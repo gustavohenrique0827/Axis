@@ -1,0 +1,8 @@
+{
+  "name": "Axis CRM",
+  "description": "Plataforma empresarial SaaS premium focada em automação comercial e inteligência de leads.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

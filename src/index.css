@@ -1,0 +1,223 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary-blue: #2563EB;
+  --color-premium-black: #0B1120;
+  --color-dark-bg: #111827;
+  --color-tech-cyan: #06B6D4;
+  --color-white-text: #F8FAFC;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+}
+
+@layer base {
+  html, body {
+    @apply bg-[#0B1120] text-[#F8FAFC] antialiased scroll-smooth;
+  }
+}
+
+@layer utilities {
+  .bg-grid-white {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='32' height='32' fill='none' stroke='white'%3E%3Cpath d='M0 .5H31.5V32' opacity='.05'/%3E%3C/svg%3E");
+  }
+  
+  .text-glow {
+    text-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+  }
+
+  .glass-card {
+    @apply bg-white/[0.03] border border-white/10 backdrop-blur-3xl;
+  }
+
+  .noise-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    mask-image: radial-gradient(ellipse at center, black, transparent);
+    @apply pointer-events-none fixed inset-0 opacity-[0.03] z-[100];
+  }
+
+  .animate-gradient-x {
+    background-size: 200% 200%;
+    animation: gradient-x 15s ease infinite;
+  }
+}
+
+@keyframes gradient-x {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.logo-container {
+  background-color: transparent !important;
+  mix-blend-mode: screen;
+  object-fit: contain;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+  transition: all 0.3s ease-in-out;
+}
+
+.logo-container:hover {
+  animation: logo-pulse 2s infinite cubic-bezier(0.4, 0, 0.6, 1);
+}
+
+@keyframes logo-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1.25);
+    filter: drop-shadow(0 0 15px rgba(59, 130, 246, 0.2));
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.28);
+    filter: drop-shadow(0 0 25px rgba(59, 130, 246, 0.4));
+  }
+}
+
+.logo-image-container {
+  margin-top: -8px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+}
+@keyframes slow-pan {
+  from { background-position: 0 0; }
+  to { background-position: 100% 100%; }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(10px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(10px) rotate(-360deg); }
+}
+
+/* Unified and Standardized Button Styles for consistent sizes, colors, rounding and feedback */
+.btn-primary {
+  @apply inline-flex items-center justify-center font-medium rounded-lg text-sm bg-[#2563EB] text-[#F8FAFC] border border-blue-500/20 shadow-md shadow-blue-500/10 hover:bg-blue-600 active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;
+}
+
+.btn-outline {
+  @apply inline-flex items-center justify-center font-medium rounded-lg text-sm border border-white/10 text-slate-200 hover:bg-white/5 hover:text-white active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center font-medium rounded-lg text-sm text-slate-400 hover:bg-white/5 hover:text-white active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;
+}
+
+.btn-success {
+  @apply inline-flex items-center justify-center font-medium rounded-lg text-sm bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 hover:bg-emerald-500/20 active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;
+}
+
+.btn-danger {
+  @apply inline-flex items-center justify-center font-medium rounded-lg text-sm bg-rose-500/10 border border-rose-500/25 text-rose-400 hover:bg-rose-500/20 active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;
+}
+
+/* Custom Seleção Ativa class for selected contact with soft glow and highlighted left border */
+.selecao-ativa {
+  border-left-width: 4px !important;
+  border-left-color: #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.12) !important;
+  box-shadow: inset 4px 0 18px rgba(59, 130, 246, 0.25), 0 0 12px rgba(59, 130, 246, 0.15) !important;
+  color: #ffffff !important;
+}
+
+/* ============================================
+   ANIMATED ROBOT - ADVANCED ANIMATIONS
+   Futuristic AI Assistant Animation Library
+   ============================================ */
+
+@keyframes slideInRobot {
+    from {
+        opacity: 0;
+        transform: translateY(-150px) scale(0.7) rotateX(45deg);
+        filter: blur(25px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1) rotateX(0deg);
+        filter: blur(0);
+    }
+}
+
+@keyframes floatSmooth {
+    0% { transform: translateY(0px) translateX(0px); }
+    25% { transform: translateY(-25px) translateX(5px); }
+    50% { transform: translateY(-15px) translateX(-3px); }
+    75% { transform: translateY(-20px) translateX(4px); }
+    100% { transform: translateY(0px) translateX(0px); }
+}
+
+@keyframes neonPulse {
+    0%, 100% {
+        box-shadow: 
+            0 0 10px rgba(0, 200, 255, 0.3),
+            0 0 20px rgba(0, 200, 255, 0.2),
+            0 0 40px rgba(0, 200, 255, 0.1),
+            inset 0 0 20px rgba(0, 200, 255, 0.05);
+    }
+    50% {
+        box-shadow: 
+            0 0 20px rgba(0, 200, 255, 0.6),
+            0 0 40px rgba(0, 200, 255, 0.4),
+            0 0 80px rgba(0, 200, 255, 0.2),
+            inset 0 0 30px rgba(0, 200, 255, 0.1);
+    }
+}
+
+@keyframes waveArm {
+    0% { transform: rotate(0deg) translateX(0); }
+    10% { transform: rotate(25deg) translateX(5px); }
+    20% { transform: rotate(35deg) translateX(8px); }
+    30% { transform: rotate(25deg) translateX(5px); }
+    40% { transform: rotate(-10deg) translateX(-3px); }
+    50% { transform: rotate(25deg) translateX(5px); }
+    60% { transform: rotate(35deg) translateX(8px); }
+    70% { transform: rotate(20deg) translateX(3px); }
+    80% { transform: rotate(5deg) translateX(1px); }
+    100% { transform: rotate(0deg) translateX(0); }
+}
+
+@keyframes eyeBlink {
+    0%, 10%, 100% { scaleY: 1; opacity: 1; }
+    5% { scaleY: 0.05; opacity: 0.8; }
+}
+
+@keyframes particleFloat {
+    0% { opacity: 0; transform: translate(0, 0) scale(0) rotate(0deg); }
+    15% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--tx), var(--ty)) scale(1) rotate(360deg); }
+}
+
+@keyframes energyTrail {
+    0% { stroke-dashoffset: 1000; opacity: 0; filter: blur(2px); }
+    50% { opacity: 1; filter: blur(0); }
+    100% { stroke-dashoffset: 0; opacity: 0; filter: blur(2px); }
+}
+
+.animate-slide-in-robot { animation: slideInRobot 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.animate-float-smooth { animation: floatSmooth 5s ease-in-out infinite; }
+.animate-neon-pulse { animation: neonPulse 2.5s ease-in-out infinite; }
+.animate-wave-arm { animation: waveArm 1.5s ease-in-out; transform-origin: 0 0; }
+.animate-eye-blink { animation: eyeBlink 3.5s ease-in-out infinite; }
+.animate-particle-float { animation: particleFloat 2.5s ease-out infinite; }
+.animate-energy-trail { animation: energyTrail 1.8s ease-in-out infinite; stroke-dasharray: 1000; }
+
+.interactive-robot {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease-out !important;
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+.interactive-robot.paused, .interactive-robot.paused * {
+    animation-play-state: paused !important;
+}
+
+.interactive-robot.is-visible, .interactive-robot.is-visible * {
+    animation-play-state: running;
+}
+
+.interactive-robot:hover {
+    filter: drop-shadow(0 0 50px #00c8ff) !important;
+    transform: scale(1.05) rotate(5deg) translateZ(0) !important;
+}

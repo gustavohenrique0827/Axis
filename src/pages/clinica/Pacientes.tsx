@@ -1,0 +1,170 @@
+import React, { useState } from 'react';
+import { 
+  Users, 
+  Search, 
+  Plus, 
+  MoreVertical, 
+  FileText, 
+  Calendar, 
+  UserPlus,
+  Filter,
+  Download,
+  Mail,
+  Phone,
+  ArrowRight,
+  ShieldCheck,
+  Clock,
+  Heart
+} from 'lucide-react';
+import { Card } from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { PageContainer } from "../../components/PageContainer";
+import { motion, AnimatePresence } from "motion/react";
+
+const mockPatients = [
+  { id: '1', name: 'Ricardo Oliveira', age: 42, lastVisit: '10 Mai, 2026', phone: '(11) 98888-7777', status: 'Ativo', plan: 'Unimed Premium', photo: 'RO' },
+  { id: '2', name: 'Beatriz Santos', age: 29, lastVisit: '15 Mai, 2026', phone: '(11) 97777-6666', status: 'Ativo', plan: 'Bradesco Saúde', photo: 'BS' },
+  { id: '3', name: 'Marcelo Dias', age: 56, lastVisit: '02 Abr, 2026', phone: '(11) 94444-5555', status: 'Inativo', plan: 'Particular', photo: 'MD' },
+  { id: '4', name: 'Fátima Lima', age: 67, lastVisit: '20 Mai, 2026', phone: '(11) 91111-2222', status: 'Ativo', plan: 'Amil Blue', photo: 'FL' },
+  { id: '5', name: 'Cláudio Mendes', age: 34, lastVisit: '12 Mai, 2026', phone: '(11) 95555-4444', status: 'Pendente', plan: 'SulAmérica', photo: 'CM' },
+];
+
+export default function Pacientes() {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredPatients = mockPatients.filter(p => 
+    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.phone.includes(searchTerm)
+  );
+
+  return (
+    <PageContainer 
+      title="Gestão de Pacientes" 
+      description="Base centralizada de prontuários, históricos e dados demográficos."
+      actions={
+        <div className="flex items-center gap-3">
+          <Button variant="outline" className="h-11 rounded-2xl border-white/5 text-[10px] font-black uppercase tracking-widest gap-2">
+            <Download className="w-4 h-4" /> Exportar Base
+          </Button>
+          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2 shadow-xl shadow-emerald-900/30 group">
+            <UserPlus className="w-4 h-4 group-hover:scale-110 transition-transform" /> Novo Paciente
+          </Button>
+        </div>
+      }
+    >
+      <div className="max-w-[1500px] mx-auto space-y-6 pb-10">
+        
+        {/* Top Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+           {[
+             { label: 'Total de Pacientes', value: '1,248', icon: Users, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+             { label: 'Novos no Mês', value: '+42', icon: UserPlus, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
+             { label: 'Taxa de Retenção', value: '94%', icon: ShieldCheck, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+             { label: 'Consultas Hoje', value: '18', icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+           ].map((stat, i) => (
+             <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 flex items-center gap-6">
+                <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
+                   <stat.icon className="w-5 h-5" />
+                </div>
+                <div>
+                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</p>
+                   <h3 className="text-2xl font-black text-white font-mono tracking-tighter">{stat.value}</h3>
+                </div>
+             </Card>
+           ))}
+        </div>
+
+        {/* Filter & Search */}
+        <Card className="p-4 bg-[#111827]/80 border-white/5 backdrop-blur-xl">
+           <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative group">
+                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                 <input 
+                   type="text" 
+                   placeholder="Buscar por nome, CPF ou link de prontuário..."
+                   className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all"
+                   value={searchTerm}
+                   onChange={(e) => setSearchTerm(e.target.value)}
+                 />
+              </div>
+              <div className="flex gap-2">
+                 <Button variant="outline" className="h-12 w-12 p-0 rounded-2xl border-white/5 text-slate-500 hover:text-white">
+                    <Filter className="w-4 h-4" />
+                 </Button>
+                 <div className="flex bg-white/5 border border-white/5 p-1 rounded-2xl">
+                    <button className="px-4 py-2 text-[10px] font-black uppercase text-emerald-400 bg-emerald-500/10 rounded-xl border border-emerald-500/20">Todos</button>
+                    <button className="px-4 py-2 text-[10px] font-black uppercase text-slate-500 hover:text-white transition-colors">Ativos</button>
+                    <button className="px-4 py-2 text-[10px] font-black uppercase text-slate-500 hover:text-white transition-colors">Novos</button>
+                 </div>
+              </div>
+           </div>
+        </Card>
+
+        {/* Patients Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+           <AnimatePresence>
+             {filteredPatients.map((patient, i) => (
+               <motion.div
+                 key={patient.id}
+                 initial={{ opacity: 0, scale: 0.95 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 transition={{ delay: i * 0.05 }}
+               >
+                 <Card className="p-6 bg-[#111827]/80 border-white/5 hover:border-emerald-500/20 transition-all group cursor-pointer relative overflow-hidden">
+                    <div className="flex items-start gap-4">
+                       <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-lg font-black text-slate-400 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all">
+                          {patient.photo}
+                       </div>
+                       <div className="flex-1">
+                          <h4 className="text-base font-black text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight">{patient.name}</h4>
+                          <div className="flex items-center gap-3 mt-1">
+                             <span className="text-[10px] font-bold text-slate-500">{patient.age} anos</span>
+                             <span className="w-1 h-1 rounded-full bg-white/10" />
+                             <span className={`text-[9px] font-black uppercase tracking-widest ${
+                               patient.status === 'Ativo' ? 'text-emerald-400' : 
+                               patient.status === 'Pendente' ? 'text-amber-400' : 'text-slate-500'
+                             }`}>● {patient.status}</span>
+                          </div>
+                       </div>
+                       <button className="p-2 hover:bg-white/5 rounded-xl text-slate-600 hover:text-white"><MoreVertical className="w-4 h-4" /></button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 mt-6">
+                       <div className="space-y-1">
+                          <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Última Consulta</p>
+                          <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
+                             <Calendar className="w-3.5 h-3.5" /> {patient.lastVisit}
+                          </div>
+                       </div>
+                       <div className="space-y-1">
+                          <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Plano / Convênio</p>
+                          <div className="flex items-center gap-2 text-xs font-medium text-slate-400">
+                             <Heart className="w-3.5 h-3.5 text-rose-500" /> {patient.plan}
+                          </div>
+                       </div>
+                    </div>
+
+                    <div className="mt-8 flex items-center gap-2">
+                       <Button className="flex-1 h-11 rounded-xl bg-white/5 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/20 text-[10px] font-black uppercase text-slate-300 hover:text-emerald-400 gap-2 transition-all">
+                          <FileText className="w-4 h-4" /> Prontuário
+                       </Button>
+                       <Button variant="outline" className="w-11 h-11 p-0 rounded-xl border-white/5 text-slate-500 hover:text-white">
+                          <Phone className="w-4 h-4" />
+                       </Button>
+                       <Button variant="outline" className="w-11 h-11 p-0 rounded-xl border-white/5 text-slate-500 hover:text-white">
+                          <Mail className="w-4 h-4" />
+                       </Button>
+                    </div>
+
+                    <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-[0.05] transition-opacity -rotate-12 pointer-events-none">
+                       <Users className="w-24 h-24" />
+                    </div>
+                 </Card>
+               </motion.div>
+             ))}
+           </AnimatePresence>
+        </div>
+      </div>
+    </PageContainer>
+  );
+}
