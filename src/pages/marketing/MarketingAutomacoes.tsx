@@ -71,6 +71,30 @@ export default function MarketingAutomacoes() {
   const [automations, setAutomations] = useState<Automation[]>(INITIAL_AUTOMATIONS);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newFlowName, setNewFlowName] = useState("");
+  const [newFlowTrigger, setNewFlowTrigger] = useState("Novo Lead");
+
+  const handleCreateFlow = () => {
+    if (!newFlowName.trim()) {
+      toast.error("Preencha o nome da automação");
+      return;
+    }
+    const newAutomation: Automation = {
+      id: Math.random().toString(36).substring(7),
+      name: newFlowName,
+      trigger: newFlowTrigger,
+      steps: 1,
+      activeCount: 0,
+      conversion: "0%",
+      status: "Rascunho",
+      lastRun: "-",
+    };
+    setAutomations([newAutomation, ...automations]);
+    setIsCreateModalOpen(false);
+    setNewFlowName("");
+    toast.success("Novo fluxo criado com sucesso!");
+  };
 
   const toggleStatus = (id: string) => {
     setAutomations(prev => prev.map(a => {
@@ -100,8 +124,8 @@ export default function MarketingAutomacoes() {
              Biblioteca
           </Button>
           <Button 
-            onClick={() => toast.info("Funcionalidade de criação de fluxos v2 em desenvolvimento.")}
-            className="bg-purple-600 hover:bg-purple-700 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-purple-600/20"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="bg-purple-600 hover:bg-purple-700 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-purple-600/20 cursor-pointer"
           >
             <Plus className="w-4 h-4 mr-2" /> Criar Fluxo
           </Button>
@@ -214,6 +238,47 @@ export default function MarketingAutomacoes() {
         ))}
       </div>
       </div>
+
+      {/* Modal de Criação */}
+      {isCreateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <Card className="w-full max-w-md p-6 bg-[#0B1120] border-white/10 shadow-2xl">
+            <h2 className="text-xl font-bold text-white mb-4">Criar Novo Fluxo</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 block">Nome da Automação</label>
+                <Input 
+                  value={newFlowName}
+                  onChange={(e) => setNewFlowName(e.target.value)}
+                  placeholder="Ex: Boas-vindas Black Friday"
+                  className="bg-[#111827] border-white/10 text-white"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 block">Gatilho Inicial</label>
+                <select 
+                  className="w-full h-10 px-3 rounded-lg bg-[#111827] border border-white/10 text-white text-sm"
+                  value={newFlowTrigger}
+                  onChange={(e) => setNewFlowTrigger(e.target.value)}
+                >
+                  <option value="Novo Lead">Novo Lead</option>
+                  <option value="Carrinho Abandonado">Carrinho Abandonado</option>
+                  <option value="Compra Aprovada">Compra Aprovada</option>
+                  <option value="Data Específica">Data Específica</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-3 justify-end mt-6">
+              <Button variant="ghost" onClick={() => setIsCreateModalOpen(false)} className="text-slate-400 hover:text-white hover:bg-white/5">
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateFlow} className="bg-purple-600 hover:bg-purple-700 text-white">
+                Criar Automação
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </PageContainer>
   );
 }

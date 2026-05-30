@@ -241,6 +241,18 @@ export default function Dashboard() {
                         </Button>
                      </div>
                   </div>
+                  
+                  {/* Legendas movidas do absolute para o fluxo normal */}
+                  <div className="flex items-center justify-end gap-3 mb-4">
+                     <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 rounded-full border border-blue-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                        <span className="text-[9px] text-blue-400 font-bold uppercase tracking-widest text-shadow-glow">Actual</span>
+                     </div>
+                     <div className="flex items-center gap-1.5 px-3 py-1 bg-cyan-500/10 rounded-full border border-cyan-500/20">
+                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 opacity-50" />
+                        <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-widest">Forecast</span>
+                     </div>
+                  </div>
                   <div className="h-[380px] -mx-4">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={performanceData}>
@@ -266,16 +278,6 @@ export default function Dashboard() {
                         <Line type="stepAfter" dataKey="retention" stroke="#8b5cf6" strokeWidth={2} dot={false} name="Health Index" />
                       </AreaChart>
                     </ResponsiveContainer>
-                  </div>
-                  <div className="absolute top-8 right-8 flex items-center gap-3">
-                     <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 rounded-full border border-blue-500/20">
-                        <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                        <span className="text-[9px] text-blue-400 font-bold uppercase tracking-widest text-shadow-glow">Actual</span>
-                     </div>
-                     <div className="flex items-center gap-1.5 px-3 py-1 bg-cyan-500/10 rounded-full border border-cyan-500/20">
-                        <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 opacity-50" />
-                        <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-widest">Forecast</span>
-                     </div>
                   </div>
                 </Card>
 
