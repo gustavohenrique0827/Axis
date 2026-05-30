@@ -10,6 +10,7 @@ import { Button } from "../../components/ui/button";
 export default function FinanceiroLayout() {
   const location = useLocation();
   const [isHidden, setIsHidden] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems = [
     { title: "Visão geral", path: "/app/financeiro", icon: PieChart },
@@ -51,7 +52,7 @@ export default function FinanceiroLayout() {
           x: isHidden ? -20 : 0
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="hidden lg:flex shrink-0 bg-[#0B1120] border-r border-white/5 flex-col pt-6 z-20 print:hidden sticky top-0 h-[calc(100vh-80px)] overflow-hidden"
+        className="hidden lg:flex shrink-0 bg-[var(--color-dark-bg)] border-r border-white/5 flex-col pt-6 z-20 print:hidden sticky top-0 h-[calc(100vh-80px)] overflow-hidden"
       >
         <div className="px-6 mb-4 flex items-center justify-between">
           <motion.h2 
@@ -93,21 +94,49 @@ export default function FinanceiroLayout() {
         </div>
       </motion.div>
 
-      {/* Mobile Top Nav (Always visible on small screens) */}
-      <div className="lg:hidden w-full bg-[#0B1120] border-b border-white/5 pt-4 shrink-0 z-20 overflow-x-auto scrollbar-hide">
-        <div className="px-2 pb-2 flex flex-row gap-2">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
-            return (
-              <Link key={item.title} to={item.path} className="shrink-0">
-                <button className={`flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-xl transition-all duration-200 ${isActive ? 'bg-blue-600/10 text-white' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
-                  <item.icon className={`w-4 h-4 ${isActive ? 'text-blue-500' : 'text-slate-600'}`} /> 
-                  <span className="whitespace-nowrap">{item.title}</span>
-                </button>
-              </Link>
-            )
-          })}
+      {/* Mobile Top Nav */}
+      <div className="lg:hidden w-full bg-[var(--color-dark-bg)] border-b border-white/5 pt-3 shrink-0 z-20 sticky top-0">
+        <div className="px-4 pb-3 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-black text-white tracking-tighter">Financeiro</h2>
+          </div>
+          <button 
+            className="p-1.5 bg-white/5 rounded-lg text-slate-400 hover:text-white"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
         </div>
+
+        <AnimatePresence>
+          {mobileMenuOpen && (
+            <motion.div 
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="absolute top-full left-0 right-0 bg-[var(--color-dark-bg)] border-b border-white/10 shadow-2xl max-h-[75vh] overflow-y-auto p-4 z-40"
+            >
+              <div className="px-2 w-full md:w-auto mb-6">
+                <div className="px-4 mb-2 flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+                  <Wallet className="w-4 h-4" /> <span>Navegação Geral</span>
+                </div>
+                <div className="space-y-0.5 flex flex-col">
+                  {navItems.map((item) => {
+                    const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+                    return (
+                      <Link key={item.title} to={item.path} onClick={() => setMobileMenuOpen(false)}>
+                        <button className={`w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${isActive ? 'bg-blue-600/10 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
+                          <item.icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-blue-500' : 'text-slate-500'}`} />
+                          <span className="truncate w-full text-left">{item.title}</span>
+                        </button>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       
       {/* Financeiro Main Content */}

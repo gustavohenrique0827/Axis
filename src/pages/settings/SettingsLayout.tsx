@@ -61,7 +61,7 @@ export default function SettingsLayout() {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row h-full -mx-4 sm:mx-0 -my-4 lg:-m-8 relative w-full lg:w-auto">
+    <div className="flex flex-col lg:flex-row h-full -m-4 lg:-m-8 relative">
       {/* Floating Trigger when Hidden */}
       <AnimatePresence>
         {isHidden && (
@@ -86,10 +86,9 @@ export default function SettingsLayout() {
         animate={{ 
           width: isHidden ? 0 : 256,
           opacity: isHidden ? 0 : 1,
-          x: isHidden ? -20 : 0
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="hidden lg:flex bg-[#0B1120] border-r border-white/5 flex-col shrink-0 z-20 lg:overflow-visible sticky top-0 h-[calc(100vh-80px)] overflow-hidden"
+        className="hidden lg:flex shrink-0 bg-[var(--color-dark-bg)] border-r border-white/5 flex-col z-20 lg:overflow-visible sticky top-0 h-[calc(100vh-80px)] overflow-hidden"
       >
         
         <div className="px-6 py-6 flex items-center justify-between">
@@ -124,7 +123,7 @@ export default function SettingsLayout() {
       </motion.div>
 
       {/* Mobile Top Nav */}
-      <div className="lg:hidden w-full bg-[#0B1120] border-b border-white/5 pt-3 shrink-0 z-20 sticky top-0">
+      <div className="lg:hidden w-full bg-[var(--color-dark-bg)] border-b border-white/5 pt-3 shrink-0 z-20 sticky top-0">
         <div className="px-4 pb-3 flex items-center justify-between">
           <div>
             <h2 className="text-lg font-black text-white tracking-tighter">Configurações</h2>
@@ -143,7 +142,7 @@ export default function SettingsLayout() {
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
-              className="absolute top-full left-0 right-0 bg-[#0B1120] border-b border-white/10 shadow-2xl max-h-[75vh] overflow-y-auto p-4 z-40"
+              className="absolute top-full left-0 right-0 bg-[var(--color-dark-bg)] border-b border-white/10 shadow-2xl max-h-[75vh] overflow-y-auto p-4 z-40"
             >
               <MenuSection title="Preferências" icon={<Bell className="w-4 h-4" />} items={secPreferencias} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
               <MenuSection title="Empresa" icon={<Building className="w-4 h-4" />} items={secEmpresa} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
