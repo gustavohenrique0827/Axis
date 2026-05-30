@@ -1,115 +1,25 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { sendPushNotification } from "../lib/notifications";
 import { supabase } from '../lib/supabase';
-import { Lead, Task, Contract, CustomField, LeadScoreTrigger, Squad, Colaborador } from '../types';
-import { defaultCustomLeadFields, defaultFinanceEntries, defaultGlobalWebhooks, defaultLeads, defaultTasks, defaultContracts, defaultActivitiesOnLoad, getDefaultAppointments, defaultSquads, defaultNotifications, defaultLeadScoreTriggers } from './dataMocks';
+import { Lead, Task, Contract, CustomField, LeadScoreTrigger, Squad } from '../types';
+import {
+  defaultCustomLeadFields,
+  defaultFinanceEntries,
+  defaultGlobalWebhooks,
+  defaultLeads,
+  defaultTasks,
+  defaultContracts,
+  defaultActivitiesOnLoad,
+  getDefaultAppointments,
+  defaultSquads,
+  defaultNotifications,
+  defaultLeadScoreTriggers
+} from './dataMocks';
+import { DataContext, DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, useData } from './DataContextTypes';
 
-export interface LeadActivity {
-  id: string;
-  leadId: string;
-  type: 'Ligação' | 'E-mail' | 'Reunião' | 'Outro';
-  title: string;
-  description: string;
-  date: string;
-  seller: string;
-  files?: { name: string; size: string; }[];
-}
-
-export interface Notification {
-  id: string;
-  title: string;
-  desc: string;
-  link?: string;
-  time: string;
-  date: string; // Dynamic date for grouping (e.g., "20 Mai 2026")
-  type: 'success' | 'error' | 'info' | 'warning';
-  category?: string; // e.g., CRM, Produtividade, Financeiro
-  read: boolean;
-}
-
-export interface GlobalWebhook {
-  id: string;
-  endpoint: string;
-  event: string;
-  active: boolean;
-}
-
-export interface FinanceEntry {
-  id: string;
-  description: string;
-  category: string;
-  status: 'Pago' | 'A Vencer' | 'Atrasado';
-  value: number;
-  type: 'Pagar' | 'Receber';
-  date: string;
-}
-
-export type Appointment = {
-  id: string;
-  time: string;
-  patient: string;
-  drId: string;
-  drName: string;
-  status: 'Confirmado' | 'Aguardando' | 'Atrasado' | 'Em Atendimento' | 'Finalizado';
-  type: 'Consulta' | 'Check-up' | 'Procedimento' | 'Retorno' | 'Teleconsulta';
-  room: string;
-  specialty: string;
-  phone?: string;
-  date: string; // YYYY-MM-DD
-};
-
-interface DataContextType {
-  leads: Lead[];
-  tasks: Task[];
-  contracts: Contract[];
-  notifications: Notification[];
-  leadActivities: LeadActivity[];
-  financeEntries: FinanceEntry[];
-  appointments: Appointment[];
-  theme: 'dark' | 'light';
-  toggleTheme: () => void;
-  // ... rest of methods
-  addLead: (lead: Omit<Lead, 'id'>) => void;
-  updateLead: (id: string, updates: Partial<Lead>) => void;
-  deleteLead: (id: string) => void;
-  moveLead: (leadId: string, destStageId: string, index: number) => void;
-  addTask: (task: Omit<Task, 'id'>) => void;
-  updateTask: (id: string, updates: Partial<Task>) => void;
-  deleteTask: (id: string) => void;
-  addContract: (contract: Omit<Contract, 'id'>) => void;
-  deleteContract: (id: string) => void;
-  addNotification: (notification: Omit<Notification, 'id' | 'time' | 'date' | 'read'>, push?: boolean) => void;
-  markNotificationAsRead: (id: string) => void;
-  markAllNotificationsAsRead: () => void;
-  addLeadActivity: (leadId: string, type: 'Ligação' | 'E-mail' | 'Reunião' | 'Outro', title: string, description: string, seller: string, customDate?: string, files?: { name: string; size: string; }[]) => void;
-  addFinanceEntry: (entry: Omit<FinanceEntry, 'id'>) => void;
-  deleteFinanceEntry: (id: string) => void;
-  updateFinanceEntry: (id: string, updates: Partial<FinanceEntry>) => void;
-  addAppointment: (apt: Omit<Appointment, 'id'>) => void;
-  updateAppointment: (id: string, updates: Partial<Appointment>) => void;
-  deleteAppointment: (id: string) => void;
-  simulateNewLeadAssignment: () => void;
-  simulateOverdueTask: () => void;
-  evolutionWebhookUrl: string;
-  setEvolutionWebhookUrl: (url: string) => void;
-  robotStatus: 'executando' | 'pausado';
-  setRobotStatus: (status: 'executando' | 'pausado') => void;
-  customLeadFields: CustomField[];
-  setCustomLeadFields: (fields: CustomField[]) => void;
-  leadScoreTriggers: LeadScoreTrigger[];
-  setLeadScoreTriggers: (triggers: LeadScoreTrigger[]) => void;
-  globalWebhooks: GlobalWebhook[];
-  addGlobalWebhook: (webhook: Omit<GlobalWebhook, 'id'>) => void;
-  deleteGlobalWebhook: (id: string) => void;
-  toggleGlobalWebhook: (id: string) => void;
-  squads: Squad[];
-  updateSquad: (id: string, updates: Partial<Squad>) => void;
-  addSquad: (squad: Omit<Squad, 'id'>) => void;
-  deleteSquad: (id: string) => void;
-}
-
-const DataContext = createContext<DataContextType | undefined>(undefined);
+export { useData };
+export type { DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry };
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -194,8 +104,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       const primary = localStorage.getItem("axis_brand_primary_color") || "#2563EB";
       const secondary = localStorage.getItem("axis_brand_secondary_color") || "#0F172A";
       const accent = localStorage.getItem("axis_brand_accent_color") || "#06B6D4";
-      const success = localStorage.getItem("axis_brand_success_color") || "#10B981";
-      const danger = localStorage.getItem("axis_brand_danger_color") || "#EF4444";
 
       document.documentElement.style.setProperty('--color-primary-blue', primary);
       document.documentElement.style.setProperty('--primary', primary);
@@ -212,13 +120,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const [leads, setLeads] = useState<Lead[]>(defaultLeads);
-
   const [tasks, setTasks] = useState<Task[]>(defaultTasks);
-
   const [contracts, setContracts] = useState<Contract[]>(defaultContracts);
-
-  
-
   const [leadActivities, setLeadActivities] = useState<LeadActivity[]>([]);
 
   const [evolutionWebhookUrl, setEvolutionWebhookUrl] = useState<string>(() => {
@@ -277,7 +180,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   // Persistence & Supabase Synchronization
   useEffect(() => {
     async function loadInitialData() {
-      // 1. Initial fallbacks from localStorage
       const savedLeads = localStorage.getItem('axis_leads');
       const savedTasks = localStorage.getItem('axis_tasks');
       const savedContracts = localStorage.getItem('axis_contracts');
@@ -294,7 +196,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         setLeadActivities(defaultActivitiesOnLoad);
       }
 
-      // 2. Try to fetch real-time data from Supabase if client is initialized
       if (!supabase) return;
       try {
         const { data: dbLeads, error: lErr } = await supabase.from('leads').select('*');
@@ -349,13 +250,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           const diffMs = aptTime.getTime() - now.getTime();
           const diffMins = Math.floor(diffMs / 60000);
           
-          // Trigger if within 29-31 minutes and not notified yet
           if (diffMins >= 28 && diffMins <= 32 && !notifiedRemindersRef.current[apt.id]) {
             notifiedRemindersRef.current[apt.id] = true;
-            
-            // Logic to simulate WhatsApp send
             const message = `Olá ${apt.patient}, aqui é da Axis Telemedicina. Lembramos que sua teleconsulta com ${apt.drName} inicia em 30 minutos. Prepare sua conexão!`;
-            
             console.log(`[WHATSAPP AUTOMÁTICO] Enviando para ${apt.phone || 'N/A'}: ${message}`);
             
             toast.info(`Lembrete WhatsApp enviado para ${apt.patient}`, {
@@ -374,19 +271,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       });
     };
 
-    const interval = setInterval(checkTeleconsultations, 30000); // Check every 30s
+    const interval = setInterval(checkTeleconsultations, 30000);
     return () => clearInterval(interval);
   }, [appointments]);
 
-  // Synchronized ref to read notifications in the effect without causing infinite loops
   const notifsRef = React.useRef(notifications);
   useEffect(() => {
     notifsRef.current = notifications;
   }, [notifications]);
 
-  // Automated real-time checking effect for critical events (lead assignments & overdue tasks)
+  // Automated real-time checking effect for critical events
   useEffect(() => {
-    // 1. Check for assigned leads that do not have their assignment notification yet
     leads.forEach(l => {
       if (l.seller && l.seller !== "Não Atribuído") {
         const hasAssignmentNotif = notifsRef.current.some(
@@ -408,7 +303,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // 2. Check for overdue tasks
     tasks.forEach(t => {
       if (t.status === "Atrasado") {
         const hasOverdueNotif = notifsRef.current.some(
@@ -418,22 +312,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         );
 
         if (!hasOverdueNotif) {
-          // Send HTML Email Simulation
-          console.log(`
-[DISPARO DE E-MAIL]
-De: no-reply@axis-crm.cloud
-Para: ${t.seller || 'admin'}@axis-crm.cloud
-Assunto: Alerta: Tarefa Atrasada - ${t.title}
-
-Template HTML:
-<div style="font-family: sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 8px;">
-  <h2 style="color: #e53e3e;">Atenção! Tarefa Atrasada</h2>
-  <p>A tarefa <strong>${t.title}</strong> passou do prazo limite.</p>
-  <p>Essa tarefa está relacionada ao lead/cliente: <strong>${t.related}</strong></p>
-  <a href="/app/pipeline" style="display: inline-block; padding: 10px 15px; background: #3b82f6; color: white; text-decoration: none; border-radius: 4px; margin-top: 10px;">Visualizar Lead</a>
-</div>
-          `);
-
+          console.log(`[DISPARO DE E-MAIL] Assunto: Alerta: Tarefa Atrasada - ${t.title}`);
           addNotification({
             title: "Tarefa Crítica Atrasada",
             desc: `A tarefa '${t.title}' (relacionada com: ${t.related}) está atrasada e necessita de atenção imediata!`,
@@ -453,7 +332,6 @@ Template HTML:
     const checkColdLeads = () => {
       leads.forEach(lead => {
         if (lead.scoreIA !== undefined && lead.scoreIA < 40) {
-          // Check if nurturing task with the 'reengajamento' tag already exists for this lead/company
           const hasNurturingTask = tasks.some(t => 
             (t.related === lead.company || t.related === lead.name) && 
             t.tags?.includes("reengajamento")
@@ -488,7 +366,6 @@ Template HTML:
       });
     };
 
-    // Run check after mount, then every 20 seconds
     const timer = setTimeout(checkColdLeads, 4000);
     const interval = setInterval(checkColdLeads, 20000);
 
@@ -505,7 +382,7 @@ Template HTML:
       const percentage = (sq.faturamentoAlcancado / sq.meta) * 100;
       if (percentage >= 90 && !notifiedSquadsRef.current[sq.id]) {
         addNotification({
-          title: "🚀 Meta Próxima (90%+)",
+          title: "Meta Próxima (90%+)",
           desc: `O ${sq.nome} atingiu 90% da meta mensal! Faturamento atual: R$ ${sq.faturamentoAlcancado.toLocaleString()}`,
           type: "success",
           category: "Performance"
@@ -516,7 +393,6 @@ Template HTML:
         });
         notifiedSquadsRef.current[sq.id] = true;
       } else if (percentage < 90) {
-        // Reset if it somehow goes below (e.g. goal adjustment or refund simulation)
         notifiedSquadsRef.current[sq.id] = false;
       }
     });
@@ -525,13 +401,8 @@ Template HTML:
   const simulateNewLeadAssignment = () => {
     const sellersList = ["Carlos Eduardo Mendes", "Ana Silva", "Roberto Ramos", "Juliana Costa"];
     const randomSeller = sellersList[Math.floor(Math.random() * sellersList.length)];
-    
-    if (leads.length === 0) {
-      toast.error("Nenhum lead ativo disponível no momento.");
-      return;
-    }
+    if (leads.length === 0) return;
     const randomLead = leads[Math.floor(Math.random() * leads.length)];
-    
     updateLead(randomLead.id, { seller: randomSeller });
   };
 
@@ -539,10 +410,9 @@ Template HTML:
     const taskTitles = [
       "Retornar ligação de proposta comercial",
       "Validar orçamento com diretoria financeira",
-      "Enviar cronograma de escopo e implantação",
-      "Reunião de alinhamento com engenharia"
+      "Enviar cronograma de escopo e implantação"
     ];
-    const clients = ["TechCorp Brasil", "Construtora RS", "Clínica Vida", "Solar Solutions"];
+    const clients = ["TechCorp Brasil", "Construtora RS", "Clínica Vida"];
     const sellersList = ["Carlos Eduardo Mendes", "Ana Silva", "Roberto Ramos"];
     
     const randomTitle = taskTitles[Math.floor(Math.random() * taskTitles.length)];
@@ -558,8 +428,23 @@ Template HTML:
       priority: "Alta",
       seller: randomSeller
     };
-    
     addTask(newTask);
+  };
+
+  const parseTaskDate = (dateStr: string): Date => {
+    const now = new Date();
+    if (!dateStr) return now;
+    const directDate = new Date(dateStr);
+    if (!isNaN(directDate.getTime())) return directDate;
+
+    const lower = dateStr.toLowerCase();
+    if (lower.includes("hoje")) return now;
+    if (lower.includes("amanhã") || lower.includes("amanha")) {
+      const tomorrow = new Date();
+      tomorrow.setDate(now.getDate() + 1);
+      return tomorrow;
+    }
+    return now;
   };
 
   const triggerScoreRecalculation = async (leadId: string, currentLeadsList?: Lead[], currentActivitiesList?: LeadActivity[]) => {
@@ -576,8 +461,6 @@ Template HTML:
       });
       if (response.ok) {
         const result = await response.json();
-        
-        // Update local state with calculation result
         setLeads(prev => prev.map(l => l.id === leadId ? {
           ...l,
           scoreIA: result.scoreIA,
@@ -586,7 +469,6 @@ Template HTML:
           stageId: (l.pipelineId === 'sdr' && (!l.stageId || l.stageId === 's1' || l.stageId === 's2')) ? 's_qual' : l.stageId
         } : l));
 
-        // Update database if using Supabase
         if (supabase) {
           const updatedStage = (targetLead.pipelineId === 'sdr' && (!targetLead.stageId || targetLead.stageId === 's1' || targetLead.stageId === 's2')) ? 's_qual' : targetLead.stageId;
           await supabase.from('leads').update({
@@ -619,16 +501,11 @@ Template HTML:
         console.error("Supabase add lead failed:", err);
       }
     }
-
-    // Trigger initial calculation
-    setTimeout(() => {
-      triggerScoreRecalculation(newLead.id);
-    }, 400);
+    setTimeout(() => { triggerScoreRecalculation(newLead.id); }, 400);
   };
 
   const updateLead = async (id: string, updates: Partial<Lead>) => {
     let hasStatusOrStageChange = false;
-    
     setLeads(prev => {
       const target = prev.find(l => l.id === id);
       if (target && (
@@ -640,37 +517,30 @@ Template HTML:
 
       return prev.map(l => {
         if (l.id === id) {
-            const updatedLead = { ...l, ...updates };
-
-            // Transition from SDR to Comercial
-            if (l.pipelineId === 'sdr' && updates.pipelineId === 'comercial') {
-                const tempLabel = updatedLead.temperature ? updatedLead.temperature.toUpperCase() : 'Não avaliada';
-                
-                toast.success('Lead Qualificado!', {
-                    description: `${updatedLead.name} foi movido para o Comercial com temperatura ${tempLabel}.`
-                });
-
-                addNotification({
-                    title: "Lead Qualificado (SDR -> Comercial)",
-                    desc: `O lead ${updatedLead.name} foi qualificado pela Master AI com temperatura ${tempLabel} e enviado ao pipeline comercial.`,
-                    link: "/app/pipeline",
-                    type: "success",
-                    category: "CRM & Vendas"
-                });
-            }
-
-            // Automation for 'Won' leads
-            if (updates.status === 'Fechado' && l.status !== 'Fechado') {
-                addNotification({
-                    title: "Automação: E-mail de Boas Vindas",
-                    desc: `Boas vindas enviadas para ${updatedLead.name} por ter se tornado cliente!`,
-                    type: "success",
-                    category: "Engajamento"
-                });
-                toast.success("E-mail de Boas Vindas enviado!");
-            }
-
-            return updatedLead;
+          const updatedLead = { ...l, ...updates };
+          if (l.pipelineId === 'sdr' && updates.pipelineId === 'comercial') {
+            const tempLabel = updatedLead.temperature ? updatedLead.temperature.toUpperCase() : 'Não avaliada';
+            toast.success('Lead Qualificado!', {
+              description: `${updatedLead.name} foi movido para o Comercial com temperatura ${tempLabel}.`
+            });
+            addNotification({
+              title: "Lead Qualificado (SDR -> Comercial)",
+              desc: `O lead ${updatedLead.name} foi qualificado pela Master AI com temperatura ${tempLabel} e enviado ao pipeline comercial.`,
+              link: "/app/pipeline",
+              type: "success",
+              category: "CRM & Vendas"
+            });
+          }
+          if (updates.status === 'Fechado' && l.status !== 'Fechado') {
+            addNotification({
+              title: "Automação: E-mail de Boas Vindas",
+              desc: `Boas vindas enviadas para ${updatedLead.name} por ter se tornado cliente!`,
+              type: "success",
+              category: "Engajamento"
+            });
+            toast.success("E-mail de Boas Vindas enviado!");
+          }
+          return updatedLead;
         }
         return l;
       });
@@ -683,18 +553,14 @@ Template HTML:
         console.error("Supabase update lead failed:", err);
       }
     }
-
     if (hasStatusOrStageChange) {
-      setTimeout(() => {
-        triggerScoreRecalculation(id);
-      }, 400);
+      setTimeout(() => { triggerScoreRecalculation(id); }, 400);
     }
   };
 
   const deleteLead = async (id: string) => {
     setLeads(prev => prev.filter(l => l.id !== id));
     toast.info('Lead removido.');
-
     if (supabase) {
       try {
         await supabase.from('leads').delete().eq('id', id);
@@ -706,24 +572,21 @@ Template HTML:
 
   const moveLead = async (leadId: string, destStageId: string, index: number) => {
     setLeads(prev => {
-        const lead = prev.find(l => l.id === leadId);
-        if (!lead) return prev;
-        
-        const otherLeads = prev.filter(l => l.id !== leadId);
-        const updatedLead = { ...lead, stageId: destStageId };
+      const lead = prev.find(l => l.id === leadId);
+      if (!lead) return prev;
+      const otherLeads = prev.filter(l => l.id !== leadId);
+      const updatedLead = { ...lead, stageId: destStageId };
 
-        // Notification for SDR 'Qualificação IA'
-        if (destStageId === 's_qual' && lead.pipelineId === 'sdr') {
-          addNotification({
-            title: "Análise Master AI Concluída",
-            desc: `O lead ${lead.name} foi movido para Qualificação IA. A análise estrutural da Master AI foi finalizada.`,
-            type: "success",
-            category: "SDR",
-            link: `/app/pipeline?search=${encodeURIComponent(lead.name)}`
-          });
-        }
-        
-        return [...otherLeads, updatedLead]; 
+      if (destStageId === 's_qual' && lead.pipelineId === 'sdr') {
+        addNotification({
+          title: "Análise Master AI Concluída",
+          desc: `O lead ${lead.name} foi movido para Qualificação IA. A análise estrutural da Master AI foi finalizada.`,
+          type: "success",
+          category: "SDR",
+          link: `/app/pipeline?search=${encodeURIComponent(lead.name)}`
+        });
+      }
+      return [...otherLeads, updatedLead]; 
     });
 
     if (supabase) {
@@ -733,11 +596,7 @@ Template HTML:
         console.error("Supabase move lead failed:", err);
       }
     }
-
-    // Move counts as stageId status update, trigger recalculation
-    setTimeout(() => {
-      triggerScoreRecalculation(leadId);
-    }, 400);
+    setTimeout(() => { triggerScoreRecalculation(leadId); }, 400);
   };
 
   const addTask = async (task: Omit<Task, 'id'>) => {
@@ -761,7 +620,6 @@ Template HTML:
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
     setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
-
     if (supabase) {
       try {
         await supabase.from('tasks').update(updates).eq('id', id);
@@ -774,7 +632,6 @@ Template HTML:
   const deleteTask = async (id: string) => {
     setTasks(prev => prev.filter(t => t.id !== id));
     toast.info('Tarefa removida.');
-
     if (supabase) {
       try {
         await supabase.from('tasks').delete().eq('id', id);
@@ -806,7 +663,6 @@ Template HTML:
   const deleteContract = async (id: string) => {
     setContracts(prev => prev.filter(c => c.id !== id));
     toast.info('Contrato removido.');
-
     if (supabase) {
       try {
         await supabase.from('contracts').delete().eq('id', id);
@@ -859,8 +715,6 @@ Template HTML:
         console.error("Supabase add lead activity failed:", err);
       }
     }
-
-    // Trigger score calculation after activity logger saved
     triggerScoreRecalculation(leadId, leads, updatedActivities);
   };
 
@@ -926,12 +780,4 @@ Template HTML:
       {children}
     </DataContext.Provider>
   );
-}
-
-export function useData() {
-  const context = useContext(DataContext);
-  if (context === undefined) {
-    throw new Error('useData must be used within a DataProvider');
-  }
-  return context;
 }

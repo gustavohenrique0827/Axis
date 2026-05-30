@@ -1,0 +1,144 @@
+import React from 'react';
+import { motion } from 'motion/react';
+import { Card } from '../../../components/ui/card';
+import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, PieChart, Pie } from 'recharts';
+import { Globe, Share2, Sparkles, MousePointer2, Layers, Users, DollarSign } from 'lucide-react';
+
+export function MarketingView() {
+  return (
+    <motion.div 
+      key="marketing"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="space-y-6 text-left"
+    >
+      <div className="grid lg:grid-cols-3 gap-6">
+        <Card className="lg:col-span-2 p-8 bg-[#111827]/80 border-white/5 relative overflow-hidden rounded-3xl">
+           <div className="flex items-center justify-between mb-10">
+              <div>
+                 <h3 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
+                   <Globe className="w-5 h-5 text-blue-400" /> Origem de Leads (Attribution)
+                 </h3>
+                 <p className="text-xs text-slate-500 mt-2 font-medium">Modelagem multicanal de primeira interação e conversão final.</p>
+              </div>
+              <div className="flex items-center gap-2">
+                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-xl border border-white/5 italic">MIA Dynamic Attribution</span>
+              </div>
+           </div>
+           <div className="h-[320px]">
+              <ResponsiveContainer width="100%" height="100%">
+                 <BarChart data={[
+                   { name: 'Google Ads', direct: 420, organic: 120, social: 45 },
+                   { name: 'Organic Search', direct: 180, organic: 290, social: 30 },
+                   { name: 'Social Media', direct: 95, organic: 80, social: 310 },
+                   { name: 'Referral', direct: 60, organic: 45, social: 25 },
+                   { name: 'Direct', direct: 210, organic: 30, social: 15 },
+                 ]}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                    <XAxis dataKey="name" stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
+                    <YAxis stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
+                    <Tooltip 
+                      cursor={{fill: '#ffffff05'}}
+                      contentStyle={{ backgroundColor: '#0B1120', border: '1px solid #ffffff05', borderRadius: '16px' }}
+                      itemStyle={{ fontSize: '10px', fontWeight: 'bold' }}
+                    />
+                    <Bar dataKey="direct" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20} />
+                    <Bar dataKey="organic" fill="#10b981" radius={[4, 4, 0, 0]} barSize={20} />
+                    <Bar dataKey="social" fill="#8b5cf6" radius={[4, 4, 0, 0]} barSize={20} />
+                 </BarChart>
+              </ResponsiveContainer>
+           </div>
+           <div className="mt-8 grid grid-cols-3 gap-4">
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                 <p className="text-[9px] text-slate-500 font-black uppercase mb-1">CPL Médio</p>
+                 <p className="text-lg font-black text-white font-mono tracking-tighter">R$ 14,80 <span className="text-[10px] text-emerald-400 font-bold ml-1">-12%</span></p>
+              </div>
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                 <p className="text-[9px] text-slate-500 font-black uppercase mb-1">ROAS Global</p>
+                 <p className="text-lg font-black text-white font-mono tracking-tighter">4.2x <span className="text-[10px] text-emerald-400 font-bold ml-1">+0.5</span></p>
+              </div>
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+                 <p className="text-[9px] text-slate-500 font-black uppercase mb-1">CAC Payback</p>
+                 <p className="text-lg font-black text-white font-mono tracking-tighter">4.5 Meses</p>
+              </div>
+           </div>
+        </Card>
+
+        <div className="space-y-6">
+           <Card className="p-8 bg-[#111827]/80 border-white/5 rounded-3xl">
+              <h4 className="text-sm font-black text-white uppercase tracking-widest mb-8 flex items-center gap-2">
+                <Share2 className="w-4 h-4 text-purple-400" /> Share of Voice
+              </h4>
+              <div className="h-[200px]">
+                 <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                       <Pie
+                         data={[
+                           { name: 'Sua Marca', value: 45, fill: '#3b82f6' },
+                           { name: 'Concorrente A', value: 25, fill: '#64748b' },
+                           { name: 'Concorrente B', value: 20, fill: '#334155' },
+                           { name: 'Outros', value: 10, fill: '#1e293b' },
+                         ]}
+                         cx="50%" cy="50%"
+                         innerRadius={60}
+                         outerRadius={80}
+                         paddingAngle={5}
+                         dataKey="value"
+                       />
+                       <Tooltip />
+                    </PieChart>
+                 </ResponsiveContainer>
+              </div>
+              <div className="space-y-3 mt-6">
+                 {[
+                   { label: 'Sua Marca', value: '45%', color: 'bg-blue-500' },
+                   { label: 'Market Avg', value: '22%', color: 'bg-slate-500' },
+                 ].map((item, i) => (
+                   <div key={i} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                         <div className={`w-2 h-2 rounded-full ${item.color}`} />
+                         <span className="text-[10px] text-slate-400 font-bold uppercase">{item.label}</span>
+                      </div>
+                      <span className="text-xs font-black text-white">{item.value}</span>
+                   </div>
+                 ))}
+              </div>
+           </Card>
+
+           <Card className="p-6 bg-gradient-to-br from-blue-600/20 to-purple-600/20 border border-white/10 rounded-3xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-6 opacity-[0.05] group-hover:opacity-[0.1] transition-opacity">
+                 <Sparkles className="w-16 h-16 text-white" />
+              </div>
+              <h5 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-2">Insight de Campanha</h5>
+              <p className="text-[11px] text-slate-200 leading-relaxed font-medium">Seus anúncios fixos em 'Gestão Financeira' estão saturando. Recomendamos rotacionar criativos para evitar blindness.</p>
+           </Card>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+         {[
+           { icon: MousePointer2, label: "CTR Médio", value: "3.24%", trend: "+0.4%", color: "text-blue-400", bg: "bg-blue-500/10" },
+           { icon: Layers, label: "LPs Conversion", value: "18.5%", trend: "-1.2%", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+           { icon: Users, label: "Marketing Leads", value: "1,240", trend: "+15%", color: "text-purple-400", bg: "bg-purple-500/10" },
+           { icon: DollarSign, label: "Total Investido", value: "R$ 18.5k", trend: "0%", color: "text-amber-400", bg: "bg-amber-500/10" },
+         ].map((metric, i) => (
+            <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 group hover:border-white/10 transition-all rounded-3xl">
+               <div className="flex items-center gap-4 mb-4">
+                  <div className={`p-2.5 rounded-xl ${metric.bg} ${metric.color}`}>
+                     <metric.icon className="w-4 h-4" />
+                  </div>
+                  <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest">{metric.label}</p>
+               </div>
+               <div className="flex items-end justify-between">
+                  <h4 className="text-2xl font-black text-white font-mono tracking-tighter">{metric.value}</h4>
+                  <span className={`text-[10px] font-bold ${metric.trend.startsWith('+') ? 'text-emerald-400' : metric.trend === '0%' ? 'text-slate-500' : 'text-rose-400'}`}>
+                     {metric.trend}
+                  </span>
+               </div>
+            </Card>
+         ))}
+      </div>
+    </motion.div>
+  );
+}

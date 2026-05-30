@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, LineChart, Line, Legend
+  PieChart, Pie, Cell, LineChart, Line
 } from "recharts";
-import { TrendingUp, Users, Target, Activity, ArrowUpRight, Zap, Mail, Calendar, Download, Clock, Send, Trash2, Settings2, CheckCircle } from "lucide-react";
-import { toast } from "sonner";
+import { TrendingUp, ArrowUpRight, Mail, Calendar, Clock, Send, Trash2, Settings2, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Reorder } from "motion/react";
+import { PageContainer } from "../../components/PageContainer";
+import { useIndicadores } from "./hooks/useIndicadores";
 
 const monthlyData = [
   { name: 'Jan', receita: 4000, leads: 240, meta: 3800 },
@@ -26,104 +27,25 @@ const pieData = [
   { name: 'Social', value: 200, color: '#8B5CF6' },
 ];
 
-import { PageContainer } from "../../components/PageContainer";
-
 export default function Indicadores() {
-  const [schedules, setSchedules] = useState<{ id: string; email: string; weekday: string; time: string; active: boolean }[]>(() => {
-    const cached = localStorage.getItem("axis_scheduled_exports");
-    if (cached) {
-      try { return JSON.parse(cached); } catch (e) {}
-    }
-    return [
-      { id: "1", email: "comercial.diretoria@axis.com.br", weekday: "Segunda-feira", time: "08:00", active: true },
-      { id: "2", email: "gerencia.operacoes@axis.com.br", weekday: "Segunda-feira", time: "07:30", active: true }
-    ];
-  });
-
-  const [selectedKPI, setSelectedKPI] = useState<any>(null);
-  const [criticalKPIs, setCriticalKPIs] = useState<string[]>(["Retention Rate"]); // Define critical threshold logic
-
-  // Form states for scheduled exports
-  const [newEmail, setNewEmail] = useState("");
-  const [newWeekday, setNewWeekday] = useState("Segunda-feira");
-  const [newTime, setNewTime] = useState("08:00");
-
-  useEffect(() => {
-    localStorage.setItem("axis_scheduled_exports", JSON.stringify(schedules));
-  }, [schedules]);
-
-  const handleCreateSchedule = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newEmail.trim()) {
-      toast.error("Por favor, digite um e-mail válido.");
-      return;
-    }
-    if (!newEmail.includes("@") || !newEmail.includes(".")) {
-      toast.error("Formato de e-mail inválido.");
-      return;
-    }
-
-    const itemExists = schedules.find(s => s.email.toLowerCase() === newEmail.trim().toLowerCase());
-    if (itemExists) {
-      toast.warning("Este e-mail já possui um agendamento.");
-      return;
-    }
-
-    const scheduledItem = {
-      id: Date.now().toString(),
-      email: newEmail.trim(),
-      weekday: newWeekday,
-      time: newTime,
-      active: true
-    };
-
-    setSchedules([...schedules, scheduledItem]);
-    setNewEmail("");
-    toast.success(`Exportação agendada com sucesso para toda ${newWeekday}!`);
-  };
-
-  const handleToggleSchedule = (id: string) => {
-    setSchedules(schedules.map(s => s.id === id ? { ...s, active: !s.active } : s));
-    toast.info("Status do agendamento atualizado.");
-  };
-
-  const handleDeleteSchedule = (id: string) => {
-    setSchedules(schedules.filter(s => s.id !== id));
-    toast.success("Agendamento de e-mail removido.");
-  };
-
-  const simulateRunAndDownloadCSV = () => {
-    const csvRows = [
-      ["Mes", "Receita Real (R$)", "Meta Comercial (R$)", "Total de Leads Atendidos", "SLA Compliance Rate (%)"],
-      ["Jan", "R$ 4.000", "R$ 3.800", "240", "85%"],
-      ["Fev", "R$ 3.000", "R$ 3.200", "139", "85%"],
-      ["Mar", "R$ 2.000", "R$ 3.500", "980", "85%"],
-      ["Abr", "R$ 2.780", "R$ 3.000", "390", "85%"],
-      ["Mai", "R$ 1.890", "R$ 2.500", "480", "85%"],
-      ["Jun", "R$ 3.200", "R$ 2.800", "600", "85%"],
-      ["Indicadores Gerais", "Ticket Medio: R$ 2.450", "Ciclo Medio: 18 dias", "LTV Medio: R$ 18.200", "Retencao: 98.4%"]
-    ];
-
-    const csvString = "\uFEFF" + csvRows.map(row => row.map(cell => `"${cell}"`).join(";")).join("\r\n");
-    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `axis_weekly_performance_report_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    toast.success(`Simulação realizada! Relatório CSV disparado para ${schedules.filter(s => s.active).length} destinatários ativos.`);
-  };
-
-  const [kpiCards, setKpiCards] = useState([
-     { label: "Ticket Médio", value: "R$ 2.450", trend: "+5.2%", icon: Target, color: "text-[#2563EB]" },
-     { label: "Ciclo de Vendas", value: "18 dias", trend: "-2 dias", icon: Activity, color: "text-[#06B6D4]" },
-     { label: "LTV Projetado", value: "R$ 18.200", trend: "+12.4%", icon: Zap, color: "text-purple-400" },
-     { label: "Retention Rate", value: "98.4%", trend: "+0.2%", icon: Users, color: "text-emerald-400" },
-  ]);
+  const {
+    schedules,
+    selectedKPI,
+    setSelectedKPI,
+    criticalKPIs,
+    newEmail,
+    setNewEmail,
+    newWeekday,
+    setNewWeekday,
+    newTime,
+    setNewTime,
+    handleCreateSchedule,
+    handleToggleSchedule,
+    handleDeleteSchedule,
+    simulateRunAndDownloadCSV,
+    kpiCards,
+    setKpiCards
+  } = useIndicadores();
 
   return (
     <PageContainer
@@ -184,7 +106,7 @@ export default function Indicadores() {
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
         id="indicadores-draggable-container"
       >
-         {kpiCards.map((kpi, i) => (
+         {kpiCards.map((kpi) => (
            <Reorder.Item 
              key={kpi.label} 
              value={kpi} 
@@ -225,24 +147,24 @@ export default function Indicadores() {
            </div>
            <div className="h-[350px]">
              <ResponsiveContainer width="100%" height="100%">
-               <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                 <XAxis dataKey="name" stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} dy={5} />
-                 <YAxis stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} dx={-5} />
-                 <Tooltip 
-                   contentStyle={{ backgroundColor: '#0B1120', borderColor: '#ffffff10', borderRadius: '16px' }}
-                   cursor={{ fill: '#ffffff03' }}
-                 />
-                 <Bar dataKey="receita" fill="#2563EB" radius={[6, 6, 0, 0]} barSize={40} />
-                 <Bar dataKey="meta" fill="#ffffff10" radius={[6, 6, 0, 0]} barSize={10} />
-               </BarChart>
+                <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                  <XAxis dataKey="name" stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} dy={5} />
+                  <YAxis stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} dx={-5} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#0B1120', borderColor: '#ffffff10', borderRadius: '16px' }}
+                    cursor={{ fill: '#ffffff03' }}
+                  />
+                  <Bar dataKey="receita" fill="#2563EB" radius={[6, 6, 0, 0]} barSize={40} />
+                  <Bar dataKey="meta" fill="#ffffff10" radius={[6, 6, 0, 0]} barSize={10} />
+                </BarChart>
              </ResponsiveContainer>
            </div>
         </Card>
 
         <Card className="p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl flex flex-col relative overflow-hidden">
            <div className="absolute top-0 right-0 p-8 opacity-5">
-              <Activity className="w-24 h-24 text-[#10B981]" />
+              <TrendingUp className="w-24 h-24 text-[#10B981]" />
            </div>
            <h3 className="font-bold text-xl text-white mb-8">Cumprimento de SLA</h3>
            <div className="flex-1 flex items-center justify-center relative">

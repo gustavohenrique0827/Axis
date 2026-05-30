@@ -1,65 +1,16 @@
 import React, { useState } from "react";
 import { Card } from "../../components/ui/card";
 import { 
-    Server, Users, HardDrive, Activity, Building2, Search, ChevronRight, CheckCircle2, 
-    AlertCircle, Download, Plus, Bell, Play, Pause, TerminalSquare, Shield, BarChart3, Settings, Database, ArrowUpRight, DollarSign, PieChart as PieChartIcon, ToggleLeft, ToggleRight, Check, X, ShieldAlert, Cpu
+    Server, Users, HardDrive, Activity, Building2, Search, CheckCircle2, 
+    AlertCircle, Download, Plus, Bell, Play, Pause, TerminalSquare, Shield, BarChart3, Settings, Database, ArrowUpRight, DollarSign, PieChart as PieChartIcon, Check, X, ShieldAlert, Cpu
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { PageContainer } from "../../components/PageContainer";
-import { useAuth, TenantModules } from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "sonner";
-
-const revenueData = [
-  { name: 'Jan', mrr: 800000 },
-  { name: 'Fev', mrr: 950000 },
-  { name: 'Mar', mrr: 1050000 },
-  { name: 'Abr', mrr: 1100000 },
-  { name: 'Mai', mrr: 1200000 },
-  { name: 'Jun', mrr: 1250000 },
-];
-
-const planDistribution = [
-  { name: 'Standard', value: 250 },
-  { name: 'Pro', value: 180 },
-  { name: 'Enterprise', value: 112 },
-];
-const COLORS = ['#94A3B8', '#06B6D4', '#2563EB'];
-
-const tenantsData = [
-    { id: 't-105', name: "TechCorp Brasil", plan: "Enterprise", status: "Healthy", dbSize: "450 MB", mrr: "R$ 4.500", users: 150, lastSync: "há 2 min" },
-    { id: 't-106', name: "Solar Solutions", plan: "Pro", status: "Healthy", dbSize: "120 MB", mrr: "R$ 1.200", users: 45, lastSync: "há 14 min" },
-    { id: 't-107', name: "Clínica Vida", plan: "Express", status: "Warning", dbSize: "2.1 GB", mrr: "R$ 800", users: 12, lastSync: "há 1h" },
-    { id: 't-108', name: "Construtora RS", plan: "Standard", status: "Healthy", dbSize: "85 MB", mrr: "R$ 400", users: 5, lastSync: "há 24 min" },
-    { id: 't-109', name: "Mendes Consultoria", plan: "Standard", status: "Healthy", dbSize: "12 MB", mrr: "R$ 400", users: 3, lastSync: "há 5 min" },
-    { id: 't-110', name: "AgroTech Sul", plan: "Enterprise", status: "Suspended", dbSize: "890 MB", mrr: "R$ 0", users: 0, lastSync: "há 2 dias" },
-    { id: 't-111', name: "Logística Alpha", plan: "Pro", status: "Healthy", dbSize: "340 MB", mrr: "R$ 1.500", users: 60, lastSync: "há 1 min" },
-];
-
-const recentLogs = [
-    "[18:05:22] INFO: Backup completed for t-105 in 12s.",
-    "[18:04:10] WARN: High API latency detected on region SA-East.",
-    "[18:01:45] INFO: New tenant provisioned: t-112 (Trial).",
-    "[17:58:00] ERROR: Webhook delivery failed for t-107. Retrying...",
-    "[17:50:11] INFO: DB scale-up triggered for Node 04.",
-    "[17:45:00] INFO: Daily billing job executed. 12 invoices generated.",
-    "[17:30:00] INFO: System health check passed. All services nominal.",
-    "[17:15:22] WARN: t-107 exceeding storage soft quota (85%).",
-];
-
-const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-[#0f172a] border border-white/10 p-3 rounded-lg shadow-xl">
-          <p className="text-white font-medium mb-1">{label}</p>
-          <p className="text-[#06B6D4] font-bold text-sm">
-            R$ {(payload[0].value / 1000).toFixed(0)}k
-          </p>
-        </div>
-      );
-    }
-    return null;
-};
+import { revenueData, planDistribution, COLORS, tenantsData, recentLogs, CustomTooltip } from "./constants/saasData";
+import { ModuleConfigModal } from "./components/ModuleConfigModal";
 
 export default function AdminSaaS() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -488,106 +439,17 @@ export default function AdminSaaS() {
 
       {/* G-Tech Admin Modularity Config Modal */}
       {selectedTenant && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-              {/* Backdrop */}
-              <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => setSelectedTenant(null)}></div>
-              
-              {/* Modal Content */}
-              <div className="relative bg-[#0F172A] border border-white/10 rounded-2xl w-full max-w-lg p-6 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
-                  {/* Gradient glow top */}
-                  <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-48 bg-cyan-500/10 blur-[60px] rounded-full pointer-events-none" />
-
-                  <div className="flex justify-between items-start mb-6 border-b border-white/5 pb-4 relative z-10">
-                      <div>
-                          <div className="flex items-center gap-2 text-[10px] text-cyan-400 font-bold uppercase tracking-widest mb-1">
-                              <Cpu className="w-3.5 h-3.5" /> G-Tech Controle Modular
-                          </div>
-                          <h3 className="text-lg font-black text-white">Editar Recursos de {selectedTenant}</h3>
-                      </div>
-                      <button onClick={() => setSelectedTenant(null)} className="text-slate-400 hover:text-white transition-colors p-1 bg-white/5 hover:bg-white/10 rounded-full">
-                          <X className="w-4 h-4" />
-                      </button>
-                  </div>
-
-                  <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-                      Apenas administradores da G-Tech podem conceder ou revogar o acesso a módulos inteligentes e integrados do Axis CRM para este tenant.
-                  </p>
-
-                  <div className="space-y-4 mb-8">
-                      {/* CRM Module Card */}
-                      <div className={`p-4 rounded-xl border transition-all flex items-start gap-3 select-none cursor-pointer ${
-                          crmEnabled 
-                              ? 'bg-blue-600/10 border-blue-500/40 text-white' 
-                              : 'bg-white/[0.01] border-white/5 text-slate-400 hover:bg-white/[0.03]'
-                      }`} onClick={() => setCrmEnabled(!crmEnabled)}>
-                          <div className="mt-0.5">
-                              {crmEnabled ? (
-                                  <div className="w-[18px] h-[18px] rounded bg-blue-500 flex items-center justify-center text-white">
-                                      <Check className="w-3.5 h-3.5" />
-                                  </div>
-                              ) : (
-                                  <div className="w-[18px] h-[18px] rounded border border-white/20" />
-                              )}
-                          </div>
-                          <div className="flex-1">
-                              <h4 className="font-bold text-sm text-slate-200">Módulo CRM Padrão</h4>
-                              <p className="text-[11px] text-slate-400 mt-0.5">Habilita leads, pipeline de vendas comercial básico e gestão de contatos das empresas.</p>
-                          </div>
-                      </div>
-
-                      {/* SDR Module Card */}
-                      <div className={`p-4 rounded-xl border transition-all flex items-start gap-3 select-none cursor-pointer ${
-                          sdrEnabled 
-                              ? 'bg-pink-600/10 border-pink-500/40 text-white font-bold' 
-                              : 'bg-white/[0.01] border-white/5 text-slate-400 hover:bg-white/[0.03]'
-                      }`} onClick={() => setSdrEnabled(!sdrEnabled)}>
-                          <div className="mt-0.5">
-                              {sdrEnabled ? (
-                                  <div className="w-[18px] h-[18px] rounded bg-pink-500 flex items-center justify-center text-white">
-                                      <Check className="w-3.5 h-3.5" />
-                                  </div>
-                              ) : (
-                                  <div className="w-[18px] h-[18px] rounded border border-white/20" />
-                              )}
-                          </div>
-                          <div className="flex-1">
-                              <h4 className="font-bold text-sm text-slate-200">Módulo SDR Inteligente</h4>
-                              <p className="text-[11px] text-slate-400 mt-0.5">Ativa funil SDR nativo, triagem por Inteligência Artificial G-Tech, métricas integradas e transferência automática para closer.</p>
-                          </div>
-                      </div>
-
-                      {/* Advanced Dashboard Module Card */}
-                      <div className={`p-4 rounded-xl border transition-all flex items-start gap-3 select-none cursor-pointer ${
-                          advDashboardEnabled 
-                              ? 'bg-emerald-600/10 border-emerald-500/40 text-white font-bold' 
-                              : 'bg-white/[0.01] border-white/5 text-slate-400 hover:bg-white/[0.03]'
-                      }`} onClick={() => setAdvDashboardEnabled(!advDashboardEnabled)}>
-                          <div className="mt-0.5">
-                              {advDashboardEnabled ? (
-                                  <div className="w-[18px] h-[18px] rounded bg-emerald-500 flex items-center justify-center text-white">
-                                      <Check className="w-3.5 h-3.5" />
-                                  </div>
-                              ) : (
-                                  <div className="w-[18px] h-[18px] rounded border border-white/20" />
-                              )}
-                          </div>
-                          <div className="flex-1">
-                              <h4 className="font-bold text-sm text-slate-200">Módulo BI Avançado</h4>
-                              <p className="text-[11px] text-slate-400 mt-0.5">Ativa análises preditivas, score/threshold de risco de churn, simulações de suporte/tíquetes e micro-dashboard financeiro completo.</p>
-                          </div>
-                      </div>
-                  </div>
-
-                  <div className="flex gap-3 justify-end border-t border-white/5 pt-4">
-                      <Button variant="outline" className="border-white/10 hover:bg-white/5 text-white text-xs px-4" onClick={() => setSelectedTenant(null)}>
-                          Cancelar
-                      </Button>
-                      <Button className="bg-cyan-600 hover:bg-cyan-700 text-white text-xs px-6 font-bold shadow-lg shadow-cyan-500/15" onClick={handleSaveModules}>
-                          Salvar Habilitação
-                      </Button>
-                  </div>
-              </div>
-          </div>
+          <ModuleConfigModal
+              selectedTenant={selectedTenant}
+              setSelectedTenant={setSelectedTenant}
+              crmEnabled={crmEnabled}
+              setCrmEnabled={setCrmEnabled}
+              sdrEnabled={sdrEnabled}
+              setSdrEnabled={setSdrEnabled}
+              advDashboardEnabled={advDashboardEnabled}
+              setAdvDashboardEnabled={setAdvDashboardEnabled}
+              handleSaveModules={handleSaveModules}
+          />
       )}
     </PageContainer>
   );

@@ -1,24 +1,37 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card } from "../card";
 import { Button } from "../button";
-import { Brain, CheckCircle2, Copy } from "lucide-react";
+import { Brain, Sparkles, Send, Copy, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface SdrReportSectionProps {
   lead: any;
+  reportContextOverride: 'auto' | 'normal' | 'educacao' | 'posvenda';
+  setReportContextOverride: (val: 'auto' | 'normal' | 'educacao' | 'posvenda') => void;
+  leadName: string;
+  companyName: string;
+  seller: string;
+  score: number;
 }
 
-export function SdrReportSection({ lead }: SdrReportSectionProps) {
-  const [reportContextOverride, setReportContextOverride] = useState<'auto' | 'normal' | 'educacao' | 'posvenda'>('auto');
-
+export function SdrReportSection({
+  lead,
+  reportContextOverride,
+  setReportContextOverride,
+  leadName,
+  companyName,
+  seller,
+  score
+}: SdrReportSectionProps) {
+  // Auto detect context
   const computedIsEdu = lead.company?.toLowerCase().includes("turma") || 
-                        lead.company?.toLowerCase().includes("curso") || 
-                        lead.company?.toLowerCase().includes("escola") || 
-                        lead.company?.toLowerCase().includes("inscrição") || 
-                        lead.company?.toLowerCase().includes("graduação") || 
-                        lead.company?.toLowerCase().includes("educação") || 
-                        lead.name?.toLowerCase().includes("educação") || 
-                        (lead.id === 'sdr1' || lead.id === 'sdr2') || false;
+                       lead.company?.toLowerCase().includes("curso") || 
+                       lead.company?.toLowerCase().includes("escola") || 
+                       lead.company?.toLowerCase().includes("inscrição") || 
+                       lead.company?.toLowerCase().includes("graduação") || 
+                       lead.company?.toLowerCase().includes("educação") || 
+                       lead.name?.toLowerCase().includes("educação") || 
+                       (lead.id === 'sdr1' || lead.id === 'sdr2') || false;
 
   const computedIsCS = lead.company?.toLowerCase().includes("licença") || 
                       lead.company?.toLowerCase().includes("saas") || 
@@ -38,7 +51,7 @@ export function SdrReportSection({ lead }: SdrReportSectionProps) {
     blockersSolved: "Medo de não conciliar com o trabalho solucionado explicando acesso assíncrono.",
     playbook: "Destacar urgência! Ficam poucas vagas remanescentes para manter os bônus corporativos. Focar na mentoria ao vivo de networking.",
     nextStep: "Confirmar escolha definitiva do horário do laboratório prático por WhatsApp.",
-    template: `Olá, ${lead.name}! Aqui é o consultor de admissão da Axis. Nossa IA mapeou que você já confirmou presença para a aula magna da turma de ${lead.id === 'sdr1' ? 'Engenharia de Software' : 'Gestão Escolar MBA'}. Vamos finalizar sua reserva oficial de vaga e liberar suas credenciais de acesso ao portal para você já iniciar suas aulas amanhã?`
+    template: `Olá, ${leadName}! Aqui é o consultor de admissão da Axis. Nossa IA mapeou que você já confirmou presença para a aula magna da turma de ${lead.id === 'sdr1' ? 'Engenharia de Software' : 'Gestão Escolar MBA'}. Vamos finalizar sua reserva oficial de vaga e liberar suas credenciais de acesso ao portal para você já iniciar suas aulas amanhã?`
   };
 
   const mockCS = {
@@ -48,7 +61,7 @@ export function SdrReportSection({ lead }: SdrReportSectionProps) {
     criticalObjection: "Dúvidas no setup inicial com APIs de terceiros. Resolvido com consultoria express de 15 minutos.",
     playbook: "Parabenizar o cliente pelos ótimos KPIs com agentes inteligentes nos últimos 30 dias e oferecer o Upgrade para plano anual com 20% desc.",
     nextStep: "Agendar videochamada de alinhamento estratégico de CS de 15 minutos.",
-    template: `Olá, ${lead.name}! Como estão os resultados comerciais aí na ${lead.company || 'sua empresa'}? Vi que seu time acelerou o SDR IA de forma incrível essa semana. Gostaríamos de marcar uma breve conversa de 15 minutos para fazer uma revisão estratégica de CS e apresentar novas automações exclusivas liberadas no seu plano. Qual o melhor horário amanhã?`
+    template: `Olá, ${leadName}! Como estão os resultados comerciais aí na ${companyName || 'sua empresa'}? Vi que seu time acelerou o SDR IA de forma incrível essa semana. Gostaríamos de marcar uma breve conversa de 15 minutos para fazer uma revisão estratégica de CS e apresentar novas automações exclusivas liberadas no seu plano. Qual o melhor horário amanhã?`
   };
 
   const mockNormal = {
@@ -59,14 +72,16 @@ export function SdrReportSection({ lead }: SdrReportSectionProps) {
     decididorStatus: "Sim, contato direto é o principal tomador de decisão técnica.",
     playbook: "Focar em ROI, automação de SLA de 5 minutos, e redução de churn de leads inativos. Demonstrar o painel SDR operando em tempo real.",
     nextStep: "Apresentar demonstração prática e enviar proposta de contratação de licenças.",
-    template: `Olá, ${lead.name}! Tudo bem? Nossa IA inteligente de qualificação realizou a triagem na ${lead.company || 'sua empresa'} e identificou que vocês têm o fit exato para reduzir o tempo de primeiro contato a inbound de horas para minutos. Podemos marcar uma chamada rápida amanhã às 14h para apresentar a estrutura rodando com seus dados?`
+    template: `Olá, ${leadName}! Tudo bem? Nossa IA inteligente de qualificação realizou a triagem na ${companyName || 'sua empresa'} e identificou que vocês têm o fit exato para reduzir o tempo de primeiro contato a inbound de horas para minutos. Podemos marcar uma chamada rápida amanhã às 14h para apresentar a estrutura rodando com seus dados?`
   };
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <Card className="p-6 border-white/10 bg-[#0B1120]/80 space-y-6 relative overflow-hidden">
+        {/* Glowing Accent */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
 
+        {/* Report Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4 relative z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center">
@@ -80,6 +95,7 @@ export function SdrReportSection({ lead }: SdrReportSectionProps) {
             </div>
           </div>
 
+          {/* Selector Context options */}
           <div className="bg-white/5 border border-white/10 rounded-xl p-1 flex items-center gap-1 self-start sm:self-auto">
             <span className="text-[9px] font-black uppercase text-slate-500 px-2 tracking-wider">Filtro Pipeline:</span>
             {[
@@ -103,6 +119,7 @@ export function SdrReportSection({ lead }: SdrReportSectionProps) {
           </div>
         </div>
 
+        {/* MODE WATERMARK BANNER */}
         <div className="flex items-center justify-between p-3.5 bg-white/5 border border-white/10 rounded-2xl relative z-10 select-none">
           <div className="flex items-center gap-2.5 flex-1 min-w-0 pr-2">
             <span className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></span>
@@ -110,16 +127,17 @@ export function SdrReportSection({ lead }: SdrReportSectionProps) {
               <span className="text-slate-400 font-bold">Foco do Pipeline: </span>
               <span className="text-white font-black uppercase font-mono tracking-widest">
                 {activeMode === 'educacao' ? '🎓 SDR Inteligente de Educação' : 
-                  activeMode === 'posvenda' ? '🔄 SDR Pós-Venda (CS & Onboarding)' : 
-                  '🌐 SDR Comercial Padrão (Corporate)'}
+                 activeMode === 'posvenda' ? '🔄 SDR Pós-Venda (CS & Onboarding)' : 
+                 '🌐 SDR Comercial Padrão (Corporate)'}
               </span>
             </div>
           </div>
-          <span className="text-[9px] font-black text-[#06B6D4] bg-[#06B6D4]/10 border border-[#06B6D4]/20 px-2.5 py-1 rounded-md uppercase tracking-widest font-mono shrink-0">
+          <span className="text-[9px] font-black text-[#06B6D4] bg-[#06B6D4]/10 border border-[#06B6D4]/20 px-2.5 py-1 rounded-md uppercase tracking-widest shrink-0">
             Hand-off Closer Ativo
           </span>
         </div>
 
+        {/* DYNAMIC CONTENT PANELS */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10">
           <div className="space-y-4">
             <div className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl space-y-3.5">
@@ -199,23 +217,25 @@ export function SdrReportSection({ lead }: SdrReportSectionProps) {
           <div className="space-y-4">
             <div className="p-4 bg-blue-600/10 border border-blue-500/20 rounded-2xl space-y-4">
               <span className="text-[9px] font-black uppercase tracking-widest text-blue-400 block border-b border-blue-500/10 pb-1.5 font-sans">Estratégia e Playbook de Fechamento</span>
+              
               <div className="text-xs space-y-3">
                 <div>
                   <span className="text-blue-400/80 font-bold block uppercase tracking-wide text-[9px] mb-1">Playbook do Closer:</span>
                   <p className="text-slate-200 leading-relaxed font-semibold">
                     {activeMode === 'educacao' ? mockEducacao.playbook : 
-                      activeMode === 'posvenda' ? mockCS.playbook : 
-                      mockNormal.playbook}
+                     activeMode === 'posvenda' ? mockCS.playbook : 
+                     mockNormal.playbook}
                   </p>
                 </div>
+                
                 <div>
                   <span className="text-blue-400/80 font-bold block uppercase tracking-wide text-[9px] mb-1">Próxima Ação Clave:</span>
                   <div className="p-2.5 bg-black/40 border border-white/5 rounded-xl text-white font-black text-[10px] uppercase tracking-wider flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                     <span className="truncate">
                       {activeMode === 'educacao' ? mockEducacao.nextStep : 
-                        activeMode === 'posvenda' ? mockCS.nextStep : 
-                        mockNormal.nextStep}
+                       activeMode === 'posvenda' ? mockCS.nextStep : 
+                       mockNormal.nextStep}
                     </span>
                   </div>
                 </div>
@@ -224,10 +244,11 @@ export function SdrReportSection({ lead }: SdrReportSectionProps) {
           </div>
         </div>
 
+        {/* ONE CLICK MENSAGEM */}
         <div className="p-4 bg-slate-900/50 border border-white/5 rounded-2xl relative z-10">
           <div className="flex items-center justify-between mb-3">
             <span className="text-[9px] font-black uppercase tracking-widest text-[#EC4899] flex items-center gap-1.5">
-              Mensagem de Abordagem Sugerida (1-Click)
+              <Send className="w-3.5 h-3.5 text-pink-400" /> Mensagem de Abordagem Sugerida (1-Click)
             </span>
             <Button
               size="sm"
@@ -236,11 +257,11 @@ export function SdrReportSection({ lead }: SdrReportSectionProps) {
                             activeMode === 'posvenda' ? mockCS.template : 
                             mockNormal.template;
                 navigator.clipboard.writeText(txt);
-                toast.success("Mensagem copiada para a área de transferência!");
+                toast.success("Script copiado!");
               }}
               className="bg-white/5 hover:bg-white/10 text-white font-mono text-[9px] h-7 px-2.5 rounded-lg border border-white/10"
             >
-              <Copy className="w-3 h-3 mr-1 inline" /> COPIAR SCRIPT
+              <Copy className="w-3 h-3 mr-1 inline animate-none" /> COPIAR SCRIPT
             </Button>
           </div>
           <p className="text-xs text-slate-300 italic font-medium leading-relaxed bg-black/25 p-3 rounded-xl border border-white/5">

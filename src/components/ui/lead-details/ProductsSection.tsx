@@ -1,28 +1,38 @@
 import React from "react";
 import { Card } from "../card";
 import { Button } from "../button";
-import { FileText } from "lucide-react";
+import { FileText, BadgeCent } from "lucide-react";
 import { toast } from "sonner";
 
 interface ProductsSectionProps {
+  lead: any;
+  estimatedSum: number;
   availableProducts: any[];
   linkedProductIds: string[];
-  toggleProductLink: (prodId: string) => void;
-  estimatedSum: number;
+  toggleProductLink: (id: string) => void;
   seller: string;
-  setAlterationLogs: React.Dispatch<React.SetStateAction<any[]>>;
+  setAlterationLogs: any;
 }
 
-export function ProductsSection({ availableProducts, linkedProductIds, toggleProductLink, estimatedSum, seller, setAlterationLogs }: ProductsSectionProps) {
+export function ProductsSection({
+  lead,
+  estimatedSum,
+  availableProducts,
+  linkedProductIds,
+  toggleProductLink,
+  seller,
+  setAlterationLogs
+}: ProductsSectionProps) {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
       <Card className="p-4 border-white/10 bg-[#0B1120]/60 space-y-4">
         <div className="flex items-center justify-between border-b border-white/5 pb-2">
           <h4 className="text-[10px] font-black uppercase tracking-widest text-[#06B6D4]">Estrutura de Orçamento & Produtos Vinculados</h4>
-          <span className="text-xs font-mono font-bold text-emerald-450 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
+          <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
             Total: R$ {estimatedSum.toLocaleString('pt-BR')}
           </span>
         </div>
+
         <div className="space-y-2">
           <p className="text-xs text-slate-400">Vincule serviços ou planos de SaaS diretamente para formalizar o orçamento comercial do lead:</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 mt-2">
@@ -50,6 +60,8 @@ export function ProductsSection({ availableProducts, linkedProductIds, togglePro
             })}
           </div>
         </div>
+
+        {/* Profit Margin & Commission calculations simulator */}
         <div className="bg-[#111827] p-4 rounded-2xl border border-white/5 space-y-3">
           <h5 className="text-[10px] font-black uppercase text-[#06B6D4] tracking-wider">Detalhamento Financeiro & Comissionamento</h5>
           <div className="grid grid-cols-2 gap-4 text-xs font-mono">
@@ -71,12 +83,14 @@ export function ProductsSection({ availableProducts, linkedProductIds, togglePro
             </div>
           </div>
         </div>
+
+        {/* Proposal generator action buttons */}
         <div className="flex gap-2">
           <Button 
             onClick={() => {
               toast.success("Documento em formato PDF gerado no servidor!");
-              setAlterationLogs(prev => [
-                { id: Date.now().toString(), author: seller || "Consultor G-Tech", desc: `Proposta comercial eletrônica criada de R$ ${estimatedSum.toLocaleString('pt-BR')}`, time: "Agora" },
+              setAlterationLogs((prev: any[]) => [
+                { id: Date.now().toString(), author: "Carlos Eduardo Mendes", desc: `Proposta comercial eletrônica criada de R$ ${estimatedSum.toLocaleString('pt-BR')}`, time: "Agora" },
                 ...prev
               ]);
             }}

@@ -1,16 +1,15 @@
 import { motion, useScroll, useTransform, useSpring, useMotionValue } from "motion/react";
 import { Link } from "react-router-dom";
 import { 
-  ArrowRight, Zap, BarChart3, ShieldCheck, 
-  Component, Activity, Star, Check, 
-  MousePointer2, Sparkles, Layers,
-  ChevronRight, Terminal, Network,
-  TrendingUp, Cpu, GraduationCap
+  Zap, BarChart3, ShieldCheck, 
+  Activity, Sparkles, ChevronRight,
+  Cpu, GraduationCap, Component, Star
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
-import { Card } from "../../components/ui/card";
-import { useRef, useEffect, useState } from "react";
-import { MascotMIA6 } from "../../components/MascotMIA6";
+import { useRef, useEffect } from "react";
+import { FlyingMascot } from "./components/FlyingMascot";
+import { HeroSection } from "./components/HeroSection";
+import { NeuralSection } from "./components/NeuralSection";
 
 export default function LandingPage() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -37,63 +36,13 @@ export default function LandingPage() {
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, [mouseX, mouseY]);
-  
-  const y1 = useTransform(scrollYProgress, [0, 1], [0, -400]);
-  const y2 = useTransform(scrollYProgress, [0, 1], [0, 400]);
-  const opacity = useTransform(scrollYProgress, [0, 0.15], [1, 0]);
-  const scale = useTransform(scrollYProgress, [0, 0.15], [1, 0.9]);
 
   return (
     <div ref={containerRef} className="min-h-screen bg-[#020617] text-[#F8FAFC] font-sans selection:bg-blue-500/30 overflow-x-hidden relative">
       <div className="noise-overlay" />
       
-      {/* Cinematic Flying Mascot - Iron Man Continuous Viewport Path (GPU optimized with transform will-change) */}
-      <motion.div
-        animate={{
-          x: ["-20vw", "40vw", "90vw", "60vw", "-20vw"],
-          y: ["10vh", "80vh", "30vh", "15vh", "10vh"],
-          rotate: [45, 10, -30, 20, 45],
-          scale: [0.5, 1.2, 0.8, 1, 0.5]
-        }}
-        transition={{
-          duration: 20,
-          ease: "easeInOut", // organic bezier curve acceleration
-          repeat: Infinity
-        }}
-        className="fixed top-0 left-0 z-[200] pointer-events-none will-change-transform"
-        style={{ width: '12rem', height: '12rem' }}
-      >
-        <div className="w-full h-full pointer-events-auto">
-          <MascotMIA6 className="w-full h-full" />
-        </div>
-        <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#00c8ff]/20 backdrop-blur-md px-3 py-1 rounded-full border border-[#00c8ff]/30">
-           <span className="text-[10px] font-mono font-black text-[#00c8ff] tracking-widest animate-[neonPulse_2s_infinite]">MIA-6_NEURAL_FLYBY</span>
-        </div>
-        {/* Neon Particle Trail via multiple child divs optimized for GPU */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none -z-10">
-          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-            <motion.div
-              key={i}
-              className="absolute left-1/2 bottom-10 w-3 h-3 rounded-full bg-[#00c8ff] top-auto will-change-transform"
-              style={{
-                filter: "drop-shadow(0 0 10px #00c8ff)",
-              }}
-              animate={{
-                y: [0, 40 * i, 120 + 30 * i],
-                x: [0, (i % 2 === 0 ? 15 : -15) * (i / 2), (i % 2 === 0 ? 30 : -30) * i],
-                scale: [1, 0.5, 0],
-                opacity: [0.8, 0.4, 0],
-              }}
-              transition={{
-                duration: 1.5,
-                repeat: Infinity,
-                delay: i * 0.15,
-                ease: "easeOut",
-              }}
-            />
-          ))}
-        </div>
-      </motion.div>
+      {/* Cinematic Flying Mascot Component */}
+      <FlyingMascot />
       
       {/* Background System - Interactive Parallax */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -141,7 +90,6 @@ export default function LandingPage() {
               </a>
             ))}
             
-            {/* Form Demos Links Dropdown-ish */}
             <div className="relative group cursor-pointer inline-flex items-center">
                <span className="hover:text-amber-400 transition-all hover:scale-110 flex items-center gap-1 text-amber-500 shrink-0">
                   DEMOS_CAPTAÇÃO <ChevronRight className="w-3 h-3 rotate-90" />
@@ -169,122 +117,8 @@ export default function LandingPage() {
 
       <main className="relative z-10 w-full">
         
-        {/* Kinetic Hero Section */}
-        <section className="relative min-h-screen flex flex-col items-center justify-center pt-24 sm:pt-40 pb-12 sm:pb-32 px-4 sm:px-6">
-          <motion.div 
-            style={{ opacity, scale, rotateX, rotateY, perspective: 1000 }}
-            className="max-w-6xl mx-auto text-center z-20 w-full"
-          >
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.2 }}
-              className="inline-flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-1.5 sm:py-3 glass-card rounded-full mb-6 sm:mb-14 border-blue-500/30 shadow-[0_0_40px_rgba(37,99,235,0.1)]"
-            >
-              <motion.div 
-                animate={{ scale: [1, 1.3, 1] }}
-                transition={{ repeat: Infinity, duration: 2 }}
-                className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-blue-500" 
-              />
-              <span className="text-[8px] sm:text-[11px] font-black uppercase tracking-[0.2em] sm:tracking-[0.4em] text-blue-400">STATUS: DOMINAÇÃO TOTAL ATIVA</span>
-            </motion.div>
-
-            <motion.h1 
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-              className="text-5xl sm:text-7xl md:text-8xl lg:text-[11rem] xl:text-[13rem] font-display font-bold leading-[0.85] sm:leading-[0.75] tracking-[-0.08em] mb-6 sm:mb-14 text-glow px-2 italic"
-            >
-              O PODER <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-white to-blue-600 animate-gradient-x bg-[length:200%_auto]">
-                INFINITO.
-              </span>
-            </motion.h1>
-
-            <motion.p 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8, duration: 1.5 }}
-              className="max-w-4xl mx-auto text-sm sm:text-xl lg:text-3xl text-slate-400 font-medium leading-relaxed mb-10 sm:mb-20 px-4 sm:px-8"
-            >
-              Sinta a força da <span className="text-white font-black italic underline decoration-blue-500 decoration-4 underline-offset-8">MIA-6</span>. O primeiro CRM do planeta que não apenas organiza, mas antecipa cada respiração do seu mercado.
-            </motion.p>
-
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-10">
-              <Link to="/login" className="w-full sm:w-auto">
-                <motion.div
-                  whileHover={{ scale: 1.08 }}
-                  whileTap={{ scale: 0.92 }}
-                  className="relative group w-full"
-                >
-                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-cyan-500 rounded-xl sm:rounded-[3rem] blur-2xl opacity-40 group-hover:opacity-75 transition duration-1000 group-hover:duration-200"></div>
-                  <Button className="relative w-full sm:w-auto h-14 sm:h-20 lg:h-28 px-6 sm:px-10 lg:px-20 bg-blue-600 text-white hover:bg-blue-700 rounded-xl sm:rounded-[3rem] font-black uppercase tracking-[0.15em] sm:tracking-[0.3em] text-xs sm:text-sm shadow-2xl transition-all border border-white/20">
-                    INICIAR DOMÍNIO <ChevronRight className="w-4 h-4 ml-2 sm:w-6 sm:h-6 sm:ml-4" />
-                  </Button>
-                </motion.div>
-              </Link>
-              <motion.button 
-                whileHover={{ scale: 1.05 }}
-                className="w-full sm:w-auto h-14 sm:h-20 lg:h-28 px-6 sm:px-10 lg:px-14 glass-card rounded-xl sm:rounded-[3rem] font-black uppercase tracking-[0.15em] sm:tracking-[0.3em] text-[9px] sm:text-[10px] hover:bg-white/10 transition-all flex items-center justify-center gap-3 sm:gap-6 border-white/10 group overflow-hidden relative"
-              >
-                <div className="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all duration-500">
-                  <Terminal className="w-4 h-4 sm:w-5 sm:h-5" />
-                </div>
-                PROTOCOLOS IA
-                <div className="absolute bottom-0 left-0 h-1 bg-blue-500 w-0 group-hover:w-full transition-all duration-700" />
-              </motion.button>
-            </div>
-          </motion.div>
-
-          {/* Floating Kinetic HUD Elements */}
-          <motion.div 
-            style={{ y: y1, rotate: -5 }}
-            className="absolute top-20 left-20 hidden xl:block glass-card p-6 rounded-3xl w-64 border-blue-500/30 shadow-[0_0_50px_rgba(37,99,235,0.2)] backdrop-blur-3xl z-30"
-          >
-             <div className="flex items-center gap-3 mb-6">
-                <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />
-                <span className="text-[10px] font-black text-slate-400 tracking-[0.2em]">NEURAL_LINK_01</span>
-             </div>
-             <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                   <div className="text-[10px] text-slate-500 font-bold">REVENUE_GEN</div>
-                   <div className="text-2xl font-display font-black text-white">+84%</div>
-                </div>
-                <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                   <motion.div 
-                     initial={{ width: 0 }}
-                     whileInView={{ width: "84%" }}
-                     transition={{ duration: 2, delay: 0.5 }}
-                     className="h-full bg-blue-600" 
-                   />
-                </div>
-             </div>
-          </motion.div>
-
-          <motion.div 
-            style={{ y: y2, rotate: 5 }}
-            className="absolute bottom-20 right-20 hidden xl:block glass-card p-6 rounded-3xl w-72 border-indigo-500/30 shadow-[0_0_50px_rgba(99,102,241,0.2)] backdrop-blur-3xl z-30"
-          >
-             <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-2">
-                   <ShieldCheck className="w-5 h-5 text-indigo-500" />
-                   <span className="text-[10px] font-black text-indigo-400 tracking-[0.2em]">CORE_SYNC</span>
-                </div>
-                <div className="text-[8px] font-black text-slate-700 px-2 py-1 bg-white/5 rounded">SECURED</div>
-             </div>
-             <div className="flex flex-wrap gap-2">
-                {[1,2,3,4,5,6].map(i => (
-                  <motion.div 
-                    key={i} 
-                    animate={{ opacity: [0.3, 1, 0.3] }}
-                    transition={{ repeat: Infinity, duration: Math.random() * 2 + 1, delay: i * 0.2 }}
-                    className="w-8 h-2 bg-indigo-500/20 rounded-full" 
-                  />
-                ))}
-             </div>
-             <div className="mt-6 text-[11px] font-black text-white uppercase tracking-widest text-center italic">MIA_ACTIVE: 100%</div>
-          </motion.div>
-        </section>
+        {/* Kinetic Hero Section Component */}
+        <HeroSection rotateX={rotateX} rotateY={rotateY} />
 
         {/* The Interface Horizon - Depth Effect */}
         <section className="py-16 sm:py-32 lg:py-40 relative px-4 sm:px-6 perspective-1000">
@@ -328,7 +162,7 @@ export default function LandingPage() {
                        ENGENHARIA_SUPERIOR
                     </motion.span>
                     <h2 className="text-4xl sm:text-6xl md:text-8xl font-display font-bold tracking-tighter mb-6 sm:mb-10 leading-[0.9] sm:leading-[0.85]">
-                       MÓDULOS DE <br /><span className="text-blue-500 italic">ALTA INTENSIDADE.</span>
+                       MÓDULOS DE <br /><span className="text-blue-500">ALTA INTENSIDADE.</span>
                     </h2>
                  </div>
                  <motion.div 
@@ -393,147 +227,8 @@ export default function LandingPage() {
             </div>
          </section>
 
-         {/* Master AI Visual Interface Prototype */}
-        <section id="neural" className="py-20 sm:py-32 lg:py-40 px-4 sm:px-6 relative overflow-hidden bg-black/20">
-           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(37,99,235,0.05)_0%,transparent_70%)]" />
-           <div className="max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-16 sm:gap-24 lg:gap-40">
-              <div className="flex-1 space-y-8 sm:space-y-16">
-                 <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-blue-600/10 rounded-full border border-blue-500/20 w-fit">
-                    <Terminal className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                    <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.25em] sm:tracking-[0.4em] text-blue-500">NÚCLEO_MIA_ACTIVE</span>
-                 </div>
-                 <h2 className="text-4xl sm:text-7xl lg:text-9xl font-display font-bold tracking-tighter leading-[0.9] sm:leading-[0.8] italic">
-                    DOMINE A <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-indigo-500">PREVISÃO.</span>
-                 </h2>
-                 <p className="text-slate-400 text-lg sm:text-2xl font-medium leading-relaxed max-w-xl italic">
-                   "A melhor maneira de prever o futuro é construí-lo com dados preditivos de alta densidade."
-                 </p>
-                 <div className="space-y-6 sm:space-y-10">
-                    {[
-                       { icon: Star, t: "Probabilidade_Atal", d: "Cálculos estocásticos de fechamento em tempo real." },
-                       { icon: Zap, t: "Impacto_Exponencial", d: "Multiplique sua produtividade por um fator de 5x." }
-                    ].map((item, i) => (
-                       <motion.div 
-                         key={i} 
-                         initial={{ x: -100, opacity: 0 }}
-                         whileInView={{ x: 0, opacity: 1 }}
-                         transition={{ delay: i * 0.3 }}
-                         className="flex gap-4 sm:gap-8 items-start group"
-                       >
-                          <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-xl sm:rounded-[1.5rem] bg-blue-500/10 flex flex-shrink-0 items-center justify-center text-blue-500 group-hover:bg-blue-500 group-hover:text-white transition-all duration-700">
-                             <item.icon className="w-5 h-5 sm:w-8 sm:h-8" />
-                          </div>
-                          <div>
-                             <h4 className="text-lg sm:text-xl font-display font-black uppercase tracking-widest text-white mb-1.5 sm:mb-3 italic">{item.t}</h4>
-                             <p className="text-slate-500 font-bold uppercase tracking-widest text-[9px] sm:text-xs">{item.d}</p>
-                          </div>
-                       </motion.div>
-                    ))}
-                 </div>
-              </div>
- 
-              <div className="flex-1 w-full relative perspective-1000">
-                <div className="absolute -top-20 -left-20 w-40 h-40 bg-blue-500/20 blur-3xl rounded-full animate-pulse z-0" />
-                <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-indigo-500/20 blur-3xl rounded-full animate-pulse z-0" />
-                
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  className="relative z-20 mb-12 flex justify-center"
-                >
-                  {/* Floating Tech Nodes */}
-                  {[
-                    { t: "+", x: -80, y: -60, d: 3 },
-                    { t: "01", x: 100, y: -40, d: 4 },
-                    { t: "[ ]", x: -90, y: 50, d: 3.5 },
-                    { t: "SYNC", x: 90, y: 70, d: 5 }
-                  ].map((node, i) => (
-                    <motion.div
-                      key={i}
-                      animate={{ 
-                        y: [node.y, node.y - 20, node.y],
-                        opacity: [0.2, 0.5, 0.2]
-                      }}
-                      transition={{ duration: node.d, repeat: Infinity, ease: "easeInOut" }}
-                      className="absolute font-mono text-[10px] font-black text-blue-500/40 tracking-widest hidden sm:block"
-                      style={{ left: `calc(50% + ${node.x}px)`, top: `calc(50% + ${node.y}px)` }}
-                    >
-                      {node.t}
-                    </motion.div>
-                  ))}
-
-                  <motion.div 
-                    initial={{ x: "60vw", y: -100, opacity: 0, scale: 0.8 }}
-                    whileInView={{ 
-                      x: 0, 
-                      y: 0,
-                      opacity: 1, 
-                      scale: 1,
-                    }}
-                    transition={{ 
-                      duration: 1.5,
-                      ease: [0.25, 0.46, 0.45, 0.94]
-                    }}
-                    viewport={{ once: true }}
-                    className="w-64 h-64 sm:w-96 sm:h-96 relative group"
-                  >
-                     <MascotMIA6 isHero={true} />
-                  </motion.div>
-                </motion.div>
-
-                <motion.div
-                   style={{ rotateX, rotateY }}
-                   className="relative glass-card rounded-3xl sm:rounded-[4rem] p-1.5 border-white/5 shadow-[0_0_150px_rgba(37,99,235,0.2)] overflow-hidden"
-                 >
-                    <div className="bg-[#020617]/90 p-6 sm:p-10 lg:p-16 rounded-[1.4rem] sm:rounded-[3.8rem] space-y-6 sm:space-y-10 lg:space-y-12">
-                       <div className="flex items-center justify-between">
-                          <span className="text-[10px] sm:text-[12px] font-black text-slate-700 tracking-[0.3em] sm:tracking-[0.5em]">OPERATIONAL_VISOR</span>
-                          <div className="flex gap-2">
-                             <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-blue-600 animate-ping" />
-                             <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-blue-600/30" />
-                          </div>
-                       </div>
-                       
-                       <div className="space-y-6 sm:space-y-10">
-                          <div className="p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-white/5 border border-white/5 space-y-3 sm:space-y-4">
-                             <div className="flex justify-between items-center mb-2 sm:mb-4">
-                                 <div className="text-[8px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest text-glow">NEURAL_CONFIDENCE</div>
-                                 <div className="text-2xl sm:text-4xl font-display font-bold text-blue-500">99.8%</div>
-                             </div>
-                             <div className="h-2.5 w-full bg-white/5 rounded-full overflow-hidden">
-                                <motion.div 
-                                  initial={{ width: 0 }}
-                                  whileInView={{ width: "99.8%" }}
-                                  transition={{ duration: 3 }}
-                                  className="h-full bg-gradient-to-r from-blue-600 to-indigo-600" 
-                                />
-                             </div>
-                          </div>
-                          
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                             {[
-                                { l: "Uptime", v: "42d:12h:08s", c: "text-emerald-500" },
-                                { l: "Sync", v: "Verified", c: "text-blue-500" }
-                             ].map((st, i) => (
-                               <div key={i} className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white/5 border border-white/5">
-                                  <div className="text-[8px] sm:text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1.5">{st.l}</div>
-                                  <div className={`text-xs sm:text-sm font-black italic ${st.c}`}>{st.v}</div>
-                               </div>
-                             ))}
-                          </div>
-                       </div>
-                    </div>
-                    {/* Scanning Animation */}
-                    <motion.div 
-                      animate={{ top: ["-100%", "200%"] }}
-                      transition={{ repeat: Infinity, duration: 4, ease: "linear" }}
-                      className="absolute left-0 w-full h-[100px] bg-gradient-to-b from-transparent via-blue-500/20 to-transparent pointer-events-none z-10"
-                    />
-                 </motion.div>
-              </div>
-           </div>
-        </section>
+        {/* Master AI Visual Interface Prototype */}
+        <NeuralSection rotateX={rotateX} rotateY={rotateY} />
 
         {/* Scalability Grid - Massive Logos & Stats */}
         <section id="rede" className="py-12 sm:py-24 lg:py-32 px-4 sm:px-6 relative border-y border-white/5 bg-[#020617]">

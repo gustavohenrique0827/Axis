@@ -1,20 +1,13 @@
-import React, { useState } from "react";
+import React from "react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
-import { Plus, Mail, Settings2, Users, ChevronDown, ChevronUp, BarChart3, Users2, History, LayoutDashboard, Target, TrendingUp } from "lucide-react";
+import { Plus, Settings2, Users, ChevronDown, ChevronUp, BarChart3, Users2, History, LayoutDashboard, Target, TrendingUp } from "lucide-react";
 import { ActionModal } from "../../components/ui/ActionModal";
 import { motion, AnimatePresence } from "motion/react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Cell } from "recharts";
-
-interface TeamMember {
-  name: string;
-  role: string;
-  email: string;
-  deals: number | string;
-  revenue: string;
-  status: string;
-  squad: string;
-}
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { useEquipe, TeamMember } from "./hooks/useEquipe";
+import { SquadsTab } from "./components/SquadsTab";
+import { LogsTab } from "./components/LogsTab";
 
 const TeamMemberCard: React.FC<{ member: TeamMember }> = ({ member }) => {
   return (
@@ -45,59 +38,33 @@ const TeamMemberCard: React.FC<{ member: TeamMember }> = ({ member }) => {
 }
 
 export default function Equipe() {
-  const [activeTab, setActiveTab] = useState("visao-geral");
-  const [memberSearch, setMemberSearch] = useState("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSquadModalOpen, setIsSquadModalOpen] = useState(false);
-  const [newSquadExpanded, setNewSquadExpanded] = useState(false);
-  const [newSquadData, setNewSquadData] = useState({ name: "", leader: "" });
-  const [expandedSquads, setExpandedSquads] = useState<string[]>([]);
-  const [squads, setSquads] = useState<{name: string, leader: string}[]>([
-    { name: "Squad Alpha", leader: "Carlos Eduardo Mendes" },
-    { name: "Squad Beta", leader: "Juliana Costa" },
-    { name: "Growth Team", leader: "N/A" }
-  ]);
-  const [team, setTeam] = useState<TeamMember[]>([
-    { name: "Carlos Eduardo Mendes", role: "Vendedor Sênior", email: "carlos@g-tech.com", deals: 34, revenue: "R$ 450.000", status: "Ativo", squad: "Squad Alpha" },
-    { name: "Ana Silva", role: "Vendedora Pleno", email: "ana@g-tech.com", deals: 28, revenue: "R$ 320.000", status: "Ativo", squad: "Squad Alpha" },
-    { name: "Roberto Ramos", role: "Pré-Vendas (SDR)", email: "roberto@g-tech.com", deals: 89, revenue: "-", status: "Ocupado", squad: "Squad Beta" },
-    { name: "Juliana Costa", role: "Gerente Comercial", email: "juliana@g-tech.com", deals: 0, revenue: "R$ 1.2M", status: "Ativo", squad: "Squad Beta" }
-  ]);
-  const [logs, setLogs] = useState<{name: string, from: string, to: string, date: string}[]>([
-    {name: "Ana Silva", from: "Squad Beta", to: "Squad Alpha", date: "2026-05-20"}
-  ]);
-
-  const toggleSquad = (squadName: string) => {
-    setExpandedSquads(prev => 
-      prev.includes(squadName) ? prev.filter(n => n !== squadName) : [...prev, squadName]
-    );
-  };
-
-  const [filter, setFilter] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 6;
-
-  const filteredLogs = logs.filter(l => 
-    l.name.toLowerCase().includes(filter.toLowerCase()) || 
-    l.date.includes(filter)
-  );
-
-  const filteredTeam = team.filter(m => 
-    m.name.toLowerCase().includes(memberSearch.toLowerCase()) ||
-    m.role.toLowerCase().includes(memberSearch.toLowerCase()) ||
-    m.squad.toLowerCase().includes(memberSearch.toLowerCase())
-  );
-
-  const paginatedLogs = filteredLogs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
-
-  const moveMember = (name: string, newSquad: string) => {
-    const member = team.find(m => m.name === name);
-    if (!member || member.squad === newSquad) return;
-    
-    setLogs(prev => [{name, from: member.squad, to: newSquad, date: new Date().toISOString().split('T')[0]}, ...prev]);
-    setTeam(prev => prev.map(m => m.name === name ? {...m, squad: newSquad} : m));
-  };
+  const {
+    activeTab,
+    setActiveTab,
+    memberSearch,
+    setMemberSearch,
+    isModalOpen,
+    setIsModalOpen,
+    newSquadExpanded,
+    setNewSquadExpanded,
+    newSquadData,
+    setNewSquadData,
+    expandedSquads,
+    squads,
+    setSquads,
+    team,
+    logs,
+    toggleSquad,
+    filter,
+    setFilter,
+    currentPage,
+    setCurrentPage,
+    filteredLogs,
+    filteredTeam,
+    paginatedLogs,
+    totalPages,
+    moveMember
+  } = useEquipe();
 
   return (
     <div className="flex flex-col lg:flex-row h-full -m-4 lg:-m-8">
@@ -323,7 +290,7 @@ export default function Equipe() {
                           </linearGradient>
                         </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                        <XAxis dataKey="name" stroke="#475569" fontSize={9} fontVariant="bold" axisLine={false} tickLine={false} dy={10} />
+                        <XAxis dataKey="name" stroke="#475569" fontSize={9} axisLine={false} tickLine={false} dy={10} />
                         <YAxis stroke="#475569" fontSize={9} axisLine={false} tickLine={false} />
                         <Tooltip 
                            cursor={{fill: '#ffffff05'}}
@@ -369,116 +336,13 @@ export default function Equipe() {
           )}
 
           {activeTab === "squads" && (
-            <motion.div
-              key="squads"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="space-y-10"
-            >
-              <div>
-                <h2 className="text-3xl font-black text-white tracking-tighter">Gestão de Squads</h2>
-                <p className="text-sm text-slate-400 mt-2">Células dinâmicas de conversão e atendimento especializado.</p>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4">
-                {squads.map(squad => {
-                  const members = team.filter(m => m.squad === squad.name);
-                  const isExpanded = expandedSquads.includes(squad.name);
-                  return (
-                    <div key={squad.name} className={`bg-[#111827]/40 border rounded-3xl overflow-hidden transition-all duration-500 ${isExpanded ? 'border-blue-500/20 shadow-2xl shadow-blue-500/5' : 'border-white/5'}`}>
-                      <button 
-                        className={`w-full flex items-center justify-between p-6 transition-all ${isExpanded ? 'bg-blue-600/[0.03]' : 'hover:bg-white/[0.02]'}`}
-                        onClick={() => toggleSquad(squad.name)}
-                      >
-                        <div className="flex items-center gap-6">
-                           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black transition-all ${isExpanded ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/30 rotate-0' : 'bg-slate-800 text-slate-600 border border-white/5 rotate-[-10deg]'}`}>
-                              {squad.name[0]}
-                           </div>
-                           <div className="text-left">
-                              <span className="text-xl font-black text-white block tracking-tight">{squad.name}</span>
-                              <div className="flex items-center gap-3 mt-1">
-                                <span className="text-[10px] text-slate-500 uppercase font-black tracking-[0.15em] flex items-center gap-1.5"><Users2 className="w-3 h-3"/> {members.length} membros</span>
-                                <span className="text-slate-700">&bull;</span>
-                                <span className="text-[10px] text-blue-500 opacity-80 uppercase font-black tracking-[0.15em] flex items-center gap-1.5"><Target className="w-3 h-3"/> {members.reduce((acc, curr) => acc + curr.deals, 0)} conversões</span>
-                              </div>
-                           </div>
-                        </div>
-                        <div className="flex items-center gap-8">
-                           <div className="text-right hidden sm:block">
-                              <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest block mb-1">Squad Lead</span>
-                              <span className="text-xs text-white font-bold">{squad.leader}</span>
-                           </div>
-                           <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-white/5 text-slate-500 transition-transform duration-500 ${isExpanded ? 'rotate-180 bg-blue-600/10 text-blue-500' : ''}`}>
-                             <ChevronDown className="w-5 h-5" />
-                           </div>
-                        </div>
-                      </button>
-                      
-                      <AnimatePresence>
-                        {isExpanded && (
-                          <motion.div 
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                            className="border-t border-white/5"
-                          >
-                            <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
-                              <div className="space-y-6">
-                                <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">Composição Atual</h4>
-                                <div className="space-y-2">
-                                  {members.map(m => (
-                                    <div key={m.name} className="flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl border border-white/5 hover:border-white/10 transition-all group">
-                                       <div className="flex items-center gap-3">
-                                          <div className="w-8 h-8 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-[10px] font-black text-white">
-                                            {m.name.split(' ').map(n=>n[0]).join('')}
-                                          </div>
-                                          <div>
-                                             <div className="text-xs font-black text-white group-hover:text-blue-400 transition-colors">{m.name}</div>
-                                             <div className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{m.role}</div>
-                                          </div>
-                                       </div>
-                                       <Button variant="ghost" size="sm" className="h-8 w-8 rounded-lg p-0 hover:bg-white/10"><Settings2 className="w-4 h-4 text-slate-500" /></Button>
-                                    </div>
-                                  ))}
-                                  {members.length === 0 && (
-                                    <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-3xl">
-                                       <Users className="w-8 h-8 text-slate-700 mb-2" />
-                                       <span className="text-xs text-slate-600 font-bold">Nenhum membro alocado</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                              
-                              <div className="space-y-6">
-                                <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center justify-between">
-                                  Reorganização Operacional
-                                  <span className="text-[9px] lowercase font-medium text-slate-600">Mover membros de outras squads</span>
-                                </h4>
-                                <div className="p-6 bg-black/20 rounded-3xl border border-white/5 space-y-4">
-                                   <select 
-                                     className="w-full bg-[#0B1120] text-xs font-bold border border-white/10 p-3 rounded-2xl text-white outline-none focus:border-blue-500 transition-all appearance-none"
-                                     onChange={(e) => {
-                                       const name = e.target.value;
-                                       if (name && name !== 'Selecionar colaborador...') moveMember(name, squad.name);
-                                     }}
-                                   >
-                                     <option value="">Selecionar colaborador...</option>
-                                     {team.filter(m => m.squad !== squad.name).map(m => m.name).map(n => <option key={n} value={n}>{n}</option>)}
-                                   </select>
-                                   <p className="text-[10px] text-slate-500 leading-relaxed italic px-2">Ao mover um colaborador, a alteração será imediatamente refletida nos KPIs da squad e registrada no log de auditoria global.</p>
-                                </div>
-                              </div>
-                            </div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  );
-                })}
-              </div>
-            </motion.div>
+            <SquadsTab
+              squads={squads}
+              team={team}
+              expandedSquads={expandedSquads}
+              toggleSquad={toggleSquad}
+              moveMember={moveMember}
+            />
           )}
 
           {activeTab === "membros" && (
@@ -528,101 +392,15 @@ export default function Equipe() {
           )}
 
           {activeTab === "logs" && (
-            <motion.div
-              key="logs"
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              className="space-y-8"
-            >
-              <div>
-                <h2 className="text-3xl font-black text-white tracking-tighter">Logs de Auditoria</h2>
-                <p className="text-sm text-slate-400 mt-1">Rastreabilidade completa de governança e movimentações de squad.</p>
-              </div>
-
-              <Card className="bg-[#111827]/40 border-white/5 backdrop-blur-xl overflow-hidden rounded-3xl">
-                <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
-                  <div>
-                    <h3 className="text-sm font-black text-white uppercase tracking-widest">Histórico Governamental</h3>
-                    <p className="text-[10px] text-slate-500 mt-1">Visualização de mudanças globais de organização.</p>
-                  </div>
-                  <div className="relative">
-                    <input 
-                      placeholder="Pesquisar logs..." 
-                      className="bg-black/20 text-xs border border-white/10 pl-10 pr-4 py-2.5 rounded-xl text-white outline-none focus:border-blue-500 w-64 transition-all"
-                      value={filter}
-                      onChange={(e) => setFilter(e.target.value)}
-                    />
-                    <History className="w-4 h-4 text-slate-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  </div>
-                </div>
-                
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left text-[11px] text-slate-400">
-                    <thead className="text-slate-500 uppercase font-black tracking-[0.2em] bg-white/[0.02]">
-                      <tr>
-                        <th className="px-8 py-5">Data da Ocorrência</th>
-                        <th className="px-8 py-5">Participante</th>
-                        <th className="px-8 py-5">Origem (From)</th>
-                        <th className="px-8 py-5">Destino (To)</th>
-                        <th className="px-8 py-5">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5 font-medium">
-                      {paginatedLogs.map((log, i) => (
-                        <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
-                          <td className="px-8 py-5 text-slate-500 font-mono scale-95 group-hover:scale-100 transition-transform origin-left">{new Date(log.date).toLocaleDateString("pt-BR")}</td>
-                          <td className="px-8 py-5">
-                            <div className="flex items-center gap-3">
-                               <div className="w-2 h-2 rounded-full bg-blue-600 shadow-[0_0_8px_rgba(37,99,235,0.4)]" />
-                               <span className="text-white font-black">{log.name}</span>
-                            </div>
-                          </td>
-                          <td className="px-8 py-5">
-                             <span className="px-3 py-1.5 rounded-xl bg-white/5 text-slate-500 border border-white/5">{log.from}</span>
-                          </td>
-                          <td className="px-8 py-5">
-                             <div className="flex items-center gap-2 text-blue-400 font-black">
-                                <span className="px-3 py-1.5 rounded-xl bg-blue-500/5 border border-blue-500/10 italic">{log.to}</span>
-                             </div>
-                          </td>
-                          <td className="px-8 py-5">
-                             <span className="text-[9px] font-black uppercase text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/10 tracking-widest">VALIDADO</span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="p-8 flex justify-between items-center border-t border-white/5">
-                   <div className="text-[10px] text-slate-600 font-black uppercase tracking-widest">Auditando {filteredLogs.length} incidentes encontrados</div>
-                   <div className="flex items-center gap-4">
-                     <Button 
-                       variant="outline" 
-                       size="sm" 
-                       className="border-white/5 bg-white/5 text-white disabled:opacity-20 rounded-xl h-10 px-6 font-black scale-95 hover:scale-100 transition-all"
-                       disabled={currentPage === 1} 
-                       onClick={() => setCurrentPage(p => p - 1)}
-                     >
-                       Anterior
-                     </Button>
-                     <span className="text-xs text-slate-500 font-mono tracking-tighter">
-                       <span className="text-white">{currentPage}</span> / {totalPages || 1}
-                     </span>
-                     <Button 
-                       variant="outline" 
-                       size="sm" 
-                       className="border-white/5 bg-white/5 text-white disabled:opacity-20 rounded-xl h-10 px-6 font-black scale-95 hover:scale-100 transition-all"
-                       disabled={currentPage === totalPages || totalPages === 0} 
-                       onClick={() => setCurrentPage(p => p + 1)}
-                     >
-                       Próxima
-                     </Button>
-                   </div>
-                </div>
-              </Card>
-            </motion.div>
+            <LogsTab
+              paginatedLogs={paginatedLogs}
+              filteredLogs={filteredLogs}
+              filter={filter}
+              setFilter={setFilter}
+              currentPage={currentPage}
+              setCurrentPage={setCurrentPage}
+              totalPages={totalPages}
+            />
           )}
         </AnimatePresence>
       </main>
