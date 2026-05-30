@@ -107,3 +107,56 @@ export interface Contract {
   date: string;
   progress: number;
 }
+
+export interface LeadActivity {
+  id: string;
+  leadId: string;
+  type: string;
+  title: string;
+  description: string;
+  seller: string;
+  date: string;
+  files?: any[];
+}
+
+export interface FinanceEntry {
+  id: string;
+  description: string;
+  category: string;
+  status: string;
+  value: number;
+  type: 'Pagar' | 'Receber';
+  date: string;
+}
+
+export interface GlobalWebhook {
+  id: string;
+  endpoint: string;
+  event: string;
+  active: boolean;
+}
+
+export interface Notification {
+  id: string;
+  title: string;
+  desc: string;
+  time: string;
+  date: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  category: string;
+  read: boolean;
+}
+
+export interface Appointment {
+  id: string;
+  time: string;
+  patient: string;
+  drId: string;
+  drName: string;
+  status: string;
+  type: string;
+  room: string;
+  specialty: string;
+  phone: string;
+  date: string;
+}

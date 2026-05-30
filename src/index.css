@@ -370,3 +370,28 @@ html.light [class*="bg-slate-800"] { background-color: #E2E8F0 !important; borde
     filter: drop-shadow(0 0 50px #00c8ff) !important;
     transform: scale(1.05) rotate(5deg) translateZ(0) !important;
 }
+
+/* ============================================================
+   Axis: Push Sidebar & Topbar behind ALL modal overlays
+   
+   Approach 1: body.axis-modal-open — set by <Modal> component
+   Approach 2: :has() — auto-detects inline modals inside <main>
+   ============================================================ */
+
+/* When <Modal> component is open (body class approach) */
+body.axis-modal-open aside {
+    z-index: 0 !important;
+}
+body.axis-modal-open header {
+    z-index: 0 !important;
+}
+
+/* When inline modals are open inside pages (CSS :has() approach) */
+body:has(main .fixed.inset-0[class*="backdrop"]) aside,
+body:has(main .fixed.inset-0[class*="bg-black"]) aside {
+    z-index: 0 !important;
+}
+body:has(main .fixed.inset-0[class*="backdrop"]) header,
+body:has(main .fixed.inset-0[class*="bg-black"]) header {
+    z-index: 0 !important;
+}

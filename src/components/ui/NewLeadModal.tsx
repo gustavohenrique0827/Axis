@@ -3,7 +3,7 @@ import { Modal } from "./modal";
 import { Button } from "./button";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { Sparkles, Target, AlertTriangle } from "lucide-react";
+import { Sparkles, Target, AlertTriangle, User, Building2, Briefcase, Mail, Phone, Hash, Link as LinkIcon, Users, Building, Tag } from "lucide-react";
 import { formatPhone, validatePhone } from "../../lib/utils";
 
 export function NewLeadModal({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
@@ -198,6 +198,7 @@ export function NewLeadModal({ isOpen, onClose }: { isOpen: boolean, onClose: ()
       isOpen={isOpen} 
       onClose={onClose} 
       title="Novo Lead"
+      maxWidth="max-w-3xl"
       footer={
         <>
           <Button variant="ghost" onClick={onClose} className="text-slate-400">Cancelar</Button>
@@ -207,209 +208,172 @@ export function NewLeadModal({ isOpen, onClose }: { isOpen: boolean, onClose: ()
         </>
       }
     >
-      <form id="new-lead-form" onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Nome</label>
-            <input name="name" required type="text" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" placeholder="Nome do lead" />
+      <form id="new-lead-form" onSubmit={handleSubmit} className="space-y-8">
+        
+        {/* ================= SEÇÃO BÁSICO ================= */}
+        <div className="space-y-5">
+          <h4 className="text-sm font-black text-white border-b border-white/5 pb-2 mb-2 flex items-center gap-2 uppercase tracking-wide">
+            <User className="w-4 h-4 text-blue-400" /> Informações Básicas
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><User className="w-3.5 h-3.5"/> Nome Principal</label>
+              <input name="name" required type="text" className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all" placeholder="Nome completo do lead" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><Tag className="w-3.5 h-3.5"/> Sufixo / Título (opcional)</label>
+              <input name="nameSuffix" type="text" className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all" placeholder="Ex: Diretor de TI, Dr." />
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Sufixo do Nome (opcional)</label>
-            <input name="nameSuffix" type="text" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" placeholder="Ex: Diretor, Jr." />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><Mail className="w-3.5 h-3.5"/> E-mail Comercial</label>
+              <input 
+                name="email" required type="email" value={emailValue} onChange={(e) => setEmailValue(e.target.value)}
+                className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all" 
+                placeholder="contato@empresa.com" 
+              />
+              {isEmailDuplicate && (
+                <p className="text-[10px] text-amber-500 mt-1.5 flex items-center gap-1 font-bold bg-amber-500/10 px-2 py-1 rounded-md w-fit"><AlertTriangle className="w-3 h-3" /> Já cadastrado no CRM!</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><Phone className="w-3.5 h-3.5"/> Celular / WhatsApp</label>
+              <input 
+                name="phone" type="tel" value={phoneValue} onChange={handlePhoneChange} maxLength={15}
+                className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all font-mono" 
+                placeholder="(00) 00000-0000" 
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-white/5">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">Origem Principal</label>
+              <select className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all">
+                <option>Site (Orgânico)</option>
+                <option>Google Ads</option>
+                <option>Meta Ads</option>
+                <option>Indicação</option>
+                <option>Prospecção Ativa</option>
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">Vendedor Responsável</label>
+              <select name="seller" defaultValue="Carlos Eduardo Mendes" className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all">
+                <option>Carlos Eduardo Mendes</option>
+                <option>Ana Silva</option>
+                <option>Roberto Ramos</option>
+                <option>Juliana Costa</option>
+              </select>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Empresa</label>
-            <input 
-              name="company" 
-              type="text" 
-              value={companyValue}
-              onChange={(e) => setCompanyValue(e.target.value)}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" 
-              placeholder="Nome da empresa" 
-            />
-          </div>
-          <div className="space-y-2">
-             <label className="text-sm font-medium text-slate-400">Website (opcional)</label>
-             <input name="website" type="url" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" placeholder="https://www.exemplo.com" />
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">E-mail</label>
-            <input 
-              name="email" 
-              required 
-              type="email" 
-              value={emailValue}
-              onChange={(e) => setEmailValue(e.target.value)}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" 
-              placeholder="E-mail de contato" 
-            />
-            {isEmailDuplicate && (
-              <p className="text-xs text-amber-500 mt-1 flex items-center gap-1 font-semibold"><AlertTriangle className="w-3 h-3" /> Este e-mail já existe na base de leads!</p>
-            )}
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">CNPJ</label>
-            <input 
-              name="cnpj" 
-              maxLength={18}
-              value={cnpjValue}
-              onChange={handleCnpjChange}
-              type="text" 
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" 
-              placeholder="00.000.000/0001-00" 
-            />
-            {isCnpjDuplicate && (
-              <p className="text-xs text-amber-500 mt-1 flex items-center gap-1 font-semibold"><AlertTriangle className="w-3 h-3" /> Este CNPJ já possui registro de lead!</p>
-            )}
-            {cnpjStatus.status === 'checking' && (
-              <p className="text-[10px] text-blue-400 animate-pulse mt-1 font-bold uppercase tracking-widest flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
-                Consulta Síncrona Receita Federal...
-              </p>
-            )}
-            {cnpjStatus.status === 'active' && (
-              <p className="text-[10px] text-emerald-400 mt-1 font-black uppercase tracking-widest flex items-center gap-1">
-                <Target className="w-3 h-3" /> CNPJ Verificado e Ativo
-              </p>
-            )}
-            {cnpjStatus.status === 'inactive' && (
-              <p className="text-[10px] text-amber-500 mt-1 font-black uppercase tracking-widest flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" /> Situação: {cnpjStatus.message || "Irregular"}
-              </p>
-            )}
-            {cnpjStatus.status === 'invalid' && (
-              <p className="text-[10px] text-red-500 mt-1 font-black uppercase tracking-widest flex items-center gap-1">
-                <AlertTriangle className="w-3 h-3" /> {cnpjStatus.message || "CNPJ Inválido!"}
-              </p>
-            )}
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Telefone / WhatsApp</label>
-            <input 
-              name="phone" 
-              type="tel" 
-              value={phoneValue}
-              onChange={handlePhoneChange}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" 
-              placeholder="(00) 00000-0000" 
-              maxLength={15}
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Tamanho da Equipe (SDR)</label>
-            <select 
-              value={teamSize}
-              onChange={(e) => setTeamSize(e.target.value)}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
-            >
-              <option value="">Selecione...</option>
-              <option value="1-10">1 a 10</option>
-              <option value="11-50">11 a 50</option>
-              <option value="51-200">51 a 200</option>
-              <option value="200+">Mais de 200</option>
-            </select>
+        {/* ================= SEÇÃO EMPRESA ================= */}
+        <div className="space-y-5">
+          <h4 className="text-sm font-black text-white border-b border-white/5 pb-2 mb-2 flex items-center gap-2 uppercase tracking-wide">
+            <Building2 className="w-4 h-4 text-emerald-400" /> Dados Empresariais
+          </h4>
+          <div className="p-5 bg-[#0B1120]/30 rounded-xl border border-white/5 space-y-4">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 justify-between">
+                <span className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5"/> Documento CNPJ</span>
+                <span className="text-[10px] text-blue-400 font-bold bg-blue-500/10 px-2 py-0.5 rounded-full">Receita Federal Sync</span>
+              </label>
+              <input 
+                name="cnpj" maxLength={18} value={cnpjValue} onChange={handleCnpjChange} type="text" 
+                className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all font-mono" 
+                placeholder="Digite o CNPJ para auto-preenchimento..." 
+              />
+              
+              {/* Feedback States CNPJ */}
+              <div className="mt-2 min-h-[24px]">
+                {isCnpjDuplicate && <p className="text-[10px] text-amber-500 mt-1 flex items-center gap-1 font-bold bg-amber-500/10 px-2 py-1 rounded-md w-fit"><AlertTriangle className="w-3 h-3" /> Já cadastrado no CRM!</p>}
+                {cnpjStatus.status === 'checking' && <p className="text-[10px] text-blue-400 animate-pulse font-bold uppercase tracking-widest flex items-center gap-1.5 bg-blue-500/10 px-2 py-1 rounded-md w-fit"><span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" /> Buscando dados...</p>}
+                {cnpjStatus.status === 'active' && <p className="text-[10px] text-emerald-400 font-black uppercase tracking-widest flex items-center gap-1 bg-emerald-500/10 px-2 py-1 rounded-md w-fit"><Target className="w-3 h-3" /> CNPJ Validado e Ativo</p>}
+                {cnpjStatus.status === 'inactive' && <p className="text-[10px] text-amber-500 font-black uppercase tracking-widest flex items-center gap-1 bg-amber-500/10 px-2 py-1 rounded-md w-fit"><AlertTriangle className="w-3 h-3" /> Situação: {cnpjStatus.message}</p>}
+                {cnpjStatus.status === 'invalid' && <p className="text-[10px] text-rose-500 font-black uppercase tracking-widest flex items-center gap-1 bg-rose-500/10 px-2 py-1 rounded-md w-fit"><AlertTriangle className="w-3 h-3" /> {cnpjStatus.message}</p>}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><Building className="w-3.5 h-3.5"/> Razão Social / Fantasia</label>
+                <input 
+                  name="company" type="text" value={companyValue} onChange={(e) => setCompanyValue(e.target.value)}
+                  className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all" 
+                  placeholder="Preenchido automaticamente..." 
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><LinkIcon className="w-3.5 h-3.5"/> Website Corporativo</label>
+                <input name="website" type="url" className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all" placeholder="https://www.empresa.com" />
+              </div>
+            </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Cargo Atual (SDR)</label>
-            <input 
-              name="currentRole" 
-              type="text" 
-              value={currentRole}
-              onChange={(e) => setCurrentRole(e.target.value)}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" 
-              placeholder="Ex: Diretor de Vendas" 
-            />
+        {/* ================= SEÇÃO SDR ================= */}
+        <div className="space-y-5">
+          <h4 className="text-sm font-black text-white border-b border-white/5 pb-2 mb-2 flex items-center gap-2 uppercase tracking-wide mt-2">
+            <Briefcase className="w-4 h-4 text-purple-400" /> Contexto & Qualificação (SDR)
+          </h4>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className="space-y-2 md:col-span-1">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5"><Users className="w-3.5 h-3.5"/> Tamanho da Equipe</label>
+              <select value={teamSize} onChange={(e) => setTeamSize(e.target.value)} className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all">
+                <option value="">Indefinido</option>
+                <option value="1-10">1 a 10 pessoas</option>
+                <option value="11-50">11 a 50 pessoas</option>
+                <option value="51-200">51 a 200 pessoas</option>
+                <option value="200+">Corporação (+200)</option>
+              </select>
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">Cargo do Decisor</label>
+              <input name="currentRole" type="text" value={currentRole} onChange={(e) => setCurrentRole(e.target.value)} className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all" placeholder="Ex: C-Level, Diretor de Marketing" />
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Link do LinkedIn (SDR)</label>
-            <input 
-              name="linkedinLink" 
-              type="url" 
-              value={linkedinLink}
-              onChange={(e) => setLinkedinLink(e.target.value)}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" 
-              placeholder="https://linkedin.com/in/usuario" 
-            />
-          </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Origem</label>
-            <select className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]">
-              <option>Site (Orgânico)</option>
-              <option>Google Ads</option>
-              <option>Meta Ads</option>
-              <option>Indicação</option>
-              <option>Prospecção Ativa</option>
-            </select>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">Interesses Tecnológicos</label>
+              <input name="lead_interesse_cliente" type="text" className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all" placeholder="Ex: Solução X, Integração Y" />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">URL do LinkedIn</label>
+              <input name="linkedinLink" type="url" value={linkedinLink} onChange={(e) => setLinkedinLink(e.target.value)} className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all" placeholder="https://linkedin.com/in/" />
+            </div>
           </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Vendedor Responsável</label>
-            <select name="seller" defaultValue="Carlos Eduardo Mendes" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]">
-              <option>Carlos Eduardo Mendes</option>
-              <option>Ana Silva</option>
-              <option>Roberto Ramos</option>
-              <option>Juliana Costa</option>
-            </select>
-          </div>
-        </div>
 
-        {isMaster && (
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-blue-400 flex items-center gap-2">
-               <Target className="w-3.5 h-3.5" /> Cliente / Tenant (Destinatário)
+          {isMaster && (
+            <div className="p-4 bg-blue-900/10 border border-blue-500/20 rounded-xl mt-4">
+              <label className="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1.5 mb-3">
+                 <Target className="w-4 h-4" /> Distribuição de Tenant (Master)
+              </label>
+              <select value={selectedTenant} onChange={(e) => setSelectedTenant(e.target.value)} className="w-full bg-[#0B1120]/80 border border-blue-500/30 rounded-xl px-4 py-2.5 text-white focus:border-blue-500 focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all">
+                <option value="G-Tech Master">Minha Base (G-Tech)</option>
+                {Object.keys(allTenantModules).filter(t => !t.includes("G-Tech")).map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          <div className="space-y-3 pt-4 border-t border-white/5">
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center justify-between">
+              Notas & Descobertas
+              <Button type="button" variant="ghost" size="sm" onClick={suggestTags} disabled={aiLoading} className="h-7 text-[10px] bg-purple-500/10 text-purple-400 border border-purple-500/20 hover:bg-purple-500/20 hover:text-purple-300 gap-1.5 rounded-md px-3 font-bold uppercase tracking-wider">
+                <Sparkles className="w-3 h-3" /> {aiLoading ? "Processando..." : "Gerar Tags com IA"}
+              </Button>
             </label>
-            <select 
-              value={selectedTenant}
-              onChange={(e) => setSelectedTenant(e.target.value)}
-              className="w-full bg-[#0B1120] border border-blue-500/20 rounded-lg px-4 py-2 text-white focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="G-Tech Master">Minha Base (G-Tech)</option>
-              {Object.keys(allTenantModules).filter(t => !t.includes("G-Tech")).map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
+            <textarea name="notes" rows={3} className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all resize-none" placeholder="Transcreva dores, objeções e informações críticas aqui..."></textarea>
+            <input name="tags" value={tags} onChange={(e) => setTags(e.target.value)} type="text" className="w-full bg-white/[0.02] border border-white/5 rounded-lg px-4 py-2 text-white focus:border-purple-500/50 focus:outline-none focus:ring-1 focus:ring-purple-500/50 text-sm italic" placeholder="Ex: enterprise, prioridade_alta, tech_lead (separados por vírgula)" />
           </div>
-        )}
-
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-400">Interesse do Cliente (opcional)</label>
-          <input name="lead_interesse_cliente" type="text" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" placeholder="Ex: Cloud, Security, AI" />
         </div>
 
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-400">Notas Adicionais</label>
-          <textarea name="notes" rows={3} className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" placeholder="Informações relevantes sobre este lead..."></textarea>
-        </div>
-
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-sm font-medium text-slate-400">Tags</label>
-            <Button 
-              type="button" 
-              variant="ghost" 
-              size="sm" 
-              onClick={suggestTags} 
-              disabled={aiLoading}
-              className="text-xs text-purple-400 gap-1 hover:text-purple-300"
-            >
-              <Sparkles className="w-3 h-3" />
-              {aiLoading ? "Sugerindo..." : "IA Sugerir Tags"}
-            </Button>
-          </div>
-          <input name="tags" value={tags} onChange={(e) => setTags(e.target.value)} type="text" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" placeholder="Tags separadas por vírgula" />
-        </div>
       </form>
     </Modal>
   );

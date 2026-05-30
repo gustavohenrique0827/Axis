@@ -1,4 +1,5 @@
 import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { Button } from "./button";
 
@@ -14,19 +15,33 @@ interface ModalProps {
 
 export function Modal({ isOpen, onClose, title, children, footer, maxWidth = "max-w-md", position = "center" }: ModalProps) {
   useEffect(() => {
+    const mainElement = document.querySelector("main"); // Pega o wrapper de conteúdo principal
+    
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      document.body.classList.add("axis-modal-open");
+      if (mainElement) {
+        mainElement.style.overflow = "hidden";
+      }
     } else {
       document.body.style.overflow = "unset";
+      document.body.classList.remove("axis-modal-open");
+      if (mainElement) {
+        mainElement.style.overflow = "auto"; // Restaura o scroll
+      }
     }
     return () => {
       document.body.style.overflow = "unset";
+      document.body.classList.remove("axis-modal-open");
+      if (mainElement) {
+        mainElement.style.overflow = "auto";
+      }
     };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className={`fixed inset-0 z-[100] flex ${position === 'right' ? 'justify-end' : 'items-center justify-center p-4 sm:p-6'}`}>
       {/* Backdrop */}
       <div 
@@ -69,6 +84,7 @@ export function Modal({ isOpen, onClose, title, children, footer, maxWidth = "ma
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
