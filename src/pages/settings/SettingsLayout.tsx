@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
 import { 
   Building, Users, Columns3, Briefcase, Zap, Globe, Bell, Menu, X, 
   PanelLeftClose, PanelLeftOpen 
@@ -9,8 +10,28 @@ import { Button } from "../../components/ui/button";
 
 export default function SettingsLayout() {
   const location = useLocation();
+  const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+
+  const [activeModules, setActiveModules] = useState<{ [key: string]: boolean }>({
+    crm: true, educacao: true, produtividade: true, financeiro: true, 
+    catalogo: true, marketing: true, engajamento: true, rh: true, bi: true, clinica: true,
+  });
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("axis_sidebar_modules");
+      if (saved) setActiveModules(JSON.parse(saved));
+    } catch (e) {}
+
+    const handleChanged = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      if (customEvent?.detail) setActiveModules(customEvent.detail);
+    };
+    window.addEventListener("axis_modules_changed", handleChanged);
+    return () => window.removeEventListener("axis_modules_changed", handleChanged);
+  }, []);
 
   const secPreferencias = [
     { title: "Preferências de Notificação", path: "/app/configuracoes/usuario/notificacoes" },
@@ -18,9 +39,8 @@ export default function SettingsLayout() {
 
   const secEmpresa = [
     { title: "Dados da empresa", path: "/app/configuracoes/empresa/dados" },
-    { title: "Módulos & Demos Ativas", path: "/app/configuracoes/empresa/modulos" },
-    { title: "Aparência & marca", path: "/app/configuracoes/empresa/marca" },
-    { title: "Filiais", path: "/app/configuracoes/empresa/filiais" },
+    ...(user?.isMaster ? [{ title: "Módulos & Demos", path: "/app/configuracoes/empresa/modulos" }] : []),
+    { title: "Filiais / Unidades", path: "/app/configuracoes/empresa/filiais" },
     { title: "Equipe & convites", path: "/app/configuracoes/empresa/equipe" },
     { title: "Perfis & permissões", path: "/app/configuracoes/empresa/permissoes" },
   ];
@@ -113,10 +133,10 @@ export default function SettingsLayout() {
         <div className="flex flex-col overflow-y-auto pb-10 px-2 scrollbar-hide">
           <MenuSection title="Preferências" icon={<Bell className="w-4 h-4" />} items={secPreferencias} currentPath={location.pathname} />
           <MenuSection title="Empresa" icon={<Building className="w-4 h-4" />} items={secEmpresa} currentPath={location.pathname} />
-          <MenuSection title="CRM" icon={<Columns3 className="w-4 h-4" />} items={secCRM} currentPath={location.pathname} />
-          <MenuSection title="Prod." icon={<Briefcase className="w-4 h-4" />} items={secProdutividade} currentPath={location.pathname} />
-          <MenuSection title="Financeiro" icon={<Globe className="w-4 h-4" />} items={secFinanceiro} currentPath={location.pathname} />
-          <MenuSection title="Engaj." icon={<Zap className="w-4 h-4" />} items={secEngajamento} currentPath={location.pathname} />
+          {activeModules.crm && <MenuSection title="CRM" icon={<Columns3 className="w-4 h-4" />} items={secCRM} currentPath={location.pathname} />}
+          {activeModules.produtividade && <MenuSection title="Prod." icon={<Briefcase className="w-4 h-4" />} items={secProdutividade} currentPath={location.pathname} />}
+          {activeModules.financeiro && <MenuSection title="Financeiro" icon={<Globe className="w-4 h-4" />} items={secFinanceiro} currentPath={location.pathname} />}
+          {(activeModules.marketing || activeModules.engajamento) && <MenuSection title="Engaj." icon={<Zap className="w-4 h-4" />} items={secEngajamento} currentPath={location.pathname} />}
           <MenuSection title="Integrações" icon={<Users className="w-4 h-4" />} items={secIntegracoes} currentPath={location.pathname} />
           <MenuSection title="Sistema" icon={<Zap className="w-4 h-4" />} items={secSistema} currentPath={location.pathname} />
         </div>
@@ -146,10 +166,10 @@ export default function SettingsLayout() {
             >
               <MenuSection title="Preferências" icon={<Bell className="w-4 h-4" />} items={secPreferencias} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
               <MenuSection title="Empresa" icon={<Building className="w-4 h-4" />} items={secEmpresa} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
-              <MenuSection title="CRM" icon={<Columns3 className="w-4 h-4" />} items={secCRM} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
-              <MenuSection title="Prod." icon={<Briefcase className="w-4 h-4" />} items={secProdutividade} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
-              <MenuSection title="Financeiro" icon={<Globe className="w-4 h-4" />} items={secFinanceiro} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
-              <MenuSection title="Engaj." icon={<Zap className="w-4 h-4" />} items={secEngajamento} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
+              {activeModules.crm && <MenuSection title="CRM" icon={<Columns3 className="w-4 h-4" />} items={secCRM} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />}
+              {activeModules.produtividade && <MenuSection title="Prod." icon={<Briefcase className="w-4 h-4" />} items={secProdutividade} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />}
+              {activeModules.financeiro && <MenuSection title="Financeiro" icon={<Globe className="w-4 h-4" />} items={secFinanceiro} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />}
+              {(activeModules.marketing || activeModules.engajamento) && <MenuSection title="Engaj." icon={<Zap className="w-4 h-4" />} items={secEngajamento} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />}
               <MenuSection title="Integrações" icon={<Users className="w-4 h-4" />} items={secIntegracoes} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
               <MenuSection title="Sistema" icon={<Zap className="w-4 h-4" />} items={secSistema} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
             </motion.div>

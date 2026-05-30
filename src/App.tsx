@@ -40,7 +40,6 @@ import SettingsLayout from "./pages/settings/SettingsLayout";
 import ConfigEmpresaDados from "./pages/settings/ConfigEmpresaDados";
 import ConfigModulosDemos from "./pages/settings/ConfigModulosDemos";
 import { 
-  ConfigEmpresaMarca, 
   ConfigEmpresaFiliais, 
   ConfigEmpresaEquipe, 
   ConfigEmpresaPermissoes, 
@@ -169,7 +168,6 @@ function AppContent() {
               <Route path="usuario/notificacoes" element={<ConfigNotificacoesPreferencias />} />
               <Route path="empresa/dados" element={<ConfigEmpresaDados />} />
               <Route path="empresa/modulos" element={<ConfigModulosDemos />} />
-              <Route path="empresa/marca" element={<ConfigEmpresaMarca />} />
               <Route path="empresa/filiais" element={<ConfigEmpresaFiliais />} />
               <Route path="empresa/equipe" element={<ConfigEmpresaEquipe />} />
               <Route path="empresa/permissoes" element={<ConfigEmpresaPermissoes />} />

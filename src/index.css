@@ -16,6 +16,39 @@
   html, body {
     @apply bg-[var(--color-dark-bg)] text-[var(--color-white-text)] antialiased scroll-smooth;
   }
+
+  /* Dashboard Scale Down (Efeito MacBook) */
+  html {
+    font-size: 87.5%; /* Faz 1rem = 14px para encaixar mais elementos na tela */
+  }
+
+  @media (min-width: 1536px) {
+    html {
+      font-size: 93.75%; /* Telas 2k */
+    }
+  }
+
+  @media (min-width: 1920px) {
+    html {
+      font-size: 100%; /* Telas ultrawide/4k */
+    }
+  }
+
+  /* Scrollbars Finas e Minimalistas (Estilo macOS) */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.2);
+    border-radius: 10px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.4);
+  }
 }
 
 @layer utilities {
@@ -83,6 +116,104 @@
   display: flex;
   align-items: center;
 }
+
+/* =========================================
+   LIGHT MODE INVERSION MAPPING (GLOBAL HACK)
+   Força o modo claro usando seletores CSS Wildcard para varrer variações do Tailwind
+   ========================================= */
+
+html.light {
+  --color-dark-bg: #F8FAFC;
+  --color-premium-black: #FFFFFF;
+  --color-white-text: #0F172A;
+}
+
+html.light body {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+}
+
+html.light [class*="bg-[#0B1120]" i],
+html.light [class*="bg-[var(--color-dark-bg)]" i],
+html.light [class*="bg-[#0A0F1C]" i],
+html.light [class*="bg-[#0f172a]" i],
+html.light [class*="bg-[#0F172A]" i] {
+  background-color: #F8FAFC !important;
+  background-image: none !important;
+}
+
+html.light [class*="bg-[#111827]" i],
+html.light [class*="bg-[var(--color-premium-black)]" i],
+html.light [class*="bg-[#1E293B]" i],
+html.light [class*="from-[#1E293B]" i],
+html.light [class*="via-[#0F172A]" i],
+html.light [class*="to-[#111827]" i] {
+  background-color: #FFFFFF !important;
+  background-image: none !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03) !important;
+}
+
+html.light [class*="border-white/"],
+html.light [class*="border-slate-800"] {
+  border-color: #E2E8F0 !important;
+}
+
+html.light [class*="text-slate-400"] {
+  color: #64748B !important;
+}
+
+html.light [class*="text-white"], 
+html.light [class*="text-[#F8FAFC]"], 
+html.light [class*="text-slate-200"], 
+html.light [class*="text-slate-300"] {
+  color: #0F172A !important;
+}
+
+/* Preservar textos brancos em botões coloridos */
+html.light [class*="bg-[#2563EB]" i],
+html.light [class*="bg-blue-600"],
+html.light [class*="bg-emerald-500"],
+html.light [class*="bg-rose-500"] {
+  color: #FFFFFF !important;
+}
+
+html.light [class*="bg-white/5"],
+html.light [class*="bg-white/[0.0"] {
+  background-color: rgba(0,0,0,0.03) !important;
+}
+
+html.light [class*="hover:bg-white/1"]:hover,
+html.light [class*="hover:bg-white/5"]:hover {
+  background-color: rgba(0,0,0,0.06) !important;
+}
+
+html.light [class*="glass-card"] {
+  background-color: rgba(255, 255, 255, 0.85) !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+}
+
+/* Ajustes de contraste para as cores de ação no Light Mode */
+html.light [class*="text-emerald-400"] { color: #059669 !important; } /* Emerald 600 */
+html.light [class*="bg-emerald-500/10"] { background-color: #D1FAE5 !important; border-color: #6EE7B7 !important; }
+
+html.light [class*="text-blue-500"], html.light [class*="text-blue-400"] { color: #2563EB !important; } /* Blue 600 */
+html.light [class*="bg-blue-600/10"], html.light [class*="bg-blue-500/10"] { background-color: #DBEAFE !important; border-color: #93C5FD !important; }
+
+html.light [class*="text-cyan-400"] { color: #0891B2 !important; } /* Cyan 600 */
+html.light [class*="bg-cyan-500/10"] { background-color: #CFFAFE !important; border-color: #67E8F9 !important; }
+
+html.light [class*="text-amber-400"], html.light [class*="text-amber-500"] { color: #D97706 !important; } /* Amber 600 */
+html.light [class*="bg-amber-500/10"] { background-color: #FEF3C7 !important; border-color: #FCD34D !important; }
+
+html.light [class*="text-rose-400"] { color: #E11D48 !important; } /* Rose 600 */
+html.light [class*="bg-rose-500/10"] { background-color: #FFE4E6 !important; border-color: #FDA4AF !important; }
+
+html.light [class*="text-purple-400"] { color: #9333EA !important; } /* Purple 600 */
+html.light [class*="bg-purple-500/10"] { background-color: #F3E8FF !important; border-color: #D8B4FE !important; }
+
+html.light [class*="bg-slate-800"] { background-color: #E2E8F0 !important; border-color: #CBD5E1 !important; }
 @keyframes slow-pan {
   from { background-position: 0 0; }
   to { background-position: 100% 100%; }

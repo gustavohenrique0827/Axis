@@ -39,6 +39,8 @@ import {
   Archive,
   FlaskConical,
   BarChart3,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { Button } from "./ui/button";
 import { Card } from "./ui/card";
@@ -59,6 +61,8 @@ export default function Layout() {
     markAllNotificationsAsRead,
     simulateNewLeadAssignment,
     simulateOverdueTask,
+    theme,
+    toggleTheme,
   } = useData();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -96,7 +100,7 @@ export default function Layout() {
     try {
       const saved = localStorage.getItem("axis_sidebar_modules");
       if (saved) setActiveModules(JSON.parse(saved));
-    } catch (e) {}
+    } catch (e) { }
 
     const handleChanged = (e: Event) => {
       const customEvent = e as CustomEvent;
@@ -106,7 +110,7 @@ export default function Layout() {
         try {
           const saved = localStorage.getItem("axis_sidebar_modules");
           if (saved) setActiveModules(JSON.parse(saved));
-        } catch (e) {}
+        } catch (e) { }
       }
     };
     window.addEventListener("axis_modules_changed", handleChanged);
@@ -116,11 +120,15 @@ export default function Layout() {
 
   const [logoDarkFull, setLogoDarkFull] = useState(() => localStorage.getItem("axis_brand_logo_dark_full") || "/logo-full.png");
   const [logoDarkIcon, setLogoDarkIcon] = useState(() => localStorage.getItem("axis_brand_logo_dark_icon") || "/logo-icon.png");
+  const [logoLightFull, setLogoLightFull] = useState(() => localStorage.getItem("axis_brand_logo_light_full") || "/logo-full.png");
+  const [logoLightIcon, setLogoLightIcon] = useState(() => localStorage.getItem("axis_brand_logo_light_icon") || "/logo-icon.png");
 
   useEffect(() => {
     const handleBrandChange = () => {
       setLogoDarkFull(localStorage.getItem("axis_brand_logo_dark_full") || "/logo-full.png");
       setLogoDarkIcon(localStorage.getItem("axis_brand_logo_dark_icon") || "/logo-icon.png");
+      setLogoLightFull(localStorage.getItem("axis_brand_logo_light_full") || "/logo-full.png");
+      setLogoLightIcon(localStorage.getItem("axis_brand_logo_light_icon") || "/logo-icon.png");
     };
     window.addEventListener("axis_brand_changed", handleBrandChange);
     return () => window.removeEventListener("axis_brand_changed", handleBrandChange);
@@ -135,13 +143,15 @@ export default function Layout() {
           name: "Performance SDR/IA",
           path: "/app/performance-ia",
           icon: Brain,
+          reqModule: "bi"
         },
         {
           name: "CPM / Indicadores",
           path: "/app/indicadores",
           icon: BarChart2,
+          reqModule: "bi"
         },
-        { name: "Relatórios", path: "/app/relatorios", icon: PieChart },
+        { name: "Relatórios", path: "/app/relatorios", icon: PieChart, reqModule: "bi" },
       ],
     },
     {
@@ -261,21 +271,21 @@ export default function Layout() {
             className={`logo-image-container flex items-center justify-center w-full h-full ${isSidebarCollapsed ? "mx-auto" : ""}`}
           >
             {isSidebarCollapsed ? (
-              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center p-1">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center p-1 ${theme === 'dark' ? 'bg-white' : 'bg-white border'}`}>
                 <img
-                  src={logoDarkIcon}
+                  src={theme === 'dark' ? logoDarkIcon : logoLightIcon}
                   alt="Axis"
-                  className="w-full h-full object-contain"
+                  className={`w-full h-full object-contain ${theme === 'dark' ? 'mix-blend-screen' : ''}`}
                   referrerPolicy="no-referrer"
                 />
               </div>
             ) : (
-              <div className="relative w-full h-full flex items-center justify-center bg-[#0B1120] rounded-xl overflow-hidden px-2">
+              <div className={`relative w-full h-full flex items-center justify-center rounded-xl overflow-hidden px-2 ${theme === 'dark' ? 'bg-[#0B1120]' : 'bg-transparent'}`}>
                 <img
-                  src={logoDarkFull}
+                  src={theme === 'dark' ? logoDarkFull : logoLightFull}
                   alt="Axis"
                   title="Axis CRM"
-                  className="logo-container object-contain w-full h-full sm:scale-110 lg:scale-125 transition-transform mix-blend-screen"
+                  className={`logo-container object-contain w-full h-full sm:scale-110 lg:scale-125 transition-transform ${theme === 'dark' ? 'mix-blend-screen' : ''}`}
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -287,32 +297,28 @@ export default function Layout() {
           {navSections
             .filter((section) => {
               const titleLower = section.title.toLowerCase();
-              if (
-                titleLower.includes("crm") &&
-                (!activeModules.crm || !isModuleEnabled("crm"))
-              )
-                return false;
-              if (titleLower.includes("educação") && !activeModules.educacao)
-                return false;
-              if (
-                (titleLower.includes("clínica") || titleLower.includes("clinica")) &&
-                !activeModules.clinica
-              )
-                return false;
-              if (
-                titleLower.includes("financeiro") &&
-                !activeModules.financeiro
-              )
-                return false;
-              if (titleLower.includes("marketing") && !activeModules.marketing)
-                return false;
-              if (
-                titleLower.includes("engajamento") &&
-                !activeModules.engajamento
-              )
-                return false;
-              if (titleLower.includes("gestão") && !activeModules.rh) return false;
-              if (titleLower.includes("geral") && !activeModules.bi) return false;
+
+              // 1. CRM
+              if (titleLower.includes("crm") && (!activeModules.crm || !isModuleEnabled("crm"))) return false;
+
+              // 2. Educação
+              if (titleLower.includes("educação") && !activeModules.educacao) return false;
+
+              // 3. Clínica
+              if ((titleLower.includes("clínica") || titleLower.includes("clinica")) && !activeModules.clinica) return false;
+
+              // 4. Financeiro & Produtividade (Exige um dos dois)
+              if (titleLower.includes("financeiro") && !activeModules.financeiro && !activeModules.produtividade) return false;
+
+              // 5. Engajamento & Marketing (Exige um dos dois)
+              if ((titleLower.includes("engajamento") || titleLower.includes("marketing")) && !activeModules.marketing && !activeModules.engajamento) return false;
+
+              // 6. Gestão do Sistema (Deve sempre estar presente para Configurações, mas podemos omitir itens internos via mapeamento, aqui garantimos a visualização da sessão pai)
+              if (titleLower.includes("gestão do sistema")) return true;
+
+              // 7. Se for Geral, podemos vincular a presença do BI, mas mantendo a sessão por causa do Dashboard raiz.
+              // Então omitimos o 'return false' agressivo que bloqueava todo o painel geral.
+
               return true;
             })
             .map((section, idx) => (
@@ -325,8 +331,11 @@ export default function Layout() {
                   <div className="h-4"></div>
                 )}
                 {section.items.map((item: any) => {
+                  if (item.reqModule && (!activeModules[item.reqModule] && item.reqModule !== 'master')) return null;
+                  if (item.reqModule === 'master' && !user?.isMaster) return null;
+
                   const isActive = item.path ? location.pathname.startsWith(item.path) : false;
-                  
+
                   const btnContent = (
                     <button
                       className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5" : "gap-3 px-3 py-2.5"} text-sm font-bold rounded-xl transition-all ${isActive ? "bg-blue-600/10 text-blue-500 border border-blue-600/20 shadow-[0_0_20px_rgba(37,99,235,0.05)]" : "text-slate-500 hover:text-white hover:bg-white/[0.03]"}`}
@@ -426,16 +435,22 @@ export default function Layout() {
           </div>
 
           <div className="flex items-center gap-6">
+            <button
+              onClick={() => toggleTheme()}
+              className="p-2 text-slate-500 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+              title="Alternar Tema (Light/Dark)"
+            >
+              {theme === "dark" ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-500" />}
+            </button>
             <div className="relative">
               <button
                 onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                className={`text-slate-400 hover:text-white transition-all relative p-2.5 rounded-xl border border-transparent ${
-                  isNotificationsOpen
+                className={`text-slate-400 hover:text-white transition-all relative p-2.5 rounded-xl border border-transparent ${isNotificationsOpen
                     ? "bg-white/10 border-white/10 text-white shadow-lg"
                     : unreadNotifications > 0
                       ? "bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10 text-rose-300"
                       : "hover:bg-white/5"
-                }`}
+                  }`}
                 title="Notificações"
               >
                 <Bell
@@ -589,13 +604,12 @@ export default function Layout() {
                                             {n.title}
                                           </h5>
                                           <span
-                                            className={`text-[8px] px-1.5 py-0.5 rounded font-black tracking-wider uppercase border shrink-0 ${
-                                              n.type === "success"
+                                            className={`text-[8px] px-1.5 py-0.5 rounded font-black tracking-wider uppercase border shrink-0 ${n.type === "success"
                                                 ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                                                 : n.type === "error"
                                                   ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
                                                   : "bg-[#2563EB]/10 text-blue-400 border-blue-500/20"
-                                            }`}
+                                              }`}
                                           >
                                             {n.type}
                                           </span>
@@ -722,12 +736,11 @@ export default function Layout() {
 
         {/* Content */}
         <div
-          className={`flex-1 overflow-hidden z-10 relative scrollbar-none ${
-            location.pathname.includes("/messaging") ||
-            location.pathname.includes("/mensageria")
+          className={`flex-1 overflow-hidden z-10 relative scrollbar-none ${location.pathname.includes("/messaging") ||
+              location.pathname.includes("/mensageria")
               ? "p-1 pb-20 sm:p-2 sm:pb-2.5"
               : "p-4 md:p-8 overflow-auto pb-24 sm:pb-8"
-          }`}
+            }`}
         >
           <Outlet />
         </div>
@@ -747,9 +760,8 @@ export default function Layout() {
             <Link
               key={tab.name}
               to={tab.path}
-              className={`flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-bold transition-all relative active:scale-95 ${
-                isActive ? "text-[#2563EB]" : "text-slate-400 hover:text-white"
-              }`}
+              className={`flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-bold transition-all relative active:scale-95 ${isActive ? "text-[#2563EB]" : "text-slate-400 hover:text-white"
+                }`}
             >
               <TabIcon
                 className={`w-5 h-5 mb-0.5 transition-transform duration-200 ${isActive ? "text-[#2563EB] scale-110" : "text-slate-400 group-hover:scale-105"}`}
@@ -773,11 +785,10 @@ export default function Layout() {
         {/* Toggle Mais Slider Button */}
         <button
           onClick={() => setIsMobileMoreOpen(true)}
-          className={`flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-bold transition-all active:scale-95 ${
-            isMobileMoreOpen
+          className={`flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-bold transition-all active:scale-95 ${isMobileMoreOpen
               ? "text-[#06B6D4]"
               : "text-slate-400 hover:text-white"
-          }`}
+            }`}
         >
           <Menu
             className={`w-5 h-5 mb-0.5 ${isMobileMoreOpen ? "text-[#06B6D4] rotate-90 scale-110" : "text-slate-400"} transition-transform duration-200`}
@@ -832,27 +843,26 @@ export default function Layout() {
                     {section.items.map((item: any) => {
                       const isActive = item.path ? location.pathname.startsWith(item.path) : false;
                       const ItemIcon = item.icon;
-                      
-                      const btnClass = `flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-xl border transition-all ${
-                        isActive
+
+                      const btnClass = `flex items-center gap-2 px-3 py-2 text-xs font-semibold rounded-xl border transition-all ${isActive
                           ? "bg-[#2563EB]/10 text-[#2563EB] border-[#2563EB]/20 font-black"
                           : "text-slate-400 border-transparent bg-white/[0.01] hover:text-white hover:bg-white/5"
-                      }`;
+                        }`;
 
                       if (item.action) {
-                          return (
-                              <button
-                                key={item.name}
-                                onClick={() => {
-                                  if (item.action === "sdr-webhooks") setIsSDRWebhookOpen(true);
-                                  setIsMobileMoreOpen(false);
-                                }}
-                                className={btnClass}
-                              >
-                                <ItemIcon className="w-4 h-4 text-[#06B6D4] shrink-0" />
-                                <span className="truncate">{item.name}</span>
-                              </button>
-                          );
+                        return (
+                          <button
+                            key={item.name}
+                            onClick={() => {
+                              if (item.action === "sdr-webhooks") setIsSDRWebhookOpen(true);
+                              setIsMobileMoreOpen(false);
+                            }}
+                            className={btnClass}
+                          >
+                            <ItemIcon className="w-4 h-4 text-[#06B6D4] shrink-0" />
+                            <span className="truncate">{item.name}</span>
+                          </button>
+                        );
                       }
 
                       return (

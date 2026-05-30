@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { 
   Cpu, Sparkles, Smartphone, Sun, Activity, Eye, EyeOff, Layout, ListChecks, 
   ShieldCheck, AlertTriangle, RefreshCw, Layers, Database, UserCheck, 
-  Calendar, Check, HelpCircle, Key, ArrowRight, Star, GraduationCap, Clock, FileSpreadsheet, Building
+  Calendar, Check, HelpCircle, Key, ArrowRight, Star, GraduationCap, Clock, FileSpreadsheet, Building, Target, Award, DollarSign, Package, MessageSquare, Users, Columns3
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -234,6 +234,29 @@ export default function ConfigModulosDemos() {
     toast.info(`Simulando visualização para a função: ${role}`);
   };
 
+  const applyPreset = (presetName: string) => {
+    let preset: typeof activeModules;
+    switch (presetName) {
+      case "ALL_ACTIVE":
+        preset = { crm: true, educacao: true, produtividade: true, financeiro: true, catalogo: true, engajamento: true, rh: true, bi: true, clinica: true, marketing: true };
+        toast.info("Aplicado Preset: Ecossistema Global (Todos Ativos)");
+        break;
+      case "EDUCACAO":
+        preset = { crm: true, educacao: true, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: true };
+        toast.info("Aplicado Preset: Admissão & Educação (Foco Turmas e Alunos)");
+        break;
+      case "SDR_CLOSER":
+        preset = { crm: true, educacao: false, produtividade: true, financeiro: false, catalogo: false, engajamento: true, rh: false, bi: true, clinica: false, marketing: true };
+        toast.info("Aplicado Preset: Agência SDR & Closers (Estrutura Leve / Funil)");
+        break;
+      default:
+        return;
+    }
+    setActiveModules(preset);
+    localStorage.setItem("axis_sidebar_modules", JSON.stringify(preset));
+    window.dispatchEvent(new CustomEvent("axis_modules_changed", { detail: preset }));
+  };
+
   // Demo Importer Main Logic
   const handleImportPreset = (preset: typeof DEMO_PRESETS[0]) => {
     setLoadingPresetId(preset.id);
@@ -427,56 +450,87 @@ export default function ConfigModulosDemos() {
       </div>
 
       {/* INDIVIDUAL MODULE ACTIVATION SWITCHES */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      {(user?.isMaster || user?.tenantName?.includes("G-Tech")) && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         
         {/* Module flags */}
         <div className="lg:col-span-2 space-y-4">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              <Layers className="w-5 h-5 text-cyan-400" /> Tabela de Módulos (Hospedados)
-            </h2>
-            <p className="text-xs text-slate-400">Ative ou remova visualmente módulos inteiros do menu lateral do Axis CRM para simplificar a usabilidade de forma cirúrgica.</p>
-          </div>
+          {/* Modular Sidebar Section */}
+          <div className="space-y-6">
+            <div className="space-y-1">
+              <h3 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                <Layers className="w-5 h-5 text-cyan-400" /> Sidebar Modular Sob Medida
+              </h3>
+              <p className="text-xs text-slate-400">Ative ou desative seções inteiras da sua barra lateral para simplificar a interface e moldar o CRM para a sua operação.</p>
+            </div>
 
-          <Card className="border-white/5 bg-[#111827]/80 backdrop-blur-xl rounded-2xl overflow-hidden divide-y divide-white/5">
-            {[
-              { key: "crm", title: "Módulo Leads & CRM Comercial", desc: "Fornece listas de prospecção, pipeline de alta conversão, painel de comissões básica e cadastro de produtos.", color: "text-[#06B6D4]" },
-              { key: "clinica", title: "Módulo Gestão Clínica Estética", desc: "Habilita Agenda médica inteligente, telemedicina de alta resolução, EHR prontuários de pacientes, faturamento clínico e estoque.", color: "text-rose-400" },
-              { key: "financeiro", title: "Módulo Financeiro Geral", desc: "Acesso a contas a pagar, contas a receber, DRE financeiro, metas comerciais e repasse de squads.", color: "text-emerald-400" },
-              { key: "marketing", title: "Módulo Marketing & Automações", desc: "Painel de conteúdo, disparos pelo WhatsApp, analytics e integrações com mídias sociais.", color: "text-blue-400" },
-              { key: "bi", title: "Módulo Alta Performance BI", desc: "Análises avançadas de retenção (churn), inteligência SDR e indicadores corporativos.", color: "text-indigo-400" },
-              { key: "educacao", title: "Módulo Escolar / Acadêmico", desc: "Controle de turmas ativas, base de alunos unificada, banco de conteúdo teórico e emissão de certificados.", color: "text-amber-400" },
-            ].map((mod) => {
-              const infoActive = activeModules[mod.key];
-              return (
-                <div key={mod.key} className="p-4 sm:p-5 flex items-start gap-4 hover:bg-white/[0.01] transition-colors">
-                  <button 
-                    onClick={() => handleToggleModule(mod.key)}
-                    className={`mt-1 h-5 w-10 rounded-full transition-all relative ${
-                      infoActive ? "bg-blue-600 shadow-[0_0_10px_rgba(37,99,235,0.5)]" : "bg-slate-800 border border-white/10"
+            {/* Quick Presets */}
+            <div className="p-4 bg-slate-900/50 border border-white/5 rounded-2xl space-y-3">
+              <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">🎯 Presets Estratégicos de Operação</span>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <button 
+                  onClick={() => applyPreset("ALL_ACTIVE")}
+                  className="px-3 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                >
+                  🌐 Geral Full
+                </button>
+                <button 
+                  onClick={() => applyPreset("EDUCACAO")}
+                  className="px-3 py-2 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/25 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                >
+                  🎓 Escola/Edu
+                </button>
+                <button 
+                  onClick={() => applyPreset("SDR_CLOSER")}
+                  className="px-3 py-2 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-400 border border-cyan-500/25 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                >
+                  ⚡ SDR & Closers
+                </button>
+              </div>
+            </div>
+
+            {/* Individual toggles list */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-2">
+              {[
+                { id: 'crm', title: "Motor de CRM & Pipeline", desc: "Leads, Funil Comercial e SDR IA", icon: Target },
+                { id: 'educacao', title: "Educação & Admissão", desc: "Turmas, Matrículas, Alunos e Acadêmico", icon: Award },
+                { id: 'produtividade', title: "Tarefas & Produtividade", desc: "Quadro Kanban de afazeres diários", icon: Clock },
+                { id: 'financeiro', title: "Cofre & Financeiro", desc: "Painel Financeiro, Entradas, Saídas e DRE", icon: DollarSign },
+                { id: 'catalogo', title: "Catálogo de Produtos", desc: "Rastreamento, estoque, iPhones e SKUs", icon: Package },
+                { id: 'engajamento', title: "Engajamento & Mensagens", desc: "Central de WhatsApp, E-mail e Automações", icon: MessageSquare },
+                { id: 'rh', title: "RH & Colaboradores", desc: "Equipe interna, comissões de corretores/closers", icon: Users },
+                { id: 'bi', title: "BI & Indicadores Relatórios", desc: "Melhores estatísticas de faturamento e OTE", icon: Columns3 }
+              ].map((mod) => {
+                const isEnabled = activeModules[mod.id] ?? true;
+                return (
+                  <div 
+                    key={mod.id} 
+                    onClick={() => handleToggleModule(mod.id)}
+                    className={`p-4 bg-[#0B1120] border rounded-2xl flex items-center justify-between gap-4 cursor-pointer select-none transition-all duration-300 ${
+                      isEnabled 
+                        ? 'border-blue-500/40 bg-blue-600/[0.02] shadow-[0_0_15px_rgba(59,130,246,0.05)]' 
+                        : 'border-white/5 opacity-55 hover:opacity-85'
                     }`}
                   >
-                    <span className={`w-3.5 h-3.5 rounded-full bg-white absolute top-0.5 transition-all ${
-                      infoActive ? "right-1" : "left-1"
-                    }`} />
-                  </button>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-sm text-slate-200">{mod.title}</h4>
-                      <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded-full border ${
-                        infoActive 
-                          ? "bg-blue-500/10 border-blue-500/20 text-blue-400" 
-                          : "bg-slate-900 border-white/5 text-slate-600"
-                      }`}>
-                        {infoActive ? "Visível / Ativo" : "Desativado"}
-                      </span>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className={`p-2 rounded-xl shrink-0 ${isEnabled ? 'bg-blue-600/10 text-blue-400' : 'bg-white/5 text-slate-500'}`}>
+                        <mod.icon className="w-4.5 h-4.5" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="text-[11px] font-black text-white uppercase tracking-wider block">{mod.title}</span>
+                        <span className="text-[9px] text-slate-500 font-bold uppercase tracking-tight block truncate mt-0.5">{mod.desc}</span>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-400 mt-1 leading-relaxed">{mod.desc}</p>
+                    <div>
+                      <div className={`w-8 h-4 rounded-full p-0.5 transition-colors flex items-center ${isEnabled ? 'bg-blue-600 justify-end' : 'bg-slate-700 justify-start'}`}>
+                        <div className="w-3 h-3 rounded-full bg-white transition-transform shadow-sm"></div>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </Card>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* Simulador de Usuário & Permissões */}
@@ -536,6 +590,7 @@ export default function ConfigModulosDemos() {
           </Card>
         </div>
       </div>
+      )}
     </div>
   );
 }
