@@ -265,27 +265,26 @@ export default function Layout() {
         transition-all duration-300 ease-in-out border-r border-white/10 bg-[var(--color-dark-bg)] flex flex-col shrink-0
       `}
       >
-        <div className="h-20 flex items-center justify-center px-2 py-2 border-b border-white/5 shrink-0">
+        <div className="sidebar-logo-header h-20 flex items-center justify-center px-2 py-2 border-b border-white/5 shrink-0 bg-[#0B1120]">
           <Link
             to="/app"
             className={`logo-image-container flex items-center justify-center w-full h-full ${isSidebarCollapsed ? "mx-auto" : ""}`}
           >
             {isSidebarCollapsed ? (
-              <div className={`w-8 h-8 rounded-lg flex items-center justify-center p-1 ${theme === 'dark' ? 'bg-white' : 'bg-white border'}`}>
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center p-1 bg-[#0B1120]">
                 <img
-                  src={theme === 'dark' ? logoDarkIcon : logoLightIcon}
+                  src={logoDarkIcon}
                   alt="Axis"
-                  className={`w-full h-full object-contain ${theme === 'dark' ? 'mix-blend-screen' : ''}`}
+                  className="w-full h-full object-contain mix-blend-screen"
                   referrerPolicy="no-referrer"
                 />
               </div>
             ) : (
-              <div className={`relative w-full h-full flex items-center justify-center rounded-xl overflow-hidden px-2 ${theme === 'dark' ? 'bg-[#0B1120]' : 'bg-transparent'}`}>
+              <div className="relative w-full h-full flex items-center justify-center rounded-xl overflow-hidden px-2 bg-[#0B1120]">
                 <img
-                  src={theme === 'dark' ? logoDarkFull : logoLightFull}
+                  src={logoDarkFull}
                   alt="Axis"
-                  title="Axis CRM"
-                  className={`logo-container object-contain w-full h-full sm:scale-110 lg:scale-125 transition-transform ${theme === 'dark' ? 'mix-blend-screen' : ''}`}
+                  className="logo-container"
                   referrerPolicy="no-referrer"
                 />
               </div>

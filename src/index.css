@@ -159,8 +159,8 @@ html.light [class*="border-slate-800"] {
   border-color: #E2E8F0 !important;
 }
 
-html.light [class*="text-slate-400"] {
-  color: #64748B !important;
+html.light [class*="text-slate-400"], html.light [class*="text-slate-500"] {
+  color: #334155 !important; /* Cor mais forte para maior visibilidade de ícones como o Sininho */
 }
 
 html.light [class*="text-white"], 
@@ -168,6 +168,22 @@ html.light [class*="text-[#F8FAFC]"],
 html.light [class*="text-slate-200"], 
 html.light [class*="text-slate-300"] {
   color: #0F172A !important;
+}
+
+
+
+/* PROTEGER HEADER DA LOGO
+   O usuário solicitou que a logo seja exatamente a mesma (Dark).
+   Então blindamos a div da logo para manter seu background original e cancelar os overrides.
+*/
+html.light .sidebar-logo-header,
+html.light .sidebar-logo-header div {
+  background-color: #0B1120 !important;
+  background-image: none !important;
+}
+
+html.light .sidebar-logo-header img {
+  filter: none !important;
 }
 
 /* Preservar textos brancos em botões coloridos */
