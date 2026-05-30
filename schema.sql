@@ -24,7 +24,7 @@ $$ language 'plpgsql';
 -- 1. TENANTS & CORE CONFIGURATIONS
 -- ==========================================
 
-CREATE TABLE tenants (
+CREATE TABLE IF NOT EXISTS tenants (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     niche VARCHAR(100) NOT NULL, -- e.g., 'apple', 'solar', 'imobiliaria', 'clinica', 'educacao'
@@ -55,14 +55,14 @@ CREATE TABLE tenants (
 );
 
 -- Index for searching active/suspended tenants
-CREATE INDEX idx_tenants_status_active ON tenants (status) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_tenants_status_active ON tenants (status) WHERE deleted_at IS NULL;
 
 
 -- ==========================================
 -- 2. WHATSAPP INSTANCES (Multi-Number Support)
 -- ==========================================
 
-CREATE TABLE whatsapp_instances (
+CREATE TABLE IF NOT EXISTS whatsapp_instances (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL, -- Ex: "Atendimento Geral", "SDR João", "Suporte"
@@ -79,6 +79,7 @@ CREATE TABLE whatsapp_instances (
     UNIQUE(tenant_id, evolution_api_instance_name)
 );
 
+DROP TRIGGER IF EXISTS update_whatsapp_instances_modtime ON whatsapp_instances;
 CREATE TRIGGER update_whatsapp_instances_modtime 
     BEFORE UPDATE ON whatsapp_instances 
     FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
@@ -88,7 +89,7 @@ CREATE TRIGGER update_whatsapp_instances_modtime
 -- 3. USERS & ACCESS CONTROL (CRM Roles)
 -- ==========================================
 
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     default_whatsapp_instance_id UUID REFERENCES whatsapp_instances(id) ON DELETE SET NULL, -- Número padrão q o usuário usa
@@ -110,19 +111,20 @@ CREATE TABLE users (
     UNIQUE(tenant_id, email)
 );
 
+DROP TRIGGER IF EXISTS update_users_modtime ON users;
 CREATE TRIGGER update_users_modtime 
     BEFORE UPDATE ON users 
     FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 
 -- Partial index for active users lookup during logins or context builds
-CREATE INDEX idx_users_active_lookup ON users (tenant_id, email) WHERE deleted_at IS NULL AND active = true;
+CREATE INDEX IF NOT EXISTS idx_users_active_lookup ON users (tenant_id, email) WHERE deleted_at IS NULL AND active = true;
 
 
 -- ==========================================
 -- 4. PIPELINES & WORKFLOWS (Kanban stages)
 -- ==========================================
 
-CREATE TABLE pipelines (
+CREATE TABLE IF NOT EXISTS pipelines (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
@@ -131,7 +133,7 @@ CREATE TABLE pipelines (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE stages (
+CREATE TABLE IF NOT EXISTS stages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     pipeline_id UUID NOT NULL REFERENCES pipelines(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
@@ -143,14 +145,14 @@ CREATE TABLE stages (
 );
 
 -- Indexes for pipeline performance (Kanban generation speed)
-CREATE INDEX idx_stages_pipeline_order ON stages (pipeline_id, "order" ASC);
+CREATE INDEX IF NOT EXISTS idx_stages_pipeline_order ON stages (pipeline_id, "order" ASC);
 
 
 -- ==========================================
 -- 5. PRODUCTS / CATÁLOGO 
 -- ==========================================
 
-CREATE TABLE products (
+CREATE TABLE IF NOT EXISTS products (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
@@ -164,6 +166,7 @@ CREATE TABLE products (
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
+DROP TRIGGER IF EXISTS update_products_modtime ON products;
 CREATE TRIGGER update_products_modtime 
     BEFORE UPDATE ON products 
     FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
@@ -173,7 +176,7 @@ CREATE TRIGGER update_products_modtime
 -- 6. LEADS & CAPTURES (Pipeline Core)
 -- ==========================================
 
-CREATE TABLE leads (
+CREATE TABLE IF NOT EXISTS leads (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     pipeline_id UUID REFERENCES pipelines(id) ON DELETE SET NULL,
@@ -212,23 +215,24 @@ CREATE TABLE leads (
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
+DROP TRIGGER IF EXISTS update_leads_modtime ON leads;
 CREATE TRIGGER update_leads_modtime 
     BEFORE UPDATE ON leads 
     FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 
 -- Performance Indexes optimized for high-volume reads (e.g. Kanban boards and tables)
-CREATE INDEX idx_leads_composite_kanban ON leads (tenant_id, pipeline_id, stage_id) WHERE deleted_at IS NULL;
-CREATE INDEX idx_leads_primary_filters ON leads (tenant_id, status, created_at DESC) WHERE deleted_at IS NULL;
-CREATE INDEX idx_leads_sdr_ia_lookup ON leads (sdr_ia_id, tenant_id) WHERE deleted_at IS NULL AND status = 'Open';
-CREATE INDEX idx_leads_seller_lookup ON leads (seller_id, tenant_id) WHERE deleted_at IS NULL AND status = 'Open';
-CREATE INDEX idx_leads_document_search ON leads (tenant_id, document_id) WHERE deleted_at IS NULL AND document_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_leads_composite_kanban ON leads (tenant_id, pipeline_id, stage_id) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_leads_primary_filters ON leads (tenant_id, status, created_at DESC) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_leads_sdr_ia_lookup ON leads (sdr_ia_id, tenant_id) WHERE deleted_at IS NULL AND status = 'Open';
+CREATE INDEX IF NOT EXISTS idx_leads_seller_lookup ON leads (seller_id, tenant_id) WHERE deleted_at IS NULL AND status = 'Open';
+CREATE INDEX IF NOT EXISTS idx_leads_document_search ON leads (tenant_id, document_id) WHERE deleted_at IS NULL AND document_id IS NOT NULL;
 
 
 -- ==========================================
 -- 7. SEGMENTATIONS & AD-HOC DATA
 -- ==========================================
 
-CREATE TABLE tags (
+CREATE TABLE IF NOT EXISTS tags (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name VARCHAR(100) NOT NULL,
@@ -236,15 +240,15 @@ CREATE TABLE tags (
     UNIQUE(tenant_id, name)
 );
 
-CREATE TABLE lead_tags (
+CREATE TABLE IF NOT EXISTS lead_tags (
     lead_id UUID NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
     tag_id UUID NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
     PRIMARY KEY(lead_id, tag_id)
 );
 
-CREATE INDEX idx_lead_tags_tag_id ON lead_tags (tag_id);
+CREATE INDEX IF NOT EXISTS idx_lead_tags_tag_id ON lead_tags (tag_id);
 
-CREATE TABLE custom_fields (
+CREATE TABLE IF NOT EXISTS custom_fields (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     entity_type VARCHAR(50) DEFAULT 'lead', -- lead, contract, user, product
@@ -253,7 +257,7 @@ CREATE TABLE custom_fields (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE lead_custom_values (
+CREATE TABLE IF NOT EXISTS lead_custom_values (
     lead_id UUID NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
     custom_field_id UUID NOT NULL REFERENCES custom_fields(id) ON DELETE CASCADE,
     value TEXT,
@@ -265,7 +269,7 @@ CREATE TABLE lead_custom_values (
 -- 8. INTERACTIONS, ACTIVITY LOGS & MESSAGES
 -- ==========================================
 
-CREATE TABLE interactions (
+CREATE TABLE IF NOT EXISTS interactions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     lead_id UUID NOT NULL REFERENCES leads(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
@@ -277,10 +281,10 @@ CREATE TABLE interactions (
 );
 
 -- Fast lookup index for historic chronologies of a lead
-CREATE INDEX idx_interactions_chronology ON interactions (lead_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_interactions_chronology ON interactions (lead_id, created_at DESC);
 
 -- Real-time WhatsApp Chat History (Multi-instance aware)
-CREATE TABLE messages (
+CREATE TABLE IF NOT EXISTS messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     lead_id UUID REFERENCES leads(id) ON DELETE SET NULL,
@@ -297,16 +301,16 @@ CREATE TABLE messages (
 );
 
 -- Performance tuning indices for real-time mobile messaging logs and loads
-CREATE INDEX idx_messages_lead_feed ON messages (lead_id, created_at DESC);
-CREATE INDEX idx_messages_external_sync ON messages (tenant_id, external_id) WHERE external_id IS NOT NULL;
-CREATE INDEX idx_messages_instance_lookup ON messages (whatsapp_instance_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_lead_feed ON messages (lead_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_external_sync ON messages (tenant_id, external_id) WHERE external_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_messages_instance_lookup ON messages (whatsapp_instance_id, created_at DESC);
 
 
 -- ==========================================
 -- 9. CONTRATOS, VENDAS & METAS FINANCEIRAS
 -- ==========================================
 
-CREATE TABLE contracts (
+CREATE TABLE IF NOT EXISTS contracts (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     lead_id UUID REFERENCES leads(id) ON DELETE SET NULL,
@@ -330,16 +334,17 @@ CREATE TABLE contracts (
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
+DROP TRIGGER IF EXISTS update_contracts_modtime ON contracts;
 CREATE TRIGGER update_contracts_modtime 
     BEFORE UPDATE ON contracts 
     FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 
 -- Metrics and Finance performance indexes
-CREATE INDEX idx_contracts_revenue_dashboard ON contracts (tenant_id, status, mrr_value) WHERE deleted_at IS NULL;
-CREATE INDEX idx_contracts_agent_lookup ON contracts (user_id, status) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_contracts_revenue_dashboard ON contracts (tenant_id, status, mrr_value) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_contracts_agent_lookup ON contracts (user_id, status) WHERE deleted_at IS NULL;
 
 -- Monthly Business and Squad targets
-CREATE TABLE financial_goals (
+CREATE TABLE IF NOT EXISTS financial_goals (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     squad_name VARCHAR(255) NOT NULL,
@@ -350,14 +355,14 @@ CREATE TABLE financial_goals (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_financial_goals_lookup ON financial_goals (tenant_id, valid_month DESC);
+CREATE INDEX IF NOT EXISTS idx_financial_goals_lookup ON financial_goals (tenant_id, valid_month DESC);
 
 
 -- ==========================================
 -- 10. TASKS, SLA & ALERTS
 -- ==========================================
 
-CREATE TABLE tasks (
+CREATE TABLE IF NOT EXISTS tasks (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     lead_id UUID REFERENCES leads(id) ON DELETE SET NULL,
@@ -377,19 +382,20 @@ CREATE TABLE tasks (
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
+DROP TRIGGER IF EXISTS update_tasks_modtime ON tasks;
 CREATE TRIGGER update_tasks_modtime 
     BEFORE UPDATE ON tasks 
     FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 
 -- Indexing for agents pending task lists
-CREATE INDEX idx_tasks_pending_schedule ON tasks (assigned_to, status, due_date ASC) WHERE deleted_at IS NULL AND status != 'Done';
+CREATE INDEX IF NOT EXISTS idx_tasks_pending_schedule ON tasks (assigned_to, status, due_date ASC) WHERE deleted_at IS NULL AND status != 'Done';
 
 
 -- ==========================================
 -- 11. API INTEGRATIONS, WEBHOOKS & TELEMETRY
 -- ==========================================
 
-CREATE TABLE webhooks (
+CREATE TABLE IF NOT EXISTS webhooks (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     event VARCHAR(100) NOT NULL, -- lead_created, deal_won, lead_score_low, etc.
@@ -399,10 +405,10 @@ CREATE TABLE webhooks (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_webhooks_active_triggers ON webhooks (tenant_id, event) WHERE active = true;
+CREATE INDEX IF NOT EXISTS idx_webhooks_active_triggers ON webhooks (tenant_id, event) WHERE active = true;
 
 -- Telemetry log table (Fast accumulation, self-purging database target)
-CREATE TABLE webhook_logs (
+CREATE TABLE IF NOT EXISTS webhook_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     webhook_id UUID REFERENCES webhooks(id) ON DELETE CASCADE,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
@@ -412,10 +418,10 @@ CREATE TABLE webhook_logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_webhook_logs_lookup ON webhook_logs (tenant_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_webhook_logs_lookup ON webhook_logs (tenant_id, created_at DESC);
 
 -- Real-time user alert inboxes
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     user_id UUID REFERENCES users(id) ON DELETE CASCADE,
@@ -429,13 +435,13 @@ CREATE TABLE notifications (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_notifications_user_unread ON notifications (user_id, is_read, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications (user_id, is_read, created_at DESC);
 
 -- ==========================================
 -- 12. AI KNOWLEDGE BASE (RAG & Context)
 -- ==========================================
 
-CREATE TABLE ai_knowledge_base (
+CREATE TABLE IF NOT EXISTS ai_knowledge_base (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
@@ -446,6 +452,7 @@ CREATE TABLE ai_knowledge_base (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+DROP TRIGGER IF EXISTS update_ai_knowledge_modtime ON ai_knowledge_base;
 CREATE TRIGGER update_ai_knowledge_modtime 
     BEFORE UPDATE ON ai_knowledge_base 
     FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
@@ -455,7 +462,7 @@ CREATE TRIGGER update_ai_knowledge_modtime
 -- ==========================================
 
 -- Traffic Campaigns (Ads)
-CREATE TABLE marketing_campaigns (
+CREATE TABLE IF NOT EXISTS marketing_campaigns (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
@@ -473,14 +480,15 @@ CREATE TABLE marketing_campaigns (
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
+DROP TRIGGER IF EXISTS update_marketing_campaigns_modtime ON marketing_campaigns;
 CREATE TRIGGER update_marketing_campaigns_modtime 
     BEFORE UPDATE ON marketing_campaigns 
     FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 
-CREATE INDEX idx_marketing_campaigns_lookup ON marketing_campaigns (tenant_id, status) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_marketing_campaigns_lookup ON marketing_campaigns (tenant_id, status) WHERE deleted_at IS NULL;
 
 -- Content Production
-CREATE TABLE marketing_content (
+CREATE TABLE IF NOT EXISTS marketing_content (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
@@ -498,14 +506,15 @@ CREATE TABLE marketing_content (
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
+DROP TRIGGER IF EXISTS update_marketing_content_modtime ON marketing_content;
 CREATE TRIGGER update_marketing_content_modtime 
     BEFORE UPDATE ON marketing_content 
     FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 
-CREATE INDEX idx_marketing_content_status ON marketing_content (tenant_id, status) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_marketing_content_status ON marketing_content (tenant_id, status) WHERE deleted_at IS NULL;
 
 -- Landing Pages
-CREATE TABLE marketing_landing_pages (
+CREATE TABLE IF NOT EXISTS marketing_landing_pages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     name VARCHAR(255) NOT NULL,
@@ -521,8 +530,9 @@ CREATE TABLE marketing_landing_pages (
     deleted_at TIMESTAMP WITH TIME ZONE DEFAULT NULL
 );
 
+DROP TRIGGER IF EXISTS update_marketing_landing_pages_modtime ON marketing_landing_pages;
 CREATE TRIGGER update_marketing_landing_pages_modtime 
     BEFORE UPDATE ON marketing_landing_pages 
     FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 
-CREATE INDEX idx_marketing_landing_pages_lookup ON marketing_landing_pages (tenant_id, status) WHERE deleted_at IS NULL;
+CREATE INDEX IF NOT EXISTS idx_marketing_landing_pages_lookup ON marketing_landing_pages (tenant_id, status) WHERE deleted_at IS NULL;
