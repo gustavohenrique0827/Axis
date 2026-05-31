@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { sendPushNotification } from "../lib/notifications";
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseReachable } from '../lib/supabase';
 import { Lead, Task, Contract, CustomField, LeadScoreTrigger, Squad } from '../types';
 import {
   defaultCustomLeadFields,
@@ -256,91 +256,106 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    if (!supabase) return;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
 
-    const channel = supabase.channel('global-db-changes')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'leads' }, (payload) => {
-        setLeads(prev => [payload.new as Lead, ...prev]);
-        toast.info(`Novo lead recebido: ${payload.new.name}`, { description: 'Atualizado em tempo real.' });
-      })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'leads' }, (payload) => {
-        setLeads(prev => prev.map(l => l.id === payload.new.id ? payload.new as Lead : l));
-      })
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'finance_entries' }, (payload) => {
-        setFinanceEntries(prev => [payload.new as FinanceEntry, ...prev]);
-        toast.success('Novo lançamento financeiro detectado.');
-      })
-      .subscribe();
+    async function setupRealtime() {
+      if (!supabase) return;
+      const reachable = await isSupabaseReachable();
+      if (!reachable) return;
+
+      channel = supabase.channel('global-db-changes')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'leads' }, (payload) => {
+          setLeads(prev => [payload.new as Lead, ...prev]);
+          toast.info(`Novo lead recebido: ${payload.new.name}`, { description: 'Atualizado em tempo real.' });
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'leads' }, (payload) => {
+          setLeads(prev => prev.map(l => l.id === payload.new.id ? payload.new as Lead : l));
+        })
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'finance_entries' }, (payload) => {
+          setFinanceEntries(prev => [payload.new as FinanceEntry, ...prev]);
+          toast.success('Novo lançamento financeiro detectado.');
+        })
+        .subscribe();
+    }
+
+    setupRealtime();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel && supabase) supabase.removeChannel(channel);
     };
   }, []);
 
   useEffect(() => {
     async function loadInitialData() {
-      // If Supabase is configured, always use it as the source of truth
+      // Check if Supabase is configured AND actually reachable
       if (supabase) {
-        try {
-          // Clear stale localStorage mock data so Supabase always wins
-          ['axis_leads','axis_tasks','axis_contracts','axis_lead_activities',
-           'axis_finance_entries','axis_appointments','axis_squads'].forEach(k => localStorage.removeItem(k));
+        const reachable = await isSupabaseReachable();
 
-            const [
-              leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes, 
-              notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
-              productsRes, proposalsRes, turmasRes, studentsRes, colabRes
-            ] = await Promise.all([
-              supabase.from('leads').select('*'),
-              supabase.from('tasks').select('*'),
-              supabase.from('contracts').select('*'),
-              supabase.from('lead_activities').select('*'),
-              supabase.from('finance_entries').select('*'),
-              supabase.from('appointments').select('*'),
-              supabase.from('squads').select('*'),
-              supabase.from('notifications').select('*'),
-              supabase.from('marketing_campaigns').select('*'),
-              supabase.from('marketing_content').select('*'),
-              supabase.from('marketing_landing_pages').select('*'),
-              supabase.from('app_settings').select('*'),
-              supabase.from('products').select('*'),
-              supabase.from('proposals').select('*'),
-              supabase.from('turmas').select('*'),
-              supabase.from('students').select('*'),
-              supabase.from('colaboradores').select('*')
-            ]);
+        if (!reachable) {
+          console.warn('[Axis] Supabase não está acessível (projeto pausado ou URL inválida). Usando localStorage como fallback.');
+          // Fall through to localStorage loading below
+        } else {
+          try {
+            // Clear stale localStorage mock data so Supabase always wins
+            ['axis_leads','axis_tasks','axis_contracts','axis_lead_activities',
+             'axis_finance_entries','axis_appointments','axis_squads'].forEach(k => localStorage.removeItem(k));
 
-          if (!leadsRes.error && leadsRes.data !== null) setLeads(leadsRes.data as Lead[]);
-          if (!tasksRes.error && tasksRes.data !== null) setTasks(tasksRes.data as Task[]);
-          if (!contractsRes.error && contractsRes.data !== null) setContracts(contractsRes.data as Contract[]);
-          if (!actsRes.error && actsRes.data !== null) setLeadActivities(actsRes.data as LeadActivity[]);
-          if (!financeRes.error && financeRes.data !== null) setFinanceEntries(financeRes.data as FinanceEntry[]);
-          if (!apptRes.error && apptRes.data !== null) setAppointments(apptRes.data as Appointment[]);
-          if (!squadsRes.error && squadsRes.data !== null) setSquads(squadsRes.data as Squad[]);
-          if (!notifRes.error && notifRes.data !== null && notifRes.data.length > 0) setNotifications(notifRes.data as Notification[]);
-          if (!mktCampRes.error && mktCampRes.data !== null) setMarketingCampaigns(mktCampRes.data);
-          if (!mktContRes.error && mktContRes.data !== null) setMarketingContent(mktContRes.data);
-          if (!mktLpRes.error && mktLpRes.data !== null) setMarketingLandingPages(mktLpRes.data);
-          
-          if (!productsRes.error && productsRes.data !== null) setProducts(productsRes.data);
-          if (!proposalsRes.error && proposalsRes.data !== null) setProposals(proposalsRes.data);
-          if (!turmasRes.error && turmasRes.data !== null) setTurmas(turmasRes.data);
-          if (!studentsRes.error && studentsRes.data !== null) setStudents(studentsRes.data);
-          if (!colabRes.error && colabRes.data !== null) setColaboradores(colabRes.data);
-          
-          if (!settingsRes.error && settingsRes.data !== null) {
-            settingsRes.data.forEach((setting: any) => {
-              switch (setting.key) {
-                case 'globalWebhooks': setGlobalWebhooks(setting.value); break;
-                case 'customLeadFields': setCustomLeadFields(setting.value); break;
-                case 'leadScoreTriggers': setLeadScoreTriggers(setting.value); break;
-              }
-            });
+              const [
+                leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes, 
+                notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
+                productsRes, proposalsRes, turmasRes, studentsRes, colabRes
+              ] = await Promise.all([
+                supabase.from('leads').select('*'),
+                supabase.from('tasks').select('*'),
+                supabase.from('contracts').select('*'),
+                supabase.from('lead_activities').select('*'),
+                supabase.from('finance_entries').select('*'),
+                supabase.from('appointments').select('*'),
+                supabase.from('squads').select('*'),
+                supabase.from('notifications').select('*'),
+                supabase.from('marketing_campaigns').select('*'),
+                supabase.from('marketing_content').select('*'),
+                supabase.from('marketing_landing_pages').select('*'),
+                supabase.from('app_settings').select('*'),
+                supabase.from('products').select('*'),
+                supabase.from('proposals').select('*'),
+                supabase.from('turmas').select('*'),
+                supabase.from('students').select('*'),
+                supabase.from('colaboradores').select('*')
+              ]);
+
+            if (!leadsRes.error && leadsRes.data !== null) setLeads(leadsRes.data as Lead[]);
+            if (!tasksRes.error && tasksRes.data !== null) setTasks(tasksRes.data as Task[]);
+            if (!contractsRes.error && contractsRes.data !== null) setContracts(contractsRes.data as Contract[]);
+            if (!actsRes.error && actsRes.data !== null) setLeadActivities(actsRes.data as LeadActivity[]);
+            if (!financeRes.error && financeRes.data !== null) setFinanceEntries(financeRes.data as FinanceEntry[]);
+            if (!apptRes.error && apptRes.data !== null) setAppointments(apptRes.data as Appointment[]);
+            if (!squadsRes.error && squadsRes.data !== null) setSquads(squadsRes.data as Squad[]);
+            if (!notifRes.error && notifRes.data !== null && notifRes.data.length > 0) setNotifications(notifRes.data as Notification[]);
+            if (!mktCampRes.error && mktCampRes.data !== null) setMarketingCampaigns(mktCampRes.data);
+            if (!mktContRes.error && mktContRes.data !== null) setMarketingContent(mktContRes.data);
+            if (!mktLpRes.error && mktLpRes.data !== null) setMarketingLandingPages(mktLpRes.data);
+            
+            if (!productsRes.error && productsRes.data !== null) setProducts(productsRes.data);
+            if (!proposalsRes.error && proposalsRes.data !== null) setProposals(proposalsRes.data);
+            if (!turmasRes.error && turmasRes.data !== null) setTurmas(turmasRes.data);
+            if (!studentsRes.error && studentsRes.data !== null) setStudents(studentsRes.data);
+            if (!colabRes.error && colabRes.data !== null) setColaboradores(colabRes.data);
+            
+            if (!settingsRes.error && settingsRes.data !== null) {
+              settingsRes.data.forEach((setting: any) => {
+                switch (setting.key) {
+                  case 'globalWebhooks': setGlobalWebhooks(setting.value); break;
+                  case 'customLeadFields': setCustomLeadFields(setting.value); break;
+                  case 'leadScoreTriggers': setLeadScoreTriggers(setting.value); break;
+                }
+              });
+            }
+          } catch (err) {
+            console.warn("Supabase fetch failed, keeping empty state.", err);
           }
-        } catch (err) {
-          console.warn("Supabase fetch failed, keeping empty state.", err);
+          return; // exit early — Supabase loaded successfully
         }
-        return;
       }
 
       // Fallback: no Supabase — use localStorage only
