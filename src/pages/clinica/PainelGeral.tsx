@@ -57,7 +57,16 @@ export default function ClinicasDashboard() {
 
   const occupancyPct = totalAppointments > 0 ? Math.min(100, Math.round((confirmed / totalAppointments) * 100)) : 0;
 
-  const stats = [
+  type Stat = {
+    label: string;
+    value: string;
+    trend: string | null;
+    icon: React.ComponentType<{ className?: string }>;
+    color: string;
+    bg: string;
+  };
+
+  const stats: Stat[] = [
     { label: "Agendamentos (Total)", value: totalAppointments.toString(), trend: null, icon: Calendar, color: "text-emerald-400", bg: "bg-emerald-500/10" },
     { label: "Confirmados / Ativos", value: confirmed.toString(), trend: null, icon: TrendingUp, color: "text-blue-400", bg: "bg-blue-500/10" },
     { label: "Finalizados", value: finalized.toString(), trend: null, icon: Users, color: "text-purple-400", bg: "bg-purple-500/10" },

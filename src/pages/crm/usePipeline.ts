@@ -60,14 +60,15 @@ export function usePipeline() {
 
   const activePipelineStages = useMemo(() => {
     return (currentPipeline === 'sdr' && isSdrEnabled) 
-      ? sdrStages.filter(s => s.type === 'sdr_ia') 
-      : stages.filter(s => s.type === 'comercial');
+      ? sdrStages.filter((s) => s.type === 'sdr_ia') 
+      : stages.filter((s: any) => s.type === 'comercial');
   }, [currentPipeline, isSdrEnabled, stages]);
+
 
   const sellers = useMemo(() => ["Todos", ...Array.from(new Set(leads.map(l => l.seller).filter(Boolean)))], [leads]);
   const allSellersFullList = useMemo(() => Array.from(new Set(["Carlos Eduardo Mendes", "Ana Silva", "Roberto Ramos", "Juliana Costa", ...sellers.filter(s => s !== "Todos")])), [sellers]);
 
-  const filteredItemsList = useMemo(() => leads.filter(item => {
+  const filteredItemsList = useMemo(() => leads.filter((item: any) => {
     const matchesTenant = !isMaster || tenantFilter === "Todos" || item.tenantName === tenantFilter;
     const matchesPipeline = (currentPipeline === 'sdr' && isSdrEnabled)
       ? item.pipelineId === 'sdr'
@@ -79,12 +80,14 @@ export function usePipeline() {
     return matchesTenant && matchesPipeline && matchesSeller && matchesSearch;
   }), [leads, currentPipeline, isSdrEnabled, sellerFilter, searchQuery, tenantFilter, isMaster]);
 
+
   const analyticsData = useMemo(() => {
-    return activePipelineStages.map(s => ({
+    return activePipelineStages.map((s: { name: any; id: string; color: any; }) => ({
       name: s.name,
-      value: filteredItemsList.filter(l => l.stageId === s.id).length,
+      value: filteredItemsList.filter((l: any) => l.stageId === s.id).length,
       color: s.color
     }));
+
   }, [activePipelineStages, filteredItemsList]);
 
   const totalValueSum = filteredItemsList.reduce((sum, item) => {
@@ -99,7 +102,8 @@ export function usePipeline() {
   }).format(totalValueSum);
 
   const totalLeadsCount = filteredItemsList.length;
-  const closedWonCount = filteredItemsList.filter(l => l.stageId === '5' || l.stageId === 'sdr-5' || l.status === "Fechado").length;
+  const closedWonCount = filteredItemsList.filter((l: any) => l.stageId === '5' || l.stageId === 'sdr-5' || l.status === "Fechado").length;
+
   const winRate = totalLeadsCount > 0 ? Math.round((closedWonCount / totalLeadsCount) * 100) : 0;
 
   const triggerCelebration = () => {
@@ -112,19 +116,21 @@ export function usePipeline() {
   };
 
   const exportPDF = () => {
+
     const doc = new jsPDF();
     doc.setFontSize(18);
     doc.text(`Relatório de Pipeline - ${currentPipeline === 'sdr' ? 'SDR' : 'Comercial'}`, 14, 22);
     doc.setFontSize(10);
     doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 14, 30);
     
-    const tableData = filteredItemsList.map(l => [
-      l.name,
-      l.company,
-      activePipelineStages.find(s => s.id === l.stageId)?.name || "Sem Fase",
-      l.value,
-      l.seller
+    const tableData: string[][] = filteredItemsList.map((l: any) => [
+      String(l.name ?? ""),
+      String(l.company ?? ""),
+      String(activePipelineStages.find((s: { id: string; }) => s.id === l.stageId)?.name ?? "Sem Fase"),
+      String(l.value ?? ""),
+      String(l.seller ?? "")
     ]);
+
 
     autoTable(doc, {
       startY: 40,
@@ -139,7 +145,7 @@ export function usePipeline() {
   };
 
   const auditStageWithAI = async (stageId: string) => {
-    const stage = activePipelineStages.find(s => s.id === stageId);
+    const stage = activePipelineStages.find((s: { id: string; }) => s.id === stageId);
     const stageLeads = filteredItemsList.filter(l => l.stageId === stageId);
     
     toast.promise(
@@ -187,14 +193,20 @@ export function usePipeline() {
     doc.text("Últimas 5 Atividades do CRM:", 14, nextY);
     nextY += 8;
 
-    const leadTasks = tasks.filter(t => t.related === lead.name || t.related === lead.company).slice(0, 5);
+    const leadTasks = tasks.filter((t: any) => t.related === lead.name || t.related === lead.company).slice(0, 5);
+
 
     if (leadTasks.length === 0) {
       doc.setFont("helvetica", "normal");
       doc.setFontSize(10);
       doc.text("Nenhuma atividade recente encontrada.", 14, nextY);
     } else {
-      const tableData = leadTasks.map(t => [t.date || "Recente", t.desc, t.status]);
+      const tableData: string[][] = leadTasks.map((t: any) => [
+        String(t.date ?? "Recente"),
+        String(t.desc ?? ""),
+        String(t.status ?? "")
+      ]);
+
       autoTable(doc, {
         startY: nextY,
         head: [['Data', 'Atividade', 'Status']],
