@@ -40,14 +40,6 @@ interface ChatMessage {
   timestamp: number;
 }
 
-interface ChatbotRule {
-  id: string;
-  trigger: string;
-  response: string;
-  matchType: "equals" | "contains";
-  active: boolean;
-}
-
 // In-Memory Database State
 let instances: WhatsAppInstance[] = [
   {
@@ -64,12 +56,6 @@ let instances: WhatsAppInstance[] = [
 let contacts: ChatContact[] = [];
 
 let messages: Record<string, ChatMessage[]> = {};
-
-let chatbotRules: ChatbotRule[] = [
-  { id: "rule_1", trigger: "olá", response: "Olá! Seja muito bem-vindo ao Axis CRM 🚀\nComo podemos te ajudar hoje?\n\nDigite o número da opção desejada:\n1️⃣ Conhecer nossos Serviços\n2️⃣ Falar com setor Comercial\n3️⃣ Suporte Técnico\n4️⃣ Financeiro", matchType: "contains", active: true },
-  { id: "rule_2", trigger: "preço", response: "Nossos planos começam em R$ 99/mês para o plano Starter, R$ 249/mês no plano Pro e Enterprise sob consulta!\n\nGostaria de agendar uma reunião comercial para demonstração do sistema?", matchType: "contains", active: true },
-  { id: "rule_3", trigger: "suporte", response: "Você selecionou Suporte Técnico. Para acelerar seu atendimento, digite seu CNPJ ou e-mail de cadastro, por favor.", matchType: "contains", active: true }
-];
 
 async function startServer() {
   const app = express();
@@ -324,6 +310,140 @@ async function startServer() {
     });
   });
 
+  // Auditoria de Performance e Negócios
+  app.post("/api/ai/performance-audit", async (req, res) => {
+    const { mrr, cac, ltv, leadsCount, dealsCount } = req.body;
+
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: "Chave de IA não configurada." });
+    }
+
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `Você é o Master IA do Axis CRM. Analise estes indicadores:
+        MRR: ${mrr}, CAC: ${cac}, LTV: ${ltv}, Leads: ${leadsCount}, Fechamentos: ${dealsCount}.
+
+        Gere 3 recomendações estratégicas baseadas em dados para otimizar o ROI.
+        Retorne estritamente um JSON array de objetos: [{"title": string, "desc": string, "impact": string, "color": "text-blue-400" | "text-emerald-400" | "text-purple-400"}].`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                title: { type: Type.STRING },
+                desc: { type: Type.STRING },
+                impact: { type: Type.STRING },
+                color: { type: Type.STRING }
+              },
+              required: ["title", "desc", "impact", "color"]
+            }
+          }
+        }
+      });
+      res.json(JSON.parse(response.text));
+    } catch (error) {
+      res.status(500).json({ error: "Falha na auditoria cerebral." });
+    }
+  });
+
+  // Auditoria de Etapa do Pipeline
+  app.post("/api/ai/pipeline-audit", async (req, res) => {
+    const { stageName, leads } = req.body;
+    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
+
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `Analise a etapa "${stageName}" do funil com estes leads:
+        ${JSON.stringify(leads.map((l: any) => ({ name: l.name, score: l.scoreIA, temp: l.temperature })))}
+        
+        Forneça um insight rápido e uma ação imediata para o vendedor.
+        Retorne JSON: {"insight": string, "action": string}.`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              insight: { type: Type.STRING },
+              action: { type: Type.STRING }
+            },
+            required: ["insight", "action"]
+          }
+        }
+      });
+      res.json(JSON.parse(response.text));
+    } catch (error) {
+      res.status(500).json({ error: "Falha ao auditar funil." });
+    }
+  });
+
+  // Recomendação de Marketing (Canais e Verba)
+  app.post("/api/ai/marketing-advisor", async (req, res) => {
+    const { leads, spent } = req.body;
+    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
+
+    try {
+      const sourceData = leads.reduce((acc: any, l: any) => {
+        const src = l.source || 'Orgânico';
+        acc[src] = (acc[src] || 0) + 1;
+        return acc;
+      }, {});
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `Análise de Marketing:
+        Gasto Total: R$ ${spent}
+        Conversão por Origem: ${JSON.stringify(sourceData)}
+        
+        Sugira onde realocar verba para diminuir o CAC.
+        Retorne JSON: {"suggestion": string, "rationale": string}.`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              suggestion: { type: Type.STRING },
+              rationale: { type: Type.STRING }
+            },
+            required: ["suggestion", "rationale"]
+          }
+        }
+      });
+      res.json(JSON.parse(response.text));
+    } catch (error) {
+      res.status(500).json({ error: "Falha na análise de marketing." });
+    }
+  });
+
+  // Endpoint de Insights Genéricos para a "IA em todo Axis"
+  app.post("/api/ai/generic-insight", async (req, res) => {
+    const { context, data } = req.body;
+
+    if (!process.env.GEMINI_API_KEY) {
+      return res.json({ insight: "A Master IA está em modo offline no momento. Conecte sua API Key para obter insights estratégicos." });
+    }
+
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `Você é o cérebro analítico do Axis CRM. 
+        Contexto da solicitação: ${context}.
+        Dados brutos para análise: ${JSON.stringify(data)}.
+
+        Sua tarefa: Forneça um insight estratégico curto, direto e acionável em português (máximo 3 frases). 
+        Foque em melhoria de ROI, conversão ou retenção.`,
+      });
+      
+      res.json({ insight: response.text });
+    } catch (error) {
+      console.error("Erro na Master IA:", error);
+      res.status(500).json({ error: "Falha ao processar insight cerebral." });
+    }
+  });
+
   // =========================================================================
   // 1. EVOLUTION API INSTANCES ENDPOINTS
   // =========================================================================
@@ -510,51 +630,6 @@ async function startServer() {
     }
 
     res.json({ success: true, message: userMsg });
-
-    // AI/Auto-Responder simulation trigger:
-    // Process chatbot trigger if rule matched
-    const loweredText = text.toLowerCase();
-    const matchedRule = chatbotRules.find(r => {
-      if (!r.active) return false;
-      if (r.matchType === "equals") {
-        return loweredText === r.trigger.toLowerCase();
-      } else {
-        return loweredText.includes(r.trigger.toLowerCase());
-      }
-    });
-
-    // Chatbot logic with Supabase persistence
-    if (matchedRule && supabase) {
-      const autoReply = {
-        id: "msg_bot_" + Math.random().toString(36).substring(2, 9),
-        text: matchedRule.response,
-        sender: "them" as const,
-        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        timestamp: Date.now(),
-        status: "read" as const
-      };
-      await supabase.from('chat_messages').insert([{ ...autoReply, contact_id: contactId }]);
-    }
-
-    if (matchedRule) {
-      setTimeout(() => {
-        const autoReply: ChatMessage = {
-          id: "msg_bot_" + Math.random().toString(36).substring(2, 9),
-          text: matchedRule.response,
-          sender: "them",
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          timestamp: Date.now(),
-          status: "read"
-        };
-        messages[contactId].push(autoReply);
-
-        if (contact) {
-          contact.lastMessage = matchedRule.response;
-          contact.time = autoReply.time;
-          contact.unread = contact.unread + 1;
-        }
-      }, 1500);
-    }
   });
 
   // Simulated Webhook triggers from outside (Simulation panel)
@@ -600,84 +675,6 @@ async function startServer() {
     }
 
     res.json({ message: inMsg, contact });
-
-    // Check Chatbot Rules for the simulated incoming message
-    const loweredText = text.toLowerCase();
-    const matchedRule = chatbotRules.find(r => {
-      if (!r.active) return false;
-      if (r.matchType === "equals") {
-        return loweredText === r.trigger.toLowerCase();
-      } else {
-        return loweredText.includes(r.trigger.toLowerCase());
-      }
-    });
-
-    if (matchedRule) {
-      setTimeout(() => {
-        const autoReply: ChatMessage = {
-          id: "msg_bot_" + Math.random().toString(36).substring(2, 9),
-          text: matchedRule.response,
-          sender: "them", // Wait! Automatic replies are sent by ME (our business)
-          time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          timestamp: Date.now(),
-          status: "read"
-        };
-        messages[contactId].push(autoReply);
-        contact.lastMessage = matchedRule.response;
-        contact.time = autoReply.time;
-      }, 1500);
-    }
-  });
-
-  // =========================================================================
-  // 4. CHATBOT RULES ENDPOINTS
-  // =========================================================================
-  app.get("/api/whatsapp/chatbot/rules", async (req, res) => {
-    if (supabase) {
-      const { data } = await supabase.from('chatbot_rules').select('*');
-      if (data) return res.json(data);
-    }
-    res.json(chatbotRules);
-  });
-
-  app.post("/api/whatsapp/chatbot/rules", (req, res) => {
-    const { trigger, response, matchType = "contains" } = req.body;
-    if (!trigger || !response) {
-      return res.status(400).json({ error: "Gatilho e Resposta são obrigatórios" });
-    }
-
-    const newRule: ChatbotRule = {
-      id: "rule_" + Math.random().toString(36).substring(2, 9),
-      trigger,
-      response,
-      matchType,
-      active: true
-    };
-    chatbotRules.push(newRule);
-    res.json(newRule);
-  });
-
-  app.put("/api/whatsapp/chatbot/rules/:id", (req, res) => {
-    const { id } = req.params;
-    const { trigger, response, matchType, active } = req.body;
-
-    const rule = chatbotRules.find(r => r.id === id);
-    if (!rule) {
-      return res.status(404).json({ error: "Regra não encontrada" });
-    }
-
-    if (trigger !== undefined) rule.trigger = trigger;
-    if (response !== undefined) rule.response = response;
-    if (matchType !== undefined) rule.matchType = matchType;
-    if (active !== undefined) rule.active = active;
-
-    res.json(rule);
-  });
-
-  app.delete("/api/whatsapp/chatbot/rules/:id", (req, res) => {
-    const { id } = req.params;
-    chatbotRules = chatbotRules.filter(r => r.id !== id);
-    res.json({ success: true, id });
   });
 
   // =========================================================================

@@ -78,6 +78,7 @@ export interface DataContextType {
   markNotificationAsRead: (id: string) => void;
   markAllNotificationsAsRead: () => void;
   addLeadActivity: (leadId: string, type: 'Ligação' | 'E-mail' | 'Reunião' | 'Outro', title: string, description: string, seller: string, customDate?: string, files?: { name: string; size: string; }[]) => void;
+  getSmartInsight: (context: string, data: any) => Promise<string>;
   addFinanceEntry: (entry: Omit<FinanceEntry, 'id'>) => void;
   deleteFinanceEntry: (id: string) => void;
   updateFinanceEntry: (id: string, updates: Partial<FinanceEntry>) => void;
@@ -102,9 +103,13 @@ export interface DataContextType {
   updateSquad: (id: string, updates: Partial<Squad>) => void;
   addSquad: (squad: Omit<Squad, 'id'>) => void;
   deleteSquad: (id: string) => void;
-  
+
   marketingAutomations: any[];
   setMarketingAutomations: (v: any[]) => void;
+  addMarketingAutomation: (v: any) => void;
+  updateMarketingAutomation: (id: string, updates: any) => void;
+  deleteMarketingAutomation: (id: string) => void;
+
   marketingContent: any[];
   setMarketingContent: (v: any[]) => void;
   addMarketingContent: (c: any) => void;
@@ -149,6 +154,9 @@ export interface DataContextType {
   deleteColaborador: (id: string) => void;
   squadMetas: any[];
   setSquadMetas: (v: any[]) => void;
+  addSquadMeta: (v: any) => void;
+  updateSquadMeta: (id: string, updates: any) => void;
+  deleteSquadMeta: (id: string) => void;
 }
 
 export const DataContext = createContext<DataContextType | undefined>(undefined);

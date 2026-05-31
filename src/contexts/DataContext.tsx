@@ -906,6 +906,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     triggerScoreRecalculation(leadId, leads, updatedActivities);
   };
 
+  const getSmartInsight = async (context: string, data: any): Promise<string> => {
+    try {
+      const response = await fetch("/api/ai/generic-insight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ context, data })
+      });
+      if (!response.ok) throw new Error("IA offline");
+      const result = await response.json();
+      return result.insight || "Análise concluída com sucesso.";
+    } catch (err) {
+      return "Erro na conexão com o motor neural da Master IA.";
+    }
+  };
+
   const createCrudHelper = (tableName: string, stateSetter: React.Dispatch<React.SetStateAction<any[]>>) => {
     return {
       add: async (item: any) => {
@@ -940,6 +955,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const mktCampCrud = createCrudHelper('marketing_campaigns', setMarketingCampaigns);
   const mktContCrud = createCrudHelper('marketing_content', setMarketingContent);
   const mktLpCrud = createCrudHelper('marketing_landing_pages', setMarketingLandingPages);
+  const mktAutoCrud = createCrudHelper('marketing_automations', setMarketingAutomations);
+  const squadMetaCrud = createCrudHelper('squad_metas', setSquadMetas);
 
   const addFinanceEntry = async (entry: Omit<FinanceEntry, 'id'>) => {
     const newEntry = { ...entry, id: `f${Math.random().toString(36).substring(2, 9)}` };
@@ -1028,6 +1045,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addTask, updateTask, deleteTask, addContract, deleteContract,
       addNotification, markNotificationAsRead, markAllNotificationsAsRead,
       addLeadActivity,
+      getSmartInsight,
       addFinanceEntry, deleteFinanceEntry, updateFinanceEntry,
       addAppointment, updateAppointment, deleteAppointment,
       simulateNewLeadAssignment,
@@ -1050,6 +1068,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       deleteSquad,
       marketingAutomations,
       setMarketingAutomations,
+      addMarketingAutomation: mktAutoCrud.add,
+      updateMarketingAutomation: mktAutoCrud.update,
+      deleteMarketingAutomation: mktAutoCrud.del,
       marketingContent,
       setMarketingContent,
       addMarketingContent: mktContCrud.add,
@@ -1094,6 +1115,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       deleteColaborador: colabCrud.del,
       squadMetas,
       setSquadMetas,
+      addSquadMeta: squadMetaCrud.add,
+      updateSquadMeta: squadMetaCrud.update,
+      deleteSquadMeta: squadMetaCrud.del,
     }}>
       {children}
     </DataContext.Provider>
