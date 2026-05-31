@@ -71,7 +71,14 @@ export function useIndicadores() {
     const totalClosedValue = closedLeads.reduce((s, l) => s + (l.value || 0), 0);
     const ticketMedio = closedLeads.length > 0 ? totalClosedValue / closedLeads.length : 0;
     
-    const mrr = contracts.reduce((acc, c) => acc + (c.mrr || 0), 0) || (ticketMedio / 12);
+    const toNumberMRR = (mrr: string | number): number => {
+      if (typeof mrr === 'number') return mrr;
+      const cleaned = String(mrr).replace('R$ ', '').replace(/\./g, '').replace(',', '.');
+      const num = parseFloat(cleaned);
+      return isNaN(num) ? 0 : num;
+    };
+
+    const mrr = contracts.reduce((acc, c) => acc + (c.mrr ? toNumberMRR(c.mrr) : 0), 0) || (ticketMedio / 12);
     const ltv = mrr * 12; // LTV simples de 1 ano
     const fmt = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
 

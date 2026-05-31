@@ -30,6 +30,7 @@ export default function Dashboard() {
     salesRanking,
     funnelData,
     recentActivities,
+    churnRate,
   } = useDashboard();
 
   // Niche based Stats Calculations
@@ -55,7 +56,7 @@ export default function Dashboard() {
         { label: "Faturamento Clínico", value: "R$ 34.800", trend: "+10.4%", color: "text-rose-400", bg: "bg-rose-500/10", icon: DollarSign, forecast: "R$ 45.0k" },
         { label: "Consultas Agendadas", value: "14 Sessões", trend: "+18.2%", color: "text-pink-400", bg: "bg-pink-500/10", icon: Users, forecast: "20" },
         { label: "Tele consultas Ativas", value: "3 Salas", trend: "+50.0%", color: "text-indigo-400", bg: "bg-indigo-500/10", icon: Target, forecast: "5 Salas" },
-        { label: "Taxa Churn Pacientes", value: "1.8%", trend: "-0.5%", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: TrendingDown, forecast: "1.2%" },
+        { label: "Taxa Churn Pacientes", value: `${churnRate.toFixed(1)}%`, trend: churnRate < 2 ? "-0.5%" : "+0.5%", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: TrendingDown, forecast: "1.2%" },
       ];
     } else if (niche === "Imobiliária") {
       return [
@@ -71,9 +72,9 @@ export default function Dashboard() {
       { label: "Receita (MRR)", value: `R$ ${totalRevenue.toLocaleString('pt-BR')}`, trend: "+12.5%", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: DollarSign, forecast: "R$ 6.8k" },
       { label: "Leads Ativos", value: leads.length.toString(), trend: "+5.2%", color: "text-blue-400", bg: "bg-blue-500/10", icon: Users, forecast: "12" },
       { label: "Conversão", value: `${conversionRate}%`, trend: "+2.4%", color: "text-purple-400", bg: "bg-purple-500/10", icon: Target, forecast: "24.5%" },
-      { label: "Churn Rate", value: "3.2%", trend: "-0.4%", color: "text-rose-400", bg: "bg-rose-500/10", icon: TrendingDown, forecast: "2.9%" },
+      { label: "Taxa Churn", value: `${churnRate.toFixed(1)}%`, trend: churnRate < 2 ? "-0.5%" : "+0.5%", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: TrendingDown, forecast: "1.2%" },
     ];
-  }, [user, totalRevenue, leads, conversionRate]);
+  }, [user, totalRevenue, leads, conversionRate, churnRate]);
 
 
   return (

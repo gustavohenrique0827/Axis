@@ -27,7 +27,11 @@ export default function PerformanceIA() {
 
   const currentMRR = useMemo(() => {
     if (contracts && contracts.length > 0) {
-       return contracts.reduce((acc, c) => acc + (c.mrr || 0), 0);
+       return contracts.reduce((acc, c) => {
+         const raw = c.mrr;
+         const val = typeof raw === 'number' ? raw : parseFloat(String(raw).replace(/[^0-9.,]/g, '').replace('.', '').replace(',', '.'));
+         return acc + (isNaN(val) ? 0 : val);
+       }, 0);
     }
     // Fallback: estimativa via leads (se MRR for nulo)
     return leads.filter(l => l.status === 'Fechado').reduce((acc, l) => acc + (l.value || 0), 0) / 12; // Exemplo tosco

@@ -40,8 +40,7 @@ export function Topbar({
     notifications,
     markNotificationAsRead,
     markAllNotificationsAsRead,
-    simulateNewLeadAssignment,
-    simulateOverdueTask,
+
     theme,
     toggleTheme,
   } = useData();
@@ -148,19 +147,8 @@ export function Topbar({
                       Simulador Real-Time
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => simulateNewLeadAssignment()}
-                      className="text-[10px] font-bold text-white bg-[#2563EB]/15 hover:bg-[#2563EB]/30 border border-[#2563EB]/30 px-2 text-center py-1.5 rounded-lg transition-all"
-                    >
-                      Atribuir Lead
-                    </button>
-                    <button
-                      onClick={() => simulateOverdueTask()}
-                      className="text-[10px] font-bold text-white bg-rose-500/15 hover:bg-rose-500/30 border border-rose-500/30 px-2 text-center py-1.5 rounded-lg transition-all"
-                    >
-                      Tarefa Atrasada
-                    </button>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[9px] text-slate-400">Simulações desativadas</span>
                   </div>
                 </div>
 

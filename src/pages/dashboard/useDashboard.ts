@@ -5,7 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
 export function useDashboard() {
-  const { leads, contracts, squads, leadActivities } = useData();
+  const { leads, contracts, squads, leadActivities, appointments } = useData();
   const { isModuleEnabled, user } = useAuth();
   const [activeTab, setActiveTab] = useState<'executivo' | 'comercial' | 'sucesso' | 'marketing'>('executivo');
   const [comparisonPeriod, setComparisonPeriod] = useState<'month' | 'year'>('month');
@@ -18,7 +18,8 @@ export function useDashboard() {
   // Stats Calculations
   const totalRevenue = useMemo(() => contracts.reduce((acc, curr) => {
     try {
-      const val = parseFloat(curr.mrr.replace('R$ ', '').replace(/\./g, '').replace(',', '.'));
+      const raw = curr.mrr;
+      const val = typeof raw === 'number' ? raw : parseFloat(String(raw).replace('R$ ', '').replace(/\./g, '').replace(',', '.'));
       return acc + (isNaN(val) ? 0 : val);
     } catch(e) { return acc; }
   }, 0), [contracts]);
@@ -50,8 +51,11 @@ export function useDashboard() {
           return !isNaN(d.getTime()) && d.getFullYear() === year && d.getMonth() === month;
         } catch { return false; }
       }).reduce((sum, c) => {
-        try { return sum + parseFloat(c.mrr.replace('R$ ', '').replace(/\./g, '').replace(',', '.')); }
-        catch { return sum; }
+        try {
+          const raw = c.mrr;
+          const parsed = typeof raw === 'number' ? raw : parseFloat(String(raw).replace('R$ ', '').replace(/\./g, '').replace(',', '.'));
+          return sum + (isNaN(parsed) ? 0 : parsed);
+        } catch { return sum; }
       }, 0);
 
       return {
@@ -112,6 +116,40 @@ export function useDashboard() {
       .slice(0, 4);
   }, [leadActivities]);
 
+  // Churn Rate calculation for clinic: patients without consultation in last 90 days
+  const churnRate = useMemo(() => {
+    if (!appointments || appointments.length === 0) return 0;
+    
+    // Get unique patients and their last visit date
+    const patientMap = new Map<string, Date>();
+    appointments.forEach(a => {
+      try {
+        const appointmentDate = new Date(a.date);
+        if (!isNaN(appointmentDate.getTime())) {
+          const patientName = a.patient;
+          const existing = patientMap.get(patientName);
+          if (!existing || appointmentDate > existing) {
+            patientMap.set(patientName, appointmentDate);
+          }
+        }
+      } catch {}
+    });
+
+    const totalPatients = patientMap.size;
+    if (totalPatients === 0) return 0;
+
+    // Count patients with no visit in last 90 days
+    const now = new Date();
+    const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+    
+    const churnedPatients = Array.from(patientMap.values()).filter(
+      lastVisitDate => lastVisitDate < ninetyDaysAgo
+    ).length;
+
+    const rate = (churnedPatients / totalPatients) * 100;
+    return parseFloat(rate.toFixed(1));
+  }, [appointments]);
+
   return {
     leads,
     contracts,
@@ -130,5 +168,6 @@ export function useDashboard() {
     salesRanking,
     funnelData,
     recentActivities,
+    churnRate,
   };
 }

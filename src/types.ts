@@ -37,6 +37,7 @@ export interface LeadScoreTrigger {
 }
 
 export interface Lead {
+  createdAt?: string;
   id: string;
   name: string;
   company: string;
@@ -44,11 +45,12 @@ export interface Lead {
   email: string;
   phone: string;
   status: string;
-  value: string;
+  value: any;
   date: string;
   seller: string;
+  source?: string;
   title: string;
-  priority: 'Alta' | 'Média' | 'Baixa';
+  priority?: 'Alta' | 'Média' | 'Baixa';
   stageId: string;
   lead_interesse_cliente?: string;
   pipelineId?: 'sdr' | 'comercial';
@@ -64,14 +66,19 @@ export interface Task {
   id: string;
   title: string;
   related: string;
-  type: string;
-  date: string;
-  status: 'Atrasado' | 'Em Aberto' | 'Concluída';
-  priority: 'Alta' | 'Média' | 'Baixa';
+  type?: string;
+  date?: string;
+
+  // compat: algumas telas usam `desc`, outras usam `description`
+  description?: string;
+  desc?: string;
+  status: 'Atrasado' | 'Cancelado' | 'Em Aberto' | 'Concluída' | 'A Fazer' | 'Aguardando';
+  priority?: 'Alta' | 'Média' | 'Baixa';
   seller?: string;
   sellerId?: string;
   tags?: string[];
   relatedProductIds?: string[];
+  responsible?: string;
 }
 
 export interface Colaborador {
@@ -102,7 +109,7 @@ export interface Contract {
   id: string;
   client: string;
   plan: string;
-  mrr: string;
+  mrr: string | number;
   status: string;
   date: string;
   progress: number;

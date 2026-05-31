@@ -12,7 +12,7 @@ interface Squad {
 }
 
 interface Contract {
-  mrr: string;
+  mrr: string | number;
   status: string;
 }
 
@@ -40,8 +40,14 @@ export function StrategicalView({
   const activeMRR = contracts
     .filter(c => c.status === 'Ativo')
     .reduce((sum, c) => {
-      try { return sum + parseFloat(c.mrr.replace(/[^0-9.,]/g, '').replace(',', '.')); }
-      catch { return sum; }
+      try {
+        const raw = c.mrr;
+        const cleaned = typeof raw === 'number' ? String(raw) : raw;
+        const numeric = typeof cleaned === 'number'
+          ? cleaned
+          : parseFloat(String(cleaned).replace(/[^0-9.,]/g, '').replace(',', '.'));
+        return sum + (isNaN(numeric) ? 0 : numeric);
+      } catch { return sum; }
     }, 0);
 
   const hasSquads = squads.length > 0;

@@ -29,7 +29,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { useData } from "../../contexts/DataContext";
 
 export default function MarketingAutomacoes() {
-  const { marketingAutomations: automations, addMarketingAutomation, updateMarketingAutomation } = useData();
+  const { marketingAutomations: automations, setMarketingAutomations } = useData();
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -51,7 +51,7 @@ export default function MarketingAutomacoes() {
       status: "Rascunho",
       lastRun: "-",
     };
-    addMarketingAutomation(newAutomation);
+    setMarketingAutomations([newAutomation, ...automations]);
     setIsCreateModalOpen(false);
     setNewFlowName("");
     toast.success("Novo fluxo criado com sucesso!");
@@ -61,7 +61,7 @@ export default function MarketingAutomacoes() {
     const a = automations.find(a => a.id === id);
     if (a) {
       const nextStatus = a.status === 'Ativa' ? 'Pausada' : 'Ativa';
-      updateMarketingAutomation(id, { status: nextStatus });
+      setMarketingAutomations(automations.map(a => a.id === id ? { ...a, status: nextStatus } : a));
       toast.success(`Automação "${a.name}" ${nextStatus === 'Ativa' ? 'ativada' : 'pausada'}`);
     }
   };

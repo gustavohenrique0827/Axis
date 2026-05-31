@@ -35,7 +35,7 @@ export default function ClinicasDashboard() {
           return !isNaN(d.getTime()) && WEEKDAYS[d.getDay()] === day;
         } catch { return false; }
       });
-      const noShow = dayApts.filter(a => a.status === 'Atrasado' || a.status === 'Cancelado').length;
+      const noShow = dayApts.filter(a => a.status === 'Atrasado').length;
       return { name: day, consultas: dayApts.length, noShow };
     });
   }, [appointments]);

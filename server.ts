@@ -2,6 +2,7 @@ import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
+import { createClient } from "@supabase/supabase-js";
 
 // types for WhatsApp Business Evolution API simulator
 interface WhatsAppInstance {
@@ -74,6 +75,11 @@ async function startServer() {
   const app = express();
   const PORT = 3002;
 
+  // Supabase Client for Backend Persistence
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+  const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+
   app.use(express.json());
 
   // AI Client Initializer
@@ -90,7 +96,7 @@ async function startServer() {
   // API Route for Tag Suggestions (Existing CRM Service)
   app.post("/api/leads/suggest-tags", async (req, res) => {
     const { name, company, notes } = req.body;
-    
+
     if (!process.env.GEMINI_API_KEY) {
       return res.json({ tags: ["Interesse", "Novo Lead", "PME"] });
     }
@@ -111,7 +117,7 @@ async function startServer() {
           },
         },
       });
-      
+
       const tags = JSON.parse(response.text);
       res.json({ tags });
     } catch (error) {
@@ -140,15 +146,15 @@ async function startServer() {
       const digits = val.substring(size);
       let sum = 0;
       let pos = size - 7;
-      
+
       for (let i = size; i >= 1; i--) {
         sum += Number(numbers.charAt(size - i)) * pos--;
         if (pos < 2) pos = 9;
       }
-      
+
       let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
       if (result !== Number(digits.charAt(0))) return false;
-      
+
       size = size + 1;
       numbers = val.substring(0, size);
       sum = 0;
@@ -157,7 +163,7 @@ async function startServer() {
         sum += Number(numbers.charAt(size - i)) * pos--;
         if (pos < 2) pos = 9;
       }
-      
+
       result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
       if (result !== Number(digits.charAt(1))) return false;
       return true;
@@ -179,8 +185,8 @@ async function startServer() {
           active: isCnpjActive,
           statusText: data.descricao_situacao_cadastral || "ATIVA",
           companyName: data.razao_social || data.nome_fantasia || "Empresa sob análise",
-          message: isCnpjActive 
-            ? `Empresa ativa: ${data.razao_social || data.nome_fantasia}` 
+          message: isCnpjActive
+            ? `Empresa ativa: ${data.razao_social || data.nome_fantasia}`
             : `Alerta: Situação cadastral ${data.descricao_situacao_cadastral || 'INATIVA'} na Receita Federal.`
         });
       }
@@ -279,7 +285,7 @@ async function startServer() {
 
     // 2. Deterministic offline calculation fallback
     let score = 50;
-    
+
     // Status metrics
     if (lead.status === 'Novo') score += 5;
     else if (lead.status === 'Prospecção') score += 10;
@@ -297,7 +303,7 @@ async function startServer() {
     if (activities && Array.isArray(activities)) {
       const leadActivities = activities.filter((a: any) => a.leadId === lead.id);
       score += leadActivities.length * 8;
-      
+
       const hasMeeting = leadActivities.some((a: any) => a.type === 'Reunião');
       if (hasMeeting) score += 15;
     }
@@ -322,6 +328,13 @@ async function startServer() {
   // 1. EVOLUTION API INSTANCES ENDPOINTS
   // =========================================================================
   app.get("/api/whatsapp/instances", (req, res) => {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('whatsapp_instances')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (!error && data) return res.json(data);
+    }
     res.json(instances);
   });
 
@@ -411,7 +424,7 @@ async function startServer() {
 
     // Clean phone number format
     const cleanPhone = phone.startsWith("+") ? phone : `+55 ${phone}`;
-    
+
     // Check if contact already exists
     const existing = contacts.find(c => c.phone === cleanPhone);
     if (existing) {
@@ -448,10 +461,14 @@ async function startServer() {
   // =========================================================================
   app.get("/api/whatsapp/messages/:contactId", (req, res) => {
     const { contactId } = req.params;
+    if (supabase) {
+      const { data, error } = await supabase.from('chat_messages').select('*').eq('contact_id', contactId).order('timestamp', { ascending: true });
+      if (!error && data) return res.json(data);
+    }
     res.json(messages[contactId] || []);
   });
 
-  app.post("/api/whatsapp/messages/send", (req, res) => {
+  app.post("/api/whatsapp/messages/send", async (req, res) => {
     const { contactId, text } = req.body;
     if (!contactId || !text) {
       return res.status(400).json({ error: "ID do contato e texto são obrigatórios" });
@@ -471,6 +488,19 @@ async function startServer() {
       messages[contactId] = [];
     }
     messages[contactId].push(userMsg);
+
+    if (supabase) {
+      await supabase.from('chat_messages').insert([{
+        id: userMsg.id,
+        text: userMsg.text,
+        sender: userMsg.sender,
+        time: userMsg.time,
+        status: userMsg.status,
+        timestamp: userMsg.timestamp,
+        contact_id: contactId
+      }]);
+      await supabase.from('chat_contacts').update({ lastMessage: text, time: timeString }).eq('id', contactId);
+    }
 
     // Update last message in contact
     const contact = contacts.find(c => c.id === contactId);
@@ -493,6 +523,19 @@ async function startServer() {
       }
     });
 
+    // Chatbot logic with Supabase persistence
+    if (matchedRule && supabase) {
+      const autoReply = {
+        id: "msg_bot_" + Math.random().toString(36).substring(2, 9),
+        text: matchedRule.response,
+        sender: "them" as const,
+        time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        timestamp: Date.now(),
+        status: "read" as const
+      };
+      await supabase.from('chat_messages').insert([{ ...autoReply, contact_id: contactId }]);
+    }
+
     if (matchedRule) {
       setTimeout(() => {
         const autoReply: ChatMessage = {
@@ -504,7 +547,7 @@ async function startServer() {
           status: "read"
         };
         messages[contactId].push(autoReply);
-        
+
         if (contact) {
           contact.lastMessage = matchedRule.response;
           contact.time = autoReply.time;
@@ -515,7 +558,7 @@ async function startServer() {
   });
 
   // Simulated Webhook triggers from outside (Simulation panel)
-  app.post("/api/whatsapp/simulate-incoming", (req, res) => {
+  app.post("/api/whatsapp/simulate-incoming", async (req, res) => {
     const { contactId, text } = req.body;
     if (!contactId || !text) {
       return res.status(400).json({ error: "contactId e texto são obrigatórios" });
@@ -543,6 +586,18 @@ async function startServer() {
     contact.lastMessage = text;
     contact.time = timeString;
     contact.unread = contact.unread + 1;
+
+    if (supabase) {
+      await supabase.from('chat_messages').insert([{
+        id: inMsg.id,
+        text: inMsg.text,
+        sender: inMsg.sender,
+        time: inMsg.time,
+        timestamp: inMsg.timestamp,
+        contact_id: contactId
+      }]);
+      await supabase.from('chat_contacts').update({ lastMessage: text, time: timeString, unread: contact.unread }).eq('id', contactId);
+    }
 
     res.json({ message: inMsg, contact });
 
@@ -577,7 +632,11 @@ async function startServer() {
   // =========================================================================
   // 4. CHATBOT RULES ENDPOINTS
   // =========================================================================
-  app.get("/api/whatsapp/chatbot/rules", (req, res) => {
+  app.get("/api/whatsapp/chatbot/rules", async (req, res) => {
+    if (supabase) {
+      const { data } = await supabase.from('chatbot_rules').select('*');
+      if (data) return res.json(data);
+    }
     res.json(chatbotRules);
   });
 
@@ -720,4 +779,3 @@ async function startServer() {
 }
 
 startServer();
-

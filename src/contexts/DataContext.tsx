@@ -68,7 +68,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setLeadScoreTriggers(triggers);
     syncSetting('leadScoreTriggers', triggers);
   };
-  
+
   const [financeEntries, setFinanceEntries] = useState<FinanceEntry[]>([]);
 
   const syncSetting = async (key: string, value: any) => {
@@ -264,17 +264,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       if (!reachable) return;
 
       channel = supabase.channel('global-db-changes')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'leads' }, (payload) => {
-          setLeads(prev => [payload.new as Lead, ...prev]);
-          toast.info(`Novo lead recebido: ${payload.new.name}`, { description: 'Atualizado em tempo real.' });
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, (payload) => {
+          if (payload.eventType === 'INSERT') {
+            setLeads(prev => [payload.new as Lead, ...prev]);
+            toast.info(`Novo lead: ${payload.new.name}`, { description: 'Recebido via Realtime' });
+          } else {
+            fetchTableData('leads', setLeads);
+          }
         })
-        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'leads' }, (payload) => {
-          setLeads(prev => prev.map(l => l.id === payload.new.id ? payload.new as Lead : l));
-        })
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'finance_entries' }, (payload) => {
-          setFinanceEntries(prev => [payload.new as FinanceEntry, ...prev]);
-          toast.success('Novo lançamento financeiro detectado.');
-        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'tasks' }, () => fetchTableData('tasks', setTasks))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'contracts' }, () => fetchTableData('contracts', setContracts))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_entries' }, () => fetchTableData('finance_entries', setFinanceEntries))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'squads' }, () => fetchTableData('squads', setSquads))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => fetchTableData('appointments', setAppointments))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchTableData('products', setProducts))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'proposals' }, () => fetchTableData('proposals', setProposals))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'turmas' }, () => fetchTableData('turmas', setTurmas))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, () => fetchTableData('students', setStudents))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'colaboradores' }, () => fetchTableData('colaboradores', setColaboradores))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'squad_metas' }, () => fetchTableData('squad_metas', setSquadMetas))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'certificates' }, () => fetchTableData('certificates', setCertificates))
         .subscribe();
     }
 
@@ -297,32 +306,34 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         } else {
           try {
             // Clear stale localStorage mock data so Supabase always wins
-            ['axis_leads','axis_tasks','axis_contracts','axis_lead_activities',
-             'axis_finance_entries','axis_appointments','axis_squads'].forEach(k => localStorage.removeItem(k));
+            ['axis_leads', 'axis_tasks', 'axis_contracts', 'axis_lead_activities',
+              'axis_finance_entries', 'axis_appointments', 'axis_squads'].forEach(k => localStorage.removeItem(k));
 
-              const [
-                leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes, 
-                notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
-                productsRes, proposalsRes, turmasRes, studentsRes, colabRes
-              ] = await Promise.all([
-                supabase.from('leads').select('*'),
-                supabase.from('tasks').select('*'),
-                supabase.from('contracts').select('*'),
-                supabase.from('lead_activities').select('*'),
-                supabase.from('finance_entries').select('*'),
-                supabase.from('appointments').select('*'),
-                supabase.from('squads').select('*'),
-                supabase.from('notifications').select('*'),
-                supabase.from('marketing_campaigns').select('*'),
-                supabase.from('marketing_content').select('*'),
-                supabase.from('marketing_landing_pages').select('*'),
-                supabase.from('app_settings').select('*'),
-                supabase.from('products').select('*'),
-                supabase.from('proposals').select('*'),
-                supabase.from('turmas').select('*'),
-                supabase.from('students').select('*'),
-                supabase.from('colaboradores').select('*')
-              ]);
+            const [
+              leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes,
+              notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
+              productsRes, proposalsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes
+            ] = await Promise.all([
+              supabase.from('leads').select('*'),
+              supabase.from('tasks').select('*'),
+              supabase.from('contracts').select('*'),
+              supabase.from('lead_activities').select('*'),
+              supabase.from('finance_entries').select('*'),
+              supabase.from('appointments').select('*'),
+              supabase.from('squads').select('*'),
+              supabase.from('notifications').select('*'),
+              supabase.from('marketing_campaigns').select('*'),
+              supabase.from('marketing_content').select('*'),
+              supabase.from('marketing_landing_pages').select('*'),
+              supabase.from('app_settings').select('*'),
+              supabase.from('products').select('*'),
+              supabase.from('proposals').select('*'),
+              supabase.from('turmas').select('*'),
+              supabase.from('students').select('*'),
+              supabase.from('colaboradores').select('*'),
+              supabase.from('squad_metas').select('*'),
+              supabase.from('certificates').select('*')
+            ]);
 
             if (!leadsRes.error && leadsRes.data !== null) setLeads(leadsRes.data as Lead[]);
             if (!tasksRes.error && tasksRes.data !== null) setTasks(tasksRes.data as Task[]);
@@ -335,13 +346,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!mktCampRes.error && mktCampRes.data !== null) setMarketingCampaigns(mktCampRes.data);
             if (!mktContRes.error && mktContRes.data !== null) setMarketingContent(mktContRes.data);
             if (!mktLpRes.error && mktLpRes.data !== null) setMarketingLandingPages(mktLpRes.data);
-            
+
             if (!productsRes.error && productsRes.data !== null) setProducts(productsRes.data);
             if (!proposalsRes.error && proposalsRes.data !== null) setProposals(proposalsRes.data);
             if (!turmasRes.error && turmasRes.data !== null) setTurmas(turmasRes.data);
             if (!studentsRes.error && studentsRes.data !== null) setStudents(studentsRes.data);
             if (!colabRes.error && colabRes.data !== null) setColaboradores(colabRes.data);
-            
+            if (!squadMetasRes.error && squadMetasRes.data !== null) setSquadMetas(squadMetasRes.data);
+            if (!certRes.error && certRes.data !== null) setCertificates(certRes.data);
+
             if (!settingsRes.error && settingsRes.data !== null) {
               settingsRes.data.forEach((setting: any) => {
                 switch (setting.key) {
@@ -415,21 +428,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const checkTeleconsultations = () => {
       const now = new Date();
       const todayStr = now.toISOString().split('T')[0];
-      
+
       appointments.forEach(apt => {
         if (apt.type === 'Teleconsulta' && apt.date === todayStr && apt.status !== 'Finalizado') {
           const [hour, minute] = apt.time.split(':').map(Number);
           const aptTime = new Date();
           aptTime.setHours(hour, minute, 0, 0);
-          
+
           const diffMs = aptTime.getTime() - now.getTime();
           const diffMins = Math.floor(diffMs / 60000);
-          
+
           if (diffMins >= 28 && diffMins <= 32 && !notifiedRemindersRef.current[apt.id]) {
             notifiedRemindersRef.current[apt.id] = true;
             const message = `Olá ${apt.patient}, aqui é da Axis Telemedicina. Lembramos que sua teleconsulta com ${apt.drName} inicia em 30 minutos. Prepare sua conexão!`;
             console.log(`[WHATSAPP AUTOMÁTICO] Enviando para ${apt.phone || 'N/A'}: ${message}`);
-            
+
             toast.info(`Lembrete WhatsApp enviado para ${apt.patient}`, {
               description: "Teleconsulta em 30 minutos.",
               icon: "📱"
@@ -460,10 +473,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     leads.forEach(l => {
       if (l.seller && l.seller !== "Não Atribuído") {
         const hasAssignmentNotif = notifsRef.current.some(
-          n => n.category === "CRM" && 
-               n.desc.includes(l.name) && 
-               n.desc.includes(l.seller) && 
-               (n.title.toLowerCase().includes("atribu") || n.title.toLowerCase().includes("responsável"))
+          n => n.category === "CRM" &&
+            n.desc.includes(l.name) &&
+            n.desc.includes(l.seller) &&
+            (n.title.toLowerCase().includes("atribu") || n.title.toLowerCase().includes("responsável"))
         );
 
         if (!hasAssignmentNotif) {
@@ -481,9 +494,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     tasks.forEach(t => {
       if (t.status === "Atrasado") {
         const hasOverdueNotif = notifsRef.current.some(
-          n => n.category === "Produtividade" && 
-               n.title.toLowerCase().includes("atrasa") && 
-               n.desc.includes(t.title)
+          n => n.category === "Produtividade" &&
+            n.title.toLowerCase().includes("atrasa") &&
+            n.desc.includes(t.title)
         );
 
         if (!hasOverdueNotif) {
@@ -507,8 +520,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const checkColdLeads = () => {
       leads.forEach(lead => {
         if (lead.scoreIA !== undefined && lead.scoreIA < 40) {
-          const hasNurturingTask = tasks.some(t => 
-            (t.related === lead.company || t.related === lead.name) && 
+          const hasNurturingTask = tasks.some(t =>
+            (t.related === lead.company || t.related === lead.name) &&
             t.tags?.includes("reengajamento")
           );
 
@@ -589,7 +602,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     ];
     const clients = ["TechCorp Brasil", "Construtora RS", "Clínica Vida"];
     const sellersList = ["Carlos Eduardo Mendes", "Ana Silva", "Roberto Ramos"];
-    
+
     const randomTitle = taskTitles[Math.floor(Math.random() * taskTitles.length)];
     const randomClient = clients[Math.floor(Math.random() * clients.length)];
     const randomSeller = sellersList[Math.floor(Math.random() * sellersList.length)];
@@ -684,7 +697,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setLeads(prev => {
       const target = prev.find(l => l.id === id);
       if (target && (
-        (updates.status !== undefined && updates.status !== target.status) || 
+        (updates.status !== undefined && updates.status !== target.status) ||
         (updates.stageId !== undefined && updates.stageId !== target.stageId)
       )) {
         hasStatusOrStageChange = true;
@@ -761,7 +774,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           link: `/app/pipeline?search=${encodeURIComponent(lead.name)}`
         });
       }
-      return [...otherLeads, updatedLead]; 
+      return [...otherLeads, updatedLead];
     });
 
     if (supabase) {
@@ -1008,7 +1021,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <DataContext.Provider value={{ 
+    <DataContext.Provider value={{
       leads, tasks, contracts, notifications, leadActivities, financeEntries, appointments,
       theme, toggleTheme,
       addLead, updateLead, deleteLead, moveLead,

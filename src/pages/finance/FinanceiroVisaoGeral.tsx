@@ -41,7 +41,9 @@ export default function FinanceiroVisaoGeral() {
     const mrr = contracts
       .filter(c => c.status === 'Ativo')
       .reduce((sum, c) => {
-        const val = parseFloat(c.mrr?.replace(/[^\d]/g, '') || "0") / 100;
+        const raw = c.mrr;
+        const valStr = typeof raw === 'number' ? String(raw) : (raw ?? '0');
+        const val = parseFloat(String(valStr).replace(/[^\d]/g, '') || "0") / 100;
         return sum + (isNaN(val) ? 0 : val);
       }, 0);
 
@@ -225,7 +227,7 @@ export default function FinanceiroVisaoGeral() {
                     dataKey="value"
                     stroke="none"
                   >
-                    <Cell fill="#2563EB" cornerRadius={20} />
+                    <Cell fill="#2563EB" />
                     <Cell fill="rgba(255,255,255,0.05)" />
                   </Pie>
                 </PieChart>

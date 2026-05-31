@@ -172,7 +172,7 @@ export function useFinanceiroMetas() {
     const saleValues = [15000, 20000, 32000, 48000];
     const saleValue = saleValues[Math.floor(Math.random() * saleValues.length)];
 
-    setSquads(prev => prev.map((s, idx) => {
+    setSquads(squads.map((s, idx) => {
       if (idx === randomIndex) {
         const newVal = s.faturamento + saleValue;
         const lastPct = (s.faturamento / s.meta) * 100;
@@ -323,7 +323,7 @@ export function useFinanceiroMetas() {
   };
 
   const handleSliderChange = (squadId: string, value: number) => {
-    setSquads(prev => prev.map(s => s.id === squadId ? { ...s, faturamento: value } : s));
+    setSquads(squads.map(s => s.id === squadId ? { ...s, faturamento: value } : s));
   };
 
   return {

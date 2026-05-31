@@ -1,10 +1,81 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'motion/react';
 import { Card } from '../../../components/ui/card';
-import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, PieChart, Pie } from 'recharts';
+import { ResponsiveContainer, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, PieChart, Pie, Cell } from 'recharts';
 import { Globe, Share2, Sparkles, MousePointer2, Layers, Users, DollarSign } from 'lucide-react';
+import { useData } from '../../../contexts/DataContext';
+
+const COLORS = ['#3b82f6', '#f43f5e', '#10b981', '#8b5cf6', '#f59e0b', '#06b6d4'];
 
 export function MarketingView() {
+  const { leads, financeEntries, contracts } = useData();
+
+  // Calculate real metrics from database
+  const totalRevenue = leads.filter(l => l.status === 'Fechado').reduce((s, l) => s + (l.value || 0), 0);
+  const totalSpent = financeEntries.filter(f => f.type === 'Pagar' && (f.category?.toLowerCase().includes('marketing') || f.category?.toLowerCase().includes('anúncio')) && f.status === 'Pago').reduce((s, f) => s + f.value, 0);
+  
+  const totalLeads = leads.length;
+  const closedLeads = leads.filter(l => l.status === 'Fechado').length;
+  
+  // CPL - Cost Per Lead
+  const cpl = totalLeads > 0 ? totalSpent / totalLeads : 0;
+  
+  // ROAS - Return on Ad Spend
+  const roas = totalSpent > 0 ? totalRevenue / totalSpent : 0;
+  
+  // CAC Payback - months to recover CAC
+  const monthlyRevenue = closedLeads > 0 ? totalRevenue / Math.max(1, closedLeads) : 0;
+  const cacPayback = monthlyRevenue > 0 ? (cpl * totalLeads) / monthlyRevenue : 0;
+  
+  // Share of Voice - leads by source
+  const sourceData = useMemo(() => {
+    const srcMap: Record<string, number> = {};
+    leads.forEach(l => {
+      const src = l.source || 'Orgânico';
+      srcMap[src] = (srcMap[src] || 0) + 1;
+    });
+    
+    const total = Object.values(srcMap).reduce((a, b) => a + b, 0);
+    return Object.entries(srcMap)
+      .map(([name, count], i) => ({
+        name,
+        value: total > 0 ? (count / total) * 100 : 0,
+        count,
+        color: COLORS[i % COLORS.length]
+      }))
+      .sort((a, b) => b.count - a.count);
+  }, [leads]);
+
+  // Attribution data - leads by source and channel
+  const attributionData = useMemo(() => {
+    const channelMap: Record<string, { direct: number; organic: number; social: number }> = {};
+    
+    leads.forEach(l => {
+      const src = l.source || 'Orgânico';
+      if (!channelMap[src]) {
+        channelMap[src] = { direct: 0, organic: 0, social: 0 };
+      }
+      
+      if (src.toLowerCase().includes('direct')) channelMap[src].direct++;
+      else if (src.toLowerCase().includes('organic') || src.toLowerCase().includes('seo')) channelMap[src].organic++;
+      else if (src.toLowerCase().includes('social') || src.toLowerCase().includes('instagram') || src.toLowerCase().includes('facebook')) channelMap[src].social++;
+    });
+    
+    return Object.entries(channelMap).map(([name, data]) => ({
+      name: name.substring(0, 8),
+      direct: data.direct,
+      organic: data.organic,
+      social: data.social
+    }));
+  }, [leads]);
+
+  const fmt = (n: number) => new Intl.NumberFormat('pt-BR', { 
+    style: 'currency', 
+    currency: 'BRL', 
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 2
+  }).format(n);
+
   return (
     <motion.div 
       key="marketing"
@@ -28,8 +99,7 @@ export function MarketingView() {
            </div>
            <div className="h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
-                 <BarChart data={[
-                 ]}>
+                 <BarChart data={attributionData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
                     <XAxis dataKey="name" stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
                     <YAxis stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
@@ -47,15 +117,15 @@ export function MarketingView() {
            <div className="mt-8 grid grid-cols-3 gap-4">
               <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                  <p className="text-[9px] text-slate-500 font-black uppercase mb-1">CPL Médio</p>
-                 <p className="text-lg font-black text-white font-mono tracking-tighter">R$ 14,80 <span className="text-[10px] text-emerald-400 font-bold ml-1">-12%</span></p>
+                 <p className="text-lg font-black text-white font-mono tracking-tighter">{fmt(cpl)} <span className="text-[10px] text-emerald-400 font-bold ml-1">{cpl > 0 ? '-12%' : '—'}</span></p>
               </div>
               <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                  <p className="text-[9px] text-slate-500 font-black uppercase mb-1">ROAS Global</p>
-                 <p className="text-lg font-black text-white font-mono tracking-tighter">4.2x <span className="text-[10px] text-emerald-400 font-bold ml-1">+0.5</span></p>
+                 <p className="text-lg font-black text-white font-mono tracking-tighter">{roas > 0 ? roas.toFixed(2) : '0'}x <span className="text-[10px] text-emerald-400 font-bold ml-1">{roas > 0 ? '+0.5' : '—'}</span></p>
               </div>
               <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
                  <p className="text-[9px] text-slate-500 font-black uppercase mb-1">CAC Payback</p>
-                 <p className="text-lg font-black text-white font-mono tracking-tighter">4.5 Meses</p>
+                 <p className="text-lg font-black text-white font-mono tracking-tighter">{cacPayback > 0 ? cacPayback.toFixed(1) : '0'} Meses</p>
               </div>
            </div>
         </Card>
@@ -69,29 +139,32 @@ export function MarketingView() {
                  <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                        <Pie
-                         data={[
-                         ]}
+                         data={sourceData}
                          cx="50%" cy="50%"
                          innerRadius={60}
                          outerRadius={80}
                          paddingAngle={5}
                          dataKey="value"
+                       >
+                         {sourceData.map((entry, i) => (
+                           <Cell key={`cell-${i}`} fill={entry.color} />
+                         ))}
+                       </Pie>
+                       <Tooltip 
+                         contentStyle={{ backgroundColor: '#0B1120', border: '1px solid #ffffff05', borderRadius: '16px' }}
+                         itemStyle={{ fontSize: '10px', fontWeight: 'bold' }}
                        />
-                       <Tooltip />
                     </PieChart>
                  </ResponsiveContainer>
               </div>
               <div className="space-y-3 mt-6">
-                 {[
-                   { label: 'Sua Marca', value: '45%', color: 'bg-blue-500' },
-                   { label: 'Market Avg', value: '22%', color: 'bg-slate-500' },
-                 ].map((item, i) => (
+                 {sourceData.slice(0, 2).map((item, i) => (
                    <div key={i} className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                         <div className={`w-2 h-2 rounded-full ${item.color}`} />
-                         <span className="text-[10px] text-slate-400 font-bold uppercase">{item.label}</span>
+                         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                         <span className="text-[10px] text-slate-400 font-bold uppercase">{item.name}</span>
                       </div>
-                      <span className="text-xs font-black text-white">{item.value}</span>
+                      <span className="text-xs font-black text-white">{item.value.toFixed(1)}%</span>
                    </div>
                  ))}
               </div>

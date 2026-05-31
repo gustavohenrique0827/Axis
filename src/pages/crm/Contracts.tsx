@@ -69,7 +69,14 @@ export default function Contracts() {
     c.plan.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const totalMRR = contracts.reduce((acc, curr) => acc + parseFloat(curr.mrr.replace('R$ ', '').replace('.', '').replace(',', '.')), 0);
+  const toNumberMRR = (mrr: string | number): number => {
+    if (typeof mrr === 'number') return mrr;
+    const cleaned = mrr.replace('R$ ', '').replace(/\./g, '').replace(',', '.');
+    const num = parseFloat(cleaned);
+    return isNaN(num) ? 0 : num;
+  };
+
+  const totalMRR = contracts.reduce((acc, curr) => acc + toNumberMRR(curr.mrr), 0);
 
   return (
     <div className="space-y-6">
