@@ -29,11 +29,6 @@ export function MarketingView() {
            <div className="h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
                  <BarChart data={[
-                   { name: 'Google Ads', direct: 420, organic: 120, social: 45 },
-                   { name: 'Organic Search', direct: 180, organic: 290, social: 30 },
-                   { name: 'Social Media', direct: 95, organic: 80, social: 310 },
-                   { name: 'Referral', direct: 60, organic: 45, social: 25 },
-                   { name: 'Direct', direct: 210, organic: 30, social: 15 },
                  ]}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
                     <XAxis dataKey="name" stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
@@ -75,10 +70,6 @@ export function MarketingView() {
                     <PieChart>
                        <Pie
                          data={[
-                           { name: 'Sua Marca', value: 45, fill: '#3b82f6' },
-                           { name: 'Concorrente A', value: 25, fill: '#64748b' },
-                           { name: 'Concorrente B', value: 20, fill: '#334155' },
-                           { name: 'Outros', value: 10, fill: '#1e293b' },
                          ]}
                          cx="50%" cy="50%"
                          innerRadius={60}
@@ -118,10 +109,10 @@ export function MarketingView() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
          {[
-           { icon: MousePointer2, label: "CTR Médio", value: "3.24%", trend: "+0.4%", color: "text-blue-400", bg: "bg-blue-500/10" },
-           { icon: Layers, label: "LPs Conversion", value: "18.5%", trend: "-1.2%", color: "text-emerald-400", bg: "bg-emerald-500/10" },
-           { icon: Users, label: "Marketing Leads", value: "1,240", trend: "+15%", color: "text-purple-400", bg: "bg-purple-500/10" },
-           { icon: DollarSign, label: "Total Investido", value: "R$ 18.5k", trend: "0%", color: "text-amber-400", bg: "bg-amber-500/10" },
+           { icon: MousePointer2, label: "CTR Médio", value: "0%", trend: "0%", color: "text-blue-400", bg: "bg-blue-500/10" },
+           { icon: Layers, label: "LPs Conversion", value: "0%", trend: "0%", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+           { icon: Users, label: "Marketing Leads", value: "0", trend: "0%", color: "text-purple-400", bg: "bg-purple-500/10" },
+           { icon: DollarSign, label: "Total Investido", value: "R$ 0", trend: "0%", color: "text-amber-400", bg: "bg-amber-500/10" },
          ].map((metric, i) => (
             <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 group hover:border-white/10 transition-all rounded-3xl">
                <div className="flex items-center gap-4 mb-4">

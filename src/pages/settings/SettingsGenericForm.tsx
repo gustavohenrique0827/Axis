@@ -43,8 +43,7 @@ export default function SettingsGenericForm() {
             <input 
               type="text" 
               className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors"
-              placeholder="Digite o valor..."
-              defaultValue="Configuração padrão auto-preenchida"
+              placeholder="Configuração padrão auto-preenchida"
             />
           </div>
 
@@ -53,7 +52,7 @@ export default function SettingsGenericForm() {
               Habilitar Recurso
             </label>
             <div className="flex items-center gap-3">
-              <input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-[#0B1120] text-[#2563EB] focus:ring-0" defaultChecked/>
+              <input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-[#0B1120] text-[#2563EB] focus:ring-0" />
               <span className="text-sm text-slate-300">Ativar processamento automático para este módulo</span>
             </div>
           </div>
@@ -70,7 +69,7 @@ export default function SettingsGenericForm() {
       <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
          <h4 className="text-sm font-bold text-white mb-4">Registros Adicionados</h4>
          <div className="space-y-3">
-            {[1, 2].map((i) => (
+            {[].map((i: any) => (
               <div key={i} className="p-4 rounded-xl border border-white/5 bg-white/5 flex items-center justify-between">
                  <div>
                    <div className="font-semibold text-sm text-white">Item de Configuração {i}</div>

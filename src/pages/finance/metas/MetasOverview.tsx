@@ -53,8 +53,8 @@ export function MetasOverview({
   const diff = totalFaturamento - totalMeta;
   const isPositive = diff >= 0;
 
-  const msgVolume = 4150 + Math.round((totalFaturamento - 399000)/120);
-  const callVolume = 1420 + Math.round((totalFaturamento - 399000)/350);
+  const msgVolume = totalFaturamento > 0 ? Math.round(totalFaturamento / 100) : 0;
+  const callVolume = totalFaturamento > 0 ? Math.round(totalFaturamento / 350) : 0;
 
   const totalOTE = squads.reduce((sum, s) => sum + calculateOTE(s).total, 0);
   const totalOTEBonus = squads.reduce((sum, s) => sum + calculateOTE(s).bonus, 0);
@@ -67,7 +67,7 @@ export function MetasOverview({
   return (
     <div className="space-y-6">
       {/* Balanço Geral */}
-      <div className="p-6 bg-slate-900/60 border border-white/5 rounded-3xl relative overflow-hidden">
+      <div className="p-6 bg-[#111827]/80 border border-white/5 rounded-3xl relative overflow-hidden glass-card">
         <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none" />
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4 pb-4 border-b border-white/5">
           <div>
@@ -86,7 +86,7 @@ export function MetasOverview({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Mensagens sent rate */}
-          <div className="p-4 bg-slate-950/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
+          <div className="p-4 bg-[#0B1120]/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
             <div className="p-3 bg-purple-500/10 text-purple-400 rounded-xl">
               <Flame className="w-5 h-5 text-purple-400" />
             </div>
@@ -100,7 +100,7 @@ export function MetasOverview({
           </div>
 
           {/* Ligações dials */}
-          <div className="p-4 bg-slate-950/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
+          <div className="p-4 bg-[#0B1120]/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
             <div className="p-3 bg-blue-500/10 text-blue-400 rounded-xl">
               <Users className="w-5 h-5 text-blue-400" />
             </div>
@@ -116,8 +116,8 @@ export function MetasOverview({
           {/* Diferença Líquida contra o teto da meta geral */}
           <div className={`p-4 rounded-2xl border transition-colors flex items-center gap-4 ${
             isPositive 
-              ? "bg-emerald-500/5 border-emerald-500/20 hover:border-emerald-500/30" 
-              : "bg-rose-500/5 border-rose-500/20 hover:border-rose-500/30"
+              ? "bg-emerald-500/10 border-emerald-500/20 hover:border-emerald-500/30" 
+              : "bg-rose-500/10 border-rose-500/20 hover:border-rose-500/30"
           }`}>
             <div className={`p-3 rounded-xl ${isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
               <TrendingUp className={`w-5 h-5 ${isPositive ? "" : "transform rotate-180"}`} />

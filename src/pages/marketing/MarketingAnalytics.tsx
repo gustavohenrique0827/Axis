@@ -1,25 +1,90 @@
 import { PageContainer } from "../../components/PageContainer";
 import { Card } from "../../components/ui/card";
-import { BarChart2, TrendingUp, Users, Target, Activity, DollarSign } from "lucide-react";
+import { BarChart2, TrendingUp, Users, Target, Activity, DollarSign, Inbox } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, PieChart, Pie, Cell } from "recharts";
+import { useData } from "../../contexts/DataContext";
+import { useMemo } from "react";
 
-const performanceData = [
-  { name: 'Jan', cac: 150, ltv: 1200, roi: 800, revenue: 45000 },
-  { name: 'Fev', cac: 140, ltv: 1300, roi: 928, revenue: 52000 },
-  { name: 'Mar', cac: 130, ltv: 1400, roi: 1076, revenue: 68000 },
-  { name: 'Abr', cac: 145, ltv: 1350, roi: 931, revenue: 61000 },
-  { name: 'Mai', cac: 120, ltv: 1500, roi: 1250, revenue: 75000 },
-  { name: 'Jun', cac: 115, ltv: 1600, roi: 1391, revenue: 89000 },
-];
-
-const sourceData = [
-  { name: 'Meta Ads', value: 400, revenue: 125000, color: '#3b82f6' },
-  { name: 'Google Ads', value: 300, revenue: 98000, color: '#f43f5e' },
-  { name: 'Orgânico', value: 200, revenue: 45000, color: '#10b981' },
-  { name: 'Email', value: 100, revenue: 32000, color: '#8b5cf6' },
-];
+const COLORS = ['#3b82f6', '#f43f5e', '#10b981', '#8b5cf6', '#f59e0b', '#06b6d4'];
+const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 export default function MarketingAnalytics() {
+  const { leads, financeEntries } = useData();
+
+  // Receita vinda de Marketing (simplificado como Total Recebido ou leads com status Fechado * valor)
+  // Como as despesas de marketing também não têm flag clara, pegamos tudo do tipo Pagar/Receber ou usamos apenas baseados em leads
+  const totalRevenue = leads.filter(l => l.status === 'Fechado').reduce((s, l) => s + (l.value || 0), 0);
+  const totalSpent = financeEntries.filter(f => f.type === 'Pagar' && (f.category?.toLowerCase().includes('marketing') || f.category?.toLowerCase().includes('anúncio')) && f.status === 'Pago').reduce((s, f) => s + f.value, 0);
+  
+  const totalLeads = leads.length;
+  const closedLeads = leads.filter(l => l.status === 'Fechado').length;
+  
+  const cac = totalLeads > 0 ? (totalSpent / totalLeads) : 0;
+  const avgDeal = closedLeads > 0 ? (totalRevenue / closedLeads) : 0;
+  const roi = totalSpent > 0 ? (totalRevenue / totalSpent) : 0;
+
+  // Evolução mensal (agrupado por mês)
+  const performanceData = useMemo(() => {
+    const months: Record<string, { revenue: number, leads: number, closed: number, spent: number }> = {};
+    
+    // Processa leads
+    leads.forEach(l => {
+      try {
+        const d = new Date(l.date || l.createdAt || '');
+        if(isNaN(d.getTime())) return;
+        const month = d.toLocaleDateString('pt-BR', { month: 'short' });
+        
+        if (!months[month]) months[month] = { revenue: 0, leads: 0, closed: 0, spent: 0 };
+        
+        months[month].leads++;
+        if (l.status === 'Fechado') {
+          months[month].closed++;
+          months[month].revenue += (l.value || 0);
+        }
+      } catch {}
+    });
+
+    // Processa gastos de mkt
+    financeEntries.forEach(f => {
+      if (f.type !== 'Pagar' || f.status !== 'Pago') return;
+      if (!(f.category?.toLowerCase().includes('marketing') || f.category?.toLowerCase().includes('anúncio'))) return;
+      try {
+        const d = new Date(f.date || '');
+        if(isNaN(d.getTime())) return;
+        const month = d.toLocaleDateString('pt-BR', { month: 'short' });
+        if (months[month]) months[month].spent += f.value;
+      } catch {}
+    });
+
+    return Object.entries(months).map(([month, data]) => ({
+      name: month,
+      revenue: data.revenue,
+      cac: data.leads > 0 ? (data.spent / data.leads) : 0
+    }));
+  }, [leads, financeEntries]);
+
+  // Receita por Origem (Canais)
+  const sourceData = useMemo(() => {
+    const srcMap: Record<string, number> = {};
+    leads.forEach(l => {
+      if (l.status === 'Fechado') {
+        const src = l.source || 'Orgânico';
+        srcMap[src] = (srcMap[src] || 0) + (l.value || 0);
+      }
+    });
+    
+    return Object.entries(srcMap)
+      .filter(([, revenue]) => revenue > 0)
+      .map(([name, revenue], i) => ({
+        name,
+        revenue,
+        color: COLORS[i % COLORS.length]
+      }))
+      .sort((a, b) => b.revenue - a.revenue);
+  }, [leads]);
+
+  const fmt = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
+
   return (
     <PageContainer
       title="Métricas de Marketing Avançadas"
@@ -32,10 +97,10 @@ export default function MarketingAnalytics() {
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
                <DollarSign className="w-5 h-5 text-blue-400" />
             </div>
-            <span className="text-[10px] uppercase tracking-wider font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">+4.2%</span>
+            {totalRevenue > 0 && <span className="text-[10px] uppercase tracking-wider font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Gerado</span>}
           </div>
           <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Receita Mkt</h4>
-          <p className="text-3xl font-black text-white">R$ 300<span className="text-sm text-slate-500">k</span></p>
+          <p className="text-3xl font-black text-white">{fmt(totalRevenue)}</p>
         </Card>
         
         <Card className="p-6 bg-[#111827] border-white/5 relative overflow-hidden group">
@@ -44,10 +109,9 @@ export default function MarketingAnalytics() {
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
                <TrendingUp className="w-5 h-5 text-purple-400" />
             </div>
-            <span className="text-[10px] uppercase tracking-wider font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">+12.5%</span>
           </div>
           <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Custo Aquisição (CAC)</h4>
-          <p className="text-3xl font-black text-white">R$ 115<span className="text-sm text-slate-500">,00</span></p>
+          <p className="text-3xl font-black text-white">{fmt(cac)}</p>
         </Card>
 
         <Card className="p-6 bg-[#111827] border-white/5 relative overflow-hidden group">
@@ -58,7 +122,7 @@ export default function MarketingAnalytics() {
             </div>
           </div>
           <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Valor Médio Deal</h4>
-          <p className="text-3xl font-black text-white">R$ 2.450</p>
+          <p className="text-3xl font-black text-white">{fmt(avgDeal)}</p>
         </Card>
 
         <Card className="p-6 bg-[#111827] border-white/5 relative overflow-hidden group">
@@ -69,7 +133,7 @@ export default function MarketingAnalytics() {
             </div>
           </div>
           <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Retorno (ROI)</h4>
-          <p className="text-3xl font-black text-white">12,5<span className="text-sm text-slate-500">x</span></p>
+          <p className="text-3xl font-black text-white">{roi.toFixed(1)}<span className="text-sm text-slate-500">x</span></p>
         </Card>
       </div>
 
@@ -78,74 +142,92 @@ export default function MarketingAnalytics() {
           <h3 className="text-sm font-black text-white uppercase tracking-wider mb-6 flex items-center gap-2">
             <BarChart2 className="w-4 h-4 text-blue-500" /> Receita Marketing vs Investimento (CAC)
           </h3>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={performanceData}>
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorCac" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1E293B', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
-                  formatter={(value: any) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)}
-                />
-                <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" name="Receita" />
-                <Area type="monotone" dataKey="cac" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorCac)" name="CAC" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          {performanceData.length === 0 ? (
+            <div className="h-72 flex flex-col items-center justify-center gap-4 opacity-40">
+              <Inbox className="w-10 h-10 text-slate-500" />
+              <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">
+                Sem dados de performance mensal.<br/>Cadastre leads e gastos em campanhas.
+              </p>
+            </div>
+          ) : (
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={performanceData}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                    </linearGradient>
+                    <linearGradient id="colorCac" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#f43f5e" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
+                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1E293B', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
+                    formatter={(value: any) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)}
+                  />
+                  <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" name="Receita" />
+                  <Area type="monotone" dataKey="cac" stroke="#f43f5e" strokeWidth={3} fillOpacity={1} fill="url(#colorCac)" name="CAC" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </Card>
 
         <Card className="p-6 bg-[#111827] border-white/5">
           <h3 className="text-sm font-black text-white uppercase tracking-wider mb-6 flex items-center gap-2">
-            <Users className="w-4 h-4 text-blue-500" /> Receita p/ Canais
+            <Users className="w-4 h-4 text-blue-500" /> Receita p/ Canais (Ganho)
           </h3>
-          <div className="h-72 flex flex-col justify-center">
-            <ResponsiveContainer width="100%" height="70%">
-              <PieChart>
-                <Pie
-                  data={sourceData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={5}
-                  dataKey="revenue"
-                  stroke="none"
-                >
-                  {sourceData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#1E293B', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
-                  formatter={(value: any) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)}
-                />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              {sourceData.map(source => (
-                <div key={source.name} className="flex flex-col gap-0.5">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: source.color }}></div>
-                    <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{source.name}</span>
-                  </div>
-                  <span className="text-xs font-black text-white ml-4">
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(source.revenue)}
-                  </span>
-                </div>
-              ))}
+          {sourceData.length === 0 ? (
+            <div className="h-72 flex flex-col items-center justify-center gap-4 opacity-40">
+              <PieChart className="w-10 h-10 text-slate-500" />
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">
+                Nenhuma receita atrelada a origens de mkt.
+              </p>
             </div>
-          </div>
+          ) : (
+            <div className="h-72 flex flex-col justify-center">
+              <ResponsiveContainer width="100%" height="70%">
+                <PieChart>
+                  <Pie
+                    data={sourceData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="revenue"
+                    stroke="none"
+                  >
+                    {sourceData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1E293B', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
+                    formatter={(value: any) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                {sourceData.map(source => (
+                  <div key={source.name} className="flex flex-col gap-0.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: source.color }}></div>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter truncate">{source.name}</span>
+                    </div>
+                    <span className="text-xs font-black text-white ml-4">
+                      {fmt(source.revenue)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </Card>
       </div>
     </PageContainer>

@@ -45,58 +45,82 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const [customLeadFields, setCustomLeadFields] = useState<CustomField[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('axis_custom_lead_fields');
+      const saved = localStorage.getItem('axis_custom_lead_fields_v2');
       if (saved) return JSON.parse(saved);
     }
     return defaultCustomLeadFields;
   });
 
+  const updateCustomLeadFields = (fields: CustomField[]) => {
+    setCustomLeadFields(fields);
+    syncSetting('customLeadFields', fields);
+  };
+
   const [leadScoreTriggers, setLeadScoreTriggers] = useState<LeadScoreTrigger[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('axis_lead_score_triggers');
+      const saved = localStorage.getItem('axis_lead_score_triggers_v2');
       if (saved) return JSON.parse(saved);
     }
     return defaultLeadScoreTriggers;
   });
+
+  const updateLeadScoreTriggers = (triggers: LeadScoreTrigger[]) => {
+    setLeadScoreTriggers(triggers);
+    syncSetting('leadScoreTriggers', triggers);
+  };
   
-  const [financeEntries, setFinanceEntries] = useState<FinanceEntry[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('axis_finance_entries');
-      if (saved) return JSON.parse(saved);
+  const [financeEntries, setFinanceEntries] = useState<FinanceEntry[]>([]);
+
+  const syncSetting = async (key: string, value: any) => {
+    if (!supabase) return;
+    try {
+      const { data } = await supabase.from('app_settings').select('id').eq('key', key).single();
+      if (data) {
+        await supabase.from('app_settings').update({ value }).eq('id', data.id);
+      } else {
+        await supabase.from('app_settings').insert({ key, value });
+      }
+    } catch (err) {
+      console.error(`Supabase sync setting failed for ${key}:`, err);
     }
-    return defaultFinanceEntries;
-  });
+  };
 
   const [globalWebhooks, setGlobalWebhooks] = useState<GlobalWebhook[]>(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('axis_global_webhooks');
+      const saved = localStorage.getItem('axis_global_webhooks_v2');
       if (saved) return JSON.parse(saved);
     }
     return defaultGlobalWebhooks;
   });
 
   useEffect(() => {
-    localStorage.setItem('axis_global_webhooks', JSON.stringify(globalWebhooks));
+    localStorage.setItem('axis_global_webhooks_v2', JSON.stringify(globalWebhooks));
   }, [globalWebhooks]);
 
   const addGlobalWebhook = (webhook: Omit<GlobalWebhook, 'id'>) => {
-    setGlobalWebhooks(prev => [{ ...webhook, id: `w${Math.random().toString(36).substring(2, 9)}` }, ...prev]);
+    const newVal = [{ ...webhook, id: `w${Math.random().toString(36).substring(2, 9)}` }, ...globalWebhooks];
+    setGlobalWebhooks(newVal);
+    syncSetting('globalWebhooks', newVal);
   };
 
   const deleteGlobalWebhook = (id: string) => {
-    setGlobalWebhooks(prev => prev.filter(w => w.id !== id));
+    const newVal = globalWebhooks.filter(w => w.id !== id);
+    setGlobalWebhooks(newVal);
+    syncSetting('globalWebhooks', newVal);
   };
 
   const toggleGlobalWebhook = (id: string) => {
-    setGlobalWebhooks(prev => prev.map(w => w.id === id ? { ...w, active: !w.active } : w));
+    const newVal = globalWebhooks.map(w => w.id === id ? { ...w, active: !w.active } : w);
+    setGlobalWebhooks(newVal);
+    syncSetting('globalWebhooks', newVal);
   };
 
   useEffect(() => {
-    localStorage.setItem('axis_custom_lead_fields', JSON.stringify(customLeadFields));
+    localStorage.setItem('axis_custom_lead_fields_v2', JSON.stringify(customLeadFields));
   }, [customLeadFields]);
 
   useEffect(() => {
-    localStorage.setItem('axis_lead_score_triggers', JSON.stringify(leadScoreTriggers));
+    localStorage.setItem('axis_lead_score_triggers_v2', JSON.stringify(leadScoreTriggers));
   }, [leadScoreTriggers]);
 
   useEffect(() => {
@@ -119,9 +143,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("axis_brand_changed", applyBrandColors);
   }, []);
 
-  const [leads, setLeads] = useState<Lead[]>(defaultLeads);
-  const [tasks, setTasks] = useState<Task[]>(defaultTasks);
-  const [contracts, setContracts] = useState<Contract[]>(defaultContracts);
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
   const [leadActivities, setLeadActivities] = useState<LeadActivity[]>([]);
 
   const [evolutionWebhookUrl, setEvolutionWebhookUrl] = useState<string>(() => {
@@ -131,41 +155,60 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return "https://axis-crm.cloud/api/webhooks/whatsapp";
   });
 
-  const [appointments, setAppointments] = useState<Appointment[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('axis_appointments');
-      if (saved) return JSON.parse(saved);
-    }
-    return getDefaultAppointments();
-  });
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   const [robotStatus, setRobotStatus] = useState<'executando' | 'pausado'>('executando');
 
-  const [squads, setSquads] = useState<Squad[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('axis_squads');
-      if (saved) return JSON.parse(saved);
-    }
-    return defaultSquads;
-  });
+  const [squads, setSquads] = useState<Squad[]>([]);
 
   useEffect(() => {
-    localStorage.setItem('axis_squads', JSON.stringify(squads));
+    if (!supabase) localStorage.setItem('axis_squads_v2', JSON.stringify(squads));
   }, [squads]);
 
-  const addSquad = (squad: Omit<Squad, 'id'>) => {
+  const addSquad = async (squad: Omit<Squad, 'id'>) => {
     const newSquad = { ...squad, id: `sq${Math.random().toString(36).substring(2, 9)}` };
     setSquads(prev => [...prev, newSquad]);
     toast.success('Novo squad comercial criado!');
+    if (supabase) {
+      try {
+        const { id, nome, meta, orcamentoMensal, faturamentoAlcancado, sdrCount, closersCount, focoComercial, membros } = newSquad as any;
+        await supabase.from('squads').insert({
+          id, nome, meta, orcamento_mensal: orcamentoMensal, faturamento_alcancado: faturamentoAlcancado, sdr_count: sdrCount, closers_count: closersCount, foco_comercial: focoComercial, membros
+        });
+      } catch (err) {
+        console.error("Supabase add squad failed:", err);
+      }
+    }
   };
 
-  const updateSquad = (id: string, updates: Partial<Squad>) => {
+  const updateSquad = async (id: string, updates: Partial<Squad>) => {
     setSquads(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+    if (supabase) {
+      try {
+        const payload: any = { ...updates };
+        if ('orcamentoMensal' in payload) payload.orcamento_mensal = payload.orcamentoMensal;
+        if ('faturamentoAlcancado' in payload) payload.faturamento_alcancado = payload.faturamentoAlcancado;
+        if ('sdrCount' in payload) payload.sdr_count = payload.sdrCount;
+        if ('closersCount' in payload) payload.closers_count = payload.closersCount;
+        if ('focoComercial' in payload) payload.foco_comercial = payload.focoComercial;
+        delete payload.orcamentoMensal; delete payload.faturamentoAlcancado; delete payload.sdrCount; delete payload.closersCount; delete payload.focoComercial;
+        await supabase.from('squads').update(payload).eq('id', id);
+      } catch (err) {
+        console.error("Supabase update squad failed:", err);
+      }
+    }
   };
 
-  const deleteSquad = (id: string) => {
+  const deleteSquad = async (id: string) => {
     setSquads(prev => prev.filter(s => s.id !== id));
     toast.info('Squad removido.');
+    if (supabase) {
+      try {
+        await supabase.from('squads').delete().eq('id', id);
+      } catch (err) {
+        console.error("Supabase delete squad failed:", err);
+      }
+    }
   };
 
   const updateEvolutionWebhookUrl = (url: string) => {
@@ -175,56 +218,155 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const [notifications, setNotifications] = useState<Notification[]>(defaultNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+
+  const [marketingAutomations, setMarketingAutomations] = useState<any[]>([]);
+  const [marketingContent, setMarketingContent] = useState<any[]>([]);
+  const [marketingCampaigns, setMarketingCampaigns] = useState<any[]>([]);
+  const [marketingLandingPages, setMarketingLandingPages] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [proposals, setProposals] = useState<any[]>([]);
+  const [certificates, setCertificates] = useState<any[]>([]);
+  const [turmas, setTurmas] = useState<any[]>([]);
+  const [students, setStudents] = useState<any[]>([]);
+  const [colaboradores, setColaboradores] = useState<any[]>([]);
+  const [squadMetas, setSquadMetas] = useState<any[]>([]);
+
+  const addStudent = async (student: any) => {
+    const newStudent = { ...student, id: `st${Math.random().toString(36).substring(2, 9)}` };
+    setStudents(prev => [...prev, newStudent]);
+    if (supabase) await supabase.from('students').insert(newStudent);
+  };
+
+  const updateStudent = async (id: string, updates: any) => {
+    setStudents(prev => prev.map(s => s.id === id ? { ...s, ...updates } : s));
+    if (supabase) await supabase.from('students').update(updates).eq('id', id);
+  };
+
+  const deleteStudent = async (id: string) => {
+    setStudents(prev => prev.filter(s => s.id !== id));
+    if (supabase) await supabase.from('students').delete().eq('id', id);
+  };
 
   // Persistence & Supabase Synchronization
+  const fetchTableData = async (tableName: string, setter: React.Dispatch<React.SetStateAction<any[]>>) => {
+    if (!supabase) return;
+    const { data } = await supabase.from(tableName).select('*');
+    if (data) setter(data);
+  };
+
+  useEffect(() => {
+    if (!supabase) return;
+
+    const channel = supabase.channel('global-db-changes')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'leads' }, (payload) => {
+        setLeads(prev => [payload.new as Lead, ...prev]);
+        toast.info(`Novo lead recebido: ${payload.new.name}`, { description: 'Atualizado em tempo real.' });
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'leads' }, (payload) => {
+        setLeads(prev => prev.map(l => l.id === payload.new.id ? payload.new as Lead : l));
+      })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'finance_entries' }, (payload) => {
+        setFinanceEntries(prev => [payload.new as FinanceEntry, ...prev]);
+        toast.success('Novo lançamento financeiro detectado.');
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
   useEffect(() => {
     async function loadInitialData() {
+      // If Supabase is configured, always use it as the source of truth
+      if (supabase) {
+        try {
+          // Clear stale localStorage mock data so Supabase always wins
+          ['axis_leads','axis_tasks','axis_contracts','axis_lead_activities',
+           'axis_finance_entries','axis_appointments','axis_squads'].forEach(k => localStorage.removeItem(k));
+
+            const [
+              leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes, 
+              notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
+              productsRes, proposalsRes, turmasRes, studentsRes, colabRes
+            ] = await Promise.all([
+              supabase.from('leads').select('*'),
+              supabase.from('tasks').select('*'),
+              supabase.from('contracts').select('*'),
+              supabase.from('lead_activities').select('*'),
+              supabase.from('finance_entries').select('*'),
+              supabase.from('appointments').select('*'),
+              supabase.from('squads').select('*'),
+              supabase.from('notifications').select('*'),
+              supabase.from('marketing_campaigns').select('*'),
+              supabase.from('marketing_content').select('*'),
+              supabase.from('marketing_landing_pages').select('*'),
+              supabase.from('app_settings').select('*'),
+              supabase.from('products').select('*'),
+              supabase.from('proposals').select('*'),
+              supabase.from('turmas').select('*'),
+              supabase.from('students').select('*'),
+              supabase.from('colaboradores').select('*')
+            ]);
+
+          if (!leadsRes.error && leadsRes.data !== null) setLeads(leadsRes.data as Lead[]);
+          if (!tasksRes.error && tasksRes.data !== null) setTasks(tasksRes.data as Task[]);
+          if (!contractsRes.error && contractsRes.data !== null) setContracts(contractsRes.data as Contract[]);
+          if (!actsRes.error && actsRes.data !== null) setLeadActivities(actsRes.data as LeadActivity[]);
+          if (!financeRes.error && financeRes.data !== null) setFinanceEntries(financeRes.data as FinanceEntry[]);
+          if (!apptRes.error && apptRes.data !== null) setAppointments(apptRes.data as Appointment[]);
+          if (!squadsRes.error && squadsRes.data !== null) setSquads(squadsRes.data as Squad[]);
+          if (!notifRes.error && notifRes.data !== null && notifRes.data.length > 0) setNotifications(notifRes.data as Notification[]);
+          if (!mktCampRes.error && mktCampRes.data !== null) setMarketingCampaigns(mktCampRes.data);
+          if (!mktContRes.error && mktContRes.data !== null) setMarketingContent(mktContRes.data);
+          if (!mktLpRes.error && mktLpRes.data !== null) setMarketingLandingPages(mktLpRes.data);
+          
+          if (!productsRes.error && productsRes.data !== null) setProducts(productsRes.data);
+          if (!proposalsRes.error && proposalsRes.data !== null) setProposals(proposalsRes.data);
+          if (!turmasRes.error && turmasRes.data !== null) setTurmas(turmasRes.data);
+          if (!studentsRes.error && studentsRes.data !== null) setStudents(studentsRes.data);
+          if (!colabRes.error && colabRes.data !== null) setColaboradores(colabRes.data);
+          
+          if (!settingsRes.error && settingsRes.data !== null) {
+            settingsRes.data.forEach((setting: any) => {
+              switch (setting.key) {
+                case 'globalWebhooks': setGlobalWebhooks(setting.value); break;
+                case 'customLeadFields': setCustomLeadFields(setting.value); break;
+                case 'leadScoreTriggers': setLeadScoreTriggers(setting.value); break;
+              }
+            });
+          }
+        } catch (err) {
+          console.warn("Supabase fetch failed, keeping empty state.", err);
+        }
+        return;
+      }
+
+      // Fallback: no Supabase — use localStorage only
       const savedLeads = localStorage.getItem('axis_leads');
       const savedTasks = localStorage.getItem('axis_tasks');
       const savedContracts = localStorage.getItem('axis_contracts');
       const savedNotifications = localStorage.getItem('axis_notifications');
       const savedActivities = localStorage.getItem('axis_lead_activities');
-      
+      const savedFinance = localStorage.getItem('axis_finance_entries');
+      const savedAppts = localStorage.getItem('axis_appointments');
+      const savedSquads = localStorage.getItem('axis_squads_v2');
+
       if (savedLeads) setLeads(JSON.parse(savedLeads));
       if (savedTasks) setTasks(JSON.parse(savedTasks));
       if (savedContracts) setContracts(JSON.parse(savedContracts));
       if (savedNotifications) setNotifications(JSON.parse(savedNotifications));
-      if (savedActivities) {
-        setLeadActivities(JSON.parse(savedActivities));
-      } else {
-        setLeadActivities(defaultActivitiesOnLoad);
-      }
-
-      if (!supabase) return;
-      try {
-        const { data: dbLeads, error: lErr } = await supabase.from('leads').select('*');
-        if (!lErr && dbLeads && dbLeads.length > 0) {
-          setLeads(dbLeads as Lead[]);
-        }
-
-        const { data: dbTasks, error: tErr } = await supabase.from('tasks').select('*');
-        if (!tErr && dbTasks && dbTasks.length > 0) {
-          setTasks(dbTasks as Task[]);
-        }
-
-        const { data: dbContracts, error: cErr } = await supabase.from('contracts').select('*');
-        if (!cErr && dbContracts && dbContracts.length > 0) {
-          setContracts(dbContracts as Contract[]);
-        }
-
-        const { data: dbActs, error: aErr } = await supabase.from('lead_activities').select('*');
-        if (!aErr && dbActs && dbActs.length > 0) {
-          setLeadActivities(dbActs as LeadActivity[]);
-        }
-      } catch (err) {
-        console.warn("Supabase fetch failed (possibly missing tables), using local storage instead.", err);
-      }
+      if (savedActivities) setLeadActivities(JSON.parse(savedActivities));
+      if (savedFinance) setFinanceEntries(JSON.parse(savedFinance));
+      if (savedAppts) setAppointments(JSON.parse(savedAppts));
+      if (savedSquads) setSquads(JSON.parse(savedSquads));
     }
     loadInitialData();
   }, []);
 
   useEffect(() => {
+    if (supabase) return; // Supabase is source of truth; skip localStorage persistence
     localStorage.setItem('axis_leads', JSON.stringify(leads));
     localStorage.setItem('axis_tasks', JSON.stringify(tasks));
     localStorage.setItem('axis_contracts', JSON.stringify(contracts));
@@ -233,6 +375,24 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('axis_finance_entries', JSON.stringify(financeEntries));
     localStorage.setItem('axis_appointments', JSON.stringify(appointments));
   }, [leads, tasks, contracts, notifications, leadActivities, financeEntries, appointments]);
+
+  useEffect(() => {
+    localStorage.setItem('axis_marketing_automations', JSON.stringify(marketingAutomations));
+    if (!supabase) {
+      localStorage.setItem('axis_marketing_campaigns', JSON.stringify(marketingCampaigns));
+      localStorage.setItem('axis_marketing_content', JSON.stringify(marketingContent));
+      localStorage.setItem('axis_marketing_landing_pages', JSON.stringify(marketingLandingPages));
+    }
+  }, [marketingAutomations, marketingCampaigns, marketingContent, marketingLandingPages]);
+
+  useEffect(() => {
+    localStorage.setItem('axis_products', JSON.stringify(products));
+    localStorage.setItem('axis_proposals', JSON.stringify(proposals));
+    localStorage.setItem('axis_certificates', JSON.stringify(certificates));
+    localStorage.setItem('axis_turmas', JSON.stringify(turmas));
+    localStorage.setItem('axis_colaboradores', JSON.stringify(colaboradores));
+    localStorage.setItem('axis_squad_metas_v2', JSON.stringify(squadMetas));
+  }, [products, proposals, certificates, turmas, colaboradores, squadMetas]);
 
   // WhatsApp Reminder Engine (30 mins before teleconsultation)
   const notifiedRemindersRef = React.useRef<Record<string, boolean>>({});
@@ -718,34 +878,118 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     triggerScoreRecalculation(leadId, leads, updatedActivities);
   };
 
-  const addFinanceEntry = (entry: Omit<FinanceEntry, 'id'>) => {
+  const createCrudHelper = (tableName: string, stateSetter: React.Dispatch<React.SetStateAction<any[]>>) => {
+    return {
+      add: async (item: any) => {
+        stateSetter(prev => [item, ...prev]);
+        if (supabase) {
+          try { await supabase.from(tableName).insert(item); }
+          catch (err) { console.error(`Supabase add ${tableName} failed:`, err); }
+        }
+      },
+      update: async (id: string, updates: any) => {
+        stateSetter(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
+        if (supabase) {
+          try { await supabase.from(tableName).update(updates).eq('id', id); }
+          catch (err) { console.error(`Supabase update ${tableName} failed:`, err); }
+        }
+      },
+      del: async (id: string) => {
+        stateSetter(prev => prev.filter(item => item.id !== id));
+        if (supabase) {
+          try { await supabase.from(tableName).delete().eq('id', id); }
+          catch (err) { console.error(`Supabase delete ${tableName} failed:`, err); }
+        }
+      }
+    };
+  };
+
+  const productCrud = createCrudHelper('products', setProducts);
+  const proposalCrud = createCrudHelper('proposals', setProposals);
+  const turmaCrud = createCrudHelper('turmas', setTurmas);
+  const studentCrud = createCrudHelper('students', setStudents);
+  const colabCrud = createCrudHelper('colaboradores', setColaboradores);
+  const mktCampCrud = createCrudHelper('marketing_campaigns', setMarketingCampaigns);
+  const mktContCrud = createCrudHelper('marketing_content', setMarketingContent);
+  const mktLpCrud = createCrudHelper('marketing_landing_pages', setMarketingLandingPages);
+
+  const addFinanceEntry = async (entry: Omit<FinanceEntry, 'id'>) => {
     const newEntry = { ...entry, id: `f${Math.random().toString(36).substring(2, 9)}` };
     setFinanceEntries(prev => [newEntry, ...prev]);
     toast.success(`${entry.type === 'Pagar' ? 'Despesa' : 'Receita'} registrada!`);
+    if (supabase) {
+      try {
+        await supabase.from('finance_entries').insert(newEntry);
+      } catch (err) {
+        console.error("Supabase add finance_entries failed:", err);
+      }
+    }
   };
 
-  const deleteFinanceEntry = (id: string) => {
+  const deleteFinanceEntry = async (id: string) => {
     setFinanceEntries(prev => prev.filter(f => f.id !== id));
     toast.info('Lançamento financeiro removido.');
+    if (supabase) {
+      try {
+        await supabase.from('finance_entries').delete().eq('id', id);
+      } catch (err) {
+        console.error("Supabase delete finance_entries failed:", err);
+      }
+    }
   };
 
-  const updateFinanceEntry = (id: string, updates: Partial<FinanceEntry>) => {
+  const updateFinanceEntry = async (id: string, updates: Partial<FinanceEntry>) => {
     setFinanceEntries(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
+    if (supabase) {
+      try {
+        await supabase.from('finance_entries').update(updates).eq('id', id);
+      } catch (err) {
+        console.error("Supabase update finance_entries failed:", err);
+      }
+    }
   };
 
-  const addAppointment = (apt: Omit<Appointment, 'id'>) => {
+  const addAppointment = async (apt: Omit<Appointment, 'id'>) => {
     const newApt = { ...apt, id: Math.random().toString(36).substr(2, 9) };
     setAppointments(prev => [newApt, ...prev]);
     toast.success('Agendamento realizado!');
+    if (supabase) {
+      try {
+        const { id, patient, phone, drId, drName, specialty, room, type, status, date, time } = newApt as any;
+        await supabase.from('appointments').insert({
+          id, patient, phone, dr_id: drId, dr_name: drName, specialty, room, type, status, date, time
+        });
+      } catch (err) {
+        console.error("Supabase add appointment failed:", err);
+      }
+    }
   };
 
-  const updateAppointment = (id: string, updates: Partial<Appointment>) => {
+  const updateAppointment = async (id: string, updates: Partial<Appointment>) => {
     setAppointments(prev => prev.map(a => a.id === id ? { ...a, ...updates } : a));
+    if (supabase) {
+      try {
+        const payload: any = { ...updates };
+        if ('drId' in payload) payload.dr_id = payload.drId;
+        if ('drName' in payload) payload.dr_name = payload.drName;
+        delete payload.drId; delete payload.drName;
+        await supabase.from('appointments').update(payload).eq('id', id);
+      } catch (err) {
+        console.error("Supabase update appointment failed:", err);
+      }
+    }
   };
 
-  const deleteAppointment = (id: string) => {
+  const deleteAppointment = async (id: string) => {
     setAppointments(prev => prev.filter(a => a.id !== id));
     toast.info('Agendamento removido.');
+    if (supabase) {
+      try {
+        await supabase.from('appointments').delete().eq('id', id);
+      } catch (err) {
+        console.error("Supabase delete appointment failed:", err);
+      }
+    }
   };
 
   return (
@@ -765,9 +1009,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       robotStatus,
       setRobotStatus,
       customLeadFields,
-      setCustomLeadFields,
+      setCustomLeadFields: updateCustomLeadFields,
       leadScoreTriggers,
-      setLeadScoreTriggers,
+      setLeadScoreTriggers: updateLeadScoreTriggers,
       globalWebhooks,
       addGlobalWebhook,
       deleteGlobalWebhook,
@@ -775,7 +1019,53 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       squads,
       updateSquad,
       addSquad,
-      deleteSquad
+      deleteSquad,
+      marketingAutomations,
+      setMarketingAutomations,
+      marketingContent,
+      setMarketingContent,
+      addMarketingContent: mktContCrud.add,
+      updateMarketingContent: mktContCrud.update,
+      deleteMarketingContent: mktContCrud.del,
+      marketingCampaigns,
+      setMarketingCampaigns,
+      addMarketingCampaign: mktCampCrud.add,
+      updateMarketingCampaign: mktCampCrud.update,
+      deleteMarketingCampaign: mktCampCrud.del,
+      marketingLandingPages,
+      setMarketingLandingPages,
+      addMarketingLandingPage: mktLpCrud.add,
+      updateMarketingLandingPage: mktLpCrud.update,
+      deleteMarketingLandingPage: mktLpCrud.del,
+      products,
+      setProducts,
+      addProduct: productCrud.add,
+      updateProduct: productCrud.update,
+      deleteProduct: productCrud.del,
+      proposals,
+      setProposals,
+      addProposal: proposalCrud.add,
+      updateProposal: proposalCrud.update,
+      deleteProposal: proposalCrud.del,
+      certificates,
+      setCertificates,
+      turmas,
+      setTurmas,
+      addTurma: turmaCrud.add,
+      updateTurma: turmaCrud.update,
+      deleteTurma: turmaCrud.del,
+      students,
+      setStudents,
+      addStudent: studentCrud.add,
+      updateStudent: studentCrud.update,
+      deleteStudent: studentCrud.del,
+      colaboradores,
+      setColaboradores,
+      addColaborador: colabCrud.add,
+      updateColaborador: colabCrud.update,
+      deleteColaborador: colabCrud.del,
+      squadMetas,
+      setSquadMetas,
     }}>
       {children}
     </DataContext.Provider>

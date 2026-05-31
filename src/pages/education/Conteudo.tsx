@@ -32,49 +32,7 @@ interface ContentItem {
   status: 'Publicado' | 'Rascunho' | 'Em Revisão' | 'Arquivado';
 }
 
-const INITIAL_CONTENT: ContentItem[] = [
-  {
-    id: "1",
-    title: "Introdução à Arquitetura Limpa",
-    type: 'Video',
-    module: "Módulo 01: Fundamentos",
-    course: "Engenharia de Software",
-    duration: "18min",
-    lastUpdate: "22 Mai 2024",
-    accessCount: 450,
-    status: 'Publicado'
-  },
-  {
-    id: "2",
-    title: "Guia de UX Writter Avançado",
-    type: 'PDF',
-    module: "Módulo 03: Design de Interfaces",
-    course: "UX Design Fundamentos",
-    lastUpdate: "15 Mai 2024",
-    accessCount: 120,
-    status: 'Publicado'
-  },
-  {
-    id: "3",
-    title: "Simulado de Metodologias Ágeis",
-    type: 'Quiz',
-    module: "Módulo Final",
-    course: "Gestão Ágil de Projetos",
-    lastUpdate: "10 Mai 2024",
-    accessCount: 89,
-    status: 'Rascunho'
-  },
-  {
-    id: "4",
-    title: "Estratégias de Growth Hacking 2024",
-    type: 'Artigo',
-    module: "Módulo 02: Estratégia",
-    course: "Marketing Digital",
-    lastUpdate: "01 Mai 2024",
-    accessCount: 230,
-    status: 'Em Revisão'
-  }
-];
+const INITIAL_CONTENT: ContentItem[] = [];
 
 export default function Conteudo() {
   const [viewMode, setViewMode] = useState<'Table' | 'Kanban'>('Kanban');

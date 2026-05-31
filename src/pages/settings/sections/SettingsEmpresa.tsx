@@ -18,10 +18,7 @@ export function ConfigEmpresaFiliais() {
       </div>
 
       <div className="grid gap-4">
-        {[
-          { nome: "Matriz - São Paulo", cnpj: "00.000.000/0001-00", cidade: "São Paulo, SP", status: "Principal" },
-          { nome: "Filial - Rio de Janeiro", cnpj: "00.000.000/0002-11", cidade: "Rio de Janeiro, RJ", status: "Ativa" }
-        ].map((filial, i) => (
+        {[].map((filial: any, i) => (
           <Card key={i} className="p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
@@ -90,12 +87,7 @@ export function ConfigEmpresaPermissoes() {
       </div>
       
       <div className="grid md:grid-cols-2 gap-4">
-        {[
-          { perfil: "Administrador", modulos: "Acesso Total", usuarios: 2, icon: Key, color: "text-rose-500", bg: "bg-rose-500/10" },
-          { perfil: "Gerente Comercial", modulos: "Dashboards, CRM, Relatórios", usuarios: 1, icon: Target, color: "text-[#2563EB]", bg: "bg-[#2563EB]/10" },
-          { perfil: "Vendedor Sênior", modulos: "CRM, Tarefas", usuarios: 4, icon: Briefcase, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-          { perfil: "Financeiro", modulos: "Faturamento, Notas, Relatórios", usuarios: 1, icon: DollarSign, color: "text-[#10B981]", bg: "bg-[#10B981]/10" },
-        ].map((p, i) => (
+        {[].map((p: any, i) => (
            <Card key={i} className="p-5 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
               <div className="flex justify-between items-start mb-4">
                  <div className={`p-2 rounded-lg ${p.bg}`}>

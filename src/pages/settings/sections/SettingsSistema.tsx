@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 export function ConfigSistemaBackups() {
   const [scheduleTime, setScheduleTime] = useState("02:00 Semanal");
-  const [lastBackupDate, setLastBackupDate] = useState("Ontem, 02:00");
+  const [lastBackupDate, setLastBackupDate] = useState("Nenhum backup recente");
 
   const runImmediateBackup = () => {
     toast.promise(

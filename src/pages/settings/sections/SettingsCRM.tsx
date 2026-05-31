@@ -80,7 +80,7 @@ export function ConfigCRMFunis() {
       <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
         <h3 className="font-bold text-lg mb-6 flex items-center gap-2"><Columns3 className="w-5 h-5 text-[#2563EB]" /> Funil Principal Exemplo</h3>
         <div className="space-y-3">
-          {['Prospecção', 'Qualificação', 'Proposta Enviada', 'Negociação', 'Fechamento'].map((etapa, i) => (
+          {[].map((etapa: any, i) => (
             <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-[#0B1120] border border-white/5 rounded-xl">
                <div className="flex items-center gap-4">
                  <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center font-bold text-slate-400">{i+1}</div>
@@ -118,7 +118,7 @@ export function ConfigCRMOrigens() {
                 <Button onClick={() => setIsModalOpen(true)} className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 shadow-lg shadow-blue-500/20"><Plus className="w-4 h-4 mr-2" /> Nova Origem</Button>
             </div>
             <div className="grid md:grid-cols-3 gap-4">
-                {['Google Ads', 'Meta Ads', 'Orgânico', 'Indicação', 'Prospecção Ativa (Outbound)', 'Parceiros'].map((origem, i) => (
+                {[].map((origem: any, i) => (
                     <Card key={i} className="p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex justify-between items-center gap-4 group">
                         <span className="font-semibold text-slate-200">{origem}</span>
                         <Target className="w-4 h-4 text-slate-500 group-hover:text-[#2563EB]" />
@@ -141,10 +141,7 @@ export function ConfigCRMOrigens() {
 
 export function ConfigCRMProdutos() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [customFields, setCustomFields] = useState([
-    { id: 1, name: "Código SKU", type: "Texto" },
-    { id: 2, name: "Peso (kg)", type: "Número" },
-  ]);
+  const [customFields, setCustomFields] = useState<any[]>([]);
 
   return (
     <div className="max-w-4xl space-y-6">

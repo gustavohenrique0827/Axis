@@ -26,10 +26,10 @@ const HEALTH_CHART = [
 ];
 
 export default function FinanceiroVisaoGeral() {
-  const { financeEntries, contracts } = useData();
+  const { financeEntries, contracts, squads } = useData();
+  const [_activeTab, setActiveTab] = useState<string>('visao');
 
-    const { receita, despesa, mrr, inadimplencia } = useMemo(() => {
-    // Current month totals
+  const { receita, despesa, mrr, inadimplencia } = useMemo(() => {
     const receita = financeEntries
       .filter(f => f.type === 'Receber' && f.status === 'Pago')
       .reduce((sum, f) => sum + f.value, 0);
@@ -65,15 +65,30 @@ export default function FinanceiroVisaoGeral() {
       }));
   }, [financeEntries]);
 
-  // Chart data simulation (normalized)
-  const chartData = [
-    { name: 'Jan', receita: 4000, despesa: 2400, projection: 4200 },
-    { name: 'Fev', receita: 3000, despesa: 1398, projection: 3100 },
-    { name: 'Mar', receita: 2000, despesa: 9800, projection: 2500 },
-    { name: 'Abr', receita: 2780, despesa: 3908, projection: 2900 },
-    { name: 'Mai', receita: receita || 1890, despesa: despesa || 4800, projection: 2200 },
-    { name: 'Jun', receita: 2390, despesa: 3800, projection: 3000 },
-  ];
+  // Chart data: group financeEntries by month (last 6 months)
+  const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+  const chartData = useMemo(() => {
+    const now = new Date();
+    return Array.from({ length: 6 }, (_, i) => {
+      const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+      const y = d.getFullYear();
+      const m = d.getMonth();
+      const monthEntries = financeEntries.filter(f => {
+        try {
+          const parts = f.date?.split('/');
+          if (!parts || parts.length < 3) return false;
+          const fd = new Date(parseInt(parts[2]), parseInt(parts[1]) - 1, parseInt(parts[0]));
+          return fd.getFullYear() === y && fd.getMonth() === m;
+        } catch { return false; }
+      });
+      const rec = monthEntries.filter(f => f.type === 'Receber' && f.status === 'Pago').reduce((s, f) => s + f.value, 0);
+      const des = monthEntries.filter(f => f.type === 'Pagar' && f.status === 'Pago').reduce((s, f) => s + f.value, 0);
+      return { name: MONTH_NAMES[m], receita: rec, despesa: des, projection: Math.round(rec * 1.1) };
+    });
+  }, [financeEntries]);
+
+  // Stability score: ratio of revenue vs total flow
+  const stabilityScore = receita + despesa > 0 ? Math.round((receita / (receita + despesa)) * 100) : 0;
 
   return (
     <PageContainer
@@ -196,7 +211,10 @@ export default function FinanceiroVisaoGeral() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={HEALTH_CHART}
+                    data={[
+                      { name: 'Stability', value: stabilityScore, fill: '#2563EB' },
+                      { name: 'Remaining', value: 100 - stabilityScore, fill: 'rgba(255,255,255,0.05)' },
+                    ]}
                     cx="50%"
                     cy="50%"
                     innerRadius="80%"
@@ -207,14 +225,13 @@ export default function FinanceiroVisaoGeral() {
                     dataKey="value"
                     stroke="none"
                   >
-                    {HEALTH_CHART.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} cornerRadius={index === 0 ? 20 : 0} />
-                    ))}
+                    <Cell fill="#2563EB" cornerRadius={20} />
+                    <Cell fill="rgba(255,255,255,0.05)" />
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center">
-                 <span className="text-5xl font-black text-white italic tracking-tighter">84</span>
+                 <span className="text-5xl font-black text-white italic tracking-tighter">{stabilityScore}</span>
                  <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest mt-2">Saúde Global</span>
               </div>
            </div>
@@ -283,9 +300,9 @@ export default function FinanceiroVisaoGeral() {
            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
                  {[
-                   { label: "Custo por Lead (CPL)", value: "R$ 42,50", trend: "+12%", status: "Warning" },
-                   { label: "LTV Projetado (12m)", value: "R$ 18.400", trend: "+5%", status: "Stable" },
-                   { label: "Margem Ebitda", value: "32.4%", trend: "+2.1%", status: "Safe" }
+                   { label: "Custo por Lead (CPL)", value: "R$ 0,00", trend: "0%", status: "Stable" },
+                   { label: "LTV Projetado (12m)", value: "R$ 0,00", trend: "0%", status: "Stable" },
+                   { label: "Margem Ebitda", value: "0%", trend: "0%", status: "Stable" }
                  ].map((insight, idx) => (
                    <div key={idx} className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0 last:pb-0">
                       <div>
@@ -314,7 +331,7 @@ export default function FinanceiroVisaoGeral() {
                     </div>
                  </div>
                  <p className="text-[11px] font-bold text-slate-400 leading-relaxed uppercase tracking-tighter">
-                   O fluxo de caixa projetado para Junho indica uma reserva de <span className="text-emerald-400">R$ 15.200</span> para expansão. Recomendamos aumentar o investimento em ads no <span className="text-blue-400">Squad Palmas</span> para acelerar o MRR antes do Q3.
+                   Sem dados suficientes para geração de insights automáticos no momento.
                  </p>
                  <Button className="mt-6 h-11 w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] uppercase tracking-widest">Executar Estratégia</Button>
               </div>
@@ -345,20 +362,24 @@ export default function FinanceiroVisaoGeral() {
               </div>
             </div>
 
+          {squads.length === 0 ? (
+            <div className="grid grid-cols-1 gap-4">
+              <div className="flex flex-col items-center justify-center py-16 gap-4 bg-white/[0.02] border border-dashed border-white/10 rounded-2xl">
+                <span className="text-3xl">🎯</span>
+                <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Nenhum squad cadastrado ainda.<br/>Crie squads para ver a evolução de metas.</p>
+              </div>
+            </div>
+          ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              {[
-                { name: "Squad Apple Palmas Elite", faturamento: 265000, meta: 300000, color: "bg-blue-500", focus: "iPhones & Revendedores" },
-                { name: "Squad G-Tech Admissões", faturamento: 89000, meta: 120000, color: "bg-emerald-500", focus: "Cursos & Matrículas" },
-                { name: "Squad Outbound Enterprise", faturamento: 35000, meta: 150000, color: "bg-indigo-500", focus: "Contratos Médios / Grandes" },
-                { name: "Squad Customer Success", faturamento: 12000, meta: 20000, color: "bg-orange-500", focus: "Upsell & Expansão" }
-              ].map((item, idx) => {
-                const percent = Math.min(100, Math.round((item.faturamento / item.meta) * 100));
+              {squads.map((sq, idx) => {
+                const percent = Math.min(100, Math.round((sq.faturamentoAlcancado / sq.meta) * 100));
+                const colors = ['bg-blue-500', 'bg-emerald-500', 'bg-indigo-500', 'bg-orange-500'];
                 return (
-                  <div key={idx} className="space-y-3 p-4 bg-white/[0.01] border border-white/5 rounded-2xl hover:bg-white/[0.03] transition-all">
+                  <div key={sq.id || idx} className="space-y-3 p-4 bg-white/[0.01] border border-white/5 rounded-2xl hover:bg-white/[0.03] transition-all">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-[11px] font-black text-white uppercase tracking-tight">{item.name}</span>
-                        <span className="text-[9px] text-slate-500 font-bold uppercase block mt-0.5 opacity-60">Foco: {item.focus}</span>
+                        <span className="text-[11px] font-black text-white uppercase tracking-tight">{sq.nome}</span>
+                        <span className="text-[9px] text-slate-500 font-bold uppercase block mt-0.5 opacity-60">Foco: {sq.focoComercial}</span>
                       </div>
                       <div className="flex items-baseline gap-1">
                         <span className="text-sm font-mono font-black text-white">{percent}</span>
@@ -367,18 +388,19 @@ export default function FinanceiroVisaoGeral() {
                     </div>
                     <div className="h-1.5 w-full bg-slate-900 rounded-full overflow-hidden shadow-inner">
                       <div 
-                        className={`h-full rounded-full ${item.color} transition-all duration-1000 shadow-[0_0_10px_rgba(37,99,235,0.2)]`}
+                        className={`h-full rounded-full ${colors[idx % colors.length]} transition-all duration-1000`}
                         style={{ width: `${percent}%` }}
                       />
                     </div>
                     <div className="flex items-center justify-between text-[10px] text-slate-500 font-bold font-mono">
-                      <span>R$ {item.faturamento.toLocaleString()}</span>
-                      <span className="opacity-40">GOAL: R$ {item.meta.toLocaleString()}</span>
+                      <span>R$ {sq.faturamentoAlcancado.toLocaleString()}</span>
+                      <span className="opacity-40">GOAL: R$ {sq.meta.toLocaleString()}</span>
                     </div>
                   </div>
                 );
               })}
             </div>
+          )}
           </div>
           
           <div className="pt-6 border-t border-white/5 mt-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-[10px] text-slate-600 font-bold uppercase tracking-widest">
@@ -391,16 +413,16 @@ export default function FinanceiroVisaoGeral() {
         </Card>
 
         {/* Commissions Breakdown Box */}
-        <Card className="p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl flex flex-col justify-between rounded-[32px] bento-card">
+          <Card className="p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl flex flex-col justify-between rounded-[32px] bento-card">
           <div>
-            <h4 className="text-sm font-black text-white uppercase tracking-tight mb-2">Comissões & OTE</h4>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-8">Preditividade de pagamentos variável</p>
+            <h4 className="text-sm font-black text-white uppercase tracking-tight mb-2">Resumo por Tipo</h4>
+            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-8">Entradas vs Saídas do período</p>
 
             <div className="space-y-4">
               {[
-                { title: "Closers High Ticket", value: "R$ 13.250", subtitle: "Goal reached on Squad Palmas", status: "Approved", type: "success" },
-                { title: "Performance Leads (SDR)", value: "R$ 5.000", subtitle: "Assertiveness metrics", status: "Audit", type: "info" },
-                { title: "Accelerator Bonus", value: "R$ 3.500", subtitle: "Regional super-overdrive", status: "Pending", type: "warning" }
+                { title: "Total a Receber", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financeEntries.filter(f => f.type === 'Receber').reduce((s, f) => s + f.value, 0)), subtitle: `${financeEntries.filter(f => f.type === 'Receber').length} lançamentos`, status: "Receita", type: "success" },
+                { title: "Total a Pagar", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(financeEntries.filter(f => f.type === 'Pagar').reduce((s, f) => s + f.value, 0)), subtitle: `${financeEntries.filter(f => f.type === 'Pagar').length} lançamentos`, status: "Despesa", type: "warning" },
+                { title: "Saldo Líquido", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(receita - despesa), subtitle: "Pago vs recebido", status: receita >= despesa ? "Positivo" : "Negativo", type: receita >= despesa ? "success" : "error" },
               ].map((fee, idx) => (
                 <div key={idx} className="p-4 bg-white/[0.02] border border-white/5 rounded-2xl hover:bg-white/[0.05] transition-all">
                   <div className="flex items-center justify-between mb-2">
@@ -411,7 +433,7 @@ export default function FinanceiroVisaoGeral() {
                     <span className="text-[9px] text-slate-600 font-black uppercase tracking-tight block">{fee.subtitle}</span>
                     <span className={`text-[8px] font-black uppercase px-2 py-0.5 rounded border ${
                       fee.type === 'success' ? 'text-emerald-500 border-emerald-500/20 bg-emerald-500/5' : 
-                      fee.type === 'info' ? 'text-blue-500 border-blue-500/20 bg-blue-500/5' : 
+                      fee.type === 'warning' ? 'text-amber-500 border-amber-500/20 bg-amber-500/5' : 
                       'text-rose-500 border-rose-500/20 bg-rose-500/5'
                     }`}>{fee.status}</span>
                   </div>
@@ -423,7 +445,7 @@ export default function FinanceiroVisaoGeral() {
           <div className="pt-6 border-t border-white/5 mt-8">
             <div className="p-5 bg-gradient-to-br from-blue-600/10 to-transparent border border-blue-500/20 rounded-2xl text-center group transition-all">
               <span className="text-[8px] text-slate-500 font-black uppercase tracking-[0.3em] block mb-2">Total Provisionado</span>
-              <span className="text-2xl font-mono font-black text-white block italic tracking-tighter">R$ 18.250</span>
+              <span className="text-2xl font-mono font-black text-white block italic tracking-tighter">R$ 0,00</span>
             </div>
           </div>
         </Card>

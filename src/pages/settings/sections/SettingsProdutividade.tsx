@@ -99,12 +99,7 @@ export function ConfigProdutividadeCategorias() {
             </Card>
 
             <div className="grid md:grid-cols-2 gap-4">
-                {[
-                    { nome: "Ligação / Follow-up", cor: "bg-blue-500" },
-                    { nome: "Reunião Presencial", cor: "bg-emerald-500" },
-                    { nome: "Reunião Online", cor: "bg-purple-500" },
-                    { nome: "Envio de Proposta", cor: "bg-amber-500" },
-                ].map((cat, i) => (
+                {[].map((cat: any, i) => (
                     <Card key={i} className="p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex justify-between items-center group">
                         <div className="flex items-center gap-3">
                             <div className={`w-3 h-3 rounded-full ${cat.cor}`}></div>
@@ -145,7 +140,7 @@ export function ConfigFinanceiroCategorias() {
                 <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
                     <h3 className="font-bold text-lg mb-4 text-[#10B981] flex items-center gap-2"><DollarSign className="w-5 h-5" /> Receitas</h3>
                     <div className="space-y-2">
-                        {['Venda de Software (SaaS)', 'Serviços de Implantação', 'Consultoria', 'Comissões de Parceiros'].map((cat, i) => (
+                        {[].map((cat: any, i) => (
                             <div key={i} className="p-3 bg-[#0B1120] border border-white/5 rounded-lg flex justify-between items-center">
                                 <span className="text-sm text-slate-300">{cat}</span>
                             </div>
@@ -156,7 +151,7 @@ export function ConfigFinanceiroCategorias() {
                 <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
                     <h3 className="font-bold text-lg mb-4 text-red-400 flex items-center gap-2"><DollarSign className="w-5 h-5" /> Despesas</h3>
                     <div className="space-y-2">
-                        {['Folha de Pagamento', 'Impostos (Simples, PIS/COFINS, etc)', 'Marketing (Ads, Patrocínios)', 'Infraestrutura (Servidores, Cloud)'].map((cat, i) => (
+                        {[].map((cat: any, i) => (
                             <div key={i} className="p-3 bg-[#0B1120] border border-white/5 rounded-lg flex justify-between items-center">
                                 <span className="text-sm text-slate-300">{cat}</span>
                             </div>

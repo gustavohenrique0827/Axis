@@ -42,37 +42,43 @@ export function SdrReportSection({
     ? (computedIsEdu ? 'educacao' : computedIsCS ? 'posvenda' : 'normal')
     : reportContextOverride;
 
-  const mockEducacao = {
-    statusTurma: lead.id === 'sdr1' ? "CONFIRMADO NA TURMA" : "PENDENTE DE MATRÍCULA",
-    classChoice: lead.id === 'sdr1' ? "Engenharia de Software (Sábado - Integração)" : "MBA Gestão Escolar (On-line EAD)",
-    presenceInaugural: lead.id === 'sdr1' ? "Sim - Confirmou que participará" : "Pendente - Falta responder WhatsApp",
-    onboardingGroup: lead.id === 'sdr1' ? "Sim - Adicionado no Discord" : "Não - Link enviado por WhatsApp",
-    primaryAim: "Elevação profissional para assumir cargo de Staff Engineer ou Coordenador de Projetos.",
-    blockersSolved: "Medo de não conciliar com o trabalho solucionado explicando acesso assíncrono.",
-    playbook: "Destacar urgência! Ficam poucas vagas remanescentes para manter os bônus corporativos. Focar na mentoria ao vivo de networking.",
-    nextStep: "Confirmar escolha definitiva do horário do laboratório prático por WhatsApp.",
-    template: `Olá, ${leadName}! Aqui é o consultor de admissão da Axis. Nossa IA mapeou que você já confirmou presença para a aula magna da turma de ${lead.id === 'sdr1' ? 'Engenharia de Software' : 'Gestão Escolar MBA'}. Vamos finalizar sua reserva oficial de vaga e liberar suas credenciais de acesso ao portal para você já iniciar suas aulas amanhã?`
+  // Generic mapping from custom fields
+  const getField = (key: string, fallback: string = 'Não informado') => {
+    if (!lead.customFields) return fallback;
+    const field = lead.customFields.find((f: any) => f.name.toLowerCase().includes(key.toLowerCase()));
+    return field?.value || fallback;
   };
 
-  const mockCS = {
-    npsScore: lead.id === 'sdr1' ? "NPS 10/10 (Promotor)" : "NPS 7/10 (Morno)",
-    activeUsers: lead.id === 'sdr1' ? "85% (Forte engajamento)" : "42% (Uso instável)",
-    growthPotential: "Excelente. Cliente em fase de expansão de time comercial com abertura para 5 novas licenças.",
-    criticalObjection: "Dúvidas no setup inicial com APIs de terceiros. Resolvido com consultoria express de 15 minutos.",
-    playbook: "Parabenizar o cliente pelos ótimos KPIs com agentes inteligentes nos últimos 30 dias e oferecer o Upgrade para plano anual com 20% desc.",
-    nextStep: "Agendar videochamada de alinhamento estratégico de CS de 15 minutos.",
-    template: `Olá, ${leadName}! Como estão os resultados comerciais aí na ${companyName || 'sua empresa'}? Vi que seu time acelerou o SDR IA de forma incrível essa semana. Gostaríamos de marcar uma breve conversa de 15 minutos para fazer uma revisão estratégica de CS e apresentar novas automações exclusivas liberadas no seu plano. Qual o melhor horário amanhã?`
+  const educacaoData = {
+    statusTurma: getField('status turma', 'Pendente de Análise'),
+    classChoice: getField('curso', 'Não selecionado'),
+    presenceInaugural: getField('presença', 'Pendente'),
+    onboardingGroup: getField('grupo', 'Pendente'),
+    primaryAim: getField('objetivo', 'Não detalhado.'),
+    playbook: getField('playbook', 'Coletar mais informações sobre o lead e engajamento nas aulas.'),
+    nextStep: getField('proximo passo', 'Agendar ligação de boas vindas.'),
+    template: `Olá, ${leadName}! Aqui é o consultor de admissão da Axis. Nossa IA mapeou seu interesse. Podemos conversar?`
   };
 
-  const mockNormal = {
-    leadScore: lead.scoreIA || 85,
-    cargo: "Diretor Comercial / Head de Operações",
-    potencialComercial: "R$ 15.000 (Consultoria Enterprise + Licenças)",
-    mainDores: "Baixo retorno em outbound, tempo de resposta a inbound lento (> 3 horas), vendedores perdidos em planilhas.",
-    decididorStatus: "Sim, contato direto é o principal tomador de decisão técnica.",
-    playbook: "Focar em ROI, automação de SLA de 5 minutos, e redução de churn de leads inativos. Demonstrar o painel SDR operando em tempo real.",
-    nextStep: "Apresentar demonstração prática e enviar proposta de contratação de licenças.",
-    template: `Olá, ${leadName}! Tudo bem? Nossa IA inteligente de qualificação realizou a triagem na ${companyName || 'sua empresa'} e identificou que vocês têm o fit exato para reduzir o tempo de primeiro contato a inbound de horas para minutos. Podemos marcar uma chamada rápida amanhã às 14h para apresentar a estrutura rodando com seus dados?`
+  const csData = {
+    npsScore: getField('nps', 'NPS Indefinido'),
+    activeUsers: getField('engajamento', 'Aguardando métricas'),
+    growthPotential: getField('potencial', 'A ser avaliado.'),
+    criticalObjection: getField('objeção', 'Nenhuma registrada.'),
+    playbook: getField('playbook cs', 'Acompanhar adoção da plataforma.'),
+    nextStep: getField('proximo passo cs', 'Agendar touchpoint.'),
+    template: `Olá, ${leadName}! Como estão os resultados na ${companyName || 'sua empresa'}? Gostaríamos de marcar uma breve conversa para revisão estratégica.`
+  };
+
+  const normalData = {
+    leadScore: lead.scoreIA || 0,
+    cargo: getField('cargo', 'Não informado'),
+    potencialComercial: getField('tamanho', 'A avaliar'),
+    mainDores: getField('dores', 'Aguardando mapeamento de dores.'),
+    decididorStatus: getField('decididor', 'A confirmar.'),
+    playbook: getField('playbook vendas', 'Qualificar através de metodologia comercial estruturada.'),
+    nextStep: getField('proximo passo vendas', 'Agendar qualificação inicial.'),
+    template: `Olá, ${leadName}! Tudo bem? Gostaria de entender mais sobre os desafios da ${companyName || 'sua empresa'}. Podemos marcar uma chamada rápida?`
   };
 
   return (
@@ -147,67 +153,67 @@ export function SdrReportSection({
                 <>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-semibold">Turma Pretendida:</span>
-                    <span className="text-white font-bold">{mockEducacao.classChoice}</span>
+                    <span className="text-white font-bold">{educacaoData.classChoice}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-slate-500 font-semibold">Confirmou que vai na turma?</span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-black ${lead.id === 'sdr1' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}>
-                      {mockEducacao.statusTurma}
+                    <span className="text-slate-500 font-semibold">Status de Matrícula:</span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-black bg-blue-500/20 text-blue-400">
+                      {educacaoData.statusTurma}
                     </span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-semibold">Presença Inaugural:</span>
-                    <span className="text-white font-bold">{mockEducacao.presenceInaugural}</span>
+                    <span className="text-white font-bold">{educacaoData.presenceInaugural}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-semibold">Grupo Alunos (Discord):</span>
-                    <span className="text-white font-bold">{mockEducacao.onboardingGroup}</span>
+                    <span className="text-white font-bold">{educacaoData.onboardingGroup}</span>
                   </div>
                   <div className="text-xs pt-2">
                     <span className="text-slate-500 font-semibold block mb-1">Desejo de Carreira:</span>
-                    <p className="text-slate-300 italic font-medium">"{mockEducacao.primaryAim}"</p>
+                    <p className="text-slate-300 italic font-medium">"{educacaoData.primaryAim}"</p>
                   </div>
                 </>
               ) : activeMode === 'posvenda' ? (
                 <>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-semibold">Status NPS:</span>
-                    <span className="text-emerald-400 font-mono font-black">{mockCS.npsScore}</span>
+                    <span className="text-emerald-400 font-mono font-black">{csData.npsScore}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-semibold">Engajamento Usuários:</span>
-                    <span className="text-white font-bold">{mockCS.activeUsers}</span>
+                    <span className="text-white font-bold">{csData.activeUsers}</span>
                   </div>
                   <div className="text-xs pt-2">
                     <span className="text-slate-500 font-semibold block mb-1">Oportunidade de Expansão:</span>
-                    <p className="text-slate-300 italic font-medium">"{mockCS.growthPotential}"</p>
+                    <p className="text-slate-300 italic font-medium">"{csData.growthPotential}"</p>
                   </div>
                   <div className="text-xs pt-1">
                     <span className="text-slate-500 font-semibold block mb-1">Objeção Crítica Mitigada:</span>
-                    <p className="text-slate-300 italic font-medium">"{mockCS.criticalObjection}"</p>
+                    <p className="text-slate-300 italic font-medium">"{csData.criticalObjection}"</p>
                   </div>
                 </>
               ) : (
                 <>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-semibold">Score IA Axis:</span>
-                    <span className="text-blue-400 font-mono font-black">{mockNormal.leadScore}/100</span>
+                    <span className="text-blue-400 font-mono font-black">{normalData.leadScore}/100</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-semibold">Cargo Contato:</span>
-                    <span className="text-white font-bold">{mockNormal.cargo}</span>
+                    <span className="text-white font-bold">{normalData.cargo}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-semibold">Potencial Estimado:</span>
-                    <span className="text-emerald-400 font-bold">{mockNormal.potencialComercial}</span>
+                    <span className="text-emerald-400 font-bold">{normalData.potencialComercial}</span>
                   </div>
                   <div className="flex justify-between items-center text-xs">
                     <span className="text-slate-500 font-semibold">Decididor Final?</span>
-                    <span className="text-white font-bold">{mockNormal.decididorStatus}</span>
+                    <span className="text-white font-bold">{normalData.decididorStatus}</span>
                   </div>
                   <div className="text-xs pt-2">
                     <span className="text-slate-500 font-semibold block mb-1">Principais Dores Comercial:</span>
-                    <p className="text-slate-300 italic font-medium">"{mockNormal.mainDores}"</p>
+                    <p className="text-slate-300 italic font-medium">"{normalData.mainDores}"</p>
                   </div>
                 </>
               )}
@@ -222,9 +228,9 @@ export function SdrReportSection({
                 <div>
                   <span className="text-blue-400/80 font-bold block uppercase tracking-wide text-[9px] mb-1">Playbook do Closer:</span>
                   <p className="text-slate-200 leading-relaxed font-semibold">
-                    {activeMode === 'educacao' ? mockEducacao.playbook : 
-                     activeMode === 'posvenda' ? mockCS.playbook : 
-                     mockNormal.playbook}
+                    {activeMode === 'educacao' ? educacaoData.playbook : 
+                     activeMode === 'posvenda' ? csData.playbook : 
+                     normalData.playbook}
                   </p>
                 </div>
                 
@@ -233,9 +239,9 @@ export function SdrReportSection({
                   <div className="p-2.5 bg-black/40 border border-white/5 rounded-xl text-white font-black text-[10px] uppercase tracking-wider flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                     <span className="truncate">
-                      {activeMode === 'educacao' ? mockEducacao.nextStep : 
-                       activeMode === 'posvenda' ? mockCS.nextStep : 
-                       mockNormal.nextStep}
+                      {activeMode === 'educacao' ? educacaoData.nextStep : 
+                       activeMode === 'posvenda' ? csData.nextStep : 
+                       normalData.nextStep}
                     </span>
                   </div>
                 </div>
@@ -253,9 +259,9 @@ export function SdrReportSection({
             <Button
               size="sm"
               onClick={() => {
-                const txt = activeMode === 'educacao' ? mockEducacao.template : 
-                            activeMode === 'posvenda' ? mockCS.template : 
-                            mockNormal.template;
+                const txt = activeMode === 'educacao' ? educacaoData.template : 
+                            activeMode === 'posvenda' ? csData.template : 
+                            normalData.template;
                 navigator.clipboard.writeText(txt);
                 toast.success("Script copiado!");
               }}
@@ -265,9 +271,9 @@ export function SdrReportSection({
             </Button>
           </div>
           <p className="text-xs text-slate-300 italic font-medium leading-relaxed bg-black/25 p-3 rounded-xl border border-white/5">
-            "{activeMode === 'educacao' ? mockEducacao.template : 
-              activeMode === 'posvenda' ? mockCS.template : 
-              mockNormal.template}"
+            "{activeMode === 'educacao' ? educacaoData.template : 
+              activeMode === 'posvenda' ? csData.template : 
+              normalData.template}"
           </p>
         </div>
       </Card>

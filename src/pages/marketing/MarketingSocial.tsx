@@ -3,11 +3,7 @@ import { Card } from "../../components/ui/card";
 import { Share2, Instagram, Facebook, Twitter, Linkedin, MessageCircle, Heart, Repeat, Eye } from "lucide-react";
 import { Button } from "../../components/ui/button";
 
-const posts = [
-  { id: 1, platform: 'Instagram', author: 'Marketing Team', date: 'Hoje, 10:00', content: 'Novo recurso Kanban chegou no Axis CRM! Arrasta pro lado pra ver como organizar suas pautas de forma visual. ✨📱', likes: 342, comments: 45, shares: 12, views: 1200 },
-  { id: 2, platform: 'LinkedIn', author: 'Corporate', date: 'Ontem, 14:30', content: 'Temos o orgulho de anunciar que processamos mais de 10 milhões de requisições de webhooks esta semana na nossa estrutura Enterprise...', likes: 890, comments: 120, shares: 340, views: 5600 },
-  { id: 3, platform: 'Twitter', author: 'Support', date: 'Sex, 09:15', content: 'Dica do dia: Use atalhos de teclado CMD+K para acessar rapidamente qualquer módulo no @axiscrm! ⚡️', likes: 56, comments: 3, shares: 10, views: 800 },
-];
+const posts: any[] = [];
 
 export default function MarketingSocial() {
   return (
@@ -21,40 +17,40 @@ export default function MarketingSocial() {
               <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center">
                  <Instagram className="w-5 h-5 text-pink-500" />
               </div>
-              <span className="text-xs font-bold text-emerald-400">+12%</span>
+              <span className="text-xs font-bold text-emerald-400">0%</span>
             </div>
             <p className="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1">Seguidores</p>
-            <h3 className="text-2xl font-black text-white">12.5K</h3>
+            <h3 className="text-2xl font-black text-white">0</h3>
          </Card>
          <Card className="p-6 bg-[#111827] border-white/5 relative overflow-hidden">
             <div className="flex justify-between items-center mb-4">
               <div className="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center">
                  <Linkedin className="w-5 h-5 text-blue-600" />
               </div>
-              <span className="text-xs font-bold text-emerald-400">+5%</span>
+              <span className="text-xs font-bold text-emerald-400">0%</span>
             </div>
             <p className="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1">Conexões</p>
-            <h3 className="text-2xl font-black text-white">8.2K</h3>
+            <h3 className="text-2xl font-black text-white">0</h3>
          </Card>
          <Card className="p-6 bg-[#111827] border-white/5 relative overflow-hidden">
             <div className="flex justify-between items-center mb-4">
               <div className="w-10 h-10 rounded-xl bg-blue-400/10 flex items-center justify-center">
                  <Twitter className="w-5 h-5 text-blue-400" />
               </div>
-              <span className="text-xs font-bold text-rose-400">-2%</span>
+              <span className="text-xs font-bold text-rose-400">0%</span>
             </div>
             <p className="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1">Seguidores</p>
-            <h3 className="text-2xl font-black text-white">4.1K</h3>
+            <h3 className="text-2xl font-black text-white">0</h3>
          </Card>
          <Card className="p-6 bg-[#111827] border-white/5 relative overflow-hidden">
             <div className="flex justify-between items-center mb-4">
               <div className="w-10 h-10 rounded-xl bg-blue-800/10 flex items-center justify-center">
                  <Facebook className="w-5 h-5 text-blue-500" />
               </div>
-              <span className="text-xs font-bold text-emerald-400">+1%</span>
+              <span className="text-xs font-bold text-emerald-400">0%</span>
             </div>
             <p className="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1">Curtidas na Página</p>
-            <h3 className="text-2xl font-black text-white">15.9K</h3>
+            <h3 className="text-2xl font-black text-white">0</h3>
          </Card>
       </div>
 

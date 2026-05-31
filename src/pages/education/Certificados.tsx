@@ -22,44 +22,7 @@ interface Certificate {
   grade: string;
 }
 
-const INITIAL_CERTIFICATES: Certificate[] = [
-  {
-    id: "1",
-    student: "Marcos Vinícius Barbosa",
-    course: "Engenharia de Software Fullstack",
-    issueDate: "20 Mai 2024",
-    code: "AX-9823-XYZ",
-    status: 'Emitido',
-    grade: "9.8"
-  },
-  {
-    id: "2",
-    student: "Juliana Costa",
-    course: "Marketing Digital Avançado",
-    issueDate: "18 Mai 2024",
-    code: "AX-4412-ABC",
-    status: 'Emitido',
-    grade: "10.0"
-  },
-  {
-    id: "3",
-    student: "Felipe Almeida",
-    course: "UX Design Fundamentos",
-    issueDate: "22 Mai 2024",
-    code: "AX-7721-QQP",
-    status: 'Processando',
-    grade: "8.5"
-  },
-  {
-    id: "4",
-    student: "Ana Beatriz Rocha",
-    course: "Gestão Ágil de Projetos",
-    issueDate: "10 Abr 2024",
-    code: "AX-1109-MKL",
-    status: 'Revogado',
-    grade: "4.2"
-  }
-];
+const INITIAL_CERTIFICATES: Certificate[] = [];
 
 export default function Certificados() {
   const [certs, setCerts] = useState<Certificate[]>(() => {

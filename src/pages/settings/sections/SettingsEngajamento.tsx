@@ -19,12 +19,7 @@ export function ConfigEngajamentoModelos() {
                 <Button onClick={() => setIsModalOpen(true)} className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 shadow-lg shadow-blue-500/20"><Plus className="w-4 h-4 mr-2" /> Novo Modelo</Button>
             </div>
             <div className="grid grid-cols-1 gap-4">
-                {[
-                    { nome: "Apresentação Inicial (Frio)", tipo: "WhatsApp", uso: "145 views" },
-                    { nome: "Follow-up de Proposta (3 dias)", tipo: "WhatsApp", uso: "89 views" },
-                    { nome: "Boas vindas (Onboarding)", tipo: "E-mail", uso: "230 views" },
-                    { nome: "Cobrança Preventiva (-2 dias)", tipo: "WhatsApp", uso: "540 views" },
-                ].map((modelo, i) => (
+                {[].map((modelo: any, i) => (
                     <Card key={i} className="p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div className="flex items-start gap-4">
                             <div className="p-2 bg-white/5 rounded-lg">
@@ -87,12 +82,7 @@ export function ConfigEngajamentoAutomacoes() {
 }
 
 export function ConfigBusinessDashboard() {
-  const [selectedKPIs, setSelectedKPIs] = useState<{name: string, alertEnabled: boolean, target: number}[]>([
-    { name: 'Receita (MRR)', alertEnabled: false, target: 100000 },
-    { name: 'Leads Totais', alertEnabled: false, target: 500 },
-    { name: 'Conversão', alertEnabled: false, target: 20 },
-    { name: 'Win Rate', alertEnabled: false, target: 30 }
-  ]);
+  const [selectedKPIs, setSelectedKPIs] = useState<{name: string, alertEnabled: boolean, target: number}[]>([]);
   const [availableKPIs] = useState(['Receita (MRR)', 'Leads Totais', 'Conversão', 'Win Rate', 'Churn Rate', 'Score IA Médio']);
 
   const toggleKPI = (kpiName: string) => {

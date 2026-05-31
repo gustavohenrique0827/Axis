@@ -28,9 +28,6 @@ export function CustomerSuccessView() {
           </div>
           <div className="space-y-4">
              {[
-               { name: 'Clínica Vida', risk: 88, mrr: 'R$ 550', reason: 'Engajamento -40%', date: '21 Mai' },
-               { name: 'InterFoods S.A.', risk: 74, mrr: 'R$ 8.9k', reason: 'Faturas Vencidas (3)', date: '18 Mai' },
-               { name: 'Construtora RS', risk: 61, mrr: 'R$ 1.2k', reason: 'SLA Técnico Crítico', date: 'Vencendo hoje' },
              ].map((c, i) => (
                 <div key={i} className="p-4 bg-white/5 border border-white/5 rounded-2xl group hover:bg-rose-500/10 hover:border-rose-500/20 transition-all cursor-pointer">
                    <div className="flex justify-between items-center mb-3">
@@ -94,10 +91,6 @@ export function CustomerSuccessView() {
           <div className="h-[280px] -mx-4">
             <ResponsiveContainer width="100%" height="100%">
                <AreaChart data={[
-                 { name: 'Sem 1', health: 85, retention: 94 },
-                 { name: 'Sem 2', health: 82, retention: 93 },
-                 { name: 'Sem 3', health: 88, retention: 95 },
-                 { name: 'Sem 4', health: 91, retention: 97 },
                ]}>
                   <defs>
                     <linearGradient id="colorHealth" x1="0" y1="0" x2="0" y2="1">

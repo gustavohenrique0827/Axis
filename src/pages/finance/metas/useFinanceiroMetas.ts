@@ -30,47 +30,26 @@ export interface AlertMessage {
   message: string;
 }
 
-const initialSquadMetas: SquadMeta[] = [
-  { id: "squad-apple", name: "Squad Apple Palmas Elite", focus: "iPhones & Revendedores Premium", meta: 300000, faturamento: 265000, comissaoPercent: 5, bonusSuperador: 3500, closers: 2, sdrs: 2 },
-  { id: "squad-gtech", name: "Squad G-Tech Admissões", focus: "Cursos & Matrículas Corporativas", meta: 120000, faturamento: 89000, comissaoPercent: 6, bonusSuperador: 2000, closers: 1, sdrs: 1 },
-  { id: "squad-outbound", name: "Squad Outbound Enterprise", focus: "Contratos Médios / Grandes Contas", meta: 150000, faturamento: 45000, comissaoPercent: 8, bonusSuperador: 5000, closers: 1, sdrs: 2 }
-];
-
-const initialColaboradores: ColaboradorMeta[] = [
-  { id: "colab-1", name: "Carlos Eduardo Mendes", squadId: "squad-apple", meta: 80000, realizado: 65000 },
-  { id: "colab-2", name: "Ana Silva", squadId: "squad-gtech", meta: 50000, realizado: 42000 },
-  { id: "colab-3", name: "Roberto Ramos", squadId: "squad-outbound", meta: 60000, realizado: 35000 },
-  { id: "colab-4", name: "Juliana Costa", squadId: "squad-gtech", meta: 40000, realizado: 32000 },
-];
+import { useData } from "../../../contexts/DataContext";
 
 export function useFinanceiroMetas() {
-  const [squads, setSquads] = useState<SquadMeta[]>(() => {
-    try {
-      const saved = localStorage.getItem("axis_squad_metas");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return initialSquadMetas;
-  });
+  const { squadMetas: squads, setSquadMetas: setSquads } = useData();
 
   const [period, setPeriod] = useState<"monthly" | "quarterly" | "annual">("monthly");
   
   const [attentionThreshold, setAttentionThreshold] = useState<number>(() => {
     try {
-      const saved = localStorage.getItem("axis_attention_threshold");
+      const saved = localStorage.getItem("axis_attention_threshold_v2");
       if (saved) return Number(saved);
     } catch (e) {}
     return 90; // defaults to 90%
   });
 
   useEffect(() => {
-    localStorage.setItem("axis_attention_threshold", attentionThreshold.toString());
+    localStorage.setItem("axis_attention_threshold_v2", attentionThreshold.toString());
   }, [attentionThreshold]);
 
-  const [alerts, setAlerts] = useState<AlertMessage[]>([
-    { id: "1", time: "14:32", type: "info", message: "Squad Palmas está a apenas R$ 35k de atingir a meta OTE superadora!" },
-    { id: "2", time: "Ontem", type: "success", message: "G-Tech Admissões registrou faturamento de R$ 12.000 em um único lote faturado." },
-    { id: "3", time: "2 dias atrás", type: "warning", message: "Squad Outbound Enterprise apresenta desvio de 32% em relação à curva ideal do mês." }
-  ]);
+  const [alerts, setAlerts] = useState<AlertMessage[]>([]);
 
   // Form states for administrators setting custom targets
   const [selectedSquadId, setSelectedSquadId] = useState("squad-apple");
@@ -93,24 +72,11 @@ export function useFinanceiroMetas() {
     }
   }, [selectedSquadId, squads]);
 
-  // Sync state with local storage
-  useEffect(() => {
-    localStorage.setItem("axis_squad_metas", JSON.stringify(squads));
-  }, [squads]);
 
-  // Collaborators goal management state
-  const [colaboradores, setColaboradores] = useState<ColaboradorMeta[]>(() => {
-    try {
-      const saved = localStorage.getItem("axis_colaborador_metas");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return initialColaboradores;
-  });
 
-  // Keep state saved
-  useEffect(() => {
-    localStorage.setItem("axis_colaborador_metas", JSON.stringify(colaboradores));
-  }, [colaboradores]);
+  const { colaboradores, setColaboradores } = useData();
+
+
 
   // Form states for individual collaborators
   const [selectedColabId, setSelectedColabId] = useState<string>("new");
@@ -172,20 +138,19 @@ export function useFinanceiroMetas() {
     }, 0);
     
     return [
-      { name: "Dez", OTE: 125000 },
-      { name: "Jan", OTE: 145000 },
-      { name: "Fev", OTE: 158000 },
-      { name: "Mar", OTE: 182000 },
-      { name: "Abr", OTE: 204000 },
-      { name: "At", OTE: currentTotalOTE }
+      { name: "Mês 1", OTE: 0 },
+      { name: "Mês 2", OTE: 0 },
+      { name: "Mês 3", OTE: 0 },
+      { name: "Mês 4", OTE: 0 },
+      { name: "Mês 5", OTE: 0 },
+      { name: "Atual", OTE: currentTotalOTE }
     ];
   }, [squads, period]);
 
-  // Histórico de faturamento consolidado dos últimos 3 meses para Projeção
   const historicoFaturamento3Meses = [
-    { mes: "Fevereiro", faturamento: 290000 },
-    { mes: "Março", faturamento: 330000 },
-    { mes: "Abril", faturamento: 380000 }
+    { mes: "Mês 1", faturamento: 0 },
+    { mes: "Mês 2", faturamento: 0 },
+    { mes: "Mês 3", faturamento: 0 }
   ];
 
   const mediaCrescimento = useMemo(() => {
@@ -249,8 +214,7 @@ export function useFinanceiroMetas() {
   };
 
   const handleResetSimulator = () => {
-    setSquads(initialSquadMetas);
-    toast.success("Valores originais de metas restaurados!");
+    toast.info("A reinicialização das metas não pode ser feita porque está integrada aos dados reais.");
   };
 
   const handleExportPDF = () => {

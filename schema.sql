@@ -39,6 +39,9 @@ CREATE TABLE IF NOT EXISTS tenants (
     -- Custom Theme Configurations
     primary_color VARCHAR(50) DEFAULT '#2563EB',
     
+    -- Dynamic App Settings (JSON configurations for webhooks, preferences, etc.)
+    settings JSONB DEFAULT '{}'::jsonb,
+    
     -- Feature Flags / Active SaaS Billing Modules
     module_crm BOOLEAN DEFAULT true,
     module_sdr_ia BOOLEAN DEFAULT false,
@@ -536,3 +539,168 @@ CREATE TRIGGER update_marketing_landing_pages_modtime
     FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
 
 CREATE INDEX IF NOT EXISTS idx_marketing_landing_pages_lookup ON marketing_landing_pages (tenant_id, status) WHERE deleted_at IS NULL;
+
+
+-- ==========================================
+-- 14. FINANCE ENTRIES (Contas a Pagar/Receber)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS finance_entries (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    description VARCHAR(255) NOT NULL,
+    category VARCHAR(100),
+    status VARCHAR(50) DEFAULT 'A Vencer', -- Pago, A Vencer, Atrasado
+    value NUMERIC(15, 2) NOT NULL DEFAULT 0,
+    type VARCHAR(20) NOT NULL, -- Pagar, Receber
+    date VARCHAR(20), -- dd/MM/yyyy format for UI compatibility
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_finance_entries_tenant ON finance_entries (tenant_id, type, status);
+
+
+-- ==========================================
+-- 15. APPOINTMENTS (Agenda Médica / Clínica)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS appointments (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    patient VARCHAR(255) NOT NULL,
+    phone VARCHAR(50),
+    dr_id TEXT,
+    dr_name VARCHAR(255),
+    specialty VARCHAR(100),
+    room VARCHAR(100),
+    type VARCHAR(100), -- Check-up, Teleconsulta, Retorno, Procedimento
+    status VARCHAR(50) DEFAULT 'Confirmado', -- Confirmado, Em Atendimento, Finalizado, Cancelado, Atrasado
+    date DATE NOT NULL,
+    time VARCHAR(10) NOT NULL, -- HH:mm format
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments (tenant_id, date DESC);
+
+
+-- ==========================================
+-- 16. SQUADS (Equipes Comerciais)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS squads (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    nome VARCHAR(255) NOT NULL,
+    meta NUMERIC(15, 2) DEFAULT 0,
+    orcamento_mensal NUMERIC(15, 2) DEFAULT 0,
+    faturamento_alcancado NUMERIC(15, 2) DEFAULT 0,
+    sdr_count INTEGER DEFAULT 0,
+    closers_count INTEGER DEFAULT 0,
+    foco_comercial TEXT,
+    membros TEXT[], -- Array of member names
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Note: The app uses camelCase keys (faturamentoAlcancado), map these in queries or use snake_case views
+CREATE INDEX IF NOT EXISTS idx_squads_tenant ON squads (tenant_id);
+
+
+-- ==========================================
+-- 17. LEAD ACTIVITIES (CRM Timeline)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS lead_activities (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    lead_id TEXT NOT NULL,
+    type VARCHAR(50) NOT NULL, -- Ligação, Reunião, E-mail, Visita, Nota
+    title VARCHAR(255) NOT NULL,
+    description TEXT,
+    date VARCHAR(100),
+    seller VARCHAR(255),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_lead_activities_lead ON lead_activities (lead_id, created_at DESC);
+
+-- ==========================================
+-- 18. APP SETTINGS (Configurações Dinâmicas)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS app_settings (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    key VARCHAR(255) NOT NULL,
+    value JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(tenant_id, key)
+);
+
+DROP TRIGGER IF EXISTS update_app_settings_modtime ON app_settings;
+CREATE TRIGGER update_app_settings_modtime 
+    BEFORE UPDATE ON app_settings 
+    FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+
+-- ==========================================
+-- 19. EDUCATIONAL MODULE (Educação)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS turmas (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    nome VARCHAR(255) NOT NULL,
+    curso VARCHAR(255) NOT NULL,
+    status VARCHAR(50) DEFAULT 'Em Andamento',
+    data_inicio DATE,
+    data_fim DATE,
+    professor VARCHAR(255),
+    vagas INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS students (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    turma_id TEXT REFERENCES turmas(id) ON DELETE SET NULL,
+    nome VARCHAR(255) NOT NULL,
+    email VARCHAR(255),
+    telefone VARCHAR(50),
+    status VARCHAR(50) DEFAULT 'Ativo',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ==========================================
+-- 20. PROPOSALS (Propostas Comerciais)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS proposals (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    lead_id UUID REFERENCES leads(id) ON DELETE SET NULL,
+    titulo VARCHAR(255) NOT NULL,
+    valor NUMERIC(15, 2) DEFAULT 0.00,
+    status VARCHAR(50) DEFAULT 'Enviada',
+    validade DATE,
+    link_pdf VARCHAR(1024),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ==========================================
+-- 21. HR / COLABORADORES (Equipe)
+-- ==========================================
+
+CREATE TABLE IF NOT EXISTS colaboradores (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    tenant_id UUID REFERENCES tenants(id) ON DELETE CASCADE,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    nome VARCHAR(255) NOT NULL,
+    cargo VARCHAR(100),
+    departamento VARCHAR(100),
+    status VARCHAR(50) DEFAULT 'Ativo',
+    data_admissao DATE,
+    email VARCHAR(255),
+    avatar VARCHAR(1024),
+    desempenho INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);

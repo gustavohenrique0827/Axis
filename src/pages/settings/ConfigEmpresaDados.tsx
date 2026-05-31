@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { formatCNPJ, validateCNPJ } from "../../lib/utils";
 
 export default function ConfigEmpresaDados() {
-  const [cnpj, setCnpj] = useState("00.000.000/0001-00");
+  const [cnpj, setCnpj] = useState("");
 
   const handleSave = () => {
     if (!validateCNPJ(cnpj)) {
@@ -26,11 +26,11 @@ export default function ConfigEmpresaDados() {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-[11px] font-bold tracking-widest text-slate-400 uppercase">Razão Social</label>
-              <input type="text" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none" defaultValue="G-Tech Systems LTDA" />
+              <input type="text" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none" placeholder="Razão Social" />
             </div>
             <div className="space-y-2">
               <label className="text-[11px] font-bold tracking-widest text-slate-400 uppercase">Nome Fantasia</label>
-              <input type="text" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none" defaultValue="G-Tech" />
+              <input type="text" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none" placeholder="Nome Fantasia" />
             </div>
           </div>
 
@@ -53,7 +53,7 @@ export default function ConfigEmpresaDados() {
           
           <div className="space-y-2">
             <label className="text-[11px] font-bold tracking-widest text-slate-400 uppercase">Endereço Completo</label>
-            <input type="text" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none" defaultValue="Av. Paulista, 1000 - São Paulo, SP" />
+            <input type="text" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none" placeholder="Endereço Completo" />
           </div>
         </div>
 

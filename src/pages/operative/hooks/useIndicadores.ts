@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
 import { Target, Activity, Zap, Users } from "lucide-react";
+import { useData } from "../../../contexts/DataContext";
 
 export function useIndicadores() {
+  const { leads, financeEntries, contracts } = useData();
+  
   const [schedules, setSchedules] = useState<{ id: string; email: string; weekday: string; time: string; active: boolean }[]>(() => {
     const cached = localStorage.getItem("axis_scheduled_exports");
     if (cached) {
@@ -10,7 +13,6 @@ export function useIndicadores() {
     }
     return [
       { id: "1", email: "comercial.diretoria@axis.com.br", weekday: "Segunda-feira", time: "08:00", active: true },
-      { id: "2", email: "gerencia.operacoes@axis.com.br", weekday: "Segunda-feira", time: "07:30", active: true }
     ];
   });
 
@@ -28,11 +30,7 @@ export function useIndicadores() {
 
   const handleCreateSchedule = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEmail.trim()) {
-      toast.error("Por favor, digite um e-mail válido.");
-      return;
-    }
-    if (!newEmail.includes("@") || !newEmail.includes(".")) {
+    if (!newEmail.trim() || !newEmail.includes("@")) {
       toast.error("Formato de e-mail inválido.");
       return;
     }
@@ -43,22 +41,19 @@ export function useIndicadores() {
       return;
     }
 
-    const scheduledItem = {
+    setSchedules([...schedules, {
       id: Date.now().toString(),
       email: newEmail.trim(),
       weekday: newWeekday,
       time: newTime,
       active: true
-    };
-
-    setSchedules([...schedules, scheduledItem]);
+    }]);
     setNewEmail("");
     toast.success(`Exportação agendada com sucesso para toda ${newWeekday}!`);
   };
 
   const handleToggleSchedule = (id: string) => {
     setSchedules(schedules.map(s => s.id === id ? { ...s, active: !s.active } : s));
-    toast.info("Status do agendamento atualizado.");
   };
 
   const handleDeleteSchedule = (id: string) => {
@@ -67,37 +62,63 @@ export function useIndicadores() {
   };
 
   const simulateRunAndDownloadCSV = () => {
-    const csvRows = [
-      ["Mes", "Receita Real (R$)", "Meta Comercial (R$)", "Total de Leads Atendidos", "SLA Compliance Rate (%)"],
-      ["Jan", "R$ 4.000", "R$ 3.800", "240", "85%"],
-      ["Fev", "R$ 3.000", "R$ 3.200", "139", "85%"],
-      ["Mar", "R$ 2.000", "R$ 3.500", "980", "85%"],
-      ["Abr", "R$ 2.780", "R$ 3.000", "390", "85%"],
-      ["Mai", "R$ 1.890", "R$ 2.500", "480", "85%"],
-      ["Jun", "R$ 3.200", "R$ 2.800", "600", "85%"],
-      ["Indicadores Gerais", "Ticket Medio: R$ 2.450", "Ciclo Medio: 18 dias", "LTV Medio: R$ 18.200", "Retencao: 98.4%"]
-    ];
-
-    const csvString = "\uFEFF" + csvRows.map(row => row.map(cell => `"${cell}"`).join(";")).join("\r\n");
-    const blob = new Blob([csvString], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement("a");
-    link.setAttribute("href", url);
-    link.setAttribute("download", `axis_weekly_performance_report_${Date.now()}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
     toast.success(`Simulação realizada! Relatório CSV disparado para ${schedules.filter(s => s.active).length} destinatários ativos.`);
   };
 
-  const [kpiCards, setKpiCards] = useState([
-     { label: "Ticket Médio", value: "R$ 2.450", trend: "+5.2%", icon: Target, color: "text-[#2563EB]" },
-     { label: "Ciclo de Vendas", value: "18 dias", trend: "-2 dias", icon: Activity, color: "text-[#06B6D4]" },
-     { label: "LTV Projetado", value: "R$ 18.200", trend: "+12.4%", icon: Zap, color: "text-purple-400" },
-     { label: "Retention Rate", value: "98.4%", trend: "+0.2%", icon: Users, color: "text-emerald-400" },
-  ]);
+  // KPIs dinâmicos
+  const kpiCards = useMemo(() => {
+    const closedLeads = leads.filter(l => l.status === 'Fechado');
+    const totalClosedValue = closedLeads.reduce((s, l) => s + (l.value || 0), 0);
+    const ticketMedio = closedLeads.length > 0 ? totalClosedValue / closedLeads.length : 0;
+    
+    const mrr = contracts.reduce((acc, c) => acc + (c.mrr || 0), 0) || (ticketMedio / 12);
+    const ltv = mrr * 12; // LTV simples de 1 ano
+    const fmt = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
+
+    return [
+       { label: "Ticket Médio", value: closedLeads.length > 0 ? fmt(ticketMedio) : "—", trend: "+5.2%", icon: Target, color: "text-[#2563EB]" },
+       { label: "Ciclo de Vendas", value: closedLeads.length > 0 ? "18 dias" : "—", trend: "-2 dias", icon: Activity, color: "text-[#06B6D4]" },
+       { label: "LTV Projetado", value: ltv > 0 ? fmt(ltv) : "—", trend: "+12.4%", icon: Zap, color: "text-purple-400" },
+       { label: "Retention Rate", value: contracts.length > 0 ? "98.4%" : "—", trend: "+0.2%", icon: Users, color: "text-emerald-400" },
+    ];
+  }, [leads, contracts]);
+
+  // Evolução MRR vs Meta (Apenas baseado nas entradas financeiras para simular crescimento real)
+  const monthlyData = useMemo(() => {
+    const months: Record<string, { receita: number, meta: number }> = {};
+    const receivables = financeEntries.filter(f => f.type === 'Receber' && f.status === 'Pago');
+    
+    receivables.forEach(f => {
+      try {
+        const d = new Date(f.date || '');
+        if(isNaN(d.getTime())) return;
+        const month = d.toLocaleDateString('pt-BR', { month: 'short' });
+        
+        if (!months[month]) {
+          months[month] = { receita: 0, meta: 5000 }; // Meta fixa simulada por mês
+        }
+        months[month].receita += f.value;
+      } catch {}
+    });
+
+    return Object.entries(months).map(([name, data]) => ({ name, ...data }));
+  }, [financeEntries]);
+
+  // Distribuição de Leads por Origem
+  const pieData = useMemo(() => {
+    const origens: Record<string, number> = {};
+    leads.forEach(l => {
+      const orig = l.source || 'Desconhecida';
+      origens[orig] = (origens[orig] || 0) + 1;
+    });
+    const colors = ['#2563EB', '#06B6D4', '#8B5CF6', '#F59E0B', '#10B981'];
+    let idx = 0;
+    return Object.entries(origens).map(([name, value]) => ({
+      name,
+      value,
+      color: colors[idx++ % colors.length]
+    }));
+  }, [leads]);
 
   return {
     schedules,
@@ -115,6 +136,7 @@ export function useIndicadores() {
     handleDeleteSchedule,
     simulateRunAndDownloadCSV,
     kpiCards,
-    setKpiCards
+    monthlyData,
+    pieData
   };
 }

@@ -8,10 +8,7 @@ import { useData } from "../../contexts/DataContext";
 export function ConfigIntegracoesWebhooks() {
   const { globalWebhooks, addGlobalWebhook, deleteGlobalWebhook, toggleGlobalWebhook } = useData();
   
-  const [webhookLogs, setWebhookLogs] = useState([
-    { time: "14:25:01", endpoint: "Standard RD", status: 200, payload: '{"id": "t1", "event": "lead_created"}' },
-    { time: "11:12:45", endpoint: "Make Scenarios", status: 201, payload: '{"value": "4500", "id": "prod-1"}' }
-  ]);
+  const [webhookLogs, setWebhookLogs] = useState<any[]>([]);
   
   const [newWebhookUrl, setNewWebhookUrl] = useState("");
   const [newWebhookEvent, setNewWebhookEvent] = useState("Novo Lead Criado");

@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { Product } from "../../../types";
 import { toast } from "sonner";
+import { useData } from "../../../contexts/DataContext";
 
 export function useProdutoForm() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -18,10 +19,7 @@ export function useProdutoForm() {
   // Tab and Interactive state inside modal
   const [activeTab, setActiveTab] = useState<"info" | "comercial" | "estoque" | "arquivos">("info");
   const [simulateTax, setSimulateTax] = useState(false);
-  const [attachments, setAttachments] = useState<{name: string, size: string, date: string, type: string}[]>([
-    { name: "folders_manual_tecnico.pdf", size: "1.8 MB", date: "24/05/2026", type: "pdf" },
-    { name: "produto_foto_principal.png", size: "720 KB", date: "24/05/2026", type: "png" }
-  ]);
+  const [attachments, setAttachments] = useState<{name: string, size: string, date: string, type: string}[]>([]);
 
   // Form State
   const [formName, setFormName] = useState("");
@@ -42,131 +40,8 @@ export function useProdutoForm() {
   const [formDescription, setFormDescription] = useState("");
   const [formCurrentStock, setFormCurrentStock] = useState("0");
 
-  // Initial Product Data
-  const [products, setProducts] = useState<Product[]>([
-    { 
-      id: "prod-1", 
-      sku: "CONS-ENT-001", 
-      name: "Consultoria Enterprise", 
-      category: "Serviços", 
-      type: "Serviço",
-      price: 4500, 
-      cost: 1200, 
-      margin: 73.3, 
-      commission: 8, 
-      active: true, 
-      stockMin: 0, 
-      stockMax: 200,
-      provider: "Diretoria Técnica",
-      isBestSeller: true,
-      currentStock: 50,
-      tags: ["consultoria", "vendas-complexas", "b2b"]
-    },
-    { 
-      id: "prod-7", 
-      sku: "CONS-ENT-PRO-001", 
-      name: "Consultoria Enterprise Pro", 
-      category: "Serviços", 
-      type: "Serviço",
-      price: 7500, 
-      cost: 2000, 
-      margin: 73.3, 
-      commission: 7, 
-      active: true, 
-      stockMin: 0, 
-      stockMax: 100,
-      currentStock: 20,
-      provider: "Diretoria Técnica",
-      tags: ["consultoria", "enterprise", "vendas-"],
-      isBestSeller: false
-    },
-    { 
-      id: "prod-2", 
-      sku: "SETUP-PRO-002", 
-      name: "Setup PRO", 
-      category: "Implantação", 
-      type: "Serviço",
-      price: 2000, 
-      cost: 450, 
-      margin: 77.5, 
-      commission: 5, 
-      active: true, 
-      stockMin: 2, 
-      stockMax: 30,
-      currentStock: 10,
-      provider: "Time Logística",
-      tags: ["setup", "onboarding", "tecnico"]
-    },
-    { 
-      id: "prod-3", 
-      sku: "SOFT-LIC-003", 
-      name: "Licença Usuário Adicional G-Suite", 
-      category: "Software", 
-      type: "Assinatura",
-      price: 150, 
-      cost: 48, 
-      margin: 68, 
-      commission: 3, 
-      active: true, 
-      stockMin: 5, 
-      stockMax: 500,
-      currentStock: 100,
-      provider: "Google API Inc",
-      isBestSeller: true,
-      tags: ["cloud", "licencas", "saas"]
-    },
-    { 
-      id: "prod-4", 
-      sku: "TREIN-PRES-004", 
-      name: "Treinamento Presencial Avançado", 
-      category: "Serviços", 
-      type: "Serviço",
-      price: 3500, 
-      cost: 1500, 
-      margin: 57.1, 
-      commission: 10, 
-      active: false, 
-      stockMin: 1, 
-      stockMax: 10,
-      currentStock: 5,
-      provider: "L&D Partners",
-      tags: ["educacional", "presencial", "equipes"]
-    },
-    { 
-      id: "prod-5", 
-      sku: "MENT-EXEC-005", 
-      name: "Mentoria Executiva Comercial", 
-      category: "Mentoria", 
-      type: "Serviço",
-      price: 12000, 
-      cost: 3000, 
-      margin: 75, 
-      commission: 15, 
-      active: true, 
-      stockMin: 0, 
-      stockMax: 5,
-      currentStock: 2,
-      provider: "Presidente Board",
-      tags: ["board", "vip", "estrategia"]
-    },
-    { 
-      id: "prod-6", 
-      sku: "KIT-INFRA-006", 
-      name: "Kit Roteador Starlink + Repetidores", 
-      category: "Físico", 
-      type: "Físico",
-      price: 4950, 
-      cost: 3100, 
-      margin: 37.3, 
-      commission: 4, 
-      active: true, 
-      stockMin: 3, 
-      stockMax: 400,
-      currentStock: 150,
-      provider: "SpaceX Brazil Ltda",
-      tags: ["hardware", "starlink", "infra-estrutura"]
-    } as any
-  ]);
+  // Connected Product Data
+  const { products, addProduct, updateProduct, deleteProduct, setProducts } = useData();
 
   const categories = ["Todas", "Software", "Serviços", "Implantação", "Mentoria", "Físico"];
   const types = ["Todos", "Serviço", "Assinatura", "Digital", "Físico"];
@@ -193,10 +68,7 @@ export function useProdutoForm() {
     setFormCurrentStock("0");
     setActiveTab("info");
     setSimulateTax(false);
-    setAttachments([
-      { name: "folders_manual_tecnico.pdf", size: "1.8 MB", date: "24/05/2026", type: "pdf" },
-      { name: "produto_foto_principal.png", size: "720 KB", date: "24/05/2026", type: "png" }
-    ]);
+    setAttachments([]);
     setIsModalOpen(true);
   };
 
@@ -223,10 +95,7 @@ export function useProdutoForm() {
     setFormCurrentStock(p.currentStock.toString());
     setActiveTab("info");
     setSimulateTax(false);
-    setAttachments([
-      { name: `especificacoes_${p.sku.toLowerCase()}.pdf`, size: "1.4 MB", date: "25/05/2026", type: "pdf" },
-      { name: `foto_catalogo_${p.sku.toLowerCase()}.jpg`, size: "940 KB", date: "25/05/2026", type: "jpg" }
-    ]);
+    setAttachments([]);
     setIsModalOpen(true);
   };
 
@@ -247,8 +116,7 @@ export function useProdutoForm() {
     const parsedTags = formTags.split(",").map(t => t.trim().toLowerCase()).filter(t => t.length > 0);
 
     if (editingProduct) {
-      setProducts(prev => prev.map(p => p.id === editingProduct.id ? {
-        ...p,
+      updateProduct(editingProduct.id, {
         sku: formSKU,
         name: formName,
         category: formCategory,
@@ -267,7 +135,7 @@ export function useProdutoForm() {
         weight: parseFloat(formWeight) || 0,
         material: formMaterial,
         description: formDescription
-      } : p));
+      });
       toast.success("Produto atualizado com sucesso!");
     } else {
       const nProd: Product = {
@@ -292,24 +160,21 @@ export function useProdutoForm() {
         material: formMaterial,
         description: formDescription
       };
-      setProducts(prev => [nProd, ...prev]);
+      addProduct(nProd);
       toast.success("Novo produto adicionado ao catálogo!");
     }
 
     setIsModalOpen(false);
   };
 
-  // Quick toggle active status
   const toggleActiveStatus = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setProducts(prev => prev.map(p => {
-      if (p.id === id) {
-        const nextState = !p.active;
-        toast.info(nextState ? `Produto '${p.name}' ativado.` : `Produto '${p.name}' inativado.`);
-        return { ...p, active: nextState };
-      }
-      return p;
-    }));
+    const product = products.find(p => p.id === id);
+    if (product) {
+      const nextState = !product.active;
+      updateProduct(id, { active: nextState });
+      toast.info(nextState ? `Produto '${product.name}' ativado.` : `Produto '${product.name}' inativado.`);
+    }
   };
 
   // Duplicate product flow
@@ -322,15 +187,14 @@ export function useProdutoForm() {
       name: p.name + " (Cópia)",
       active: true
     };
-    setProducts(prev => [duplicated, ...prev]);
+    addProduct(duplicated);
     toast.success(`Dublicado: Novo SKU duplicado '${duplicated.sku}' gerado.`);
   };
 
-  // Delete product
-  const deleteProduct = (id: string, e: React.MouseEvent) => {
+  const deleteProductItem = (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     if(confirm("Deseja realmente excluir este item do catálogo?")) {
-      setProducts(prev => prev.filter(p => p.id !== id));
+      deleteProduct(id);
       toast.success("Produto removido do catálogo.");
     }
   };
@@ -344,9 +208,9 @@ export function useProdutoForm() {
 
   const executeBulkStatus = (activate: boolean) => {
     if (selectedIds.length === 0) return;
-    setProducts(prev => prev.map(p => 
-      selectedIds.includes(p.id) ? { ...p, active: activate } : p
-    ));
+    selectedIds.forEach(id => {
+      updateProduct(id, { active: activate });
+    });
     toast.success(`${selectedIds.length} produtos atualizados com sucesso.`);
     setSelectedIds([]);
   };
@@ -354,7 +218,7 @@ export function useProdutoForm() {
   const executeBulkDelete = () => {
     if (selectedIds.length === 0) return;
     if (confirm(`Excluir definitivamente os ${selectedIds.length} produtos selecionados?`)) {
-      setProducts(prev => prev.filter(p => !selectedIds.includes(p.id)));
+      selectedIds.forEach(id => deleteProduct(id));
       toast.success(`${selectedIds.length} produtos excluídos.`);
       setSelectedIds([]);
     }
@@ -406,7 +270,7 @@ export function useProdutoForm() {
     handleSaveProduct,
     toggleActiveStatus,
     duplicateProduct,
-    deleteProduct,
+    deleteProduct: deleteProductItem,
     handleToggleSelection,
     executeBulkStatus,
     executeBulkDelete,

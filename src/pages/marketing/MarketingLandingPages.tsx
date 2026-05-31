@@ -11,20 +11,10 @@ import { motion } from "motion/react";
 import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
 import { toast } from "sonner";
 
-const initialLandingPages = [
-  { id: 1, name: "Campanha Black Friday", url: "lp.seussistema.com/black-friday", status: "published", views: 12500, conversions: 850, rate: "6.8%", sparkline: [12, 18, 25, 22, 35, 45, 55] },
-  { id: 2, name: "Webinar Axis RAG IA", url: "lp.seussistema.com/webinar-ia", status: "draft", views: 0, conversions: 0, rate: "0%", sparkline: [0, 0, 0, 0, 0, 0, 0] },
-  { id: 3, name: "Captura E-book N8N", url: "lp.seussistema.com/ebook-n8n", status: "published", views: 4500, conversions: 1200, rate: "26.6%", sparkline: [5, 10, 8, 15, 20, 18, 30] },
-];
+import { useData } from "../../contexts/DataContext";
 
 export default function MarketingLandingPages() {
-  const [pages, setPages] = useState<any[]>(() => {
-    try {
-      const saved = localStorage.getItem("axis_landing_pages");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return initialLandingPages;
-  });
+  const { marketingLandingPages: pages, addMarketingLandingPage, updateMarketingLandingPage, deleteMarketingLandingPage } = useData();
 
   const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -36,22 +26,12 @@ export default function MarketingLandingPages() {
   const [pixelId, setPixelId] = useState("");
   const [gtagId, setGtagId] = useState("");
 
-  const savePages = (updated: any[]) => {
-    setPages(updated);
-    try {
-      localStorage.setItem("axis_landing_pages", JSON.stringify(updated));
-    } catch (e) {}
-  };
-
-  const toggleStatus = (id: number) => {
-    const updated = pages.map(p => 
-      p.id === id 
-        ? { ...p, status: p.status === 'published' ? 'draft' : 'published' } 
-        : p
-    );
-    savePages(updated);
-    const affected = updated.find(p => p.id === id);
-    toast.success(`Página alterada para: ${affected?.status === 'published' ? 'Publicada' : 'Rascunho'}`);
+  const toggleStatus = (id: string) => {
+    const page = pages.find(p => p.id === id);
+    if (!page) return;
+    const newStatus = page.status === 'published' ? 'draft' : 'published';
+    updateMarketingLandingPage(id, { status: newStatus });
+    toast.success(`Página alterada para: ${newStatus === 'published' ? 'Publicada' : 'Rascunho'}`);
   };
 
   const openTrackingModal = (page: any) => {
@@ -81,8 +61,7 @@ export default function MarketingLandingPages() {
       gtag: gtagId
     };
 
-    const updated = [newPage, ...pages];
-    savePages(updated);
+    addMarketingLandingPage(newPage);
     toast.success("Landing Page criada e publicada com sucesso!");
     setIsCreateModalOpen(false);
 
@@ -92,20 +71,14 @@ export default function MarketingLandingPages() {
     setGtagId("");
   };
 
-  const handleDeletePage = (id: number) => {
-    const updated = pages.filter(p => p.id !== id);
-    savePages(updated);
+  const handleDeletePage = (id: string) => {
+    deleteMarketingLandingPage(id);
     toast.success("Página excluída com sucesso.");
   };
 
   const handleSaveTracking = () => {
     if (!selectedPage) return;
-    const updated = pages.map(p => 
-      p.id === selectedPage.id 
-        ? { ...p, pixel: pixelId, gtag: gtagId } 
-        : p
-    );
-    savePages(updated);
+    updateMarketingLandingPage(selectedPage.id, { pixel: pixelId, gtag: gtagId });
     toast.success("Parâmetros de rastreamento salvos!");
     setIsTrackingModalOpen(false);
   };

@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { Sidebar } from "./layout/Sidebar";
 import { Topbar } from "./layout/Topbar";
 import { MobileNav } from "./layout/MobileNav";
+import { CommandPalette } from "./CommandPalette";
 
 export default function Layout() {
   const location = useLocation();
@@ -97,6 +98,7 @@ export default function Layout() {
         isMobileMoreOpen={isMobileMoreOpen}
         setIsMobileMoreOpen={setIsMobileMoreOpen}
       />
+      <CommandPalette />
     </div>
   );
 }

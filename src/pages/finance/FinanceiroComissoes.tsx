@@ -16,12 +16,7 @@ interface CommissionRecord {
   status: "Pago" | "A Pagar";
 }
 
-const defaultComissions: CommissionRecord[] = [
-  { id: "c-1", vendedor: "Carlos Eduardo Mendes", periodo: "Maio/2026", baseValor: 145000, taxaPercent: 5, comissaoValor: 7250, status: "A Pagar" },
-  { id: "c-2", vendedor: "Ana Silva", periodo: "Maio/2026", baseValor: 112000, taxaPercent: 5, comissaoValor: 5600, status: "A Pagar" },
-  { id: "c-3", vendedor: "Roberto Ramos", periodo: "Maio/2026", baseValor: 94000, taxaPercent: 5, comissaoValor: 4700, status: "Pago" },
-  { id: "c-4", vendedor: "Juliana Costa", periodo: "Abril/2026", baseValor: 85000, taxaPercent: 4, comissaoValor: 3400, status: "Pago" },
-];
+const defaultComissions: CommissionRecord[] = [];
 
 export default function FinanceiroComissoes() {
   const { leads } = useData();
@@ -29,7 +24,7 @@ export default function FinanceiroComissoes() {
   // Load custom list from localStorage or defaults
   const [comissoes, setComissoes] = useState<CommissionRecord[]>(() => {
     try {
-      const saved = localStorage.getItem("axis_comissoes_list");
+      const saved = localStorage.getItem("axis_comissoes_list_v2");
       if (saved) return JSON.parse(saved);
     } catch (e) {}
     return defaultComissions;
@@ -37,7 +32,7 @@ export default function FinanceiroComissoes() {
 
   // Automatically sync to local storage
   useEffect(() => {
-    localStorage.setItem("axis_comissoes_list", JSON.stringify(comissoes));
+    localStorage.setItem("axis_comissoes_list_v2", JSON.stringify(comissoes));
   }, [comissoes]);
 
   // Load salespeople from global system/leads to populate addition dropdowns

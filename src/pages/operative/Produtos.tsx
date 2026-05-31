@@ -330,17 +330,17 @@ export default function Catalog() {
             <div className="bg-[#0B1120] border border-white/5 p-3 rounded-xl flex items-center justify-between">
               <div>
                 <span className="text-[9px] text-[#2563EB] font-bold block uppercase tracking-wide">Combo Premium</span>
-                <p className="text-xs font-bold text-white mt-0.5">Setup PRO + Consultoria</p>
+                <p className="text-xs font-bold text-white mt-0.5">Sem Recomendação</p>
               </div>
-              <span className="text-xs font-bold text-emerald-400 font-mono mt-0.5">R$ 5.850,00</span>
+              <span className="text-xs font-bold text-emerald-400 font-mono mt-0.5">R$ 0,00</span>
             </div>
 
             <div className="bg-[#0B1120] border border-white/5 p-3 rounded-xl flex items-center justify-between">
               <div>
                 <span className="text-[9px] text-[#2563EB] font-bold block uppercase tracking-wide">Desconto do Combo</span>
-                <p className="text-xs font-bold text-white mt-0.5">Desconto de 10% Aplicado</p>
+                <p className="text-xs font-bold text-white mt-0.5">Sem Desconto</p>
               </div>
-              <span className="text-xs font-bold text-rose-400 mt-0.5 font-mono">-R$ 650,00</span>
+              <span className="text-xs font-bold text-rose-400 mt-0.5 font-mono">-R$ 0,00</span>
             </div>
 
             <div className="bg-[#0B1120] border border-white/5 p-3 rounded-xl flex items-center justify-between">
@@ -348,7 +348,7 @@ export default function Catalog() {
                 <span className="text-[9px] text-amber-400 font-bold block uppercase tracking-wide">Média Margem Líquida</span>
                 <p className="text-xs font-bold text-white mt-0.5">Rentabilidade Combinada</p>
               </div>
-              <span className="text-xs font-bold text-white font-mono mt-0.5">74.5%</span>
+              <span className="text-xs font-bold text-white font-mono mt-0.5">0%</span>
             </div>
           </div>
         </Card>

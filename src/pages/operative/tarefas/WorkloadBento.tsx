@@ -7,12 +7,7 @@ import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip, Cell } from 'rechar
 import { motion, AnimatePresence } from "motion/react";
 import { Task } from "../../../types";
 
-const WORKLOAD_DATA = [
-  { name: 'Carlos', tasks: 12, color: '#2563EB' },
-  { name: 'Ana', tasks: 8, color: '#10b981' },
-  { name: 'Roberto', tasks: 15, color: '#6366f1' },
-  { name: 'Juliana', tasks: 5, color: '#f59e0b' },
-];
+const WORKLOAD_DATA: any[] = [];
 
 interface WorkloadBentoProps {
   tasks: Task[];
@@ -94,11 +89,11 @@ export function WorkloadBento({ tasks, highPriorityCount }: WorkloadBentoProps) 
                 </div>
                 <div className="flex justify-center md:justify-start gap-4">
                    <div className="flex flex-col text-center md:text-left">
-                      <span className="text-xl font-black text-white italic tracking-tighter">40</span>
+                      <span className="text-xl font-black text-white italic tracking-tighter">{tasks.filter(t => t.status !== 'Concluída').length}</span>
                       <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Active</span>
                    </div>
                    <div className="flex flex-col text-center md:text-left border-l border-white/10 pl-4">
-                      <span className="text-xl font-black text-emerald-400 italic tracking-tighter">92%</span>
+                      <span className="text-xl font-black text-emerald-400 italic tracking-tighter">{tasks.length > 0 ? Math.round((tasks.filter(t => t.status === 'Concluída').length / tasks.length) * 100) : 0}%</span>
                       <span className="text-[8px] font-black text-slate-600 uppercase tracking-widest">Velocity</span>
                    </div>
                 </div>
@@ -111,14 +106,14 @@ export function WorkloadBento({ tasks, highPriorityCount }: WorkloadBentoProps) 
           <div>
              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Performance Engine</h4>
              <div className="space-y-6 text-left">
-                <div className="flex items-center justify-between">
+                 <div className="flex items-center justify-between">
                    <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400">
                          <TrendingUp className="w-4 h-4" />
                       </div>
                       <span className="text-[10px] font-black text-white uppercase tracking-tight">Lead Conversion</span>
                    </div>
-                   <span className="text-xs font-black text-emerald-400 font-mono">+12.4%</span>
+                   <span className="text-xs font-black text-emerald-400 font-mono">0.0%</span>
                 </div>
                 <div className="flex items-center justify-between">
                    <div className="flex items-center gap-3">
@@ -126,7 +121,7 @@ export function WorkloadBento({ tasks, highPriorityCount }: WorkloadBentoProps) 
                          <Clock className="w-4 h-4" />
                       </div>
                       <span className="text-[10px] font-black text-white uppercase tracking-tight">Avg Time to Close</span>
-                      <span className="text-xs font-black text-blue-400 font-mono">4.2d</span>
+                      <span className="text-xs font-black text-blue-400 font-mono">0d</span>
                    </div>
                 </div>
              </div>

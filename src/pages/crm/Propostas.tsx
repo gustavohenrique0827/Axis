@@ -20,16 +20,11 @@ import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
 import { PageContainer } from "../../components/PageContainer";
 import { toast } from "sonner";
-import { Proposta, INITIAL_PROPOSTAS, handleDownloadPdf } from "./utils/proposalPdf";
+import { useData } from "../../contexts/DataContext";
+import { Proposta, handleDownloadPdf } from "./utils/proposalPdf";
 
 export default function Propostas() {
-  const [propostas, setPropostas] = useState<Proposta[]>(() => {
-    try {
-      const saved = localStorage.getItem("axis_propostas");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return INITIAL_PROPOSTAS;
-  });
+  const { proposals: propostas, addProposal, updateProposal, deleteProposal } = useData();
   
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -40,13 +35,6 @@ export default function Propostas() {
   const [newValor, setNewValor] = useState("");
   const [newVendedor, setNewVendedor] = useState("Carlos Silva");
   const [newVencimento, setNewVencimento] = useState("");
-
-  const savePropostas = (updated: Proposta[]) => {
-    setPropostas(updated);
-    try {
-      localStorage.setItem("axis_propostas", JSON.stringify(updated));
-    } catch (e) {}
-  };
 
   const handleCreateProposta = (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,8 +65,7 @@ export default function Propostas() {
       vendedor: newVendedor
     };
 
-    const updated = [newProposal, ...propostas];
-    savePropostas(updated);
+    addProposal(newProposal);
     toast.success("Proposta comercial criada com sucesso!");
     setIsModalOpen(false);
     
@@ -90,14 +77,12 @@ export default function Propostas() {
   };
 
   const handleDeleteProposta = (id: string) => {
-    const updated = propostas.filter(p => p.id !== id);
-    savePropostas(updated);
+    deleteProposal(id);
     toast.success("Proposta de venda excluída.");
   };
 
   const handleUpdateStatus = (id: string, newStatus: Proposta["status"]) => {
-    const updated = propostas.map(p => p.id === id ? { ...p, status: newStatus } : p);
-    savePropostas(updated);
+    updateProposal(id, { status: newStatus });
     toast.success(`Proposta atualizada para: ${newStatus}`);
   };
 
@@ -111,17 +96,17 @@ export default function Propostas() {
     switch (status) {
       case "Aceita":
         return {
-          color: "text-emerald-500 bg-emerald-500/10",
+          color: "text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)]",
           icon: CheckCircle2,
         };
       case "Enviada":
-        return { color: "text-blue-500 bg-blue-500/10", icon: Send };
+        return { color: "text-blue-400 bg-blue-500/20 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)]", icon: Send };
       case "Aberta":
-        return { color: "text-amber-500 bg-amber-500/10", icon: Clock };
+        return { color: "text-amber-400 bg-amber-500/20 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]", icon: Clock };
       case "Recusada":
-        return { color: "text-rose-500 bg-rose-500/10", icon: XCircle };
+        return { color: "text-rose-400 bg-rose-500/20 border border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.15)]", icon: XCircle };
       default:
-        return { color: "text-slate-500 bg-slate-500/10", icon: History };
+        return { color: "text-slate-300 bg-slate-500/20 border border-slate-500/30 shadow-[0_0_15px_rgba(100,116,139,0.15)]", icon: History };
     }
   };
 
@@ -152,21 +137,21 @@ export default function Propostas() {
         {[
           {
             label: "Aguardando Aceite",
-            value: "R$ 142.5k",
+            value: propostas.filter(p => p.status === 'Enviada').reduce((acc, curr) => acc + parseFloat(curr.valor.replace(/[^0-9.,]/g, '').replace(',', '.')), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
             icon: Send,
             color: "text-blue-500",
             bg: "bg-blue-500/10",
           },
           {
             label: "Convertidas (Mês)",
-            value: "R$ 89.2k",
+            value: propostas.filter(p => p.status === 'Aceita').reduce((acc, curr) => acc + parseFloat(curr.valor.replace(/[^0-9.,]/g, '').replace(',', '.')), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
             icon: CheckCircle2,
             color: "text-emerald-500",
             bg: "bg-emerald-500/10",
           },
           {
             label: "Taxa de Conversão",
-            value: "32%",
+            value: propostas.length > 0 ? Math.round((propostas.filter(p => p.status === 'Aceita').length / propostas.length) * 100) + "%" : "0%",
             icon: ArrowUpRight,
             color: "text-indigo-500",
             bg: "bg-indigo-500/10",
@@ -263,7 +248,7 @@ export default function Propostas() {
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="secondary"
-                        className={`${status.color} border-none font-black uppercase tracking-widest text-[9px] px-2.5 py-1 flex items-center gap-1.5 w-fit`}
+                        className={`${status.color} font-black uppercase tracking-widest text-[9px] px-2.5 py-1 flex items-center gap-1.5 w-fit`}
                       >
                         <status.icon className="w-3 h-3" />
                         {item.status}

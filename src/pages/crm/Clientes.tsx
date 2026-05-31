@@ -16,12 +16,8 @@ export default function Clientes() {
     try {
       const saved = localStorage.getItem("axis_clientes");
       if (saved) return JSON.parse(saved);
-    } catch(e) {}
-    return [
-      { id: 1, name: "TechCorp Brasil", industry: "Tecnologia", city: "São Paulo", state: "SP", phone: "(11) 98888-7777", email: "contato@techcorp.com", status: "Ativo" },
-      { id: 2, name: "Construtora RS", industry: "Engenharia", city: "Porto Alegre", state: "RS", phone: "(51) 97777-6666", email: "admin@crs.com.br", status: "Ativo" },
-      { id: 3, name: "Clínica Vida", industry: "Saúde", city: "Rio de Janeiro", state: "RJ", phone: "(21) 99999-0000", email: "financeiro@vida.med.br", status: "Em Implantação" },
-    ];
+    } catch (e) {}
+    return [];
   });
 
   const saveClientes = (updated: any[]) => {

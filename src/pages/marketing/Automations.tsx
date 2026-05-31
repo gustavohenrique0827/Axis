@@ -13,25 +13,13 @@ export default function Automations() {
   const [isSyncing, setIsSyncing] = useState(false);
 
   // Standard System Workflows
-  const [systemWorkflows, setSystemWorkflows] = useState([
-    { title: "Lead Criado -> E-mail de Boas Vindas", trigger: "Novo Lead Criado", action: "Enviar E-mail (Template 01)", active: true },
-    { title: "Orçamento Aprovado -> Criar Contrato", trigger: "Negócio Ganho", action: "Gerar Minuta de Contrato", active: true },
-    { title: "Lead Inativo 30 dias -> Reengajamento", trigger: "Sem interação > 30d", action: "Adicionar a Campanha: Reengajamento", active: false },
-  ]);
+  const [systemWorkflows, setSystemWorkflows] = useState<any[]>([]);
 
   // Evolution API Instances
-  const [instances, setInstances] = useState([
-    { name: "SDR Global", key: "evo-sdr", status: "ONLINE", phone: "+55 11 99888-7711", messagesReceived: 1420 },
-    { name: "Vendas SP", key: "evo-vendas-sp", status: "ONLINE", phone: "+55 11 97777-6655", messagesReceived: 580 },
-    { name: "Suporte Central", key: "evo-suporte-pr", status: "OFFLINE", phone: "+55 21 95555-4422", messagesReceived: 0 },
-  ]);
+  const [instances, setInstances] = useState<any[]>([]);
 
   // Evolution Trigger Rules State
-  const [evoRules, setEvoRules] = useState([
-    { id: 'er1', instance: "SDR Global", trigger: "Ao receber nova mensagem", condition: "Todas as mensagens", action: "Adicionar tag 'Interessado WhatsApp'", active: true },
-    { id: 'er2', instance: "Vendas SP", trigger: "Mensagem contendo palavra-chave", condition: "Contendo 'demo' ou 'teste'", action: "Cadastrar na Pipeline SDR como Novo Lead", active: true },
-    { id: 'er3', instance: "Suporte Central", trigger: "Sem resposta após 24h", condition: "Fase de Negociação", action: "Notificar com alerta de follow-up", active: false },
-  ]);
+  const [evoRules, setEvoRules] = useState<any[]>([]);
 
   // Form states for adding Evolution Rules
   const [newRuleInstance, setNewRuleInstance] = useState("SDR Global");

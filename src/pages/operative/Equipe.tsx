@@ -185,7 +185,7 @@ export default function Equipe() {
                   { label: "Membros Ativos", val: team.length, color: "text-blue-500" },
                   { label: "Squads Operantes", val: squads.length, color: "text-cyan-500" },
                   { label: "Líderes Alocados", val: squads.filter(s => s.leader).length, color: "text-emerald-500" },
-                  { label: "Efficiency Rate", val: "94.2%", color: "text-amber-500" },
+                  { label: "Efficiency Rate", val: "0%", color: "text-amber-500" },
                 ].map((stat, i) => (
                   <Card key={i} className="p-6 bg-white/[0.02] border-white/5 backdrop-blur-3xl hover:bg-white/[0.04] transition-all group overflow-hidden relative">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-blue-600/5 blur-3xl -mr-12 -mt-12 group-hover:bg-blue-600/10 transition-colors" />
@@ -280,8 +280,8 @@ export default function Equipe() {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={squads.map(s => ({
                         name: s.name,
-                        value: Math.floor(Math.random() * 800) + 200,
-                        leads: Math.floor(Math.random() * 60) + 20
+                        value: 0,
+                        leads: 0
                       }))}>
                         <defs>
                           <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">

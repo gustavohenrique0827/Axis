@@ -44,7 +44,7 @@ export default function FinanceiroMetas() {
 
   const actions = (
     <div className="flex flex-wrap items-center gap-2 print:hidden">
-      <div className="flex bg-[#0A1120] border border-white/10 rounded-xl p-1 shrink-0">
+      <div className="flex bg-[#0B1120] border border-white/10 rounded-xl p-1 shrink-0 glass-card">
         {(["monthly", "quarterly", "annual"] as const).map((p) => (
           <button
             key={p}

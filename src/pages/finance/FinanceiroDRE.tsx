@@ -11,30 +11,30 @@ export default function FinanceiroDRE() {
 
   // Load parameter inputs from local storage or defaults
   const [impostoPct, setImpostoPct] = useState(() => {
-    return Number(localStorage.getItem("axis_dre_imposto_pct") || "10");
+    return Number(localStorage.getItem("axis_dre_imposto_pct_v2") || "0");
   });
   const [cpvPct, setCpvPct] = useState(() => {
-    return Number(localStorage.getItem("axis_dre_cpv_pct") || "25");
+    return Number(localStorage.getItem("axis_dre_cpv_pct_v2") || "0");
   });
   const [despesaPessoal, setDespesaPessoal] = useState(() => {
-    return Number(localStorage.getItem("axis_dre_pessoal") || "45000");
+    return Number(localStorage.getItem("axis_dre_pessoal_v2") || "0");
   });
   const [despesaMarketing, setDespesaMarketing] = useState(() => {
-    return Number(localStorage.getItem("axis_dre_marketing") || "15000");
+    return Number(localStorage.getItem("axis_dre_marketing_v2") || "0");
   });
   const [despesaAdmin, setDespesaAdmin] = useState(() => {
-    return Number(localStorage.getItem("axis_dre_admin") || "10000");
+    return Number(localStorage.getItem("axis_dre_admin_v2") || "0");
   });
 
   const [period, setPeriod] = useState<"mensal" | "trimestral" | "anual">("mensal");
 
   // Sync state changes with localStorage
   useEffect(() => {
-    localStorage.setItem("axis_dre_imposto_pct", impostoPct.toString());
-    localStorage.setItem("axis_dre_cpv_pct", cpvPct.toString());
-    localStorage.setItem("axis_dre_pessoal", despesaPessoal.toString());
-    localStorage.setItem("axis_dre_marketing", despesaMarketing.toString());
-    localStorage.setItem("axis_dre_admin", despesaAdmin.toString());
+    localStorage.setItem("axis_dre_imposto_pct_v2", impostoPct.toString());
+    localStorage.setItem("axis_dre_cpv_pct_v2", cpvPct.toString());
+    localStorage.setItem("axis_dre_pessoal_v2", despesaPessoal.toString());
+    localStorage.setItem("axis_dre_marketing_v2", despesaMarketing.toString());
+    localStorage.setItem("axis_dre_admin_v2", despesaAdmin.toString());
   }, [impostoPct, cpvPct, despesaPessoal, despesaMarketing, despesaAdmin]);
 
   // Aggregate current actuals from the data provider
@@ -49,9 +49,7 @@ export default function FinanceiroDRE() {
       .filter(f => f.type === "Receber" && f.status === "A Vencer")
       .reduce((sum, f) => sum + f.value, 0);
 
-    // Baseline fallback if database is empty or too small
-    const baselineReceita = 380000;
-    const finalReceitaBruta = receitaBrutaPaid > 0 ? receitaBrutaPaid : baselineReceita;
+    const finalReceitaBruta = receitaBrutaPaid;
 
     // Apply period scaling factors
     const scaleFactor = period === "mensal" ? 1 : period === "trimestral" ? 3 : 12;
@@ -132,12 +130,12 @@ export default function FinanceiroDRE() {
   };
 
   const handleResetParameters = () => {
-    setImpostoPct(10);
-    setCpvPct(25);
-    setDespesaPessoal(45000);
-    setDespesaMarketing(15000);
-    setDespesaAdmin(10000);
-    toast.info("Parâmetros do DRE restaurados aos padrões originais.");
+    setImpostoPct(0);
+    setCpvPct(0);
+    setDespesaPessoal(0);
+    setDespesaMarketing(0);
+    setDespesaAdmin(0);
+    toast.info("Parâmetros do DRE zerados.");
   };
 
   return (

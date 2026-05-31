@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { Lock, Mail, ArrowRight, Building, Fingerprint } from "lucide-react";
@@ -9,7 +9,10 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
+
+  const from = location.state?.from?.pathname || "/app/dashboard";
 
   const [logoDarkFull, setLogoDarkFull] = useState(() => localStorage.getItem("axis_brand_logo_dark_full") || "/logo-full.png");
 
@@ -31,7 +34,7 @@ export default function Login() {
       tenantNiche: "Master",
       isMaster: true
     });
-    navigate("/app/dashboard");
+    navigate(from, { replace: true });
   };
 
   const loginAsDemo = (tenantName: string, niche: TenantNiche, isMaster: boolean) => {
@@ -43,7 +46,7 @@ export default function Login() {
       tenantNiche: niche,
       isMaster
     });
-    navigate("/app/dashboard");
+    navigate(from, { replace: true });
   };
 
   return (

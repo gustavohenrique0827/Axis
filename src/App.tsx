@@ -15,6 +15,7 @@ import EstatisticasClinicas from "./pages/clinica/Estatisticas";
 import Pacientes from "./pages/clinica/Pacientes";
 import Login from "./pages/auth/Login";
 import Layout from "./components/Layout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Leads from "./pages/crm/Leads";
 import Pipeline from "./pages/crm/Pipeline";
 import Clientes from "./pages/crm/Clientes";
@@ -99,7 +100,11 @@ function AppContent() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           
-          <Route path="/app" element={<Layout />}>
+          <Route path="/app" element={
+            <ProtectedRoute>
+              <Layout />
+            </ProtectedRoute>
+          }>
             <Route index element={<Navigate to="/app/dashboard" />} />
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="leads" element={<Leads />} />

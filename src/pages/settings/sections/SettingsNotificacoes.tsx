@@ -28,14 +28,7 @@ export function ConfigNotificacoesPreferencias() {
         // ignore
       }
     }
-    return [
-      { id: "novo_lead", title: "Novo Lead Cadastrado", category: "Leads", description: "Notificar quando um novo lead entrar no funil via automação ou formulário.", inApp: true, email: true, whatsapp: false, icon: Target },
-      { id: "lead_distribuido", title: "Lead Atribuído", category: "Leads", description: "Notificar quando um lead for distribuído ou atribuído à sua carteira.", inApp: true, email: true, whatsapp: true, icon: Users },
-      { id: "tarefa_vencida", title: "Tarefa Vencida", category: "Tarefas", description: "Alerta crítico para tarefas que ultrapassaram a data limite sem conclusão.", inApp: true, email: true, whatsapp: true, icon: ShieldAlert },
-      { id: "tarefa_proxima", title: "Tarefa Próxima do Vencimento", category: "Tarefas", description: "Aviso de tarefas que vencem nas próximas 2 horas.", inApp: true, email: false, whatsapp: false, icon: Clock },
-      { id: "proposta_aberta", title: "Proposta Visualizada", category: "Vendas", description: "Notificar no exato instante em que o cliente abrir o e-mail com a proposta.", inApp: true, email: true, whatsapp: false, icon: Mail },
-      { id: "venda_fechada", title: "Venda Concluída (Fechamento)", category: "Vendas", description: "Notificar quando uma oportunidade for marcada como Ganho.", inApp: true, email: true, whatsapp: true, icon: Award },
-    ];
+    return [];
   });
 
   const [generalEmail, setGeneralEmail] = useState(true);
@@ -245,14 +238,7 @@ export function ConfigNotificacoesPreferencias() {
           <Button 
             type="button"
             onClick={() => {
-              setPrefs([
-                { id: "novo_lead", title: "Novo Lead Cadastrado", category: "Leads", description: "Notificar quando um novo lead entrar no funil via automação ou formulário.", inApp: true, email: true, whatsapp: false, icon: Target },
-                { id: "lead_distribuido", title: "Lead Atribuído", category: "Leads", description: "Notificar quando um lead for distribuído ou atribuído à sua carteira.", inApp: true, email: true, whatsapp: true, icon: Users },
-                { id: "tarefa_vencida", title: "Tarefa Vencida", category: "Tarefas", description: "Alerta crítico para tarefas que ultrapassaram a data limite sem conclusão.", inApp: true, email: true, whatsapp: true, icon: ShieldAlert },
-                { id: "tarefa_proxima", title: "Tarefa Próxima do Vencimento", category: "Tarefas", description: "Aviso de tarefas que vencem nas próximas 2 horas.", inApp: true, email: false, whatsapp: false, icon: Clock },
-                { id: "proposta_aberta", title: "Proposta Visualizada", category: "Vendas", description: "Notificar no exato instante em que o cliente abrir o e-mail com a proposta.", inApp: true, email: true, whatsapp: false, icon: Mail },
-                { id: "venda_fechada", title: "Venda Concluída (Fechamento)", category: "Vendas", description: "Notificar quando uma oportunidade for marcada como Ganho.", inApp: true, email: true, whatsapp: true, icon: Award },
-              ]);
+              setPrefs([]);
               setGeneralEmail(true);
               setGeneralInApp(true);
               setGeneralWhatsapp(true);

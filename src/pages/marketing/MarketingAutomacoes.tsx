@@ -21,54 +21,15 @@ interface Automation {
   lastRun: string;
 }
 
-const INITIAL_AUTOMATIONS: Automation[] = [
-  {
-    id: "1",
-    name: "Boas-vindas - Novos Leads",
-    trigger: "Novo Lead Cadastrado",
-    steps: 5,
-    activeCount: 1250,
-    conversion: "12.4%",
-    status: 'Ativa',
-    lastRun: "Há 2 min"
-  },
-  {
-    id: "2",
-    name: "Recuperação de Carrinho - 24h",
-    trigger: "Carrinho Abandonado",
-    steps: 3,
-    activeCount: 450,
-    conversion: "28.1%",
-    status: 'Ativa',
-    lastRun: "Há 15 min"
-  },
-  {
-    id: "3",
-    name: "Upsell - Pós Compra",
-    trigger: "Compra Finalizada",
-    steps: 4,
-    activeCount: 89,
-    conversion: "5.2%",
-    status: 'Pausada',
-    lastRun: "Há 3 dias"
-  },
-  {
-    id: "4",
-    name: "Nurturing - Webinar Tecnologia",
-    trigger: "Inscrição em Evento",
-    steps: 8,
-    activeCount: 0,
-    conversion: "0%",
-    status: 'Rascunho',
-    lastRun: "-"
-  }
-];
+
 
 import { toast } from "sonner";
 import { PageContainer } from "../../components/PageContainer";
 
+import { useData } from "../../contexts/DataContext";
+
 export default function MarketingAutomacoes() {
-  const [automations, setAutomations] = useState<Automation[]>(INITIAL_AUTOMATIONS);
+  const { marketingAutomations: automations, addMarketingAutomation, updateMarketingAutomation } = useData();
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -90,21 +51,19 @@ export default function MarketingAutomacoes() {
       status: "Rascunho",
       lastRun: "-",
     };
-    setAutomations([newAutomation, ...automations]);
+    addMarketingAutomation(newAutomation);
     setIsCreateModalOpen(false);
     setNewFlowName("");
     toast.success("Novo fluxo criado com sucesso!");
   };
 
   const toggleStatus = (id: string) => {
-    setAutomations(prev => prev.map(a => {
-      if (a.id === id) {
-        const nextStatus = a.status === 'Ativa' ? 'Pausada' : 'Ativa';
-        toast.success(`Automação "${a.name}" ${nextStatus === 'Ativa' ? 'ativada' : 'pausada'}`);
-        return { ...a, status: nextStatus as any };
-      }
-      return a;
-    }));
+    const a = automations.find(a => a.id === id);
+    if (a) {
+      const nextStatus = a.status === 'Ativa' ? 'Pausada' : 'Ativa';
+      updateMarketingAutomation(id, { status: nextStatus });
+      toast.success(`Automação "${a.name}" ${nextStatus === 'Ativa' ? 'ativada' : 'pausada'}`);
+    }
   };
 
   const filtered = automations.filter(a => {
@@ -136,10 +95,10 @@ export default function MarketingAutomacoes() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Leads em Fluxo", value: "8.4k", icon: Users, color: "text-purple-500" },
-          { label: "Emails Enviados", value: "24.2k", icon: Mail, color: "text-blue-500" },
-          { label: "Conversões Assist.", value: "412", icon: MousePointer2, color: "text-emerald-500" },
-          { label: "Eficiência Média", value: "18%", icon: BarChart3, color: "text-amber-500" },
+          { label: "Leads em Fluxo", value: "0", icon: Users, color: "text-purple-500" },
+          { label: "Emails Enviados", value: "0", icon: Mail, color: "text-blue-500" },
+          { label: "Conversões Assist.", value: "0", icon: MousePointer2, color: "text-emerald-500" },
+          { label: "Eficiência Média", value: "0%", icon: BarChart3, color: "text-amber-500" },
         ].map((stat, i) => (
           <Card key={i} className="p-6 bg-[#111827]/50 border-white/5 backdrop-blur-md">
             <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />

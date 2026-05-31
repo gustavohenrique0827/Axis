@@ -11,21 +11,7 @@ import { Reorder } from "motion/react";
 import { PageContainer } from "../../components/PageContainer";
 import { useIndicadores } from "./hooks/useIndicadores";
 
-const monthlyData = [
-  { name: 'Jan', receita: 4000, leads: 240, meta: 3800 },
-  { name: 'Fev', receita: 3000, leads: 139, meta: 3200 },
-  { name: 'Mar', receita: 2000, leads: 980, meta: 3500 },
-  { name: 'Abr', receita: 2780, leads: 390, meta: 3000 },
-  { name: 'Mai', receita: 1890, leads: 480, meta: 2500 },
-  { name: 'Jun', receita: 3200, leads: 600, meta: 2800 },
-];
-
-const pieData = [
-  { name: 'Google Ads', value: 400, color: '#2563EB' },
-  { name: 'Orgânico', value: 300, color: '#06B6D4' },
-  { name: 'Indicações', value: 300, color: '#10B981' },
-  { name: 'Social', value: 200, color: '#8B5CF6' },
-];
+import { Inbox } from "lucide-react";
 
 export default function Indicadores() {
   const {
@@ -44,7 +30,8 @@ export default function Indicadores() {
     handleDeleteSchedule,
     simulateRunAndDownloadCSV,
     kpiCards,
-    setKpiCards
+    monthlyData,
+    pieData
   } = useIndicadores();
 
   return (
@@ -99,22 +86,17 @@ export default function Indicadores() {
         )}
       </AnimatePresence>
 
-      <Reorder.Group 
-        axis="x" 
-        values={kpiCards} 
-        onReorder={setKpiCards} 
+      <div 
         className="grid grid-cols-1 md:grid-cols-4 gap-6"
         id="indicadores-draggable-container"
       >
          {kpiCards.map((kpi) => (
-           <Reorder.Item 
+           <div 
              key={kpi.label} 
-             value={kpi} 
-             layout
-             transition={{ type: "spring", stiffness: 300, damping: 30 }}
+             className="h-full"
            >
              <Card 
-               className={`p-6 bg-[#111827]/80 border-white/5 backdrop-blur-xl relative overflow-hidden group cursor-grab active:cursor-grabbing ${criticalKPIs.includes(kpi.label) ? 'animate-pulse' : ''}`}
+               className={`p-6 bg-[#111827]/80 border-white/5 backdrop-blur-xl relative overflow-hidden group ${criticalKPIs.includes(kpi.label) ? 'animate-pulse' : ''}`}
                onDoubleClick={() => setSelectedKPI(kpi)}
              >
                 <div className="flex justify-between items-start mb-4">
@@ -126,9 +108,9 @@ export default function Indicadores() {
                 <h3 className="text-2xl font-black text-white mb-1 tracking-tight">{kpi.value}</h3>
                 <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">{kpi.label}</p>
              </Card>
-           </Reorder.Item>
+           </div>
          ))}
-      </Reorder.Group>
+      </div>
 
       <div className="grid lg:grid-cols-4 gap-6">
         <Card className="lg:col-span-2 p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl group">
@@ -145,21 +127,30 @@ export default function Indicadores() {
                  </div>
               </div>
            </div>
-           <div className="h-[350px]">
-             <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                  <XAxis dataKey="name" stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} dy={5} />
-                  <YAxis stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} dx={-5} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#0B1120', borderColor: '#ffffff10', borderRadius: '16px' }}
-                    cursor={{ fill: '#ffffff03' }}
-                  />
-                  <Bar dataKey="receita" fill="#2563EB" radius={[6, 6, 0, 0]} barSize={40} />
-                  <Bar dataKey="meta" fill="#ffffff10" radius={[6, 6, 0, 0]} barSize={10} />
-                </BarChart>
-             </ResponsiveContainer>
-           </div>
+           {monthlyData.length === 0 ? (
+             <div className="h-[350px] flex flex-col items-center justify-center gap-4 opacity-40">
+               <Inbox className="w-12 h-12 text-slate-500" />
+               <p className="text-xs font-black text-slate-500 uppercase tracking-widest text-center">
+                 Sem histórico financeiro para montar o gráfico.
+               </p>
+             </div>
+           ) : (
+             <div className="h-[350px]">
+               <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+                    <XAxis dataKey="name" stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} dy={5} />
+                    <YAxis stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} dx={-5} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#0B1120', borderColor: '#ffffff10', borderRadius: '16px' }}
+                      cursor={{ fill: '#ffffff03' }}
+                    />
+                    <Bar dataKey="receita" fill="#2563EB" radius={[6, 6, 0, 0]} barSize={40} />
+                    <Bar dataKey="meta" fill="#ffffff10" radius={[6, 6, 0, 0]} barSize={10} />
+                  </BarChart>
+               </ResponsiveContainer>
+             </div>
+           )}
         </Card>
 
         <Card className="p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl flex flex-col relative overflow-hidden">
@@ -172,9 +163,9 @@ export default function Indicadores() {
                  <PieChart>
                    <Pie 
                      data={[
-                       { name: 'Dentro do Prazo', value: 85, color: '#10B981' },
-                       { name: 'Em Risco', value: 10, color: '#F59E0B' },
-                       { name: 'Ultrapassado (Violado)', value: 5, color: '#EF4444' }
+                       { name: 'Dentro do Prazo', value: 100, color: '#10B981' },
+                       { name: 'Em Risco', value: 0, color: '#F59E0B' },
+                       { name: 'Ultrapassado (Violado)', value: 0, color: '#EF4444' }
                      ]} 
                      innerRadius={80} 
                      outerRadius={115} 
@@ -183,9 +174,9 @@ export default function Indicadores() {
                      cornerRadius={6}
                    >
                      {[
-                       { name: 'Dentro do Prazo', value: 85, color: '#10B981' },
-                       { name: 'Em Risco', value: 10, color: '#F59E0B' },
-                       { name: 'Ultrapassado (Violado)', value: 5, color: '#EF4444' }
+                       { name: 'Dentro do Prazo', value: 100, color: '#10B981' },
+                       { name: 'Em Risco', value: 0, color: '#F59E0B' },
+                       { name: 'Ultrapassado (Violado)', value: 0, color: '#EF4444' }
                      ].map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                    </Pie>
                    <Tooltip 
@@ -196,15 +187,15 @@ export default function Indicadores() {
                  </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                 <span className="text-4xl font-black text-white">85%</span>
+                 <span className="text-4xl font-black text-white">0%</span>
                  <span className="text-[10px] text-emerald-500 uppercase tracking-widest font-bold">Health Score</span>
               </div>
            </div>
            <div className="mt-8 grid grid-cols-1 gap-2">
               {[
-                { name: 'Dentro do Prazo', value: 85, color: '#10B981' },
-                { name: 'Em Risco', value: 10, color: '#F59E0B' },
-                { name: 'Ultrapassado', value: 5, color: '#EF4444' }
+                { name: 'Dentro do Prazo', value: 100, color: '#10B981' },
+                { name: 'Em Risco', value: 0, color: '#F59E0B' },
+                { name: 'Ultrapassado', value: 0, color: '#EF4444' }
               ].map((d, i) => (
                 <div key={i} className="flex items-center gap-2">
                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }}></div>
@@ -232,7 +223,7 @@ export default function Indicadores() {
                  </PieChart>
               </ResponsiveContainer>
               <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                 <span className="text-4xl font-black text-white">1,2k</span>
+                 <span className="text-4xl font-black text-white">{pieData.reduce((acc, curr) => acc + curr.value, 0)}</span>
                  <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Leads Atuais</span>
               </div>
            </div>
@@ -403,10 +394,10 @@ export default function Indicadores() {
 
       <div className="grid lg:grid-cols-4 gap-6">
          {[
-           { title: "Indicações", value: "342", sub: "+12%", color: "text-emerald-400" },
-           { title: "Instagram", value: "854", sub: "+25%", color: "text-purple-400" },
-           { title: "LinkedIn", value: "112", sub: "+5%", color: "text-blue-400" },
-           { title: "Google Ads", value: "2.5k", sub: "+14%", color: "text-[#06B6D4]" },
+           { title: "Indicações", value: "0", sub: "0%", color: "text-emerald-400" },
+           { title: "Instagram", value: "0", sub: "0%", color: "text-purple-400" },
+           { title: "LinkedIn", value: "0", sub: "0%", color: "text-blue-400" },
+           { title: "Google Ads", value: "0", sub: "0%", color: "text-[#06B6D4]" },
          ].map((item, i) => (
            <Card key={i} className="p-5 border-white/5 bg-white/5 backdrop-blur-lg flex items-center justify-between group hover:bg-white/[0.08] transition-colors cursor-pointer">
               <div>

@@ -11,14 +11,10 @@ const initialColumns = [
   { id: "publicado", title: "Publicado", color: "bg-emerald-500" },
 ];
 
-const initialTasks = [
-  { id: "1", colId: "ideia", title: "Post Carrossel sobre n8n", desc: "Como usar n8n no novo CRM.", platform: "Instagram", date: "24 Mai", priority: "Média", value: 1200 },
-  { id: "2", colId: "producao", title: "Vídeo Reels Axis CRM", desc: "Demonstrando a funcionalidade Kanban.", platform: "TikTok", date: "26 Mai", priority: "Alta", value: 3500 },
-  { id: "3", colId: "revisao", title: "Post Blog: Supabase Setup", desc: "Mostrando a structure sql e performance...", platform: "Blog", date: "28 Mai", priority: "Baixa", value: 850 },
-];
+import { useData } from "../../contexts/DataContext";
 
 export function useMarketingConteudo() {
-  const [tasks, setTasks] = useState(initialTasks);
+  const { marketingContent: tasks, setMarketingContent: setTasks } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
@@ -35,60 +31,16 @@ export function useMarketingConteudo() {
   const [newDesc, setNewDesc] = useState("");
   const [newPriority, setNewPriority] = useState("Média");
 
-  useEffect(() => {
-    const loadTasks = async () => {
-      if (supabase) {
-        try {
-          const { data, error } = await supabase
-            .from("marketing_conteudo")
-            .select("*")
-            .order("id", { ascending: true });
-          
-          if (error) {
-            console.warn("Supabase fetch warning, using local fallback:", error.message);
-          } else if (data && data.length > 0) {
-            const mapped = data.map(item => ({
-              id: String(item.id),
-              colId: item.col_id || item.colId,
-              title: item.title,
-              desc: item.desc,
-              platform: item.platform,
-              date: item.date,
-              priority: item.priority || "Média",
-              value: item.value || 0
-            }));
-            setTasks(mapped);
-            return;
-          }
-        } catch (err) {
-          console.warn("Supabase load exception, using local fallback:", err);
-        }
-      }
-
-      const saved = localStorage.getItem("axis_marketing_tasks");
-      if (saved) {
-        try {
-          setTasks(JSON.parse(saved));
-        } catch (e) {
-          setTasks(initialTasks);
-        }
-      } else {
-        setTasks(initialTasks);
-      }
-    };
-
-    loadTasks();
-  }, []);
+  // Tasks are loaded via DataContext
 
   const updateTaskInDatabase = async (task: any) => {
     if (supabase) {
       try {
         const { error } = await supabase
-          .from("marketing_conteudo")
+          .from("marketing_content")
           .upsert({
             id: task.id,
             col_id: task.colId,
-            colId: task.colId,
             title: task.title,
             desc: task.desc,
             platform: task.platform,
@@ -130,7 +82,7 @@ export function useMarketingConteudo() {
       reorderedSourceTasks.splice(destination.index, 0, movedTask);
       const updatedTasks = [...tasksInOtherCols, ...reorderedSourceTasks];
       setTasks(updatedTasks);
-      localStorage.setItem("axis_marketing_tasks", JSON.stringify(updatedTasks));
+      setTasks(updatedTasks);
       
       await updateTaskInDatabase({ ...movedTask, colId: destColId });
     } else {
@@ -141,7 +93,7 @@ export function useMarketingConteudo() {
       
       const updatedTasks = [...tasksInOtherCols, ...tasksInSource, ...reorderedDestTasks];
       setTasks(updatedTasks);
-      localStorage.setItem("axis_marketing_tasks", JSON.stringify(updatedTasks));
+      setTasks(updatedTasks);
 
       const colName = initialColumns.find(c => c.id === destColId)?.title;
       toast.success(`"${movedTask.title}" movido para ${colName}`);
@@ -180,7 +132,7 @@ export function useMarketingConteudo() {
     
     const updated = [...tasks, newTask];
     setTasks(updated);
-    localStorage.setItem("axis_marketing_tasks", JSON.stringify(updated));
+    setTasks(updated);
     await updateTaskInDatabase(newTask);
 
     setIsNewTaskModalOpen(false);

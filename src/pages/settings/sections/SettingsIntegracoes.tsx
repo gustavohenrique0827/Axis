@@ -6,21 +6,14 @@ import { useData } from "../../../contexts/DataContext";
 import { toast } from "sonner";
 
 export function ConfigIntegracoesApps() {
-    const [integrations, setIntegrations] = useState([
-        { id: 'wa', nome: "WhatsApp Oficial (API)", desc: "Envio de mensagens automatizadas via Evolution API.", status: "Conectado", connected: true, icon: Zap },
-        { id: 'resend', nome: "Resend Email", desc: "Mala direta e campanhas.", status: "Conectado", connected: true, icon: Mail },
-        { id: 'calendar', nome: "Google Calendar", desc: "Sincronização de reuniões.", status: "Desconectado", connected: false, icon: CalendarIcon },
-        { id: 'sheets', nome: "Google Sheets", desc: "Importar de planilhas.", status: "Desconectado", connected: false, icon: FileText },
-        { id: 'stripe', nome: "Stripe", desc: "Pagamentos de faturas.", status: "Desconectado", connected: false, icon: DollarSign },
-        { id: 'n8n', nome: "N8N", desc: "Automações externas.", status: "Desconectado", connected: false, icon: Zap },
-    ]);
+    const [integrations, setIntegrations] = useState<any[]>([]);
 
     const [instances, setInstances] = useState<any[]>([]);
     const [webhookUrl, setWebhookUrl] = useState("");
     const [selectedInstanceId, setSelectedInstanceId] = useState("");
     const [contacts, setContacts] = useState<any[]>([]);
     const [selectedContactId, setSelectedContactId] = useState("");
-    const [simulationText, setSimulationText] = useState("Olá! Gostaria de falar com o time comercial da Axis CRM.");
+    const [simulationText, setSimulationText] = useState("");
     const [savingWebhook, setSavingWebhook] = useState(false);
     const [simulating, setSimulating] = useState(false);
 
@@ -411,9 +404,9 @@ function CalendarIcon(props: any) {
 }
 
 export function ConfigIntegracoesSMTP() {
-  const [smtpServer, setSmtpServer] = useState("smtp.gmail.com");
-  const [smtpPort, setSmtpPort] = useState("587");
-  const [smtpUser, setSmtpUser] = useState("vendas@seu-workspace-workspace.com");
+  const [smtpServer, setSmtpServer] = useState("");
+  const [smtpPort, setSmtpPort] = useState("");
+  const [smtpUser, setSmtpUser] = useState("");
 
   const testConnection = () => {
     toast.promise(
@@ -480,7 +473,7 @@ export function ConfigIntegracoesSMTP() {
 }
 
 export function ConfigIntegracoesSDR() {
-  const [webhookUrl, setWebhookUrl] = useState("https://n8n.seumodelo.com/webhook/sdr-reuniao");
+  const [webhookUrl, setWebhookUrl] = useState("");
   const [webhookActive, setWebhookActive] = useState(true);
 
   const testWebhook = () => {
@@ -565,7 +558,7 @@ export function ConfigIntegracoesSDR() {
             </div>
             <label className="flex items-center cursor-pointer">
               <div className="relative">
-                <input type="checkbox" className="sr-only" defaultChecked={true} />
+                <input type="checkbox" className="sr-only" />
                 <div className={`block w-10 h-6 rounded-full transition-colors bg-emerald-600`}></div>
                 <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform transform translate-x-4`}></div>
               </div>
@@ -578,9 +571,8 @@ export function ConfigIntegracoesSDR() {
             <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Endpoint URL</label>
             <input 
               type="text" 
-              defaultValue="https://n8n.seumodelo.com/webhook/sdr-qualificado"
+              placeholder="https://n8n.seumodelo.com/webhook/sdr-qualificado"
               className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-sm text-white font-mono focus:border-emerald-500 focus:outline-none" 
-              placeholder="https://"
             />
           </div>
 
@@ -588,11 +580,11 @@ export function ConfigIntegracoesSDR() {
             <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Eventos de Disparo</label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
                <label className="flex items-center gap-2 text-sm text-slate-300">
-                 <input type="checkbox" defaultChecked className="rounded border-white/20 bg-transparent text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 transition-colors" />
+                 <input type="checkbox" className="rounded border-white/20 bg-transparent text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 transition-colors" />
                  Atualização de Score IA
                </label>
                <label className="flex items-center gap-2 text-sm text-slate-300">
-                 <input type="checkbox" defaultChecked className="rounded border-white/20 bg-transparent text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 transition-colors" />
+                 <input type="checkbox" className="rounded border-white/20 bg-transparent text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 transition-colors" />
                  Mapeamento de Perfil Concluído
                </label>
                <label className="flex items-center gap-2 text-sm text-slate-300">
@@ -600,7 +592,7 @@ export function ConfigIntegracoesSDR() {
                  Contato Iniciado (1º Touchpoint)
                </label>
                <label className="flex items-center gap-2 text-sm text-slate-300">
-                 <input type="checkbox" defaultChecked className="rounded border-white/20 bg-transparent text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 transition-colors" />
+                 <input type="checkbox" className="rounded border-white/20 bg-transparent text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0 transition-colors" />
                  Identificação de Ticket Médio
                </label>
             </div>

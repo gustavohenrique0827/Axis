@@ -21,13 +21,6 @@ interface Student {
   lastPresence: string;
 }
 
-const MOCK_STUDENTS: Student[] = [
-  { id: "1", name: "Ana Beatriz", status: 'active', progress: 65, attendance: 92, lastPresence: "22 Mai" },
-  { id: "2", name: "Carlos Eduardo", status: 'at_risk', progress: 20, attendance: 45, lastPresence: "15 Mai" },
-  { id: "3", name: "Mariana Silva", status: 'onboarding', progress: 5, attendance: 100, lastPresence: "22 Mai" },
-  { id: "4", name: "Ricardo Lopes", status: 'completed', progress: 100, attendance: 98, lastPresence: "18 Mai" },
-  { id: "5", name: "Julia Santos", status: 'active', progress: 45, attendance: 88, lastPresence: "22 Mai" },
-];
 
 interface EducationTurmaDetalhesProps {
   turma: {
@@ -43,17 +36,17 @@ export default function EducationTurmaDetalhes({ turma, onBack }: EducationTurma
   const [activeTab, setActiveTab] = useState<'kanban' | 'presenca'>('presenca');
   const [attendanceDate, setAttendanceDate] = useState("2024-05-22");
   const [searchQuery, setSearchQuery] = useState("");
-  const [students, setStudents] = useState<Student[]>(MOCK_STUDENTS);
+  const [students, setStudents] = useState<Student[]>([]);
 
   const filteredStudents = students.filter(s => 
     s.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const stats = [
-    { label: "Presença Média", value: "88%", icon: CheckSquare, color: "text-emerald-500" },
-    { label: "Progresso Médio", value: "42%", icon: TrendingUp, color: "text-blue-500" },
-    { label: "Alunos em Risco", value: "3", icon: X, color: "text-rose-500" },
-    { label: "Aulas Realizadas", value: "12/40", icon: Calendar, color: "text-amber-500" },
+    { label: "Presença Média", value: students.length ? "88%" : "—", icon: CheckSquare, color: "text-emerald-500" },
+    { label: "Progresso Médio", value: students.length ? "42%" : "—", icon: TrendingUp, color: "text-blue-500" },
+    { label: "Alunos em Risco", value: students.filter(s => s.status === 'at_risk').length.toString(), icon: X, color: "text-rose-500" },
+    { label: "Aulas Realizadas", value: "0/40", icon: Calendar, color: "text-amber-500" },
   ];
 
   const kanbanColumns = [
@@ -149,60 +142,69 @@ export default function EducationTurmaDetalhes({ turma, onBack }: EducationTurma
             </div>
           </Card>
 
-          <Card className="overflow-hidden bg-[#111827]/60 border-white/5">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="bg-white/5 border-b border-white/5">
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Aluno</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">Presença</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Freq. Geral</th>
-                  <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {filteredStudents.map((student) => (
-                  <tr key={student.id} className="hover:bg-white/[0.02] transition-colors group">
-                    <td className="px-6 py-5">
-                       <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:text-indigo-300 transition-colors capitalize font-bold text-xs italic">
-                             {student.name.charAt(0)}
-                          </div>
-                          <div>
-                             <div className="text-sm font-bold text-white">{student.name}</div>
-                             <div className="text-[9px] text-slate-600 font-black uppercase tracking-widest">Matrícula: Axis-{student.id}92</div>
-                          </div>
-                       </div>
-                    </td>
-                    <td className="px-6 py-5">
-                       <div className="flex justify-center gap-3">
-                          <button onClick={() => handleToggleAttendance(student.id, true)} className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center hover:bg-emerald-500/20 transition-all">
-                             <Check className="w-5 h-5" />
-                          </button>
-                          <button onClick={() => handleToggleAttendance(student.id, false)} className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center justify-center hover:bg-rose-500/20 transition-all">
-                             <X className="w-5 h-5" />
-                          </button>
-                       </div>
-                    </td>
-                    <td className="px-6 py-5">
-                       <div className="flex items-center gap-3">
-                          <div className="flex-1 max-w-[100px] h-1.5 bg-white/5 rounded-full overflow-hidden">
-                             <div 
-                               className={`h-full rounded-full ${student.attendance < 50 ? 'bg-rose-500' : 'bg-emerald-500'}`} 
-                               style={{ width: `${student.attendance}%` }} 
-                             />
-                          </div>
-                          <span className={`text-[11px] font-black ${student.attendance < 50 ? 'text-rose-500' : 'text-emerald-500'}`}>{student.attendance}%</span>
-                       </div>
-                    </td>
-                    <td className="px-6 py-5 text-right">
-                       <button className="p-2 text-slate-600 hover:text-white transition-colors">
-                          <MoreVertical className="w-4 h-4" />
-                       </button>
-                    </td>
+          <Card className="overflow-hidden bg-[#111827]/60 border-white/5 min-h-[300px]">
+            {filteredStudents.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 opacity-40 gap-4">
+                <Users className="w-12 h-12 text-slate-500" />
+                <span className="text-xs uppercase font-black tracking-widest text-slate-500 text-center max-w-sm">
+                  Sem alunos cadastrados nesta turma. Integre o banco para ver a lista de presença.
+                </span>
+              </div>
+            ) : (
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="bg-white/5 border-b border-white/5">
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Aluno</th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">Presença</th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Freq. Geral</th>
+                    <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Ações</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {filteredStudents.map((student) => (
+                    <tr key={student.id} className="hover:bg-white/[0.02] transition-colors group">
+                      <td className="px-6 py-5">
+                         <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 group-hover:text-indigo-300 transition-colors capitalize font-bold text-xs italic">
+                               {student.name.charAt(0)}
+                            </div>
+                            <div>
+                               <div className="text-sm font-bold text-white">{student.name}</div>
+                               <div className="text-[9px] text-slate-600 font-black uppercase tracking-widest">Matrícula: Axis-{student.id}92</div>
+                            </div>
+                         </div>
+                      </td>
+                      <td className="px-6 py-5">
+                         <div className="flex justify-center gap-3">
+                            <button onClick={() => handleToggleAttendance(student.id, true)} className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center hover:bg-emerald-500/20 transition-all">
+                               <Check className="w-5 h-5" />
+                            </button>
+                            <button onClick={() => handleToggleAttendance(student.id, false)} className="w-10 h-10 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center justify-center hover:bg-rose-500/20 transition-all">
+                               <X className="w-5 h-5" />
+                            </button>
+                         </div>
+                      </td>
+                      <td className="px-6 py-5">
+                         <div className="flex items-center gap-3">
+                            <div className="flex-1 max-w-[100px] h-1.5 bg-white/5 rounded-full overflow-hidden">
+                               <div 
+                                 className={`h-full rounded-full ${student.attendance < 50 ? 'bg-rose-500' : 'bg-emerald-500'}`} 
+                                 style={{ width: `${student.attendance}%` }} 
+                               />
+                            </div>
+                            <span className={`text-[11px] font-black ${student.attendance < 50 ? 'text-rose-500' : 'text-emerald-500'}`}>{student.attendance}%</span>
+                         </div>
+                      </td>
+                      <td className="px-6 py-5 text-right">
+                         <button className="p-2 text-slate-600 hover:text-white transition-colors">
+                            <MoreVertical className="w-4 h-4" />
+                         </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </Card>
         </div>
       )}

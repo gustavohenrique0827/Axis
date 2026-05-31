@@ -30,28 +30,6 @@ export interface Message {
 
 export type RightPanelState = "none" | "info" | "ai";
 
-const MOCK_CONTACTS: Contact[] = [
-  { id: "1", name: "João Silva", avatar: "JS", channel: "WhatsApp", lastMessage: "Obrigado! Aguardo o retorno.", time: "10:30", unread: 2, online: true, phone: "+55 11 98888-7777", tags: ["vip", "suporte"], slaStatus: "No Prazo - 2h restantes", purchaseHistory: [{ item: "Plano Premium Anual", date: "15/04/2026", value: "R$ 499,00" }] },
-  { id: "2", name: "Maria Oliveira", avatar: "MO", channel: "Instagram", lastMessage: "Qual o valor do frete?", time: "09:15", unread: 1, online: false, phone: "+55 21 97777-6666", tags: ["vendas"], slaStatus: "Atrasado - Passou do SLA", purchaseHistory: [{ item: "Camiseta Básica", date: "10/05/2026", value: "R$ 89,90" }] },
-  { id: "3", name: "Carlos Empresa", avatar: "CE", channel: "Email", lastMessage: "Segue em anexo a nota fiscal.", time: "Ontem", unread: 0, online: false, email: "carlos@empresa.com", tags: ["financeiro"], slaStatus: "Dentro do Prazo", purchaseHistory: [] },
-  { id: "4", name: "Ana Souza", avatar: "AS", channel: "WhatsApp", lastMessage: "Sim, concordo.", time: "Ontem", unread: 0, online: true, phone: "+55 11 91111-2222", tags: ["contrato"] },
-  { id: "5", name: "Marcos Pereira", avatar: "MP", channel: "WhatsApp", lastMessage: "Pode me enviar o catálogo?", time: "Segunda", unread: 5, online: false, phone: "+55 41 95555-5555", tags: ["lead"] },
-];
-
-const MOCK_CHAT_HISTORY: Record<string, Message[]> = {
-  "1": [
-    { id: "101", text: "Olá João, tudo bem? Seu pedido foi atualizado.", sender: "me", time: "10:00", status: "read" },
-    { id: "102", text: "Excelente! Quando deve chegar?", sender: "them", time: "10:05" },
-    { id: "103", text: "A previsão é até o final da semana.", sender: "me", time: "10:07", status: "read" },
-    { id: "104", text: "Perfeito.", sender: "them", time: "10:29" },
-    { id: "105", text: "Obrigado! Aguardo o retorno.", sender: "them", time: "10:30" }
-  ],
-  "2": [
-    { id: "201", text: "Boa tarde, vi o anúncio na página.", sender: "them", time: "09:10" },
-    { id: "202", text: "Boa tarde! Como posso ajudar?", sender: "me", time: "09:12", status: "read" },
-    { id: "203", text: "Qual o valor do frete?", sender: "them", time: "09:15" },
-  ]
-};
 
 const playIncomingMessageSound = () => {
   const soundEnabled = localStorage.getItem("axis_whatsapp_sound") !== "false";
@@ -167,8 +145,27 @@ export function useMessaging() {
   const [rightPanel, setRightPanel] = useState<RightPanelState>("none");
   const [previousPanel, setPreviousPanel] = useState<RightPanelState>("info");
   
-  const [contacts, setContacts] = useState<Contact[]>(MOCK_CONTACTS);
-  const [messages, setMessages] = useState<Record<string, Message[]>>(MOCK_CHAT_HISTORY);
+  const [contacts, setContacts] = useState<Contact[]>([]);
+  const [messages, setMessages] = useState<Record<string, Message[]>>({});
+
+  useEffect(() => {
+    if (leads.length > 0 && contacts.length === 0) {
+      setContacts(leads.map(l => ({
+        id: l.id,
+        name: l.name,
+        avatar: l.name.substring(0, 2).toUpperCase(),
+        channel: "WhatsApp",
+        lastMessage: "Inicie o atendimento",
+        time: "Agora",
+        unread: 0,
+        online: false,
+        phone: l.phone,
+        email: l.email,
+        tags: l.status ? [l.status.toLowerCase()] : [],
+        slaStatus: "Sem histórico de chat"
+      })));
+    }
+  }, [leads, contacts.length]);
   const [inputText, setInputText] = useState("");
   const [isOffline, setIsOffline] = useState(false);
   

@@ -60,28 +60,9 @@ let instances: WhatsAppInstance[] = [
   }
 ];
 
-let contacts: ChatContact[] = [
-  { id: "1", name: "João Silva", avatar: "JS", channel: "WhatsApp", lastMessage: "Obrigado! Aguardo o retorno.", time: "10:30", unread: 2, online: true, phone: "+55 11 98888-7777", tags: ["vip", "suporte"], slaStatus: "No Prazo - 2h restantes" },
-  { id: "2", name: "Maria Oliveira", avatar: "MO", channel: "WhatsApp", lastMessage: "Qual o valor do frete?", time: "09:15", unread: 1, online: false, phone: "+55 21 97777-6666", tags: ["vendas"], slaStatus: "Atrasado - Passou do SLA" },
-  { id: "3", name: "Carlos Empresa", avatar: "CE", channel: "WhatsApp", lastMessage: "Segue em anexo a nota fiscal.", time: "Ontem", unread: 0, online: false, phone: "+55 11 93333-4444", tags: ["financeiro"], slaStatus: "Dentro do Prazo" },
-  { id: "4", name: "Ana Souza", avatar: "AS", channel: "WhatsApp", lastMessage: "Sim, concordo.", time: "Ontem", unread: 0, online: true, phone: "+55 11 91111-2222", tags: ["contrato"] },
-  { id: "5", name: "Marcos Pereira", avatar: "MP", channel: "WhatsApp", lastMessage: "Pode me enviar o catálogo?", time: "Segunda", unread: 0, online: false, phone: "+55 41 95555-5555", tags: ["lead"] },
-];
+let contacts: ChatContact[] = [];
 
-let messages: Record<string, ChatMessage[]> = {
-  "1": [
-    { id: "101", text: "Olá João, tudo bem? Seu pedido foi atualizado.", sender: "me", time: "10:00", status: "read", timestamp: Date.now() - 3600000 * 3 },
-    { id: "102", text: "Excelente! Quando deve chegar?", sender: "them", time: "10:05", timestamp: Date.now() - 3600000 * 2.9 },
-    { id: "103", text: "A previsão é até o final da semana.", sender: "me", time: "10:07", status: "read", timestamp: Date.now() - 3600000 * 2.8 },
-    { id: "104", text: "Perfeito.", sender: "them", time: "10:29", timestamp: Date.now() - 3600000 * 2.7 },
-    { id: "105", text: "Obrigado! Aguardo o retorno.", sender: "them", time: "10:30", timestamp: Date.now() - 3600000 * 2.6 }
-  ],
-  "2": [
-    { id: "201", text: "Boa tarde, vi o anúncio na página.", sender: "them", time: "09:10", timestamp: Date.now() - 3600000 * 12 },
-    { id: "202", text: "Boa tarde! Como posso ajudar?", sender: "me", time: "09:12", status: "read", timestamp: Date.now() - 3600000 * 11.9 },
-    { id: "203", text: "Qual o valor do frete?", sender: "them", time: "09:15", timestamp: Date.now() - 3600000 * 11.8 },
-  ]
-};
+let messages: Record<string, ChatMessage[]> = {};
 
 let chatbotRules: ChatbotRule[] = [
   { id: "rule_1", trigger: "olá", response: "Olá! Seja muito bem-vindo ao Axis CRM 🚀\nComo podemos te ajudar hoje?\n\nDigite o número da opção desejada:\n1️⃣ Conhecer nossos Serviços\n2️⃣ Falar com setor Comercial\n3️⃣ Suporte Técnico\n4️⃣ Financeiro", matchType: "contains", active: true },

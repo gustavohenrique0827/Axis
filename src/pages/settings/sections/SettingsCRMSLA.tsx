@@ -9,7 +9,7 @@ export function ConfigCRMSLA() {
   const [activePriority, setActivePriority] = useState<"Alta" | "Média" | "Baixa">("Alta");
   
   const [slaRules, setSlaRules] = useState(() => {
-    const cached = localStorage.getItem("crm_sla_rules");
+    const cached = localStorage.getItem("crm_sla_rules_v2");
     if (cached) {
       try {
         return JSON.parse(cached);
@@ -39,7 +39,7 @@ export function ConfigCRMSLA() {
   };
 
   const handleSaveSla = () => {
-    localStorage.setItem("crm_sla_rules", JSON.stringify(slaRules));
+    localStorage.setItem("crm_sla_rules_v2", JSON.stringify(slaRules));
     toast.success("Regras de tempo limite (SLA) e Alertas Customizados sincronizados!");
   };
 
@@ -55,8 +55,8 @@ export function ConfigCRMSLA() {
     }
   };
 
-  // Helper to resolve CSS classes for mockup card based on alert settings
-  const getMockupAlertClass = (color: string, style: string) => {
+  // Helper to resolve CSS classes for preview card based on alert settings
+  const getPreviewAlertClass = (color: string, style: string) => {
     let classes = "";
     if (style === "border-pulse-shake") {
       classes = "border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.25)] animate-[pulse_2s_infinite] bg-red-500/[0.02]";
@@ -228,12 +228,12 @@ export function ConfigCRMSLA() {
           <Card className="p-4 sm:p-6 bg-[#111827]/80 border border-white/10 flex flex-col justify-between rounded-2xl relative overflow-hidden h-full">
             <div className="space-y-2">
               <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest font-mono">Visualizador de Card</h3>
-              <p className="text-xs text-slate-400 leading-relaxed">Mockup real de como este lead aparecerá no funil de negociações quando o SLA estourar:</p>
+              <p className="text-xs text-slate-400 leading-relaxed">Pré-visualização de como este lead aparecerá no funil de negociações quando o SLA estourar:</p>
             </div>
 
             {/* Actual simulated card */}
             <div className="my-6">
-              <div className={`p-4 bg-[#111827]/90 border backdrop-blur-xl rounded-xl transition-all ${getMockupAlertClass(currentRule.color, currentRule.alertStyle)}`}>
+              <div className={`p-4 bg-[#111827]/90 border backdrop-blur-xl rounded-xl transition-all ${getPreviewAlertClass(currentRule.color, currentRule.alertStyle)}`}>
                 <div className="flex justify-between items-start mb-3 gap-2 flex-wrap">
                   <span className={`inline-flex items-center gap-1 text-[8.5px] font-black px-2 py-0.5 rounded-md border uppercase bg-rose-500/10 text-rose-400 border-rose-500/20`}>
                     {activePriority} Prioridade
@@ -250,13 +250,13 @@ export function ConfigCRMSLA() {
                 </div>
 
                 <div className="space-y-2 col-span-1 min-w-0">
-                  <h4 className="font-bold text-white text-sm truncate">Almeida Logistics</h4>
+                  <h4 className="font-bold text-white text-sm truncate">Empresa Exemplo LTDA</h4>
                   <div className="flex items-center gap-1.5 text-xs text-slate-400 flex-wrap">
                      <span className="bg-[#0B1120] px-1.5 py-0.5 rounded text-[10px] font-bold border border-white/5 truncate max-w-[120px]">
-                       Lucas Almeida
+                       Nome do Vendedor
                      </span>
                      <span>•</span>
-                     <span className="font-mono text-[10px] text-slate-500">R$ 45.000</span>
+                     <span className="font-mono text-[10px] text-slate-500">R$ 0,00</span>
                   </div>
                 </div>
 

@@ -98,9 +98,9 @@ export default function RHColaboradores() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {[
                 { label: "Total de Colaboradores", value: filtered.length, icon: Users, color: "text-indigo-500" },
-                { label: "Vendas & SDRs Ativos", value: "3", icon: UserPlus, color: "text-emerald-500" },
-                { label: "Engajamento Médio", value: "94.5%", icon: TrendingUp, color: "text-blue-500" },
-                { label: "Meta Geral Batida", value: "88%", icon: ShieldCheck, color: "text-rose-500" },
+                { label: "Vendas & SDRs Ativos", value: "0", icon: UserPlus, color: "text-emerald-500" },
+                { label: "Engajamento Médio", value: "0%", icon: TrendingUp, color: "text-blue-500" },
+                { label: "Meta Geral Batida", value: "0%", icon: ShieldCheck, color: "text-rose-500" },
               ].map((stat, i) => (
                 <Card key={i} className="p-6 bg-[#111827]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
                   <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />

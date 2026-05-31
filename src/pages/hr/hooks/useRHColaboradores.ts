@@ -3,82 +3,10 @@ import { useData } from "../../../contexts/DataContext";
 import { Colaborador } from "../../../types";
 import { toast } from "sonner";
 
-export const INITIAL_COLABORADORES: Colaborador[] = [
-  {
-    id: "1",
-    nome: "Eduardo Meirelles",
-    cargo: "Desenvolvedor Backend Sr",
-    departamento: "Tecnologia",
-    status: 'Ativo',
-    dataAdmissao: "12 Mar 2021",
-    email: "eduardo.m@empresa.com",
-    desempenho: 94
-  },
-  {
-    id: "2",
-    nome: "Beatriz Oliveira",
-    cargo: "Product Manager",
-    departamento: "Produtos",
-    status: 'Ativo',
-    dataAdmissao: "05 Jan 2022",
-    email: "beatriz.o@empresa.com",
-    desempenho: 88
-  },
-  {
-    id: "3",
-    nome: "Rodrigo Santos",
-    cargo: "UX/UI Designer",
-    departamento: "Design",
-    status: 'Férias',
-    dataAdmissao: "22 Set 2020",
-    email: "rodrigo.s@empresa.com",
-    desempenho: 91
-  },
-  {
-    id: "4",
-    nome: "Mariana Costa",
-    cargo: "Analista de RH",
-    departamento: "Pessoas & Cultura",
-    status: 'Ativo',
-    dataAdmissao: "15 Mai 2023",
-    email: "mariana.c@empresa.com",
-    desempenho: 82
-  },
-  {
-    id: "5",
-    nome: "Roberto Ramos",
-    cargo: "SDR Comercial Executivo",
-    departamento: "Vendas / SDR",
-    status: 'Ativo',
-    dataAdmissao: "10 Ago 2022",
-    email: "roberto.ramos@axis.com",
-    desempenho: 96
-  },
-  {
-    id: "6",
-    nome: "Carlos Eduardo Mendes",
-    cargo: "Closer Comercial Sênior",
-    departamento: "Vendas / Closers",
-    status: 'Ativo',
-    dataAdmissao: "15 Jan 2022",
-    email: "carlos.mendes@axis.com",
-    desempenho: 92
-  },
-  {
-    id: "7",
-    nome: "Ana Silva",
-    cargo: "Closer Closer Specialist",
-    departamento: "Vendas / Closers",
-    status: 'Ativo',
-    dataAdmissao: "20 Mar 2023",
-    email: "ana.silva@axis.com",
-    desempenho: 89
-  }
-];
+export const INITIAL_COLABORADORES: Colaborador[] = [];
 
 export function useRHColaboradores() {
-  const { squads, addSquad, updateSquad, deleteSquad, leads } = useData();
-  const [colaboradores] = useState<Colaborador[]>(INITIAL_COLABORADORES);
+  const { squads, addSquad, updateSquad, deleteSquad, leads, colaboradores, addColaborador, updateColaborador, deleteColaborador } = useData();
 
   const [activeTab, setActiveTab] = useState<'membros' | 'squads'>('membros');
   const [search, setSearch] = useState("");
@@ -91,10 +19,10 @@ export function useRHColaboradores() {
   const [newSquadFoco, setNewSquadFoco] = useState("");
 
   // OTE Calculator states
-  const [oteBaseSalary, setOteBaseSalary] = useState("3500");
-  const [oteCommPercentage, setOteCommPercentage] = useState("5");
-  const [oteVendasRealizadas, setOteVendasRealizadas] = useState("80000");
-  const [oteAtingimentoMeta, setOteAtingimentoMeta] = useState("105");
+  const [oteBaseSalary, setOteBaseSalary] = useState("0");
+  const [oteCommPercentage, setOteCommPercentage] = useState("0");
+  const [oteVendasRealizadas, setOteVendasRealizadas] = useState("0");
+  const [oteAtingimentoMeta, setOteAtingimentoMeta] = useState("0");
 
   const handleCreateSquad = (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,7 +38,7 @@ export function useRHColaboradores() {
       sdrCount: 1,
       closersCount: 1,
       focoComercial: newSquadFoco || "Prospecção Geral e Contatos Comerciais",
-      membros: ["Roberto Ramos (SDR)", "Carlos Mendes (Closer)"]
+      membros: []
     };
     addSquad(created);
     setIsNewSquadOpen(false);
@@ -139,6 +67,9 @@ export function useRHColaboradores() {
     deleteSquad,
     leads,
     colaboradores,
+    addColaborador,
+    updateColaborador,
+    deleteColaborador,
     activeTab,
     setActiveTab,
     search,

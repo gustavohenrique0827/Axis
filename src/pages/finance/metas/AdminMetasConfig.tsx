@@ -1,14 +1,15 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { 
-  Target, Sparkles, AlertTriangle, ShieldCheck
+  Target, Sparkles, AlertTriangle, ShieldCheck, Inbox
 } from "lucide-react";
 import { 
   XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar 
 } from 'recharts';
 import { toast } from "sonner";
 import { SquadMeta, AlertMessage } from "./useFinanceiroMetas";
+import { useData } from "../../../contexts/DataContext";
 
 interface AdminMetasConfigProps {
   squads: SquadMeta[];
@@ -59,37 +60,61 @@ export function AdminMetasConfig({
   alerts,
   setAlerts
 }: AdminMetasConfigProps) {
-  const salesEvolutionData = [
-    { name: "Semana 1", GTech: 20000, Palmas: 60000, Outbound: 10000 },
-    { name: "Semana 2", GTech: 45000, Palmas: 120000, Outbound: 25000 },
-    { name: "Semana 3", GTech: 68000, Palmas: 195000, Outbound: 32000 },
-    { name: "Semana 4 (Proj)", GTech: 89000, Palmas: 265000, Outbound: 45000 },
-  ];
+
+  const { financeEntries } = useData();
+
+  // Calcular evolução dinâmica se houver entradas financeiras
+  const salesEvolutionData = useMemo(() => {
+    const weeks: Record<string, any> = {};
+    const receivables = financeEntries.filter(f => f.type === 'Receber' && f.status === 'Pago');
+    
+    receivables.forEach(f => {
+      try {
+        const d = new Date(f.date || '');
+        if (isNaN(d.getTime())) return;
+        const weekNum = Math.ceil(d.getDate() / 7);
+        const month = d.toLocaleDateString('pt-BR', { month: 'short' });
+        const name = `${month} S${weekNum}`;
+        
+        if (!weeks[name]) {
+          weeks[name] = { name, total: 0 };
+        }
+        weeks[name].total += f.value;
+      } catch {}
+    });
+
+    return Object.values(weeks);
+  }, [financeEntries]);
 
   return (
     <div className="space-y-6">
       
       {/* Dynamic Distribution Chart */}
       <Card className="p-5 border-white/5 bg-[#111827]/80 backdrop-blur-xl shrink-0 rounded-3xl">
-        <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-1">Evolução do Faturamento Semanal</h4>
-        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-4">Divisão proporcional por Squad ativo</span>
+        <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-1">Evolução do Faturamento</h4>
+        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-4">Total faturado no tempo</span>
 
-        <div className="h-44 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={salesEvolutionData}>
-              <XAxis dataKey="name" stroke="#64748b" fontSize={9} tickLine={false} />
-              <YAxis stroke="#64748b" fontSize={9} tickFormatter={(val) => `R$ ${val / 1000}k`} />
-              <Tooltip 
-                contentStyle={{ backgroundColor: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px" }}
-                labelStyle={{ color: "white", fontSize: "10px", fontWeight: "bold" }}
-                itemStyle={{ fontSize: "10px" }}
-              />
-              <Bar dataKey="Palmas" fill="#3b82f6" stackId="a" name="Palmas Apple" />
-              <Bar dataKey="GTech" fill="#10b981" stackId="a" name="G-Tech" />
-              <Bar dataKey="Outbound" fill="#6366f1" stackId="a" name="Outbound" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        {salesEvolutionData.length === 0 ? (
+          <div className="h-44 w-full flex flex-col items-center justify-center opacity-40 gap-2">
+            <Inbox className="w-8 h-8 text-slate-500" />
+            <span className="text-[10px] font-black uppercase text-slate-500">Sem dados financeiros de recebimento.</span>
+          </div>
+        ) : (
+          <div className="h-44 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={salesEvolutionData}>
+                <XAxis dataKey="name" stroke="#64748b" fontSize={9} tickLine={false} />
+                <YAxis stroke="#64748b" fontSize={9} tickFormatter={(val) => `R$ ${val / 1000}k`} />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px" }}
+                  labelStyle={{ color: "white", fontSize: "10px", fontWeight: "bold" }}
+                  itemStyle={{ fontSize: "10px" }}
+                />
+                <Bar dataKey="total" fill="#3b82f6" name="Total Recebido" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        )}
       </Card>
 
       {/* Formulário de Configuração - Área do Administrador */}

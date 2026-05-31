@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { 
+import {
   DollarSign, Users, Target, TrendingDown, Sun
 } from 'lucide-react';
 import { PageContainer } from "../../components/PageContainer";
@@ -13,16 +13,6 @@ import { CommercialView } from "./components/CommercialView";
 import { MarketingView } from "./components/MarketingView";
 import { CustomerSuccessView } from "./components/CustomerSuccessView";
 
-const performanceData = [
-  { name: 'Jan', vendas: 4000, leads: 2400, retention: 95 },
-  { name: 'Fev', vendas: 3000, leads: 1398, retention: 94 },
-  { name: 'Mar', vendas: 2000, leads: 9800, retention: 96 },
-  { name: 'Abr', vendas: 2780, leads: 3908, retention: 92 },
-  { name: 'Mai', vendas: 1890, leads: 4800, retention: 93 },
-  { name: 'Jun', vendas: 2390, leads: 3800, retention: 95 },
-  { name: 'Jul', vendas: 3490, leads: 4300, retention: 97 },
-];
-
 export default function Dashboard() {
   const {
     leads,
@@ -33,13 +23,19 @@ export default function Dashboard() {
     goalAlerts,
     totalRevenue,
     conversionRate,
-    user
+    squads,
+    contracts,
+    user,
+    performanceData,
+    salesRanking,
+    funnelData,
+    recentActivities,
   } = useDashboard();
 
   // Niche based Stats Calculations
   const stats = useMemo(() => {
     const niche = user?.tenantNiche || "Master";
-    
+
     if (niche === "Tecnologia") {
       return [
         { label: "Hardware & Upgrades", value: "R$ 78.400", trend: "+15.2%", color: "text-cyan-400", bg: "bg-cyan-500/10", icon: DollarSign, forecast: "R$ 90.0k" },
@@ -69,7 +65,7 @@ export default function Dashboard() {
         { label: "Tempo de Campanha", value: "14 Dias", trend: "-4.2%", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: TrendingDown, forecast: "10 Dias" },
       ];
     }
-    
+
     // Default fallback
     return [
       { label: "Receita (MRR)", value: `R$ ${totalRevenue.toLocaleString('pt-BR')}`, trend: "+12.5%", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: DollarSign, forecast: "R$ 6.8k" },
@@ -79,39 +75,33 @@ export default function Dashboard() {
     ];
   }, [user, totalRevenue, leads, conversionRate]);
 
-  const salesRanking = [
-    { name: "Carlos Eduardo", value: 145000, rate: 92, avatar: "🥇", trend: "+12%", ticket: "R$ 12.5k", deals: 12, badge: "Master Closer" },
-    { name: "Ana Silva", value: 112000, rate: 85, avatar: "🥈", trend: "+8%", ticket: "R$ 10.2k", deals: 11, badge: "Efficiency Star" },
-    { name: "Roberto Ramos", value: 94000, rate: 78, avatar: "🥉", trend: "+5%", ticket: "R$ 8.5k", deals: 11, badge: "Rising Talent" },
-  ];
 
   return (
-    <PageContainer 
-      title="Inteligência Axis" 
+    <PageContainer
+      title="Inteligência Axis"
       description="Painel de comando estratégico para decisões baseadas em dados."
       actions={
         <div className="flex bg-[#111827]/80 border border-white/5 rounded-2xl p-1 w-fit gap-1 shadow-2xl backdrop-blur-xl">
-           {[ 
-             { id: 'executivo', label: 'Estratégico', icon: Gauge },
-             { id: 'comercial', label: 'Comercial', icon: Zap },
-             { id: 'marketing', label: 'Marketing', icon: Megaphone },
-             { id: 'sucesso', label: 'Retenção', icon: HeartHandshake }
-           ].map(tab => (
-              <button 
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 cursor-pointer border-none bg-transparent ${
-                  activeTab === tab.id ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'text-slate-500 hover:text-white'
+          {[
+            { id: 'executivo', label: 'Estratégico', icon: Gauge },
+            { id: 'comercial', label: 'Comercial', icon: Zap },
+            { id: 'marketing', label: 'Marketing', icon: Megaphone },
+            { id: 'sucesso', label: 'Retenção', icon: HeartHandshake }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 cursor-pointer border-none bg-transparent ${activeTab === tab.id ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30' : 'text-slate-500 hover:text-white'
                 }`}
-              >
-                <tab.icon className="w-4 h-4" /> {tab.label}
-              </button>
-           ))}
+            >
+              <tab.icon className="w-4 h-4" /> {tab.label}
+            </button>
+          ))}
         </div>
       }
     >
       <div className="space-y-6 max-w-[1600px] mx-auto pb-10">
-        
+
         {/* Goal Alerts Banner */}
         <AnimatePresence>
           {goalAlerts.length > 0 && (
@@ -152,11 +142,13 @@ export default function Dashboard() {
               comparisonPeriod={comparisonPeriod}
               setComparisonPeriod={setComparisonPeriod}
               performanceData={performanceData}
+              squads={squads}
+              contracts={contracts}
             />
           )}
 
           {activeTab === 'comercial' && (
-            <CommercialView salesRanking={salesRanking} />
+            <CommercialView salesRanking={salesRanking} funnelData={funnelData} recentActivities={recentActivities} />
           )}
 
           {activeTab === 'marketing' && (

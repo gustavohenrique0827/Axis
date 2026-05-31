@@ -49,19 +49,33 @@ type Appointment = {
   specialty: string;
 };
 
-const mockDoctors = [
-  { id: '1', name: 'Dr. Lucas Ferro', esp: 'Cardiologia', color: '#3b82f6' },
-  { id: '2', name: 'Dra. Ana Costa', esp: 'Dermatologia', color: '#10b981' },
-  { id: '3', name: 'Dra. Elena Ramos', esp: 'Ginecologia', color: '#8b5cf6' },
-  { id: '4', name: 'Dr. Roberto Vilela', esp: 'Ortopedia', color: '#f59e0b' },
-];
-
 export default function AgendaClinica() {
-  const { appointments, addAppointment } = useData();
+  const { appointments, addAppointment, squads } = useData();
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedDrs, setSelectedDrs] = useState<string[]>(mockDoctors.map(d => d.id));
+  
+  const doctors = useMemo(() => {
+    if (!squads || squads.length === 0) return [];
+    const allMembers = squads.flatMap(s => s.membros || []);
+    const unique = Array.from(new Set(allMembers));
+    const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899'];
+    return unique.map((name: string, i) => ({
+      id: `dr-${i}`,
+      name: name.includes('(') ? name.split(' (')[0] : name,
+      esp: name.includes('(') ? name.split('(')[1].replace(')', '') : 'Geral',
+      color: colors[i % colors.length]
+    }));
+  }, [squads]);
+
+  const [selectedDrs, setSelectedDrs] = useState<string[]>([]);
   const [selectedAptId, setSelectedAptId] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+
+  // Auto-select all doctors when the list loads for the first time
+  useEffect(() => {
+    if (doctors.length > 0 && selectedDrs.length === 0) {
+      setSelectedDrs(doctors.map(d => d.id));
+    }
+  }, [doctors]);
 
   const filteredAppointments = useMemo(() => {
     return appointments.filter(apt => selectedDrs.includes(apt.drId));
@@ -182,10 +196,15 @@ export default function AgendaClinica() {
            <Card className="p-8 bg-[#111827]/80 border-white/5 backdrop-blur-xl">
               <div className="flex items-center justify-between mb-8">
                  <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Painel de Médicos</h3>
-                 <button onClick={() => setSelectedDrs(mockDoctors.map(d => d.id))} className="text-[9px] font-black text-emerald-400 uppercase tracking-tighter">Marcar Todos</button>
+                 <button onClick={() => setSelectedDrs(doctors.map(d => d.id))} className="text-[9px] font-black text-emerald-400 uppercase tracking-tighter">Marcar Todos</button>
               </div>
               <div className="space-y-3">
-                 {mockDoctors.map((dr) => (
+                 {doctors.length === 0 ? (
+                   <div className="py-6 flex flex-col items-center justify-center opacity-40">
+                      <User className="w-8 h-8 text-slate-500 mb-2" />
+                      <span className="text-[10px] uppercase font-black tracking-widest text-slate-500 text-center">Nenhum médico cadastrado (Squads)</span>
+                   </div>
+                 ) : doctors.map((dr) => (
                    <button 
                      key={dr.id} 
                      onClick={() => toggleDr(dr.id)}
