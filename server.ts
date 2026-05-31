@@ -327,7 +327,7 @@ async function startServer() {
   // =========================================================================
   // 1. EVOLUTION API INSTANCES ENDPOINTS
   // =========================================================================
-  app.get("/api/whatsapp/instances", (req, res) => {
+  app.get("/api/whatsapp/instances", async (req, res) => {
     if (supabase) {
       const { data, error } = await supabase
         .from('whatsapp_instances')
@@ -459,7 +459,7 @@ async function startServer() {
   // =========================================================================
   // 3. MESSAGES SENDER / POLLER & AUTOMATIONS (WEBHOOK / CHATBOT)
   // =========================================================================
-  app.get("/api/whatsapp/messages/:contactId", (req, res) => {
+  app.get("/api/whatsapp/messages/:contactId", async (req, res) => {
     const { contactId } = req.params;
     if (supabase) {
       const { data, error } = await supabase.from('chat_messages').select('*').eq('contact_id', contactId).order('timestamp', { ascending: true });
