@@ -32,12 +32,16 @@ const DEFAULT_TENANT_MODULES: Record<string, TenantModules> = {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserSession | null>(null);
+  const [user, setUser] = useState<UserSession | null>(() => {
+    // Recupera a sessão salva no localStorage ao iniciar
+    const savedSession = localStorage.getItem("axis_session");
+    return savedSession ? JSON.parse(savedSession) : null;
+  });
 
   // Start with only G-Tech Master, always load from Supabase
   const [allTenantModules, setAllTenantModules] = useState<Record<string, TenantModules>>(DEFAULT_TENANT_MODULES);
 
-  // Load tenants from Supabase on component mount - ALWAYS (ignore localStorage cache)
+  // Carrega os tenants e as configurações de módulos do banco
   useEffect(() => {
     const loadTenantsFromDB = async () => {
       console.log('[AuthContext] 🔄 Carregando tenants do banco de dados (sempre)...');
@@ -61,10 +65,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (session: UserSession) => {
     setUser(session);
+    localStorage.setItem("axis_session", JSON.stringify(session));
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.removeItem("axis_session");
   };
 
   const getTenantModules = (tenant: string): TenantModules => {

@@ -117,25 +117,37 @@ export async function signIn(
     const { data, error } = await supabase
       .from("users")
       .select(`
+        id,
         name,
         email,
         role,
         is_master,
         active,
         tenants (
+          id,
           name,
           niche
         )
       `)
       .eq("email", email)
       .eq("password_hash", passwordHash)
+      .eq("active", true)
       .single();
 
-    if (error || !data) {
-      return { success: false, error: "E-mail ou senha inválidos." };
+    if (error) {
+      console.error('[Supabase] Erro no login:', error.message);
+      return { success: false, error: "E-mail ou senha inválidos ou usuário inativo." };
+    }
+
+    if (!data) {
+      return { success: false, error: "Usuário não encontrado." };
     }
 
     const tenant = Array.isArray(data.tenants) ? data.tenants[0] : (data.tenants as any);
+
+    if (!tenant) {
+      return { success: false, error: "Usuário não possui uma empresa (tenant) vinculada." };
+    }
 
     return {
       success: true,
