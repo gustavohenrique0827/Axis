@@ -5,7 +5,7 @@ import {
   Zap, Play, Plus, ArrowRight, MessageSquare, Link2, 
   Trash2, RefreshCw, Sliders, CheckCircle2, Activity, HelpCircle, AlertCircle
 } from "lucide-react";
-import { ActionModal } from "../../components/ui/ActionModal";
+import { NovaAutomacaoModal } from "../../components/ui/NovaAutomacaoModal";
 import { toast } from "sonner";
 
 export default function Automations() {
@@ -413,17 +413,10 @@ export default function Automations() {
         </div>
       </div>
 
-      <ActionModal
+      <NovaAutomacaoModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Novo Fluxo de Automação"
-        actionText="Criar Fluxo"
-        fields={[
-          { name: "nome", label: "Nome do Fluxo", type: "text", required: true },
-          { name: "gatilho", label: "Quando isso acontecer... (Gatilho)", type: "select", options: ["Novo Lead Criado", "Negócio Ganho", "Negócio Perdido", "Sem interação > 30d", "Formulário Site Preenchido"] },
-          { name: "acao", label: "Fazer isso... (Ação)", type: "select", options: ["Enviar E-mail", "Enviar WhatsApp", "Mudar Etapa Pipeline", "Criar Tarefa", "Notificar Equipe"] }
-        ]}
-        onAction={handleCreateSystemWorkflow}
+        onSave={handleCreateSystemWorkflow}
       />
     </div>
   );

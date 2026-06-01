@@ -2,12 +2,13 @@ import React from "react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Plus, Settings2, Users, ChevronDown, ChevronUp, BarChart3, Users2, History, LayoutDashboard, Target, TrendingUp } from "lucide-react";
-import { ActionModal } from "../../components/ui/ActionModal";
+import { NovoMembroModal } from "../../components/ui/NovoMembroModal";
 import { motion, AnimatePresence } from "motion/react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { useEquipe, TeamMember } from "./hooks/useEquipe";
 import { SquadsTab } from "./components/SquadsTab";
 import { LogsTab } from "./components/LogsTab";
+import { toast } from "sonner";
 
 const TeamMemberCard: React.FC<{ member: TeamMember }> = ({ member }) => {
   return (
@@ -65,6 +66,21 @@ export default function Equipe() {
     totalPages,
     moveMember
   } = useEquipe();
+
+  const handleSaveMember = (data: any) => {
+    const newMember: TeamMember = {
+      name: data.nome,
+      role: data.cargo,
+      email: data.email,
+      deals: 0,
+      revenue: "R$ 0",
+      status: "Ativo",
+      squad: data.squad || "Sem squad"
+    };
+    setTeam((prev) => [newMember, ...prev]);
+    toast.success("Membro adicionado à equipe com sucesso!");
+    setIsModalOpen(false);
+  };
 
   return (
     <div className="flex flex-col lg:flex-row h-full -m-4 lg:-m-8">
@@ -405,16 +421,11 @@ export default function Equipe() {
         </AnimatePresence>
       </main>
 
-      <ActionModal
+      <NovoMembroModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Novo Membro"
-        fields={[
-          { name: "nome", label: "Nome Completo", type: "text", required: true },
-          { name: "email", label: "E-mail Corporativo", type: "email", required: true },
-          { name: "cargo", label: "Cargo / Papel", type: "select", options: ["Pré-Vendas (SDR)", "Vendedor Externo", "Vendedor Interno", "Gerente Comercial", "Administrador"] },
-          { name: "squad", label: "Squad", type: "select", options: squads.map(s => s.name) }
-        ]}
+        onSave={handleSaveMember}
+        initialValue={null}
       />
     </div>
   );

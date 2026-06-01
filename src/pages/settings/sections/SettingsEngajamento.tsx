@@ -6,7 +6,6 @@ import { NovoModeloModal } from "../../../components/ui/NovoModeloModal";
 import { Reorder } from "motion/react";
 import { toast } from "sonner";
 import { useData } from "../../../contexts/DataContext";
-import { ActionModal } from "@/src/components/ui/ActionModal";
 
 export function ConfigEngajamentoModelos() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,18 +55,10 @@ export function ConfigEngajamentoModelos() {
         ))}
       </div>
 
-      <ActionModal
+      <NovoModeloModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Novo Modelo"
-        actionText="Salvar Modelo"
-        aiSuggestType="Modelo"
-        fields={[
-          { name: "nome", label: "Nome do Template", type: "text", required: true },
-          { name: "tipo", label: "Canal", type: "select", options: ["WhatsApp", "E-mail", "Ambos"] },
-          { name: "conteudo", label: "Conteúdo da Mensagem", type: "textarea", required: true }
-        ]}
-        onAction={handleSave}
+        onSave={handleSave}
       />
     </div>
   );

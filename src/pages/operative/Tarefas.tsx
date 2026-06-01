@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import { LayoutGrid, List as ListIcon, RefreshCw, Plus } from "lucide-react";
-import { ActionModal } from "../../components/ui/ActionModal";
+import { NovaTarefaModal } from "../../components/ui/NovaTarefaModal";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
 import { NovaPautaModal } from "../../components/ui/NovaPautaModal";
 
@@ -160,72 +161,23 @@ export default function Tarefas() {
       </div>
 
       {/* Creation/Edition Modal */}
-      <ActionModal
+      <NovaTarefaModal
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
           setEditingTask(null);
         }}
-        onAction={handleSaveTask}
-        title={editingTask ? "Editar Tarefa / Compromisso" : "Nova Tarefa / Compromisso"}
-        actionText={editingTask ? "Salvar Alterações" : "Agendar Tarefa"}
-        fields={[
-          {
-            name: "nome",
-            label: "Título do Compromisso",
-            type: "text",
-            required: true,
-            defaultValue: editingTask ? editingTask.title : ""
-          },
-          {
-            name: "tipo",
-            label: "Tipo do Canal",
-            type: "select",
-            options: ["Reunião Presencial", "Call Online", "Acompanhamento (Follow-up)", "Demonstração", "Envio Docs", "Ligação"],
-            defaultValue: editingTask ? editingTask.type : "Acompanhamento (Follow-up)"
-          },
-          {
-            name: "prioridade",
-            label: "Prioridade Comercial",
-            type: "select",
-            options: ["Alta", "Média", "Baixa"],
-            defaultValue: editingTask ? editingTask.priority : "Média"
-          },
-          {
-            name: "data",
-            label: "Data & Hora Limite",
-            type: "datetime-local",
-            required: true,
-            defaultValue: editingTask ? convertReadableDateToDatetimeLocal(editingTask.date) : new Date().toISOString().substring(0, 16)
-          },
-          {
-            name: "relacionado",
-            label: "Lead / Empresa Associado",
-            type: "text",
-            required: true,
-            defaultValue: editingTask ? editingTask.related : ""
-          },
-          {
-            name: "vendedor",
-            label: "Vendedor Responsável",
-            type: "select",
-            options: ["Carlos Eduardo Mendes", "Ana Silva", "Roberto Ramos", "Juliana Costa"],
-            defaultValue: editingTask ? (editingTask.seller || "Carlos Eduardo Mendes") : "Carlos Eduardo Mendes"
-          },
-          {
-            name: "produtos",
-            label: "Produtos/Serviços Relacionados",
-            type: "multi-select",
-            options: ["Consultoria Enterprise", "Setup PRO", "Licença SaaS"],
-            defaultValue: editingTask ? (editingTask.relatedProductIds || []) : []
-          },
-          {
-            name: "tags",
-            label: "Tags",
-            type: "text",
-            defaultValue: editingTask ? (editingTask.tags || []).join(", ") : ""
-          }
-        ]}
+        onSave={handleSaveTask}
+        initialValue={editingTask ? {
+          nome: editingTask.title,
+          tipo: editingTask.type,
+          prioridade: editingTask.priority,
+          data: convertReadableDateToDatetimeLocal(editingTask.date),
+          relacionado: editingTask.related,
+          vendedor: editingTask.seller || "Carlos Eduardo Mendes",
+          produtos: (editingTask.relatedProductIds || []).join(", "),
+          tags: (editingTask.tags || []).join(", ")
+        } : undefined}
       />
 
       <ConfirmModal
