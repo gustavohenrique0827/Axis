@@ -36,11 +36,7 @@ const DEFAULT_TENANT_MODULES: Record<string, TenantModules> = {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserSession | null>(() => {
-    const saved = localStorage.getItem("axis_session");
-    if (saved) return JSON.parse(saved);
-    return null;
-  });
+  const [user, setUser] = useState<UserSession | null>(null);
 
   // Start with only G-Tech Master, always load from Supabase
   const [allTenantModules, setAllTenantModules] = useState<Record<string, TenantModules>>(DEFAULT_TENANT_MODULES);
@@ -59,7 +55,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           ...dbTenants
         };
         setAllTenantModules(merged);
-        localStorage.setItem("axis_tenant_modules", JSON.stringify(merged));
       } else {
         console.warn('[AuthContext] ⚠️ Nenhum tenant encontrado no banco, usando apenas G-Tech Master');
       }
@@ -68,18 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loadTenantsFromDB();
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("axis_tenant_modules", JSON.stringify(allTenantModules));
-  }, [allTenantModules]);
-
   const login = (session: UserSession) => {
     setUser(session);
-    localStorage.setItem("axis_session", JSON.stringify(session));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("axis_session");
   };
 
   const getTenantModules = (tenant: string): TenantModules => {

@@ -20,11 +20,6 @@ export default function SettingsLayout() {
   });
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("axis_sidebar_modules");
-      if (saved) setActiveModules(JSON.parse(saved));
-    } catch (e) {}
-
     const handleChanged = (e: Event) => {
       const customEvent = e as CustomEvent;
       if (customEvent?.detail) setActiveModules(customEvent.detail);

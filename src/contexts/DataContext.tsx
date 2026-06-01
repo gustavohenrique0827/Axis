@@ -22,20 +22,13 @@ export { useData };
 export type { DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry };
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('axis_theme');
-      if (saved) return saved as 'dark' | 'light';
-    }
-    return 'dark';
-  });
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   const toggleTheme = () => {
     setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
   };
 
   useEffect(() => {
-    localStorage.setItem('axis_theme', theme);
     if (theme === 'light') {
       document.documentElement.classList.add('light');
     } else {
@@ -56,34 +49,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     clinica: true,
   };
 
-  const [sidebarModules, setSidebarModulesState] = useState<Record<string, boolean>>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('axis_sidebar_modules');
-      if (saved) return JSON.parse(saved);
-    }
-    return DEFAULT_SIDEBAR_MODULES;
-  });
+  const [sidebarModules, setSidebarModulesState] = useState<Record<string, boolean>>(DEFAULT_SIDEBAR_MODULES);
 
-  const [customLeadFields, setCustomLeadFields] = useState<CustomField[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('axis_custom_lead_fields_v2');
-      if (saved) return JSON.parse(saved);
-    }
-    return defaultCustomLeadFields;
-  });
+  const [customLeadFields, setCustomLeadFields] = useState<CustomField[]>(defaultCustomLeadFields);
 
   const updateCustomLeadFields = (fields: CustomField[]) => {
     setCustomLeadFields(fields);
     syncSetting('customLeadFields', fields);
   };
 
-  const [leadScoreTriggers, setLeadScoreTriggers] = useState<LeadScoreTrigger[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('axis_lead_score_triggers_v2');
-      if (saved) return JSON.parse(saved);
-    }
-    return defaultLeadScoreTriggers;
-  });
+  const [leadScoreTriggers, setLeadScoreTriggers] = useState<LeadScoreTrigger[]>(defaultLeadScoreTriggers);
 
   const updateLeadScoreTriggers = (triggers: LeadScoreTrigger[]) => {
     setLeadScoreTriggers(triggers);
@@ -109,8 +84,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const saveAppSetting = async (key: string, value: any) => {
     if (supabase) {
       await syncSetting(key, value);
-    } else if (typeof window !== 'undefined') {
-      localStorage.setItem(key, JSON.stringify(value));
     }
   };
 
@@ -122,17 +95,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const [globalWebhooks, setGlobalWebhooks] = useState<GlobalWebhook[]>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('axis_global_webhooks_v2');
-      if (saved) return JSON.parse(saved);
-    }
-    return defaultGlobalWebhooks;
-  });
-
-  useEffect(() => {
-    localStorage.setItem('axis_global_webhooks_v2', JSON.stringify(globalWebhooks));
-  }, [globalWebhooks]);
+  const [globalWebhooks, setGlobalWebhooks] = useState<GlobalWebhook[]>(defaultGlobalWebhooks);
 
   const addGlobalWebhook = (webhook: Omit<GlobalWebhook, 'id'>) => {
     const newVal = [{ ...webhook, id: `w${Math.random().toString(36).substring(2, 9)}` }, ...globalWebhooks];
@@ -159,18 +122,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    localStorage.setItem('axis_custom_lead_fields_v2', JSON.stringify(customLeadFields));
-  }, [customLeadFields]);
-
-  useEffect(() => {
-    localStorage.setItem('axis_lead_score_triggers_v2', JSON.stringify(leadScoreTriggers));
-  }, [leadScoreTriggers]);
-
-  useEffect(() => {
     const applyBrandColors = () => {
-      const primary = localStorage.getItem("axis_brand_primary_color") || "#2563EB";
-      const secondary = localStorage.getItem("axis_brand_secondary_color") || "#0F172A";
-      const accent = localStorage.getItem("axis_brand_accent_color") || "#06B6D4";
+      const primary = "#2563EB";
+      const secondary = "#0F172A";
+      const accent = "#06B6D4";
 
       document.documentElement.style.setProperty('--color-primary-blue', primary);
       document.documentElement.style.setProperty('--primary', primary);
@@ -191,22 +146,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [leadActivities, setLeadActivities] = useState<LeadActivity[]>([]);
 
-  const [evolutionWebhookUrl, setEvolutionWebhookUrl] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return window.localStorage.getItem("evolution_webhook_url") || "https://axis-crm.cloud/api/webhooks/whatsapp";
-    }
-    return "https://axis-crm.cloud/api/webhooks/whatsapp";
-  });
+  const [evolutionWebhookUrl, setEvolutionWebhookUrl] = useState<string>("https://axis-crm.cloud/api/webhooks/whatsapp");
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   const [robotStatus, setRobotStatus] = useState<'executando' | 'pausado'>('executando');
 
   const [squads, setSquads] = useState<Squad[]>([]);
-
-  useEffect(() => {
-    if (!supabase) localStorage.setItem('axis_squads_v2', JSON.stringify(squads));
-  }, [squads]);
 
   const addSquad = async (squad: Omit<Squad, 'id'>) => {
     const newSquad = { ...squad, id: `sq${Math.random().toString(36).substring(2, 9)}` };
@@ -256,9 +202,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const updateEvolutionWebhookUrl = (url: string) => {
     setEvolutionWebhookUrl(url);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("evolution_webhook_url", url);
-    }
   };
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -345,15 +288,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const reachable = await isSupabaseReachable();
         console.log('[DataContext] Supabase reachable:', reachable);
 
-        if (!reachable) {
-          console.warn('[Axis] ⚠️ Supabase não está acessível (projeto pausado ou URL inválida). Usando localStorage como fallback.');
-          // Fall through to localStorage loading below
-        } else {
+        if (reachable) {
           try {
-            // Clear stale localStorage mock data so Supabase always wins
-            ['axis_leads', 'axis_tasks', 'axis_contracts', 'axis_lead_activities',
-              'axis_finance_entries', 'axis_appointments', 'axis_squads'].forEach(k => localStorage.removeItem(k));
-
             console.log('[DataContext] 📊 Carregando tabelas...');
             const [
               leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes,
@@ -381,42 +317,26 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('certificates').select('*')
             ]);
 
-            if (!leadsRes.error && leadsRes.data !== null) setLeads(leadsRes.data as Lead[]);
-            if (!tasksRes.error && tasksRes.data !== null) setTasks(tasksRes.data as Task[]);
-            if (!contractsRes.error && contractsRes.data !== null) setContracts(contractsRes.data as Contract[]);
-            if (!actsRes.error && actsRes.data !== null) setLeadActivities(actsRes.data as LeadActivity[]);
-            if (!financeRes.error && financeRes.data !== null) setFinanceEntries(financeRes.data as FinanceEntry[]);
-            if (!apptRes.error && apptRes.data !== null) setAppointments(apptRes.data as Appointment[]);
-            if (!squadsRes.error && squadsRes.data !== null) setSquads(squadsRes.data as Squad[]);
-            if (!notifRes.error && notifRes.data !== null && notifRes.data.length > 0) setNotifications(notifRes.data as Notification[]);
-            if (!mktCampRes.error && mktCampRes.data !== null) setMarketingCampaigns(mktCampRes.data);
-            if (!mktContRes.error && mktContRes.data !== null) setMarketingContent(mktContRes.data);
-            if (!mktLpRes.error && mktLpRes.data !== null) setMarketingLandingPages(mktLpRes.data);
+            if (!leadsRes.error && leadsRes.data) setLeads(leadsRes.data as Lead[]);
+            if (!tasksRes.error && tasksRes.data) setTasks(tasksRes.data as Task[]);
+            if (!contractsRes.error && contractsRes.data) setContracts(contractsRes.data as Contract[]);
+            if (!actsRes.error && actsRes.data) setLeadActivities(actsRes.data as LeadActivity[]);
+            if (!financeRes.error && financeRes.data) setFinanceEntries(financeRes.data as FinanceEntry[]);
+            if (!apptRes.error && apptRes.data) setAppointments(apptRes.data as Appointment[]);
+            if (!squadsRes.error && squadsRes.data) setSquads(squadsRes.data as Squad[]);
+            if (!notifRes.error && notifRes.data) setNotifications(notifRes.data as Notification[]);
+            if (!mktCampRes.error && mktCampRes.data) setMarketingCampaigns(mktCampRes.data);
+            if (!mktContRes.error && mktContRes.data) setMarketingContent(mktContRes.data);
+            if (!mktLpRes.error && mktLpRes.data) setMarketingLandingPages(mktLpRes.data);
+            if (!productsRes.error && productsRes.data) setProducts(productsRes.data);
+            if (!proposalsRes.error && proposalsRes.data) setProposals(proposalsRes.data);
+            if (!turmasRes.error && turmasRes.data) setTurmas(turmasRes.data);
+            if (!studentsRes.error && studentsRes.data) setStudents(studentsRes.data);
+            if (!colabRes.error && colabRes.data) setColaboradores(colabRes.data);
+            if (!squadMetasRes.error && squadMetasRes.data) setSquadMetas(squadMetasRes.data);
+            if (!certRes.error && certRes.data) setCertificates(certRes.data);
 
-            if (!productsRes.error && productsRes.data !== null) setProducts(productsRes.data);
-            if (!proposalsRes.error && proposalsRes.data !== null) setProposals(proposalsRes.data);
-            if (!turmasRes.error && turmasRes.data !== null) setTurmas(turmasRes.data);
-            if (!studentsRes.error && studentsRes.data !== null) setStudents(studentsRes.data);
-            if (!colabRes.error && colabRes.data !== null) setColaboradores(colabRes.data);
-            if (!squadMetasRes.error && squadMetasRes.data !== null) setSquadMetas(squadMetasRes.data);
-            if (!certRes.error && certRes.data !== null) setCertificates(certRes.data);
-
-            // Log loading results
-            console.log('[DataContext] ✅ Dados carregados:', {
-              leads: leadsRes.data?.length || 0,
-              tasks: tasksRes.data?.length || 0,
-              contracts: contractsRes.data?.length || 0,
-              products: productsRes.data?.length || 0
-            });
-
-            // Log any errors
-            const errors = [];
-            if (leadsRes.error) errors.push('leads: ' + leadsRes.error.message);
-            if (tasksRes.error) errors.push('tasks: ' + tasksRes.error.message);
-            if (contractsRes.error) errors.push('contracts: ' + contractsRes.error.message);
-            if (errors.length > 0) console.warn('[DataContext] ⚠️ Erros nas queries:', errors);
-
-            if (!settingsRes.error && settingsRes.data !== null) {
+            if (!settingsRes.error && settingsRes.data) {
               settingsRes.data.forEach((setting: any) => {
                 switch (setting.key) {
                   case 'globalWebhooks': setGlobalWebhooks(setting.value); break;
@@ -426,66 +346,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                 }
               });
             }
+            console.log('[DataContext] ✅ Dados carregados do Supabase.');
           } catch (err) {
             console.error('[DataContext] ❌ Erro ao fetch Supabase:', err);
           }
-          return; // exit early — Supabase loaded successfully
+          return;
         }
+        console.warn('[Axis] ⚠️ Supabase não está acessível.');
       }
-
-      console.log('[DataContext] 💾 Usando localStorage como fallback...');
-      // Fallback: no Supabase — use localStorage only
-      const savedLeads = localStorage.getItem('axis_leads');
-      const savedTasks = localStorage.getItem('axis_tasks');
-      const savedContracts = localStorage.getItem('axis_contracts');
-      const savedNotifications = localStorage.getItem('axis_notifications');
-      const savedActivities = localStorage.getItem('axis_lead_activities');
-      const savedFinance = localStorage.getItem('axis_finance_entries');
-      const savedAppts = localStorage.getItem('axis_appointments');
-      const savedSquads = localStorage.getItem('axis_squads_v2');
-
-      if (savedLeads) setLeads(JSON.parse(savedLeads));
-      if (savedTasks) setTasks(JSON.parse(savedTasks));
-      if (savedContracts) setContracts(JSON.parse(savedContracts));
-      if (savedNotifications) setNotifications(JSON.parse(savedNotifications));
-      if (savedActivities) setLeadActivities(JSON.parse(savedActivities));
-      if (savedFinance) setFinanceEntries(JSON.parse(savedFinance));
-      if (savedAppts) setAppointments(JSON.parse(savedAppts));
-      if (savedSquads) setSquads(JSON.parse(savedSquads));
+      console.log('[DataContext] ⚠️ Supabase offline e localStorage desativado.');
     }
     loadInitialData();
   }, []);
-
-  useEffect(() => {
-    if (supabase) return; // Supabase is source of truth; skip localStorage persistence
-    localStorage.setItem('axis_leads', JSON.stringify(leads));
-    localStorage.setItem('axis_tasks', JSON.stringify(tasks));
-    localStorage.setItem('axis_contracts', JSON.stringify(contracts));
-    localStorage.setItem('axis_notifications', JSON.stringify(notifications));
-    localStorage.setItem('axis_lead_activities', JSON.stringify(leadActivities));
-    localStorage.setItem('axis_finance_entries', JSON.stringify(financeEntries));
-    localStorage.setItem('axis_appointments', JSON.stringify(appointments));
-  }, [leads, tasks, contracts, notifications, leadActivities, financeEntries, appointments]);
-
-  useEffect(() => {
-    localStorage.setItem('axis_marketing_automations', JSON.stringify(marketingAutomations));
-    if (!supabase) {
-      localStorage.setItem('axis_marketing_campaigns', JSON.stringify(marketingCampaigns));
-      localStorage.setItem('axis_marketing_content', JSON.stringify(marketingContent));
-      localStorage.setItem('axis_marketing_landing_pages', JSON.stringify(marketingLandingPages));
-    }
-  }, [marketingAutomations, marketingCampaigns, marketingContent, marketingLandingPages]);
-
-  useEffect(() => {
-    localStorage.setItem('axis_products', JSON.stringify(products));
-    localStorage.setItem('axis_proposals', JSON.stringify(proposals));
-    localStorage.setItem('axis_certificates', JSON.stringify(certificates));
-    localStorage.setItem('axis_turmas', JSON.stringify(turmas));
-    localStorage.setItem('axis_colaboradores', JSON.stringify(colaboradores));
-    localStorage.setItem('axis_squad_metas_v2', JSON.stringify(squadMetas));
-  }, [products, proposals, certificates, turmas, colaboradores, squadMetas]);
-
-  // WhatsApp Reminder Engine (30 mins before teleconsultation)
   const notifiedRemindersRef = React.useRef<Record<string, boolean>>({});
   useEffect(() => {
     const checkTeleconsultations = () => {

@@ -35,28 +35,15 @@ export default function ConfigModulosDemos() {
     ...Object.keys(allTenantModules).filter(t => t !== "G-Tech Master")
   ];
 
-  const [simulationRole, setSimulationRole] = useState(() => {
-    return localStorage.getItem("axis_simulation_role") || "Administrador / Sócio";
-  });
+  const [simulationRole, setSimulationRole] = useState("Administrador / Sócio");
 
   const [loadingPresetId, setLoadingPresetId] = useState<string | null>(null);
 
-  // Load modules configuration from localStorage on mount
+  // Load modules configuration on mount
   useEffect(() => {
     if (selectedTenant === user?.tenantName) {
       setActiveModules(sidebarModules || DEFAULT_MODULES);
       return;
-    }
-    try {
-      const saved = localStorage.getItem(`axis_modules_${selectedTenant}`);
-      if (saved) {
-        setActiveModules(JSON.parse(saved));
-      } else {
-        localStorage.setItem(`axis_modules_${selectedTenant}`, JSON.stringify(DEFAULT_MODULES));
-        setActiveModules(DEFAULT_MODULES);
-      }
-    } catch (e) {
-      setActiveModules(DEFAULT_MODULES);
     }
   }, [selectedTenant, sidebarModules, user?.tenantName]);
 
@@ -67,7 +54,6 @@ export default function ConfigModulosDemos() {
       [key]: !activeModules[key]
     };
     setActiveModules(updated);
-    localStorage.setItem(`axis_modules_${selectedTenant}`, JSON.stringify(updated));
     await saveAppSetting(`axis_modules_${selectedTenant}`, updated);
     if (selectedTenant === user?.tenantName) {
       await setSidebarModules(updated);
@@ -81,7 +67,6 @@ export default function ConfigModulosDemos() {
   // Switch role helper
   const handleSwitchRole = (role: string) => {
     setSimulationRole(role);
-    localStorage.setItem("axis_simulation_role", role);
     
     if (user) {
       const updatedUser = {
@@ -112,7 +97,6 @@ export default function ConfigModulosDemos() {
         return;
     }
     setActiveModules(preset);
-    localStorage.setItem("axis_sidebar_modules", JSON.stringify(preset));
     if (selectedTenant === user?.tenantName) {
       await setSidebarModules(preset);
     }
@@ -150,24 +134,9 @@ export default function ConfigModulosDemos() {
       };
 
       setActiveModules(fullModulesList);
-      localStorage.setItem("axis_sidebar_modules", JSON.stringify(fullModulesList));
       await setSidebarModules(fullModulesList);
       await saveAppSetting(`axis_modules_${selectedTenant}`, fullModulesList);
       
-      // 3. Inject customized Industry Data
-      if (preset.stages && preset.stages.length > 0) {
-        localStorage.setItem("axis_custom_stages", JSON.stringify(preset.stages));
-      }
-      if (preset.leads && preset.leads.length > 0) {
-        localStorage.setItem("axis_leads", JSON.stringify(preset.leads));
-      }
-      if (preset.finance && preset.finance.length > 0) {
-        localStorage.setItem("axis_finance_entries", JSON.stringify(preset.finance));
-      }
-      if (preset.appointments) {
-        localStorage.setItem("axis_appointments", JSON.stringify(preset.appointments));
-      }
-
       // Dispatch global events for instant sync
       window.dispatchEvent(new CustomEvent("axis_modules_changed", { detail: fullModulesList }));
       window.dispatchEvent(new CustomEvent("axis_brand_changed"));

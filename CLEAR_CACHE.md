@@ -6,10 +6,8 @@ Como o localStorage ainda tinha dados antigos, siga um desses passos:
 
 1. Abra a app (localhost ou Vercel)
 2. Aperte **F12** para abrir DevTools
-3. Vá em **Storage** → **Local Storage**
-4. Procure por: `axis_tenant_modules`
-5. **Delete** esse item
-6. **Aperte F5** para recarregar a página
+3. **Delete** o item `axis_tenant_modules`
+4. **Aperte F5** para recarregar a página
 
 A página vai carregar só com `G-Tech Master` e depois **buscar todos os tenants do Supabase**.
 
