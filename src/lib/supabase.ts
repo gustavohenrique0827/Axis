@@ -174,3 +174,42 @@ export async function registerPartner(
     return { success: false, error: errMsg };
   }
 }
+
+/**
+ * Fetch all active tenants from database and transform to TenantModules format
+ */
+export async function fetchTenants() {
+  if (!supabase) {
+    console.warn('[Tenants] Supabase não está configurado, usando dados padrão');
+    return {};
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from("tenants")
+      .select("id, name, niche, status")
+      .eq("status", "Active")
+      .order("name", { ascending: true });
+
+    if (error) {
+      console.error('[Tenants] Erro ao carregar tenants do banco:', error);
+      return {};
+    }
+
+    const tenantModules: Record<string, any> = {};
+
+    (data || []).forEach((tenant: any) => {
+      tenantModules[tenant.name] = {
+        crm: true,
+        sdr: tenant.niche === "Master" || tenant.niche === "Tecnologia",
+        advDashboard: tenant.niche === "Master"
+      };
+    });
+
+    console.log('[Tenants] ✅ Carregados do banco de dados:', Object.keys(tenantModules));
+    return tenantModules;
+  } catch (err) {
+    console.error('[Tenants] ❌ Erro ao carregar tenants:', err);
+    return {};
+  }
+}

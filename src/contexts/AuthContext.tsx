@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { fetchTenants } from "../lib/supabase";
 
 export type TenantNiche = "Master" | "Solar" | "Imobiliária" | "Clínica" | "Tecnologia" | "Parceira";
 
@@ -29,6 +30,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Fallback data for when Supabase is not available
 const DEFAULT_TENANT_MODULES: Record<string, TenantModules> = {
   "G-Tech (Master)": { crm: true, sdr: true, advDashboard: true },
   "G-Tech Master": { crm: true, sdr: true, advDashboard: true },
@@ -61,6 +63,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     return DEFAULT_TENANT_MODULES;
   });
+
+  // Load tenants from Supabase on component mount
+  useEffect(() => {
+    const loadTenantsFromDB = async () => {
+      console.log('[AuthContext] 🔄 Carregando tenants do banco de dados...');
+      const dbTenants = await fetchTenants();
+      
+      if (Object.keys(dbTenants).length > 0) {
+        console.log('[AuthContext] ✅ Tenants do banco carregados com sucesso');
+        setAllTenantModules(dbTenants);
+        localStorage.setItem("axis_tenant_modules", JSON.stringify(dbTenants));
+      } else {
+        console.warn('[AuthContext] ⚠️ Nenhum tenant encontrado no banco, usando dados padrão');
+      }
+    };
+
+    loadTenantsFromDB();
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("axis_tenant_modules", JSON.stringify(allTenantModules));
