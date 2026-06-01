@@ -95,9 +95,62 @@ export async function isSupabaseReachable(): Promise<boolean> {
  * Hash password using basic implementation (consider bcrypt in production)
  */
 export function hashPassword(password: string): string {
-  // For now, use a simple approach. In production, use bcryptjs library
-  // This is a placeholder - in real app, use bcrypt on backend
-  return btoa(password + Date.now().toString());
+  // Placeholder estável para fins de demonstração. 
+  // Em produção, utilize Supabase Auth ou uma biblioteca como bcryptjs.
+  return btoa(password);
+}
+
+/**
+ * Authenticate a user with email and password from the database
+ */
+export async function signIn(
+  email: string,
+  password: string
+): Promise<{ success: boolean; error?: string; user?: any }> {
+  if (!supabase) {
+    return { success: false, error: 'Supabase não configurado.' };
+  }
+
+  try {
+    const passwordHash = hashPassword(password);
+
+    const { data, error } = await supabase
+      .from("users")
+      .select(`
+        name,
+        email,
+        role,
+        is_master,
+        active,
+        tenants (
+          name,
+          niche
+        )
+      `)
+      .eq("email", email)
+      .eq("password_hash", passwordHash)
+      .single();
+
+    if (error || !data) {
+      return { success: false, error: "E-mail ou senha inválidos." };
+    }
+
+    const tenant = Array.isArray(data.tenants) ? data.tenants[0] : (data.tenants as any);
+
+    return {
+      success: true,
+      user: {
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        tenantName: tenant?.name,
+        tenantNiche: tenant?.niche,
+        isMaster: data.is_master
+      }
+    };
+  } catch (err) {
+    return { success: false, error: "Erro na conexão com o banco de dados." };
+  }
 }
 
 /**
@@ -119,6 +172,17 @@ export async function registerPartner(
   }
 
   try {
+    // 0. Verificar se o e-mail já existe
+    const { data: existingUser } = await supabase
+      .from("users")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (existingUser) {
+      return { success: false, error: "Este e-mail já está cadastrado no sistema." };
+    }
+
     // 1. Create tenant (company)
     const { data: tenantData, error: tenantError } = await supabase
       .from("tenants")

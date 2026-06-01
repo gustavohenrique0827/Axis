@@ -12,11 +12,7 @@ export interface UserSession {
   isMaster: boolean;
 }
 
-export interface TenantModules {
-  crm: boolean;
-  sdr: boolean;
-  advDashboard: boolean;
-}
+export type TenantModules = Record<string, boolean>;
 
 interface AuthContextType {
   user: UserSession | null;

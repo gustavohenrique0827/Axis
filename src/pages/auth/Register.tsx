@@ -5,6 +5,7 @@ import { Card } from "../../components/ui/card";
 import { Mail, Lock, Building, Phone, UserCheck, ArrowRight } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth, TenantNiche } from "../../contexts/AuthContext";
+import { registerPartner } from "../../lib/supabase";
 
 const niches: TenantNiche[] = ["Master", "Solar", "Imobiliária", "Clínica", "Tecnologia", "Parceira"];
 
@@ -21,7 +22,7 @@ export default function Register() {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleRegister = (event: React.FormEvent) => {
+  const handleRegister = async (event: React.FormEvent) => {
     event.preventDefault();
     setError("");
 
@@ -37,18 +38,32 @@ export default function Register() {
 
     setLoading(true);
 
-    login({
-      name: `Parceiro ${companyName}`,
-      email,
-      role: "Parceiro",
-      tenantName: companyName,
-      tenantNiche: niche,
-      isMaster: false,
-    });
+    try {
+      const result = await registerPartner(companyName, email, password, phone, niche);
 
-    toast.success("Cadastro realizado com sucesso!");
-    setLoading(false);
-    navigate("/app/dashboard", { replace: true });
+      if (!result.success) {
+        setError(result.error || "Erro ao registrar empresa.");
+        toast.error(result.error || "Erro ao registrar empresa.");
+        setLoading(false);
+        return;
+      }
+
+      login({
+        name: `Admin ${companyName}`,
+        email,
+        role: "Admin",
+        tenantName: companyName,
+        tenantNiche: niche,
+        isMaster: false,
+      });
+
+      toast.success("Cadastro realizado com sucesso!");
+      navigate("/app/dashboard", { replace: true });
+    } catch (err) {
+      setError("Erro ao conectar com o banco de dados.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
