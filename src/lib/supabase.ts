@@ -132,11 +132,11 @@ export async function signIn(
       .eq("email", email)
       .eq("password_hash", passwordHash)
       .eq("active", true)
-      .single();
+      .maybeSingle();
 
     if (error) {
-      console.error('[Supabase] Erro no login:', error.message);
-      return { success: false, error: "E-mail ou senha inválidos ou usuário inativo." };
+      console.error('[Supabase] Erro técnico no login:', error.message);
+      return { success: false, error: "Erro de conexão com o servidor." };
     }
 
     if (!data) {
@@ -206,7 +206,7 @@ export async function registerPartner(
         timezone: "America/Sao_Paulo"
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (tenantError || !tenantData) {
       const errMsg = `Erro ao criar empresa: ${tenantError?.message || "Unknown error"}`;
@@ -228,7 +228,7 @@ export async function registerPartner(
         active: true
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (userError || !userData) {
       // Rollback tenant if user creation fails
