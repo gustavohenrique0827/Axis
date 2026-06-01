@@ -25,8 +25,8 @@ if (supabase) {
   console.warn(
     '[Supabase] ⚠️ NÃO CONFIGURADO\n' +
     'URL:', import.meta.env.VITE_SUPABASE_URL ? '✓ Definida' : '✗ Não definida', '\n' +
-    'ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? '✓ Definida' : '✗ Não definida', '\n' +
-    'Ação: Reinicie o servidor Vite após configurar .env (npm run dev)'
+  'ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? '✓ Definida' : '✗ Não definida', '\n' +
+  'Ação: Reinicie o servidor Vite após configurar .env (npm run dev)'
   );
 }
 
@@ -187,7 +187,7 @@ export async function fetchTenants() {
   try {
     const { data, error } = await supabase
       .from("tenants")
-      .select("id, name, niche, status")
+      .select("id, name, niche, status, modules")
       .eq("status", "Active")
       .order("name", { ascending: true });
 
@@ -199,7 +199,8 @@ export async function fetchTenants() {
     const tenantModules: Record<string, any> = {};
 
     (data || []).forEach((tenant: any) => {
-      tenantModules[tenant.name] = {
+      // Prioriza a configuração salva no banco, senão usa o padrão por nicho
+      tenantModules[tenant.name] = tenant.modules || {
         crm: true,
         sdr: tenant.niche === "Master" || tenant.niche === "Tecnologia",
         advDashboard: tenant.niche === "Master"
@@ -211,5 +212,25 @@ export async function fetchTenants() {
   } catch (err) {
     console.error('[Tenants] ❌ Erro ao carregar tenants:', err);
     return {};
+  }
+}
+
+/**
+ * Atualiza os módulos ativos de um tenant no banco de dados
+ */
+export async function updateTenantModulesInDB(tenantName: string, modules: any) {
+  if (!supabase) return { success: false, error: 'Supabase não configurado' };
+
+  try {
+    const { error } = await supabase
+      .from("tenants")
+      .update({ modules })
+      .eq("name", tenantName);
+
+    if (error) throw error;
+    return { success: true };
+  } catch (err) {
+    console.error('[Tenants] ❌ Erro ao salvar módulos:', err);
+    return { success: false, error: err };
   }
 }

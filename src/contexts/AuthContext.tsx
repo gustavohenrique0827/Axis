@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { fetchTenants } from "../lib/supabase";
+import { fetchTenants, updateTenantModulesInDB } from "../lib/supabase";
 
 export type TenantNiche = "Master" | "Solar" | "Imobiliária" | "Clínica" | "Tecnologia" | "Parceira";
 
@@ -23,7 +23,7 @@ interface AuthContextType {
   login: (user: UserSession) => void;
   logout: () => void;
   isModuleEnabled: (moduleName: keyof TenantModules) => boolean;
-  updateTenantModules: (tenantName: string, modules: TenantModules) => void;
+  updateTenantModules: (tenantName: string, modules: TenantModules) => Promise<void>;
   getTenantModules: (tenantName: string) => TenantModules;
   allTenantModules: Record<string, TenantModules>;
 }
@@ -46,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const loadTenantsFromDB = async () => {
       console.log('[AuthContext] 🔄 Carregando tenants do banco de dados (sempre)...');
       const dbTenants = await fetchTenants();
-      
+
       if (Object.keys(dbTenants).length > 0) {
         console.log('[AuthContext] ✅ Tenants do banco carregados:', Object.keys(dbTenants));
         // Merge G-Tech Master + database tenants
@@ -85,14 +85,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) return false;
     // G-Tech master user always has access to all modules
     if (user.isMaster || user.tenantName.includes("G-Tech")) return true;
-    
+
     const modules = getTenantModules(user.tenantName);
     return !!modules[moduleName];
   };
 
-  const updateTenantModules = (tenant: string, modules: TenantModules) => {
+  const updateTenantModules = async (tenant: string, modules: TenantModules) => {
+    // 1. Atualiza o estado local para feedback imediato na UI
     setAllTenantModules(prev => {
-      // Find matching key if normalized
       const keys = Object.keys(prev);
       const matchedKey = keys.find(k => k.toLowerCase() === tenant.toLowerCase() || tenant.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(tenant.toLowerCase())) || tenant;
       return {
@@ -100,6 +100,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         [matchedKey]: modules
       };
     });
+
+    // 2. Persiste no banco de dados (Supabase)
+    const result = await updateTenantModulesInDB(tenant, modules);
+
+    if (!result.success) {
+      console.error('[AuthContext] Falha ao persistir módulos no banco');
+    }
   };
 
   return (
