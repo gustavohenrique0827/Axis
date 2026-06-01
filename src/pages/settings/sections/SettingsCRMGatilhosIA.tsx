@@ -5,20 +5,31 @@ import { Zap, Plus } from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
 import { toast } from "sonner";
 
+import { NovaRegraIAAutomacaoModal } from "../../../components/ui/NovaRegraIAAutomacaoModal";
+
 export function ConfigCRMGatilhosIA() {
   const { leadScoreTriggers, setLeadScoreTriggers } = useData();
 
-  const [newTrigger, setNewTrigger] = useState({ name: "", scoreThreshold: 80, condition: "greater", actionStageId: "s5" });
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const sdrStagesMap: Record<string, string> = {
-    's1': "Novo Lead",
-    's2': "IA Analisando",
-    's3': "Contato Iniciado",
-    's4': "Em Nutrição",
-    's5': "Qualificado",
-    's6': "Reunião Agendada",
-    's7': "Perdido"
+    s1: "Novo Lead",
+    s2: "IA Analisando",
+    s3: "Contato Iniciado",
+    s4: "Em Nutrição",
+    s5: "Qualificado",
+    s6: "Reunião Agendada",
+    s7: "Perdido",
   };
+
+  const newTriggerInitialValue = {
+    name: "",
+    scoreThreshold: 80,
+    condition: "greater" as const,
+    targetStageId: "s5",
+  };
+
+  const [newTrigger, setNewTrigger] = useState(newTriggerInitialValue);
 
   const handleSaveTriggers = () => {
     toast.success("Gatilhos de Lead Score IA sincronizados com o motor da Master AI! 🤖✨");
@@ -40,10 +51,12 @@ export function ConfigCRMGatilhosIA() {
         id: Date.now().toString(), 
         scoreThreshold: Number(newTrigger.scoreThreshold), 
         condition: newTrigger.condition as 'greater' | 'less', 
-        targetStageId: newTrigger.actionStageId, 
+        targetStageId: newTrigger.targetStageId,
       }
+
+
     ]);
-    setNewTrigger({ name: "", scoreThreshold: 80, condition: "greater", actionStageId: "s5" });
+    setNewTrigger({ name: "", scoreThreshold: 80, condition: "greater", targetStageId: "s5" });
     toast.success("Novo gatilho automático de Lead Score registrado!");
   };
 
@@ -141,8 +154,8 @@ export function ConfigCRMGatilhosIA() {
           <div className="space-y-1">
             <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Mover Automático para Coluna SDR</label>
             <select 
-              value={newTrigger.actionStageId}
-              onChange={(e) => setNewTrigger({ ...newTrigger, actionStageId: e.target.value })}
+              value={newTrigger.targetStageId}
+              onChange={(e) => setNewTrigger({ ...newTrigger, targetStageId: e.target.value })}
               className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
             >
               {Object.entries(sdrStagesMap).map(([id, name]) => (

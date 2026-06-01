@@ -27,7 +27,7 @@ export function ConfirmModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={null}
+      title={title}
       maxWidth="max-w-md"
       footer={null}
     >

@@ -97,6 +97,7 @@ export interface DataContextType {
   setLeadScoreTriggers: (triggers: LeadScoreTrigger[]) => void;
   globalWebhooks: GlobalWebhook[];
   addGlobalWebhook: (webhook: Omit<GlobalWebhook, 'id'>) => void;
+  updateGlobalWebhook: (id: string, updates: Partial<GlobalWebhook>) => void;
   deleteGlobalWebhook: (id: string) => void;
   toggleGlobalWebhook: (id: string) => void;
   squads: Squad[];

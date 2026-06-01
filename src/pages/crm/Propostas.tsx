@@ -22,12 +22,14 @@ import { PageContainer } from "../../components/PageContainer";
 import { toast } from "sonner";
 import { useData } from "../../contexts/DataContext";
 import { Proposta, handleDownloadPdf } from "./utils/proposalPdf";
+import { CriarPropostaModal } from "../../components/ui/CriarPropostaModal";
 
 export default function Propostas() {
   const { proposals: propostas, addProposal, updateProposal, deleteProposal } = useData();
   
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isPropostaModalOpen, setIsPropostaModalOpen] = useState(false);
   
   // Modal states
   const [newCliente, setNewCliente] = useState("");
@@ -35,6 +37,30 @@ export default function Propostas() {
   const [newValor, setNewValor] = useState("");
   const [newVendedor, setNewVendedor] = useState("Carlos Silva");
   const [newVencimento, setNewVencimento] = useState("");
+
+  const handleCreatePropostaNew = (data: any) => {
+    const today = new Date();
+    const formattedToday = today.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+
+    const newProposal: Proposta = {
+      id: Math.random().toString(36).substring(2, 9),
+      cliente: data.cliente,
+      titulo: data.titulo,
+      valor: `R$ ${parseFloat(data.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      dataCriacao: formattedToday,
+      vencimento: new Date(data.dataValidade).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }),
+      status: "Enviada",
+      vendedor: "Sistema Axis"
+    };
+
+    addProposal(newProposal);
+    toast.success("✨ Proposta criada com sucesso! Pronta para envio.");
+    setIsPropostaModalOpen(false);
+  };
 
   const handleCreateProposta = (e: React.FormEvent) => {
     e.preventDefault();
@@ -125,7 +151,7 @@ export default function Propostas() {
             Modelos
           </Button>
           <Button 
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsPropostaModalOpen(true)}
             className="bg-[#2563EB] hover:bg-blue-605 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20"
           >
             <Plus className="w-4 h-4 mr-2" /> Nova Proposta
@@ -416,6 +442,14 @@ export default function Propostas() {
           </div>
         </div>
       )}
+
+      <CriarPropostaModal
+        isOpen={isPropostaModalOpen}
+        onClose={() => setIsPropostaModalOpen(false)}
+        onSave={handleCreatePropostaNew}
+        title="Criar Proposta Axis"
+        submitText="Gerar Proposta"
+      />
     </PageContainer>
   );
 }

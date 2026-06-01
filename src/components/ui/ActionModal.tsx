@@ -1,107 +1,143 @@
-import React, { useState } from "react";
-import { Modal } from "./modal";
+import React, { useState, useEffect } from "react";
+import { X } from "lucide-react";
 import { Button } from "./button";
 
 interface Field {
   name: string;
   label: string;
-  type: string;
-  placeholder?: string;
-  options?: string[];
+  type: "text" | "email" | "tel" | "number" | "select" | "textarea" | "datetime-local";
   required?: boolean;
-  defaultValue?: string | string[];
+  options?: string[];
+  defaultValue?: string;
+  placeholder?: string;
 }
 
 interface ActionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAction?: (data: any) => void;
+  onAction: (data: Record<string, any>) => void;
   title: string;
-  actionText?: string;
   fields: Field[];
+  actionText?: string;
+  aiSuggestType?: string;
 }
 
-export function ActionModal({ isOpen, onClose, onAction, title, actionText = "Salvar", fields }: ActionModalProps) {
-  const [loading, setLoading] = useState(false);
+export function ActionModal({
+  isOpen,
+  onClose,
+  onAction,
+  title,
+  fields,
+  actionText = "Salvar",
+  aiSuggestType,
+}: ActionModalProps) {
+  const [formData, setFormData] = useState<Record<string, any>>({});
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    if (onAction) {
-      const formData = new FormData(e.currentTarget);
-      const data: any = {};
-      fields.forEach(f => {
-        if (f.type === "multi-select") {
-            data[f.name] = formData.getAll(f.name);
-        } else {
-            data[f.name] = formData.get(f.name);
-        }
+  useEffect(() => {
+    if (isOpen) {
+      const initialData: Record<string, any> = {};
+      fields.forEach((field) => {
+        initialData[field.name] = field.defaultValue || "";
       });
-      onAction(data);
+      setFormData(initialData);
     }
+  }, [isOpen, fields]);
 
-    setLoading(false);
-    onClose();
+  const handleInputChange = (name: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
-  const formKeyString = isOpen + "-" + fields.map(f => f.name + "_" + (f.defaultValue || "")).join("-");
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onAction(formData);
+    setFormData({});
+  };
+
+  if (!isOpen) return null;
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      title={title}
-      footer={
-        <>
-          <Button variant="ghost" onClick={onClose} className="text-slate-400">Cancelar</Button>
-          <Button form="action-modal-form" type="submit" className="bg-[#2563EB] hover:bg-blue-600 text-white font-bold px-6">
-            {loading ? "Salvando..." : actionText}
-          </Button>
-        </>
-      }
-    >
-      <form id="action-modal-form" key={formKeyString} onSubmit={handleSubmit} className="space-y-4">
-        {fields.map((field) => (
-          <div key={field.name} className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">{field.label}</label>
-            {field.type === "select" ? (
-              <select name={field.name} defaultValue={field.defaultValue} className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" required={field.required}>
-                {field.options?.map(opt => <option key={opt}>{opt}</option>)}
-              </select>
-            ) : field.type === "multi-select" ? (
-              <div className="w-full max-h-40 overflow-y-auto bg-[#0B1120] border border-white/10 rounded-lg p-2 space-y-1">
-                 {field.options?.map(opt => {
-                    // Check if default value includes this option
-                    let isChecked = false;
-                    if (Array.isArray(field.defaultValue)) {
-                        isChecked = field.defaultValue.includes(opt);
-                    } else if (typeof field.defaultValue === 'string') {
-                        isChecked = field.defaultValue === opt;
-                    }
+    <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-[#111827] border border-white/10 rounded-lg max-w-md w-full shadow-xl">
+        <div className="flex items-center justify-between p-6 border-b border-white/10">
+          <h2 className="text-lg font-bold text-white">{title}</h2>
+          <button
+            onClick={onClose}
+            className="text-slate-400 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-                    return (
-                        <label key={opt} className="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded cursor-pointer">
-                            <input 
-                                type="checkbox" 
-                                name={field.name} 
-                                value={opt} 
-                                defaultChecked={isChecked}
-                                className="w-4 h-4 rounded border-white/20 bg-[#1E293B] text-blue-500 focus:ring-blue-500/50"
-                            />
-                            <span className="text-sm text-slate-200">{opt}</span>
-                        </label>
-                    );
-                 })}
-              </div>
-            ) : field.type === "textarea" ? (
-              <textarea name={field.name} defaultValue={field.defaultValue as string} rows={3} className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" placeholder={field.placeholder} required={field.required}></textarea>
-            ) : (
-              <input name={field.name} type={field.type} defaultValue={field.defaultValue as string} className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" placeholder={field.placeholder} required={field.required} />
-            )}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {fields.map((field) => (
+            <div key={field.name} className="space-y-2">
+              <label className="text-sm font-medium text-slate-300">
+                {field.label}
+                {field.required && <span className="text-red-500 ml-1">*</span>}
+              </label>
+
+              {field.type === "select" && field.options ? (
+                <select
+                  value={formData[field.name] || ""}
+                  onChange={(e) =>
+                    handleInputChange(field.name, e.target.value)
+                  }
+                  required={field.required}
+                  className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                >
+                  <option value="">Selecione...</option>
+                  {field.options.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              ) : field.type === "textarea" ? (
+                <textarea
+                  value={formData[field.name] || ""}
+                  onChange={(e) =>
+                    handleInputChange(field.name, e.target.value)
+                  }
+                  placeholder={field.placeholder}
+                  required={field.required}
+                  rows={4}
+                  className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors resize-none"
+                />
+              ) : (
+                <input
+                  type={field.type}
+                  value={formData[field.name] || ""}
+                  onChange={(e) =>
+                    handleInputChange(field.name, e.target.value)
+                  }
+                  placeholder={field.placeholder}
+                  required={field.required}
+                  className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                />
+              )}
+            </div>
+          ))}
+
+          <div className="flex gap-3 pt-4">
+            <Button
+              type="button"
+              onClick={onClose}
+              className="flex-1 bg-white/10 hover:bg-white/20 text-white font-medium"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              className="flex-1 bg-[#2563EB] hover:bg-blue-600 text-white font-medium"
+            >
+              {actionText}
+            </Button>
           </div>
-        ))}
-      </form>
-    </Modal>
+        </form>
+      </div>
+    </div>
   );
 }

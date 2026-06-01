@@ -3,6 +3,7 @@ import { Button } from "../../components/ui/button";
 import { LayoutGrid, List as ListIcon, RefreshCw, Plus } from "lucide-react";
 import { ActionModal } from "../../components/ui/ActionModal";
 import { ConfirmModal } from "../../components/ui/ConfirmModal";
+import { NovaPautaModal } from "../../components/ui/NovaPautaModal";
 
 import { useTarefas } from "./tarefas/useTarefas";
 import { PerformanceMetrics } from "./tarefas/PerformanceMetrics";
@@ -60,6 +61,8 @@ export default function Tarefas() {
     handleDeleteTask,
   } = useTarefas();
 
+  const [isPautaModalOpen, setIsPautaModalOpen] = useState(false);
+
   return (
     <PageContainer
       title="Tarefas Axis"
@@ -83,6 +86,9 @@ export default function Tarefas() {
           <Button onClick={handleSyncGoogleTasks} disabled={isSyncing} className="gap-2 bg-white flex items-center justify-center text-slate-800 shadow-xl border border-slate-200 hover:bg-slate-50 transition-all font-black uppercase tracking-wider text-[10px] h-11 px-4 rounded-xl">
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
             {isSyncing ? 'Sincronizando...' : (needsAuth ? 'Conectar Google Tasks' : 'Sincronizar Google Tasks')}
+          </Button>
+          <Button onClick={() => setIsPautaModalOpen(true)} className="gap-2 bg-purple-600 hover:bg-purple-700 h-11 px-6 rounded-xl text-[10px] uppercase font-black shadow-xl shadow-purple-600/20">
+            <Plus className="w-4 h-4" /> Nova Pauta
           </Button>
           <Button onClick={openNewTaskModal} className="gap-2 bg-[#2563EB] hover:bg-blue-600 h-11 px-6 rounded-xl text-[10px] uppercase font-black shadow-xl shadow-blue-500/20">
             <Plus className="w-4 h-4" /> Cadastrar Tarefa
@@ -232,6 +238,15 @@ export default function Tarefas() {
         }}
         title="Confirmar Exclusão de Tarefa"
         message="Tem certeza de que deseja remover permanentemente esta tarefa? Essa ação não pode ser desfeita."
+      />
+
+      <NovaPautaModal
+        isOpen={isPautaModalOpen}
+        onClose={() => setIsPautaModalOpen(false)}
+        onSave={(data) => {
+          console.log("Nova Pauta criada:", data);
+          // Integrar com DataContext se necessário
+        }}
       />
     </PageContainer>
   );

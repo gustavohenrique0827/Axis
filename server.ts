@@ -54,8 +54,28 @@ let instances: WhatsAppInstance[] = [
 ];
 
 let contacts: ChatContact[] = [];
-
 let messages: Record<string, ChatMessage[]> = {};
+
+// CRM Settings State
+let sources: any[] = [
+  { id: "1", name: "Instagram" },
+  { id: "2", name: "WhatsApp" },
+  { id: "3", name: "Indicação" },
+  { id: "4", name: "Site" },
+  { id: "5", name: "Google Ads" }
+];
+let customFields: any[] = [
+  { id: "1", label: "CPF/CNPJ", type: "text", required: true },
+  { id: "2", label: "Setor", type: "select", options: ["Varejo", "Serviços", "Indústria"] }
+];
+let taskCategories: any[] = [
+  { id: "1", name: "Follow-up", color: "bg-blue-500" },
+  { id: "2", name: "Reunião", color: "purple" },
+  { id: "3", name: "Proposta", color: "emerald" }
+];
+let templates = [
+  { id: "1", name: "Saudação Inicial", content: "Olá {{name}}, como posso ajudar?", category: "Vendas" }
+];
 
 async function startServer() {
   const app = express();
@@ -219,7 +239,7 @@ async function startServer() {
   app.post("/api/leads/calculate-score", async (req, res) => {
     const { lead, activities } = req.body;
     if (!lead) {
-      return res.status(400).json({ error: "Lead are required for score calculation" });
+      return res.status(400).json({ error: "Lead data is required for score calculation" });
     }
 
     // 1. If Gemini API is available, perform expert AI appraisal
@@ -418,6 +438,141 @@ async function startServer() {
     }
   });
 
+  // Auditoria de Configurações (Campos, Score e Webhooks)
+  app.post("/api/ai/settings-audit", async (req, res) => {
+    const { type, config } = req.body;
+    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
+
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `Você é o Auditor Master do Axis CRM. Analise esta configuração de ${type}:
+        ${JSON.stringify(config)}
+        
+        Identifique possíveis gargalos, regras redundantes ou melhorias na lógica.
+        Retorne estritamente um JSON: {"audit": string, "suggestions": string[]}.`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              audit: { type: Type.STRING },
+              suggestions: { type: Type.ARRAY, items: { type: Type.STRING } }
+            },
+            required: ["audit", "suggestions"]
+          }
+        }
+      });
+      res.json(JSON.parse(response.text));
+    } catch (error) {
+      res.status(500).json({ error: "Falha ao auditar configurações." });
+    }
+  });
+
+  // API de Configurações (CRUD com Persistência em Banco)
+  app.get("/api/settings/:category", async (req, res) => {
+    const { category } = req.params;
+
+    // Tentativa de buscar do Supabase se disponível
+    if (supabase) {
+      const tableName = `crm_${category.replace('-', '_')}`;
+      const { data, error } = await supabase.from(tableName).select('*');
+      if (!error && data) return res.json(data);
+    }
+
+    // Fallback para memória se o banco falhar ou não existir
+    switch (category) {
+      case "sources": return res.json(sources);
+      case "fields": case "custom-fields": case "custom_lead_fields": return res.json(customFields);
+      case "task-categories": case "categories": return res.json(taskCategories);
+      case "templates": return res.json(templates);
+      default: res.status(404).json({ error: "Categoria não encontrada" });
+    }
+  });
+
+  app.post("/api/settings/:category", async (req, res) => {
+    const { category } = req.params;
+    const item = req.body;
+    const id = Math.random().toString(36).substring(2, 9);
+    const newItem = { id, ...item };
+
+    // Persistência no Supabase
+    if (supabase) {
+      const tableName = `crm_${category.replace('-', '_')}`;
+      const { data, error } = await supabase.from(tableName).insert([newItem]).select();
+      if (!error && data) return res.json(data[0]);
+    }
+
+    // Fallback In-Memory (Sincronização com o estado do "sistema")
+    switch (category) {
+      case "sources":
+        // Aceita 'name' ou 'nome' vindo do modal de Origem
+        const newSource = { id, name: item.name || item.nome };
+        sources.push(newSource);
+        return res.json(newSource);
+      case "fields": case "custom-fields": case "custom_lead_fields":
+        customFields.push(newItem);
+        return res.json(newItem);
+      case "task-categories":
+        taskCategories.push(newItem);
+        return res.json(newItem);
+      case "templates":
+        templates.push(newItem);
+        return res.json(newItem);
+      default: res.status(404).json({ error: "Categoria inválida" });
+    }
+  });
+
+  app.delete("/api/settings/:category/:id", async (req, res) => {
+    const { category, id } = req.params;
+
+    if (supabase) {
+      const tableName = `crm_${category.replace('-', '_')}`;
+      await supabase.from(tableName).delete().eq('id', id);
+    }
+
+    switch (category) {
+      case "sources":
+        sources = sources.filter(s => s.id !== id);
+        break;
+      case "fields": case "custom-fields": case "custom_lead_fields":
+        customFields = customFields.filter(f => f.id !== id);
+        break;
+      case "task-categories": case "categories":
+        taskCategories = taskCategories.filter(c => c.id !== id);
+        break;
+      case "templates":
+        templates = templates.filter(t => t.id !== id);
+        break;
+    }
+    res.json({ success: true });
+  });
+
+  // IA Sugestão para Novos Modais (Melhoria de UX)
+  app.post("/api/ai/suggest-new-config", async (req, res) => {
+    const { type } = req.body;
+    if (!process.env.GEMINI_API_KEY) return res.json({ suggestion: null });
+
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `Você é um consultor de CRM. Sugira um exemplo para "${type}".
+        NÃO inclua campos como 'target'. Use os campos exatos abaixo.
+
+        Responda APENAS com JSON:
+        - Se for "Campo Personalizado": {"name": "Data de Aniversário", "type": "Data", "required": false}
+        - Se for "Origem": {"nome": "Indicação Parceiro Premium"}
+        - Se for "Categoria de Tarefa": {"nome": "Follow-up Estratégico", "cor": "bg-purple-500"}
+        - Se for "Modelo": {"name": "Boas-vindas", "content": "Olá {{name}}, seja bem-vindo!", "category": "Vendas"}`,
+        config: { responseMimeType: "application/json" }
+      });
+
+      res.json(JSON.parse(response.text));
+    } catch (error) {
+      res.status(500).json({ error: "Erro na sugestão da IA" });
+    }
+  });
+
   // Endpoint de Insights Genéricos para a "IA em todo Axis"
   app.post("/api/ai/generic-insight", async (req, res) => {
     const { context, data } = req.body;
@@ -436,7 +591,7 @@ async function startServer() {
         Sua tarefa: Forneça um insight estratégico curto, direto e acionável em português (máximo 3 frases). 
         Foque em melhoria de ROI, conversão ou retenção.`,
       });
-      
+
       res.json({ insight: response.text });
     } catch (error) {
       console.error("Erro na Master IA:", error);

@@ -4,6 +4,9 @@ import { Button } from "../../../components/ui/button";
 import { Zap, Mail, FileText, DollarSign, Settings, X, MessageSquare } from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
 import { toast } from "sonner";
+import { Modal } from "../../../components/ui/modal";
+import { NovaIntegracaoModal } from "../../../components/ui/NovaIntegracaoModal";
+
 
 export function ConfigIntegracoesApps() {
     const [integrations, setIntegrations] = useState<any[]>([]);
@@ -20,6 +23,7 @@ export function ConfigIntegracoesApps() {
     const { evolutionWebhookUrl, setEvolutionWebhookUrl } = useData();
     const [isWebhookModalOpen, setIsWebhookModalOpen] = useState(false);
     const [modalWebhookUrl, setModalWebhookUrl] = useState(evolutionWebhookUrl || "");
+    const [isNovaIntegracaoModalOpen, setIsNovaIntegracaoModalOpen] = useState(false);
 
     // Fetch instances and contacts on mount
     React.useEffect(() => {
@@ -171,15 +175,23 @@ export function ConfigIntegracoesApps() {
                     <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Integrações Globais</h1>
                     <p className="text-xs sm:text-sm text-slate-400">Conecte seu CRM com ferramentas essenciais e configure a Evolution API.</p>
                 </div>
-                <Button 
-                    onClick={() => {
-                        setModalWebhookUrl(evolutionWebhookUrl || webhookUrl);
-                        setIsWebhookModalOpen(true);
-                    }}
-                    className="bg-blue-600 hover:bg-blue-500 font-bold px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-xs h-10 hover:scale-[1.02] transition-transform duration-200 cursor-pointer w-full sm:w-auto"
-                >
-                    <Settings className="w-4 h-4" /> Configurar Webhook
-                </Button>
+                <div className="flex gap-2 w-full sm:w-auto">
+                    <Button 
+                        onClick={() => setIsNovaIntegracaoModalOpen(true)}
+                        className="bg-cyan-600 hover:bg-cyan-500 font-bold px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-xs h-10 hover:scale-[1.02] transition-transform duration-200 cursor-pointer flex-1 sm:flex-initial"
+                    >
+                        <Zap className="w-4 h-4" /> Nova Integração
+                    </Button>
+                    <Button 
+                        onClick={() => {
+                            setModalWebhookUrl(evolutionWebhookUrl || webhookUrl);
+                            setIsWebhookModalOpen(true);
+                        }}
+                        className="bg-blue-600 hover:bg-blue-500 font-bold px-4 py-2 rounded-xl flex items-center justify-center gap-2 text-xs h-10 hover:scale-[1.02] transition-transform duration-200 cursor-pointer flex-1 sm:flex-initial"
+                    >
+                        <Settings className="w-4 h-4" /> Configurar Webhook
+                    </Button>
+                </div>
             </div>
 
             {/* Integrations Grid */}
@@ -325,57 +337,66 @@ export function ConfigIntegracoesApps() {
 
             {/* Modal for Webhook Configuration */}
             {isWebhookModalOpen && (
-                <div className="fixed inset-0 bg-black/65 backdrop-blur-sm z-[999] flex items-center justify-center p-4">
-                    <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl relative animate-in zoom-in-95 duration-200">
-                        <button 
-                            onClick={() => setIsWebhookModalOpen(false)}
-                            className="bg-white/5 hover:bg-white/10 border border-white/5 absolute top-3 right-3 p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors cursor-pointer"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
+                <Modal
+                  isOpen={isWebhookModalOpen}
+                  onClose={() => setIsWebhookModalOpen(false)}
+                  title="Configurar URL de Webhook"
+                  maxWidth="max-w-md"
+                  footer={
+                    <>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsWebhookModalOpen(false)}
+                        className="bg-transparent border border-white/15 px-4 py-2 rounded-xl text-slate-400 hover:text-white transition-colors"
+                      >
+                        Cancelar
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => handleSaveWebhookFromModal(modalWebhookUrl)}
+                        disabled={savingWebhook}
+                        className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-xl font-bold transition-all"
+                      >
+                        {savingWebhook ? "Salvando..." : "Salvar Configuração"}
+                      </Button>
+                    </>
+                  }
+                >
+                  <div className="space-y-4">
+                    <span className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-0.5 rounded font-black uppercase tracking-wider">
+                      Evolution API
+                    </span>
 
-                        <div>
-                            <span className="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2.5 py-0.5 rounded font-black uppercase tracking-wider">Evolution API</span>
-                            <h3 className="text-lg font-bold text-white mt-1">Configurar URL de Webhook</h3>
-                            <p className="text-xs text-slate-400 leading-relaxed mt-1">
-                                Digite a URL de callback que receberá notificações em tempo real sempre que mensagens forem disparadas ou recebidas.
-                            </p>
-                        </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Digite a URL de callback que receberá notificações em tempo real sempre que mensagens forem disparadas ou recebidas.
+                    </p>
 
-                        <div className="space-y-1.5 pt-1">
-                            <label className="text-[10px] text-slate-400 uppercase tracking-widest block font-bold">
-                                URL de Callback (POST)
-                            </label>
-                            <input
-                                type="text"
-                                value={modalWebhookUrl}
-                                onChange={(e) => setModalWebhookUrl(e.target.value)}
-                                placeholder="https://sua-api.com/api/webhooks/whatsapp"
-                                className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:border-blue-500 focus:outline-none"
-                            />
-                        </div>
-
-                        <div className="pt-2 border-t border-white/5 flex justify-end gap-3 text-xs">
-                            <Button 
-                                type="button"
-                                variant="outline"
-                                onClick={() => setIsWebhookModalOpen(false)}
-                                className="bg-transparent border border-white/15 px-4 py-2 rounded-xl text-slate-400 hover:text-white transition-colors"
-                            >
-                                Cancelar
-                            </Button>
-                            <Button 
-                                type="button"
-                                onClick={() => handleSaveWebhookFromModal(modalWebhookUrl)}
-                                disabled={savingWebhook}
-                                className="bg-blue-600 hover:bg-blue-500 text-white px-5 py-2 rounded-xl font-bold transition-all"
-                            >
-                                {savingWebhook ? "Salvando..." : "Salvar Configuração"}
-                            </Button>
-                        </div>
+                    <div className="space-y-1.5 pt-1">
+                      <label className="text-[10px] text-slate-400 uppercase tracking-widest block font-bold">
+                        URL de Callback (POST)
+                      </label>
+                      <input
+                        type="text"
+                        value={modalWebhookUrl}
+                        onChange={(e) => setModalWebhookUrl(e.target.value)}
+                        placeholder="https://sua-api.com/api/webhooks/whatsapp"
+                        className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:border-blue-500 focus:outline-none"
+                      />
                     </div>
-                </div>
+                  </div>
+                </Modal>
             )}
+
+            <NovaIntegracaoModal
+                isOpen={isNovaIntegracaoModalOpen}
+                onClose={() => setIsNovaIntegracaoModalOpen(false)}
+                onSave={(data) => {
+                    setIntegrations([...integrations, { id: Date.now().toString(), ...data }]);
+                    toast.success(`Integração "${data.nome}" criada com sucesso!`);
+                    setIsNovaIntegracaoModalOpen(false);
+                }}
+            />
 
         </div>
     );

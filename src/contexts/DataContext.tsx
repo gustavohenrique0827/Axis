@@ -103,6 +103,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     syncSetting('globalWebhooks', newVal);
   };
 
+  const updateGlobalWebhook = (id: string, updates: Partial<GlobalWebhook>) => {
+    const newVal = globalWebhooks.map(w => w.id === id ? { ...w, ...updates } : w);
+    setGlobalWebhooks(newVal);
+    syncSetting('globalWebhooks', newVal);
+  };
+
   const deleteGlobalWebhook = (id: string) => {
     const newVal = globalWebhooks.filter(w => w.id !== id);
     setGlobalWebhooks(newVal);
@@ -1060,6 +1066,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setLeadScoreTriggers: updateLeadScoreTriggers,
       globalWebhooks,
       addGlobalWebhook,
+      updateGlobalWebhook,
       deleteGlobalWebhook,
       toggleGlobalWebhook,
       squads,

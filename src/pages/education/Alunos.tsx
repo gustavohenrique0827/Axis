@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import {
    Users, Search, UserPlus, Filter, Download,
-   Mail, Phone, BookOpen, Clock, Target,
+   Mail, Phone, BookOpen, Clock, Target, Brain,
    MoreVertical, CheckCircle2, AlertCircle,
    GraduationCap, Calendar, Star, ArrowUpRight,
-   TrendingUp, Trash2, Plus, X, Calculator, Inbox
+   TrendingUp, Trash2, Plus, X, Calculator, Inbox,
+   RefreshCw,
+   Zap
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -35,7 +37,7 @@ interface Student {
 
 export default function Alunos() {
    const [searchTerm, setSearchTerm] = useState('');
-   const { students: rawStudents, addStudent } = useData();
+   const { students: rawStudents, addStudent, updateStudent, getSmartInsight } = useData();
 
    const [isModalOpen, setIsModalOpen] = useState(false);
    const [newStudent, setNewStudent] = useState({
@@ -95,7 +97,26 @@ export default function Alunos() {
       if (grades.length === 0) return "0";
       const totalWeight = grades.reduce((acc, curr) => acc + curr.weight, 0);
       const totalValue = grades.reduce((acc, curr) => acc + (curr.value * curr.weight), 0);
-      return (totalValue / totalWeight).toFixed(2);
+      return totalWeight > 0 ? (totalValue / totalWeight).toFixed(2) : "0.0";
+   };
+
+   const [isAiAnalyzing, setIsAiAnalyzing] = useState(false);
+   const [aiInsight, setAiInsight] = useState("");
+
+   const analyzeStudentPerformance = async (student: Student) => {
+      setIsAiAnalyzing(true);
+      try {
+         const insight = await getSmartInsight(
+            "Análise de Performance Acadêmica",
+            { name: student.name, course: student.course, grades: student.grades, progress: student.progress }
+         );
+         setAiInsight(insight);
+         toast.success("Master IA concluiu a análise do aluno.");
+      } catch (err) {
+         toast.error("IA temporariamente indisponível.");
+      } finally {
+         setIsAiAnalyzing(false);
+      }
    };
 
    const handleAddGrade = (e: React.FormEvent) => {
@@ -116,7 +137,6 @@ export default function Alunos() {
          weight: weightVal
       }];
 
-      const { updateStudent } = useData();
       updateStudent(selectedStudent.id, { grades: updatedGrades });
 
       toast.success(`Nota de ${newSubject} registrada no prontuário acadêmico.`);
@@ -127,7 +147,6 @@ export default function Alunos() {
    const removeGrade = (index: number) => {
       if (!selectedStudent) return;
       const updatedGrades = selectedStudent.grades.filter((_, i) => i !== index);
-      const { updateStudent } = useData();
       updateStudent(selectedStudent.id, { grades: updatedGrades });
       toast.info("Nota removida do histórico.");
    };
@@ -241,7 +260,11 @@ export default function Alunos() {
                               </Badge>
                            </td>
                            <td className="py-4 pr-6 rounded-r-2xl border-y border-r border-white/5 text-right">
-                              <Button variant="ghost" className="h-8 text-[10px] uppercase font-black tracking-widest text-blue-500 hover:bg-blue-500/10">
+                              <Button
+                                 onClick={() => { setSelectedStudent(aluno); setIsGradesModalOpen(true); setAiInsight(""); }}
+                                 variant="ghost"
+                                 className="h-8 text-[10px] uppercase font-black tracking-widest text-blue-500 hover:bg-blue-500/10"
+                              >
                                  Gerenciar
                               </Button>
                            </td>
@@ -288,70 +311,195 @@ export default function Alunos() {
 
          </div>
 
-         {isModalOpen && (
-            <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-               <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
-                  <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
-                     <div>
-                        <h3 className="text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
-                           Nova Matrícula
-                        </h3>
-                     </div>
-                     <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors">
-                        <X className="w-5 h-5" />
-                     </button>
-                  </div>
-
-                  <form onSubmit={handleCreateStudent} className="p-6 flex flex-col gap-4">
-                     <div>
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Nome Completo</label>
-                        <input
-                           type="text"
-                           required
-                           value={newStudent.nome}
-                           onChange={(e) => setNewStudent({ ...newStudent, nome: e.target.value })}
-                           className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                        />
-                     </div>
-                     <div>
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">E-mail</label>
-                        <input
-                           type="email"
-                           required
-                           value={newStudent.email}
-                           onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })}
-                           className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                        />
-                     </div>
-                     <div className="grid grid-cols-2 gap-4">
+         <AnimatePresence>
+            {isModalOpen && (
+               <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                  <motion.div
+                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                     animate={{ opacity: 1, scale: 1, y: 0 }}
+                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                     className="bg-[#111827] border border-white/10 rounded-3xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden"
+                  >
+                     <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
                         <div>
-                           <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Telefone</label>
+                           <h3 className="text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
+                              Nova Matrícula
+                           </h3>
+                        </div>
+                        <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors">
+                           <X className="w-5 h-5" />
+                        </button>
+                     </div>
+
+                     <form onSubmit={handleCreateStudent} className="p-6 flex flex-col gap-4">
+                        <div>
+                           <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Nome Completo</label>
                            <input
                               type="text"
-                              value={newStudent.telefone}
-                              onChange={(e) => setNewStudent({ ...newStudent, telefone: e.target.value })}
+                              required
+                              value={newStudent.nome}
+                              onChange={(e) => setNewStudent({ ...newStudent, nome: e.target.value })}
                               className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                            />
                         </div>
                         <div>
-                           <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Curso / Turma</label>
+                           <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">E-mail</label>
                            <input
-                              type="text"
-                              value={newStudent.curso}
-                              onChange={(e) => setNewStudent({ ...newStudent, curso: e.target.value })}
+                              type="email"
+                              required
+                              value={newStudent.email}
+                              onChange={(e) => setNewStudent({ ...newStudent, email: e.target.value })}
                               className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
                            />
                         </div>
-                     </div>
+                        <div className="grid grid-cols-2 gap-4">
+                           <div>
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Telefone</label>
+                              <input
+                                 type="text"
+                                 value={newStudent.telefone}
+                                 onChange={(e) => setNewStudent({ ...newStudent, telefone: e.target.value })}
+                                 className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                              />
+                           </div>
+                           <div>
+                              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Curso / Turma</label>
+                              <input
+                                 type="text"
+                                 value={newStudent.curso}
+                                 onChange={(e) => setNewStudent({ ...newStudent, curso: e.target.value })}
+                                 className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                              />
+                           </div>
+                        </div>
 
-                     <div className="flex gap-3 mt-4">
-                        <Button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-white/5 hover:bg-white/10 text-white h-12 rounded-xl border border-white/5 uppercase text-[10px] tracking-widest font-black">Cancelar</Button>
-                        <Button type="submit" className="flex-1 bg-[#2563EB] hover:bg-blue-600 text-white h-12 rounded-xl uppercase text-[10px] tracking-widest font-black">Matricular Aluno</Button>
-                     </div>
-                  </form>
+                        <div className="flex gap-3 mt-4">
+                           <Button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-white/5 hover:bg-white/10 text-white h-12 rounded-xl border border-white/5 uppercase text-[10px] tracking-widest font-black">Cancelar</Button>
+                           <Button type="submit" className="bg-[#2563EB] hover:bg-blue-600 text-white h-12 rounded-xl flex-1 uppercase text-[10px] tracking-widest font-black shadow-lg shadow-blue-500/20">Matricular Aluno</Button>
+                        </div>
+                     </form>
+                  </motion.div>
                </div>
-            </div>
-         )}
+            )}
+
+            {isGradesModalOpen && selectedStudent && (
+               <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+                  <motion.div
+                     initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                     animate={{ opacity: 1, scale: 1, y: 0 }}
+                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                     className="bg-[#111827] border border-white/10 rounded-3xl w-full max-w-2xl shadow-2xl flex flex-col overflow-hidden max-h-[90vh]"
+                  >
+                     <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+                        <div className="flex items-center gap-4">
+                           <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-black border border-blue-500/20">
+                              {selectedStudent.name.substring(0, 2).toUpperCase()}
+                           </div>
+                           <div>
+                              <h3 className="text-lg font-black text-white uppercase tracking-tight">{selectedStudent.name}</h3>
+                              <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{selectedStudent.course}</p>
+                           </div>
+                        </div>
+                        <button onClick={() => setIsGradesModalOpen(false)} className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors">
+                           <X className="w-5 h-5" />
+                        </button>
+                     </div>
+
+                     <div className="p-6 overflow-y-auto space-y-6">
+                        {/* Seção IA */}
+                        <div className="p-6 bg-gradient-to-br from-indigo-600/10 to-transparent border border-indigo-500/20 rounded-2xl relative overflow-hidden group">
+                           <div className="flex justify-between items-start mb-4">
+                              <div className="flex items-center gap-2">
+                                 <Brain className="w-4 h-4 text-indigo-400" />
+                                 <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Master IA - Análise de Desempenho</h4>
+                              </div>
+                              <Button
+                                 onClick={() => analyzeStudentPerformance(selectedStudent)}
+                                 disabled={isAiAnalyzing}
+                                 variant="outline"
+                                 className="h-8 border-indigo-500/30 text-indigo-400 text-[9px] font-black uppercase tracking-widest gap-2 bg-indigo-500/5 hover:bg-indigo-500/10"
+                              >
+                                 {isAiAnalyzing ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3 fill-current" />}
+                                 Solicitar Análise
+                              </Button>
+                           </div>
+                           {aiInsight ? (
+                              <p className="text-xs text-slate-300 italic leading-relaxed">"{aiInsight}"</p>
+                           ) : (
+                              <p className="text-xs text-slate-500 italic">Peça para a Master IA analisar o histórico de notas e prever o engajamento.</p>
+                           )}
+                        </div>
+
+                        {/* Formulário de Nota */}
+                        <form onSubmit={handleAddGrade} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+                           <div className="md:col-span-2">
+                              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">Matéria / Atividade</label>
+                              <input
+                                 value={newSubject}
+                                 onChange={(e) => setNewSubject(e.target.value)}
+                                 className="w-full h-11 bg-white/5 border border-white/5 rounded-xl px-4 text-sm text-white focus:outline-none focus:border-blue-500 transition-all"
+                                 placeholder="Ex: Anatomia Aplicada"
+                              />
+                           </div>
+                           <div>
+                              <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest block mb-2">Nota (0-10)</label>
+                              <input
+                                 value={newValue}
+                                 onChange={(e) => setNewValue(e.target.value)}
+                                 className="w-full h-11 bg-white/5 border border-white/5 rounded-xl px-4 text-sm text-white focus:outline-none focus:border-blue-500 transition-all font-mono"
+                                 placeholder="0.0"
+                              />
+                           </div>
+                           <Button type="submit" className="h-11 bg-blue-600 hover:bg-blue-700 text-white rounded-xl uppercase text-[10px] font-black tracking-widest gap-2">
+                              <Plus className="w-4 h-4" /> Lançar
+                           </Button>
+                        </form>
+
+                        {/* Tabela de Notas */}
+                        <div className="space-y-3">
+                           <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-white/5 pb-2">Histórico de Avaliações</h5>
+                           <div className="space-y-2">
+                              {selectedStudent.grades.length > 0 ? selectedStudent.grades.map((grade, idx) => (
+                                 <div key={idx} className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/5 rounded-2xl group">
+                                    <div className="flex items-center gap-4">
+                                       <div className="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-[10px] font-black text-slate-500">
+                                          {idx + 1}
+                                       </div>
+                                       <span className="text-sm font-bold text-white">{grade.subject}</span>
+                                    </div>
+                                    <div className="flex items-center gap-6">
+                                       <div className="text-right">
+                                          <p className="text-[9px] text-slate-500 font-black uppercase tracking-tighter">Nota</p>
+                                          <p className={`text-sm font-black font-mono ${grade.value >= 7 ? 'text-emerald-400' : 'text-rose-400'}`}>{grade.value.toFixed(1)}</p>
+                                       </div>
+                                       <button onClick={() => removeGrade(idx)} className="p-2 opacity-0 group-hover:opacity-100 text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all">
+                                          <Trash2 className="w-4 h-4" />
+                                       </button>
+                                    </div>
+                                 </div>
+                              )) : (
+                                 <div className="py-8 text-center text-slate-600 italic text-xs">Nenhuma nota registrada para este aluno.</div>
+                              )}
+                           </div>
+                        </div>
+                     </div>
+
+                     <div className="p-6 bg-white/[0.02] border-t border-white/10 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                           <div className="p-3 bg-blue-500/10 rounded-xl text-blue-400">
+                              <Calculator className="w-4 h-4" />
+                           </div>
+                           <div>
+                              <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest">Média Ponderada</p>
+                              <p className="text-xl font-black text-white font-mono tracking-tighter">{calculateWeightedAverage(selectedStudent.grades)}</p>
+                           </div>
+                        </div>
+                        <Button onClick={() => setIsGradesModalOpen(false)} className="bg-white/5 hover:bg-white/10 text-white rounded-xl h-12 px-8 text-[10px] font-black uppercase tracking-widest border border-white/5">Fechar</Button>
+                     </div>
+                  </motion.div>
+               </div>
+            )}
+         </AnimatePresence>
       </PageContainer>
    );
 }

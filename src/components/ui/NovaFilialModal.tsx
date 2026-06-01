@@ -1,0 +1,207 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { X, Building2, ShieldCheck } from "lucide-react";
+import { Modal } from "./modal";
+import { Button } from "./button";
+
+type FilialPayload = {
+  nome: string;
+  cnpj: string;
+  cidade: string;
+};
+
+interface NovaFilialModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave?: (payload: FilialPayload) => void;
+}
+
+const onlyDigits = (value: string) => (value || "").replace(/\D+/g, "");
+
+const formatCnpj = (raw: string) => {
+  const d = onlyDigits(raw).slice(0, 14);
+  // 00.000.000/0000-00
+  const p1 = d.slice(0, 2);
+  const p2 = d.slice(2, 5);
+  const p3 = d.slice(5, 8);
+  const p4 = d.slice(8, 12);
+  const p5 = d.slice(12, 14);
+  if (d.length <= 2) return p1;
+  if (d.length <= 5) return `${p1}.${p2}`;
+  if (d.length <= 8) return `${p1}.${p2}.${p3}`;
+  if (d.length <= 12) return `${p1}.${p2}.${p3}/${p4}`;
+  return `${p1}.${p2}.${p3}/${p4}-${p5}`;
+};
+
+const normalizeAndValidateCnpj = (value: string) => {
+  const digits = onlyDigits(value);
+  const ok = digits.length === 14;
+  return { digits, ok };
+};
+
+export function NovaFilialModal({ isOpen, onClose, onSave }: NovaFilialModalProps) {
+  const [nome, setNome] = useState("");
+  const [cnpjInput, setCnpjInput] = useState("");
+  const [cidade, setCidade] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const cnpjNormalized = useMemo(() => normalizeAndValidateCnpj(cnpjInput), [cnpjInput]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    // Reset leve ao abrir
+    setNome("");
+    setCnpjInput("");
+    setCidade("");
+    setLoading(false);
+  }, [isOpen]);
+
+  const [touched, setTouched] = useState(false);
+  useEffect(() => {
+    if (!isOpen) return;
+    setTouched(false);
+  }, [isOpen]);
+
+  const canSubmit = useMemo(() => {
+    if (loading) return false;
+    if (!nome.trim()) return false;
+    if (!cidade.trim()) return false;
+    if (!cnpjNormalized.ok) return false;
+    return true;
+  }, [loading, nome, cidade, cnpjNormalized.ok]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setTouched(true);
+    if (!canSubmit) return;
+
+    setLoading(true);
+    try {
+      const payload: FilialPayload = {
+        nome: nome.trim(),
+        cnpj: cnpjNormalized.digits,
+        cidade: cidade.trim(),
+      };
+
+      onSave?.(payload);
+    } finally {
+      setLoading(false);
+      onClose();
+    }
+  };
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-2xl"
+      title={
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center mt-0.5">
+            <Building2 className="w-4.5 h-4.5 text-[#60A5FA]" />
+          </div>
+          <div className="leading-tight">
+            <div className="text-base font-black text-white">Nova Filial</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">
+              Cadastre os dados da unidade
+            </div>
+          </div>
+        </div>
+      }
+      footer={
+        <>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            className="text-slate-400 hover:text-white"
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <Button
+            form="nova-filial-form"
+            type="submit"
+            className="bg-[#2563EB] hover:bg-blue-600 text-white font-bold px-6"
+            disabled={!canSubmit}
+          >
+            {loading ? "Cadastrando..." : "Cadastrar Filial"}
+          </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div className="bg-[#0B1120]/40 border border-white/10 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mt-0.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-sm text-slate-200 font-bold">Dados do cadastro</p>
+              <p className="text-xs text-slate-400 leading-relaxed mt-1">
+                O CNPJ será normalizado automaticamente (somente dígitos) e validado com 14 caracteres.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <form id="nova-filial-form" onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label htmlFor="filial-nome" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                Nome da Unidade
+              </label>
+              <input
+                id="filial-nome"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
+                placeholder="Ex.: Clínica Centro / Unidade Zona Sul"
+                className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all"
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="filial-cnpj" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                CNPJ
+              </label>
+              <input
+                id="filial-cnpj"
+                value={cnpjInput}
+                onChange={(e) => setCnpjInput(formatCnpj(e.target.value))}
+                placeholder="00.000.000/0000-00"
+                inputMode="numeric"
+                className={
+                  "w-full bg-[#0B1120] border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:ring-2 transition-all " +
+                  (touched && !cnpjNormalized.ok
+                    ? "border-rose-500/60 focus:ring-rose-500/20"
+                    : "border-white/10 focus:border-[#2563EB] focus:ring-[#2563EB]/30")
+                }
+                required
+              />
+              {touched && !cnpjNormalized.ok && (
+                <div className="text-[11px] text-rose-400 font-semibold">
+                  Informe um CNPJ válido com 14 dígitos.
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="filial-cidade" className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Cidade / Estado
+            </label>
+            <input
+              id="filial-cidade"
+              value={cidade}
+              onChange={(e) => setCidade(e.target.value)}
+              placeholder="Ex.: São Paulo / SP"
+              className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all"
+              required
+            />
+          </div>
+        </form>
+      </div>
+    </Modal>
+  );
+}
+
