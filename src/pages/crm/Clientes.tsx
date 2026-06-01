@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Search, Plus, Building, MapPin, Phone, Mail, MoreHorizontal, Trash2 } from "lucide-react";
-import { NovoClienteModal } from "../common/NovoClienteModal";
+import { NovoClienteModal } from "../../components/ui/NovoClienteModal";
 import { toast } from "sonner";
 import { PageContainer } from "../../components/PageContainer";
 
