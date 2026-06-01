@@ -14,6 +14,7 @@ import Exames from "./pages/clinica/Exames";
 import EstatisticasClinicas from "./pages/clinica/Estatisticas";
 import Pacientes from "./pages/clinica/Pacientes";
 import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
 import Layout from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Leads from "./pages/crm/Leads";
@@ -100,6 +101,7 @@ function AppContent() {
         <Route path="/" element={<Navigate to="/app" replace />} />
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         <Route path="/app" element={
           <ProtectedRoute>

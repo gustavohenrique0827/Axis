@@ -110,6 +110,10 @@ export default function Login() {
                 Acessar Plataforma <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
               </Button>
             </form>
+
+            <div className="mt-6 text-center text-sm text-slate-400">
+              Não tem uma conta? <Link to="/register" className="text-[#2563EB] hover:text-blue-400">Cadastre sua empresa parceira</Link>
+            </div>
           </Card>
         </div>
 

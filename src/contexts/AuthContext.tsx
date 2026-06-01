@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 
-export type TenantNiche = "Master" | "Solar" | "Imobiliária" | "Clínica" | "Tecnologia";
+export type TenantNiche = "Master" | "Solar" | "Imobiliária" | "Clínica" | "Tecnologia" | "Parceira";
 
 export interface UserSession {
   name: string;
@@ -39,7 +39,8 @@ const DEFAULT_TENANT_MODULES: Record<string, TenantModules> = {
   "TechCorp Brasil": { crm: true, sdr: false, advDashboard: true },
   "Solar Solutions (SolarCorp)": { crm: true, sdr: false, advDashboard: false },
   "Construtora RS": { crm: true, sdr: false, advDashboard: false },
-  "Mendes Consultoria": { crm: true, sdr: false, advDashboard: false }
+  "Mendes Consultoria": { crm: true, sdr: false, advDashboard: false },
+  "Parceira Axis": { crm: true, sdr: false, advDashboard: false }
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
