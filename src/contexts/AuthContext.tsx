@@ -42,30 +42,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return null;
   });
 
-  const [allTenantModules, setAllTenantModules] = useState<Record<string, TenantModules>>(() => {
-    const saved = localStorage.getItem("axis_tenant_modules");
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error("Error parsing axis_tenant_modules", e);
-      }
-    }
-    return DEFAULT_TENANT_MODULES;
-  });
+  // Start with only G-Tech Master, always load from Supabase
+  const [allTenantModules, setAllTenantModules] = useState<Record<string, TenantModules>>(DEFAULT_TENANT_MODULES);
 
-  // Load tenants from Supabase on component mount
+  // Load tenants from Supabase on component mount - ALWAYS (ignore localStorage cache)
   useEffect(() => {
     const loadTenantsFromDB = async () => {
-      console.log('[AuthContext] 🔄 Carregando tenants do banco de dados...');
+      console.log('[AuthContext] 🔄 Carregando tenants do banco de dados (sempre)...');
       const dbTenants = await fetchTenants();
       
       if (Object.keys(dbTenants).length > 0) {
-        console.log('[AuthContext] ✅ Tenants do banco carregados com sucesso');
-        setAllTenantModules(dbTenants);
-        localStorage.setItem("axis_tenant_modules", JSON.stringify(dbTenants));
+        console.log('[AuthContext] ✅ Tenants do banco carregados:', Object.keys(dbTenants));
+        // Merge G-Tech Master + database tenants
+        const merged = {
+          "G-Tech Master": DEFAULT_TENANT_MODULES["G-Tech Master"],
+          ...dbTenants
+        };
+        setAllTenantModules(merged);
+        localStorage.setItem("axis_tenant_modules", JSON.stringify(merged));
       } else {
-        console.warn('[AuthContext] ⚠️ Nenhum tenant encontrado no banco, usando dados padrão');
+        console.warn('[AuthContext] ⚠️ Nenhum tenant encontrado no banco, usando apenas G-Tech Master');
       }
     };
 
