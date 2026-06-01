@@ -2,12 +2,19 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
-import { Lock, Mail, ArrowRight, Building, Fingerprint } from "lucide-react";
+import { Lock, Mail, ArrowRight, Building, Fingerprint, Phone, UserCheck } from "lucide-react";
 import { useAuth, TenantNiche, UserSession } from "../../contexts/AuthContext";
 
 export default function Login() {
+  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [niche, setNiche] = useState<TenantNiche>("Parceira");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
@@ -26,6 +33,7 @@ export default function Login() {
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
     login({
       name: "Usuário Admin",
       email: email || "admin@g-tech.com",
@@ -34,6 +42,33 @@ export default function Login() {
       tenantNiche: "Master",
       isMaster: true
     });
+    navigate(from, { replace: true });
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!companyName || !email || !password || !confirmPassword) {
+      setError("Preencha todos os campos obrigatórios.");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError("As senhas precisam ser iguais.");
+      return;
+    }
+
+    setLoading(true);
+    login({
+      name: `Parceiro ${companyName}`,
+      email,
+      role: "Parceiro",
+      tenantName: companyName,
+      tenantNiche: niche,
+      isMaster: false
+    });
+    setLoading(false);
     navigate(from, { replace: true });
   };
 
@@ -55,10 +90,10 @@ export default function Login() {
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-[#2563EB]/10 blur-[120px] rounded-full pointer-events-none"></div>
       <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] bg-[#06B6D4]/10 blur-[120px] rounded-full pointer-events-none"></div>
 
-      <div className="w-full max-w-4xl p-6 relative z-10 flex flex-col md:flex-row gap-8 items-center">
+      <div className="w-full max-w-4xl p-6 relative z-10 flex flex-col md:flex-row gap-8 items-start">
         
-        {/* Left Side: Standard Login */}
-        <div className="flex-1 w-full max-w-md">
+        {/* Left Side: Login / Registration */}
+        <div className="flex-1 w-full max-w-xl">
           <div className="text-center mb-8">
             <div className="relative inline-block bg-[#0B1120] rounded-2xl overflow-hidden p-3 border border-white/5 mb-6">
               <img 
@@ -70,50 +105,162 @@ export default function Login() {
               />
             </div>
             <h1 className="text-3xl font-bold tracking-tight mb-2">Bem-vindo ao Axis CRM</h1>
-            <p className="text-slate-400 text-sm">Acesse a plataforma de gestão da G-Tech</p>
+            <p className="text-slate-400 text-sm">Acesse a plataforma ou cadastre sua empresa parceira.</p>
+          </div>
+
+          <div className="mb-6 flex items-center justify-center gap-2">
+            <button
+              type="button"
+              onClick={() => setMode("login")}
+              className={`px-4 py-2 rounded-full ${mode === "login" ? "bg-[#2563EB] text-white" : "bg-white/5 text-slate-300 hover:bg-white/10"}`}
+            >
+              Entrar
+            </button>
+            <button
+              type="button"
+              onClick={() => setMode("register")}
+              className={`px-4 py-2 rounded-full ${mode === "register" ? "bg-[#2563EB] text-white" : "bg-white/5 text-slate-300 hover:bg-white/10"}`}
+            >
+              Registrar
+            </button>
           </div>
 
           <Card className="p-8 bg-[#111827]/80 backdrop-blur-xl border border-white/10 shadow-2xl">
-            <form onSubmit={handleLogin} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[11px] font-bold tracking-widest text-slate-400 uppercase">E-mail Corporativo</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input 
-                    type="email" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors"
-                    placeholder="admin@g-tech.com"
-                  />
+            {mode === "login" ? (
+              <form onSubmit={handleLogin} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[11px] font-bold tracking-widest text-slate-400 uppercase">E-mail Corporativo</label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <input 
+                      type="email" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors"
+                      placeholder="admin@g-tech.com"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <label className="text-[11px] font-bold tracking-widest text-slate-400 uppercase">Senha</label>
-                  <a href="#" className="text-xs text-[#2563EB] hover:text-blue-400">Esqueci a senha</a>
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[11px] font-bold tracking-widest text-slate-400 uppercase">Senha</label>
+                    <a href="#" className="text-xs text-[#2563EB] hover:text-blue-400">Esqueci a senha</a>
+                  </div>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <input 
+                      type="password" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors"
+                      placeholder="••••••••"
+                    />
+                  </div>
                 </div>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input 
-                    type="password" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors"
-                    placeholder="••••••••"
-                  />
+
+                <Button type="submit" className="w-full py-6 bg-[#2563EB] hover:bg-blue-600 rounded-lg text-md font-bold shadow-lg shadow-blue-500/20 group">
+                  Entrar <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </form>
+            ) : (
+              <form onSubmit={handleRegister} className="space-y-6">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="space-y-2 text-sm">
+                    <span className="text-slate-400 font-semibold">Nome da Empresa</span>
+                    <div className="relative">
+                      <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="text"
+                        value={companyName}
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                        placeholder="Ex: Axis Parceira"
+                      />
+                    </div>
+                  </label>
+
+                  <label className="space-y-2 text-sm">
+                    <span className="text-slate-400 font-semibold">Telefone</span>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                        placeholder="(XX) XXXXX-XXXX"
+                      />
+                    </div>
+                  </label>
                 </div>
-              </div>
 
-              <Button type="submit" className="w-full py-6 bg-[#2563EB] hover:bg-blue-600 rounded-lg text-md font-bold shadow-lg shadow-blue-500/20 group">
-                Acessar Plataforma <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-              </Button>
-            </form>
+                <label className="space-y-2 text-sm">
+                  <span className="text-slate-400 font-semibold">E-mail Corporativo</span>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                      placeholder="contato@empresa.com"
+                    />
+                  </div>
+                </label>
 
-            <div className="mt-6 text-center text-sm text-slate-400">
-              Não tem uma conta? <Link to="/register" className="text-[#2563EB] hover:text-blue-400">Cadastre sua empresa parceira</Link>
-            </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <label className="space-y-2 text-sm">
+                    <span className="text-slate-400 font-semibold">Senha</span>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                  </label>
+
+                  <label className="space-y-2 text-sm">
+                    <span className="text-slate-400 font-semibold">Confirmar senha</span>
+                    <div className="relative">
+                      <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                        placeholder="••••••••"
+                      />
+                    </div>
+                  </label>
+                </div>
+
+                <label className="space-y-2 text-sm">
+                  <span className="text-slate-400 font-semibold">Segmento</span>
+                  <select
+                    value={niche}
+                    onChange={(e) => setNiche(e.target.value as TenantNiche)}
+                    className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                  >
+                    <option value="Parceira">Parceira</option>
+                    <option value="Solar">Solar</option>
+                    <option value="Imobiliária">Imobiliária</option>
+                    <option value="Clínica">Clínica</option>
+                    <option value="Tecnologia">Tecnologia</option>
+                  </select>
+                </label>
+
+                {error ? <div className="text-sm text-rose-400">{error}</div> : null}
+
+                <Button type="submit" className="w-full py-6 bg-[#2563EB] hover:bg-blue-600 rounded-lg text-md font-bold shadow-lg shadow-blue-500/20 group">
+                  {loading ? "Registrando..." : "Registrar empresa"} <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </form>
+            )}
           </Card>
         </div>
 
