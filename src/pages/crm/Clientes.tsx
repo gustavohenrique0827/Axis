@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Search, Plus, Building, MapPin, Phone, Mail, MoreHorizontal, Trash2 } from "lucide-react";
-import { ActionModal } from "../../components/ui/ActionModal";
+import { NovoClienteModal } from "../common/NovoClienteModal";
 import { toast } from "sonner";
 import { PageContainer } from "../../components/PageContainer";
 
@@ -220,20 +220,10 @@ export default function Clientes() {
         </div>
       </Card>
 
-      <ActionModal
+      <NovoClienteModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAction={handleCreateCliente}
-        title="Novo Cliente"
-        fields={[
-          { name: "nome", label: "Nome do Cliente/Empresa", type: "text", required: true },
-          { name: "documento", label: "CPF/CNPJ (Opcional)", type: "text" },
-          { name: "industry", label: "Setor / Indústria", type: "select", options: ["Tecnologia", "Engenharia", "Saúde", "Varejo", "Indústria"], required: true },
-          { name: "email", label: "E-mail Principal", type: "email", required: true },
-          { name: "telefone", label: "Telefone", type: "tel", required: true },
-          { name: "cidade", label: "Cidade", type: "text", required: true, defaultValue: "São Paulo" },
-          { name: "estado", label: "Estado (Sigla)", type: "text", required: true, defaultValue: "SP" }
-        ]}
       />
     </PageContainer>
   );
