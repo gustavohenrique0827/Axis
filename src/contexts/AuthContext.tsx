@@ -30,19 +30,9 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Fallback data for when Supabase is not available
+// Default: Only G-Tech Master is hardcoded as system admin. All other tenants load from Supabase.
 const DEFAULT_TENANT_MODULES: Record<string, TenantModules> = {
-  "G-Tech (Master)": { crm: true, sdr: true, advDashboard: true },
-  "G-Tech Master": { crm: true, sdr: true, advDashboard: true },
-  "SolarCorp Engenharia": { crm: true, sdr: false, advDashboard: false },
-  "Solar Solutions": { crm: true, sdr: false, advDashboard: false },
-  "Imobiliária Prime": { crm: true, sdr: true, advDashboard: false },
-  "Clínica Vida": { crm: true, sdr: false, advDashboard: true },
-  "TechCorp Brasil": { crm: true, sdr: false, advDashboard: true },
-  "Solar Solutions (SolarCorp)": { crm: true, sdr: false, advDashboard: false },
-  "Construtora RS": { crm: true, sdr: false, advDashboard: false },
-  "Mendes Consultoria": { crm: true, sdr: false, advDashboard: false },
-  "Parceira Axis": { crm: true, sdr: false, advDashboard: false }
+  "G-Tech Master": { crm: true, sdr: true, advDashboard: true }
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
