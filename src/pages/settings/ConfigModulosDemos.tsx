@@ -27,8 +27,13 @@ export default function ConfigModulosDemos() {
     clinica: true,
   };
 
-  const [selectedTenant, setSelectedTenant] = useState<string>(() => user?.tenantName || Object.keys(allTenantModules)[0] || "G-Tech (Master)");
+  const [selectedTenant, setSelectedTenant] = useState<string>(() => user?.tenantName || "G-Tech Master");
   const [activeModules, setActiveModules] = useState<{ [key: string]: boolean }>(sidebarModules || DEFAULT_MODULES);
+
+  const tenantOptions = [
+    "G-Tech Master",
+    ...Object.keys(allTenantModules).filter(t => t !== "G-Tech Master")
+  ];
 
   const [simulationRole, setSimulationRole] = useState(() => {
     return localStorage.getItem("axis_simulation_role") || "Administrador / Sócio";
@@ -264,7 +269,7 @@ export default function ConfigModulosDemos() {
                 onChange={(e) => setSelectedTenant(e.target.value)}
                 className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
               >
-                {Object.keys(allTenantModules).map((tenant) => (
+                {tenantOptions.map((tenant) => (
                   <option key={tenant} value={tenant}>{tenant}</option>
                 ))}
               </select>

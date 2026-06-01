@@ -54,6 +54,7 @@ export default function Equipe() {
     squads,
     setSquads,
     team,
+    setTeam,
     logs,
     toggleSquad,
     filter,
