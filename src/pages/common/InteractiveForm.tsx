@@ -162,7 +162,7 @@ export function InteractiveForm() {
   if (isCompleted) {
     return (
       <div className={`min-h-screen bg-gradient-to-br ${formConfig.bgGradient} flex items-center justify-center p-4`}>
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           className="bg-[#0B1120]/80 backdrop-blur-xl p-10 rounded-3xl border border-white/10 max-w-lg w-full text-center shadow-2xl"
@@ -174,8 +174,12 @@ export function InteractiveForm() {
           <p className="text-slate-300 mb-8 leading-relaxed">
             Obrigado pelo seu tempo. Nossa equipe já recebeu seus dados e os analisará para um atendimento totalmente personalizado. Retornaremos em breve.
           </p>
-          <button 
-            onClick={() => navigate('/')}
+          <button
+            onClick={() => {
+              setIsCompleted(false);
+              setCurrentStep(0);
+              setAnswers({});
+            }}
             className={`w-full py-4 rounded-xl font-bold transition-all ${theme.bg} ${theme.buttonText || 'text-white'} hover:opacity-90 shadow-lg`}
           >
             Voltar ao Início
@@ -188,7 +192,7 @@ export function InteractiveForm() {
   return (
     <div className={`min-h-screen bg-gradient-to-br ${formConfig.bgGradient} flex items-center justify-center p-4 sm:p-8 font-sans relative overflow-hidden`}>
       <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
-      
+
       {/* Decorative Mascot for MIA-6 Form */}
       {niche === 'mia-6' && (
         <div className="absolute top-1/2 right-[-200px] -translate-y-1/2 opacity-30 lg:opacity-100 lg:right-10 pointer-events-none xl:right-32">
@@ -197,35 +201,35 @@ export function InteractiveForm() {
       )}
 
       <div className="w-full max-w-3xl relative z-10">
-        
+
         {/* Header / Progress */}
         <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center gap-3">
-               <div className={`w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/5 shadow-lg ${theme.text}`}>
-                  <Icon className="w-5 h-5" />
-               </div>
-               <div>
-                  <h1 className="text-white font-bold text-sm tracking-widest uppercase opacity-90">{formConfig.name}</h1>
-                  <p className="text-white/50 text-xs font-mono">Passo {currentStep + 1} de {totalSteps}</p>
-               </div>
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/5 shadow-lg ${theme.text}`}>
+              <Icon className="w-5 h-5" />
             </div>
+            <div>
+              <h1 className="text-white font-bold text-sm tracking-widest uppercase opacity-90">{formConfig.name}</h1>
+              <p className="text-white/50 text-xs font-mono">Passo {currentStep + 1} de {totalSteps}</p>
+            </div>
+          </div>
 
-            <div className="flex gap-1">
-               {Array.from({ length: totalSteps }).map((_, i) => (
-                  <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i <= currentStep ? 'w-8 bg-white' : 'w-2 bg-white/20'}`} />
-               ))}
-            </div>
+          <div className="flex gap-1">
+            {Array.from({ length: totalSteps }).map((_, i) => (
+              <div key={i} className={`h-1.5 rounded-full transition-all duration-300 ${i <= currentStep ? 'w-8 bg-white' : 'w-2 bg-white/20'}`} />
+            ))}
+          </div>
         </div>
 
         {/* Form Card */}
         <div className="bg-[#0B1120]/60 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden min-h-[400px] flex flex-col relative">
-          
+
           {/* Navigation Top Bar */}
           <div className="absolute top-4 left-4 z-20">
             {currentStep > 0 && (
-                <button onClick={goToPrevStep} className="p-2 text-slate-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full">
-                    <ArrowLeft className="w-5 h-5" />
-                </button>
+              <button onClick={goToPrevStep} className="p-2 text-slate-400 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full">
+                <ArrowLeft className="w-5 h-5" />
+              </button>
             )}
           </div>
 
@@ -252,10 +256,10 @@ export function InteractiveForm() {
                     >
                       <div className="flex justify-between items-center relative z-10">
                         <span className="text-slate-200 font-medium text-lg leading-snug group-hover:text-white transition-colors">
-                           {option}
+                          {option}
                         </span>
                         <div className="w-6 h-6 rounded-full border border-white/20 flex items-center justify-center group-hover:border-white/50 group-hover:bg-white/10 transition-all">
-                           <ArrowRight className="w-3 h-3 text-transparent group-hover:text-white transition-all" />
+                          <ArrowRight className="w-3 h-3 text-transparent group-hover:text-white transition-all" />
                         </div>
                       </div>
                     </button>
@@ -271,35 +275,35 @@ export function InteractiveForm() {
                     placeholder={currentQuestion.placeholder}
                     value={inputValue}
                     onChange={(e) => {
-                       let val = e.target.value;
-                       if (currentQuestion.id === 'q3' && niche === 'mia-6') {
-                          val = val.replace(/\D/g, '');
-                          let formatted = val;
-                          if (val.length > 2) formatted = `${val.slice(0, 2)}.${val.slice(2)}`;
-                          if (val.length > 5) formatted = `${val.slice(0, 2)}.${val.slice(2, 5)}.${val.slice(5)}`;
-                          if (val.length > 8) formatted = `${val.slice(0, 2)}.${val.slice(2, 5)}.${val.slice(5, 8)}/${val.slice(8)}`;
-                          if (val.length > 12) formatted = `${val.slice(0, 2)}.${val.slice(2, 5)}.${val.slice(5, 8)}/${val.slice(8, 12)}-${val.slice(12, 14)}`;
-                          setInputValue(formatted);
-                       } else if (currentQuestion.subtype === 'tel') {
-                          val = val.replace(/\D/g, '');
-                          let formatted = val;
-                          if (val.length > 2) formatted = `(${val.slice(0, 2)}) ${val.slice(2)}`;
-                          if (val.length > 6) formatted = `(${val.slice(0, 2)}) ${val.slice(2, 7)}-${val.slice(7, 11)}`;
-                          setInputValue(formatted.slice(0, 15));
-                       } else {
-                          setInputValue(val);
-                       }
+                      let val = e.target.value;
+                      if (currentQuestion.id === 'q3' && niche === 'mia-6') {
+                        val = val.replace(/\D/g, '');
+                        let formatted = val;
+                        if (val.length > 2) formatted = `${val.slice(0, 2)}.${val.slice(2)}`;
+                        if (val.length > 5) formatted = `${val.slice(0, 2)}.${val.slice(2, 5)}.${val.slice(5)}`;
+                        if (val.length > 8) formatted = `${val.slice(0, 2)}.${val.slice(2, 5)}.${val.slice(5, 8)}/${val.slice(8)}`;
+                        if (val.length > 12) formatted = `${val.slice(0, 2)}.${val.slice(2, 5)}.${val.slice(5, 8)}/${val.slice(8, 12)}-${val.slice(12, 14)}`;
+                        setInputValue(formatted);
+                      } else if (currentQuestion.subtype === 'tel') {
+                        val = val.replace(/\D/g, '');
+                        let formatted = val;
+                        if (val.length > 2) formatted = `(${val.slice(0, 2)}) ${val.slice(2)}`;
+                        if (val.length > 6) formatted = `(${val.slice(0, 2)}) ${val.slice(2, 7)}-${val.slice(7, 11)}`;
+                        setInputValue(formatted.slice(0, 15));
+                      } else {
+                        setInputValue(val);
+                      }
                     }}
                     className={`w-full bg-white/5 border border-white/20 rounded-2xl p-6 text-xl text-white outline-none placeholder:text-slate-500 transition-all focus:border-white/50 focus:bg-white/10 ${theme.ring}`}
                   />
                   <div className="flex justify-end">
-                      <button 
-                         type="submit"
-                         disabled={!inputValue.trim()}
-                         className={`px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${theme.bg} ${theme.buttonText || 'text-white'} shadow-lg`}
-                      >
-                         Continuar <ArrowRight className="w-5 h-5" />
-                      </button>
+                    <button
+                      type="submit"
+                      disabled={!inputValue.trim()}
+                      className={`px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${theme.bg} ${theme.buttonText || 'text-white'} shadow-lg`}
+                    >
+                      Continuar <ArrowRight className="w-5 h-5" />
+                    </button>
                   </div>
                 </form>
               )}
@@ -307,7 +311,7 @@ export function InteractiveForm() {
           </AnimatePresence>
 
         </div>
-        
+
         {/* Footer info */}
         <div className="mt-8 text-center text-xs text-white/40 font-mono tracking-wide">
           <p>Powered by Axis CRM ✦ Captação Segura e Inteligente</p>
