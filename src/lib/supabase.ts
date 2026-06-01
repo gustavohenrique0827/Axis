@@ -18,11 +18,15 @@ export const supabase = supabaseUrl && supabaseAnonKey
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
-// Log Supabase configuration status
-if (!supabase) {
+// Log Supabase configuration status for debugging
+if (supabase) {
+  console.log('[Supabase] ✅ Configurado e pronto para uso');
+} else {
   console.warn(
-    "Supabase credentials (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY) are not set. " +
-    "Axis CRM will fall back to local offline storage persistence automatically."
+    '[Supabase] ⚠️ NÃO CONFIGURADO\n' +
+    'URL:', import.meta.env.VITE_SUPABASE_URL ? '✓ Definida' : '✗ Não definida', '\n' +
+    'ANON_KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY ? '✓ Definida' : '✗ Não definida', '\n' +
+    'Ação: Reinicie o servidor Vite após configurar .env (npm run dev)'
   );
 }
 
@@ -107,7 +111,11 @@ export async function registerPartner(
   niche: string
 ): Promise<{ success: boolean; error?: string; userId?: string; tenantId?: string }> {
   if (!supabase) {
-    return { success: false, error: "Supabase não está configurado" };
+    const errorMsg = 'Supabase não está configurado. Variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY faltam. Reinicie o servidor (npm run dev) após configurar .env';
+    console.error('[Register] ' + errorMsg);
+    console.error('[Env Debug] URL:', import.meta.env.VITE_SUPABASE_URL);
+    console.error('[Env Debug] KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY);
+    return { success: false, error: errorMsg };
   }
 
   try {
@@ -125,10 +133,9 @@ export async function registerPartner(
       .single();
 
     if (tenantError || !tenantData) {
-      return { 
-        success: false, 
-        error: `Erro ao criar empresa: ${tenantError?.message || "Unknown error"}` 
-      };
+      const errMsg = `Erro ao criar empresa: ${tenantError?.message || "Unknown error"}`;
+      console.error('[Register] ' + errMsg, tenantError);
+      return { success: false, error: errMsg };
     }
 
     // 2. Create admin user for tenant
@@ -150,22 +157,20 @@ export async function registerPartner(
     if (userError || !userData) {
       // Rollback tenant if user creation fails
       await supabase.from("tenants").delete().eq("id", tenantData.id);
-      return { 
-        success: false, 
-        error: `Erro ao criar usuário: ${userError?.message || "Unknown error"}` 
-      };
+      const errMsg = `Erro ao criar usuário: ${userError?.message || "Unknown error"}`;
+      console.error('[Register] ' + errMsg, userError);
+      return { success: false, error: errMsg };
     }
 
+    console.log('[Register] ✅ Parceiro registrado com sucesso', { tenantId: tenantData.id, userId: userData.id });
     return {
       success: true,
       userId: userData.id,
       tenantId: tenantData.id
     };
   } catch (err) {
-    console.error("Register partner error:", err);
-    return { 
-      success: false, 
-      error: err instanceof Error ? err.message : "Erro desconhecido no registro" 
-    };
+    const errMsg = err instanceof Error ? err.message : "Erro desconhecido no registro";
+    console.error('[Register] ' + errMsg, err);
+    return { success: false, error: errMsg };
   }
 }
