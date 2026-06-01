@@ -10,10 +10,9 @@ import { motion, AnimatePresence } from "motion/react";
 import { DEMO_PRESETS } from "./constants/demoPresets";
 
 export default function ConfigModulosDemos() {
-  const { login, user } = useAuth();
+  const { login, user, allTenantModules } = useAuth();
   
-  // Dynamic Modules States
-  const [activeModules, setActiveModules] = useState<{ [key: string]: boolean }>({
+  const DEFAULT_MODULES = {
     crm: true,
     educacao: true,
     produtividade: true,
@@ -24,7 +23,10 @@ export default function ConfigModulosDemos() {
     rh: true,
     bi: true,
     clinica: true,
-  });
+  };
+
+  const [selectedTenant, setSelectedTenant] = useState<string>(() => user?.tenantName || Object.keys(allTenantModules)[0] || "G-Tech (Master)");
+  const [activeModules, setActiveModules] = useState<{ [key: string]: boolean }>(DEFAULT_MODULES);
 
   const [simulationRole, setSimulationRole] = useState(() => {
     return localStorage.getItem("axis_simulation_role") || "Administrador / Sócio";
@@ -35,14 +37,17 @@ export default function ConfigModulosDemos() {
   // Load modules configuration from localStorage on mount
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("axis_sidebar_modules");
+      const saved = localStorage.getItem(`axis_modules_${selectedTenant}`);
       if (saved) {
         setActiveModules(JSON.parse(saved));
       } else {
-        localStorage.setItem("axis_sidebar_modules", JSON.stringify(activeModules));
+        localStorage.setItem(`axis_modules_${selectedTenant}`, JSON.stringify(DEFAULT_MODULES));
+        setActiveModules(DEFAULT_MODULES);
       }
-    } catch (e) {}
-  }, []);
+    } catch (e) {
+      setActiveModules(DEFAULT_MODULES);
+    }
+  }, [selectedTenant]);
 
   // Update modules list helper
   const handleToggleModule = (key: string) => {
@@ -51,12 +56,12 @@ export default function ConfigModulosDemos() {
       [key]: !activeModules[key]
     };
     setActiveModules(updated);
-    localStorage.setItem("axis_sidebar_modules", JSON.stringify(updated));
+    localStorage.setItem(`axis_modules_${selectedTenant}`, JSON.stringify(updated));
     
     // Broadcast sidebar modules change event
     const event = new CustomEvent("axis_modules_changed", { detail: updated });
     window.dispatchEvent(event);
-    toast.success(`Módulo "${key.toUpperCase()}" ${updated[key] ? 'ATIVADO' : 'OCULTADO'} com sucesso!`);
+    toast.success(`Módulo "${key.toUpperCase()}" ${updated[key] ? 'ATIVADO' : 'OCULTADO'} para ${selectedTenant}!`);
   };
 
   // Switch role helper
@@ -227,6 +232,28 @@ export default function ConfigModulosDemos() {
                   ⚡ SDR & Closers
                 </button>
               </div>
+            </div>
+
+            {/* Tenant selector for Master */}
+            <div className="p-4 bg-slate-900/50 border border-white/5 rounded-2xl space-y-3">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Tenant Selecionado</p>
+                  <h4 className="text-sm font-bold text-white mt-1">{selectedTenant}</h4>
+                </div>
+                <span className="text-[10px] uppercase tracking-widest text-slate-400 bg-white/5 px-3 py-2 rounded-full">Master</span>
+              </div>
+              <label className="block text-[12px] uppercase tracking-widest text-slate-400">Selecione a empresa parceira</label>
+              <select
+                value={selectedTenant}
+                onChange={(e) => setSelectedTenant(e.target.value)}
+                className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+              >
+                {Object.keys(allTenantModules).map((tenant) => (
+                  <option key={tenant} value={tenant}>{tenant}</option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-500">Como Master, você pode alternar para qualquer empresa parceira listada aqui e ajustar seus módulos.</p>
             </div>
 
             {/* Individual toggles list */}
