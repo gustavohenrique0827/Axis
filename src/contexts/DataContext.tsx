@@ -299,7 +299,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    let channel: ReturnType<typeof supabase.channel> | null = null;
+    let channel: any = null;
 
     async function setupRealtime() {
       if (!supabase) return;
@@ -341,10 +341,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     async function loadInitialData() {
       // Check if Supabase is configured AND actually reachable
       if (supabase) {
+        console.log('[DataContext] 🔄 Iniciando carregamento de dados do Supabase...');
         const reachable = await isSupabaseReachable();
+        console.log('[DataContext] Supabase reachable:', reachable);
 
         if (!reachable) {
-          console.warn('[Axis] Supabase não está acessível (projeto pausado ou URL inválida). Usando localStorage como fallback.');
+          console.warn('[Axis] ⚠️ Supabase não está acessível (projeto pausado ou URL inválida). Usando localStorage como fallback.');
           // Fall through to localStorage loading below
         } else {
           try {
@@ -352,6 +354,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             ['axis_leads', 'axis_tasks', 'axis_contracts', 'axis_lead_activities',
               'axis_finance_entries', 'axis_appointments', 'axis_squads'].forEach(k => localStorage.removeItem(k));
 
+            console.log('[DataContext] 📊 Carregando tabelas...');
             const [
               leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes,
               notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
@@ -398,6 +401,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!squadMetasRes.error && squadMetasRes.data !== null) setSquadMetas(squadMetasRes.data);
             if (!certRes.error && certRes.data !== null) setCertificates(certRes.data);
 
+            // Log loading results
+            console.log('[DataContext] ✅ Dados carregados:', {
+              leads: leadsRes.data?.length || 0,
+              tasks: tasksRes.data?.length || 0,
+              contracts: contractsRes.data?.length || 0,
+              products: productsRes.data?.length || 0
+            });
+
+            // Log any errors
+            const errors = [];
+            if (leadsRes.error) errors.push('leads: ' + leadsRes.error.message);
+            if (tasksRes.error) errors.push('tasks: ' + tasksRes.error.message);
+            if (contractsRes.error) errors.push('contracts: ' + contractsRes.error.message);
+            if (errors.length > 0) console.warn('[DataContext] ⚠️ Erros nas queries:', errors);
+
             if (!settingsRes.error && settingsRes.data !== null) {
               settingsRes.data.forEach((setting: any) => {
                 switch (setting.key) {
@@ -409,12 +427,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               });
             }
           } catch (err) {
-            console.warn("Supabase fetch failed, keeping empty state.", err);
+            console.error('[DataContext] ❌ Erro ao fetch Supabase:', err);
           }
           return; // exit early — Supabase loaded successfully
         }
       }
 
+      console.log('[DataContext] 💾 Usando localStorage como fallback...');
       // Fallback: no Supabase — use localStorage only
       const savedLeads = localStorage.getItem('axis_leads');
       const savedTasks = localStorage.getItem('axis_tasks');
