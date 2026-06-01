@@ -4,6 +4,8 @@ import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { Lock, Mail, ArrowRight, Building, Fingerprint, Phone, UserCheck } from "lucide-react";
 import { useAuth, TenantNiche, UserSession } from "../../contexts/AuthContext";
+import { registerPartner } from "../../lib/supabase";
+import { toast } from "sonner";
 
 export default function Login() {
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -45,11 +47,11 @@ export default function Login() {
     navigate(from, { replace: true });
   };
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!companyName || !email || !password || !confirmPassword) {
+    if (!companyName || !email || !password || !confirmPassword || !phone) {
       setError("Preencha todos os campos obrigatórios.");
       return;
     }
@@ -60,16 +62,33 @@ export default function Login() {
     }
 
     setLoading(true);
-    login({
-      name: `Parceiro ${companyName}`,
-      email,
-      role: "Parceiro",
-      tenantName: companyName,
-      tenantNiche: niche,
-      isMaster: false
-    });
-    setLoading(false);
-    navigate(from, { replace: true });
+    try {
+      // Register in Supabase
+      const result = await registerPartner(companyName, email, password, phone, niche);
+      
+      if (!result.success) {
+        setError(result.error || "Erro ao registrar empresa");
+        setLoading(false);
+        return;
+      }
+
+      // If Supabase registration succeeds, create local session
+      login({
+        name: `Admin ${companyName}`,
+        email,
+        role: "Admin",
+        tenantName: companyName,
+        tenantNiche: niche,
+        isMaster: false
+      });
+
+      toast.success(`Bem-vindo, ${companyName}! Empresa registrada com sucesso.`);
+      navigate(from, { replace: true });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro desconhecido no registro");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const loginAsDemo = (tenantName: string, niche: TenantNiche, isMaster: boolean) => {

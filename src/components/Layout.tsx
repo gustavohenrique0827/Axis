@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useData } from "../contexts/DataContext";
 import { Sidebar } from "./layout/Sidebar";
 import { Topbar } from "./layout/Topbar";
 import { MobileNav } from "./layout/MobileNav";
@@ -9,49 +10,22 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { sidebarModules } = useData();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isMobileMoreOpen, setIsMobileMoreOpen] = useState(false);
   const [isSDRWebhookOpen, setIsSDRWebhookOpen] = useState(false);
 
-  const [activeModules, setActiveModules] = useState<{ [key: string]: boolean }>({
-    crm: true,
-    educacao: true,
-    produtividade: true,
-    financeiro: true,
-    catalogo: true,
-    marketing: true,
-    engajamento: true,
-    rh: true,
-    bi: true,
-    clinica: true,
-  });
+  const activeModules = sidebarModules;
 
   useEffect(() => {
     if (!user) navigate("/login");
   }, [user, navigate]);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("axis_sidebar_modules");
-      if (saved) setActiveModules(JSON.parse(saved));
-    } catch (e) {}
-
-    const handleChanged = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      if (customEvent?.detail) {
-        setActiveModules(customEvent.detail);
-      } else {
-        try {
-          const saved = localStorage.getItem("axis_sidebar_modules");
-          if (saved) setActiveModules(JSON.parse(saved));
-        } catch (e) {}
-      }
-    };
-    window.addEventListener("axis_modules_changed", handleChanged);
-    return () => window.removeEventListener("axis_modules_changed", handleChanged);
-  }, []);
+    if (!user) navigate("/login");
+  }, [user, navigate]);
 
   const [logoDarkFull, setLogoDarkFull] = useState(() => localStorage.getItem("axis_brand_logo_dark_full") || "/logo-full.png");
   const [logoDarkIcon, setLogoDarkIcon] = useState(() => localStorage.getItem("axis_brand_logo_dark_icon") || "/logo-icon.png");

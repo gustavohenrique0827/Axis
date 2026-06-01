@@ -78,6 +78,9 @@ export interface DataContextType {
   markNotificationAsRead: (id: string) => void;
   markAllNotificationsAsRead: () => void;
   addLeadActivity: (leadId: string, type: 'Ligação' | 'E-mail' | 'Reunião' | 'Outro', title: string, description: string, seller: string, customDate?: string, files?: { name: string; size: string; }[]) => void;
+  sidebarModules: Record<string, boolean>;
+  setSidebarModules: (modules: Record<string, boolean>) => void;
+  saveAppSetting: (key: string, value: any) => Promise<void>;
   getSmartInsight: (context: string, data: any) => Promise<string>;
   addFinanceEntry: (entry: Omit<FinanceEntry, 'id'>) => void;
   deleteFinanceEntry: (id: string) => void;

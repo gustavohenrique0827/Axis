@@ -43,6 +43,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme]);
 
+  const DEFAULT_SIDEBAR_MODULES = {
+    crm: true,
+    educacao: true,
+    produtividade: true,
+    financeiro: true,
+    catalogo: true,
+    marketing: true,
+    engajamento: true,
+    rh: true,
+    bi: true,
+    clinica: true,
+  };
+
+  const [sidebarModules, setSidebarModulesState] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('axis_sidebar_modules');
+      if (saved) return JSON.parse(saved);
+    }
+    return DEFAULT_SIDEBAR_MODULES;
+  });
+
   const [customLeadFields, setCustomLeadFields] = useState<CustomField[]>(() => {
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('axis_custom_lead_fields_v2');
@@ -82,6 +103,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (err) {
       console.error(`Supabase sync setting failed for ${key}:`, err);
+    }
+  };
+
+  const saveAppSetting = async (key: string, value: any) => {
+    if (supabase) {
+      await syncSetting(key, value);
+    } else if (typeof window !== 'undefined') {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+  };
+
+  const setSidebarModules = async (modules: Record<string, boolean>) => {
+    setSidebarModulesState(modules);
+    await saveAppSetting('axis_sidebar_modules', modules);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('axis_modules_changed', { detail: modules }));
     }
   };
 
@@ -367,6 +404,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                   case 'globalWebhooks': setGlobalWebhooks(setting.value); break;
                   case 'customLeadFields': setCustomLeadFields(setting.value); break;
                   case 'leadScoreTriggers': setLeadScoreTriggers(setting.value); break;
+                  case 'axis_sidebar_modules': setSidebarModulesState(setting.value); break;
                 }
               });
             }
@@ -1064,6 +1102,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setCustomLeadFields: updateCustomLeadFields,
       leadScoreTriggers,
       setLeadScoreTriggers: updateLeadScoreTriggers,
+      sidebarModules,
+      setSidebarModules,
+      saveAppSetting,
       globalWebhooks,
       addGlobalWebhook,
       updateGlobalWebhook,

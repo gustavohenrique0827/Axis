@@ -86,3 +86,86 @@ export async function isSupabaseReachable(): Promise<boolean> {
 
   return reachabilityPromise;
 }
+
+/**
+ * Hash password using basic implementation (consider bcrypt in production)
+ */
+export function hashPassword(password: string): string {
+  // For now, use a simple approach. In production, use bcryptjs library
+  // This is a placeholder - in real app, use bcrypt on backend
+  return btoa(password + Date.now().toString());
+}
+
+/**
+ * Register a new partner company and admin user
+ */
+export async function registerPartner(
+  companyName: string,
+  email: string,
+  password: string,
+  phone: string,
+  niche: string
+): Promise<{ success: boolean; error?: string; userId?: string; tenantId?: string }> {
+  if (!supabase) {
+    return { success: false, error: "Supabase não está configurado" };
+  }
+
+  try {
+    // 1. Create tenant (company)
+    const { data: tenantData, error: tenantError } = await supabase
+      .from("tenants")
+      .insert({
+        name: companyName,
+        niche: niche || "Parceira",
+        plan: "Standard",
+        status: "Active",
+        timezone: "America/Sao_Paulo"
+      })
+      .select()
+      .single();
+
+    if (tenantError || !tenantData) {
+      return { 
+        success: false, 
+        error: `Erro ao criar empresa: ${tenantError?.message || "Unknown error"}` 
+      };
+    }
+
+    // 2. Create admin user for tenant
+    const passwordHash = hashPassword(password);
+    const { data: userData, error: userError } = await supabase
+      .from("users")
+      .insert({
+        tenant_id: tenantData.id,
+        name: `Admin ${companyName}`,
+        email: email,
+        password_hash: passwordHash,
+        role: "Admin",
+        is_master: false,
+        active: true
+      })
+      .select()
+      .single();
+
+    if (userError || !userData) {
+      // Rollback tenant if user creation fails
+      await supabase.from("tenants").delete().eq("id", tenantData.id);
+      return { 
+        success: false, 
+        error: `Erro ao criar usuário: ${userError?.message || "Unknown error"}` 
+      };
+    }
+
+    return {
+      success: true,
+      userId: userData.id,
+      tenantId: tenantData.id
+    };
+  } catch (err) {
+    console.error("Register partner error:", err);
+    return { 
+      success: false, 
+      error: err instanceof Error ? err.message : "Erro desconhecido no registro" 
+    };
+  }
+}

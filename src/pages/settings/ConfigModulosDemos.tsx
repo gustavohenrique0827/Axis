@@ -6,11 +6,13 @@ import {
   ArrowRight, Target, Award, DollarSign, Package, MessageSquare, Users, Columns3, Check, Clock
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useData } from "../../contexts/DataContext";
 import { motion, AnimatePresence } from "motion/react";
 import { DEMO_PRESETS } from "./constants/demoPresets";
 
 export default function ConfigModulosDemos() {
   const { login, user, allTenantModules } = useAuth();
+  const { sidebarModules, setSidebarModules, saveAppSetting } = useData();
   
   const DEFAULT_MODULES = {
     crm: true,
@@ -26,7 +28,7 @@ export default function ConfigModulosDemos() {
   };
 
   const [selectedTenant, setSelectedTenant] = useState<string>(() => user?.tenantName || Object.keys(allTenantModules)[0] || "G-Tech (Master)");
-  const [activeModules, setActiveModules] = useState<{ [key: string]: boolean }>(DEFAULT_MODULES);
+  const [activeModules, setActiveModules] = useState<{ [key: string]: boolean }>(sidebarModules || DEFAULT_MODULES);
 
   const [simulationRole, setSimulationRole] = useState(() => {
     return localStorage.getItem("axis_simulation_role") || "Administrador / Sócio";
@@ -36,6 +38,10 @@ export default function ConfigModulosDemos() {
 
   // Load modules configuration from localStorage on mount
   useEffect(() => {
+    if (selectedTenant === user?.tenantName) {
+      setActiveModules(sidebarModules || DEFAULT_MODULES);
+      return;
+    }
     try {
       const saved = localStorage.getItem(`axis_modules_${selectedTenant}`);
       if (saved) {
@@ -47,18 +53,21 @@ export default function ConfigModulosDemos() {
     } catch (e) {
       setActiveModules(DEFAULT_MODULES);
     }
-  }, [selectedTenant]);
+  }, [selectedTenant, sidebarModules, user?.tenantName]);
 
   // Update modules list helper
-  const handleToggleModule = (key: string) => {
+  const handleToggleModule = async (key: string) => {
     const updated = {
       ...activeModules,
       [key]: !activeModules[key]
     };
     setActiveModules(updated);
     localStorage.setItem(`axis_modules_${selectedTenant}`, JSON.stringify(updated));
-    
-    // Broadcast sidebar modules change event
+    await saveAppSetting(`axis_modules_${selectedTenant}`, updated);
+    if (selectedTenant === user?.tenantName) {
+      await setSidebarModules(updated);
+    }
+
     const event = new CustomEvent("axis_modules_changed", { detail: updated });
     window.dispatchEvent(event);
     toast.success(`Módulo "${key.toUpperCase()}" ${updated[key] ? 'ATIVADO' : 'OCULTADO'} para ${selectedTenant}!`);
@@ -79,7 +88,7 @@ export default function ConfigModulosDemos() {
     toast.info(`Simulando visualização para a função: ${role}`);
   };
 
-  const applyPreset = (presetName: string) => {
+  const applyPreset = async (presetName: string) => {
     let preset: typeof activeModules;
     switch (presetName) {
       case "ALL_ACTIVE":
@@ -99,14 +108,18 @@ export default function ConfigModulosDemos() {
     }
     setActiveModules(preset);
     localStorage.setItem("axis_sidebar_modules", JSON.stringify(preset));
+    if (selectedTenant === user?.tenantName) {
+      await setSidebarModules(preset);
+    }
+    await saveAppSetting(`axis_modules_${selectedTenant}`, preset);
     window.dispatchEvent(new CustomEvent("axis_modules_changed", { detail: preset }));
   };
 
   // Demo Importer Main Logic
-  const handleImportPreset = (preset: typeof DEMO_PRESETS[0]) => {
+  const handleImportPreset = async (preset: typeof DEMO_PRESETS[0]) => {
     setLoadingPresetId(preset.id);
     
-    setTimeout(() => {
+    setTimeout(async () => {
       // 1. Update session niche & tenant name
       if (user) {
         const updatedUser = {
@@ -133,6 +146,8 @@ export default function ConfigModulosDemos() {
 
       setActiveModules(fullModulesList);
       localStorage.setItem("axis_sidebar_modules", JSON.stringify(fullModulesList));
+      await setSidebarModules(fullModulesList);
+      await saveAppSetting(`axis_modules_${selectedTenant}`, fullModulesList);
       
       // 3. Inject customized Industry Data
       if (preset.stages && preset.stages.length > 0) {
