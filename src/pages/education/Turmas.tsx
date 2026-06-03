@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { 
-  GraduationCap, Users, Calendar, Search, Plus, 
+import { useState } from "react";
+import {
+  GraduationCap, Users, Calendar, Search, Plus,
   MoreVertical, Filter, BookOpen, Clock, CheckCircle2,
-  AlertCircle, ChevronRight, MapPin, X
+  ChevronRight
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
@@ -12,6 +12,7 @@ import EducationTurmaDetalhes from "./EducationTurmaDetalhes";
 import { useData } from "../../contexts/DataContext";
 import { PageContainer } from "../../components/PageContainer";
 import { toast } from "sonner";
+import { NovaTurmaModal } from "../../components/ui/NovaTurmaModal";
 
 interface Turma {
   id: string;
@@ -47,45 +48,6 @@ export default function Turmas() {
   const [selectedTurma, setSelectedTurma] = useState<Turma | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newTurma, setNewTurma] = useState({
-    nome: "",
-    curso: "",
-    professor: "",
-    vagas: "30",
-    shift: "Manhã",
-    data_inicio: ""
-  });
-
-  const handleCreateTurma = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTurma.nome || !newTurma.curso) {
-      toast.error("Preencha o nome da turma e curso");
-      return;
-    }
-    
-    addTurma({
-      id: Math.random().toString(36).substring(2, 9),
-      nome: newTurma.nome,
-      curso: newTurma.curso,
-      professor: newTurma.professor || "Não definido",
-      vagas: parseInt(newTurma.vagas) || 30,
-      shift: newTurma.shift,
-      data_inicio: newTurma.data_inicio,
-      status: 'Planejamento',
-      progress: 0
-    });
-
-    toast.success("Turma criada com sucesso!");
-    setIsModalOpen(false);
-    setNewTurma({
-      nome: "",
-      curso: "",
-      professor: "",
-      vagas: "30",
-      shift: "Manhã",
-      data_inicio: ""
-    });
-  };
 
   if (selectedTurma) {
     return (
@@ -259,93 +221,25 @@ export default function Turmas() {
         </div>
       </div>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden">
-            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
-              <div>
-                <h3 className="text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
-                  Nova Turma
-                </h3>
-              </div>
-              <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateTurma} className="p-6 flex flex-col gap-4">
-              <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Nome da Turma</label>
-                <input
-                  type="text"
-                  required
-                  value={newTurma.nome}
-                  onChange={(e) => setNewTurma({...newTurma, nome: e.target.value})}
-                  className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
-              <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Curso / Assunto</label>
-                <input
-                  type="text"
-                  required
-                  value={newTurma.curso}
-                  onChange={(e) => setNewTurma({...newTurma, curso: e.target.value})}
-                  className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Professor</label>
-                  <input
-                    type="text"
-                    value={newTurma.professor}
-                    onChange={(e) => setNewTurma({...newTurma, professor: e.target.value})}
-                    className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Vagas</label>
-                  <input
-                    type="number"
-                    value={newTurma.vagas}
-                    onChange={(e) => setNewTurma({...newTurma, vagas: e.target.value})}
-                    className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Turno</label>
-                  <select
-                    value={newTurma.shift}
-                    onChange={(e) => setNewTurma({...newTurma, shift: e.target.value})}
-                    className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                  >
-                    <option>Manhã</option>
-                    <option>Tarde</option>
-                    <option>Noite</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Data de Início</label>
-                  <input
-                    type="date"
-                    value={newTurma.data_inicio}
-                    onChange={(e) => setNewTurma({...newTurma, data_inicio: e.target.value})}
-                    className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-3 mt-4">
-                <Button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 bg-white/5 hover:bg-white/10 text-white h-12 rounded-xl">Cancelar</Button>
-                <Button type="submit" className="flex-1 bg-[#2563EB] hover:bg-blue-600 text-white h-12 rounded-xl">Criar Turma</Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <NovaTurmaModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={(data) => {
+          addTurma({
+            id: Math.random().toString(36).substring(2, 9),
+            nome: data.nome,
+            curso: data.curso,
+            professor: data.professor || "Não definido",
+            vagas: parseInt(data.vagas) || 30,
+            shift: data.shift,
+            data_inicio: data.data_inicio,
+            status: "Planejamento",
+            progress: 0,
+          });
+          toast.success("Turma criada com sucesso!");
+          setIsModalOpen(false);
+        }}
+      />
     </PageContainer>
   );
 }

@@ -39,7 +39,6 @@ interface SidebarProps {
   isSidebarCollapsed: boolean;
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (isOpen: boolean) => void;
-  activeModules: Record<string, boolean>;
   logoDarkIcon: string;
   logoDarkFull: string;
   setIsSDRWebhookOpen: (isOpen: boolean) => void;
@@ -49,7 +48,6 @@ export function Sidebar({
   isSidebarCollapsed,
   isMobileSidebarOpen,
   setIsMobileSidebarOpen,
-  activeModules,
   logoDarkIcon,
   logoDarkFull,
   setIsSDRWebhookOpen,
@@ -90,9 +88,9 @@ export function Sidebar({
 
       <aside
         className={`
-        fixed inset-y-0 left-0 z-50 lg:z-30 lg:relative 
-        ${isSidebarCollapsed ? "lg:w-20" : "lg:w-72"} 
-        ${isMobileSidebarOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0"} 
+        fixed inset-y-0 left-0 z-50 lg:z-30 lg:relative lg:h-full
+        ${isSidebarCollapsed ? "lg:w-20" : "lg:w-72"}
+        ${isMobileSidebarOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0"}
         transition-all duration-300 ease-in-out border-r border-white/10 bg-[var(--color-dark-bg)] flex flex-col shrink-0
       `}
       >
@@ -127,11 +125,11 @@ export function Sidebar({
           {navSections
             .filter((section) => {
               const titleLower = section.title.toLowerCase();
-              if (titleLower.includes("crm") && (!activeModules.crm || !isModuleEnabled("crm"))) return false;
-              if (titleLower.includes("educação") && !activeModules.educacao) return false;
-              if ((titleLower.includes("clínica") || titleLower.includes("clinica")) && !activeModules.clinica) return false;
-              if (titleLower.includes("financeiro") && !activeModules.financeiro && !activeModules.produtividade) return false;
-              if ((titleLower.includes("engajamento") || titleLower.includes("marketing")) && !activeModules.marketing && !activeModules.engajamento) return false;
+              if (titleLower.includes("crm") && !isModuleEnabled("crm")) return false;
+              if (titleLower.includes("educação") && !isModuleEnabled("educacao")) return false;
+              if ((titleLower.includes("clínica") || titleLower.includes("clinica")) && !isModuleEnabled("clinica")) return false;
+              if (titleLower.includes("financeiro") && !isModuleEnabled("financeiro") && !isModuleEnabled("produtividade")) return false;
+              if ((titleLower.includes("engajamento") || titleLower.includes("marketing")) && !isModuleEnabled("marketing") && !isModuleEnabled("engajamento")) return false;
               if (titleLower.includes("gestão do sistema")) return true;
               return true;
             })
@@ -145,7 +143,7 @@ export function Sidebar({
                   <div className="h-4"></div>
                 )}
                 {section.items.map((item: any) => {
-                  if (item.reqModule && (!activeModules[item.reqModule] && item.reqModule !== 'master')) return null;
+                  if (item.reqModule && item.reqModule !== 'master' && !isModuleEnabled(item.reqModule)) return null;
                   if (item.reqModule === 'master' && !user?.isMaster) return null;
 
                   const isActive = item.path ? location.pathname.startsWith(item.path) : false;

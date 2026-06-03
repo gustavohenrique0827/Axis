@@ -11,6 +11,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "sonner";
 import { ModuleConfigModal } from "./components/ModuleConfigModal";
 import { useData } from "../../contexts/DataContext";
+import { setupMasterUser } from "../../lib/supabase";
 
 const COLORS = ['#94A3B8', '#06B6D4', '#2563EB'];
 
@@ -32,6 +33,22 @@ export default function AdminSaaS() {
   const [activeTab, setActiveTab] = useState('overview');
   const { getTenantModules, updateTenantModules } = useAuth();
   const { financeEntries } = useData();
+  const [settingUpMaster, setSettingUpMaster] = useState(false);
+
+  const handleSetupMaster = async () => {
+    setSettingUpMaster(true);
+    const result = await setupMasterUser();
+    setSettingUpMaster(false);
+    if (result.success) {
+      if (result.alreadyExists) {
+        toast.success('Usuário master gthec já existe — permissões verificadas.');
+      } else {
+        toast.success('Usuário master admin@gthec.com criado! Senha: gthec@2025');
+      }
+    } else {
+      toast.error(`Erro: ${result.error}`);
+    }
+  };
   
   // Modals for module management
   const [selectedTenant, setSelectedTenant] = useState<any | null>(null);
@@ -93,6 +110,15 @@ export default function AdminSaaS() {
       description="Controle centralizado de instâncias, faturamento e saúde global da plataforma."
       actions={
         <div className="flex gap-2">
+            <Button
+              onClick={handleSetupMaster}
+              disabled={settingUpMaster}
+              variant="outline"
+              className="border-blue-500/30 bg-blue-600/10 text-blue-400 hover:bg-blue-600/20 h-10 px-4"
+            >
+              <Shield className="w-4 h-4 mr-2" />
+              {settingUpMaster ? 'Configurando...' : 'Setup Master gthec'}
+            </Button>
             <Button variant="outline" className="border-white/10 bg-[#111827] text-white hover:bg-white/5 h-10 px-4" disabled>
                 <Bell className="w-4 h-4 mr-2" />
                 Alertas

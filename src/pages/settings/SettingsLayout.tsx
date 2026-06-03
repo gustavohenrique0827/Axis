@@ -76,7 +76,7 @@ export default function SettingsLayout() {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row h-full -m-4 lg:-m-8 relative">
+    <div className="flex flex-col lg:flex-row h-full -m-4 md:-m-8 relative overflow-hidden">
       {/* Floating Trigger when Hidden */}
       <AnimatePresence>
         {isHidden && (
@@ -103,7 +103,7 @@ export default function SettingsLayout() {
           opacity: isHidden ? 0 : 1,
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="hidden lg:flex shrink-0 bg-[var(--color-dark-bg)] border-r border-white/5 flex-col z-20 lg:overflow-visible sticky top-0 h-[calc(100vh-80px)] overflow-hidden"
+        className="hidden lg:flex shrink-0 bg-[var(--color-dark-bg)] border-r border-white/5 flex-col z-20 sticky top-0 h-full overflow-hidden"
       >
         
         <div className="px-6 py-6 flex items-center justify-between">
@@ -173,7 +173,7 @@ export default function SettingsLayout() {
       </div>
       
       {/* Configurações Main Content */}
-      <div className="flex-1 lg:overflow-auto overflow-visible p-2 sm:p-4 lg:p-8 relative min-w-0 w-full">
+      <div className="flex-1 overflow-y-auto p-2 sm:p-4 lg:p-8 relative min-w-0 w-full">
         <Outlet />
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { CalendarDays, ClipboardList, Layers, Tag, Users } from "lucide-react";
+import { ClipboardList, Layers, Users, ShieldCheck, Loader2 } from "lucide-react";
 import { Modal } from "./modal";
 import { Button } from "./button";
 

@@ -1,24 +1,23 @@
-import React, { useState } from "react";
-import { 
-  BookOpen, Search, Plus, Filter, FileText, Video, 
-  HelpCircle, MoreVertical, Eye, Download, Layers,
-  Globe, Clock, ChevronRight, Trash2, X, Share2, Star,
+import { useState } from "react";
+import {
+  Search, Plus, FileText, Video,
+  HelpCircle, MoreVertical, Download, Layers,
+  Globe, Clock, ChevronRight, Star,
   LayoutGrid, List as ListIcon, GripVertical
 } from "lucide-react";
-import { 
-  DragDropContext, 
-  Droppable, 
-  Draggable as DraggableOrig, 
-  DropResult 
+import {
+  DragDropContext,
+  Droppable,
+  Draggable as DraggableOrig,
+  DropResult
 } from "@hello-pangea/dnd";
 const Draggable = DraggableOrig as any;
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
 import { toast } from "sonner";
 import { PageContainer } from "../../components/PageContainer";
-import { motion, AnimatePresence } from "motion/react";
+import { NovoConteudoModal } from "../../components/ui/NovoConteudoModal";
 
 interface ContentItem {
   id: string;
@@ -47,15 +46,7 @@ export default function Conteudo() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-
-  // Modal Form States
-  const [newTitle, setNewTitle] = useState("");
-  const [newType, setNewType] = useState<'Video' | 'PDF' | 'Quiz' | 'Artigo'>('Video');
-  const [newModule, setNewModule] = useState("");
-  const [newCourse, setNewCourse] = useState("");
-  const [newDuration, setNewDuration] = useState("");
-  const [newStatus, setNewStatus] = useState<'Publicado' | 'Rascunho' | 'Em Revisão' | 'Arquivado'>('Publicado');
+  const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
 
   const saveContent = (updated: ContentItem[]) => {
     setContent(updated);
@@ -77,64 +68,34 @@ export default function Conteudo() {
   };
 
   const handleOpenEdit = (item: ContentItem) => {
-    setEditingId(item.id);
-    setNewTitle(item.title);
-    setNewType(item.type);
-    setNewModule(item.module);
-    setNewCourse(item.course);
-    setNewDuration(item.duration || "");
-    setNewStatus(item.status);
+    setEditingItem(item);
     setIsModalOpen(true);
   };
 
-  const resetForm = () => {
-    setEditingId(null);
-    setNewTitle("");
-    setNewType("Video");
-    setNewModule("");
-    setNewCourse("");
-    setNewDuration("");
-    setNewStatus("Publicado");
-  }
-
-  const handleSaveContent = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTitle || !newCourse || !newModule) {
-      toast.error("Por favor, preencha todos os campos obrigatórios!");
-      return;
-    }
-
-    if (editingId) {
-        const updated = content.map(item => item.id === editingId ? {
-           ...item,
-           title: newTitle,
-           type: newType,
-           module: newModule,
-           course: newCourse,
-           duration: newDuration || undefined,
-           status: newStatus
-        } : item);
-        saveContent(updated);
-        toast.success("Material atualizado com sucesso!");
-    } else {
-        const newItem: ContentItem = {
-          id: Math.random().toString(36).substring(2, 9),
-          title: newTitle,
-          type: newType,
-          module: newModule,
-          course: newCourse,
-          duration: newDuration || undefined,
-          lastUpdate: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }),
-          accessCount: 0,
-          status: newStatus
-        };
-        const updated = [newItem, ...content];
-        saveContent(updated);
-        toast.success("Material adicionado com sucesso!");
-    }
-
+  const handleClose = () => {
     setIsModalOpen(false);
-    resetForm();
+    setEditingItem(null);
+  };
+
+  const handleSubmitContent = (data: { title: string; type: ContentItem['type']; duration: string; course: string; module: string; status: ContentItem['status'] }) => {
+    if (editingItem) {
+      const updated = content.map(item => item.id === editingItem.id ? {
+        ...item, ...data, duration: data.duration || undefined
+      } : item);
+      saveContent(updated);
+      toast.success("Material atualizado com sucesso!");
+    } else {
+      const newItem: ContentItem = {
+        id: Math.random().toString(36).substring(2, 9),
+        ...data,
+        duration: data.duration || undefined,
+        lastUpdate: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }),
+        accessCount: 0,
+      };
+      saveContent([newItem, ...content]);
+      toast.success("Material adicionado com sucesso!");
+    }
+    handleClose();
   };
 
   const filteredContent = content.filter(c => {
@@ -162,7 +123,7 @@ export default function Conteudo() {
             <Download className="w-4 h-4" /> Exportar Lote
           </Button>
           <Button 
-            onClick={() => { resetForm(); setIsModalOpen(true); }}
+            onClick={() => { setEditingItem(null); setIsModalOpen(true); }}
             className="bg-[#2563EB] hover:bg-[#1d4ed8] text-white h-11 px-8 rounded-2xl font-black uppercase tracking-widest text-[10px] shadow-xl shadow-blue-600/20"
           >
             <Plus className="w-4 h-4 mr-2" /> Novo Material
@@ -364,55 +325,20 @@ export default function Conteudo() {
         )}
       </div>
 
-       {/* Modal remains simplified from original but follows the improved styling */}
-       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-[#111827] border border-white/10 rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-             <div className="p-8 border-b border-white/5 bg-gradient-to-br from-white/[0.03] to-transparent">
-                <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">🚀 Publicar Material Axis</h3>
-                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Integração de novos ativos na trilha acadêmica.</p>
-             </div>
-             <form onSubmit={handleSaveContent} className="p-8 space-y-5">
-                 <div className="space-y-4">
-                    <input 
-                      required placeholder="Título do Conteúdo" value={newTitle} onChange={(e) => setNewTitle(e.target.value)}
-                      className="w-full bg-white/5 border border-white/5 rounded-2xl h-14 px-6 text-sm text-white focus:border-blue-500/50 transition-all font-medium"
-                    />
-                    <div className="grid grid-cols-2 gap-4">
-                       <select value={newType} onChange={(e) => setNewType(e.target.value as any)}
-                         className="bg-white/5 border border-white/5 rounded-2xl h-14 px-6 text-sm text-slate-400 focus:text-white focus:border-blue-500/50 transition-all"
-                       >
-                          <option value="Video">Vídeo</option>
-                          <option value="PDF">PDF</option>
-                          <option value="Quiz">Quiz</option>
-                       </select>
-                       <input placeholder="Duração (ex: 20min)" value={newDuration} onChange={(e) => setNewDuration(e.target.value)}
-                         className="bg-white/5 border border-white/5 rounded-2xl h-14 px-6 text-sm text-white focus:border-blue-500/50 transition-all font-medium"
-                       />
-                    </div>
-                    <input required placeholder="Curso Relacionado" value={newCourse} onChange={(e) => setNewCourse(e.target.value)}
-                         className="w-full bg-white/5 border border-white/5 rounded-2xl h-14 px-6 text-sm text-white focus:border-blue-500/50 transition-all font-medium"
-                    />
-                    <input required placeholder="Módulo (ex: 01: Fundamentos)" value={newModule} onChange={(e) => setNewModule(e.target.value)}
-                         className="w-full bg-white/5 border border-white/5 rounded-2xl h-14 px-6 text-sm text-white focus:border-blue-500/50 transition-all font-medium"
-                    />
-                    <select value={newStatus} onChange={(e) => setNewStatus(e.target.value as any)}
-                       className="w-full bg-white/5 border border-white/5 rounded-2xl h-14 px-6 text-sm text-slate-400 focus:text-white focus:border-blue-500/50 transition-all"
-                    >
-                       <option value="Rascunho">Rascunho</option>
-                       <option value="Em Revisão">Em Revisão</option>
-                       <option value="Publicado">Publicado</option>
-                       <option value="Arquivado">Arquivado</option>
-                    </select>
-                 </div>
-                 <div className="flex gap-4 pt-4">
-                    <Button type="button" variant="outline" className="flex-1 h-14 rounded-2xl border-white/5 text-[10px] font-black uppercase tracking-widest" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-                    <Button type="submit" className="flex-1 h-14 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-black uppercase tracking-widest">Salvar Ativo</Button>
-                 </div>
-             </form>
-          </div>
-        </div>
-       )}
+      <NovoConteudoModal
+        isOpen={isModalOpen}
+        onClose={handleClose}
+        onSubmit={handleSubmitContent}
+        editingTitle={editingItem?.title}
+        initialValues={editingItem ? {
+          title: editingItem.title,
+          type: editingItem.type,
+          duration: editingItem.duration || "",
+          course: editingItem.course,
+          module: editingItem.module,
+          status: editingItem.status,
+        } : undefined}
+      />
     </PageContainer>
   );
 }

@@ -24,7 +24,7 @@ export default function FinanceiroLayout() {
   ];
 
   return (
-    <div className="flex flex-col lg:flex-row h-full -m-4 lg:-m-8 relative">
+    <div className="flex flex-col lg:flex-row h-full -m-4 md:-m-8 relative overflow-hidden">
       {/* Floating Trigger when Hidden */}
       <AnimatePresence>
         {isHidden && (
@@ -52,7 +52,7 @@ export default function FinanceiroLayout() {
           x: isHidden ? -20 : 0
         }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
-        className="hidden lg:flex shrink-0 bg-[var(--color-dark-bg)] border-r border-white/5 flex-col pt-6 z-20 print:hidden sticky top-0 h-[calc(100vh-80px)] overflow-hidden"
+        className="hidden lg:flex shrink-0 bg-[var(--color-dark-bg)] border-r border-white/5 flex-col pt-6 z-20 print:hidden sticky top-0 h-full overflow-hidden"
       >
         <div className="px-6 mb-4 flex items-center justify-between">
           <motion.h2 

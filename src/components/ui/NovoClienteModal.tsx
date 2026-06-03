@@ -1,7 +1,19 @@
-import React, { useState } from 'react';
-import { Modal } from './modal';
-import { Button } from './button';
-import { toast } from 'sonner';
+import React, { useState, useEffect } from "react";
+import { Building2, Mail, Phone, FileText, MapPin, Briefcase, Loader2, ShieldCheck } from "lucide-react";
+import { Modal } from "./modal";
+import { Button } from "./button";
+
+type Setor = "Tecnologia" | "Engenharia" | "Saúde" | "Varejo" | "Indústria" | "Educação" | "Financeiro" | "Outros";
+
+interface NovoClienteForm {
+  nome: string;
+  documento: string;
+  industry: Setor;
+  email: string;
+  telefone: string;
+  cidade: string;
+  estado: string;
+}
 
 interface NovoClienteModalProps {
   isOpen: boolean;
@@ -9,41 +21,42 @@ interface NovoClienteModalProps {
   onAction: (data: Record<string, string | string[] | null>) => void;
 }
 
-interface Field {
-  name: string;
-  label: string;
-  type: 'text' | 'email' | 'tel' | 'select' | 'multi-select' | 'textarea';
-  placeholder?: string;
-  required?: boolean;
-  options?: string[];
-  defaultValue?: string | string[];
-}
+const DEFAULT: NovoClienteForm = {
+  nome: "",
+  documento: "",
+  industry: "Tecnologia",
+  email: "",
+  telefone: "",
+  cidade: "São Paulo",
+  estado: "SP",
+};
 
-const fields: Field[] = [
-  { name: 'nome', label: 'Nome do Cliente/Empresa', type: 'text', required: true, placeholder: 'Ex: Axis Innovations' },
-  { name: 'documento', label: 'CPF/CNPJ (Opcional)', type: 'text', placeholder: 'Ex: 00.000.000/0000-00' },
-  { name: 'industry', label: 'Setor / Indústria', type: 'select', options: ['Tecnologia', 'Engenharia', 'Saúde', 'Varejo', 'Indústria'], required: true },
-  { name: 'email', label: 'E-mail Principal', type: 'email', required: true, placeholder: 'contato@empresa.com' },
-  { name: 'telefone', label: 'Telefone', type: 'tel', required: true, placeholder: '(XX) XXXXX-XXXX' },
-  { name: 'cidade', label: 'Cidade', type: 'text', required: true, defaultValue: 'São Paulo', placeholder: 'Ex: São Paulo' },
-  { name: 'estado', label: 'Estado (Sigla)', type: 'text', required: true, defaultValue: 'SP', placeholder: 'Ex: SP' },
-];
+const inputClass =
+  "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all placeholder:text-slate-600";
+const labelClass = "text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5";
+
+const SETORES: Setor[] = ["Tecnologia", "Engenharia", "Saúde", "Varejo", "Indústria", "Educação", "Financeiro", "Outros"];
 
 export function NovoClienteModal({ isOpen, onClose, onAction }: NovoClienteModalProps) {
+  const [form, setForm] = useState<NovoClienteForm>(DEFAULT);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (h: React.FormEvent<HTMLFormElement>) => {
-    h.preventDefault();
+  useEffect(() => {
+    if (isOpen) setForm(DEFAULT);
+  }, [isOpen]);
+
+  const set = (k: keyof NovoClienteForm) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setForm((prev) => ({ ...prev, [k]: e.target.value }));
+
+  const canSubmit = form.nome.trim() && form.email.trim() && form.telefone.trim();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!canSubmit) return;
     setLoading(true);
-    if (onAction) {
-      const f = new FormData(h.currentTarget);
-      const x: Record<string, any> = {};
-      fields.forEach(m => {
-        m.type === 'multi-select' ? x[m.name] = f.getAll(m.name) : x[m.name] = f.get(m.name);
-      });
-      onAction(x);
-      toast.success('Dados enviados para processamento');
-    }
+    await new Promise((r) => setTimeout(r, 300));
+    onAction({ ...form });
     setLoading(false);
     onClose();
   };
@@ -52,63 +65,156 @@ export function NovoClienteModal({ isOpen, onClose, onAction }: NovoClienteModal
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Novo Cliente"
-      maxWidth="max-w-md"
+      maxWidth="max-w-2xl"
+      title={
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-blue-500/15 border border-blue-500/20 flex items-center justify-center shrink-0">
+            <Building2 className="w-5 h-5 text-blue-400" />
+          </div>
+          <div>
+            <div className="text-base font-black text-white">Novo Cliente</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">
+              Cadastro de conta no CRM Axis
+            </div>
+          </div>
+        </div>
+      }
       footer={
-        <Button form="action-modal-form" type="submit" className="bg-[#2563EB] hover:bg-blue-600 text-white font-bold px-6">
-          {loading ? 'Salvando...' : 'Salvar Cliente'}
-        </Button>
+        <>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onClose}
+            disabled={loading}
+            className="text-slate-400 hover:text-white text-[10px] font-black uppercase tracking-widest"
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form="novo-cliente-form"
+            disabled={!canSubmit || loading}
+            className="bg-blue-600 hover:bg-blue-500 text-white px-6 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20 disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Cadastrar Cliente"}
+          </Button>
+        </>
       }
     >
-      <form id="action-modal-form" onSubmit={handleSubmit} className="space-y-4">
-        {fields.map(field => (
-          <div key={field.name} className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">{field.label}</label>
-            {field.type === 'select' ? (
-              <select
-                name={field.name}
-                defaultValue={field.defaultValue}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
-                required={field.required}
-              >
-                {field.options?.map(m => <option key={m} value={m}>{m}</option>)}
-              </select>
-            ) : field.type === 'multi-select' ? (
-              <div className="w-full max-h-40 overflow-y-auto bg-[#0B1120] border border-white/10 rounded-lg p-2 space-y-1">
-                {field.options?.map(m => {
-                  let b = false;
-                  if (Array.isArray(field.defaultValue)) b = field.defaultValue.includes(m);
-                  else if (typeof field.defaultValue === 'string') b = field.defaultValue === m;
-                  return (
-                    <label key={m} className="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded cursor-pointer">
-                      <input type="checkbox" name={field.name} value={m} defaultChecked={b} className="w-4 h-4 rounded border-white/20 bg-[#1E293B] text-blue-500 focus:ring-blue-500/50" />
-                      <span className="text-sm text-slate-200">{m}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            ) : field.type === 'textarea' ? (
-              <textarea
-                name={field.name}
-                defaultValue={field.defaultValue as string}
-                rows={3}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
-                placeholder={field.placeholder}
-                required={field.required}
-              />
-            ) : (
-              <input
-                name={field.name}
-                type={field.type}
-                defaultValue={field.defaultValue as string}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
-                placeholder={field.placeholder}
-                required={field.required}
-              />
-            )}
+      <div className="space-y-5">
+        {/* Info banner */}
+        <div className="bg-[#0B1120]/60 border border-white/10 rounded-xl p-4 flex gap-3 items-start">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>
-        ))}
-      </form>
+          <div>
+            <p className="text-sm font-bold text-slate-200">Conta registrada no CRM</p>
+            <p className="text-xs text-slate-400 leading-relaxed mt-0.5">
+              O cliente será adicionado à base de contas e poderá ser vinculado a negócios, propostas e tarefas.
+            </p>
+          </div>
+        </div>
+
+        <form id="novo-cliente-form" onSubmit={handleSubmit} className="space-y-4">
+          {/* Nome */}
+          <div>
+            <label className={labelClass}>
+              <span className="flex items-center gap-1.5"><Building2 className="w-3 h-3" /> Nome do Cliente / Empresa *</span>
+            </label>
+            <input
+              required
+              value={form.nome}
+              onChange={set("nome")}
+              placeholder="Ex: Axis Innovations Ltda"
+              className={inputClass}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Documento */}
+            <div>
+              <label className={labelClass}>
+                <span className="flex items-center gap-1.5"><FileText className="w-3 h-3" /> CPF / CNPJ</span>
+              </label>
+              <input
+                value={form.documento}
+                onChange={set("documento")}
+                placeholder="00.000.000/0001-00"
+                className={inputClass}
+              />
+            </div>
+
+            {/* Setor */}
+            <div>
+              <label className={labelClass}>
+                <span className="flex items-center gap-1.5"><Briefcase className="w-3 h-3" /> Setor / Indústria *</span>
+              </label>
+              <select value={form.industry} onChange={set("industry")} className={inputClass} required>
+                {SETORES.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            {/* Email */}
+            <div>
+              <label className={labelClass}>
+                <span className="flex items-center gap-1.5"><Mail className="w-3 h-3" /> E-mail Principal *</span>
+              </label>
+              <input
+                required
+                type="email"
+                value={form.email}
+                onChange={set("email")}
+                placeholder="contato@empresa.com"
+                className={inputClass}
+              />
+            </div>
+
+            {/* Telefone */}
+            <div>
+              <label className={labelClass}>
+                <span className="flex items-center gap-1.5"><Phone className="w-3 h-3" /> Telefone *</span>
+              </label>
+              <input
+                required
+                type="tel"
+                value={form.telefone}
+                onChange={set("telefone")}
+                placeholder="(11) 99999-9999"
+                className={inputClass}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-4">
+            {/* Cidade */}
+            <div className="col-span-2">
+              <label className={labelClass}>
+                <span className="flex items-center gap-1.5"><MapPin className="w-3 h-3" /> Cidade</span>
+              </label>
+              <input
+                value={form.cidade}
+                onChange={set("cidade")}
+                placeholder="São Paulo"
+                className={inputClass}
+              />
+            </div>
+
+            {/* Estado */}
+            <div>
+              <label className={labelClass}>Estado (UF)</label>
+              <input
+                value={form.estado}
+                onChange={set("estado")}
+                placeholder="SP"
+                maxLength={2}
+                className={inputClass + " uppercase"}
+              />
+            </div>
+          </div>
+        </form>
+      </div>
     </Modal>
   );
 }

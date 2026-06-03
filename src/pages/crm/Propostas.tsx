@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   FileText,
   Search,
@@ -9,7 +9,6 @@ import {
   User,
   Download,
   Trash2,
-  X,
   History,
   Send,
   ArrowUpRight,
@@ -23,6 +22,7 @@ import { toast } from "sonner";
 import { useData } from "../../contexts/DataContext";
 import { Proposta, handleDownloadPdf } from "./utils/proposalPdf";
 import { CriarPropostaModal } from "../../components/ui/CriarPropostaModal";
+import { NovaPropostaRapidaModal } from "../../components/ui/NovaPropostaRapidaModal";
 
 export default function Propostas() {
   const { proposals: propostas, addProposal, updateProposal, deleteProposal } = useData();
@@ -31,75 +31,21 @@ export default function Propostas() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPropostaModalOpen, setIsPropostaModalOpen] = useState(false);
   
-  // Modal states
-  const [newCliente, setNewCliente] = useState("");
-  const [newTitulo, setNewTitulo] = useState("");
-  const [newValor, setNewValor] = useState("");
-  const [newVendedor, setNewVendedor] = useState("Carlos Silva");
-  const [newVencimento, setNewVencimento] = useState("");
-
   const handleCreatePropostaNew = (data: any) => {
+    const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
     const today = new Date();
-    const formattedToday = today.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric"
-    });
-
-    const newProposal: Proposta = {
+    addProposal({
       id: Math.random().toString(36).substring(2, 9),
       cliente: data.cliente,
       titulo: data.titulo,
       valor: `R$ ${parseFloat(data.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      dataCriacao: formattedToday,
+      dataCriacao: fmt(today),
       vencimento: new Date(data.dataValidade).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }),
       status: "Enviada",
       vendedor: "Sistema Axis"
-    };
-
-    addProposal(newProposal);
+    });
     toast.success("✨ Proposta criada com sucesso! Pronta para envio.");
     setIsPropostaModalOpen(false);
-  };
-
-  const handleCreateProposta = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCliente || !newTitulo || !newValor) {
-      toast.error("Por favor, preencha os campos obrigatórios!");
-      return;
-    }
-
-    const today = new Date();
-    const formattedToday = today.toLocaleDateString("pt-BR", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric"
-    });
-
-    const valDate = newVencimento 
-      ? new Date(newVencimento).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })
-      : new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-
-    const newProposal: Proposta = {
-      id: Math.random().toString(36).substring(2, 9),
-      cliente: newCliente,
-      titulo: newTitulo,
-      valor: newValor.startsWith("R$") ? newValor : `R$ ${parseFloat(newValor).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}`,
-      dataCriacao: formattedToday,
-      vencimento: valDate,
-      status: "Aberta",
-      vendedor: newVendedor
-    };
-
-    addProposal(newProposal);
-    toast.success("Proposta comercial criada com sucesso!");
-    setIsModalOpen(false);
-    
-    // reset form
-    setNewCliente("");
-    setNewTitulo("");
-    setNewValor("");
-    setNewVencimento("");
   };
 
   const handleDeleteProposta = (id: string) => {
@@ -342,106 +288,29 @@ export default function Propostas() {
         </table>
       </div>
 
-      {/* Modern creation Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden">
-            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
-              <div>
-                <h3 className="text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
-                  💥 Criar Proposta Axis
-                </h3>
-                <p className="text-xs text-slate-400 mt-1">Preencha os dados comerciais da nova oferta.</p>
-              </div>
-              <button 
-                onClick={() => setIsModalOpen(false)} 
-                className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateProposta} className="p-6 flex flex-col gap-4">
-              <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Nome do Cliente</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Grupo Pão de Açúcar, TechCorp"
-                  value={newCliente}
-                  onChange={(e) => setNewCliente(e.target.value)}
-                  className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Projeto / Título da Proposta</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Consultoria CRM Adicional, Migração DB"
-                  value={newTitulo}
-                  onChange={(e) => setNewTitulo(e.target.value)}
-                  className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Valor Proposto</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ex: 15000"
-                    value={newValor}
-                    onChange={(e) => setNewValor(e.target.value)}
-                    className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Prazo de Validade</label>
-                  <input
-                    type="date"
-                    value={newVencimento}
-                    onChange={(e) => setNewVencimento(e.target.value)}
-                    className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2">Vendedor Associado</label>
-                <select
-                  value={newVendedor}
-                  onChange={(e) => setNewVendedor(e.target.value)}
-                  className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-                >
-                  <option value="Carlos Silva">Carlos Silva</option>
-                  <option value="Ana Paula">Ana Paula</option>
-                  <option value="Roberto Neves">Roberto Neves</option>
-                </select>
-              </div>
-
-              <div className="flex gap-3 mt-4">
-                <Button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 bg-white/5 hover:bg-white/10 text-white h-12 rounded-xl border border-white/5 uppercase text-xs font-black tracking-widest"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  className="flex-1 bg-[#2563EB] hover:bg-blue-600 text-white h-12 rounded-xl uppercase text-xs font-black tracking-widest"
-                >
-                  Criar Proposta
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <NovaPropostaRapidaModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={({ cliente, titulo, valor, vencimento, vendedor }) => {
+          const today = new Date();
+          const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+          const valDate = vencimento
+            ? fmt(new Date(vencimento))
+            : fmt(new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000));
+          addProposal({
+            id: Math.random().toString(36).substring(2, 9),
+            cliente,
+            titulo,
+            valor: valor.startsWith("R$") ? valor : `R$ ${parseFloat(valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
+            dataCriacao: fmt(today),
+            vencimento: valDate,
+            status: "Aberta",
+            vendedor,
+          });
+          toast.success("Proposta comercial criada com sucesso!");
+          setIsModalOpen(false);
+        }}
+      />
 
       <CriarPropostaModal
         isOpen={isPropostaModalOpen}

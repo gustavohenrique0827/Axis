@@ -292,6 +292,74 @@ export async function fetchTenants() {
 }
 
 /**
+ * Cria (ou atualiza) o usuário master G-Tech (admin@gthec.com / gthec@2025).
+ * Chamado automaticamente pelo painel admin ao detectar ausência do usuário master.
+ */
+export async function setupMasterUser(): Promise<{ success: boolean; error?: string; alreadyExists?: boolean }> {
+  if (!supabase) return { success: false, error: 'Supabase não configurado.' };
+
+  try {
+    const MASTER_EMAIL = 'admin@gthec.com';
+    const MASTER_PASSWORD = 'gthec@2025';
+    const TENANT_NAME = 'G-Tech Master';
+
+    // 1. Garantir que o tenant G-Tech Master existe
+    const allModules = {
+      crm: true, sdr: true, advDashboard: true, financeiro: true, marketing: true,
+      educacao: true, clinica: true, produtividade: true, rh: true, bi: true, engajamento: true
+    };
+
+    let { data: tenant } = await supabase
+      .from('tenants')
+      .select('id')
+      .eq('name', TENANT_NAME)
+      .maybeSingle();
+
+    if (!tenant) {
+      const { data: newTenant, error: tenantErr } = await supabase
+        .from('tenants')
+        .insert({ name: TENANT_NAME, niche: 'Master', plan: 'Enterprise', status: 'Active', timezone: 'America/Sao_Paulo', modules: allModules })
+        .select('id')
+        .maybeSingle();
+      if (tenantErr || !newTenant) return { success: false, error: `Erro ao criar tenant: ${tenantErr?.message}` };
+      tenant = newTenant;
+    } else {
+      await supabase.from('tenants').update({ modules: allModules }).eq('id', tenant.id);
+    }
+
+    // 2. Verificar se o usuário master já existe
+    const { data: existing } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', MASTER_EMAIL)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase.from('users').update({ is_master: true, active: true, role: 'Super Admin' }).eq('id', existing.id);
+      return { success: true, alreadyExists: true };
+    }
+
+    // 3. Criar usuário master
+    const { error: userErr } = await supabase.from('users').insert({
+      tenant_id: tenant.id,
+      name: 'G-Tech Administrador',
+      email: MASTER_EMAIL,
+      password_hash: hashPassword(MASTER_PASSWORD),
+      role: 'Super Admin',
+      is_master: true,
+      active: true
+    });
+
+    if (userErr) return { success: false, error: `Erro ao criar usuário: ${userErr.message}` };
+
+    console.log('[Setup] ✅ Usuário master gthec criado com sucesso');
+    return { success: true };
+  } catch (err) {
+    return { success: false, error: err instanceof Error ? err.message : 'Erro desconhecido' };
+  }
+}
+
+/**
  * Atualiza os módulos ativos de um tenant no banco de dados
  */
 export async function updateTenantModulesInDB(tenantName: string, modules: any) {

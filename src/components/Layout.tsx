@@ -1,23 +1,21 @@
 import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import { useData } from "../contexts/DataContext";
 import { Sidebar } from "./layout/Sidebar";
 import { Topbar } from "./layout/Topbar";
 import { MobileNav } from "./layout/MobileNav";
+import { useData } from "../contexts/DataContextTypes";
 
 export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { sidebarModules } = useData();
+  useData();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isMobileMoreOpen, setIsMobileMoreOpen] = useState(false);
   const [isSDRWebhookOpen, setIsSDRWebhookOpen] = useState(false);
-
-  const activeModules = sidebarModules;
 
   useEffect(() => {
     if (!user) navigate("/login");
@@ -40,12 +38,11 @@ export default function Layout() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0B1120] text-[#F8FAFC] font-sans flex transition-all">
-      <Sidebar 
+    <div className="h-screen overflow-hidden bg-[#0B1120] text-[#F8FAFC] font-sans flex transition-all">
+      <Sidebar
         isSidebarCollapsed={isSidebarCollapsed}
         isMobileSidebarOpen={isMobileSidebarOpen}
         setIsMobileSidebarOpen={setIsMobileSidebarOpen}
-        activeModules={activeModules}
         logoDarkIcon={logoDarkIcon}
         logoDarkFull={logoDarkFull}
         setIsSDRWebhookOpen={setIsSDRWebhookOpen}
@@ -54,7 +51,7 @@ export default function Layout() {
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <div className="absolute top-[-300px] right-[-100px] w-[800px] h-[800px] bg-blue-600/5 blur-[150px] rounded-full pointer-events-none"></div>
 
-        <Topbar 
+        <Topbar
           isSidebarCollapsed={isSidebarCollapsed}
           setIsSidebarCollapsed={setIsSidebarCollapsed}
           isMobileSidebarOpen={isMobileSidebarOpen}
@@ -62,12 +59,12 @@ export default function Layout() {
           logoDarkIcon={logoDarkIcon}
         />
 
-        <div className={`flex-1 overflow-hidden relative scrollbar-none ${location.pathname.includes("/messaging") || location.pathname.includes("/mensageria") ? "p-1 pb-20 sm:p-2 sm:pb-2.5" : "p-4 md:p-8 overflow-auto pb-24 sm:pb-8"}`}>
+        <div className={`flex-1 min-h-0 relative ${location.pathname.includes("/messaging") || location.pathname.includes("/mensageria") ? "overflow-hidden p-1 pb-20 sm:p-2 sm:pb-2.5" : "overflow-y-auto p-4 md:p-8 pb-24 sm:pb-8"}`}>
           <Outlet />
         </div>
       </main>
 
-      <MobileNav 
+      <MobileNav
         isMobileMoreOpen={isMobileMoreOpen}
         setIsMobileMoreOpen={setIsMobileMoreOpen}
       />
