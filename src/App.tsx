@@ -79,6 +79,12 @@ import MarketingAnalytics from "./pages/marketing/MarketingAnalytics";
 import MarketingSocial from "./pages/marketing/MarketingSocial";
 import MarketingLandingPages from "./pages/marketing/MarketingLandingPages";
 import RHColaboradores from "./pages/hr/RHColaboradores";
+import PainelDev from "./pages/dev/PainelDev";
+import ProjetosDev from "./pages/dev/Projetos";
+import SprintsDev from "./pages/dev/Sprints";
+import IssuesDev from "./pages/dev/Issues";
+import RepositoriosDev from "./pages/dev/Repositorios";
+import AmbientesDev from "./pages/dev/Ambientes";
 import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider } from "./contexts/DataContext";
 import { Toaster } from "sonner";
@@ -203,6 +209,17 @@ function AppContent() {
             <Route path="sistema/backups" element={<ConfigSistemaBackups />} />
 
             <Route path="*" element={<SettingsGenericForm />} />
+          </Route>
+
+          {/* Dev & Tecnologia */}
+          <Route path="dev">
+            <Route index element={<Navigate to="painel" replace />} />
+            <Route path="painel" element={<PainelDev />} />
+            <Route path="projetos" element={<ProjetosDev />} />
+            <Route path="sprints" element={<SprintsDev />} />
+            <Route path="issues" element={<IssuesDev />} />
+            <Route path="repositorios" element={<RepositoriosDev />} />
+            <Route path="ambientes" element={<AmbientesDev />} />
           </Route>
 
           <Route path="admin" element={<AdminSaaS />} />

@@ -27,6 +27,13 @@ import {
   Archive,
   FlaskConical,
   BarChart3,
+  Code2,
+  FolderCode,
+  Kanban,
+  Bug,
+  GitBranch,
+  Server,
+  MonitorCheck,
 } from "lucide-react";
 
 export const navSections = [
@@ -90,6 +97,17 @@ export const navSections = [
     items: [
       { name: "Painel Financeiro", path: "/app/financeiro", icon: Wallet },
       { name: "Tarefas", path: "/app/tarefas", icon: CheckSquare },
+    ],
+  },
+  {
+    title: "Dev & Tecnologia",
+    items: [
+      { name: "Painel Dev", path: "/app/dev/painel", icon: Code2, reqModule: "dev" },
+      { name: "Projetos", path: "/app/dev/projetos", icon: FolderCode, reqModule: "dev" },
+      { name: "Sprints", path: "/app/dev/sprints", icon: Kanban, reqModule: "dev" },
+      { name: "Issues & Bugs", path: "/app/dev/issues", icon: Bug, reqModule: "dev" },
+      { name: "Repositórios", path: "/app/dev/repositorios", icon: GitBranch, reqModule: "dev" },
+      { name: "Ambientes", path: "/app/dev/ambientes", icon: MonitorCheck, reqModule: "dev" },
     ],
   },
   {

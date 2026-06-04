@@ -10,8 +10,13 @@ function normalizeSupabaseUrl(url: string): string {
   }
 }
 
-const supabaseUrl = normalizeSupabaseUrl(import.meta.env.VITE_SUPABASE_URL || '');
-const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
+const supabaseUrlRaw = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKeyRaw = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const supabaseUrl = normalizeSupabaseUrl(supabaseUrlRaw);
+const supabaseAnonKey = (supabaseAnonKeyRaw || '').trim();
+
+console.log('[Supabase] env VITE_SUPABASE_URL set?', Boolean(supabaseUrlRaw));
+console.log('[Supabase] env VITE_SUPABASE_ANON_KEY set?', Boolean(supabaseAnonKeyRaw));
 
 // Initialize client if credentials are configured
 export const supabase = supabaseUrl && supabaseAnonKey

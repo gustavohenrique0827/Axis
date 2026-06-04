@@ -130,6 +130,7 @@ export function Sidebar({
               if ((titleLower.includes("clínica") || titleLower.includes("clinica")) && !isModuleEnabled("clinica")) return false;
               if (titleLower.includes("financeiro") && !isModuleEnabled("financeiro") && !isModuleEnabled("produtividade")) return false;
               if ((titleLower.includes("engajamento") || titleLower.includes("marketing")) && !isModuleEnabled("marketing") && !isModuleEnabled("engajamento")) return false;
+              if ((titleLower.includes("dev") || titleLower.includes("tecnologia")) && !isModuleEnabled("dev")) return false;
               if (titleLower.includes("gestão do sistema")) return true;
               return true;
             })

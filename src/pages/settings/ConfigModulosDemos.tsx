@@ -3,7 +3,7 @@ import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import {
   Cpu, Sparkles, Smartphone, Sun, Activity, RefreshCw, Layers, Database, UserCheck,
-  ArrowRight, Target, Award, DollarSign, Package, MessageSquare, Users, Columns3, Check, Clock
+  ArrowRight, Target, Award, DollarSign, Package, MessageSquare, Users, Columns3, Check, Clock, Code2
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -25,6 +25,7 @@ export default function ConfigModulosDemos() {
     rh: true,
     bi: true,
     clinica: true,
+    dev: true,
   };
 
   const [selectedTenant, setSelectedTenant] = useState<string>(() => user?.tenantName || "G-Tech Master");
@@ -254,7 +255,8 @@ export default function ConfigModulosDemos() {
                   { id: 'engajamento', title: "Engajamento & Mensagens", desc: "Central de WhatsApp, E-mail e Automações", icon: MessageSquare },
                   { id: 'rh', title: "RH & Colaboradores", desc: "Equipe interna, comissões de corretores/closers", icon: Users },
                   { id: 'clinica', title: "Clínica & Saúde", desc: "Prontuários, Telemedicina e Agendamento", icon: Activity },
-                  { id: 'bi', title: "BI & Indicadores Relatórios", desc: "Melhores estatísticas de faturamento e OTE", icon: Columns3 }
+                  { id: 'bi', title: "BI & Indicadores Relatórios", desc: "Melhores estatísticas de faturamento e OTE", icon: Columns3 },
+                  { id: 'dev', title: "Dev & Tecnologia", desc: "Projetos, Sprints, Issues, Repositórios e Equipe Dev", icon: Code2 }
                 ].map((mod) => {
                   const isEnabled = activeModules[mod.id] ?? true;
                   return (
