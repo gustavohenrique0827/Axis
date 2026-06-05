@@ -702,5 +702,117 @@ CREATE TABLE IF NOT EXISTS colaboradores (
     email VARCHAR(255),
     avatar VARCHAR(1024),
     desempenho INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    -- Campos do módulo de equipe (deals, receita, squad)
+    deals INTEGER DEFAULT 0,
+    revenue TEXT DEFAULT 'R$ 0',
+    squad TEXT DEFAULT 'Sem squad',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+DROP TRIGGER IF EXISTS update_colaboradores_modtime ON colaboradores;
+CREATE TRIGGER update_colaboradores_modtime
+    BEFORE UPDATE ON colaboradores
+    FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+
+
+-- ==========================================
+-- 22. DEV & TECHNOLOGY MODULE
+-- ==========================================
+
+-- Projetos de desenvolvimento
+CREATE TABLE IF NOT EXISTS dev_projects (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'Em Planejamento',
+    progress INTEGER DEFAULT 0,
+    stack TEXT[] DEFAULT '{}',
+    team TEXT[] DEFAULT '{}',
+    last_commit TEXT DEFAULT '',
+    open_issues INTEGER DEFAULT 0,
+    sprints INTEGER DEFAULT 0,
+    stars INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+DROP TRIGGER IF EXISTS update_dev_projects_modtime ON dev_projects;
+CREATE TRIGGER update_dev_projects_modtime
+    BEFORE UPDATE ON dev_projects
+    FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+
+-- Sequência para número legível de issues
+CREATE SEQUENCE IF NOT EXISTS dev_issue_number_seq START WITH 300;
+
+-- Issues e bugs
+CREATE TABLE IF NOT EXISTS dev_issues (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    issue_number INTEGER DEFAULT nextval('dev_issue_number_seq'),
+    title TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    severity TEXT NOT NULL DEFAULT 'médio',
+    status TEXT NOT NULL DEFAULT 'aberto',
+    project TEXT DEFAULT '',
+    assignee TEXT DEFAULT '-',
+    reporter TEXT DEFAULT '',
+    labels TEXT[] DEFAULT '{}',
+    comments INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+DROP TRIGGER IF EXISTS update_dev_issues_modtime ON dev_issues;
+CREATE TRIGGER update_dev_issues_modtime
+    BEFORE UPDATE ON dev_issues
+    FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+
+-- Tarefas do sprint (Kanban)
+CREATE TABLE IF NOT EXISTS dev_sprint_tasks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    title TEXT NOT NULL,
+    type TEXT NOT NULL DEFAULT 'feature',
+    priority TEXT NOT NULL DEFAULT 'média',
+    points INTEGER DEFAULT 1,
+    assignee TEXT DEFAULT '',
+    tags TEXT[] DEFAULT '{}',
+    column_id TEXT NOT NULL DEFAULT 'backlog',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+DROP TRIGGER IF EXISTS update_dev_sprint_tasks_modtime ON dev_sprint_tasks;
+CREATE TRIGGER update_dev_sprint_tasks_modtime
+    BEFORE UPDATE ON dev_sprint_tasks
+    FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+
+-- Repositórios de código
+CREATE TABLE IF NOT EXISTS dev_repositories (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    name TEXT NOT NULL,
+    description TEXT DEFAULT '',
+    language TEXT DEFAULT 'TypeScript',
+    visibility TEXT DEFAULT 'private',
+    status TEXT DEFAULT 'ativo',
+    branches INTEGER DEFAULT 1,
+    stars INTEGER DEFAULT 0,
+    forks INTEGER DEFAULT 0,
+    last_commit TEXT DEFAULT '',
+    open_prs INTEGER DEFAULT 0,
+    contributors TEXT[] DEFAULT '{}',
+    size TEXT DEFAULT '0 MB',
+    url TEXT DEFAULT '',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+DROP TRIGGER IF EXISTS update_dev_repositories_modtime ON dev_repositories;
+CREATE TRIGGER update_dev_repositories_modtime
+    BEFORE UPDATE ON dev_repositories
+    FOR EACH ROW EXECUTE PROCEDURE update_modified_column();
+
+CREATE INDEX IF NOT EXISTS idx_dev_projects_status ON dev_projects (status);
+CREATE INDEX IF NOT EXISTS idx_dev_issues_status ON dev_issues (status);
+CREATE INDEX IF NOT EXISTS idx_dev_issues_project ON dev_issues (project);
+CREATE INDEX IF NOT EXISTS idx_dev_sprint_tasks_column ON dev_sprint_tasks (column_id);
+CREATE INDEX IF NOT EXISTS idx_dev_repositories_status ON dev_repositories (status);
