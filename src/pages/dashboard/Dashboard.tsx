@@ -39,40 +39,40 @@ export default function Dashboard() {
 
     if (niche === "Tecnologia") {
       return [
-        { label: "Hardware & Upgrades", value: "R$ 78.400", trend: "+15.2%", color: "text-cyan-400", bg: "bg-cyan-500/10", icon: DollarSign, forecast: "R$ 90.0k" },
-        { label: "Aparelhos Trade-In", value: "48 Unid.", trend: "+12.1%", color: "text-blue-400", bg: "bg-blue-500/10", icon: Users, forecast: "60" },
-        { label: "Ativação SDR", value: "91.5%", trend: "+3.2%", color: "text-purple-400", bg: "bg-purple-500/10", icon: Target, forecast: "94.0%" },
-        { label: "Foco Conversão", value: "85.8%", trend: "-1.5%", color: "text-rose-400", bg: "bg-rose-500/10", icon: TrendingDown, forecast: "88.0%" },
+        { label: "Hardware & Upgrades", value: `R$ ${totalRevenue.toLocaleString('pt-BR')}`, trend: "--", color: "text-cyan-400", bg: "bg-cyan-500/10", icon: DollarSign, forecast: "--" },
+        { label: "Aparelhos Trade-In", value: leads.length.toString(), trend: "--", color: "text-blue-400", bg: "bg-blue-500/10", icon: Users, forecast: "--" },
+        { label: "Ativação SDR", value: `${conversionRate}%`, trend: "--", color: "text-purple-400", bg: "bg-purple-500/10", icon: Target, forecast: "--" },
+        { label: "Foco Conversão", value: `${churnRate.toFixed(1)}%`, trend: "--", color: "text-rose-400", bg: "bg-rose-500/10", icon: TrendingDown, forecast: "--" },
       ];
     } else if (niche === "Solar") {
       return [
-        { label: "Potência Total", value: "180 kWp", trend: "+24.5%", color: "text-amber-400", bg: "bg-amber-500/10", icon: Sun, forecast: "240 kWp" },
-        { label: "Projetos em Homologação", value: "5 Ativos", trend: "+15.2%", color: "text-amber-500", bg: "bg-amber-500/10", icon: Users, forecast: "8" },
-        { label: "Viabilidade Concluída", value: "11 Estudos", trend: "+8.9%", color: "text-blue-400", bg: "bg-blue-500/10", icon: Target, forecast: "15" },
-        { label: "ROI Médio Projetos", value: "3.2 Anos", trend: "-0.8%", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: TrendingDown, forecast: "2.8 Anos" },
+        { label: "Potência Total", value: "--", trend: "--", color: "text-amber-400", bg: "bg-amber-500/10", icon: Sun, forecast: "--" },
+        { label: "Projetos em Homologação", value: leads.length.toString(), trend: "--", color: "text-amber-500", bg: "bg-amber-500/10", icon: Users, forecast: "--" },
+        { label: "Viabilidade Concluída", value: "--", trend: "--", color: "text-blue-400", bg: "bg-blue-500/10", icon: Target, forecast: "--" },
+        { label: "ROI Médio Projetos", value: "--", trend: "--", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: TrendingDown, forecast: "--" },
       ];
     } else if (niche === "Clínica") {
       return [
-        { label: "Faturamento Clínico", value: "R$ 34.800", trend: "+10.4%", color: "text-rose-400", bg: "bg-rose-500/10", icon: DollarSign, forecast: "R$ 45.0k" },
-        { label: "Consultas Agendadas", value: "14 Sessões", trend: "+18.2%", color: "text-pink-400", bg: "bg-pink-500/10", icon: Users, forecast: "20" },
-        { label: "Tele consultas Ativas", value: "3 Salas", trend: "+50.0%", color: "text-indigo-400", bg: "bg-indigo-500/10", icon: Target, forecast: "5 Salas" },
-        { label: "Taxa Churn Pacientes", value: `${churnRate.toFixed(1)}%`, trend: churnRate < 2 ? "-0.5%" : "+0.5%", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: TrendingDown, forecast: "1.2%" },
+        { label: "Faturamento Clínico", value: `R$ ${totalRevenue.toLocaleString('pt-BR')}`, trend: "--", color: "text-rose-400", bg: "bg-rose-500/10", icon: DollarSign, forecast: "--" },
+        { label: "Consultas Agendadas", value: leads.length.toString(), trend: "--", color: "text-pink-400", bg: "bg-pink-500/10", icon: Users, forecast: "--" },
+        { label: "Teleconsultas Ativas", value: "--", trend: "--", color: "text-indigo-400", bg: "bg-indigo-500/10", icon: Target, forecast: "--" },
+        { label: "Taxa Churn Pacientes", value: `${churnRate.toFixed(1)}%`, trend: "--", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: TrendingDown, forecast: "--" },
       ];
     } else if (niche === "Imobiliária") {
       return [
-        { label: "VGV Estimado", value: "R$ 7.8M", trend: "+30.1%", color: "text-blue-500", bg: "bg-blue-500/10", icon: DollarSign, forecast: "R$ 10.0M" },
-        { label: "Visitas Incorporador", value: "6 Visitas", trend: "+12.0%", color: "text-cyan-400", bg: "bg-cyan-500/10", icon: Users, forecast: "10" },
-        { label: "Crédito Pré-Aprovado", value: "88.2%", trend: "+5.1%", color: "text-indigo-400", bg: "bg-indigo-500/10", icon: Target, forecast: "92%" },
-        { label: "Tempo de Campanha", value: "14 Dias", trend: "-4.2%", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: TrendingDown, forecast: "10 Dias" },
+        { label: "VGV Estimado", value: `R$ ${totalRevenue.toLocaleString('pt-BR')}`, trend: "--", color: "text-blue-500", bg: "bg-blue-500/10", icon: DollarSign, forecast: "--" },
+        { label: "Visitas Incorporador", value: leads.length.toString(), trend: "--", color: "text-cyan-400", bg: "bg-cyan-500/10", icon: Users, forecast: "--" },
+        { label: "Crédito Pré-Aprovado", value: `${conversionRate}%`, trend: "--", color: "text-indigo-400", bg: "bg-indigo-500/10", icon: Target, forecast: "--" },
+        { label: "Tempo de Campanha", value: "--", trend: "--", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: TrendingDown, forecast: "--" },
       ];
     }
 
     // Default fallback
     return [
-      { label: "Receita (MRR)", value: `R$ ${totalRevenue.toLocaleString('pt-BR')}`, trend: "+12.5%", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: DollarSign, forecast: "R$ 6.8k" },
-      { label: "Leads Ativos", value: leads.length.toString(), trend: "+5.2%", color: "text-blue-400", bg: "bg-blue-500/10", icon: Users, forecast: "12" },
-      { label: "Conversão", value: `${conversionRate}%`, trend: "+2.4%", color: "text-purple-400", bg: "bg-purple-500/10", icon: Target, forecast: "24.5%" },
-      { label: "Taxa Churn", value: `${churnRate.toFixed(1)}%`, trend: churnRate < 2 ? "-0.5%" : "+0.5%", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: TrendingDown, forecast: "1.2%" },
+      { label: "Receita (MRR)", value: `R$ ${totalRevenue.toLocaleString('pt-BR')}`, trend: "--", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: DollarSign, forecast: "--" },
+      { label: "Leads Ativos", value: leads.length.toString(), trend: "--", color: "text-blue-400", bg: "bg-blue-500/10", icon: Users, forecast: "--" },
+      { label: "Conversão", value: `${conversionRate}%`, trend: "--", color: "text-purple-400", bg: "bg-purple-500/10", icon: Target, forecast: "--" },
+      { label: "Taxa Churn", value: `${churnRate.toFixed(1)}%`, trend: "--", color: "text-emerald-400", bg: "bg-emerald-500/10", icon: TrendingDown, forecast: "--" },
     ];
   }, [user, totalRevenue, leads, conversionRate, churnRate]);
 

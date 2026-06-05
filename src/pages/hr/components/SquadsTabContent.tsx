@@ -1,4 +1,3 @@
-import React from "react";
 import { 
   Brain, TrendingUp, Wallet, Sparkles
 } from "lucide-react";
@@ -56,9 +55,6 @@ export function SquadsTabContent({
             <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wide">Agrupe Closers e SDRs de alta performance, atribua metas regionais e automatize a passagem de bastão de leads de iPhones.</p>
           </div>
         </div>
-        <Badge className="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 font-black uppercase tracking-widest text-[9px]">
-          Nicho: Revendedores Apple Palmas / Educação
-        </Badge>
       </div>
 
       {/* Squads Grid */}

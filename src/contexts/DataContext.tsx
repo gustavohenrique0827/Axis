@@ -522,29 +522,24 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [squads]);
 
   const simulateNewLeadAssignment = () => {
-    const sellersList = ["Carlos Eduardo Mendes", "Ana Silva", "Roberto Ramos", "Juliana Costa"];
-    const randomSeller = sellersList[Math.floor(Math.random() * sellersList.length)];
-    if (leads.length === 0) return;
+    const uniqueSellers = Array.from(new Set(leads.map(l => l.seller).filter(Boolean)));
+    if (leads.length === 0 || uniqueSellers.length === 0) return;
+    const randomSeller = uniqueSellers[Math.floor(Math.random() * uniqueSellers.length)];
     const randomLead = leads[Math.floor(Math.random() * leads.length)];
     updateLead(randomLead.id, { seller: randomSeller });
   };
 
   const simulateOverdueTask = () => {
-    const taskTitles = [
-      "Retornar ligação de proposta comercial",
-      "Validar orçamento com diretoria financeira",
-      "Enviar cronograma de escopo e implantação"
-    ];
-    const clients = ["TechCorp Brasil", "Construtora RS", "Clínica Vida"];
-    const sellersList = ["Carlos Eduardo Mendes", "Ana Silva", "Roberto Ramos"];
-
-    const randomTitle = taskTitles[Math.floor(Math.random() * taskTitles.length)];
-    const randomClient = clients[Math.floor(Math.random() * clients.length)];
-    const randomSeller = sellersList[Math.floor(Math.random() * sellersList.length)];
+    if (leads.length === 0) return;
+    const randomLead = leads[Math.floor(Math.random() * leads.length)];
+    const uniqueSellers = Array.from(new Set(leads.map(l => l.seller).filter(Boolean)));
+    const randomSeller = uniqueSellers.length > 0
+      ? uniqueSellers[Math.floor(Math.random() * uniqueSellers.length)]
+      : "";
 
     const newTask: Omit<Task, 'id'> = {
-      title: randomTitle,
-      related: randomClient,
+      title: "Retornar contato com lead",
+      related: randomLead.company || randomLead.name,
       type: "Call",
       date: "Hoje, 09:00",
       status: "Atrasado",

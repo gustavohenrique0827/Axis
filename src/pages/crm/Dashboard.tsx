@@ -1,12 +1,12 @@
-import React, { useMemo } from "react";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  LineChart, Line, ComposedChart, Area, AreaChart
+import { useMemo } from "react";
+import {
+  Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  Line, ComposedChart, Area, AreaChart
 } from 'recharts';
 import { Card } from "../../components/ui/card";
 import { PageContainer } from "../../components/PageContainer";
 import { useData } from "../../contexts/DataContext";
-import { TrendingUp, Users, DollarSign, Target, Brain, Award, FileText, Download } from "lucide-react";
+import { TrendingUp, Users, DollarSign, Target, Brain, Award, FileText } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { toast } from "sonner";
 
@@ -19,18 +19,12 @@ export default function Dashboard() {
     // Here we'll generate data based on current state of leads.
     
     const months = ["Jan", "Fev", "Mar", "Abr", "Mai"];
-    return months.map((month, idx) => {
-      // Simulate historical growth
-      const avgScore = 60 + (idx * 5) + (Math.random() * 10);
-      const conversionRate = (avgScore * 0.4) + (Math.random() * 5);
-      
-      return {
-        month,
-        avgScore: parseFloat(avgScore.toFixed(1)),
-        conversionRate: parseFloat(conversionRate.toFixed(1)),
-        leads: 10 + (idx * 15)
-      };
-    });
+    return months.map((month) => ({
+      month,
+      avgScore: 0,
+      conversionRate: 0,
+      leads: 0,
+    }));
   }, [leads]);
 
   const stats = useMemo(() => {
@@ -202,11 +196,11 @@ export default function Dashboard() {
           <div className="mt-8 flex gap-2">
              <div className="flex-1 p-4 bg-white/5 rounded-2xl border border-white/5">
                 <p className="text-[10px] text-slate-500 uppercase mb-1">Crescimento WoW</p>
-                <p className="text-lg text-emerald-400">+12%</p>
+                <p className="text-lg text-emerald-400">--</p>
              </div>
              <div className="flex-1 p-4 bg-white/5 rounded-2xl border border-white/5">
                 <p className="text-[10px] text-slate-500 uppercase mb-1">CAC Médio</p>
-                <p className="text-lg text-blue-400">R$ 142</p>
+                <p className="text-lg text-blue-400">--</p>
              </div>
           </div>
         </Card>

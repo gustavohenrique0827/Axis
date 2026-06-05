@@ -1,13 +1,11 @@
 import React, { useState } from "react";
-import { 
-  Award, Search, Plus, Filter, Download, 
-  ExternalLink, CheckCircle2, AlertCircle, 
-  User, Calendar, ShieldCheck, RefreshCw, Trash2, X, FileText,
+import {
+  Award, Search, Plus, Download,
+  Calendar, ShieldCheck, RefreshCw,
   Star, Share2, BookOpen
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
 import { toast } from "sonner";
 import { PageContainer } from "../../components/PageContainer";
@@ -93,9 +91,9 @@ export default function Certificados() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: "Diplomas Emitidos", value: certs.length, icon: Award, color: "text-amber-400", bg: "bg-amber-500/10" },
-            { label: "Validacões Hoje", value: "142", icon: ShieldCheck, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-            { label: "Processamento", value: "05", icon: RefreshCw, color: "text-blue-400", bg: "bg-blue-500/10" },
-            { label: "Média Acadêmica", value: "9.2", icon: Star, color: "text-indigo-400", bg: "bg-indigo-500/10" },
+            { label: "Validações Hoje", value: "--", icon: ShieldCheck, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+            { label: "Processamento", value: certs.filter(c => c.status === 'Processando').length, icon: RefreshCw, color: "text-blue-400", bg: "bg-blue-500/10" },
+            { label: "Média Acadêmica", value: "--", icon: Star, color: "text-indigo-400", bg: "bg-indigo-500/10" },
           ].map((stat, i) => (
             <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 flex items-center gap-6 group hover:border-white/10 transition-all">
               <div className={`p-4 rounded-2xl ${stat.bg} ${stat.color} group-hover:rotate-12 transition-transform`}>

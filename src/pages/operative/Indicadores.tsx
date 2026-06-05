@@ -1,13 +1,11 @@
-import React from "react";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, LineChart, Line
 } from "recharts";
 import { TrendingUp, ArrowUpRight, Mail, Calendar, Clock, Send, Trash2, Settings2, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { Reorder } from "motion/react";
 import { PageContainer } from "../../components/PageContainer";
 import { useIndicadores } from "./hooks/useIndicadores";
 
@@ -73,7 +71,7 @@ export default function Indicadores() {
                 <h3 className="text-xl font-bold text-white mb-4">{selectedKPI.label} - Histórico (30 dias)</h3>
                 <div className="h-64">
                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={[...Array(30).keys()].map(i => ({ day: i, value: Math.random() * 100 }))}>
+                      <LineChart data={[...Array(30).keys()].map(i => ({ day: i, value: 0 }))}>
                         <Line type="monotone" dataKey="value" stroke="#3B82F6" strokeWidth={2} dot={false} />
                         <XAxis dataKey="day" hide />
                         <YAxis hide />

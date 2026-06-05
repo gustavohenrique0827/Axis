@@ -1,7 +1,6 @@
 import React from 'react';
 import {
-  Code2, GitBranch, Bug, Rocket, Users, CheckCircle2,
-  Clock, AlertTriangle, TrendingUp, Activity, Terminal,
+  GitBranch, Bug, Rocket, Activity, Terminal,
   ArrowUpRight, Zap, Database, Server
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
@@ -12,32 +11,11 @@ import {
   Tooltip, ResponsiveContainer, BarChart, Bar
 } from 'recharts';
 
-const velocityData = [
-  { sprint: 'S1', pontos: 34, bugs: 8 },
-  { sprint: 'S2', pontos: 41, bugs: 5 },
-  { sprint: 'S3', pontos: 38, bugs: 12 },
-  { sprint: 'S4', pontos: 52, bugs: 4 },
-  { sprint: 'S5', pontos: 47, bugs: 7 },
-  { sprint: 'S6', pontos: 60, bugs: 3 },
-];
+const velocityData: { sprint: string; pontos: number; bugs: number }[] = [];
 
-const deployData = [
-  { dia: 'Seg', deploys: 2 },
-  { dia: 'Ter', deploys: 5 },
-  { dia: 'Qua', deploys: 3 },
-  { dia: 'Qui', deploys: 7 },
-  { dia: 'Sex', deploys: 4 },
-  { dia: 'Sáb', deploys: 1 },
-  { dia: 'Dom', deploys: 0 },
-];
+const deployData: { dia: string; deploys: number }[] = [];
 
-const recentActivity = [
-  { type: 'deploy', message: 'Deploy v2.4.1 em Produção', time: '12min atrás', color: 'text-emerald-400', icon: Rocket },
-  { type: 'issue', message: 'Issue #247 fechado — autenticação JWT', time: '45min atrás', color: 'text-blue-400', icon: CheckCircle2 },
-  { type: 'bug', message: 'Bug crítico aberto — timeout no checkout', time: '1h atrás', color: 'text-red-400', icon: Bug },
-  { type: 'commit', message: 'PR merged: feat/pagamento-pix #89', time: '2h atrás', color: 'text-indigo-400', icon: GitBranch },
-  { type: 'deploy', message: 'Deploy v2.4.0 em Staging', time: '3h atrás', color: 'text-cyan-400', icon: Rocket },
-];
+const recentActivity: { type: string; message: string; time: string; color: string; icon: React.ElementType }[] = [];
 
 export default function PainelDev() {
   return (
@@ -60,10 +38,10 @@ export default function PainelDev() {
         {/* KPI Grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Pontos no Sprint", value: "47", trend: "+15%", icon: Zap, color: "text-blue-400", bg: "bg-blue-600/10" },
-            { label: "Issues em Aberto", value: "12", trend: "-3", icon: Bug, color: "text-amber-400", bg: "bg-amber-500/10" },
-            { label: "Deploys Hoje", value: "4", trend: "+2", icon: Rocket, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-            { label: "Uptime Produção", value: "99.8%", trend: "↑ Estável", icon: Server, color: "text-cyan-400", bg: "bg-cyan-500/10" },
+            { label: "Pontos no Sprint", value: "--", trend: "--", icon: Zap, color: "text-blue-400", bg: "bg-blue-600/10" },
+            { label: "Issues em Aberto", value: "--", trend: "--", icon: Bug, color: "text-amber-400", bg: "bg-amber-500/10" },
+            { label: "Deploys Hoje", value: "--", trend: "--", icon: Rocket, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+            { label: "Uptime Produção", value: "--", trend: "--", icon: Server, color: "text-cyan-400", bg: "bg-cyan-500/10" },
           ].map((stat, i) => (
             <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 group">
               <div className="flex items-center justify-between mb-4">

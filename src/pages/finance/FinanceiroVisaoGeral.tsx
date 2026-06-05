@@ -1,33 +1,20 @@
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
-import { DollarSign, TrendingUp, AlertCircle, FileText, Download, Wallet, ArrowUpRight, ArrowDownRight, Printer, Globe, Clock, Sparkles } from "lucide-react";
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
+import { TrendingUp, AlertCircle, Download, Wallet, ArrowUpRight, ArrowDownRight, Printer, Globe, Clock, Sparkles } from "lucide-react";
+import {
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area,
   Cell, PieChart, Pie
 } from 'recharts';
 import { useData } from "../../contexts/DataContext";
-import { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { useMemo } from "react";
+import { motion } from "motion/react";
 
 import { PageContainer } from "../../components/PageContainer";
 
-const RADAR_DATA = [
-  { subject: 'Liquidez', A: 120, fullMark: 150 },
-  { subject: 'Solvência', A: 98, fullMark: 150 },
-  { subject: 'Rentabilidade', A: 86, fullMark: 150 },
-  { subject: 'Eficiência', A: 99, fullMark: 150 },
-  { subject: 'Crescimento', A: 85, fullMark: 150 },
-];
-
-const HEALTH_CHART = [
-  { name: 'Stability', value: 84, fill: '#2563EB' },
-  { name: 'Remaining', value: 16, fill: 'rgba(255,255,255,0.05)' },
-];
 
 export default function FinanceiroVisaoGeral() {
   const { financeEntries, contracts, squads } = useData();
-  const [_activeTab, setActiveTab] = useState<string>('visao');
 
   const { receita, despesa, mrr, inadimplencia } = useMemo(() => {
     const receita = financeEntries
@@ -112,10 +99,10 @@ export default function FinanceiroVisaoGeral() {
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Revenue (Actual)", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(receita), trend: "+12.5%", positive: true, icon: TrendingUp, color: "text-blue-400", bg: "bg-blue-500/10" },
-          { label: "Operational Cost", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(despesa), trend: "-2.4%", positive: true, icon: Wallet, color: "text-rose-400", bg: "bg-rose-500/10" },
-          { label: "Global MRR", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(mrr), trend: "+5.1%", positive: true, icon: Globe, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-          { label: "Churn Risk Index", value: `${inadimplencia.toFixed(1)}%`, trend: "+0.4%", positive: false, icon: AlertCircle, color: "text-yellow-500", bg: "bg-yellow-500/10" },
+          { label: "Revenue (Actual)", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(receita), trend: "--", positive: true, icon: TrendingUp, color: "text-blue-400", bg: "bg-blue-500/10" },
+          { label: "Operational Cost", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(despesa), trend: "--", positive: true, icon: Wallet, color: "text-rose-400", bg: "bg-rose-500/10" },
+          { label: "Global MRR", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(mrr), trend: "--", positive: true, icon: Globe, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+          { label: "Churn Risk Index", value: `${inadimplencia.toFixed(1)}%`, trend: "--", positive: false, icon: AlertCircle, color: "text-yellow-500", bg: "bg-yellow-500/10" },
         ].map((kpi, i) => (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -241,11 +228,11 @@ export default function FinanceiroVisaoGeral() {
            <div className="grid grid-cols-2 gap-4 w-full mt-10">
               <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
                  <p className="text-[9px] font-black text-slate-500 uppercase mb-1">Liquidez</p>
-                 <span className="text-white font-black font-mono">1.25x</span>
+                 <span className="text-white font-black font-mono">--</span>
               </div>
               <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
                  <p className="text-[9px] font-black text-slate-500 uppercase mb-1">Burn Rate</p>
-                 <span className="text-rose-400 font-black font-mono">-12%</span>
+                 <span className="text-rose-400 font-black font-mono">--</span>
               </div>
            </div>
         </Card>
@@ -457,22 +444,3 @@ export default function FinanceiroVisaoGeral() {
   );
 }
 
-function TrendingDown(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
-      <polyline points="17 18 23 18 23 12" />
-    </svg>
-  );
-}

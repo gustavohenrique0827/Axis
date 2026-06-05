@@ -66,7 +66,7 @@ export function usePipeline() {
 
 
   const sellers = useMemo(() => ["Todos", ...Array.from(new Set(leads.map(l => l.seller).filter(Boolean)))], [leads]);
-  const allSellersFullList = useMemo(() => Array.from(new Set(["Carlos Eduardo Mendes", "Ana Silva", "Roberto Ramos", "Juliana Costa", ...sellers.filter(s => s !== "Todos")])), [sellers]);
+  const allSellersFullList = useMemo(() => sellers.filter(s => s !== "Todos"), [sellers]);
 
   const filteredItemsList = useMemo(() => leads.filter((item: any) => {
     const matchesTenant = !isMaster || tenantFilter === "Todos" || item.tenantName === tenantFilter;

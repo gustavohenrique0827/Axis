@@ -26,18 +26,6 @@ export const DEMO_PRESETS = [
       { id: '4', name: "Proposta de Trade-in & Valores", color: "#F59E0B", textClass: "text-amber-400", bgClass: "bg-amber-500/10", borderClass: "border-amber-500/20", type: 'comercial' },
       { id: '5', name: "Venda Concluída (Closer)", color: "#10B981", textClass: "text-emerald-400", bgClass: "bg-emerald-500/10", borderClass: "border-emerald-500/20", type: 'comercial' },
     ],
-    leads: [
-      { id: 'apple-1', name: "Eduardo Vasconcelos", company: "Premium Dev S/A", email: "edu@premiumdev.com", phone: "(11) 98765-4321", status: "Novo", value: "R$ 48.000", date: "Hoje, 10:15", seller: "Carlos Eduardo Mendes", title: "Lote de 5 MacBooks M3 Max", priority: "Alta", stageId: '1', pipelineId: 'comercial', timeIdle: 2, tenantName: "TechCorp Brasil" },
-      { id: 'apple-2', name: "Marcela Albuquerque", company: "Pessoa Física", email: "marcela@terra.com.br", phone: "(11) 99112-2334", status: "Qualificado", value: "R$ 4.500", date: "Hoje, 11:30", seller: "Ana Silva", title: "Trade-in iPhone 13 -> 15 Pro", priority: "Média", stageId: '3', pipelineId: 'comercial', timeIdle: 5, tenantName: "TechCorp Brasil" },
-      { id: 'apple-3', name: "Felipe Gouveia", company: "FG Audiovisual", email: "felipe@fgaudio.com", phone: "(21) 97722-1100", status: "Em Negociação", value: "R$ 14.200", date: "Ontem, 16:00", seller: "Carlos Eduardo Mendes", title: "Mac Studio + Studio Display", priority: "Alta", stageId: '4', pipelineId: 'comercial', timeIdle: 24, tenantName: "TechCorp Brasil" },
-      { id: 'apple-4', name: "Juliana Rocha", company: "Rocha Designer", email: "ju@rocha.design", phone: "(31) 98888-2233", status: "Fechado", value: "R$ 7.800", date: "12 Mai, 14:00", seller: "Ana Silva", title: "iPad Pro M4 + Pencil Pro", priority: "Baixa", stageId: '5', pipelineId: 'comercial', timeIdle: 80, tenantName: "TechCorp Brasil" },
-    ],
-    finance: [
-      { id: 'f-ap1', description: 'Venda Lote MacBooks FG', category: 'Hardware', status: 'Pago', value: 48000, type: 'Receber', date: 'Hoje' },
-      { id: 'f-ap2', description: 'Compra Lote Importação Dist', category: 'Estoque', status: 'Pago', value: 32000, type: 'Pagar', date: 'Hoje' },
-      { id: 'f-ap3', description: 'Licença Apple Developer SaaS', category: 'Ferramentas', status: 'A Vencer', value: 590, type: 'Pagar', date: '05/06/2026' },
-    ],
-    appointments: []
   },
   {
     id: "solar_corp",
@@ -64,18 +52,6 @@ export const DEMO_PRESETS = [
       { id: '4', name: "Homologação Concessionária", color: "#F59E0B", textClass: "text-amber-400", bgClass: "bg-amber-500/10", borderClass: "border-amber-500/20", type: 'comercial' },
       { id: '5', name: "Instalado & Operando", color: "#10B981", textClass: "text-emerald-400", bgClass: "bg-emerald-500/10", borderClass: "border-emerald-500/20", type: 'comercial' },
     ],
-    leads: [
-      { id: 'sol-1', name: "Fazenda Reis", company: "Reis Agronegócios", email: "contato@reisagro.com.br", phone: "(34) 99888-0011", status: "Novo", value: "R$ 320.000", date: "Hoje, 08:30", seller: "Carlos Eduardo Mendes", title: "Usina Solar Fotovoltaica 120kWp", priority: "Alta", stageId: '1', pipelineId: 'comercial', timeIdle: 1, tenantName: "Solar Solutions" },
-      { id: 'sol-2', name: "Dr. Roberto Silveira", company: "Condomínio Golden", email: "roberto@silveira.med.br", phone: "(34) 99111-2222", status: "Qualificado", value: "R$ 48.000", date: "Hoje, 09:45", seller: "Ana Silva", title: "Residencial Bifacial 15kWp", priority: "Média", stageId: '2', pipelineId: 'comercial', timeIdle: 3, tenantName: "Solar Solutions" },
-      { id: 'sol-3', name: "Julio Cesar", company: "Panificadora Central", email: "julio@panificadoracentral.com", phone: "(34) 98877-6655", status: "Em Negociação", value: "R$ 115.000", date: "Ontem", seller: "Carlos Eduardo Mendes", title: "Projeto Comercial Telhado 45kWp", priority: "Alta", stageId: '3', pipelineId: 'comercial', timeIdle: 28, tenantName: "Solar Solutions" },
-      { id: 'sol-4', name: "Associação Comercial Uberlândia", company: "ACIU", email: "direcao@aciu.org.br", phone: "(34) 3210-9000", status: "Fechado", value: "R$ 540.000", date: "15 Mai, 11:20", seller: "Ana Silva", title: "Instalação do Parque Solar ACIU", priority: "Alta", stageId: '5', pipelineId: 'comercial', timeIdle: 40, tenantName: "Solar Solutions" },
-    ],
-    finance: [
-      { id: 'f-sol1', description: 'Entrada Usina Reis Agro', category: 'Projetos', status: 'Pago', value: 96000, type: 'Receber', date: 'Hoje' },
-      { id: 'f-sol2', description: 'Compra de Inversores WEG / Painéis', category: 'Insumos', status: 'Pago', value: 180000, type: 'Pagar', date: 'Ontem' },
-      { id: 'f-sol3', description: 'Equipe de Montagem Civil', category: 'Mão de Obra', status: 'A Vencer', value: 24000, type: 'Pagar', date: '03/06/2026' },
-    ],
-    appointments: []
   },
   {
     id: "aesthetic_clinic",
@@ -102,22 +78,6 @@ export const DEMO_PRESETS = [
       { id: '4', name: "Fechamento de Pacote / Injet", color: "#F59E0B", textClass: "text-amber-400", bgClass: "bg-amber-500/10", borderClass: "border-amber-500/20", type: 'comercial' },
       { id: '5', name: "Fase de Aplicação & Botox Ativo", color: "#10B981", textClass: "text-emerald-400", bgClass: "bg-emerald-500/10", borderClass: "border-emerald-500/20", type: 'comercial' },
     ],
-    leads: [
-      { id: 'clin-1', name: "Dra. Patrícia Albuquerque", company: "Paciência Individual", email: "patricia@gmail.com", phone: "(11) 99222-3311", status: "Novo", value: "R$ 4.800", date: "Hoje, 09:30", seller: "Dra. Ana Costa", title: "Harmonização Facial + Botox", priority: "Alta", stageId: '1', pipelineId: 'comercial', timeIdle: 1, tenantName: "Clínica Vida" },
-      { id: 'clin-2', name: "Sônia Regina", company: "Unidade Paulista", email: "soniaregina@ig.com.br", phone: "(11) 98123-4567", status: "Qualificado", value: "R$ 8.200", date: "Hoje, 10:45", seller: "Dr. Lucas Ferro", title: "Protocolo Ultraformer III", priority: "Média", stageId: '2', pipelineId: 'comercial', timeIdle: 4, tenantName: "Clínica Vida" },
-      { id: 'clin-3', name: "Cláudia Valéria", company: "Unidade Paulista", email: "claudinha@uol.com.br", phone: "(11) 97112-9988", status: "Em Negociação", value: "R$ 1.200", date: "Ontem", seller: "Dra. Ana Costa", title: "Retoque e Fios de PDO", priority: "Baixa", stageId: '3', pipelineId: 'comercial', timeIdle: 20, tenantName: "Clínica Vida" },
-      { id: 'clin-4', name: "Alessandra Toledo", company: "Unidade Alphaville", email: "alessandra@toledo.com", phone: "(11) 96324-1122", status: "Fechado", value: "R$ 15.000", date: "10 Mai, 11:20", seller: "Dra. Ana Costa", title: "Pacote Liftera Full Face + Estética", priority: "Alta", stageId: '5', pipelineId: 'comercial', timeIdle: 55, tenantName: "Clínica Vida" },
-    ],
-    finance: [
-      { id: 'f-cl1', description: 'Serviço Harmonização Patrícia', category: 'Procedimentos', status: 'Pago', value: 4800, type: 'Receber', date: 'Hoje' },
-      { id: 'f-cl2', description: 'Compra de Toxina Botulínica (Allergan)', category: 'Estok Clínico', status: 'Pago', value: 3400, type: 'Pagar', date: 'Hoje' },
-      { id: 'f-cl3', description: 'Comissão Esteticista Unidade', category: 'Profissionais', status: 'A Vencer', value: 480, type: 'Pagar', date: '30/05/2026' },
-    ],
-    appointments: [
-      { id: 'apt-preset1', time: '08:30', patient: 'Patrícia Albuquerque', drId: '2', drName: 'Dra. Ana Costa', status: 'Confirmado', type: 'Procedimento', room: 'Sala de Estética', specialty: 'Dermatologia', phone: '5511992223311', date: new Date().toISOString().split('T')[0] },
-      { id: 'apt-preset2', time: '10:00', patient: 'Sônia Regina', drId: '1', drName: 'Dr. Lucas Ferro', status: 'Em Atendimento', type: 'Check-up', room: 'Consultório 01', specialty: 'Cardiologia', phone: '5511981234567', date: new Date().toISOString().split('T')[0] },
-      { id: 'apt-preset3', time: '11:30', patient: 'Cláudia Valéria', drId: '2', drName: 'Dra. Ana Costa', status: 'Atrasado', type: 'Teleconsulta', room: 'Virtual (Meet)', specialty: 'Dermatologia', phone: '5511971129988', date: new Date().toISOString().split('T')[0] },
-    ]
   },
   {
     id: "real_estate",
@@ -144,16 +104,5 @@ export const DEMO_PRESETS = [
       { id: '4', name: "Análise de Crédito / Pasta", color: "#F59E0B", textClass: "text-amber-400", bgClass: "bg-amber-500/10", borderClass: "border-amber-500/20", type: 'comercial' },
       { id: '5', name: "Dono Recebeu / Chaves", color: "#10B981", textClass: "text-emerald-400", bgClass: "bg-emerald-500/10", borderClass: "border-emerald-500/20", type: 'comercial' },
     ],
-    leads: [
-      { id: 're-1', name: "Dr. Maurício Andrade", company: "Andrade Advogados", email: "mauricio@andrade.com.br", phone: "(11) 98877-9911", status: "Novo", value: "R$ 4.200.000", date: "Hoje, 11:00", seller: "Carlos Eduardo Mendes", title: "Cobertura Duplex 4 Suítes - Itaim Bibi", priority: "Alta", stageId: '2', pipelineId: 'comercial', timeIdle: 1, tenantName: "Imobiliária Prime" },
-      { id: 're-2', name: "Andréia Vasconcellos", company: "Pessoa Física", email: "andreia@uol.com.br", phone: "(11) 96123-4567", status: "Qualificado", value: "R$ 2.800.000", date: "Hoje, 14:15", seller: "Ana Silva", title: "Casa Alphaville Residencial 02", priority: "Alta", stageId: '3', pipelineId: 'comercial', timeIdle: 2, tenantName: "Imobiliária Prime" },
-      { id: 're-3', name: "Bruno Silveira", company: "Silveira Tech", email: "bruno@silveira.io", phone: "(11) 97100-2233", status: "Em Negociação", value: "R$ 850.000", date: "Ontem", seller: "Carlos Eduardo Mendes", title: "Apartamento Mobiliado 2 Qts Pinheiros", priority: "Média", stageId: '4', pipelineId: 'comercial', timeIdle: 18, tenantName: "Imobiliária Prime" },
-    ],
-    finance: [
-      { id: 'f-re1', description: 'Sinal Duplex Andrade', category: 'Intermediação', status: 'Pago', value: 240000, type: 'Receber', date: 'Hoje' },
-      { id: 'f-re2', description: 'Tráfego Pago Meta Ads Imóveis', category: 'Marketing', status: 'Pago', value: 8500, type: 'Pagar', date: 'Ontem' },
-      { id: 'f-re3', description: 'Parceria Corretor Externo', category: 'Comissão', status: 'A Vencer', value: 35000, type: 'Pagar', date: '04/06/2026' },
-    ],
-    appointments: []
   }
 ];
