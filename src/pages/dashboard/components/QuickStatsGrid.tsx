@@ -29,15 +29,18 @@ export function QuickStatsGrid({ stats }: QuickStatsGridProps) {
                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
               </div>
               <div className="text-right">
-                <span className={`text-[10px] font-black ${stat.trend.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'} flex items-center justify-end gap-0.5 bg-white/5 px-2 py-1 rounded-full border border-white/5`}>
+                <span className={`text-[10px] ${stat.trend.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'} flex items-center justify-end gap-0.5 bg-white/5 px-2 py-1 rounded-full border border-white/5`}>
+
                   {stat.trend} {stat.trend.startsWith('+') ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
                 </span>
               </div>
             </div>
             <div className="mt-6 relative z-10">
-              <h2 className="text-3xl font-black text-white font-mono tracking-tighter">{stat.value}</h2>
+              <h2 className="text-3xl text-white tracking-tighter">{stat.value}</h2>
+
               <div className="flex items-center justify-between mt-2">
-                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{stat.label}</p>
+                  <p className="text-[10px] text-slate-500 uppercase tracking-widest">{stat.label}</p>
+
                   <span className="text-[9px] text-slate-400 font-medium">Proj: {stat.forecast}</span>
               </div>
             </div>

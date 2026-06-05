@@ -52,9 +52,7 @@ export default function Equipe() {
     setNewSquadData,
     expandedSquads,
     squads,
-    setSquads,
     team,
-    setTeam,
     logs,
     toggleSquad,
     filter,
@@ -65,10 +63,12 @@ export default function Equipe() {
     filteredTeam,
     paginatedLogs,
     totalPages,
-    moveMember
+    moveMember,
+    addMember,
+    addSquad,
   } = useEquipe();
 
-  const handleSaveMember = (data: any) => {
+  const handleSaveMember = async (data: any) => {
     const newMember: TeamMember = {
       name: data.nome,
       role: data.cargo,
@@ -78,7 +78,7 @@ export default function Equipe() {
       status: "Ativo",
       squad: data.squad || "Sem squad"
     };
-    setTeam((prev) => [newMember, ...prev]);
+    await addMember(newMember);
     toast.success("Membro adicionado à equipe com sucesso!");
     setIsModalOpen(false);
   };
@@ -153,9 +153,9 @@ export default function Equipe() {
                       <Button 
                         size="sm" 
                         className="w-full h-8 text-[11px] font-bold bg-blue-600 hover:bg-blue-700"
-                        onClick={() => {
+                        onClick={async () => {
                           if (newSquadData.name) {
-                            setSquads([...squads, { name: newSquadData.name, leader: newSquadData.leader }]);
+                            await addSquad({ name: newSquadData.name, leader: newSquadData.leader });
                             setNewSquadData({ name: "", leader: "" });
                             setNewSquadExpanded(false);
                           }

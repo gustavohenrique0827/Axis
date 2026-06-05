@@ -137,6 +137,7 @@ export default function Dashboard() {
         {/* Quick Stats Grid */}
         <QuickStatsGrid stats={stats} />
 
+
         <AnimatePresence mode="wait">
           {activeTab === 'executivo' && (
             <StrategicalView

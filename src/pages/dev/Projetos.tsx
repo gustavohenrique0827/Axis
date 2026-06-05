@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { FolderCode, Plus, Search, Clock, MoreHorizontal, Star, Bug } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
 import { NovoProjetoDevModal, type NovoProjetoPayload } from "./modals/NovoProjetoDevModal";
+import { useDevProjects } from "./hooks/useDevProjects";
 
 const STATUS_COLORS: Record<string, string> = {
   "Em Produção": "bg-emerald-500/15 text-emerald-400 border-emerald-500/25",
@@ -12,87 +13,6 @@ const STATUS_COLORS: Record<string, string> = {
   "Pausado": "bg-slate-500/15 text-slate-400 border-slate-500/25",
   "Concluído": "bg-indigo-500/15 text-indigo-400 border-indigo-500/25",
 };
-
-const MOCK_PROJECTS = [
-  {
-    id: 1,
-    name: "Plataforma Axis CRM",
-    description: "Sistema principal de CRM e gestão multitenant da G-Tech.",
-    status: "Em Desenvolvimento",
-    progress: 72,
-    stack: ["React", "TypeScript", "Supabase"],
-    team: ["G.H.", "M.L.", "A.R."],
-    lastCommit: "2h atrás",
-    openIssues: 8,
-    sprints: 6,
-    stars: 14,
-  },
-  {
-    id: 2,
-    name: "API Gateway v3",
-    description: "Novo gateway de APIs com rate limiting, autenticação e logs centralizados.",
-    status: "Em Planejamento",
-    progress: 20,
-    stack: ["Node.js", "Fastify", "Redis"],
-    team: ["G.H.", "P.C."],
-    lastCommit: "1 dia atrás",
-    openIssues: 3,
-    sprints: 1,
-    stars: 5,
-  },
-  {
-    id: 3,
-    name: "App Mobile Alunos",
-    description: "Aplicativo mobile para alunos acessarem turmas, conteúdos e certificados.",
-    status: "Em Desenvolvimento",
-    progress: 45,
-    stack: ["React Native", "Expo", "Supabase"],
-    team: ["A.R.", "L.M.", "T.S."],
-    lastCommit: "4h atrás",
-    openIssues: 12,
-    sprints: 3,
-    stars: 9,
-  },
-  {
-    id: 4,
-    name: "Dashboard Analytics BI",
-    description: "Painel de BI com métricas avançadas, gráficos e relatórios exportáveis.",
-    status: "Em Produção",
-    progress: 100,
-    stack: ["React", "Recharts", "PostgreSQL"],
-    team: ["G.H.", "M.L."],
-    lastCommit: "5 dias atrás",
-    openIssues: 1,
-    sprints: 4,
-    stars: 21,
-  },
-  {
-    id: 5,
-    name: "Módulo Financeiro 2.0",
-    description: "Refatoração completa do módulo financeiro com integração bancária open finance.",
-    status: "Em Planejamento",
-    progress: 8,
-    stack: ["React", "TypeScript", "OpenFinance API"],
-    team: ["G.H.", "P.C.", "A.R."],
-    lastCommit: "3 dias atrás",
-    openIssues: 0,
-    sprints: 0,
-    stars: 7,
-  },
-  {
-    id: 6,
-    name: "SDK de Integrações",
-    description: "SDK JavaScript/TypeScript para parceiros integrarem o Axis em suas plataformas.",
-    status: "Concluído",
-    progress: 100,
-    stack: ["TypeScript", "npm", "Vitest"],
-    team: ["M.L."],
-    lastCommit: "2 semanas atrás",
-    openIssues: 0,
-    sprints: 2,
-    stars: 33,
-  },
-];
 
 const STACK_COLORS: Record<string, string> = {
   "React": "bg-cyan-500/10 text-cyan-400",
@@ -112,17 +32,18 @@ const STACK_COLORS: Record<string, string> = {
 };
 
 export default function Projetos() {
+  const { projects, addProject } = useDevProjects();
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('Todos');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleSaveprojeto = (_data: NovoProjetoPayload) => {
-    // integração com estado/API aqui
+  const handleSaveProjeto = async (data: NovoProjetoPayload) => {
+    await addProject(data);
   };
 
-  const statuses = ['Todos', ...Array.from(new Set(MOCK_PROJECTS.map(p => p.status)))];
+  const statuses = ['Todos', ...Array.from(new Set(projects.map(p => p.status)))];
 
-  const filtered = MOCK_PROJECTS.filter(p => {
+  const filtered = projects.filter(p => {
     const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.description.toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === 'Todos' || p.status === filterStatus;
     return matchSearch && matchStatus;
@@ -169,7 +90,7 @@ export default function Projetos() {
         {/* Projetos Grid */}
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map(project => (
-            <Card key={project.id} className="p-6 bg-[#111827]/80 border-white/5 hover:border-blue-500/20 transition-all duration-200 group flex flex-col">
+            <Card key={String(project.id)} className="p-6 bg-[#111827]/80 border-white/5 hover:border-blue-500/20 transition-all duration-200 group flex flex-col">
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="p-2.5 rounded-xl bg-blue-600/10 text-blue-400 shrink-0 group-hover:scale-110 transition-transform">
@@ -210,7 +131,7 @@ export default function Projetos() {
               {/* Footer */}
               <div className="flex items-center justify-between pt-4 border-t border-white/5">
                 <div className="flex items-center gap-3">
-                  <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border ${STATUS_COLORS[project.status]}`}>
+                  <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border ${STATUS_COLORS[project.status] || 'bg-slate-500/15 text-slate-400 border-slate-500/25'}`}>
                     {project.status}
                   </span>
                 </div>
@@ -242,7 +163,7 @@ export default function Projetos() {
       <NovoProjetoDevModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveprojeto}
+        onSave={handleSaveProjeto}
       />
     </PageContainer>
   );

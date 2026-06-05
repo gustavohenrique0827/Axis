@@ -81,12 +81,15 @@ export default function Dashboard() {
           <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 backdrop-blur-xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
+                <p className="text-xs text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
                 <h3 className="text-2xl font-black text-white">{stat.value}</h3>
               </div>
+
+
               <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
                 <stat.icon className="w-6 h-6" />
               </div>
+
             </div>
           </Card>
         ))}
@@ -95,18 +98,18 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <Card className="p-6 bg-[#111827]/80 border-white/5 backdrop-blur-xl">
           <div className="flex items-center justify-between mb-8">
-             <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+             <h3 className="text-sm text-white uppercase tracking-widest flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-blue-400" /> Correlação: Score IA vs Conversão
              </h3>
              <div className="flex items-center gap-6">
                 <div className="hidden md:flex gap-4">
                   <div className="flex items-center gap-1.5">
                     <div className="w-3 h-3 rounded-full bg-blue-500" />
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Score IA</span>
+                    <span className="text-[10px] text-slate-400 uppercase">Score IA</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Conversão %</span>
+                    <span className="text-[10px] text-slate-400 uppercase">Conversão %</span>
                   </div>
                 </div>
                 <Button 
@@ -119,7 +122,7 @@ export default function Dashboard() {
                       error: 'Falha ao exportar insights.',
                     });
                   }}
-                  className="bg-blue-600/10 border-blue-500/20 text-blue-400 hover:bg-blue-600/20 hover:text-blue-300 h-8 gap-2 text-[10px] font-bold uppercase"
+                  className="bg-blue-600/10 border-blue-500/20 text-blue-400 hover:bg-blue-600/20 hover:text-blue-300 h-8 gap-2 text-[10px] uppercase"
                 >
                   <FileText className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Exportar Insights</span>
@@ -161,7 +164,7 @@ export default function Dashboard() {
         </Card>
 
         <Card className="p-6 bg-[#111827]/80 border-white/5 backdrop-blur-xl">
-           <h3 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2 mb-8">
+             <h3 className="text-sm text-white uppercase tracking-widest flex items-center gap-2 mb-8">
               <Target className="w-4 h-4 text-purple-400" /> Volume de Leads Prospectados
            </h3>
            <div className="h-[300px] w-full">
@@ -198,12 +201,12 @@ export default function Dashboard() {
           </div>
           <div className="mt-8 flex gap-2">
              <div className="flex-1 p-4 bg-white/5 rounded-2xl border border-white/5">
-                <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">Crescimento WoW</p>
-                <p className="text-lg font-black text-emerald-400">+12%</p>
+                <p className="text-[10px] text-slate-500 uppercase mb-1">Crescimento WoW</p>
+                <p className="text-lg text-emerald-400">+12%</p>
              </div>
              <div className="flex-1 p-4 bg-white/5 rounded-2xl border border-white/5">
-                <p className="text-[10px] text-slate-500 font-bold uppercase mb-1">CAC Médio</p>
-                <p className="text-lg font-black text-blue-400">R$ 142</p>
+                <p className="text-[10px] text-slate-500 uppercase mb-1">CAC Médio</p>
+                <p className="text-lg text-blue-400">R$ 142</p>
              </div>
           </div>
         </Card>

@@ -1,26 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Plus, Search, AlertCircle, CheckCircle2, Circle, Clock, Flame, MessageSquare } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
 import { NovaIssueDevModal, type NovaIssuePayload } from "./modals/NovaIssueDevModal";
-
-type Severity = 'crítico' | 'alto' | 'médio' | 'baixo';
-type Status = 'aberto' | 'em andamento' | 'em review' | 'fechado';
-
-interface Issue {
-  id: number;
-  title: string;
-  description: string;
-  severity: Severity;
-  status: Status;
-  project: string;
-  assignee: string;
-  reporter: string;
-  createdAt: string;
-  comments: number;
-  labels: string[];
-}
+import { useDevIssues, type Severity, type IssueStatus } from "./hooks/useDevIssues";
 
 const SEVERITY_STYLE: Record<Severity, string> = {
   crítico: 'bg-red-500/15 text-red-400 border-red-500/30',
@@ -29,52 +13,42 @@ const SEVERITY_STYLE: Record<Severity, string> = {
   baixo: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
 };
 
-const STATUS_STYLE: Record<Status, string> = {
+const STATUS_STYLE: Record<IssueStatus, string> = {
   aberto: 'text-red-400',
   'em andamento': 'text-amber-400',
   'em review': 'text-indigo-400',
   fechado: 'text-emerald-400',
 };
 
-const STATUS_ICON: Record<Status, React.FC<any>> = {
+const STATUS_ICON = {
   aberto: Circle,
   'em andamento': AlertCircle,
   'em review': Clock,
   fechado: CheckCircle2,
 };
 
-const MOCK_ISSUES: Issue[] = [
-  { id: 247, title: "Timeout na requisição de checkout após 30s", description: "Usuários relatam erro 504 ao finalizar compras com mais de 3 itens no carrinho.", severity: 'crítico', status: 'em andamento', project: "Plataforma Axis CRM", assignee: "G.H.", reporter: "M.L.", createdAt: "1h atrás", comments: 5, labels: ["checkout", "performance", "backend"] },
-  { id: 246, title: "Layout quebrado em mobile no pipeline Kanban", description: "Cards do pipeline ficam sobrepostos em telas menores que 375px de largura.", severity: 'alto', status: 'em review', project: "Plataforma Axis CRM", assignee: "T.S.", reporter: "A.R.", createdAt: "3h atrás", comments: 2, labels: ["mobile", "crm", "ui"] },
-  { id: 245, title: "Emails de confirmação não estão sendo enviados", description: "Após a atualização do SMTP, os emails de confirmação de matrícula pararam.", severity: 'crítico', status: 'aberto', project: "App Mobile Alunos", assignee: "P.C.", reporter: "G.H.", createdAt: "5h atrás", comments: 8, labels: ["email", "smtp", "educação"] },
-  { id: 244, title: "Filtros de data no relatório financeiro retornam incorreto", description: "Ao filtrar por mês, o sistema inclui transações do mês anterior na contagem.", severity: 'alto', status: 'aberto', project: "Plataforma Axis CRM", assignee: "M.L.", reporter: "P.C.", createdAt: "1 dia atrás", comments: 3, labels: ["financeiro", "relatórios"] },
-  { id: 243, title: "Erro 403 ao tentar acessar configurações de empresa", description: "Usuários com role 'Administrador' recebem 403 ao tentar editar dados da empresa.", severity: 'médio', status: 'em andamento', project: "Plataforma Axis CRM", assignee: "G.H.", reporter: "L.M.", createdAt: "2 dias atrás", comments: 4, labels: ["auth", "permissões"] },
-  { id: 242, title: "Lentidão ao carregar lista de alunos com mais de 500 registros", description: "A página de alunos demora mais de 8 segundos quando há muitos registros.", severity: 'médio', status: 'fechado', project: "App Mobile Alunos", assignee: "A.R.", reporter: "T.S.", createdAt: "3 dias atrás", comments: 6, labels: ["performance", "educação"] },
-  { id: 241, title: "Botão de exportar CSV não responde no Firefox", description: "No Firefox versão 118+, o botão de exportação de relatório não dispara o download.", severity: 'baixo', status: 'aberto', project: "Plataforma Axis CRM", assignee: "-", reporter: "M.L.", createdAt: "4 dias atrás", comments: 1, labels: ["browser", "exportação"] },
-  { id: 240, title: "Tooltip de gráfico BI sobrepõe sidebar em telas 1366px", description: "Em resoluções de 1366x768, o tooltip dos gráficos ultrapassa a sidebar.", severity: 'baixo', status: 'fechado', project: "Dashboard Analytics BI", assignee: "L.M.", reporter: "G.H.", createdAt: "1 semana atrás", comments: 2, labels: ["ui", "bi"] },
-];
-
 export default function Issues() {
+  const { issues, addIssue } = useDevIssues();
   const [search, setSearch] = useState('');
-  const [filterStatus, setFilterStatus] = useState<'todos' | Status>('todos');
+  const [filterStatus, setFilterStatus] = useState<'todos' | IssueStatus>('todos');
   const [filterSeverity, setFilterSeverity] = useState<'todos' | Severity>('todos');
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleSaveIssue = (_data: NovaIssuePayload) => {
-    // integração com estado/API aqui
+  const handleSaveIssue = async (data: NovaIssuePayload) => {
+    await addIssue(data);
   };
 
-  const filtered = MOCK_ISSUES.filter(issue => {
+  const filtered = issues.filter(issue => {
     const matchSearch = issue.title.toLowerCase().includes(search.toLowerCase()) || issue.labels.some(l => l.includes(search.toLowerCase()));
     const matchStatus = filterStatus === 'todos' || issue.status === filterStatus;
     const matchSeverity = filterSeverity === 'todos' || issue.severity === filterSeverity;
     return matchSearch && matchStatus && matchSeverity;
   });
 
-  const open = MOCK_ISSUES.filter(i => i.status === 'aberto').length;
-  const inProgress = MOCK_ISSUES.filter(i => i.status === 'em andamento').length;
-  const critical = MOCK_ISSUES.filter(i => i.severity === 'crítico').length;
-  const closed = MOCK_ISSUES.filter(i => i.status === 'fechado').length;
+  const open = issues.filter(i => i.status === 'aberto').length;
+  const inProgress = issues.filter(i => i.status === 'em andamento').length;
+  const critical = issues.filter(i => i.severity === 'crítico').length;
+  const closed = issues.filter(i => i.status === 'fechado').length;
 
   return (
     <PageContainer
@@ -151,12 +125,12 @@ export default function Issues() {
             {filtered.map(issue => {
               const StatusIcon = STATUS_ICON[issue.status];
               return (
-                <div key={issue.id} className="flex items-start gap-4 p-5 hover:bg-white/[0.02] transition-colors cursor-pointer group">
+                <div key={String(issue.id)} className="flex items-start gap-4 p-5 hover:bg-white/[0.02] transition-colors cursor-pointer group">
                   <StatusIcon className={`w-4 h-4 mt-0.5 shrink-0 ${STATUS_STYLE[issue.status]}`} />
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-[10px] font-black text-slate-500 font-mono">#{issue.id}</span>
+                      <span className="text-[10px] font-black text-slate-500">#{issue.issueNumber}</span>
                       <h4 className="text-sm font-bold text-white group-hover:text-blue-300 transition-colors">{issue.title}</h4>
                     </div>
                     <p className="text-xs text-slate-500 leading-relaxed mb-2 line-clamp-1">{issue.description}</p>

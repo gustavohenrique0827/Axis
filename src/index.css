@@ -9,12 +9,15 @@
   --color-white-text: #F8FAFC;
   --font-sans: Arial, "Helvetica Neue", Helvetica, ui-sans-serif, system-ui, sans-serif;
   --font-display: Arial, "Helvetica Neue", Helvetica, ui-sans-serif, system-ui, sans-serif;
+  --font-mono: Arial, "Helvetica Neue", Helvetica, ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
   html, body {
     @apply bg-[var(--color-dark-bg)] text-[var(--color-white-text)] antialiased scroll-smooth;
+    font-family: var(--font-sans);
   }
+
 
   /* Dashboard Scale Down (Efeito MacBook) */
   html {
