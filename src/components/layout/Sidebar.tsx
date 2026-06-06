@@ -1,37 +1,6 @@
-import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import {
-  LayoutDashboard,
-  Users,
-  Columns3,
-  CheckSquare,
-  Settings,
-  Mail,
-  Zap,
-  Server,
-  Briefcase,
-  Target,
-  BarChart2,
-  PieChart,
-  Brain,
-  Wallet,
-  FolderOpen,
-  GraduationCap,
-  BookOpen,
-  Award,
-  FileText,
-  Megaphone,
-  Edit3,
-  Share2,
-  Globe,
-  Stethoscope,
-  Calendar,
-  Video,
-  Archive,
-  FlaskConical,
-  BarChart3,
-} from "lucide-react";
+import { Server } from "lucide-react";
 
 import { navSections as defaultNavSections } from "./navData";
 
@@ -124,15 +93,9 @@ export function Sidebar({
         <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 scrollbar-none">
           {navSections
             .filter((section) => {
-              const titleLower = section.title.toLowerCase();
-              if (titleLower.includes("crm") && !isModuleEnabled("crm")) return false;
-              if (titleLower.includes("educação") && !isModuleEnabled("educacao")) return false;
-              if ((titleLower.includes("clínica") || titleLower.includes("clinica")) && !isModuleEnabled("clinica")) return false;
-              if (titleLower.includes("financeiro") && !isModuleEnabled("financeiro") && !isModuleEnabled("produtividade")) return false;
-              if ((titleLower.includes("engajamento") || titleLower.includes("marketing")) && !isModuleEnabled("marketing") && !isModuleEnabled("engajamento")) return false;
-              if ((titleLower.includes("dev") || titleLower.includes("tecnologia")) && !isModuleEnabled("dev")) return false;
-              if (titleLower.includes("gestão do sistema")) return true;
-              return true;
+              const mod = (section as any).reqModule;
+              if (!mod) return true;
+              return isModuleEnabled(mod);
             })
             .map((section, idx) => (
               <div key={idx} className="space-y-1.5">
