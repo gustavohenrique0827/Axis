@@ -273,14 +273,20 @@ export async function fetchTenants() {
       .order("name", { ascending: true });
 
     if (error) {
-      console.error('[Tenants] Erro ao carregar tenants do banco:', error);
+      console.error('[Tenants] ❌ Erro RLS/Supabase ao carregar tenants:', error.message, error.code);
+      return {};
+    }
+
+    console.log(`[Tenants] 📦 Rows retornadas pelo Supabase: ${data?.length ?? 0}`, data?.map((t: any) => t.name));
+
+    if (!data || data.length === 0) {
+      console.warn('[Tenants] ⚠️ Supabase retornou array vazio — verifique RLS na tabela tenants. Execute no SQL Editor: CREATE POLICY "anon_read_tenants" ON public.tenants FOR SELECT TO anon USING (true);');
       return {};
     }
 
     const tenantModules: Record<string, any> = {};
 
-    (data || []).forEach((tenant: any) => {
-      // Prioriza a configuração salva no banco, senão usa o padrão por nicho
+    data.forEach((tenant: any) => {
       tenantModules[tenant.name] = tenant.modules || {
         crm: true,
         sdr: tenant.niche === "Master" || tenant.niche === "Tecnologia",
