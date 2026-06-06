@@ -43,6 +43,22 @@ export default function ConfigModulosDemos() {
   const [savingTenant, setSavingTenant] = useState(false);
   const [reloading, setReloading] = useState(false);
 
+  // Busca direta ao montar — não depende do timing do AuthContext
+  useEffect(() => {
+    const loadDirect = async () => {
+      const dbTenants = await fetchTenants();
+      if (Object.keys(dbTenants).length > 0) {
+        const merged: Record<string, any> = {
+          "G-Tech Master": allTenantModules["G-Tech Master"] || {},
+          ...dbTenants
+        };
+        setTenantOptions(Object.keys(merged));
+      }
+    };
+    loadDirect();
+  }, []);
+
+  // Sincroniza quando AuthContext atualiza também
   useEffect(() => {
     setTenantOptions(Object.keys(allTenantModules));
   }, [allTenantModules]);
@@ -57,7 +73,7 @@ export default function ConfigModulosDemos() {
     setActiveModules(updated);
     await updateTenantModules(selectedTenant, updated as any);
     if (selectedTenant === user?.tenantName) {
-      await setSidebarModules(updated);
+      setSidebarModules(updated);
     }
     toast.success(`Módulo "${key.toUpperCase()}" ${updated[key] ? 'ATIVADO' : 'OCULTADO'} para ${selectedTenant}!`);
   };
@@ -89,7 +105,7 @@ export default function ConfigModulosDemos() {
     setActiveModules(preset);
     await updateTenantModules(selectedTenant, preset as any);
     if (selectedTenant === user?.tenantName) {
-      await setSidebarModules(preset);
+      setSidebarModules(preset);
     }
   };
 
