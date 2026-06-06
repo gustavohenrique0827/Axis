@@ -176,6 +176,18 @@ html.light [class*="bg-[var(--color-premium-black)]"]:hover {
   box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 16px -6px rgba(15, 23, 42, 0.04) !important;
 }
 
+/* Tailwind dark slate classes → cinza claro em light mode */
+html.light [class*="bg-slate-900"],
+html.light [class*="bg-slate-800"] {
+  background-color: #F1F5F9 !important;
+  background-image: none !important;
+}
+html.light [class*="bg-slate-950"],
+html.light [class*="bg-slate-900/"] {
+  background-color: #E8EDF5 !important;
+  background-image: none !important;
+}
+
 /* Borders & Dividers */
 html.light [class*="border-white/"],
 html.light [class*="border-slate-800"],

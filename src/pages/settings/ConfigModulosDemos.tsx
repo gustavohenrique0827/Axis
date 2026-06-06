@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import {
-  Cpu, Sparkles, Smartphone, Sun, Activity, RefreshCw, Layers, Database, UserCheck,
-  ArrowRight, Target, Award, DollarSign, Package, MessageSquare, Users, Columns3, Check, Clock, Code2
+  Cpu, Activity, Layers, Database, UserCheck,
+  Target, Award, DollarSign, Package, MessageSquare, Users, Columns3, Clock, Code2,
+  Plus, X, Building2, RefreshCw, ChevronDown
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { motion, AnimatePresence } from "motion/react";
-import { DEMO_PRESETS } from "./constants/demoPresets";
+import { createTenantAdmin, fetchTenants } from "../../lib/supabase";
+
+const NICHES = ["Parceira", "Solar", "Imobiliária", "Clínica", "Tecnologia", "Educação", "Agronegócio", "Varejo"];
 
 export default function ConfigModulosDemos() {
   const { login, user, allTenantModules, updateTenantModules, getTenantModules } = useAuth();
-  const { setSidebarModules, saveAppSetting } = useData();
+  const { setSidebarModules } = useData();
 
   const DEFAULT_MODULES = {
     crm: true,
@@ -30,48 +33,38 @@ export default function ConfigModulosDemos() {
 
   const [selectedTenant, setSelectedTenant] = useState<string>(() => user?.tenantName || "G-Tech Master");
   const [activeModules, setActiveModules] = useState<Record<string, boolean>>(DEFAULT_MODULES);
-
-  const tenantOptions = Object.keys(allTenantModules);
-
+  const [tenantOptions, setTenantOptions] = useState<string[]>(Object.keys(allTenantModules));
   const [simulationRole, setSimulationRole] = useState("Administrador / Sócio");
 
-  const [loadingPresetId, setLoadingPresetId] = useState<string | null>(null);
+  // Add partner state
+  const [showAddTenant, setShowAddTenant] = useState(false);
+  const [newTenantName, setNewTenantName] = useState("");
+  const [newTenantNiche, setNewTenantNiche] = useState("Parceira");
+  const [savingTenant, setSavingTenant] = useState(false);
+  const [reloading, setReloading] = useState(false);
 
-  // Sincroniza os módulos exibidos com a empresa selecionada no banco de dados
+  useEffect(() => {
+    setTenantOptions(Object.keys(allTenantModules));
+  }, [allTenantModules]);
+
   useEffect(() => {
     const modules = getTenantModules(selectedTenant);
     setActiveModules({ ...DEFAULT_MODULES, ...modules });
   }, [selectedTenant, allTenantModules]);
 
-  // Update modules list helper
   const handleToggleModule = async (key: string) => {
-    const updated = {
-      ...activeModules,
-      [key]: !activeModules[key]
-    };
+    const updated = { ...activeModules, [key]: !activeModules[key] };
     setActiveModules(updated);
-
-    // Persiste no banco de dados (tabela tenants) via AuthContext
     await updateTenantModules(selectedTenant, updated as any);
-
-    // Se for o tenant do próprio usuário, atualiza a visão local
     if (selectedTenant === user?.tenantName) {
       await setSidebarModules(updated);
     }
     toast.success(`Módulo "${key.toUpperCase()}" ${updated[key] ? 'ATIVADO' : 'OCULTADO'} para ${selectedTenant}!`);
   };
 
-  // Switch role helper
   const handleSwitchRole = (role: string) => {
     setSimulationRole(role);
-
-    if (user) {
-      const updatedUser = {
-        ...user,
-        role: role
-      };
-      login(updatedUser);
-    }
+    if (user) login({ ...user, role });
     toast.info(`Simulando visualização para a função: ${role}`);
   };
 
@@ -79,76 +72,57 @@ export default function ConfigModulosDemos() {
     let preset: typeof activeModules;
     switch (presetName) {
       case "ALL_ACTIVE":
-        preset = { crm: true, educacao: true, produtividade: true, financeiro: true, catalogo: true, engajamento: true, rh: true, bi: true, clinica: true, marketing: true };
+        preset = { crm: true, educacao: true, produtividade: true, financeiro: true, catalogo: true, engajamento: true, rh: true, bi: true, clinica: true, marketing: true, dev: true };
         toast.info("Aplicado Preset: Ecossistema Global (Todos Ativos)");
         break;
       case "EDUCACAO":
-        preset = { crm: true, educacao: true, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: true };
-        toast.info("Aplicado Preset: Admissão & Educação (Foco Turmas e Alunos)");
+        preset = { crm: true, educacao: true, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: true, dev: false };
+        toast.info("Aplicado Preset: Admissão & Educação");
         break;
       case "SDR_CLOSER":
-        preset = { crm: true, educacao: false, produtividade: true, financeiro: false, catalogo: false, engajamento: true, rh: false, bi: true, clinica: false, marketing: true };
-        toast.info("Aplicado Preset: Agência SDR & Closers (Estrutura Leve / Funil)");
+        preset = { crm: true, educacao: false, produtividade: true, financeiro: false, catalogo: false, engajamento: true, rh: false, bi: true, clinica: false, marketing: true, dev: false };
+        toast.info("Aplicado Preset: Agência SDR & Closers");
         break;
       default:
         return;
     }
     setActiveModules(preset);
-
-    // Persiste o preset no banco de dados para a empresa selecionada
     await updateTenantModules(selectedTenant, preset as any);
-
     if (selectedTenant === user?.tenantName) {
       await setSidebarModules(preset);
     }
   };
 
-  // Demo Importer Main Logic
-  const handleImportPreset = async (preset: typeof DEMO_PRESETS[0]) => {
-    setLoadingPresetId(preset.id);
+  const handleReloadTenants = async () => {
+    setReloading(true);
+    const dbTenants = await fetchTenants();
+    if (Object.keys(dbTenants).length > 0) {
+      const merged: Record<string, any> = { "G-Tech Master": allTenantModules["G-Tech Master"] || {}, ...dbTenants };
+      setTenantOptions(Object.keys(merged));
+      toast.success(`${Object.keys(dbTenants).length} empresa(s) carregada(s) do banco.`);
+    } else {
+      toast.error("Nenhuma empresa parceira encontrada no banco.");
+    }
+    setReloading(false);
+  };
 
-    setTimeout(async () => {
-      // 1. Update session niche & tenant name
-      if (user) {
-        const updatedUser = {
-          ...user,
-          tenantNiche: preset.niche as any,
-          tenantName: preset.name
-        };
-        login(updatedUser);
-      }
-
-      // 2. Set specific active modules for this demo template
-      const fullModulesList = {
-        crm: preset.modules.crm,
-        educacao: preset.modules.educacao,
-        clinica: preset.modules.clinica,
-        financeiro: preset.modules.financeiro,
-        catalogo: preset.modules.crm,
-        marketing: preset.modules.marketing,
-        engajamento: preset.modules.engajamento,
-        rh: preset.modules.rh,
-        bi: preset.modules.bi,
-        produtividade: true // Always true helper
-      };
-
-      setActiveModules(fullModulesList);
-      await setSidebarModules(fullModulesList);
-      await saveAppSetting(`axis_modules_${selectedTenant}`, fullModulesList);
-
-      // Dispatch global events for instant sync
-      window.dispatchEvent(new CustomEvent("axis_modules_changed", { detail: fullModulesList }));
-      window.dispatchEvent(new CustomEvent("axis_brand_changed"));
-
-      setLoadingPresetId(null);
-      toast.success(`Demo "${preset.name}" carregada perfeitamente! Dados e funis reconfigurados.`);
-
-      // Slight delay and dispatch visual reload
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-
-    }, 1500);
+  const handleAddTenant = async () => {
+    if (!newTenantName.trim()) {
+      toast.error("Informe o nome da empresa.");
+      return;
+    }
+    setSavingTenant(true);
+    const result = await createTenantAdmin(newTenantName.trim(), newTenantNiche);
+    if (result.success) {
+      toast.success(`Empresa "${newTenantName}" cadastrada com sucesso!`);
+      setNewTenantName("");
+      setNewTenantNiche("Parceira");
+      setShowAddTenant(false);
+      await handleReloadTenants();
+    } else {
+      toast.error(`Erro: ${result.error}`);
+    }
+    setSavingTenant(false);
   };
 
   return (
@@ -180,15 +154,12 @@ export default function ConfigModulosDemos() {
         </div>
       </div>
 
-
-
       {/* INDIVIDUAL MODULE ACTIVATION SWITCHES */}
       {(user?.isMaster || user?.tenantName?.includes("G-Tech")) && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* Module flags */}
           <div className="lg:col-span-2 space-y-4">
-            {/* Modular Sidebar Section */}
             <div className="space-y-6">
               <div className="space-y-1">
                 <h3 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
@@ -222,25 +193,102 @@ export default function ConfigModulosDemos() {
                 </div>
               </div>
 
-              {/* Tenant selector for Master */}
+              {/* Tenant selector */}
               <div className="p-4 bg-slate-900/50 border border-white/5 rounded-2xl space-y-3">
                 <div className="flex items-center justify-between gap-4">
                   <div>
                     <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Tenant Selecionado</p>
                     <h4 className="text-sm font-bold text-white mt-1">{selectedTenant}</h4>
                   </div>
-                  <span className="text-[10px] uppercase tracking-widest text-slate-400 bg-white/5 px-3 py-2 rounded-full">Master</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] uppercase tracking-widest text-slate-400 bg-white/5 px-3 py-2 rounded-full">Master</span>
+                    <button
+                      onClick={handleReloadTenants}
+                      disabled={reloading}
+                      title="Recarregar parceiros do banco"
+                      className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-slate-400 hover:text-white transition-all"
+                    >
+                      <RefreshCw className={`w-3.5 h-3.5 ${reloading ? 'animate-spin' : ''}`} />
+                    </button>
+                    <button
+                      onClick={() => setShowAddTenant(v => !v)}
+                      title="Cadastrar nova empresa parceira"
+                      className="p-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/25 rounded-xl text-blue-400 hover:text-blue-300 transition-all"
+                    >
+                      {showAddTenant ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
                 </div>
+
+                {/* Add tenant inline form */}
+                <AnimatePresence>
+                  {showAddTenant && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-4 bg-[#0B1120] border border-blue-500/20 rounded-xl space-y-3">
+                        <div className="flex items-center gap-2 text-blue-400 text-xs font-black uppercase tracking-widest">
+                          <Building2 className="w-4 h-4" /> Cadastrar Nova Empresa Parceira
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Nome da Empresa</label>
+                            <input
+                              value={newTenantName}
+                              onChange={e => setNewTenantName(e.target.value)}
+                              placeholder="Ex: Empresa ABC Ltda"
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Nicho</label>
+                            <div className="relative">
+                              <select
+                                value={newTenantNiche}
+                                onChange={e => setNewTenantNiche(e.target.value)}
+                                className="w-full appearance-none bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50 pr-8"
+                              >
+                                {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
+                              </select>
+                              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleAddTenant}
+                          disabled={savingTenant}
+                          className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+                        >
+                          {savingTenant ? "Cadastrando..." : "Cadastrar Empresa"}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
                 <label className="block text-[12px] uppercase tracking-widest text-slate-400">Selecione a empresa parceira</label>
-                <select
-                  value={selectedTenant}
-                  onChange={(e) => setSelectedTenant(e.target.value)}
-                  className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
-                >
-                  {tenantOptions.map((tenant) => (
-                    <option key={tenant} value={tenant}>{tenant}</option>
-                  ))}
-                </select>
+                {tenantOptions.length <= 1 ? (
+                  <div className="p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-xl text-xs text-yellow-400/80 flex items-center gap-2">
+                    <span>⚠️</span>
+                    <span>Nenhum parceiro cadastrado ainda. Clique em <strong>+</strong> para adicionar ou <strong>↺</strong> para recarregar.</span>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <select
+                      value={selectedTenant}
+                      onChange={(e) => setSelectedTenant(e.target.value)}
+                      className="w-full appearance-none bg-[#0B1120] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] pr-10"
+                    >
+                      {tenantOptions.map((tenant) => (
+                        <option key={tenant} value={tenant}>{tenant}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  </div>
+                )}
                 <p className="text-xs text-slate-500">Como Master, você pode alternar para qualquer empresa parceira listada aqui e ajustar seus módulos.</p>
               </div>
 
@@ -324,8 +372,7 @@ export default function ConfigModulosDemos() {
                         <div className="absolute top-0 bottom-0 left-0 w-1 bg-blue-500" />
                       )}
                       <div className="mt-0.5 shrink-0">
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${isSelected ? "border-blue-500 text-blue-500" : "border-slate-700"
-                          }`}>
+                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${isSelected ? "border-blue-500 text-blue-500" : "border-slate-700"}`}>
                           {isSelected && <span className="w-2 h-2 rounded-full bg-blue-500" />}
                         </div>
                       </div>
@@ -339,7 +386,7 @@ export default function ConfigModulosDemos() {
               </div>
 
               <div className="p-3 bg-blue-500/5 rounded-xl border border-blue-500/10 text-[10px] text-blue-400/90 leading-relaxed">
-                <strong>Regra de Infrestrutura:</strong> Quando logado como Master, o menu lateral libera painéis de servidores globais no SaaS. Alternando sua empresa por demo acima, o banco de dados reseta instantaneamente.
+                <strong>Regra de Infraestrutura:</strong> Quando logado como Master, o menu lateral libera painéis de servidores globais no SaaS. Alternando sua empresa por demo acima, o banco de dados reseta instantaneamente.
               </div>
             </Card>
           </div>

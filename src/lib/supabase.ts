@@ -177,7 +177,7 @@ export async function registerPartner(
   companyName: string,
   email: string,
   password: string,
-  phone: string,
+  _phone: string,
   niche: string
 ): Promise<{ success: boolean; error?: string; userId?: string; tenantId?: string }> {
   if (!supabase) {
@@ -361,6 +361,27 @@ export async function setupMasterUser(): Promise<{ success: boolean; error?: str
     return { success: true };
   } catch (err) {
     return { success: false, error: err instanceof Error ? err.message : 'Erro desconhecido' };
+  }
+}
+
+/**
+ * Cria um novo tenant parceiro diretamente pelo painel admin (sem criar usuário)
+ */
+export async function createTenantAdmin(tenantName: string, niche: string): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: 'Supabase não configurado' };
+  try {
+    const { error } = await supabase.from('tenants').insert({
+      name: tenantName,
+      niche: niche || 'Parceira',
+      plan: 'Standard',
+      status: 'Active',
+      timezone: 'America/Sao_Paulo',
+      modules: { crm: true, sdr: false, advDashboard: false, financeiro: true, marketing: false, educacao: false, clinica: false, produtividade: true, rh: false, bi: false, engajamento: false }
+    });
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Erro desconhecido' };
   }
 }
 
