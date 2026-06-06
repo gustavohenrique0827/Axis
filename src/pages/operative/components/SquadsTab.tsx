@@ -1,7 +1,32 @@
+import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Users2, Target, ChevronDown, Users, Settings2 } from "lucide-react";
+import { Users2, Users, UserPlus, Trophy, Shield, Zap } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { TeamMember, Squad } from "../hooks/useEquipe";
+
+const SQUAD_THEMES = [
+  { from: "from-indigo-800", via: "via-blue-900", to: "to-slate-950", accent: "text-blue-300", ring: "ring-blue-500/50", dot: "bg-blue-400" },
+  { from: "from-emerald-800", via: "via-teal-900", to: "to-slate-950", accent: "text-emerald-300", ring: "ring-emerald-500/50", dot: "bg-emerald-400" },
+  { from: "from-violet-800", via: "via-purple-900", to: "to-slate-950", accent: "text-violet-300", ring: "ring-violet-500/50", dot: "bg-violet-400" },
+  { from: "from-rose-800", via: "via-pink-900", to: "to-slate-950", accent: "text-rose-300", ring: "ring-rose-500/50", dot: "bg-rose-400" },
+  { from: "from-amber-800", via: "via-orange-900", to: "to-slate-950", accent: "text-amber-300", ring: "ring-amber-500/50", dot: "bg-amber-400" },
+];
+
+const ROLE_BADGE: Record<string, string> = {
+  Gestor: "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
+  Closer: "bg-blue-500/20 text-blue-400 border border-blue-500/30",
+  SDR: "bg-violet-500/20 text-violet-400 border border-violet-500/30",
+  Membro: "bg-slate-500/20 text-slate-400 border border-slate-500/30",
+};
+
+const AVATAR_GRADIENTS = [
+  "from-blue-500 to-indigo-600",
+  "from-emerald-500 to-teal-600",
+  "from-violet-500 to-purple-600",
+  "from-rose-500 to-pink-600",
+  "from-amber-500 to-orange-600",
+  "from-cyan-500 to-blue-600",
+];
 
 interface SquadsTabProps {
   squads: Squad[];
@@ -11,111 +36,212 @@ interface SquadsTabProps {
   moveMember: (name: string, newSquad: string) => void;
 }
 
-export function SquadsTab({ squads, team, expandedSquads, toggleSquad, moveMember }: SquadsTabProps) {
+export function SquadsTab({ squads, team, moveMember }: SquadsTabProps) {
+  const [selectedSquad, setSelectedSquad] = useState<string>(squads[0]?.name ?? "");
+  const [addUser, setAddUser] = useState("");
+
+  const selected = squads.find(s => s.name === selectedSquad);
+  const members = team.filter(m => m.squad === selectedSquad);
+  const outside = team.filter(m => m.squad !== selectedSquad);
+
+  function handleAdd() {
+    if (!addUser || !selectedSquad) return;
+    moveMember(addUser, selectedSquad);
+    setAddUser("");
+  }
+
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <div>
         <h2 className="text-3xl font-black text-white tracking-tighter">Gestão de Squads</h2>
         <p className="text-sm text-slate-400 mt-2">Células dinâmicas de conversão e atendimento especializado.</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
-        {squads.map(squad => {
-          const members = team.filter(m => m.squad === squad.name);
-          const isExpanded = expandedSquads.includes(squad.name);
-          return (
-            <div key={squad.name} className={`bg-[#111827]/40 border rounded-3xl overflow-hidden transition-all duration-500 ${isExpanded ? 'border-blue-500/20 shadow-2xl shadow-blue-500/5' : 'border-white/5'}`}>
-              <button 
-                className={`w-full flex items-center justify-between p-6 transition-all ${isExpanded ? 'bg-blue-600/[0.03]' : 'hover:bg-white/[0.02]'}`}
-                onClick={() => toggleSquad(squad.name)}
-              >
-                <div className="flex items-center gap-6">
-                   <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black transition-all ${isExpanded ? 'bg-blue-600 text-white shadow-xl shadow-blue-600/30 rotate-0' : 'bg-slate-800 text-slate-600 border border-white/5 rotate-[-10deg]'}`}>
-                      {squad.name[0]}
-                   </div>
-                   <div className="text-left">
-                      <span className="text-xl font-black text-white block tracking-tight">{squad.name}</span>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-[10px] text-slate-500 uppercase font-black tracking-[0.15em] flex items-center gap-1.5"><Users2 className="w-3 h-3"/> {members.length} membros</span>
-                        <span className="text-slate-700">&bull;</span>
-                        <span className="text-[10px] text-blue-500 opacity-80 uppercase font-black tracking-[0.15em] flex items-center gap-1.5"><Target className="w-3 h-3"/> {members.reduce((acc, curr) => acc + (typeof curr.deals === 'number' ? curr.deals : parseInt(curr.deals as string) || 0), 0)} conversões</span>
-                      </div>
-                   </div>
-                </div>
-                <div className="flex items-center gap-8">
-                   <div className="text-right hidden sm:block">
-                      <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest block mb-1">Squad Lead</span>
-                      <span className="text-xs text-white font-bold">{squad.leader}</span>
-                   </div>
-                   <div className={`w-10 h-10 rounded-full flex items-center justify-center bg-white/5 text-slate-500 transition-transform duration-500 ${isExpanded ? 'rotate-180 bg-blue-600/10 text-blue-500' : ''}`}>
-                     <ChevronDown className="w-5 h-5" />
-                   </div>
-                </div>
-              </button>
-              
-              <AnimatePresence>
-                {isExpanded && (
-                  <motion.div 
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
-                    className="border-t border-white/5"
+      <div className="grid lg:grid-cols-3 gap-6 items-start">
+        {/* Squad Cards Grid */}
+        <div className="lg:col-span-2">
+          {squads.length === 0 ? (
+            <div className="h-64 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-3xl gap-3">
+              <Users2 className="w-10 h-10 text-slate-700" />
+              <p className="text-sm font-black text-slate-500 uppercase tracking-widest">Nenhuma squad criada</p>
+              <p className="text-xs text-slate-600">Use o painel lateral para criar sua primeira squad</p>
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-4">
+              {squads.map((squad, i) => {
+                const theme = SQUAD_THEMES[i % SQUAD_THEMES.length];
+                const count = team.filter(m => m.squad === squad.name).length;
+                const isActive = selectedSquad === squad.name;
+
+                return (
+                  <motion.button
+                    key={squad.name}
+                    onClick={() => setSelectedSquad(squad.name)}
+                    className={`relative h-60 rounded-3xl overflow-hidden text-left transition-all ${
+                      isActive ? `ring-2 ${theme.ring} shadow-2xl` : "opacity-80 hover:opacity-100"
+                    }`}
+                    whileHover={{ scale: isActive ? 1 : 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                   >
-                    <div className="p-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
-                      <div className="space-y-6">
-                        <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em]">Composição Atual</h4>
-                        <div className="space-y-2">
-                          {members.map(m => (
-                            <div key={m.name} className="flex items-center justify-between p-4 bg-white/[0.02] rounded-2xl border border-white/5 hover:border-white/10 transition-all group">
-                               <div className="flex items-center gap-3">
-                                  <div className="w-8 h-8 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-[10px] font-black text-white">
-                                    {m.name.split(' ').map(n=>n[0]).join('')}
-                                  </div>
-                                  <div>
-                                     <div className="text-xs font-black text-white group-hover:text-blue-400 transition-colors">{m.name}</div>
-                                     <div className="text-[9px] text-slate-500 font-bold uppercase tracking-widest">{m.role}</div>
-                                  </div>
-                               </div>
-                               <Button variant="ghost" size="sm" className="h-8 w-8 rounded-lg p-0 hover:bg-white/10"><Settings2 className="w-4 h-4 text-slate-500" /></Button>
-                            </div>
-                          ))}
-                          {members.length === 0 && (
-                            <div className="py-12 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-3xl">
-                               <Users className="w-8 h-8 text-slate-700 mb-2" />
-                               <span className="text-xs text-slate-600 font-bold">Nenhum membro alocado</span>
-                            </div>
-                          )}
-                        </div>
+                    {/* Background gradient */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${theme.from} ${theme.via} ${theme.to}`} />
+
+                    {/* Large decorative letter */}
+                    <div className="absolute -bottom-4 -right-4 text-[140px] font-black text-white/5 leading-none select-none pointer-events-none">
+                      {squad.name[0]}
+                    </div>
+
+                    {/* Trophy icon decoration */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.07]">
+                      <Trophy className="w-32 h-32 text-white" />
+                    </div>
+
+                    {/* Top badge */}
+                    <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 px-2.5 py-1 bg-black/30 backdrop-blur-sm rounded-full border border-white/10">
+                        <div className={`w-1.5 h-1.5 rounded-full ${isActive ? `${theme.dot} animate-pulse` : "bg-white/30"}`} />
+                        <span className="text-[9px] font-black text-white uppercase tracking-widest">{squad.name}</span>
                       </div>
-                      
-                      <div className="space-y-6">
-                        <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-[0.2em] flex items-center justify-between">
-                          Reorganização Operacional
-                          <span className="text-[9px] lowercase font-medium text-slate-600">Mover membros de outras squads</span>
-                        </h4>
-                        <div className="p-6 bg-black/20 rounded-3xl border border-white/5 space-y-4">
-                           <select 
-                             className="w-full bg-[#0B1120] text-xs font-bold border border-white/10 p-3 rounded-2xl text-white outline-none focus:border-blue-500 transition-all appearance-none"
-                             onChange={(e) => {
-                               const name = e.target.value;
-                               if (name && name !== 'Selecionar colaborador...') moveMember(name, squad.name);
-                             }}
-                           >
-                             <option value="">Selecionar colaborador...</option>
-                             {team.filter(m => m.squad !== squad.name).map(m => m.name).map(n => <option key={n} value={n}>{n}</option>)}
-                           </select>
-                           <p className="text-[10px] text-slate-500 leading-relaxed italic px-2">Ao mover um colaborador, a alteração será imediatamente refletida nos KPIs da squad e registrada no log de auditoria global.</p>
-                        </div>
+                      <div className="flex items-center gap-1 px-2.5 py-1 bg-black/30 backdrop-blur-sm rounded-full border border-white/10">
+                        <Users2 className="w-3 h-3 text-white/60" />
+                        <span className="text-[9px] font-black text-white">{count}</span>
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+
+                    {/* Bottom info */}
+                    <div className="absolute bottom-0 left-0 right-0 p-5">
+                      <h3 className="text-2xl font-black text-white tracking-tighter uppercase leading-none">
+                        {squad.name}
+                      </h3>
+                      {squad.leader && (
+                        <p className={`text-xs font-bold mt-1.5 ${theme.accent} opacity-80`}>
+                          Líder: {squad.leader}
+                        </p>
+                      )}
+                    </div>
+                  </motion.button>
+                );
+              })}
             </div>
-          );
-        })}
+          )}
+        </div>
+
+        {/* Member Panel */}
+        <AnimatePresence mode="wait">
+          {selectedSquad && selected && (
+            <motion.div
+              key={selectedSquad}
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 16 }}
+              transition={{ duration: 0.25 }}
+              className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden flex flex-col"
+            >
+              {/* Header */}
+              <div className="p-5 border-b border-white/5 flex items-center justify-between">
+                <div>
+                  <h4 className="text-sm font-black text-white uppercase tracking-widest">Membros</h4>
+                  <p className="text-[10px] text-slate-500 font-medium mt-0.5">{members.length} na squad</p>
+                </div>
+                <div className="p-2 bg-white/5 rounded-xl">
+                  <Users className="w-4 h-4 text-slate-400" />
+                </div>
+              </div>
+
+              {/* Member list */}
+              <div className="flex-1 p-3 space-y-1.5 max-h-[320px] overflow-y-auto custom-scrollbar">
+                {members.map((m, i) => (
+                  <motion.div
+                    key={m.name}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.04 }}
+                    className="flex items-center justify-between p-3 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-transparent hover:border-white/5 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full bg-gradient-to-br ${AVATAR_GRADIENTS[i % AVATAR_GRADIENTS.length]} flex items-center justify-center text-[10px] font-black text-white shrink-0`}>
+                        {m.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
+                      </div>
+                      <span className="text-xs font-bold text-white leading-tight">{m.name}</span>
+                    </div>
+                    <span className={`text-[9px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0 ${ROLE_BADGE[m.role] || ROLE_BADGE.Membro}`}>
+                      {m.role}
+                    </span>
+                  </motion.div>
+                ))}
+
+                {members.length === 0 && (
+                  <div className="py-10 flex flex-col items-center justify-center gap-2 opacity-40">
+                    <Users className="w-6 h-6 text-slate-600" />
+                    <p className="text-[10px] font-black text-slate-500 uppercase">Sem membros</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Add to squad */}
+              <div className="p-4 border-t border-white/5 space-y-3">
+                <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.2em]">Adicionar à Equipe</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Usuário</label>
+                    <select
+                      value={addUser}
+                      onChange={e => setAddUser(e.target.value)}
+                      className="w-full mt-1 bg-white/5 border border-white/10 rounded-xl px-2.5 py-2 text-[11px] text-white outline-none focus:border-blue-500 transition-colors"
+                    >
+                      <option value="">Adicionar...</option>
+                      {outside.map(m => (
+                        <option key={m.name} value={m.name}>{m.name.split(' ')[0]}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[9px] text-slate-600 font-bold uppercase tracking-widest">Função</label>
+                    <select className="w-full mt-1 bg-white/5 border border-white/10 rounded-xl px-2.5 py-2 text-[11px] text-white outline-none focus:border-blue-500 transition-colors">
+                      {['Membro', 'Closer', 'SDR', 'Gestor'].map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                </div>
+                <Button
+                  onClick={handleAdd}
+                  disabled={!addUser}
+                  className="w-full h-10 bg-emerald-600/80 hover:bg-emerald-600 text-white font-black text-[9px] uppercase tracking-[0.2em] rounded-xl disabled:opacity-30 gap-2"
+                >
+                  <UserPlus className="w-3.5 h-3.5" /> Adicionar à Equipe
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
+
+      {/* Stats row */}
+      {squads.length > 0 && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { icon: Users2, label: "Total Squads", value: squads.length, color: "text-blue-400", bg: "bg-blue-500/10" },
+            { icon: Users, label: "Total Membros", value: team.length, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+            { icon: Shield, label: "Líderes Ativos", value: squads.filter(s => s.leader).length, color: "text-violet-400", bg: "bg-violet-500/10" },
+            { icon: Zap, label: "Média / Squad", value: squads.length > 0 ? (team.length / squads.length).toFixed(1) : "0", color: "text-amber-400", bg: "bg-amber-500/10" },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06 }}
+              className="p-5 bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl"
+            >
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`p-2 rounded-xl ${stat.bg}`}>
+                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
+                </div>
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</span>
+              </div>
+              <span className={`text-2xl font-black ${stat.color} tracking-tighter`}>{stat.value}</span>
+            </motion.div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

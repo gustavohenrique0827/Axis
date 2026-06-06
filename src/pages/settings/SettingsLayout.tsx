@@ -48,6 +48,7 @@ export default function SettingsLayout() {
     { title: "Configuração de SLA", path: "/app/configuracoes/crm/sla" },
     { title: "Gatilhos IA", path: "/app/configuracoes/crm/gatilhos-ia" },
     { title: "Configuração de Dashboards", path: "/app/configuracoes/crm/dashboards" },
+    { title: "Rodízio de Leads", path: "/app/configuracoes/crm/rodizio" },
   ];
 
   const secProdutividade = [

@@ -61,7 +61,8 @@ import {
   ConfigIntegracoesSMTP,
   ConfigSistemaBackups,
   ConfigIntegracoesSDR,
-  ConfigFinanceiroSquads
+  ConfigFinanceiroSquads,
+  ConfigRodizioLeads
 } from "./pages/settings/SettingsPages";
 import { ConfigIntegracoesWebhooks } from "./pages/settings/ConfigIntegracoesWebhooks";
 import SettingsGenericForm from "./pages/settings/SettingsGenericForm";
@@ -194,6 +195,7 @@ function AppContent() {
             <Route path="crm/campos" element={<ConfigCRMCampos />} />
             <Route path="crm/sla" element={<ConfigCRMSLA />} />
             <Route path="crm/gatilhos-ia" element={<ConfigCRMGatilhosIA />} />
+            <Route path="crm/rodizio" element={<ConfigRodizioLeads />} />
 
             <Route path="produtividade/categorias" element={<ConfigProdutividadeCategorias />} />
 

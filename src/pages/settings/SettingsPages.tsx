@@ -7,3 +7,4 @@ export { ConfigEngajamentoModelos, ConfigEngajamentoAutomacoes, ConfigBusinessDa
 export { ConfigIntegracoesApps, ConfigIntegracoesSMTP, ConfigIntegracoesSDR } from "./sections/SettingsIntegracoes";
 export { ConfigNotificacoesPreferencias } from "./sections/SettingsNotificacoes";
 export { ConfigSistemaBackups } from "./sections/SettingsSistema";
+export { ConfigRodizioLeads } from "./sections/SettingsRodizioLeads";

@@ -321,7 +321,7 @@ export default function FinanceiroConfiguracoes() {
                   <table className="w-full">
                     <thead className="border-b border-white/5">
                       <tr><Th>Tipo</Th><Th>Descrição</Th><Th>Split %</Th><Th children={''}></Th></tr>
-                    </thead> children={''}
+                    </thead>
                     <tbody className="divide-y divide-white/[0.04]">
                       {partRules.map(r => (
                         <tr key={r.id} className="hover:bg-white/[0.02] transition-colors group">
