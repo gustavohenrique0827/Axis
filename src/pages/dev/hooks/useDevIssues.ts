@@ -50,7 +50,7 @@ function rowToIssue(row: any): DevIssue {
 }
 
 export function useDevIssues() {
-  const [issues, setIssues] = useState<DevIssue[]>(MOCK_ISSUES);
+  const [issues, setIssues] = useState<DevIssue[]>(supabase ? [] : MOCK_ISSUES);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export function useDevIssues() {
         .from('dev_issues')
         .select('*')
         .order('created_at', { ascending: false });
-      if (!error && data && data.length > 0) {
+      if (!error && data !== null) {
         setIssues(data.map(rowToIssue));
       }
       setLoading(false);

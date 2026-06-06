@@ -6,7 +6,6 @@ import {
   Settings,
   Mail,
   Zap,
-  Briefcase,
   Target,
   BarChart2,
   PieChart,
@@ -32,7 +31,6 @@ import {
   Kanban,
   Bug,
   GitBranch,
-  Server,
   MonitorCheck,
 } from "lucide-react";
 
@@ -71,15 +69,25 @@ export const navSections = [
     ],
   },
   {
-    title: "Engajamento & Marketing",
+    title: "Engajamento",
     items: [
       { name: "Mensageria", path: "/app/mensageria", icon: Mail },
       { name: "Automações", path: "/app/automacoes", icon: Zap },
+    ],
+  },
+  {
+    title: "Conteúdo & Social",
+    items: [
       { name: "Conteúdo", path: "/app/marketing/conteudo", icon: Edit3 },
-      { name: "Campanhas", path: "/app/marketing/campanhas", icon: Megaphone },
-      { name: "Métricas", path: "/app/marketing/analytics", icon: BarChart2 },
       { name: "Social Media", path: "/app/marketing/social", icon: Share2 },
       { name: "Landing Pages", path: "/app/marketing/landing-pages", icon: Globe },
+    ],
+  },
+  {
+    title: "Campanhas & Analytics",
+    items: [
+      { name: "Campanhas", path: "/app/marketing/campanhas", icon: Megaphone },
+      { name: "Métricas", path: "/app/marketing/analytics", icon: BarChart2 },
     ],
   },
   {

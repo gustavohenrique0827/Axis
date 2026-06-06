@@ -81,7 +81,7 @@ export default function FinanceiroVisaoGeral() {
 
   return (
     <PageContainer
-      title="Intelligence Financial Dashboard"
+      title="Painel Financeiro"
       description="Monitoramento avançado de fluxo, MRR, inadimplência e projeção de caixa em tempo real."
       actions={
         <div className="flex gap-2">
@@ -92,17 +92,17 @@ export default function FinanceiroVisaoGeral() {
              <Printer className="w-4 h-4 mr-2" />
           </Button>
           <Button className="print:hidden h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] bg-[#2563EB] hover:bg-blue-600 text-white shadow-xl shadow-blue-500/20">
-            <Download className="w-4 h-4 mr-2" /> Export
+            <Download className="w-4 h-4 mr-2" /> Exportar
           </Button>
         </div>
       }
     >
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Revenue (Actual)", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(receita), trend: "--", positive: true, icon: TrendingUp, color: "text-blue-400", bg: "bg-blue-500/10" },
-          { label: "Operational Cost", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(despesa), trend: "--", positive: true, icon: Wallet, color: "text-rose-400", bg: "bg-rose-500/10" },
-          { label: "Global MRR", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(mrr), trend: "--", positive: true, icon: Globe, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-          { label: "Churn Risk Index", value: `${inadimplencia.toFixed(1)}%`, trend: "--", positive: false, icon: AlertCircle, color: "text-yellow-500", bg: "bg-yellow-500/10" },
+          { label: "Receita (Real)", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(receita), trend: "--", positive: true, icon: TrendingUp, color: "text-blue-400", bg: "bg-blue-500/10" },
+          { label: "Custo Operacional", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(despesa), trend: "--", positive: true, icon: Wallet, color: "text-rose-400", bg: "bg-rose-500/10" },
+          { label: "MRR Global", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(mrr), trend: "--", positive: true, icon: Globe, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+          { label: "Índice de Churn", value: `${inadimplencia.toFixed(1)}%`, trend: "--", positive: false, icon: AlertCircle, color: "text-yellow-500", bg: "bg-yellow-500/10" },
         ].map((kpi, i) => (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -137,7 +137,7 @@ export default function FinanceiroVisaoGeral() {
            <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
               <div>
                 <h3 className="font-black text-lg text-white uppercase italic tracking-tighter flex items-center gap-3">
-                  <div className="w-2 h-8 bg-blue-500 rounded-full" /> Financial Performance Engine
+                  <div className="w-2 h-8 bg-blue-500 rounded-full" /> Motor de Performance Financeira
                 </h3>
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Comparativo de fluxo de caixa vs projeção inteligente</p>
               </div>
@@ -283,15 +283,15 @@ export default function FinanceiroVisaoGeral() {
               <h3 className="font-black flex items-center gap-3 uppercase text-[10px] tracking-[0.2em] text-slate-300">
                 <TrendingUp className="w-4 h-4 text-emerald-400" /> Inteligência Operacional
               </h3>
-              <Badge className="bg-white/5 border-white/10 text-slate-500 text-[8px] font-black uppercase h-6">Real-Time ML Projections</Badge>
+              <Badge className="bg-white/5 border-white/10 text-slate-500 text-[8px] font-black uppercase h-6">Projeções ML em Tempo Real</Badge>
            </div>
 
            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="space-y-6">
                  {[
-                   { label: "Custo por Lead (CPL)", value: "R$ 0,00", trend: "0%", status: "Stable" },
-                   { label: "LTV Projetado (12m)", value: "R$ 0,00", trend: "0%", status: "Stable" },
-                   { label: "Margem Ebitda", value: "0%", trend: "0%", status: "Stable" }
+                   { label: "Custo por Lead (CPL)", value: "R$ 0,00", trend: "0%", status: "Estável" },
+                   { label: "LTV Projetado (12m)", value: "R$ 0,00", trend: "0%", status: "Estável" },
+                   { label: "Margem Ebitda", value: "0%", trend: "0%", status: "Estável" }
                  ].map((insight, idx) => (
                    <div key={idx} className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0 last:pb-0">
                       <div>
@@ -301,8 +301,8 @@ export default function FinanceiroVisaoGeral() {
                       <div className="text-right">
                          <span className={`text-[9px] font-black uppercase block mb-1 ${insight.trend.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}`}>{insight.trend}</span>
                          <span className={`text-[8px] font-black px-2 py-0.5 rounded uppercase ${
-                           insight.status === 'Safe' ? 'bg-emerald-500/10 text-emerald-400' : 
-                           insight.status === 'Warning' ? 'bg-rose-500/10 text-rose-400' : 'bg-white/5 text-slate-500'
+                           insight.status === 'Seguro' ? 'bg-emerald-500/10 text-emerald-400' :
+                           insight.status === 'Atenção' ? 'bg-rose-500/10 text-rose-400' : 'bg-white/5 text-slate-500'
                          }`}>{insight.status}</span>
                       </div>
                    </div>
@@ -315,7 +315,7 @@ export default function FinanceiroVisaoGeral() {
                       <Sparkles className="w-6 h-6" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-black text-white uppercase italic tracking-tighter">AI Advisory</h4>
+                      <h4 className="text-xs font-black text-white uppercase italic tracking-tighter">Consultoria IA</h4>
                       <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Recomendação Automatizada</p>
                     </div>
                  </div>
@@ -333,7 +333,7 @@ export default function FinanceiroVisaoGeral() {
         <h3 className="font-black text-sm text-white uppercase tracking-[0.15em] flex items-center gap-2">
           🎯 Campanha de Metas & Comissionamento
         </h3>
-        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full animate-pulse">Live Tracking</span>
+        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full animate-pulse">Monitoramento ao Vivo</span>
       </div>
       
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -347,7 +347,7 @@ export default function FinanceiroVisaoGeral() {
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Atingimento de faturamento e status da comissão OTE</p>
               </div>
               <div className="bg-blue-500/10 text-blue-400 border border-blue-500/15 font-black uppercase tracking-widest text-[8px] px-3 py-1.5 rounded-lg shadow-inner">
-                Real-Time Data Extraction
+                Extração de Dados ao Vivo
               </div>
             </div>
 
@@ -383,7 +383,7 @@ export default function FinanceiroVisaoGeral() {
                     </div>
                     <div className="flex items-center justify-between text-[10px] text-slate-500 font-bold font-mono">
                       <span>R$ {sq.faturamentoAlcancado.toLocaleString()}</span>
-                      <span className="opacity-40">GOAL: R$ {sq.meta.toLocaleString()}</span>
+                      <span className="opacity-40">META: R$ {sq.meta.toLocaleString()}</span>
                     </div>
                   </div>
                 );

@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion } from 'motion/react';
 import { Button } from '../../../components/ui/button';
 
@@ -64,13 +63,13 @@ export function NewTaskModal({
                />
             </div>
             <div className="space-y-1.5">
-               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Valor da Oportunidade (R$)</label>
-               <input 
-                 type="number" 
+               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Investimento Necessário (R$)</label>
+               <input
+                 type="number"
                  value={newValue}
                  onChange={(e) => setNewValue(e.target.value)}
-                 placeholder="0,00" 
-                 className="w-full bg-[#1E293B] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none" 
+                 placeholder="0,00 — deixe em branco se não houver custo"
+                 className="w-full bg-[#1E293B] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none"
                />
             </div>
             <div className="grid grid-cols-2 gap-4">

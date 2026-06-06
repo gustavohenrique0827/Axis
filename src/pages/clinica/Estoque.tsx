@@ -1,24 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  Package, Box, AlertTriangle, ArrowUpRight, 
-  ArrowDownRight, Plus, Search, Filter,
-  Truck, Archive, ShieldAlert, Zap,
+import {
+  Package, Box, Plus, Search,
+  Truck, ShieldAlert, Zap,
   BarChart3, RefreshCw
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
-import { motion } from "motion/react";
-
-const stockItems = [
-  { id: 1, name: 'Seringa Descartável 5ml', category: 'Descartáveis', qty: 1240, minQty: 500, status: 'Normal', price: 'R$ 0,45' },
-  { id: 2, name: 'Luvas Nitrílicas (M)', category: 'EPIs', qty: 150, minQty: 200, status: 'Crítico', price: 'R$ 42,00' },
-  { id: 3, name: 'Gaze Estéril 7,5cm', category: 'Curativos', qty: 3200, minQty: 1000, status: 'Normal', price: 'R$ 0,12' },
-  { id: 4, name: 'Amoxicilina 500mg', category: 'Medicamentos', qty: 45, minQty: 50, status: 'Alerta', price: 'R$ 18,50' },
-  { id: 5, name: 'Álcool 70% (1L)', category: 'Saneantes', qty: 12, minQty: 20, status: 'Alerta', price: 'R$ 14,90' },
-];
+import { useEstoque } from './hooks/useEstoque';
 
 export default function EstoqueClinico() {
+  const { items: stockItems, loading } = useEstoque();
+
   return (
     <PageContainer 
       title="Estoque e Suprimentos" 

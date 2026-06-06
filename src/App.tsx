@@ -37,6 +37,7 @@ import FinanceiroPagar from "./pages/finance/FinanceiroPagar";
 import FinanceiroComissoes from "./pages/finance/FinanceiroComissoes";
 import FinanceiroDRE from "./pages/finance/FinanceiroDRE";
 import FinanceiroMetas from "./pages/finance/FinanceiroMetas";
+import FinanceiroConfiguracoes from "./pages/finance/FinanceiroConfiguracoes";
 
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import ConfigEmpresaDados from "./pages/settings/ConfigEmpresaDados";
@@ -173,6 +174,7 @@ function AppContent() {
             <Route path="dre" element={<FinanceiroDRE />} />
             <Route path="metas" element={<FinanceiroMetas />} />
             <Route path="categorias" element={<SettingsGenericForm />} />
+            <Route path="configuracoes" element={<FinanceiroConfiguracoes />} />
             <Route path="*" element={<GenericPlaceholder />} />
           </Route>
 

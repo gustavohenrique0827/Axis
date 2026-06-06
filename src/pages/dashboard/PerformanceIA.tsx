@@ -92,16 +92,16 @@ export default function PerformanceIA() {
                   <div className="relative z-10">
                      <div className="flex items-center gap-3 mb-6">
                         <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                        <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Neural Engine v4.2</span>
+                        <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Motor Neural v4.2</span>
                      </div>
                      <h3 className="text-2xl font-black text-white italic tracking-tighter mb-2">Processamento Ativo</h3>
-                     <p className="text-xs text-slate-400 leading-relaxed font-medium">Analizando pontos de dados em tempo real para identificação de gargalos de conversão.</p>
+                     <p className="text-xs text-slate-400 leading-relaxed font-medium">Analisando pontos de dados em tempo real para identificação de gargalos de conversão.</p>
                   </div>
                </Card>
 
                <Card className="p-8 bg-[#111827]/80 border-white/5 flex flex-col justify-between">
                   <div className="flex items-center justify-between">
-                     <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Health Score IA</h4>
+                     <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Score de Saúde IA</h4>
                      <ShieldCheck className="w-4 h-4 text-emerald-500" />
                   </div>
                   <div className="py-6 flex items-end gap-3 text-white">
@@ -138,7 +138,7 @@ export default function PerformanceIA() {
                   <div className="flex items-center justify-between mb-10">
                      <div>
                         <h3 className="text-lg font-black text-white uppercase tracking-tighter flex items-center gap-3">
-                           <Play className="w-5 h-5 text-purple-400" /> Simulador 'What-If'
+                           <Play className="w-5 h-5 text-purple-400" /> Simulador de Cenários
                         </h3>
                         <p className="text-xs text-slate-500 mt-2">Modele o crescimento alterando variáveis críticas de aquisição.</p>
                      </div>

@@ -1,23 +1,17 @@
-import React, { useState } from 'react';
-import { 
-  FileText, Search, Filter, FlaskConical,
+import React from 'react';
+import {
+  FileText, Search, FlaskConical,
   Clock, CheckCircle2, AlertCircle, Download,
-  Eye, Plus, Calendar, User, 
-  ArrowUpRight, Share2
+  Eye, Plus, Share2
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
-import { motion } from "motion/react";
-
-const examList = [
-  { id: '1', patient: 'Ricardo Oliveira', exam: 'Hemograma Completo', date: '25 Mai, 2026', lab: 'Lab Axis Central', status: 'Finalizado', result: 'Normal' },
-  { id: '2', patient: 'Beatriz Santos', exam: 'Ressonância Magnética (Joelho)', date: '28 Mai, 2026', lab: 'Imobiliz Imagem', status: 'Em Análise', result: '-' },
-  { id: '3', patient: 'Marcelo Dias', exam: 'Glicemia de Jejum', date: '24 Mai, 2026', lab: 'Lab Axis Central', status: 'Finalizado', result: 'Alerta' },
-  { id: '4', patient: 'Fátima Lima', exam: 'Eletrocardiograma', date: '28 Mai, 2026', lab: 'CardioClin', status: 'Aguardando Coleta', result: '-' },
-];
+import { useExames } from './hooks/useExames';
 
 export default function Exames() {
+  const { exames: examList } = useExames();
+
   return (
     <PageContainer 
       title="Exames & Laboratório" 

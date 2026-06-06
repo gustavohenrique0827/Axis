@@ -1,340 +1,483 @@
-import React, { useMemo, useState, useEffect } from "react";
-import { Card } from "../../components/ui/card";
-import { DollarSign, Download, Calendar, ArrowUpRight, Plus, HelpCircle, BadgeAlert, CheckCircle, RefreshCw, Layers, PlusCircle, Trash2 } from "lucide-react";
-import { useData } from "../../contexts/DataContext";
-import { PageContainer } from "../../components/PageContainer";
-import { toast } from "sonner";
-import { Button } from "../../components/ui/button";
+import { useState, useMemo, useCallback } from 'react';
+import { RefreshCw, TrendingUp, TrendingDown, Settings, ChevronDown, Download, Plus, Trash2, Users, DollarSign, Zap } from 'lucide-react';
+import { PageContainer } from '../../components/PageContainer';
+import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
+import { useData } from '../../contexts/DataContext';
+import { useOTEConfig } from './hooks/useOTEConfig';
+import { toast } from 'sonner';
+import { Link } from 'react-router-dom';
+import { motion } from 'motion/react';
 
-interface CommissionRecord {
-  id: string;
-  vendedor: string;
-  periodo: string;
-  baseValor: number;
-  taxaPercent: number;
-  comissaoValor: number;
-  status: "Pago" | "A Pagar";
+type CargoTab = 'Closer' | 'SDR' | 'Gestor';
+
+const CARGO_TABS: { key: CargoTab; label: string; sublabel: string }[] = [
+  { key: 'Closer', label: 'Closers',  sublabel: 'Vendas'      },
+  { key: 'SDR',    label: 'SDRs',     sublabel: 'Agendamento' },
+  { key: 'Gestor', label: 'Gestores', sublabel: 'Squad'       },
+];
+
+function semaforo(pct: number): { label: string; textColor: string; dotColor: string; badgeBg: string } {
+  if (pct >= 80) return { label: 'Verde',    textColor: 'text-emerald-400', dotColor: 'bg-emerald-400', badgeBg: 'bg-emerald-500/10 border-emerald-500/20' };
+  if (pct >= 50) return { label: 'Amarelo',  textColor: 'text-amber-400',   dotColor: 'bg-amber-400',   badgeBg: 'bg-amber-500/10 border-amber-500/20'   };
+  return               { label: 'Vermelho', textColor: 'text-red-400',     dotColor: 'bg-red-400',     badgeBg: 'bg-red-500/10 border-red-500/20'       };
 }
 
-const defaultComissions: CommissionRecord[] = [];
+function fmt(n: number) {
+  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n);
+}
+
+function initials(nome: string) {
+  return nome.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase();
+}
+
+const AVATAR_COLORS = [
+  'from-blue-500 to-indigo-600',
+  'from-emerald-500 to-teal-600',
+  'from-violet-500 to-purple-600',
+  'from-rose-500 to-pink-600',
+  'from-amber-500 to-orange-600',
+  'from-cyan-500 to-blue-600',
+];
+
+interface ColabEntry {
+  id: string;
+  nome: string;
+  cargo: CargoTab;
+  nivel: string;
+  squad: string;
+  meta: number;
+  realizado: number;
+}
+
+const STORAGE_KEY = 'ote_period_entries_v2';
+const PERIOD_KEY  = 'ote_current_period';
+
+const DEFAULT_ENTRIES: ColabEntry[] = [
+  { id: 'e1', nome: 'Luana Pereira Alves Pinheiro Leite', cargo: 'Closer', nivel: 'Aprendiz', squad: 'Target',  meta: 70410, realizado: 591  },
+  { id: 'e2', nome: 'Paulo Victor',                       cargo: 'Closer', nivel: 'Junior 1', squad: 'Pluppex', meta: 70410, realizado: 5285 },
+  { id: 'e3', nome: 'Thais Nascimento Pereira',           cargo: 'Closer', nivel: 'Junior 1', squad: 'Target',  meta: 70410, realizado: 985  },
+  { id: 'e4', nome: 'Israel Assis de Oliveira Carvalho',  cargo: 'Closer', nivel: 'Junior 1', squad: 'Target',  meta: 89186, realizado: 197  },
+  { id: 'e5', nome: 'Wanderlei Sewaybricker Gurzoni',     cargo: 'Closer', nivel: 'Junior 1', squad: 'Target',  meta: 89186, realizado: 0    },
+  { id: 'e6', nome: 'Gabriel Lima',                       cargo: 'Closer', nivel: 'Junior 1', squad: 'Pluppex', meta: 70410, realizado: 985  },
+  { id: 'e7', nome: 'Anna Cristiny',                      cargo: 'Closer', nivel: 'Aprendiz', squad: 'Pluppex', meta: 50000, realizado: 0    },
+];
+
+const PERIODOS = ['Junho/2026', 'Maio/2026', 'Abril/2026', 'Março/2026'];
 
 export default function FinanceiroComissoes() {
-  const { leads } = useData();
+  const { squads } = useData();
+  const { profiles, calcOTE } = useOTEConfig();
 
-  // Load custom list from localStorage or defaults
-  const [comissoes, setComissoes] = useState<CommissionRecord[]>(() => {
-    try {
-      const saved = localStorage.getItem("axis_comissoes_list_v2");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return defaultComissions;
+  const [periodo, setPeriodo] = useState<string>(
+    () => localStorage.getItem(PERIOD_KEY) || PERIODOS[0]
+  );
+  const [activeTab, setActiveTab] = useState<CargoTab>('Closer');
+  const [squadFilter, setSquadFilter] = useState('Todos');
+  const [showSquadMenu, setShowSquadMenu] = useState(false);
+  const [spinning, setSpinning] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [form, setForm] = useState({ nome: '', cargo: 'Closer' as CargoTab, nivel: 'Junior 1', squad: '', meta: '', realizado: '' });
+
+  const [entries, setEntries] = useState<ColabEntry[]>(() => {
+    try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch {}
+    return DEFAULT_ENTRIES;
   });
 
-  // Automatically sync to local storage
-  useEffect(() => {
-    localStorage.setItem("axis_comissoes_list_v2", JSON.stringify(comissoes));
-  }, [comissoes]);
-
-  // Load salespeople from global system/leads to populate addition dropdowns
-  const availableSellers = useMemo(() => {
-    const list = Array.from(new Set(["Carlos Eduardo Mendes", "Ana Silva", "Roberto Ramos", "Juliana Costa", ...leads.map(l => l.seller).filter(Boolean)]));
-    return list;
-  }, [leads]);
-
-  // Form states
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [vendedorInput, setVendedorInput] = useState("Carlos Eduardo Mendes");
-  const [periodoInput, setPeriodoInput] = useState("Maio/2026");
-  const [baseValorInput, setBaseValorInput] = useState("100000");
-  const [taxaPctInput, setTaxaPctInput] = useState("5");
-
-  const [filterPeriod, setFilterPeriod] = useState<string>("Maio/2026");
-
-  // Filtered list
-  const filteredComissoes = useMemo(() => {
-    return comissoes.filter(c => c.periodo === filterPeriod);
-  }, [comissoes, filterPeriod]);
-
-  // Calculations
-  const totalApurado = useMemo(() => {
-    return filteredComissoes.reduce((acc, curr) => acc + curr.comissaoValor, 0);
-  }, [filteredComissoes]);
-
-  const totalPago = useMemo(() => {
-    return filteredComissoes
-      .filter(c => c.status === "Pago")
-      .reduce((acc, curr) => acc + curr.comissaoValor, 0);
-  }, [filteredComissoes]);
-
-  const totalPendente = useMemo(() => {
-    return filteredComissoes
-      .filter(c => c.status === "A Pagar")
-      .reduce((acc, curr) => acc + curr.comissaoValor, 0);
-  }, [filteredComissoes]);
-
-  const currencyFormater = (val: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL"
-    }).format(val);
+  const saveEntries = (v: ColabEntry[]) => {
+    setEntries(v);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(v));
   };
 
-  const handleToggleStatus = (id: string, current: "Pago" | "A Pagar") => {
-    const nextStatus = current === "Pago" ? "A Pagar" : "Pago";
-    setComissoes(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, status: nextStatus };
-      }
-      return item;
-    }));
-    toast.success(`Status da comissão alterado para: ${nextStatus}`);
+  const squadNames = useMemo(() => {
+    const fromSquads = squads.map(s => s.nome);
+    const fromEntries = [...new Set(entries.map(e => e.squad))];
+    return ['Todos', ...new Set([...fromSquads, ...fromEntries])];
+  }, [squads, entries]);
+
+  const filtered = useMemo(() =>
+    entries.filter(e =>
+      e.cargo === activeTab &&
+      (squadFilter === 'Todos' || e.squad === squadFilter)
+    )
+  , [entries, activeTab, squadFilter]);
+
+  const rows = useMemo(() => filtered.map((e, idx) => {
+    const ating = e.meta > 0 ? (e.realizado / e.meta) * 100 : 0;
+    const profile = profiles.find(p => p.cargo === e.cargo && p.nivel === e.nivel);
+    const ote = profile
+      ? calcOTE(profile, ating)
+      : { fixo: 0, variavel: 0, acelerador: 0, totalOTE: 0 };
+    return { ...e, ating, sem: semaforo(ating), ...ote, colorIdx: idx % AVATAR_COLORS.length };
+  }), [filtered, profiles, calcOTE]);
+
+  const totals = useMemo(() => ({
+    fixo:     rows.reduce((a, r) => a + r.fixo, 0),
+    variavel: rows.reduce((a, r) => a + r.variavel, 0),
+    ote:      rows.reduce((a, r) => a + r.totalOTE, 0),
+    count:    rows.length,
+    avgAting: rows.length ? rows.reduce((a, r) => a + r.ating, 0) / rows.length : 0,
+  }), [rows]);
+
+  const handleRecalc = useCallback(() => {
+    setSpinning(true);
+    setTimeout(() => { setSpinning(false); toast.success('OTE recalculado com sucesso!'); }, 900);
+  }, []);
+
+  const handleAddEntry = () => {
+    if (!form.nome.trim() || !form.meta) return toast.error('Preencha nome e meta.');
+    saveEntries([...entries, {
+      id: `e${Date.now()}`,
+      nome: form.nome.trim(),
+      cargo: form.cargo,
+      nivel: form.nivel,
+      squad: form.squad,
+      meta: parseFloat(form.meta) || 0,
+      realizado: parseFloat(form.realizado) || 0,
+    }]);
+    setShowAddModal(false);
+    setForm({ nome: '', cargo: 'Closer', nivel: 'Junior 1', squad: '', meta: '', realizado: '' });
+    toast.success('Colaborador adicionado!');
   };
 
-  const handleCreateCommission = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!vendedorInput || !baseValorInput) {
-      toast.error("Por favor, preencha as informações obrigatórias.");
-      return;
-    }
+  const tabCount = (cargo: CargoTab) => entries.filter(e => e.cargo === cargo).length;
 
-    const baseVal = parseFloat(baseValorInput) || 0;
-    const taxa = parseFloat(taxaPctInput) || 5;
-    const comValue = baseVal * (taxa / 100);
-
-    const record: CommissionRecord = {
-      id: "manual-" + Date.now().toString(),
-      vendedor: vendedorInput,
-      periodo: periodoInput,
-      baseValor: baseVal,
-      taxaPercent: taxa,
-      comissaoValor: comValue,
-      status: "A Pagar"
-    };
-
-    setComissoes(prev => [record, ...prev]);
-    toast.success("Novo registro de comissão lançado!");
-    setIsModalOpen(false);
+  const handleExport = () => {
+    const lines = ['Nome;Cargo;Nível;Squad;Meta;Realizado;Atingimento;Semáforo;Fixo;Variável;Acelerador;Total OTE'];
+    rows.forEach(r => lines.push(
+      `"${r.nome}";"${r.cargo}";"${r.nivel}";"${r.squad}";${r.meta};${r.realizado};${r.ating.toFixed(1)}%;${r.sem.label};${r.fixo};${r.variavel};${r.acelerador};${r.totalOTE}`
+    ));
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `ote_${periodo.replace('/', '-')}.csv`; a.click();
   };
 
-  const handleDeleteCommission = (id: string) => {
-    setComissoes(prev => prev.filter(c => c.id !== id));
-    toast.success("Registro de comissão deletado.");
-  };
-
-  const handleExportCSV = () => {
-    const csvContent = "data:text/csv;charset=utf-8,\uFEFF"
-      + ["Colaborador;Periodo;Faturamento Base;Taxa;Comissao;Status"].join("\r\n") + "\r\n"
-      + filteredComissoes.map(c => `"${c.vendedor}";"${c.periodo}";"${c.baseValor}";"${c.taxaPercent}%";"${c.comissaoValor}";"${c.status}"`).join("\r\n");
-
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `comissoes_${filterPeriod.replace("/", "-")}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    toast.success("Relatório de comissionamento exportado (CSV)!");
-  };
+  const kpis = [
+    {
+      label: 'Colaboradores',
+      value: String(totals.count),
+      sub: `${activeTab}s ativos`,
+      icon: Users,
+      color: 'text-blue-400',
+      bg: 'bg-blue-500/10',
+      border: 'border-blue-500/20',
+    },
+    {
+      label: 'Total Fixo',
+      value: fmt(totals.fixo),
+      sub: 'salário base',
+      icon: DollarSign,
+      color: 'text-slate-300',
+      bg: 'bg-white/5',
+      border: 'border-white/10',
+    },
+    {
+      label: 'Total Variável',
+      value: fmt(totals.variavel),
+      sub: 'comissão apurada',
+      icon: TrendingUp,
+      color: 'text-amber-400',
+      bg: 'bg-amber-500/10',
+      border: 'border-amber-500/20',
+    },
+    {
+      label: 'Total OTE',
+      value: fmt(totals.ote),
+      sub: `média ${totals.avgAting.toFixed(1)}% atingimento`,
+      icon: Zap,
+      color: 'text-emerald-400',
+      bg: 'bg-emerald-500/10',
+      border: 'border-emerald-500/20',
+    },
+  ];
 
   return (
     <PageContainer
-      title="Comissões da Equipe"
-      description="Apuração estratégica de comissões, faturamento sob gestão do vendedor, acompanhamento do OTE e pagamentos residuais de SDR e Closers."
+      title="Comissões & OTE"
+      description="Apuração de On-Target Earnings por colaborador — fixo, variável e acelerador calculados automaticamente pelos perfis configurados."
+      breadcrumb={[{ label: 'Financeiro', path: '/app/financeiro' }, { label: 'Comissões & OTE' }]}
       actions={
-        <div className="flex gap-2">
-          <select 
-            value={filterPeriod}
-            onChange={(e) => setFilterPeriod(e.target.value)}
-            className="bg-[#111827] border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest outline-none focus:border-blue-500 text-white h-11"
+        <div className="flex items-center gap-2">
+          {/* Period */}
+          <select
+            value={periodo}
+            onChange={e => { setPeriodo(e.target.value); localStorage.setItem(PERIOD_KEY, e.target.value); }}
+            className="h-11 bg-white/5 border border-white/10 rounded-xl px-3 text-[11px] font-black uppercase tracking-widest outline-none text-white cursor-pointer"
           >
-            <option value="Maio/2026">Maio/2026</option>
-            <option value="Abril/2026">Abril/2026</option>
+            {PERIODOS.map(p => <option key={p} value={p}>{p}</option>)}
           </select>
-          <Button onClick={() => setIsModalOpen(true)} className="bg-[#2563EB] hover:bg-blue-600 text-white font-bold text-[10px] uppercase tracking-widest h-11 px-6 rounded-xl">
-             <Plus className="w-4 h-4 mr-1" /> Novo Lançamento
+
+          {/* Squad filter */}
+          <div className="relative">
+            <button
+              onClick={() => setShowSquadMenu(v => !v)}
+              className="flex items-center gap-2 h-11 px-4 border border-white/10 rounded-xl text-[11px] font-black text-white bg-white/5 hover:bg-white/10 transition-colors"
+            >
+              {squadFilter} <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+            </button>
+            {showSquadMenu && (
+              <div className="absolute right-0 top-12 z-30 bg-[#111827] border border-white/10 rounded-xl shadow-2xl shadow-black/50 min-w-[160px] overflow-hidden">
+                {squadNames.map(s => (
+                  <button key={s} onClick={() => { setSquadFilter(s); setShowSquadMenu(false); }}
+                    className={`w-full text-left px-4 py-2.5 text-[11px] font-bold hover:bg-white/5 transition-colors ${squadFilter === s ? 'text-emerald-400' : 'text-slate-300'}`}
+                  >{s}</button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <Link to="/app/financeiro/configuracoes">
+            <Button variant="outline" className="h-11 gap-2 text-[10px] font-black uppercase tracking-widest border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl">
+              <Settings className="w-4 h-4" /> Config
+            </Button>
+          </Link>
+
+          <Button variant="outline" onClick={handleExport} className="h-11 gap-2 text-[10px] font-black uppercase tracking-widest border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl">
+            <Download className="w-4 h-4" /> CSV
           </Button>
-          <Button onClick={handleExportCSV} variant="outline" className="border-white/10 bg-[#111827] text-slate-300 hover:text-white h-11 text-[10px] uppercase font-bold tracking-widest px-4 rounded-xl">
-            <Download className="w-4 h-4 mr-1" /> Exportar
+
+          <Button
+            onClick={handleRecalc}
+            className="h-11 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest px-5 rounded-xl shadow-lg shadow-emerald-500/20"
+          >
+            <RefreshCw className={`w-4 h-4 ${spinning ? 'animate-spin' : ''}`} /> Recalcular OTE
           </Button>
         </div>
       }
     >
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/5 border-l-[4px] border-l-blue-500 flex flex-col justify-between">
-            <div className="text-xs font-black text-slate-500 uppercase tracking-widest">Total Comissões</div>
-            <div className="text-3xl font-black font-mono text-white mt-2">{currencyFormater(totalApurado)}</div>
-            <div className="text-[9px] text-slate-500 font-bold uppercase mt-1">Soma de comissões para {filterPeriod}</div>
-          </Card>
-
-          <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/5 border-l-[4px] border-l-emerald-500 flex flex-col justify-between">
-            <div className="text-xs font-black text-slate-500 uppercase tracking-widest text-[#10B981]">Total Pago</div>
-            <div className="text-3xl font-black font-mono text-[#10B981] mt-2">{currencyFormater(totalPago)}</div>
-            <div className="text-[9px] text-emerald-500/80 font-bold uppercase mt-1">Concluído e transferido</div>
-          </Card>
-
-          <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/5 border-l-[4px] border-l-amber-500 flex flex-col justify-between">
-            <div className="text-xs font-black text-slate-500 uppercase tracking-widest text-amber-500">Pendente de Pgto</div>
-            <div className="text-3xl font-black font-mono text-amber-500 mt-2">{currencyFormater(totalPendente)}</div>
-            <div className="text-[9px] text-amber-500/80 font-bold uppercase mt-1">Compromisso financeiro em aberto</div>
-          </Card>
-        </div>
-
-        <Card className="bg-[#111827]/80 backdrop-blur-xl border border-white/10 overflow-hidden rounded-2xl shadow-xl">
-          <div className="p-5 border-b border-white/5 bg-[#0B1120]/40 flex items-center justify-between">
-            <h3 className="text-xs font-black text-white uppercase tracking-wider flex items-center gap-2">
-              <Layers className="w-4 h-4 text-blue-500" /> Registro Detalhado de Comissionamento ({filteredComissoes.length})
-            </h3>
-            <span className="text-[9px] text-slate-500 font-bold uppercase">{filterPeriod}</span>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/5 bg-[#0B1120]/20 text-[10px] font-black uppercase tracking-widest text-slate-500">
-                  <th className="p-4 pl-6">Vendedor</th>
-                  <th className="p-4">Período</th>
-                  <th className="p-4">Base (Faturamento)</th>
-                  <th className="p-4">Alíquota %</th>
-                  <th className="p-4">Comissão Devida</th>
-                  <th className="p-4">Status</th>
-                  <th className="p-4 pr-6 text-right">Ações</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5 text-xs font-medium">
-                {filteredComissoes.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="p-12 text-center text-slate-500 italic uppercase font-black text-[10px] tracking-widest">
-                      Nenhuma comissão cadastrada ou apurada para este período.
-                    </td>
-                  </tr>
-                ) : (
-                  filteredComissoes.map((item) => (
-                    <tr key={item.id} className="hover:bg-white/[0.01] transition-all group">
-                      <td className="p-4 pl-6 font-bold text-white uppercase">{item.vendedor}</td>
-                      <td className="p-4 text-slate-400 font-mono">{item.periodo}</td>
-                      <td className="p-4 font-mono text-slate-300">{currencyFormater(item.baseValor)}</td>
-                      <td className="p-4 font-mono font-black text-slate-500">{item.taxaPercent}%</td>
-                      <td className="p-4 font-mono font-black text-[#10B981]">{currencyFormater(item.comissaoValor)}</td>
-                      <td className="p-4">
-                        <button 
-                          onClick={() => handleToggleStatus(item.id, item.status)}
-                          className={`text-[9px] uppercase font-black tracking-widest px-2.5 py-1 rounded-lg border transition-all cursor-pointer hover:brightness-125 ${
-                            item.status === 'Pago' 
-                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                              : 'bg-amber-500/10 text-amber-500 border-amber-500/20'
-                          }`}
-                        >
-                          {item.status}
-                        </button>
-                      </td>
-                      <td className="p-4 pr-6 text-right">
-                        <button
-                          onClick={() => handleDeleteCommission(item.id)}
-                          className="p-1.5 text-slate-600 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </Card>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        {kpis.map((kpi, i) => (
+          <motion.div
+            key={kpi.label}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.07 }}
+          >
+            <Card className="p-5 bg-[#111827]/80 backdrop-blur-xl border-white/5 relative overflow-hidden group">
+              <div className="flex items-start justify-between mb-3">
+                <div className={`p-2 rounded-xl ${kpi.bg} border ${kpi.border}`}>
+                  <kpi.icon className={`w-4 h-4 ${kpi.color}`} />
+                </div>
+              </div>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.18em] mb-1">{kpi.label}</p>
+              <h3 className="text-xl font-black text-white italic tracking-tighter leading-none">{kpi.value}</h3>
+              <p className="text-[10px] text-slate-600 mt-1 font-medium">{kpi.sub}</p>
+            </Card>
+          </motion.div>
+        ))}
       </div>
 
-      {/* Manual record addition modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-            <div className="p-6 border-b border-white/5 flex justify-between items-center bg-white/[0.01]">
-              <div>
-                <h3 className="text-lg font-black text-white uppercase tracking-tighter flex items-center gap-2">
-                  <PlusCircle className="w-5 h-5 text-blue-500" /> Nova Comissão Manual
-                </h3>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Lançar ganho ou override comercial.</p>
-              </div>
-              <button 
-                onClick={() => setIsModalOpen(false)}
-                className="text-slate-400 hover:text-white transition-colors"
-                type="button"
-              >
-                ✕
-              </button>
+      {/* Table card */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+        className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden"
+      >
+        {/* Tab bar */}
+        <div className="flex items-center gap-0 border-b border-white/5 px-4 pt-1">
+          {CARGO_TABS.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-5 py-3.5 text-[11px] font-black uppercase tracking-widest transition-all border-b-2 -mb-px whitespace-nowrap ${
+                activeTab === tab.key
+                  ? 'border-emerald-500 text-white'
+                  : 'border-transparent text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              {tab.label} / {tab.sublabel}
+              <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-md font-black ${activeTab === tab.key ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/5 text-slate-600'}`}>
+                {tabCount(tab.key)}
+              </span>
+            </button>
+          ))}
+          <div className="ml-auto">
+            <Button
+              onClick={() => setShowAddModal(true)}
+              className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 text-[10px] font-black uppercase tracking-widest px-4 rounded-lg shadow-lg shadow-emerald-500/20"
+            >
+              <Plus className="w-3.5 h-3.5" /> Adicionar
+            </Button>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-white/5">
+                {['Colaborador(a)', 'Meta', 'Realizado', 'Atingimento', 'Semáforo', 'Fixo', 'Variável', 'Acelerador', 'Total OTE', ''].map((h, i) => (
+                  <th key={i} className={`px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap ${i === 9 ? 'w-10' : 'text-left'}`}>
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/[0.04]">
+              {rows.length === 0 ? (
+                <tr>
+                  <td colSpan={10} className="py-20 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="p-4 rounded-2xl bg-white/5"><Users className="w-6 h-6 text-slate-600" /></div>
+                      <p className="text-[11px] font-black text-slate-600 uppercase tracking-widest">Nenhum colaborador nesta categoria</p>
+                      <button onClick={() => setShowAddModal(true)} className="text-[10px] font-bold text-emerald-500 hover:text-emerald-400 underline underline-offset-2">Adicionar colaborador</button>
+                    </div>
+                  </td>
+                </tr>
+              ) : rows.map(row => {
+                const pct = row.ating;
+                const atBadge = pct >= 80 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                              : pct >= 50 ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+                              : 'bg-red-500/10 text-red-400 border border-red-500/20';
+                return (
+                  <tr key={row.id} className="hover:bg-white/[0.02] transition-colors group">
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${AVATAR_COLORS[row.colorIdx]} flex items-center justify-center text-[11px] font-black text-white shrink-0 shadow-lg`}>
+                          {initials(row.nome)}
+                        </div>
+                        <div>
+                          <p className="text-sm font-black text-white leading-tight">{row.nome}</p>
+                          <p className="text-[10px] font-bold text-slate-500 mt-0.5">
+                            {row.cargo}
+                            <span className="mx-1.5 text-slate-700">·</span>
+                            {row.nivel}
+                            {row.squad && <>
+                              <span className="mx-1.5 text-slate-700">·</span>
+                              <span className="text-blue-400">{row.squad}</span>
+                            </>}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5 text-sm font-bold text-slate-500 whitespace-nowrap">{fmt(row.meta)}</td>
+                    <td className="px-5 py-3.5 text-sm font-black text-white whitespace-nowrap">{fmt(row.realizado)}</td>
+                    <td className="px-5 py-3.5">
+                      <span className={`inline-flex items-center gap-1.5 text-[11px] font-black px-2.5 py-1 rounded-lg ${atBadge}`}>
+                        {pct >= 100 ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                        {pct.toFixed(1)}%
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-2 h-2 rounded-full shrink-0 ${row.sem.dotColor}`} />
+                        <span className={`text-[10px] font-black uppercase tracking-wider ${row.sem.textColor}`}>{row.sem.label}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5 text-sm font-bold text-slate-400 whitespace-nowrap">{fmt(row.fixo)}</td>
+                    <td className="px-5 py-3.5 text-sm font-bold text-slate-400 whitespace-nowrap">{fmt(row.variavel)}</td>
+                    <td className="px-5 py-3.5 text-sm font-bold whitespace-nowrap">
+                      {row.acelerador > 0
+                        ? <span className="text-amber-400">{fmt(row.acelerador)}</span>
+                        : <span className="text-slate-700">—</span>}
+                    </td>
+                    <td className="px-5 py-3.5 whitespace-nowrap">
+                      <span className="text-sm font-black text-emerald-400">{fmt(row.totalOTE)}</span>
+                    </td>
+                    <td className="px-3 py-3.5">
+                      <button
+                        onClick={() => { saveEntries(entries.filter(e => e.id !== row.id)); toast.success('Removido.'); }}
+                        className="p-1.5 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all rounded-lg hover:bg-white/5"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer totals */}
+        {rows.length > 0 && (
+          <div className="px-5 py-4 border-t border-white/5 bg-white/[0.02] flex flex-wrap items-center justify-end gap-8">
+            <div className="text-right">
+              <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Total Fixo</p>
+              <p className="text-sm font-black text-slate-300">{fmt(totals.fixo)}</p>
             </div>
+            <div className="text-right">
+              <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Total Variável</p>
+              <p className="text-sm font-black text-slate-300">{fmt(totals.variavel)}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Total OTE</p>
+              <p className="text-base font-black text-emerald-400">{fmt(totals.ote)}</p>
+            </div>
+          </div>
+        )}
+      </motion.div>
 
-            <form onSubmit={handleCreateCommission} className="p-6 space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 block">Vendedor Comercial / Closer</label>
-                <select 
-                  className="w-full bg-[#1e293b] text-white border border-white/5 rounded-xl h-11 px-4 text-xs font-black focus:outline-none"
-                  value={vendedorInput}
-                  onChange={(e) => setVendedorInput(e.target.value)}
-                >
-                  {availableSellers.map(s => <option key={s} value={s}>{s}</option>)}
-                </select>
+      {/* Add Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-[#0F172A] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl shadow-black/60 overflow-hidden"
+          >
+            <div className="p-6 border-b border-white/10 flex justify-between items-center">
+              <div>
+                <h3 className="text-sm font-black text-white uppercase tracking-widest">Adicionar Colaborador</h3>
+                <p className="text-[10px] text-slate-500 mt-0.5">Perfil OTE aplicado automaticamente pelo cargo + nível</p>
               </div>
-
+              <button onClick={() => setShowAddModal(false)} className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-colors">✕</button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nome Completo</label>
+                <input value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 placeholder:text-slate-600 transition-colors"
+                  placeholder="Nome completo" />
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 block">Mês/Ano</label>
-                  <select 
-                    className="w-full bg-[#1e293b] text-white border border-white/5 rounded-xl h-11 px-4 text-xs font-black focus:outline-none"
-                    value={periodoInput}
-                    onChange={(e) => setPeriodoInput(e.target.value)}
-                  >
-                    <option value="Maio/2026">Maio/2026</option>
-                    <option value="Abril/2026">Abril/2026</option>
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cargo</label>
+                  <select value={form.cargo} onChange={e => setForm(f => ({ ...f, cargo: e.target.value as CargoTab }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 transition-colors">
+                    <option>Closer</option><option>SDR</option><option>Gestor</option>
                   </select>
                 </div>
-
                 <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 block">Alíquota (%)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="100"
-                    className="w-full bg-[#1e293b] text-white border border-white/5 rounded-xl h-11 px-4 text-xs font-black focus:outline-none focus:border-blue-500"
-                    value={taxaPctInput}
-                    onChange={(e) => setTaxaPctInput(e.target.value)}
-                  />
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nível</label>
+                  <select value={form.nivel} onChange={e => setForm(f => ({ ...f, nivel: e.target.value }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 transition-colors">
+                    <option>Aprendiz</option><option>Junior 1</option><option>Junior 2</option><option>Pleno</option><option>Senior</option>
+                  </select>
                 </div>
               </div>
-
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Squad</label>
+                  <input value={form.squad} onChange={e => setForm(f => ({ ...f, squad: e.target.value }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 placeholder:text-slate-600 transition-colors"
+                    placeholder="Ex: Target" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Meta (R$)</label>
+                  <input type="number" value={form.meta} onChange={e => setForm(f => ({ ...f, meta: e.target.value }))}
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 placeholder:text-slate-600 transition-colors"
+                    placeholder="70000" />
+                </div>
+              </div>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 block">Faturamento Base Gerado (R$)</label>
-                <input
-                  type="number"
-                  placeholder="Ex: 50000"
-                  required
-                  className="w-full bg-[#1e293b] text-white border border-white/5 rounded-xl h-11 px-4 text-xs font-black focus:outline-none focus:border-blue-500"
-                  value={baseValorInput}
-                  onChange={(e) => setBaseValorInput(e.target.value)}
-                />
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Realizado (R$)</label>
+                <input type="number" value={form.realizado} onChange={e => setForm(f => ({ ...f, realizado: e.target.value }))}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 placeholder:text-slate-600 transition-colors"
+                  placeholder="0" />
               </div>
-
-              <div className="flex gap-3 pt-3">
-                <Button 
-                  type="button" 
-                  onClick={() => setIsModalOpen(false)}
-                  className="flex-1 bg-white/5 hover:bg-white/10 text-slate-400 h-11 rounded-xl text-[10px] font-black uppercase tracking-widest"
-                >
-                  Cancelar
-                </Button>
-                <Button 
-                  type="submit" 
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white h-11 rounded-xl text-[10px] font-black uppercase tracking-widest"
-                >
-                  Lançar Comissão
-                </Button>
-              </div>
-            </form>
-          </div>
+            </div>
+            <div className="p-6 border-t border-white/10 flex gap-3">
+              <Button variant="ghost" onClick={() => setShowAddModal(false)} className="flex-1 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl">Cancelar</Button>
+              <Button onClick={handleAddEntry} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20">
+                Adicionar
+              </Button>
+            </div>
+          </motion.div>
         </div>
       )}
     </PageContainer>
   );
 }
-

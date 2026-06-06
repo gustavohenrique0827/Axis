@@ -43,7 +43,7 @@ function rowToProject(row: any): DevProject {
 }
 
 export function useDevProjects() {
-  const [projects, setProjects] = useState<DevProject[]>(MOCK_PROJECTS);
+  const [projects, setProjects] = useState<DevProject[]>(supabase ? [] : MOCK_PROJECTS);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function useDevProjects() {
         .from('dev_projects')
         .select('*')
         .order('created_at', { ascending: false });
-      if (!error && data && data.length > 0) {
+      if (!error && data !== null) {
         setProjects(data.map(rowToProject));
       }
       setLoading(false);

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
-import { 
-  Menu, Wallet, TrendingUp, TrendingDown, DollarSign, PieChart, FileText, Target,
-  ChevronLeft, ChevronRight, PanelLeftClose, PanelLeftOpen, X
+import {
+  Menu, Wallet, TrendingUp, TrendingDown, DollarSign, PieChart, FileText, Target, Settings2,
+  PanelLeftClose, PanelLeftOpen, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "../../components/ui/button";
@@ -21,6 +21,7 @@ export default function FinanceiroLayout() {
     { title: "Metas", path: "/app/financeiro/metas", icon: Target },
     { title: "DRE", path: "/app/financeiro/dre", icon: Menu },
     { title: "Categorias", path: "/app/financeiro/categorias", icon: Wallet },
+    { title: "Configurações", path: "/app/financeiro/configuracoes", icon: Settings2 },
   ];
 
   return (

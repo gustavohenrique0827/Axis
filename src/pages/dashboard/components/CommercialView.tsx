@@ -120,7 +120,7 @@ export function CommercialView({ salesRanking, funnelData, recentActivities }: C
                     <div className="w-full h-full bg-amber-500/10 border-x border-t border-amber-500/30 rounded-t-[2.5rem] p-6 flex flex-col items-center justify-center shadow-inner">
                         <p className="text-[13px] font-black text-white text-center truncate w-full mb-1">{top3[0].name}</p>
                         <p className="text-lg font-black text-amber-400 font-mono tracking-tighter">R$ {top3[0].total.toLocaleString('pt-BR')}</p>
-                        <div className="mt-3 px-3 py-1 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black uppercase tracking-tighter shadow-[0_0_15px_rgba(245,158,11,0.4)]">Master Closer</div>
+                        <div className="mt-3 px-3 py-1 rounded-full bg-amber-500 text-slate-950 text-[9px] font-black uppercase tracking-tighter shadow-[0_0_15px_rgba(245,158,11,0.4)]">Destaque do Mês</div>
                     </div>
                   </motion.div>
 
@@ -160,7 +160,7 @@ export function CommercialView({ salesRanking, funnelData, recentActivities }: C
                           />
                       </div>
                       <div className="flex items-center justify-between">
-                          <span className="text-[9px] text-slate-500 font-bold uppercase">Deals Fechados</span>
+                          <span className="text-[9px] text-slate-500 font-bold uppercase">Negócios Fechados</span>
                           <span className="text-xs font-black text-white">{s.deals}</span>
                       </div>
                     </div>
@@ -232,7 +232,7 @@ export function CommercialView({ salesRanking, funnelData, recentActivities }: C
                  { subject: 'Ticket Médio', A: salesRanking.length > 0 ? Math.min(150, (salesRanking[0].total / Math.max(salesRanking[0].deals, 1)) / 1000) : 0, fullMark: 150 },
                  { subject: 'Volume', A: salesRanking.length > 0 ? Math.min(150, salesRanking[0].deals * 10) : 0, fullMark: 150 },
                  { subject: 'Qualidade', A: salesRanking.length > 0 ? Math.min(150, salesRanking[0].rate) : 0, fullMark: 150 },
-                 { subject: 'CRM Health', A: funnelData.length > 0 ? Math.min(150, (funnelData[0]?.value || 0) * 5) : 0, fullMark: 150 },
+                 { subject: 'Saúde CRM', A: funnelData.length > 0 ? Math.min(150, (funnelData[0]?.value || 0) * 5) : 0, fullMark: 150 },
                ]}>
                  <PolarGrid stroke="#64748b20" />
                  <PolarAngleAxis dataKey="subject" stroke="#64748b" fontSize={9} fontStyle="bold" />

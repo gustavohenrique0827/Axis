@@ -50,7 +50,7 @@ function rowToTask(row: any): SprintTask {
 }
 
 export function useDevSprints() {
-  const [tasks, setTasks] = useState<SprintTask[]>(MOCK_TASKS);
+  const [tasks, setTasks] = useState<SprintTask[]>(supabase ? [] : MOCK_TASKS);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -61,7 +61,7 @@ export function useDevSprints() {
         .from('dev_sprint_tasks')
         .select('*')
         .order('created_at', { ascending: true });
-      if (!error && data && data.length > 0) {
+      if (!error && data !== null) {
         setTasks(data.map(rowToTask));
       }
       setLoading(false);

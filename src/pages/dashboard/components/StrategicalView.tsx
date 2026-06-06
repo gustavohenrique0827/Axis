@@ -72,7 +72,7 @@ export function StrategicalView({
             </div>
             <div className="flex items-center gap-4">
               <div className="flex bg-white/5 border border-white/5 p-1 rounded-xl gap-1">
-                {['MRR', 'Retention'].map(type => (
+                {(['MRR', 'Retenção'] as const).map(type => (
                   <button
                     key={type}
                     onClick={() => setComparisonPeriod(type === 'MRR' ? 'month' : 'year')}
@@ -91,11 +91,11 @@ export function StrategicalView({
           <div className="flex items-center justify-end gap-3 mb-4">
             <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 rounded-full border border-blue-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-              <span className="text-[9px] text-blue-400 font-bold uppercase tracking-widest text-shadow-glow">Actual</span>
+              <span className="text-[9px] text-blue-400 font-bold uppercase tracking-widest text-shadow-glow">Real</span>
             </div>
             <div className="flex items-center gap-1.5 px-3 py-1 bg-cyan-500/10 rounded-full border border-cyan-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 opacity-50" />
-              <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-widest">Forecast</span>
+              <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-widest">Previsão</span>
             </div>
           </div>
           <div className="h-[380px] -mx-4">
@@ -126,7 +126,7 @@ export function StrategicalView({
           <Card className="p-8 bg-[#111827]/80 border-white/5 relative overflow-hidden h-full flex flex-col rounded-3xl">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                <Target className="w-4 h-4 text-emerald-400" /> Goal Meter
+                <Target className="w-4 h-4 text-emerald-400" /> Medidor de Meta
               </h3>
               <Trophy className="w-4 h-4 text-amber-500 animate-bounce" />
             </div>
@@ -134,7 +134,7 @@ export function StrategicalView({
               {!hasSquads ? (
                 <div className="flex flex-col items-center justify-center py-10 gap-3 opacity-40">
                   <Target className="w-8 h-8 text-slate-500" />
-                  <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Crie squads para ver o Goal Meter</p>
+                  <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Crie squads para ver o Medidor de Meta</p>
                 </div>
               ) : (
                 <>
@@ -168,7 +168,7 @@ export function StrategicalView({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                        <span className="text-[10px] text-slate-400 font-bold uppercase">Target</span>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase">Meta</span>
                       </div>
                       <span className="text-xs font-black text-slate-500">R$ {totalMeta.toLocaleString('pt-BR')}</span>
                     </div>
@@ -183,7 +183,7 @@ export function StrategicalView({
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <Card className="p-6 bg-[#111827]/80 border-white/5 flex flex-col rounded-3xl">
           <h3 className="text-[11px] font-black text-slate-400 mb-6 uppercase tracking-[0.25em] flex items-center gap-2">
-            <Layers className="w-4 h-4 text-blue-400" /> Smart Insights
+            <Layers className="w-4 h-4 text-blue-400" /> Insights Inteligentes
           </h3>
           <div className="space-y-6">
             <div className="group cursor-help">
@@ -205,7 +205,7 @@ export function StrategicalView({
               <Briefcase className="w-4 h-4 text-purple-400" /> Snapshot Financeiro
             </h3>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] text-slate-500 font-black uppercase">Net Revenue Retention</span>
+              <span className="text-[10px] text-slate-500 font-black uppercase">Retenção Líquida de Receita</span>
               <span className="text-xs font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">106.4%</span>
             </div>
           </div>

@@ -89,12 +89,12 @@ export function MarketingView() {
            <div className="flex items-center justify-between mb-10">
               <div>
                  <h3 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
-                   <Globe className="w-5 h-5 text-blue-400" /> Origem de Leads (Attribution)
+                   <Globe className="w-5 h-5 text-blue-400" /> Origem de Leads (Atribuição)
                  </h3>
                  <p className="text-xs text-slate-500 mt-2 font-medium">Modelagem multicanal de primeira interação e conversão final.</p>
               </div>
               <div className="flex items-center gap-2">
-                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-xl border border-white/5 italic">MIA Dynamic Attribution</span>
+                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-xl border border-white/5 italic">Atribuição Dinâmica MIA</span>
               </div>
            </div>
            <div className="h-[320px]">
@@ -133,7 +133,7 @@ export function MarketingView() {
         <div className="space-y-6">
            <Card className="p-8 bg-[#111827]/80 border-white/5 rounded-3xl">
               <h4 className="text-sm font-black text-white uppercase tracking-widest mb-8 flex items-center gap-2">
-                <Share2 className="w-4 h-4 text-purple-400" /> Share of Voice
+                <Share2 className="w-4 h-4 text-purple-400" /> Voz de Mercado
               </h4>
               <div className="h-[200px]">
                  <ResponsiveContainer width="100%" height="100%">
@@ -183,8 +183,8 @@ export function MarketingView() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
          {[
            { icon: MousePointer2, label: "CTR Médio", value: "0%", trend: "0%", color: "text-blue-400", bg: "bg-blue-500/10" },
-           { icon: Layers, label: "LPs Conversion", value: "0%", trend: "0%", color: "text-emerald-400", bg: "bg-emerald-500/10" },
-           { icon: Users, label: "Marketing Leads", value: "0", trend: "0%", color: "text-purple-400", bg: "bg-purple-500/10" },
+           { icon: Layers, label: "Conv. Landing Pages", value: "0%", trend: "0%", color: "text-emerald-400", bg: "bg-emerald-500/10" },
+           { icon: Users, label: "Leads de Marketing", value: "0", trend: "0%", color: "text-purple-400", bg: "bg-purple-500/10" },
            { icon: DollarSign, label: "Total Investido", value: "R$ 0", trend: "0%", color: "text-amber-400", bg: "bg-amber-500/10" },
          ].map((metric, i) => (
             <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 group hover:border-white/10 transition-all rounded-3xl">

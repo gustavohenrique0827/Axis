@@ -66,7 +66,7 @@ export function CustomerSuccessView() {
                 <h3 className="text-lg font-black text-white uppercase tracking-tighter flex items-center gap-3">
                   <HeartHandshake className="w-5 h-5 text-emerald-400" /> Saúde & Retenção Global
                 </h3>
-                <p className="text-xs text-slate-500 mt-2 font-medium">Evolution health score over active customer base.</p>
+                <p className="text-xs text-slate-500 mt-2 font-medium">Evolução do score de saúde da base de clientes ativos.</p>
             </div>
             <div className="flex items-center gap-6">
                <div className="text-right">
@@ -80,8 +80,8 @@ export function CustomerSuccessView() {
                   </div>
                </div>
                <div className="flex bg-white/5 border border-white/5 p-1 rounded-2xl gap-1">
-                {['Day', 'Week', 'Month'].map(p => (
-                  <button key={p} className={`px-4 py-2 text-[9px] font-black uppercase rounded-xl border transition-all border-none bg-transparent cursor-pointer ${p === 'Week' ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'text-slate-500 hover:text-white'}`}>
+                {['Dia', 'Semana', 'Mês'].map(p => (
+                  <button key={p} className={`px-4 py-2 text-[9px] font-black uppercase rounded-xl border transition-all border-none bg-transparent cursor-pointer ${p === 'Semana' ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' : 'text-slate-500 hover:text-white'}`}>
                     {p}
                   </button>
                 ))}
@@ -111,7 +111,7 @@ export function CustomerSuccessView() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
              <div className="p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-emerald-500/20 transition-all group">
-                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3 group-hover:text-emerald-400 transition-colors">Net Retention</span>
+                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3 group-hover:text-emerald-400 transition-colors">Retenção Líquida</span>
                 <div className="flex items-end gap-3">
                   <span className="text-3xl font-black text-white font-mono tracking-tighter">104%</span>
                   <div className="flex items-center gap-0.5 text-emerald-400 font-black mb-1.5">
@@ -121,14 +121,14 @@ export function CustomerSuccessView() {
                 </div>
              </div>
              <div className="p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-emerald-500/20 transition-all group">
-                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3 group-hover:text-emerald-400 transition-colors">Avg Health Score</span>
+                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3 group-hover:text-emerald-400 transition-colors">Score de Saúde Médio</span>
                 <div className="flex items-end gap-3 text-emerald-400">
                   <span className="text-3xl font-black font-mono tracking-tighter">88.5</span>
                   <Sparkles className="w-5 h-5 mb-2.5 opacity-50" />
                 </div>
              </div>
              <div className="p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-emerald-500/20 transition-all group">
-                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3 group-hover:text-emerald-400 transition-colors">Digital Engagement</span>
+                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3 group-hover:text-emerald-400 transition-colors">Engajamento Digital</span>
                 <div className="flex items-end gap-3 text-purple-400">
                   <span className="text-3xl font-black font-mono tracking-tighter">76%</span>
                   <Activity className="w-5 h-5 mb-2.5 opacity-50" />

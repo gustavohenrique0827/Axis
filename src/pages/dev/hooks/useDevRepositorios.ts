@@ -49,7 +49,7 @@ function rowToRepo(row: any): DevRepo {
 }
 
 export function useDevRepositorios() {
-  const [repos, setRepos] = useState<DevRepo[]>(MOCK_REPOS);
+  const [repos, setRepos] = useState<DevRepo[]>(supabase ? [] : MOCK_REPOS);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export function useDevRepositorios() {
         .from('dev_repositories')
         .select('*')
         .order('created_at', { ascending: false });
-      if (!error && data && data.length > 0) {
+      if (!error && data !== null) {
         setRepos(data.map(rowToRepo));
       }
       setLoading(false);

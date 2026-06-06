@@ -1,29 +1,12 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
-  Server, RefreshCw, CheckCircle2, AlertTriangle, XCircle,
-  Activity, Clock, Cpu, Database, Globe, Lock,
-  ArrowUpRight, Zap, HardDrive, Wifi, MoreHorizontal,
-  Rocket, GitBranch, Shield
+  Server, RefreshCw, Cpu, Clock,
+  HardDrive, Wifi
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
-
-type EnvStatus = 'operacional' | 'degradado' | 'offline' | 'em deploy';
-
-interface Environment {
-  id: string;
-  name: string;
-  type: string;
-  status: EnvStatus;
-  url: string;
-  version: string;
-  lastDeploy: string;
-  uptime: string;
-  region: string;
-  metrics: { cpu: number; memory: number; requests: string; latency: string };
-  services: { name: string; status: EnvStatus }[];
-}
+import { useAmbientes, type EnvStatus } from './hooks/useAmbientes';
 
 const STATUS_CONFIG: Record<EnvStatus, { label: string; color: string; dot: string; badge: string }> = {
   operacional: { label: 'Operacional', color: 'text-emerald-400', dot: 'bg-emerald-500', badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25' },
@@ -31,85 +14,6 @@ const STATUS_CONFIG: Record<EnvStatus, { label: string; color: string; dot: stri
   offline: { label: 'Offline', color: 'text-red-400', dot: 'bg-red-500', badge: 'bg-red-500/15 text-red-400 border-red-500/25' },
   'em deploy': { label: 'Em Deploy', color: 'text-blue-400', dot: 'bg-blue-500 animate-pulse', badge: 'bg-blue-500/15 text-blue-400 border-blue-500/25' },
 };
-
-const ENVIRONMENTS: Environment[] = [
-  {
-    id: 'prod',
-    name: 'Produção',
-    type: 'Production',
-    status: 'operacional',
-    url: 'app.axiscrm.com.br',
-    version: 'v2.4.1',
-    lastDeploy: '2 dias atrás',
-    uptime: '99.98%',
-    region: 'sa-east-1 (São Paulo)',
-    metrics: { cpu: 34, memory: 61, requests: '1.2k/min', latency: '142ms' },
-    services: [
-      { name: 'API REST', status: 'operacional' },
-      { name: 'Banco de Dados', status: 'operacional' },
-      { name: 'Autenticação', status: 'operacional' },
-      { name: 'Storage', status: 'operacional' },
-      { name: 'Email SMTP', status: 'operacional' },
-    ],
-  },
-  {
-    id: 'staging',
-    name: 'Staging',
-    type: 'Staging',
-    status: 'em deploy',
-    url: 'staging.axiscrm.com.br',
-    version: 'v2.4.2-rc1',
-    lastDeploy: '45 min atrás',
-    uptime: '99.2%',
-    region: 'sa-east-1 (São Paulo)',
-    metrics: { cpu: 18, memory: 42, requests: '84/min', latency: '198ms' },
-    services: [
-      { name: 'API REST', status: 'em deploy' },
-      { name: 'Banco de Dados', status: 'operacional' },
-      { name: 'Autenticação', status: 'operacional' },
-      { name: 'Storage', status: 'operacional' },
-      { name: 'Email SMTP', status: 'degradado' },
-    ],
-  },
-  {
-    id: 'dev',
-    name: 'Desenvolvimento',
-    type: 'Development',
-    status: 'operacional',
-    url: 'dev.axiscrm.com.br',
-    version: 'v2.5.0-dev',
-    lastDeploy: '2h atrás',
-    uptime: '95.4%',
-    region: 'us-east-1 (N. Virgínia)',
-    metrics: { cpu: 8, memory: 29, requests: '12/min', latency: '310ms' },
-    services: [
-      { name: 'API REST', status: 'operacional' },
-      { name: 'Banco de Dados', status: 'operacional' },
-      { name: 'Autenticação', status: 'operacional' },
-      { name: 'Storage', status: 'operacional' },
-      { name: 'Email SMTP', status: 'offline' },
-    ],
-  },
-  {
-    id: 'qa',
-    name: 'QA / Testes',
-    type: 'QA',
-    status: 'degradado',
-    url: 'qa.axiscrm.com.br',
-    version: 'v2.4.2-qa',
-    lastDeploy: '1 dia atrás',
-    uptime: '88.7%',
-    region: 'us-east-1 (N. Virgínia)',
-    metrics: { cpu: 45, memory: 72, requests: '320/min', latency: '520ms' },
-    services: [
-      { name: 'API REST', status: 'degradado' },
-      { name: 'Banco de Dados', status: 'operacional' },
-      { name: 'Autenticação', status: 'degradado' },
-      { name: 'Storage', status: 'operacional' },
-      { name: 'Email SMTP', status: 'operacional' },
-    ],
-  },
-];
 
 function MetricBar({ value, color }: { value: number; color: string }) {
   return (
@@ -123,7 +27,10 @@ function MetricBar({ value, color }: { value: number; color: string }) {
 }
 
 export default function Ambientes() {
+  const { environments, loading } = useAmbientes();
   const [refreshing, setRefreshing] = useState<string | null>(null);
+
+  const operacionalCount = environments.filter(e => e.status === 'operacional').length;
 
   const handleRefresh = (id: string) => {
     setRefreshing(id);
@@ -139,7 +46,9 @@ export default function Ambientes() {
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-3 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
             <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">3/4 Operacionais</span>
+            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+              {operacionalCount}/{environments.length} Operacionais
+            </span>
           </div>
           <Button variant="outline" className="h-10 rounded-xl border-white/5 text-[10px] font-black uppercase tracking-widest gap-2">
             <RefreshCw className="w-4 h-4" /> Atualizar Todos
@@ -148,7 +57,13 @@ export default function Ambientes() {
       }
     >
       <div className="grid md:grid-cols-2 gap-6 pb-10">
-        {ENVIRONMENTS.map(env => {
+        {loading && (
+          <p className="col-span-2 text-center text-slate-500 text-xs py-10">Carregando ambientes...</p>
+        )}
+        {!loading && environments.length === 0 && (
+          <p className="col-span-2 text-center text-slate-500 text-xs py-10">Nenhum ambiente cadastrado.</p>
+        )}
+        {environments.map(env => {
           const cfg = STATUS_CONFIG[env.status];
           const isRefreshing = refreshing === env.id;
 
@@ -158,7 +73,7 @@ export default function Ambientes() {
               <div className="p-6 border-b border-white/5">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2.5 rounded-xl bg-white/5`}>
+                    <div className="p-2.5 rounded-xl bg-white/5">
                       <Server className="w-4 h-4 text-slate-400" />
                     </div>
                     <div>
@@ -231,7 +146,7 @@ export default function Ambientes() {
               <div className="p-6">
                 <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3">Serviços</p>
                 <div className="grid grid-cols-2 gap-2">
-                  {env.services.map(svc => {
+                  {env.services.map((svc: { name: string; status: EnvStatus }) => {
                     const sc = STATUS_CONFIG[svc.status];
                     return (
                       <div key={svc.name} className="flex items-center gap-2 p-2 bg-white/[0.02] rounded-lg">
