@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import {
   Cpu, Activity, Layers, Database, UserCheck,
   Target, Award, DollarSign, Package, MessageSquare, Users, Columns3, Clock, Code2,
-  Plus, X, Building2, RefreshCw, ChevronDown
+  Plus, X, Building2, RefreshCw, ChevronDown, Megaphone
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -317,6 +317,7 @@ export default function ConfigModulosDemos() {
                   { id: 'financeiro', title: "Cofre & Financeiro", desc: "Painel Financeiro, Entradas, Saídas e DRE", icon: DollarSign },
                   { id: 'catalogo', title: "Catálogo de Produtos", desc: "Rastreamento, estoque, iPhones e SKUs", icon: Package },
                   { id: 'engajamento', title: "Engajamento & Mensagens", desc: "Central de WhatsApp, E-mail e Automações", icon: MessageSquare },
+                  { id: 'marketing', title: "Marketing & Conteúdo", desc: "Campanhas, Social Media, Landing Pages e Métricas", icon: Megaphone },
                   { id: 'rh', title: "RH & Colaboradores", desc: "Equipe interna, comissões de corretores/closers", icon: Users },
                   { id: 'clinica', title: "Clínica & Saúde", desc: "Prontuários, Telemedicina e Agendamento", icon: Activity },
                   { id: 'bi', title: "BI & Indicadores Relatórios", desc: "Melhores estatísticas de faturamento e OTE", icon: Columns3 },
