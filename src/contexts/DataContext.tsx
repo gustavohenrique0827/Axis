@@ -76,7 +76,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const syncSetting = async (key: string, value: any) => {
     if (!supabase) return;
     try {
-      const { data } = await supabase.from('app_settings').select('id').eq('key', key).single();
+      const { data } = await supabase.from('app_settings').select('id').eq('key', key).maybeSingle();
       if (data) {
         await supabase.from('app_settings').update({ value }).eq('id', data.id);
       } else {
