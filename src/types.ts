@@ -96,13 +96,19 @@ export interface Colaborador {
 export interface Squad {
   id: string;
   nome: string;
-  meta: number; // in R$
-  orcamentoMensal: number; // in R$ - spend per month
-  faturamentoAlcancado: number; // in R$
-  sdrCount: number;
-  closersCount: number;
+  departamento?: string;
+  leader?: string;
+  cor?: string;
+  logo?: string;
   focoComercial: string;
   membros: string[];
+  membrosFuncoes?: Record<string, string>;
+  clientes?: string[];
+  meta?: number;
+  orcamentoMensal?: number;
+  faturamentoAlcancado?: number;
+  sdrCount?: number;
+  closersCount?: number;
 }
 
 export interface Contract {

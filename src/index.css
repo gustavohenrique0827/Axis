@@ -393,6 +393,23 @@ html.light th {
   @apply inline-flex items-center justify-center font-medium rounded-lg text-sm bg-rose-500/10 border border-rose-500/25 text-rose-400 hover:bg-rose-500/20 active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;
 }
 
+/* ── EtapaCard (pipeline settings) ── */
+.etapa-card-placeholder {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+html.light .etapa-card-placeholder {
+  background: rgba(15, 23, 42, 0.05) !important;
+  border-color: rgba(15, 23, 42, 0.08) !important;
+}
+
+.etapa-toggle-off {
+  background: rgba(255, 255, 255, 0.12);
+}
+html.light .etapa-toggle-off {
+  background: rgba(15, 23, 42, 0.10) !important;
+}
+
 /* Custom Seleção Ativa class for selected contact with soft glow and highlighted left border */
 .selecao-ativa {
   border-left-width: 4px !important;

@@ -7,8 +7,8 @@ import { BarChart3, RefreshCw, Target, Trophy, Layers, Zap, Briefcase } from 'lu
 
 interface Squad {
   nome: string;
-  meta: number;
-  faturamentoAlcancado: number;
+  meta?: number;
+  faturamentoAlcancado?: number;
 }
 
 interface Contract {

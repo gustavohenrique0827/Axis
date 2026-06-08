@@ -273,7 +273,11 @@ export async function fetchTenants() {
       .order("name", { ascending: true });
 
     if (error) {
-      console.error('[Tenants] ❌ Erro RLS/Supabase ao carregar tenants:', error.message, error.code);
+      if (error.code === '42501') {
+        console.warn('[Tenants] ⚠️ Sem permissão RLS na tabela tenants — usando módulos demo locais. Execute o SQL de setup no Supabase SQL Editor para habilitar dados reais.');
+      } else {
+        console.error('[Tenants] ❌ Erro ao carregar tenants:', error.message, error.code);
+      }
       return {};
     }
 

@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
-import { Plus, Settings2, Users, ChevronDown, ChevronUp, BarChart3, Users2, History, LayoutDashboard, Target, TrendingUp } from "lucide-react";
+import { Plus, Pencil, Users, ChevronDown, ChevronUp, BarChart3, Users2, History, LayoutDashboard, Target, TrendingUp } from "lucide-react";
 import { NovoMembroModal } from "../../components/ui/NovoMembroModal";
+import { EditarMembroModal } from "../../components/ui/EditarMembroModal";
 import { motion, AnimatePresence } from "motion/react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { useEquipe, TeamMember } from "./hooks/useEquipe";
@@ -10,7 +11,7 @@ import { SquadsTab } from "./components/SquadsTab";
 import { LogsTab } from "./components/LogsTab";
 import { toast } from "sonner";
 
-const TeamMemberCard: React.FC<{ member: TeamMember }> = ({ member }) => {
+const TeamMemberCard: React.FC<{ member: TeamMember; onEdit: (m: TeamMember) => void }> = ({ member, onEdit }) => {
   return (
     <Card className="p-5 bg-white/5 backdrop-blur-xl border border-white/10 flex items-center justify-between hover:bg-white/10 transition-all duration-200 group">
       <div className="flex items-center gap-4">
@@ -28,11 +29,13 @@ const TeamMemberCard: React.FC<{ member: TeamMember }> = ({ member }) => {
           </div>
         </div>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
          <span className={`text-[9px] uppercase font-bold px-2 py-0.5 rounded ${member.status === 'Ativo' ? 'bg-[#10B981]/20 text-[#10B981]' : 'bg-yellow-500/20 text-yellow-500'}`}>
             {member.status}
          </span>
-         <Button variant="ghost" size="sm" className="h-8 w-8 p-0"><Settings2 className="w-4 h-4" /></Button>
+         <Button variant="ghost" size="sm" className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => onEdit(member)}>
+           <Pencil className="w-4 h-4 text-slate-400 hover:text-white" />
+         </Button>
       </div>
     </Card>
   );
@@ -65,14 +68,18 @@ export default function Equipe() {
     totalPages,
     moveMember,
     addMember,
+    editMember,
     addSquad,
   } = useEquipe();
+
+  const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
 
   const handleSaveMember = async (data: any) => {
     const newMember: TeamMember = {
       name: data.nome,
       role: data.cargo,
       email: data.email,
+      phone: data.phone || "",
       deals: 0,
       revenue: "R$ 0",
       status: "Ativo",
@@ -81,6 +88,11 @@ export default function Equipe() {
     await addMember(newMember);
     toast.success("Membro adicionado à equipe com sucesso!");
     setIsModalOpen(false);
+  };
+
+  const handleEditMember = async (id: string, updates: Partial<TeamMember>) => {
+    await editMember(id, updates);
+    toast.success("Perfil atualizado com sucesso!");
   };
 
   return (
@@ -393,7 +405,7 @@ export default function Equipe() {
 
               <div className="grid grid-cols-1 gap-3">
                 {filteredTeam.map((member, i) => (
-                  <TeamMemberCard key={i} member={member} />
+                  <TeamMemberCard key={i} member={member} onEdit={setEditingMember} />
                 ))}
                 {filteredTeam.length === 0 && (
                    <div className="py-24 text-center">
@@ -427,6 +439,14 @@ export default function Equipe() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveMember}
         initialValue={null}
+      />
+
+      <EditarMembroModal
+        isOpen={editingMember !== null}
+        onClose={() => setEditingMember(null)}
+        onSave={handleEditMember}
+        member={editingMember}
+        squads={squads}
       />
     </div>
   );

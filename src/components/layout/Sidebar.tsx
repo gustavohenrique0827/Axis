@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { useData } from "../../contexts/DataContext";
 import { Server } from "lucide-react";
 
 import { navSections as defaultNavSections } from "./navData";
@@ -23,6 +24,16 @@ export function Sidebar({
 }: SidebarProps) {
   const location = useLocation();
   const { user, isModuleEnabled } = useAuth();
+  const { cargos } = useData();
+  const userCargo = cargos.find(c => c.nome === user?.role);
+  const cargoModulos: string[] | null = userCargo && Array.isArray(userCargo.modulos) && userCargo.modulos.length > 0
+    ? userCargo.modulos
+    : null;
+  const canAccessModule = (mod: string) => {
+    if (user?.isMaster) return isModuleEnabled(mod);
+    if (!cargoModulos) return isModuleEnabled(mod);
+    return isModuleEnabled(mod) && cargoModulos.includes(mod);
+  };
 
   const navSections = defaultNavSections.map(s => ({ ...s, items: [...s.items] }));
 
@@ -95,7 +106,7 @@ export function Sidebar({
             .filter((section) => {
               const mod = (section as any).reqModule;
               if (!mod) return true;
-              return isModuleEnabled(mod);
+              return canAccessModule(mod);
             })
             .map((section, idx) => (
               <div key={idx} className="space-y-1.5">
@@ -107,7 +118,7 @@ export function Sidebar({
                   <div className="h-4"></div>
                 )}
                 {section.items.map((item: any) => {
-                  if (item.reqModule && item.reqModule !== 'master' && !isModuleEnabled(item.reqModule)) return null;
+                  if (item.reqModule && item.reqModule !== 'master' && !canAccessModule(item.reqModule)) return null;
                   if (item.reqModule === 'master' && !user?.isMaster) return null;
 
                   const isActive = item.path ? location.pathname.startsWith(item.path) : false;

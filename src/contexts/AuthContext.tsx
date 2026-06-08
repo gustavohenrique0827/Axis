@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { fetchTenants, updateTenantModulesInDB } from "../lib/supabase";
 
 export type TenantNiche = "Master" | "Solar" | "Imobiliária" | "Clínica" | "Tecnologia" | "Parceira";
@@ -26,9 +26,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Default: Only G-Tech Master is hardcoded as system admin. All other tenants load from Supabase.
+// Módulos padrão dos tenants demo — carregados localmente como fallback quando Supabase não está acessível
 const DEFAULT_TENANT_MODULES: Record<string, TenantModules> = {
-  "G-Tech Master": { crm: true, sdr: true, advDashboard: true }
+  "G-Tech Master": {
+    crm: true, sdr: true, advDashboard: true, financeiro: true, marketing: true,
+    educacao: true, clinica: true, produtividade: true, rh: true, bi: true,
+    engajamento: true, catalogo: true, dev: true
+  },
+  "SolarCorp Engenharia": {
+    crm: true, financeiro: true, produtividade: true, marketing: true, bi: true, rh: true, engajamento: true
+  },
+  "Imobiliária Prime": {
+    crm: true, financeiro: true, produtividade: true, marketing: true, bi: true, rh: true, catalogo: true
+  },
+  "Clínica Vida": {
+    clinica: true, crm: true, financeiro: true, produtividade: true, rh: true, engajamento: true, bi: true
+  },
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {

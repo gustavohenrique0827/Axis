@@ -1,13 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { UserPlus, ShieldCheck } from "lucide-react";
+import { UserPlus, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import { Modal } from "./modal";
 import { Button } from "./button";
+import { useData } from "../../contexts/DataContext";
 
-type NovoMembroPayload = {
+export type NovoMembroPayload = {
     nome: string;
     email: string;
+    phone: string;
+    senha: string;
     cargo: string;
     departamento: string;
+    squad: string;
 };
 
 type NovoMembroModalProps = {
@@ -33,23 +37,32 @@ export function NovoMembroModal({
 }: NovoMembroModalProps) {
     const [nome, setNome] = useState(initialValue?.nome || "");
     const [email, setEmail] = useState(initialValue?.email || "");
+    const [phone, setPhone] = useState(initialValue?.phone || "");
+    const [senha, setSenha] = useState("");
+    const [showSenha, setShowSenha] = useState(false);
     const [cargo, setCargo] = useState(initialValue?.cargo || "");
     const [departamento, setDepartamento] = useState(initialValue?.departamento || "");
+    const [squad, setSquad] = useState("");
     const [loading, setLoading] = useState(false);
+    const { cargos, squads } = useData();
 
     useEffect(() => {
         if (!isOpen) return;
         setNome(initialValue?.nome || "");
         setEmail(initialValue?.email || "");
+        setPhone(initialValue?.phone || "");
+        setSenha("");
+        setShowSenha(false);
         setCargo(initialValue?.cargo || "");
         setDepartamento(initialValue?.departamento || "");
+        setSquad("");
         setLoading(false);
     }, [isOpen, initialValue]);
 
     const canSubmit = useMemo(() => {
         if (loading) return false;
-        return Boolean(nome.trim() && email.trim() && cargo.trim());
-    }, [loading, nome, email, cargo]);
+        return Boolean(nome.trim() && email.trim() && cargo.trim() && senha.length >= 6);
+    }, [loading, nome, email, cargo, senha]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -60,8 +73,11 @@ export function NovoMembroModal({
             onSave({
                 nome: nome.trim(),
                 email: email.trim(),
+                phone: phone.trim(),
+                senha: senha,
                 cargo: cargo.trim(),
-                departamento: departamento.trim()
+                departamento: departamento.trim(),
+                squad: squad.trim(),
             });
             onClose();
         } finally {
@@ -125,10 +141,44 @@ export function NovoMembroModal({
                         </div>
                     </div>
 
+                    <div className="space-y-2">
+                        <label htmlFor="membro-phone" className={labelClass}>Telefone / WhatsApp</label>
+                        <input id="membro-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputBaseClass} placeholder="(11) 99999-9999" />
+                    </div>
+
+                    <div className="space-y-2">
+                        <label htmlFor="membro-senha" className={labelClass}>Senha de Acesso <span className="text-slate-600 normal-case font-normal">(mín. 6 caracteres)</span></label>
+                        <div className="relative">
+                            <input
+                                id="membro-senha"
+                                type={showSenha ? "text" : "password"}
+                                value={senha}
+                                onChange={(e) => setSenha(e.target.value)}
+                                className={inputBaseClass + " pr-11"}
+                                placeholder="••••••••"
+                                required
+                                minLength={6}
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setShowSenha(v => !v)}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                                tabIndex={-1}
+                            >
+                                {showSenha ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            </button>
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
                             <label htmlFor="membro-cargo" className={labelClass}>Cargo / Função</label>
-                            <input id="membro-cargo" value={cargo} onChange={(e) => setCargo(e.target.value)} className={inputBaseClass} placeholder="Ex.: SDR Senior" required />
+                            <select id="membro-cargo" value={cargo} onChange={(e) => setCargo(e.target.value)} className={inputBaseClass} required>
+                                <option value="">Selecione um cargo...</option>
+                                {cargos.map(c => (
+                                    <option key={c.id} value={c.nome}>{c.nome}</option>
+                                ))}
+                            </select>
                         </div>
                         <div className="space-y-2">
                             <label htmlFor="membro-depto" className={labelClass}>Departamento</label>
@@ -141,6 +191,16 @@ export function NovoMembroModal({
                                 <option value="Tecnologia">Tecnologia</option>
                             </select>
                         </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <label htmlFor="membro-squad" className={labelClass}>Squad <span className="text-slate-600 normal-case font-normal">(opcional)</span></label>
+                        <select id="membro-squad" value={squad} onChange={(e) => setSquad(e.target.value)} className={inputBaseClass}>
+                            <option value="">Sem squad</option>
+                            {squads.map(s => (
+                                <option key={s.id} value={s.nome}>{s.nome}{s.departamento ? ` — ${s.departamento}` : ''}</option>
+                            ))}
+                        </select>
                     </div>
                 </form>
             </div>

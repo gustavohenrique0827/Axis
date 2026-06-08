@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useData } from "../../../contexts/DataContext";
 import { Colaborador } from "../../../types";
 import { toast } from "sonner";
@@ -14,9 +14,11 @@ export function useRHColaboradores() {
   // Squad modal creation states
   const [isNewSquadOpen, setIsNewSquadOpen] = useState(false);
   const [newSquadName, setNewSquadName] = useState("");
-  const [newSquadMeta, setNewSquadMeta] = useState("100000");
-  const [newSquadBudget, setNewSquadBudget] = useState("10000");
+  const [newSquadDepartamento, setNewSquadDepartamento] = useState("");
   const [newSquadFoco, setNewSquadFoco] = useState("");
+  const [newSquadCor, setNewSquadCor] = useState("#6366f1");
+  const [newSquadLogo, setNewSquadLogo] = useState("");
+  const [newSquadLeader, setNewSquadLeader] = useState("");
 
   // OTE Calculator states
   const [oteBaseSalary, setOteBaseSalary] = useState("0");
@@ -24,26 +26,30 @@ export function useRHColaboradores() {
   const [oteVendasRealizadas, setOteVendasRealizadas] = useState("0");
   const [oteAtingimentoMeta, setOteAtingimentoMeta] = useState("0");
 
-  const handleCreateSquad = (e: React.FormEvent) => {
+  const handleCreateSquad = (e: { preventDefault(): void }) => {
     e.preventDefault();
     if (!newSquadName.trim()) {
-      toast.error("Insira o nome do Squad comercial!");
+      toast.error("Insira o nome do Squad!");
       return;
     }
-    const created = {
+    addSquad({
       nome: newSquadName,
-      meta: parseFloat(newSquadMeta) || 100000,
-      orcamentoMensal: parseFloat(newSquadBudget) || 10000,
-      faturamentoAlcancado: 0,
-      sdrCount: 1,
-      closersCount: 1,
-      focoComercial: newSquadFoco || "Prospecção Geral e Contatos Comerciais",
-      membros: []
-    };
-    addSquad(created);
+      departamento: newSquadDepartamento || "Geral",
+      focoComercial: newSquadFoco || "",
+      membros: [],
+      cor: newSquadCor || "#6366f1",
+      logo: newSquadLogo || "",
+      leader: newSquadLeader || "",
+      membrosFuncoes: {},
+      clientes: [],
+    });
     setIsNewSquadOpen(false);
     setNewSquadName("");
+    setNewSquadDepartamento("");
     setNewSquadFoco("");
+    setNewSquadCor("#6366f1");
+    setNewSquadLogo("");
+    setNewSquadLeader("");
   };
 
   const handleDeleteSquad = (id: string) => {
@@ -78,12 +84,16 @@ export function useRHColaboradores() {
     setIsNewSquadOpen,
     newSquadName,
     setNewSquadName,
-    newSquadMeta,
-    setNewSquadMeta,
-    newSquadBudget,
-    setNewSquadBudget,
+    newSquadDepartamento,
+    setNewSquadDepartamento,
     newSquadFoco,
     setNewSquadFoco,
+    newSquadCor,
+    setNewSquadCor,
+    newSquadLogo,
+    setNewSquadLogo,
+    newSquadLeader,
+    setNewSquadLeader,
     oteBaseSalary,
     setOteBaseSalary,
     oteCommPercentage,

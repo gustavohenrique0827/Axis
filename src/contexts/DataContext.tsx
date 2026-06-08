@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { sendPushNotification } from "../lib/notifications";
-import { supabase, isSupabaseReachable } from '../lib/supabase';
+import { isSupabaseReachable, supabase } from '../lib/supabase';
 import { Lead, Task, Contract, CustomField, LeadScoreTrigger, Squad } from '../types';
 import {
   defaultCustomLeadFields,
@@ -163,12 +163,20 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const addSquad = async (squad: Omit<Squad, 'id'>) => {
     const newSquad = { ...squad, id: `sq${Math.random().toString(36).substring(2, 9)}` };
     setSquads(prev => [...prev, newSquad]);
-    toast.success('Novo squad comercial criado!');
+    toast.success('Squad criado com sucesso!');
     if (supabase) {
       try {
-        const { id, nome, meta, orcamentoMensal, faturamentoAlcancado, sdrCount, closersCount, focoComercial, membros } = newSquad as any;
+        const { id, nome, departamento, focoComercial, membros, leader, cor, logo, membrosFuncoes, clientes } = newSquad as any;
         await supabase.from('squads').insert({
-          id, nome, meta, orcamento_mensal: orcamentoMensal, faturamento_alcancado: faturamentoAlcancado, sdr_count: sdrCount, closers_count: closersCount, foco_comercial: focoComercial, membros
+          id, nome,
+          departamento: departamento || 'Geral',
+          foco_comercial: focoComercial || '',
+          membros: membros || [],
+          leader: leader || '',
+          cor: cor || '#6366f1',
+          logo: logo || '',
+          membros_funcoes: membrosFuncoes || {},
+          clientes: clientes || [],
         });
       } catch (err) {
         console.error("Supabase add squad failed:", err);
@@ -181,12 +189,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (supabase) {
       try {
         const payload: any = { ...updates };
-        if ('orcamentoMensal' in payload) payload.orcamento_mensal = payload.orcamentoMensal;
-        if ('faturamentoAlcancado' in payload) payload.faturamento_alcancado = payload.faturamentoAlcancado;
-        if ('sdrCount' in payload) payload.sdr_count = payload.sdrCount;
-        if ('closersCount' in payload) payload.closers_count = payload.closersCount;
-        if ('focoComercial' in payload) payload.foco_comercial = payload.focoComercial;
-        delete payload.orcamentoMensal; delete payload.faturamentoAlcancado; delete payload.sdrCount; delete payload.closersCount; delete payload.focoComercial;
+        if ('focoComercial' in payload) { payload.foco_comercial = payload.focoComercial; delete payload.focoComercial; }
+        if ('membrosFuncoes' in payload) { payload.membros_funcoes = payload.membrosFuncoes; delete payload.membrosFuncoes; }
         await supabase.from('squads').update(payload).eq('id', id);
       } catch (err) {
         console.error("Supabase update squad failed:", err);
@@ -223,6 +227,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [students, setStudents] = useState<any[]>([]);
   const [colaboradores, setColaboradores] = useState<any[]>([]);
   const [squadMetas, setSquadMetas] = useState<any[]>([]);
+  const [cargos, setCargos] = useState<any[]>([]);
+  const [clienteBase, setClienteBase] = useState<any[]>([]);
 
   const addStudent = async (student: any) => {
     const newStudent = { ...student, id: `st${Math.random().toString(36).substring(2, 9)}` };
@@ -252,8 +258,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     async function setupRealtime() {
       if (!supabase) return;
-      const reachable = await isSupabaseReachable();
-      if (!reachable) return;
 
       channel = supabase.channel('global-db-changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, (payload) => {
@@ -275,6 +279,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, () => fetchTableData('students', setStudents))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'colaboradores' }, () => fetchTableData('colaboradores', setColaboradores))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'squad_metas' }, () => fetchTableData('squad_metas', setSquadMetas))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'cargos' }, () => fetchTableData('cargos', setCargos))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'certificates' }, () => fetchTableData('certificates', setCertificates))
         .subscribe();
     }
@@ -288,19 +293,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function loadInitialData() {
-      // Check if Supabase is configured AND actually reachable
       if (supabase) {
-        console.log('[DataContext] 🔄 Iniciando carregamento de dados do Supabase...');
-        const reachable = await isSupabaseReachable();
-        console.log('[DataContext] Supabase reachable:', reachable);
-
-        if (reachable) {
-          try {
-            console.log('[DataContext] 📊 Carregando tabelas...');
+        console.log('[DataContext] 🔄 Carregando dados do Supabase...');
+        try {
             const [
               leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes,
               notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
-              productsRes, proposalsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes
+              productsRes, proposalsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
+              clienteBaseRes
             ] = await Promise.all([
               supabase.from('leads').select('*'),
               supabase.from('tasks').select('*'),
@@ -320,7 +320,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('students').select('*'),
               supabase.from('colaboradores').select('*'),
               supabase.from('squad_metas').select('*'),
-              supabase.from('certificates').select('*')
+              supabase.from('certificates').select('*'),
+              supabase.from('cargos').select('*'),
+              supabase.from('clientes').select('*')
             ]);
 
             if (!leadsRes.error && leadsRes.data) setLeads(leadsRes.data as Lead[]);
@@ -329,7 +331,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!actsRes.error && actsRes.data) setLeadActivities(actsRes.data as LeadActivity[]);
             if (!financeRes.error && financeRes.data) setFinanceEntries(financeRes.data as FinanceEntry[]);
             if (!apptRes.error && apptRes.data) setAppointments(apptRes.data as Appointment[]);
-            if (!squadsRes.error && squadsRes.data) setSquads(squadsRes.data as Squad[]);
+            if (!squadsRes.error && squadsRes.data) setSquads(squadsRes.data.map((r: any): Squad => ({
+              id: r.id, nome: r.nome,
+              departamento: r.departamento || 'Geral',
+              focoComercial: r.foco_comercial || '',
+              membros: r.membros || [],
+              leader: r.leader || '',
+              cor: r.cor || '#6366f1',
+              logo: r.logo || '',
+              membrosFuncoes: r.membros_funcoes || {},
+              clientes: r.clientes || [],
+            })));
             if (!notifRes.error && notifRes.data) setNotifications(notifRes.data as Notification[]);
             if (!mktCampRes.error && mktCampRes.data) setMarketingCampaigns(mktCampRes.data);
             if (!mktContRes.error && mktContRes.data) setMarketingContent(mktContRes.data);
@@ -338,9 +350,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!proposalsRes.error && proposalsRes.data) setProposals(proposalsRes.data);
             if (!turmasRes.error && turmasRes.data) setTurmas(turmasRes.data);
             if (!studentsRes.error && studentsRes.data) setStudents(studentsRes.data);
-            if (!colabRes.error && colabRes.data) setColaboradores(colabRes.data);
+            if (colabRes.error) console.error('[Supabase] colaboradores load error:', colabRes.error.message);
+            else if (colabRes.data) setColaboradores(colabRes.data);
             if (!squadMetasRes.error && squadMetasRes.data) setSquadMetas(squadMetasRes.data);
             if (!certRes.error && certRes.data) setCertificates(certRes.data);
+            if (!cargosRes.error && cargosRes.data) setCargos(cargosRes.data);
+            if (!clienteBaseRes.error && clienteBaseRes.data) setClienteBase(clienteBaseRes.data);
 
             if (!settingsRes.error && settingsRes.data) {
               settingsRes.data.forEach((setting: any) => {
@@ -353,14 +368,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               });
             }
             console.log('[DataContext] ✅ Dados carregados do Supabase.');
-          } catch (err) {
-            console.error('[DataContext] ❌ Erro ao fetch Supabase:', err);
-          }
-          return;
+        } catch (err) {
+          console.error('[DataContext] ❌ Erro ao fetch Supabase:', err);
         }
-        console.warn('[Axis] ⚠️ Supabase não está acessível.');
       }
-      console.log('[DataContext] ⚠️ Supabase offline e localStorage desativado.');
     }
     loadInitialData();
   }, []);
@@ -508,6 +519,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const notifiedSquadsRef = React.useRef<Record<string, boolean>>({});
   useEffect(() => {
     squads.forEach(sq => {
+      if (!sq.meta || !sq.faturamentoAlcancado) return;
       const percentage = (sq.faturamentoAlcancado / sq.meta) * 100;
       if (percentage >= 90 && !notifiedSquadsRef.current[sq.id]) {
         addNotification({
@@ -862,22 +874,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       add: async (item: any) => {
         stateSetter(prev => [item, ...prev]);
         if (supabase) {
-          try { await supabase.from(tableName).insert(item); }
-          catch (err) { console.error(`Supabase add ${tableName} failed:`, err); }
+          const { error } = await supabase.from(tableName).insert(item);
+          if (error) console.error(`[Supabase] insert ${tableName} error:`, error.message, error.details);
         }
       },
       update: async (id: string, updates: any) => {
         stateSetter(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
         if (supabase) {
-          try { await supabase.from(tableName).update(updates).eq('id', id); }
-          catch (err) { console.error(`Supabase update ${tableName} failed:`, err); }
+          const { error } = await supabase.from(tableName).update(updates).eq('id', id);
+          if (error) console.error(`[Supabase] update ${tableName} error:`, error.message);
         }
       },
       del: async (id: string) => {
         stateSetter(prev => prev.filter(item => item.id !== id));
         if (supabase) {
-          try { await supabase.from(tableName).delete().eq('id', id); }
-          catch (err) { console.error(`Supabase delete ${tableName} failed:`, err); }
+          const { error } = await supabase.from(tableName).delete().eq('id', id);
+          if (error) console.error(`[Supabase] delete ${tableName} error:`, error.message);
         }
       }
     };
@@ -893,6 +905,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const mktLpCrud = createCrudHelper('marketing_landing_pages', setMarketingLandingPages);
   const mktAutoCrud = createCrudHelper('marketing_automations', setMarketingAutomations);
   const squadMetaCrud = createCrudHelper('squad_metas', setSquadMetas);
+  const cargoCrud = createCrudHelper('cargos', setCargos);
 
   const addFinanceEntry = async (entry: Omit<FinanceEntry, 'id'>) => {
     const newEntry = { ...entry, id: `f${Math.random().toString(36).substring(2, 9)}` };
@@ -1058,6 +1071,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addSquadMeta: squadMetaCrud.add,
       updateSquadMeta: squadMetaCrud.update,
       deleteSquadMeta: squadMetaCrud.del,
+      cargos,
+      setCargos,
+      addCargo: cargoCrud.add,
+      updateCargo: cargoCrud.update,
+      deleteCargo: cargoCrud.del,
+      clienteBase,
+      setClienteBase,
     }}>
       {children}
     </DataContext.Provider>

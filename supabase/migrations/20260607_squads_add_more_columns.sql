@@ -1,0 +1,6 @@
+ALTER TABLE public.squads ADD COLUMN IF NOT EXISTS cor TEXT DEFAULT '#6366f1';
+ALTER TABLE public.squads ADD COLUMN IF NOT EXISTS logo TEXT DEFAULT '';
+ALTER TABLE public.squads ADD COLUMN IF NOT EXISTS membros_funcoes JSONB DEFAULT '{}';
+ALTER TABLE public.squads ADD COLUMN IF NOT EXISTS clientes TEXT[] DEFAULT '{}';
+ALTER TABLE public.squads DISABLE ROW LEVEL SECURITY;
+GRANT ALL ON public.squads TO anon, authenticated;

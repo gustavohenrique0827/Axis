@@ -113,6 +113,15 @@ export default function Conteudo() {
     { id: 'Publicado', label: 'Publicado', color: 'bg-emerald-500/20 text-emerald-400' },
   ];
 
+  const totalAcessos = content.reduce((acc, c) => acc + (c.accessCount || 0), 0);
+  const totalAcessosFmt = totalAcessos >= 1000 ? `${(totalAcessos / 1000).toFixed(1)}k` : String(totalAcessos);
+  const contentStats = [
+    { label: "Ativos Totais",  value: String(content.length),                                        icon: Layers,  color: "text-blue-500",   bg: "bg-blue-500/10"   },
+    { label: "Total Acessos",  value: content.length === 0 ? "—" : totalAcessosFmt,                  icon: Globe,   color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { label: "Publicados",     value: String(content.filter(c => c.status === 'Publicado').length),   icon: Star,    color: "text-amber-500",   bg: "bg-amber-500/10"  },
+    { label: "Em Rascunho",    value: String(content.filter(c => c.status === 'Rascunho').length),    icon: Download,color: "text-indigo-500",  bg: "bg-indigo-500/10" },
+  ];
+
   return (
     <PageContainer
       title="Repositório de Conteúdo Axis"
@@ -135,12 +144,7 @@ export default function Conteudo() {
         
         {/* Content Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[
-            { label: "Ativos Totais", value: content.length, icon: Layers, color: "text-blue-500", bg: "bg-blue-500/10" },
-            { label: "Total Acessos", value: "12.4k", icon: Globe, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-            { label: "Média Review", value: "4.9", icon: Star, color: "text-amber-500", bg: "bg-amber-500/10" },
-            { label: "Capacidade Nuvem", value: "1.2GB", icon: Download, color: "text-indigo-500", bg: "bg-indigo-500/10" },
-          ].map((stat, i) => (
+          {contentStats.map((stat, i) => (
             <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 flex items-center gap-6 group hover:border-white/10 transition-all">
               <div className={`p-4 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
                 <stat.icon className="w-6 h-6" />

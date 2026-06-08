@@ -361,7 +361,9 @@ export default function FinanceiroVisaoGeral() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               {squads.map((sq, idx) => {
-                const percent = Math.min(100, Math.round((sq.faturamentoAlcancado / sq.meta) * 100));
+                const faturado = sq.faturamentoAlcancado ?? 0;
+                const meta = sq.meta ?? 0;
+                const percent = meta > 0 ? Math.min(100, Math.round((faturado / meta) * 100)) : 0;
                 const colors = ['bg-blue-500', 'bg-emerald-500', 'bg-indigo-500', 'bg-orange-500'];
                 return (
                   <div key={sq.id || idx} className="space-y-3 p-4 bg-white/[0.01] border border-white/5 rounded-2xl hover:bg-white/[0.03] transition-all">
@@ -382,8 +384,8 @@ export default function FinanceiroVisaoGeral() {
                       />
                     </div>
                     <div className="flex items-center justify-between text-[10px] text-slate-500 font-bold font-mono">
-                      <span>R$ {sq.faturamentoAlcancado.toLocaleString()}</span>
-                      <span className="opacity-40">META: R$ {sq.meta.toLocaleString()}</span>
+                      <span>R$ {faturado.toLocaleString("pt-BR")}</span>
+                      <span className="opacity-40">META: R$ {meta.toLocaleString("pt-BR")}</span>
                     </div>
                   </div>
                 );

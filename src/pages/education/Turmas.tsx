@@ -28,7 +28,7 @@ interface Turma {
 }
 
 export default function Turmas() {
-  const { turmas: rawTurmas, addTurma } = useData();
+  const { turmas: rawTurmas, addTurma, students } = useData();
   
   // Map Supabase fields to UI fields if needed
   const turmas: Turma[] = rawTurmas.map(t => ({
@@ -43,6 +43,14 @@ export default function Turmas() {
     shift: t.shift || "Manhã",
     progress: t.progress || 0
   }));
+
+  // Real stats from Supabase data
+  const turmasAtivas = turmas.filter(t => t.status === 'Ativa').length;
+  const totalAlunos = students.length;
+  const vagasDisponiveis = turmas.reduce((acc, t) => acc + Math.max(0, (t.capacity || 0) - (t.students || 0)), 0);
+  const taxaRetencao = students.length === 0
+    ? "—"
+    : `${Math.round((students.filter((s: any) => s.status === 'Ativo' || s.ativo === true || !s.status).length / students.length) * 100)}%`;
 
   const [search, setSearch] = useState("");
   const [selectedTurma, setSelectedTurma] = useState<Turma | null>(null);
@@ -91,10 +99,10 @@ export default function Turmas() {
         {/* Academic Overview Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: "Turmas Ativas", value: "24", icon: GraduationCap, color: "text-blue-500", bg: "bg-blue-500/10" },
-            { label: "Alunos Matriculados", value: "1,482", icon: Users, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-            { label: "Vagas Disponíveis", value: "156", icon: BookOpen, color: "text-amber-500", bg: "bg-amber-500/10" },
-            { label: "Taxa de Retenção", value: "94%", icon: CheckCircle2, color: "text-purple-500", bg: "bg-purple-500/10" },
+            { label: "Turmas Ativas", value: String(turmasAtivas), icon: GraduationCap, color: "text-blue-500", bg: "bg-blue-500/10" },
+            { label: "Alunos Matriculados", value: totalAlunos.toLocaleString("pt-BR"), icon: Users, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+            { label: "Vagas Disponíveis", value: String(vagasDisponiveis), icon: BookOpen, color: "text-amber-500", bg: "bg-amber-500/10" },
+            { label: "Taxa de Retenção", value: taxaRetencao, icon: CheckCircle2, color: "text-purple-500", bg: "bg-purple-500/10" },
           ].map((stat, i) => (
             <Card key={i} className="p-6 bg-[#111827]/50 border-white/5 backdrop-blur-md group hover:border-white/10 transition-all cursor-default">
               <div className="flex justify-between items-start mb-4">

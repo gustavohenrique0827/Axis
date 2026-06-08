@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
-import { supabase } from "../../../lib/supabase";
+import { useState } from "react";
+import { useData } from "../../../contexts/DataContext";
 
 export interface TeamMember {
+  id?: string;
   name: string;
   role: string;
   email: string;
+  phone: string;
   deals: number;
   revenue: string;
   status: string;
@@ -25,9 +27,11 @@ export interface AuditLog {
 
 function rowToMember(row: any): TeamMember {
   return {
-    name: row.name,
-    role: row.role,
+    id: row.id,
+    name: row.nome || row.name || '',
+    role: row.cargo || row.role || '',
     email: row.email || '',
+    phone: row.phone || '',
     deals: row.deals || 0,
     revenue: row.revenue || 'R$ 0',
     status: row.status || 'Ativo',
@@ -35,14 +39,9 @@ function rowToMember(row: any): TeamMember {
   };
 }
 
-function rowToSquad(row: any): Squad {
-  return {
-    name: row.name,
-    leader: row.leader || '',
-  };
-}
-
 export function useEquipe() {
+  const { colaboradores, addColaborador, updateColaborador, squads: dataSquads, addSquad: dataAddSquad } = useData();
+
   const [activeTab, setActiveTab] = useState("visao-geral");
   const [memberSearch, setMemberSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -50,55 +49,50 @@ export function useEquipe() {
   const [newSquadExpanded, setNewSquadExpanded] = useState(false);
   const [newSquadData, setNewSquadData] = useState({ name: "", leader: "" });
   const [expandedSquads, setExpandedSquads] = useState<string[]>([]);
-  const [squads, setSquads] = useState<Squad[]>([]);
-  const [team, setTeam] = useState<TeamMember[]>([]);
   const [logs, setLogs] = useState<AuditLog[]>([]);
 
-  useEffect(() => {
-    if (!supabase) return;
-    async function loadData() {
-      const [membersRes, squadsRes] = await Promise.all([
-        supabase!.from('team_members').select('*').order('name', { ascending: true }),
-        supabase!.from('squads').select('*').order('name', { ascending: true }),
-      ]);
-      if (!membersRes.error && membersRes.data && membersRes.data.length > 0) {
-        setTeam(membersRes.data.map(rowToMember));
-      }
-      if (!squadsRes.error && squadsRes.data && squadsRes.data.length > 0) {
-        setSquads(squadsRes.data.map(rowToSquad));
-      }
-    }
-    loadData();
-  }, []);
+  // Squads come from DataContext (single source of truth)
+  const squads: Squad[] = dataSquads.map(s => ({
+    name: s.nome,
+    leader: s.leader || '',
+  }));
+
+  // Team derived from DataContext colaboradores
+  const team = colaboradores.map(rowToMember);
 
   const addMember = async (member: TeamMember) => {
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('team_members')
-        .insert({
-          name: member.name,
-          role: member.role,
-          email: member.email,
-          deals: member.deals,
-          revenue: member.revenue,
-          status: member.status,
-          squad: member.squad,
-        })
-        .select()
-        .single();
-      if (!error && data) {
-        setTeam(prev => [rowToMember(data), ...prev]);
-        return;
-      }
-    }
-    setTeam(prev => [member, ...prev]);
+    addColaborador({
+      id: Date.now().toString(),
+      nome: member.name,
+      cargo: member.role,
+      email: member.email,
+      phone: member.phone,
+      deals: member.deals,
+      revenue: member.revenue,
+      status: member.status,
+      squad: member.squad,
+    });
+  };
+
+  const editMember = async (id: string, member: Partial<TeamMember>) => {
+    await updateColaborador(id, {
+      nome: member.name,
+      cargo: member.role,
+      email: member.email,
+      phone: member.phone,
+      status: member.status,
+      squad: member.squad,
+    });
   };
 
   const addSquad = async (squad: Squad) => {
-    if (supabase) {
-      await supabase.from('squads').insert({ name: squad.name, leader: squad.leader });
-    }
-    setSquads(prev => [...prev, squad]);
+    await dataAddSquad({
+      nome: squad.name,
+      leader: squad.leader,
+      departamento: 'Geral',
+      focoComercial: '',
+      membros: [],
+    });
   };
 
   const toggleSquad = (squadName: string) => {
@@ -128,9 +122,7 @@ export function useEquipe() {
   const moveMember = (name: string, newSquad: string) => {
     const member = team.find(m => m.name === name);
     if (!member || member.squad === newSquad) return;
-
     setLogs(prev => [{ name, from: member.squad, to: newSquad, date: new Date().toISOString().split('T')[0] }, ...prev]);
-    setTeam(prev => prev.map(m => m.name === name ? { ...m, squad: newSquad } : m));
   };
 
   return {
@@ -149,9 +141,7 @@ export function useEquipe() {
     expandedSquads,
     setExpandedSquads,
     squads,
-    setSquads,
     team,
-    setTeam,
     logs,
     setLogs,
     toggleSquad,
@@ -166,6 +156,7 @@ export function useEquipe() {
     totalPages,
     moveMember,
     addMember,
+    editMember,
     addSquad,
   };
 }

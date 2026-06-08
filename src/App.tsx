@@ -46,6 +46,7 @@ import {
   ConfigEmpresaFiliais,
   ConfigEmpresaEquipe,
   ConfigEmpresaPermissoes,
+  ConfigEmpresaCargos,
   ConfigCRMFunis,
   ConfigCRMOrigens,
   ConfigCRMProdutos,
@@ -188,6 +189,7 @@ function AppContent() {
             <Route path="empresa/filiais" element={<ConfigEmpresaFiliais />} />
             <Route path="empresa/equipe" element={<ConfigEmpresaEquipe />} />
             <Route path="empresa/permissoes" element={<ConfigEmpresaPermissoes />} />
+            <Route path="empresa/cargos" element={<ConfigEmpresaCargos />} />
 
             <Route path="crm/funis" element={<ConfigCRMFunis />} />
             <Route path="crm/origens" element={<ConfigCRMOrigens />} />

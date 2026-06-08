@@ -1,39 +1,34 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
-import { Search, Plus, Building, MapPin, Phone, Mail, MoreHorizontal, Trash2 } from "lucide-react";
+import { Search, Plus, Building, MapPin, Phone, Mail, Trash2 } from "lucide-react";
 import { NovoClienteModal } from "../../components/ui/NovoClienteModal";
 import { toast } from "sonner";
 import { PageContainer } from "../../components/PageContainer";
+import { supabase } from "../../lib/supabase";
 
 export default function Clientes() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("Todos as situações");
   const [sectorFilter, setSectorFilter] = useState("Todos os setores");
   const [searchQuery, setSearchQuery] = useState("");
-  
-  const [clientes, setClientes] = useState<any[]>(() => {
-    try {
-      const saved = localStorage.getItem("axis_clientes");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return [];
-  });
+  const [clientes, setClientes] = useState<any[]>([]);
 
-  const saveClientes = (updated: any[]) => {
-    setClientes(updated);
-    try {
-      localStorage.setItem("axis_clientes", JSON.stringify(updated));
-    } catch (e) {}
-  };
+  useEffect(() => {
+    if (!supabase) return;
+    supabase.from("clientes").select("*").order("created_at", { ascending: false }).then(({ data, error }) => {
+      if (error) console.error("[Supabase] clientes load error:", error.message);
+      else if (data) setClientes(data);
+    });
+  }, []);
 
-  const handleCreateCliente = (data: any) => {
+  const handleCreateCliente = async (data: any) => {
     if (!data.nome) {
       toast.error("Nome da empresa é obrigatório.");
       return;
     }
     const newClient = {
-      id: Date.now(),
+      id: Date.now().toString(),
       name: data.nome,
       industry: data.industry || "Tecnologia",
       city: data.cidade || "São Paulo",
@@ -43,14 +38,22 @@ export default function Clientes() {
       status: "Ativo"
     };
 
-    const updated = [newClient, ...clientes];
-    saveClientes(updated);
+    setClientes(prev => [newClient, ...prev]);
+
+    if (supabase) {
+      const { error } = await supabase.from("clientes").insert(newClient);
+      if (error) console.error("[Supabase] clientes insert error:", error.message);
+    }
+
     toast.success("Cliente inserido com sucesso na base!");
   };
 
-  const handleDeleteCliente = (id: number) => {
-    const updated = clientes.filter(c => c.id !== id);
-    saveClientes(updated);
+  const handleDeleteCliente = async (id: string) => {
+    setClientes(prev => prev.filter(c => c.id !== id));
+    if (supabase) {
+      const { error } = await supabase.from("clientes").delete().eq("id", id);
+      if (error) console.error("[Supabase] clientes delete error:", error.message);
+    }
     toast.success("Cliente removido.");
   };
 
@@ -83,15 +86,15 @@ export default function Clientes() {
         <div className="p-4 border-b border-white/5 flex gap-4 w-full flex-wrap">
             <div className="relative flex-1 min-w-[200px]">
                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Buscar cliente..." 
-                  className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB] text-white" 
+                  placeholder="Buscar cliente..."
+                  className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB] text-white"
                 />
             </div>
-            <select 
+            <select
                value={sectorFilter}
                onChange={(e) => setSectorFilter(e.target.value)}
                className="bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-[#2563EB] focus:outline-none"
@@ -103,7 +106,7 @@ export default function Clientes() {
                <option>Varejo</option>
                <option>Indústria</option>
             </select>
-            <select 
+            <select
                value={statusFilter}
                onChange={(e) => setStatusFilter(e.target.value)}
                className="bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm text-white focus:border-[#2563EB] focus:outline-none"
@@ -153,7 +156,7 @@ export default function Clientes() {
                     </span>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteCliente(c.id);
@@ -166,6 +169,13 @@ export default function Clientes() {
                   </td>
                 </tr>
               ))}
+              {filteredClientes.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-slate-500">
+                    Nenhum cliente cadastrado
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -183,7 +193,7 @@ export default function Clientes() {
                   <span className={`px-2.5 py-0.5 text-[8px] font-black rounded-full border shrink-0 ${c.status === 'Ativo' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}`}>
                     {c.status}
                   </span>
-                  <button 
+                  <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeleteCliente(c.id);
@@ -194,7 +204,7 @@ export default function Clientes() {
                   </button>
                 </div>
               </div>
-              
+
               <div className="flex justify-between items-center text-xs text-slate-400">
                 <span className="bg-white/5 px-2 py-0.5 rounded text-[9px] uppercase font-bold text-slate-400">{c.industry}</span>
                 <span className="flex items-center gap-1 text-[10px] text-slate-500"><MapPin className="w-3 h-3 mr-0.5" /> {c.city}, {c.state}</span>

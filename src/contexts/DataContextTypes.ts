@@ -161,6 +161,13 @@ export interface DataContextType {
   addSquadMeta: (v: any) => void;
   updateSquadMeta: (id: string, updates: any) => void;
   deleteSquadMeta: (id: string) => void;
+  cargos: any[];
+  setCargos: (v: any[]) => void;
+  addCargo: (c: any) => void;
+  updateCargo: (id: string, updates: any) => void;
+  deleteCargo: (id: string) => void;
+  clienteBase: any[];
+  setClienteBase: (v: any[]) => void;
 }
 
 export const DataContext = createContext<DataContextType | undefined>(undefined);
