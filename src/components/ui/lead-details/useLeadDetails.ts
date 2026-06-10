@@ -1,290 +1,329 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useData } from "../../../contexts/DataContext";
+import { supabase } from "../../../lib/supabase";
 import { toast } from "sonner";
 
+// ─── Helpers para carregar stages do funisConfig ──────────────────────────────
+function getStageId(funilId: string, idx: number): string {
+  if (funilId === "funil-comercial-default") return String(idx + 1);
+  if (funilId === "funil-sdr-ia-default") return `sdr-${idx + 1}`;
+  return `${funilId}-${idx}`;
+}
+
+function buildStages(funis: any[], isSDR: boolean): Array<{ id: string; name: string; status: string }> {
+  const matching = funis.filter((f: any) =>
+    f.ativo !== false && (isSDR ? f.tipo === "sdr_ia" : f.tipo === "comercial")
+  );
+  if (matching.length === 0) return [];
+  const funil = matching[0];
+  const etapas: string[] = funil.etapas || [];
+  return etapas.map((nome: string, idx: number) => ({
+    id: getStageId(funil.id, idx),
+    name: nome,
+    status: idx === 0 ? "Novo" : idx === etapas.length - 1 ? "Fechado" : "Em Negociação",
+  }));
+}
+
+function loadStagesSync(isSDR: boolean): Array<{ id: string; name: string; status: string }> | null {
+  try {
+    const saved = localStorage.getItem("axis_funis_config");
+    if (!saved) return null;
+    const stages = buildStages(JSON.parse(saved), isSDR);
+    return stages.length > 0 ? stages : null;
+  } catch {
+    return null;
+  }
+}
+
 export function useLeadDetails(lead: any, onClose: () => void) {
-  const [activeTab, setActiveTab] = useState('timeline');
-  const [reportContextOverride, setReportContextOverride] = useState<'auto' | 'normal' | 'educacao' | 'posvenda'>('auto');
-  const { leadActivities, addLeadActivity, updateLead, deleteLead, customLeadFields } = useData();
+  const [activeTab, setActiveTab] = useState("timeline");
+  const [reportContextOverride, setReportContextOverride] = useState<"auto" | "normal" | "educacao" | "posvenda">("auto");
+  const { leadActivities, addLeadActivity, updateLead, deleteLead, customLeadFields, products } = useData();
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
   const [customFieldsState, setCustomFieldsState] = useState<Record<string, string | number>>({});
-  
+
   // Tab timeline states
-  const [activityType, setActivityType] = useState<'Ligação' | 'E-mail' | 'Reunião' | 'Outro'>('Ligação');
-  const [activityDesc, setActivityDesc] = useState('');
-  const [activityTitle, setActivityTitle] = useState('');
+  const [activityType, setActivityType] = useState<"Ligação" | "E-mail" | "Reunião" | "Outro">("Ligação");
+  const [activityDesc, setActivityDesc] = useState("");
+  const [activityTitle, setActivityTitle] = useState("");
   const [activityDate, setActivityDate] = useState(() => {
-    const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+    const tzoffset = new Date().getTimezoneOffset() * 60000;
     return new Date(Date.now() - tzoffset).toISOString().slice(0, 10);
   });
   const [activityTime, setActivityTime] = useState(() => {
     const now = new Date();
-    return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
   });
-  const [activityError, setActivityError] = useState('');
-  const [selectedFiles, setSelectedFiles] = useState<{ name: string; size: string; }[]>([]);
+  const [activityError, setActivityError] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<{ name: string; size: string }[]>([]);
 
-  // Direct chat simulation states
-  const [chatChannel, setChatChannel] = useState<'whatsapp' | 'email' | 'instagram'>('whatsapp');
+  // Chat states (session-only, not persisted)
+  const [chatChannel, setChatChannel] = useState<"whatsapp" | "email" | "instagram">("whatsapp");
   const [quickMessageText, setQuickMessageText] = useState("");
-  const [chatLog, setChatLog] = useState<Array<{ id: string; sender: 'me' | 'client' | 'ai'; text: string; time: string; channel: string }>>([
-    { id: '1', sender: 'client', text: "Olá! Vi o anúncio de vocês e queria saber mais sobre a Consultoria Enterprise e as licenças SaaS.", time: "Hoje, 10:25", channel: "whatsapp" },
-    { id: '2', sender: 'ai', text: "Olá! Seja bem-vindo à Axis. Nossos especialistas já receberam seu contato. Em instantes, nosso consultor irá te chamar. Aqui estão algumas opções de planos: ...", time: "Hoje, 10:26", channel: "whatsapp" }
-  ]);
+  const [chatLog, setChatLog] = useState<Array<{ id: string; sender: "me" | "client" | "ai"; text: string; time: string; channel: string }>>([]);
 
-  // Product linkage states
-  const [availableProducts] = useState([
-    { id: 'p1', name: "Consultoria Enterprise", price: 4500, recurrence: true, category: "Serviços" },
-    { id: 'p2', name: "Setup PRO", price: 2000, recurrence: false, category: "Implantação" },
-    { id: 'p3', name: "Licença Usuário Adicional", price: 150, recurrence: true, category: "Software" },
-    { id: 'p4', name: "Treinamento Presencial", price: 3500, recurrence: false, category: "Serviços" }
-  ]);
-  const [linkedProductIds, setLinkedProductIds] = useState<string[]>(['p1', 'p2']);
+  // Products from DataContext (real DB)
+  const availableProducts = useMemo(
+    () =>
+      (products || []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        price: typeof p.price === "number" ? p.price : parseFloat(String(p.price || "0")),
+        recurrence: p.type === "Assinatura",
+        category: p.category || "Geral",
+      })),
+    [products]
+  );
+  const [linkedProductIds, setLinkedProductIds] = useState<string[]>([]);
 
-  // Custom metadata editable state
+  // Editable fields
   const [isEditingInline, setIsEditingInline] = useState(false);
-  const [leadName, setLeadName] = useState('');
-  const [companyName, setCompanyName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [title, setTitle] = useState('');
-  const [value, setValue] = useState('');
-  const [seller, setSeller] = useState('');
-  const [priority, setPriority] = useState<'Alta' | 'Média' | 'Baixa'>('Média');
+  const [leadName, setLeadName] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [title, setTitle] = useState("");
+  const [value, setValue] = useState("");
+  const [seller, setSeller] = useState("");
+  const [priority, setPriority] = useState<"Alta" | "Média" | "Baixa">("Média");
 
-  // Elite CRM states
-  const [score, setScore] = useState(85);
-  const [temperature, setTemperature] = useState<'Quente' | 'Morno' | 'Frio'>('Quente');
-  const [probability, setProbability] = useState(75);
-  const [slaStatus] = useState<'Em Dia' | 'Crítico' | 'Atrasado'>('Em Dia');
-  const [timeIdle] = useState('1 dia, 4 horas');
-  const [customTags, setCustomTags] = useState<string[]>(["Inbound", "Enterprise", "Alta Conversão"]);
+  // CRM intelligence states
+  const [score, setScore] = useState(0);
+  const [temperature, setTemperature] = useState<"Quente" | "Morno" | "Frio">("Frio");
+  const [probability, setProbability] = useState(0);
+  const [slaStatus] = useState<"Em Dia" | "Crítico" | "Atrasado">("Em Dia");
+  const [timeIdle] = useState("");
+  const [customTags, setCustomTags] = useState<string[]>([]);
   const [newTagInput, setNewTagInput] = useState("");
 
-  // Static / simulated log of alterations
-  const [alterationLogs, setAlterationLogs] = useState([
-    { id: 'l1', author: "Sistema", desc: "Lead importado via formulário de contato do site principal", time: "18 Mai, 09:00" },
-    { id: 'l2', author: "Distribuição Inteligente", desc: "Atribuído automaticamente ao consultor Carlos Eduardo Mendes", time: "18 Mai, 09:02" },
-    { id: 'l3', author: "Carlos Eduardo Mendes", desc: "Etapa alterada de 'Prospecção' para 'Qualificação'", time: "19 Mai, 11:30" },
-    { id: 'l4', author: "Sistema (Automação)", desc: "Status de SLA analisado: Em dia com meta de resposta rápida", time: "Hoje, 10:30" }
-  ]);
+  // Alteration logs - populated from real lead activities
+  const [alterationLogs, setAlterationLogs] = useState<Array<{ id: string; author: string; desc: string; time: string }>>([]);
 
-  // Sync state when lead changes
+  // ─── Stage definitions from funisConfig ──────────────────────────────────────
+  const isSDR = lead?.pipelineId === "sdr";
+  const [stagesDef, setStagesDef] = useState<Array<{ id: string; name: string; status: string }>>(() => {
+    return loadStagesSync(isSDR) || [];
+  });
+
   useEffect(() => {
-    if (lead) {
-      setLeadName(lead.name || '');
-      setCompanyName(lead.company || '');
-      setPhone(lead.phone || '');
-      setEmail(lead.email || '');
-      setTitle(lead.title || '');
-      setValue(lead.value || '');
-      setSeller(lead.seller || '');
-      setPriority(lead.priority || 'Média');
-      setCustomFieldsState(lead.customFields || {});
-
-      const computedScore = lead.id === 't1' ? 95 : lead.id === 't2' ? 88 : lead.id === 't3' ? 62 : 45;
-      const computedTemp = computedScore > 80 ? 'Quente' : computedScore > 50 ? 'Morno' : 'Frio';
-      const computedProb = computedScore > 80 ? 80 : computedScore > 50 ? 50 : 25;
-      setScore(computedScore);
-      setTemperature(computedTemp);
-      setProbability(computedProb);
+    const stages = loadStagesSync(isSDR);
+    if (stages && stages.length > 0) {
+      setStagesDef(stages);
+      return;
     }
+    if (!supabase) return;
+    supabase
+      .from("app_settings")
+      .select("value")
+      .eq("key", "axis_funis_config")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!data?.value) return;
+        try {
+          const funis = Array.isArray(data.value) ? data.value : JSON.parse(data.value);
+          localStorage.setItem("axis_funis_config", JSON.stringify(funis));
+          const s = buildStages(funis, isSDR);
+          if (s.length > 0) setStagesDef(s);
+        } catch {}
+      });
+  }, [lead?.id, isSDR]);
+
+  // Sync fields when lead changes
+  useEffect(() => {
+    if (!lead) return;
+    setLeadName(lead.name || "");
+    setCompanyName(lead.company || "");
+    setPhone(lead.phone || "");
+    setEmail(lead.email || "");
+    setTitle(lead.title || "");
+    setValue(lead.value || "");
+    setSeller(lead.seller || "");
+    setPriority(lead.priority || "Média");
+    setCustomFieldsState(lead.customFields || {});
+
+    // Use real scoreIA and temperature from lead
+    const realScore = lead.scoreIA ?? 45;
+    let realTemp: "Quente" | "Morno" | "Frio" = "Frio";
+    if (lead.temperature) {
+      const t = lead.temperature.toLowerCase();
+      realTemp = t === "quente" ? "Quente" : t === "morno" ? "Morno" : "Frio";
+    } else {
+      realTemp = realScore > 80 ? "Quente" : realScore > 50 ? "Morno" : "Frio";
+    }
+    setScore(realScore);
+    setTemperature(realTemp);
+    setProbability(realScore > 80 ? 80 : realScore > 50 ? 50 : 25);
   }, [lead]);
 
-  // Dynamic calculations for Estimated Sum of Linked Products
-  const estimatedSum = useMemo(() => {
-    return linkedProductIds.reduce((sum, id) => {
-      const p = availableProducts.find(prod => prod.id === id);
-      return sum + (p ? p.price : 0);
-    }, 0);
-  }, [linkedProductIds, availableProducts]);
+  // Populate alteration logs from real lead activities
+  useEffect(() => {
+    if (!lead?.id || !leadActivities) return;
+    const relevant = (leadActivities as any[])
+      .filter((a) => a.leadId === lead.id)
+      .sort((a, b) => (a.date < b.date ? 1 : -1))
+      .map((a) => ({
+        id: a.id,
+        author: a.seller || "Sistema",
+        desc: a.title || a.description || "Atividade registrada",
+        time: a.date || "Recente",
+      }));
+    setAlterationLogs(relevant);
+  }, [lead?.id, leadActivities]);
 
-  // Sync the estimatedSum to value input
+  // Estimated sum of linked products
+  const estimatedSum = useMemo(
+    () =>
+      linkedProductIds.reduce((sum, id) => {
+        const p = availableProducts.find((prod) => prod.id === id);
+        return sum + (p ? p.price : 0);
+      }, 0),
+    [linkedProductIds, availableProducts]
+  );
+
   useEffect(() => {
     if (linkedProductIds.length > 0 && isEditingInline) {
-      setValue(`R$ ${estimatedSum.toLocaleString('pt-BR')}`);
+      setValue(`R$ ${estimatedSum.toLocaleString("pt-BR")}`);
     }
   }, [linkedProductIds, estimatedSum, isEditingInline]);
 
-  // Add tag
   const handleAddTag = () => {
     if (!newTagInput.trim()) return;
     if (customTags.includes(newTagInput.trim())) {
       toast.error("Tag já adicionada.");
       return;
     }
-    setCustomTags(prev => [...prev, newTagInput.trim()]);
+    setCustomTags((prev) => [...prev, newTagInput.trim()]);
     setNewTagInput("");
     toast.success("Nova tag adicionada!");
   };
 
-  // Remove tag
   const handleRemoveTag = (tagToRemove: string) => {
-    setCustomTags(prev => prev.filter(t => t !== tagToRemove));
+    setCustomTags((prev) => prev.filter((t) => t !== tagToRemove));
     toast.info("Tag removida.");
   };
 
-  // Convert/Issue Contract quick simulation
   const handleConvertLead = () => {
-    toast.success(`Convertendo Lead ${leadName} para Cliente Fechado!`);
-    updateLead(lead.id, { stageId: '5', status: 'Fechado' });
-    
-    // Add log
-    setAlterationLogs(prev => [
-      { id: Date.now().toString(), author: "Carlos Eduardo Mendes", desc: "Lead convertido com sucesso em Cliente Ativo via dashboard de Atallhos Inteligentes", time: "Agora" },
-      ...prev
+    const lastStage = stagesDef[stagesDef.length - 1];
+    updateLead(lead.id, { stageId: lastStage?.id ?? "5", status: "Fechado" });
+    toast.success(`Lead ${leadName} convertido para Cliente Fechado!`);
+    setAlterationLogs((prev) => [
+      { id: Date.now().toString(), author: seller || "Sistema", desc: "Lead convertido em Cliente Ativo", time: "Agora" },
+      ...prev,
     ]);
   };
 
-  // Form helpers
   const getFormattedActivityDate = (dateStr: string, timeStr: string) => {
     try {
-      const [year, month, day] = dateStr.split('-').map(Number);
-      const [hours, minutes] = timeStr.split(':').map(Number);
+      const [year, month, day] = dateStr.split("-").map(Number);
+      const [hours, minutes] = timeStr.split(":").map(Number);
       const selectedDate = new Date(year, month - 1, day, hours, minutes);
       const today = new Date();
-      
-      const isToday = selectedDate.getDate() === today.getDate() &&
-                      selectedDate.getMonth() === today.getMonth() &&
-                      selectedDate.getFullYear() === today.getFullYear();
-                      
-      if (isToday) {
-        return `Hoje, ${timeStr}`;
-      } else {
-        const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
-        return `${selectedDate.getDate()} ${months[selectedDate.getMonth()]} às ${timeStr}`;
-      }
+      const isToday =
+        selectedDate.getDate() === today.getDate() &&
+        selectedDate.getMonth() === today.getMonth() &&
+        selectedDate.getFullYear() === today.getFullYear();
+      if (isToday) return `Hoje, ${timeStr}`;
+      const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+      return `${selectedDate.getDate()} ${months[selectedDate.getMonth()]} às ${timeStr}`;
     } catch {
-      return `Gravado em ${dateStr} ${timeStr}`;
+      return `${dateStr} ${timeStr}`;
     }
   };
 
   const handleRegisterActivity = () => {
     if (!activityDesc.trim()) {
       setActivityError("A descrição detalhada da atividade é obrigatória.");
-      toast.error("Erro: Insira uma descrição para registrar a atividade!");
+      toast.error("Insira uma descrição para registrar a atividade!");
       return;
     }
-
     const titlesMap = {
-      'Ligação': 'Ligação Telefônica realizada',
-      'E-mail': 'E-mail Comercial enviado',
-      'Reunião': 'Apresentação/Reunião executada',
-      'Outro': 'Observação Geral do Consultor'
+      Ligação: "Ligação Telefônica realizada",
+      "E-mail": "E-mail Comercial enviado",
+      Reunião: "Apresentação/Reunião executada",
+      Outro: "Observação Geral do Consultor",
     };
-    
     const finalTitle = activityTitle.trim() || titlesMap[activityType];
     const finalDate = getFormattedActivityDate(activityDate, activityTime);
 
-    addLeadActivity(
-      lead.id,
-      activityType,
-      finalTitle,
-      activityDesc,
-      seller || "Consultor G-Tech",
-      finalDate,
-      selectedFiles.length > 0 ? selectedFiles : undefined
-    );
-    
-    setAlterationLogs(prev => [
-      { id: Date.now().toString(), author: seller || "Consultor G-Tech", desc: `Registrou nova atividade comercial: ${finalTitle}`, time: "Agora" },
-      ...prev
+    addLeadActivity(lead.id, activityType, finalTitle, activityDesc, seller || "Sistema", finalDate, selectedFiles.length > 0 ? selectedFiles : undefined);
+
+    setAlterationLogs((prev) => [
+      { id: Date.now().toString(), author: seller || "Sistema", desc: `Registrou atividade: ${finalTitle}`, time: "Agora" },
+      ...prev,
     ]);
 
-    setActivityDesc('');
-    setActivityTitle('');
-    setActivityError('');
+    setActivityDesc("");
+    setActivityTitle("");
+    setActivityError("");
     setSelectedFiles([]);
-    toast.success('Histórico comercial atualizado com sucesso!');
+    toast.success("Histórico comercial atualizado com sucesso!");
   };
 
   const handleSaveAll = () => {
-    updateLead(lead.id, {
-      name: leadName,
-      company: companyName,
-      phone,
-      email,
-      title,
-      value,
-      seller,
-      priority,
-      customFields: customFieldsState,
-    });
-    setAlterationLogs(prev => [
-      { id: Date.now().toString(), author: "Carlos Eduardo Mendes", desc: "Informações principais do lead atualizadas via edição inline", time: "Agora" },
-      ...prev
+    updateLead(lead.id, { name: leadName, company: companyName, phone, email, title, value, seller, priority, customFields: customFieldsState });
+    setAlterationLogs((prev) => [
+      { id: Date.now().toString(), author: seller || "Sistema", desc: "Informações do lead atualizadas", time: "Agora" },
+      ...prev,
     ]);
-    toast.success('Alterações salvas com sucesso!');
+    toast.success("Alterações salvas com sucesso!");
     setIsEditingInline(false);
   };
 
   const handleConfirmDelete = () => {
     deleteLead(lead.id);
-    toast.success('Lead removido do system.');
+    toast.success("Lead removido do sistema.");
     onClose();
   };
 
   const handleSendQuickMessage = () => {
     if (!quickMessageText.trim()) return;
-    const newMsgObj = {
-      id: Date.now().toString(),
-      sender: 'me' as const,
-      text: quickMessageText,
-      time: "Agora",
-      channel: chatChannel
-    };
-    setChatLog(prev => [...prev, newMsgObj]);
+    setChatLog((prev) => [
+      ...prev,
+      { id: Date.now().toString(), sender: "me", text: quickMessageText, time: "Agora", channel: chatChannel },
+    ]);
     setQuickMessageText("");
     toast.success(`Mensagem enviada via simulador de ${chatChannel.toUpperCase()}`);
-
-    // AI automatic response suggestion simulation
     setTimeout(() => {
-      setChatLog(prev => [...prev, {
-        id: (Date.now() + 1).toString(),
-        sender: 'ai',
-        text: "💡 [IA Resposta Sugerida] Gostaria de agendar uma demonstração completa para amanhã às 14:00 ou prefere às 16:30?",
-        time: "Agora mesmo",
-        channel: chatChannel
-      }]);
+      setChatLog((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          sender: "ai",
+          text: "💡 [IA Resposta Sugerida] Gostaria de agendar uma demonstração completa para amanhã às 14:00 ou prefere às 16:30?",
+          time: "Agora mesmo",
+          channel: chatChannel,
+        },
+      ]);
     }, 1000);
   };
 
-  // Quick message template inject customizer
   const applyMessageTemplate = (tpl: string) => {
     const formatted = tpl
       .replace("{client}", leadName)
       .replace("{company}", companyName)
-      .replace("{seller}", seller || "Carlos");
+      .replace("{seller}", seller || "Consultor");
     setQuickMessageText(formatted);
     toast.info("Template aplicado! Você pode editar antes de simular o envio.");
   };
 
-  // Toggle products
   const toggleProductLink = (prodId: string) => {
     if (linkedProductIds.includes(prodId)) {
-      setLinkedProductIds(prev => prev.filter(id => id !== prodId));
+      setLinkedProductIds((prev) => prev.filter((id) => id !== prodId));
       toast.info("Produto removido do orçamento do lead.");
     } else {
-      setLinkedProductIds(prev => [...prev, prodId]);
+      setLinkedProductIds((prev) => [...prev, prodId]);
       toast.success("Produto adicionado ao orçamento!");
     }
   };
 
-  const stagesDef = [
-    { id: '1', name: "Prospecção", status: 'Novo' },
-    { id: '2', name: "Qualificação", status: 'Qualificado' },
-    { id: '3', name: "Apresentação", status: 'Em Negociação' },
-    { id: '4', name: "Negociação", status: 'Em Negociação' },
-    { id: '5', name: "Fechamento", status: 'Fechado' },
-  ];
-
-  const currentStageIndex = stagesDef.findIndex(s => s.id === lead?.stageId);
-  const progressPercent = currentStageIndex !== -1 ? ((currentStageIndex + 1) / stagesDef.length) * 100 : 20;
+  const currentStageIndex = stagesDef.findIndex((s) => s.id === lead?.stageId);
+  const progressPercent =
+    currentStageIndex !== -1 && stagesDef.length > 0 ? ((currentStageIndex + 1) / stagesDef.length) * 100 : 10;
 
   const tempColors = {
     Quente: "bg-rose-500/10 border-rose-500/30 text-rose-400 font-bold",
     Morno: "bg-amber-500/10 border-amber-500/30 text-amber-400 font-bold",
-    Frio: "bg-blue-500/10 border-blue-500/30 text-blue-400 font-bold"
+    Frio: "bg-blue-500/10 border-blue-500/30 text-blue-400 font-bold",
   };
 
   return {
@@ -334,6 +373,6 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     stagesDef,
     progressPercent,
     tempColors,
-    customLeadFields
+    customLeadFields,
   };
 }
