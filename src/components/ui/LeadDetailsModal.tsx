@@ -149,7 +149,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                   updateLead(lead.id, { stageId: stg.id, status: stg.status });
                   toast.success(`Encaminhado no funil: ${stg.name}`);
                   setAlterationLogs((prev: any[]) => [
-                    { id: Date.now().toString(), author: "Carlos Eduardo Mendes", desc: `Moveu o lead para a etapa de '${stg.name}'`, time: "Agora" },
+                    { id: Date.now().toString(), author: seller || "Sistema", desc: `Moveu o lead para a etapa de '${stg.name}'`, time: "Agora" },
                     ...prev
                   ]);
                 }}
