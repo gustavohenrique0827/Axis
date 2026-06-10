@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Card } from "../card";
-import { Sparkles, Brain, ArrowRight, Edit, Tag, Trophy, Phone, MessageSquare, Mail, FileCheck } from "lucide-react";
+import { Sparkles, Brain, ArrowRight, Edit, Tag, Trophy, Phone, MessageSquare, Mail, FileCheck, Search } from "lucide-react";
 import { Button } from "../button";
 
 interface ProfileSectionProps {
@@ -88,6 +88,32 @@ export function ProfileSection({
   applyMessageTemplate,
   updateLead
 }: ProfileSectionProps) {
+  const [cnpjFetching, setCnpjFetching] = useState(false);
+
+  const fetchCnpjData = async () => {
+    const digits = (lead.cnpj || "").replace(/\D/g, "");
+    if (digits.length !== 14) return;
+    setCnpjFetching(true);
+    try {
+      const resp = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${digits}`);
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data.nome_fantasia || data.razao_social) setCompanyName(data.nome_fantasia || data.razao_social);
+        if (data.email && !email) setEmail(data.email.toLowerCase());
+        if (data.ddd_telefone_1 && !phone) {
+          const raw = data.ddd_telefone_1.replace(/\D/g, "");
+          const d = raw.slice(0, 11);
+          const formatted = d.length === 11
+            ? `(${d.slice(0,2)}) ${d.slice(2,7)}-${d.slice(7)}`
+            : `(${d.slice(0,2)}) ${d.slice(2,6)}-${d.slice(6)}`;
+          setPhone(formatted);
+        }
+      }
+    } finally {
+      setCnpjFetching(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header Block with Avatar, Score & Temperature indicators */}
@@ -265,18 +291,28 @@ export function ProfileSection({
           <div>
             <label className="text-slate-500 font-bold block">CNPJ</label>
             {isEditingInline ? (
-              <input 
-                type="text" 
-                maxLength={18}
-                value={lead.cnpj || ''}
-                onChange={(e) => {
-                  import('../../../lib/utils').then(({ formatCNPJ }) => {
-                    const val = formatCNPJ(e.target.value);
-                    updateLead(lead.id, { cnpj: val });
-                  });
-                }}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-white mt-1 text-xs" 
-              />
+              <div className="flex gap-1 mt-1">
+                <input
+                  type="text"
+                  maxLength={18}
+                  value={lead.cnpj || ''}
+                  onChange={(e) => {
+                    import('../../../lib/utils').then(({ formatCNPJ }) => {
+                      updateLead(lead.id, { cnpj: formatCNPJ(e.target.value) });
+                    });
+                  }}
+                  className="flex-1 bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-white text-xs font-mono"
+                />
+                <button
+                  type="button"
+                  onClick={fetchCnpjData}
+                  disabled={cnpjFetching || (lead.cnpj || '').replace(/\D/g, '').length !== 14}
+                  className="px-2 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  title="Buscar dados da Receita Federal"
+                >
+                  <Search className={`w-3 h-3 ${cnpjFetching ? 'animate-spin' : ''}`} />
+                </button>
+              </div>
             ) : (
               <span className="text-white font-mono mt-0.5 block">{lead.cnpj || '-'}</span>
             )}

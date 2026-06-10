@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Building2, Mail, Phone, FileText, MapPin, Briefcase, Loader2, ShieldCheck } from "lucide-react";
+import { Building2, Mail, Phone, FileText, MapPin, Briefcase, Loader2, ShieldCheck, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Modal } from "./modal";
 import { Button } from "./button";
 
@@ -37,21 +37,88 @@ const labelClass = "text-[10px] font-black text-slate-400 uppercase tracking-wid
 
 const SETORES: Setor[] = ["Tecnologia", "Engenharia", "Saúde", "Varejo", "Indústria", "Educação", "Financeiro", "Outros"];
 
+function formatPhone(raw: string): string {
+  const d = raw.replace(/\D/g, "").slice(0, 11);
+  if (d.length <= 2) return d.length ? `(${d}` : "";
+  if (d.length <= 6) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  if (d.length <= 10) return `(${d.slice(0, 2)}) ${d.slice(2, 6)}-${d.slice(6)}`;
+  return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+}
+
+function formatDocumento(raw: string): string {
+  const d = raw.replace(/\D/g, "").slice(0, 14);
+  if (d.length <= 11) {
+    // CPF: 000.000.000-00
+    if (d.length <= 3) return d;
+    if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+    if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+    return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+  }
+  // CNPJ: 00.000.000/0000-00
+  if (d.length <= 2) return d;
+  if (d.length <= 5) return `${d.slice(0, 2)}.${d.slice(2)}`;
+  if (d.length <= 8) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5)}`;
+  if (d.length <= 12) return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8)}`;
+  return `${d.slice(0, 2)}.${d.slice(2, 5)}.${d.slice(5, 8)}/${d.slice(8, 12)}-${d.slice(12)}`;
+}
+
+type CnpjStatus = "idle" | "checking" | "active" | "inactive" | "invalid";
+
 export function NovoClienteModal({ isOpen, onClose, onAction }: NovoClienteModalProps) {
   const [form, setForm] = useState<NovoClienteForm>(DEFAULT);
   const [loading, setLoading] = useState(false);
+  const [cnpjStatus, setCnpjStatus] = useState<{ status: CnpjStatus; message?: string }>({ status: "idle" });
 
   useEffect(() => {
-    if (isOpen) setForm(DEFAULT);
+    if (isOpen) {
+      setForm(DEFAULT);
+      setCnpjStatus({ status: "idle" });
+    }
   }, [isOpen]);
 
   const set = (k: keyof NovoClienteForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
       setForm((prev) => ({ ...prev, [k]: e.target.value }));
 
+  const handleDocumentoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatDocumento(e.target.value);
+    setForm((prev) => ({ ...prev, documento: formatted }));
+
+    const digits = formatted.replace(/\D/g, "");
+    if (digits.length === 14) {
+      setCnpjStatus({ status: "checking" });
+      try {
+        const resp = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${digits}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          const isActive = data.situacao_cadastral === 2;
+          setCnpjStatus({
+            status: isActive ? "active" : "inactive",
+            message: data.descricao_situacao_cadastral,
+          });
+          setForm((prev) => ({
+            ...prev,
+            nome: prev.nome || (data.nome_fantasia || data.razao_social || prev.nome),
+            email: prev.email || (data.email ? data.email.toLowerCase() : ""),
+            telefone: prev.telefone || (data.ddd_telefone_1 ? formatPhone(data.ddd_telefone_1.replace(/\D/g, "")) : ""),
+            cidade: data.municipio || prev.cidade,
+            estado: data.uf || prev.estado,
+          }));
+        } else {
+          const err = await resp.json().catch(() => ({}));
+          setCnpjStatus({ status: "invalid", message: err.message || "CNPJ não encontrado." });
+        }
+      } catch {
+        setCnpjStatus({ status: "invalid", message: "Falha na conexão." });
+      }
+    } else {
+      setCnpjStatus({ status: "idle" });
+    }
+  };
+
   const canSubmit = form.nome.trim() && form.email.trim() && form.telefone.trim();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!canSubmit) return;
     setLoading(true);
@@ -134,14 +201,45 @@ export function NovoClienteModal({ isOpen, onClose, onAction }: NovoClienteModal
             {/* Documento */}
             <div>
               <label className={labelClass}>
-                <span className="flex items-center gap-1.5"><FileText className="w-3 h-3" /> CPF / CNPJ</span>
+                <span className="flex items-center gap-1.5 justify-between w-full">
+                  <span className="flex items-center gap-1.5">
+                    <FileText className="w-3 h-3" /> CPF / CNPJ
+                  </span>
+                  <span className="text-[9px] text-blue-400 font-bold bg-blue-500/10 px-1.5 py-0.5 rounded-full">
+                    Receita Federal Sync
+                  </span>
+                </span>
               </label>
               <input
                 value={form.documento}
-                onChange={set("documento")}
+                onChange={handleDocumentoChange}
                 placeholder="00.000.000/0001-00"
+                maxLength={18}
+                inputMode="numeric"
                 className={inputClass}
               />
+              <div className="mt-1.5 min-h-[20px]">
+                {cnpjStatus.status === "checking" && (
+                  <p className="text-[10px] text-blue-400 animate-pulse font-bold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" /> Buscando...
+                  </p>
+                )}
+                {cnpjStatus.status === "active" && (
+                  <p className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> CNPJ Ativo e Validado
+                  </p>
+                )}
+                {cnpjStatus.status === "inactive" && (
+                  <p className="text-[10px] text-amber-400 font-bold flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> {cnpjStatus.message}
+                  </p>
+                )}
+                {cnpjStatus.status === "invalid" && (
+                  <p className="text-[10px] text-rose-400 font-bold flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> {cnpjStatus.message}
+                  </p>
+                )}
+              </div>
             </div>
 
             {/* Setor */}
@@ -180,7 +278,7 @@ export function NovoClienteModal({ isOpen, onClose, onAction }: NovoClienteModal
                 required
                 type="tel"
                 value={form.telefone}
-                onChange={set("telefone")}
+                onChange={(e) => setForm((prev) => ({ ...prev, telefone: formatPhone(e.target.value) }))}
                 placeholder="(11) 99999-9999"
                 className={inputClass}
               />

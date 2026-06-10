@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { X, Building2, ShieldCheck } from "lucide-react";
+import { Building2, ShieldCheck, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { Modal } from "./modal";
 import { Button } from "./button";
 
@@ -38,21 +38,24 @@ const normalizeAndValidateCnpj = (value: string) => {
   return { digits, ok };
 };
 
+type CnpjApiStatus = "idle" | "checking" | "active" | "inactive" | "invalid";
+
 export function NovaFilialModal({ isOpen, onClose, onSave }: NovaFilialModalProps) {
   const [nome, setNome] = useState("");
   const [cnpjInput, setCnpjInput] = useState("");
   const [cidade, setCidade] = useState("");
   const [loading, setLoading] = useState(false);
+  const [cnpjStatus, setCnpjStatus] = useState<{ status: CnpjApiStatus; message?: string }>({ status: "idle" });
 
   const cnpjNormalized = useMemo(() => normalizeAndValidateCnpj(cnpjInput), [cnpjInput]);
 
   useEffect(() => {
     if (!isOpen) return;
-    // Reset leve ao abrir
     setNome("");
     setCnpjInput("");
     setCidade("");
     setLoading(false);
+    setCnpjStatus({ status: "idle" });
   }, [isOpen]);
 
   const [touched, setTouched] = useState(false);
@@ -60,6 +63,32 @@ export function NovaFilialModal({ isOpen, onClose, onSave }: NovaFilialModalProp
     if (!isOpen) return;
     setTouched(false);
   }, [isOpen]);
+
+  const handleCnpjChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCnpj(e.target.value);
+    setCnpjInput(formatted);
+    const digits = formatted.replace(/\D/g, "");
+    if (digits.length === 14) {
+      setCnpjStatus({ status: "checking" });
+      try {
+        const resp = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${digits}`);
+        if (resp.ok) {
+          const data = await resp.json();
+          const isActive = data.situacao_cadastral === 2;
+          setCnpjStatus({ status: isActive ? "active" : "inactive", message: data.descricao_situacao_cadastral });
+          if (!nome && (data.nome_fantasia || data.razao_social)) setNome(data.nome_fantasia || data.razao_social);
+          if (data.municipio && data.uf) setCidade(`${data.municipio} / ${data.uf}`);
+        } else {
+          const err = await resp.json().catch(() => ({}));
+          setCnpjStatus({ status: "invalid", message: err.message || "CNPJ não encontrado." });
+        }
+      } catch {
+        setCnpjStatus({ status: "invalid", message: "Falha na conexão." });
+      }
+    } else {
+      setCnpjStatus({ status: "idle" });
+    }
+  };
 
   const canSubmit = useMemo(() => {
     if (loading) return false;
@@ -69,7 +98,7 @@ export function NovaFilialModal({ isOpen, onClose, onSave }: NovaFilialModalProp
     return true;
   }, [loading, nome, cidade, cnpjNormalized.ok]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     setTouched(true);
     if (!canSubmit) return;
@@ -167,7 +196,7 @@ export function NovaFilialModal({ isOpen, onClose, onSave }: NovaFilialModalProp
               <input
                 id="filial-cnpj"
                 value={cnpjInput}
-                onChange={(e) => setCnpjInput(formatCnpj(e.target.value))}
+                onChange={handleCnpjChange}
                 placeholder="00.000.000/0000-00"
                 inputMode="numeric"
                 className={
@@ -178,11 +207,31 @@ export function NovaFilialModal({ isOpen, onClose, onSave }: NovaFilialModalProp
                 }
                 required
               />
-              {touched && !cnpjNormalized.ok && (
-                <div className="text-[11px] text-rose-400 font-semibold">
-                  Informe um CNPJ válido com 14 dígitos.
-                </div>
-              )}
+              <div className="mt-1 min-h-[18px]">
+                {cnpjStatus.status === "checking" && (
+                  <p className="text-[10px] text-blue-400 animate-pulse font-bold flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-ping" /> Buscando...
+                  </p>
+                )}
+                {cnpjStatus.status === "active" && (
+                  <p className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> CNPJ Ativo
+                  </p>
+                )}
+                {cnpjStatus.status === "inactive" && (
+                  <p className="text-[10px] text-amber-400 font-bold flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> {cnpjStatus.message}
+                  </p>
+                )}
+                {cnpjStatus.status === "invalid" && (
+                  <p className="text-[10px] text-rose-400 font-bold flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> {cnpjStatus.message}
+                  </p>
+                )}
+                {touched && !cnpjNormalized.ok && cnpjStatus.status === "idle" && (
+                  <p className="text-[11px] text-rose-400 font-semibold">Informe um CNPJ válido com 14 dígitos.</p>
+                )}
+              </div>
             </div>
           </div>
 

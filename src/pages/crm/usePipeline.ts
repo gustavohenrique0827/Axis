@@ -195,13 +195,14 @@ export function usePipeline() {
       : !item.pipelineId || item.pipelineId === "comercial";
     const matchesSeller  = sellerFilter  === "Todos" || item.seller  === sellerFilter;
     const matchesCompany = companyFilter === "Todos" || item.company === companyFilter;
+    const matchesClient  = clientFilter  === "Todos" || item.clientName === clientFilter;
     const q = searchQuery.toLowerCase();
     const matchesSearch  =
       item.name.toLowerCase().includes(q) ||
       item.company.toLowerCase().includes(q) ||
       item.title.toLowerCase().includes(q);
-    return matchesTenant && matchesPipeline && matchesSeller && matchesCompany && matchesSearch;
-  }), [leads, currentPipeline, sellerFilter, searchQuery, tenantFilter, isMaster, companyFilter]);
+    return matchesTenant && matchesPipeline && matchesSeller && matchesCompany && matchesClient && matchesSearch;
+  }), [leads, currentPipeline, sellerFilter, searchQuery, tenantFilter, isMaster, companyFilter, clientFilter]);
 
   // ─── Metrics ─────────────────────────────────────────────────────────────────
   const analyticsData = useMemo(() =>
