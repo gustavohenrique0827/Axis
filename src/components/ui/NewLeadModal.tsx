@@ -6,7 +6,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import {
   Sparkles, Target, AlertTriangle, User, Building2, Briefcase,
   Mail, Phone, Hash, Link as LinkIcon, Users, Building, Tag, Search,
-  ChevronDown, CheckCircle2,
+  ChevronDown, CheckCircle2, Package,
 } from "lucide-react";
 import { formatPhone, validatePhone } from "../../lib/utils";
 
@@ -14,7 +14,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
   const [loading, setLoading] = useState(false);
   const [tags, setTags] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
-  const { leads, addLead, customLeadFields, clienteBase, colaboradores } = useData();
+  const { leads, addLead, customLeadFields, clienteBase, colaboradores, products } = useData();
   const { user, allTenantModules } = useAuth();
   const isMaster = user?.isMaster || user?.tenantName?.includes("G-Tech");
 
@@ -39,6 +39,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
   const [linkedinLink, setLinkedinLink] = useState("");
   const [currentRole, setCurrentRole] = useState("");
   const [teamSize, setTeamSize] = useState("");
+  const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
 
   const isEmailDuplicate = leads.some(
     (l) => l.email.toLowerCase() === emailValue.toLowerCase() && emailValue !== ""
@@ -69,6 +70,16 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
     if (!colab) return "comercial";
     const cargo = (colab.cargo || "").toLowerCase();
     return cargo.includes("sdr") ? "sdr" : "comercial";
+  }, [selectedSeller, colaboradores]);
+
+  const sellerCargoLabel = useMemo(() => {
+    if (!selectedSeller || !colaboradores?.length) return "Comercial";
+    const colab = colaboradores.find((c: any) => c.nome === selectedSeller);
+    if (!colab) return "Comercial";
+    const cargo = (colab.cargo || "").toUpperCase();
+    if (cargo.includes("SDR")) return "SDR (pré-venda)";
+    if (cargo.includes("CLOSER")) return "Comercial (closer)";
+    return `Comercial (${colab.cargo || "vendas"})`;
   }, [selectedSeller, colaboradores]);
 
   // Filtered clients for search dropdown
@@ -235,6 +246,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
       clientId: selectedClientId || undefined,
       clientName: selectedClientName || undefined,
       customFields: { linkedinLink, currentRole, teamSize },
+      productIds: selectedProductIds.length > 0 ? selectedProductIds : undefined,
     });
 
     setLoading(false);
@@ -250,6 +262,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
     setSelectedClientId("");
     setSelectedClientName("");
     setSelectedSeller(sellerOptions[0] || "");
+    setSelectedProductIds([]);
     setCnpjStatus({ status: "idle" });
     onClose();
   };
@@ -461,7 +474,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
               {selectedSeller && (
                 <p className={`text-[10px] font-black flex items-center gap-1 ${sellerPipelineId === "sdr" ? "text-purple-400" : "text-blue-400"}`}>
                   <Target className="w-3 h-3" />
-                  Pipeline: {sellerPipelineId === "sdr" ? "SDR (pré-venda)" : "Comercial (closer)"}
+                  Pipeline: {sellerCargoLabel}
                 </p>
               )}
             </div>
@@ -633,6 +646,50 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
                     </option>
                   ))}
               </select>
+            </div>
+          )}
+
+          {/* ── PRODUTOS ── */}
+          {products && products.filter((p: any) => p.active !== false).length > 0 && (
+            <div className="space-y-3 pt-4 border-t border-white/5">
+              <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Package className="w-3.5 h-3.5 text-emerald-400" /> Produtos / Serviços de Interesse
+                <span className="ml-auto text-[9px] text-slate-500 font-normal normal-case">Opcional</span>
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {products.filter((p: any) => p.active !== false).map((p: any) => {
+                  const isSelected = selectedProductIds.includes(p.id);
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setSelectedProductIds(prev =>
+                        isSelected ? prev.filter(id => id !== p.id) : [...prev, p.id]
+                      )}
+                      className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between gap-2 ${
+                        isSelected
+                          ? "bg-emerald-500/10 border-emerald-500/40 text-white"
+                          : "bg-[#0B1120]/40 border-white/5 text-slate-400 hover:text-white hover:border-white/15"
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold truncate">{p.name}</p>
+                        {p.price > 0 && (
+                          <p className="text-[10px] font-mono text-emerald-400">
+                            R$ {Number(p.price).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                          </p>
+                        )}
+                      </div>
+                      {isSelected && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />}
+                    </button>
+                  );
+                })}
+              </div>
+              {selectedProductIds.length > 0 && (
+                <p className="text-[10px] text-emerald-400 font-bold flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3" /> {selectedProductIds.length} produto(s) selecionado(s)
+                </p>
+              )}
             </div>
           )}
 

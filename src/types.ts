@@ -62,6 +62,7 @@ export interface Lead {
   tenantName?: string;
   clientId?: string;
   clientName?: string;
+  productIds?: string[];
 }
 
 export interface Task {

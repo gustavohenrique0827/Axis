@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { Product } from "../../../types";
 import { toast } from "sonner";
 import { useData } from "../../../contexts/DataContext";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export function useProdutoForm() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -11,15 +12,21 @@ export function useProdutoForm() {
   const [selectedStatus, setSelectedStatus] = useState("Todos");
   const [sortBy, setSortBy] = useState("name-asc");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  
+
   // Modal controllers
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-  
+
   // Tab and Interactive state inside modal
   const [activeTab, setActiveTab] = useState<"info" | "comercial" | "estoque" | "arquivos">("info");
   const [simulateTax, setSimulateTax] = useState(false);
   const [attachments, setAttachments] = useState<{name: string, size: string, date: string, type: string}[]>([]);
+
+  // Client association state
+  const [clientSearch, setClientSearch] = useState("");
+  const [clientId, setClientId] = useState("");
+  const [clientName, setClientName] = useState("");
+  const [showClientDropdown, setShowClientDropdown] = useState(false);
 
   // Form State
   const [formName, setFormName] = useState("");
@@ -40,13 +47,34 @@ export function useProdutoForm() {
   const [formDescription, setFormDescription] = useState("");
   const [formCurrentStock, setFormCurrentStock] = useState("0");
 
-  // Connected Product Data
-  const { products, addProduct, updateProduct, deleteProduct, setProducts } = useData();
+  const { products, addProduct, updateProduct, deleteProduct, setProducts, clienteBase } = useData();
+  const { user } = useAuth();
 
   const categories = ["Todas", "Software", "Serviços", "Implantação", "Mentoria", "Físico"];
   const types = ["Todos", "Serviço", "Assinatura", "Digital", "Físico"];
 
-  // Open creation modal
+  const filteredClients = useMemo(() => {
+    if (!clienteBase) return [];
+    const q = clientSearch.toLowerCase();
+    return clienteBase.filter((c: any) =>
+      (c.name || c.nome || "").toLowerCase().includes(q)
+    ).slice(0, 30);
+  }, [clienteBase, clientSearch]);
+
+  function handleSelectClient(client: any) {
+    const name = client.name || client.nome || "";
+    setClientId(client.id);
+    setClientName(name);
+    setClientSearch(name);
+    setShowClientDropdown(false);
+  }
+
+  function clearClient() {
+    setClientId("");
+    setClientName("");
+    setClientSearch("");
+  }
+
   const handleOpenAddModal = () => {
     setEditingProduct(null);
     setFormName("");
@@ -69,10 +97,12 @@ export function useProdutoForm() {
     setActiveTab("info");
     setSimulateTax(false);
     setAttachments([]);
+    setClientId("");
+    setClientName("");
+    setClientSearch("");
     setIsModalOpen(true);
   };
 
-  // Open edit modal
   const handleOpenEditModal = (p: Product, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingProduct(p);
@@ -96,10 +126,12 @@ export function useProdutoForm() {
     setActiveTab("info");
     setSimulateTax(false);
     setAttachments([]);
+    setClientId((p as any).clientId || "");
+    setClientName((p as any).clientName || "");
+    setClientSearch((p as any).clientName || "");
     setIsModalOpen(true);
   };
 
-  // Save product
   const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName.trim() || !formSKU.trim() || !formPrice) {
@@ -114,6 +146,8 @@ export function useProdutoForm() {
     const stockMaxNum = parseInt(formStockMax) || 0;
     const marginRatio = priceNum > 0 ? parseFloat((((priceNum - costNum) / priceNum) * 100).toFixed(1)) : 0;
     const parsedTags = formTags.split(",").map(t => t.trim().toLowerCase()).filter(t => t.length > 0);
+
+    const tenantName = user?.tenantName || "";
 
     if (editingProduct) {
       updateProduct(editingProduct.id, {
@@ -134,12 +168,15 @@ export function useProdutoForm() {
         dimensions: formDimensions,
         weight: parseFloat(formWeight) || 0,
         material: formMaterial,
-        description: formDescription
+        description: formDescription,
+        clientId: clientId || undefined,
+        clientName: clientName || undefined,
+        tenantName,
       });
       toast.success("Produto atualizado com sucesso!");
     } else {
       const nProd: Product = {
-        id: "prod-" + Math.random().toString(36).substr(2, 9),
+        id: crypto.randomUUID(),
         sku: formSKU,
         name: formName,
         category: formCategory,
@@ -158,8 +195,11 @@ export function useProdutoForm() {
         dimensions: formDimensions,
         weight: parseFloat(formWeight) || 0,
         material: formMaterial,
-        description: formDescription
-      };
+        description: formDescription,
+        clientId: clientId || undefined,
+        clientName: clientName || undefined,
+        tenantName,
+      } as any;
       addProduct(nProd);
       toast.success("Novo produto adicionado ao catálogo!");
     }
@@ -177,12 +217,11 @@ export function useProdutoForm() {
     }
   };
 
-  // Duplicate product flow
   const duplicateProduct = (p: Product, e: React.MouseEvent) => {
     e.stopPropagation();
     const duplicated: Product = {
       ...p,
-      id: "prod-" + Math.random().toString(36).substr(2, 9),
+      id: crypto.randomUUID(),
       sku: p.sku + "-COPY",
       name: p.name + " (Cópia)",
       active: true
@@ -199,9 +238,8 @@ export function useProdutoForm() {
     }
   };
 
-  // Bulk Actions
   const handleToggleSelection = (id: string) => {
-    setSelectedIds(prev => 
+    setSelectedIds(prev =>
       prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
     );
   };
@@ -246,6 +284,15 @@ export function useProdutoForm() {
     activeTab, setActiveTab,
     simulateTax, setSimulateTax,
     attachments, setAttachments,
+    // client
+    clientSearch, setClientSearch,
+    clientId, setClientId,
+    clientName, setClientName,
+    showClientDropdown, setShowClientDropdown,
+    filteredClients,
+    handleSelectClient,
+    clearClient,
+    // form fields
     formName, setFormName,
     formSKU, setFormSKU,
     formCategory, setFormCategory,

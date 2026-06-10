@@ -661,6 +661,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           clientId: lead.clientId ?? '',
           clientName: lead.clientName ?? '',
           source: lead.source ?? '',
+          productIds: lead.productIds ?? [],
         };
 
         const { error } = await supabase.from('leads').insert(dbPayload);

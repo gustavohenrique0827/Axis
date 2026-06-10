@@ -354,7 +354,7 @@ export default function Catalog() {
         </Card>
 
         {/* COMPREHENSIVE REGISTRATION / EDIT MODAL */}
-        <ProdutoModal 
+        <ProdutoModal
           isOpen={f.isModalOpen}
           onClose={() => f.setIsModalOpen(false)}
           editingProduct={f.editingProduct}
@@ -364,6 +364,15 @@ export default function Catalog() {
           setSimulateTax={f.setSimulateTax}
           attachments={f.attachments}
           setAttachments={f.setAttachments}
+          clientSearch={f.clientSearch}
+          setClientSearch={f.setClientSearch}
+          clientId={f.clientId}
+          clientName={f.clientName}
+          showClientDropdown={f.showClientDropdown}
+          setShowClientDropdown={f.setShowClientDropdown}
+          filteredClients={f.filteredClients}
+          handleSelectClient={f.handleSelectClient}
+          clearClient={f.clearClient}
           formName={f.formName}
           setFormName={f.setFormName}
           formSKU={f.formSKU}
