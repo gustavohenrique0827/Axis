@@ -6,7 +6,6 @@ import {
   Settings,
   Mail,
   Zap,
-  Target,
   BarChart2,
   PieChart,
   Brain,
@@ -45,8 +44,7 @@ export const navSections = [
     title: "CRM & Pipeline",
     reqModule: "crm",
     items: [
-      { name: "Leads", path: "/app/leads", icon: Target },
-      { name: "Pipeline", path: "/app/pipeline", icon: Columns3 },
+      { name: "Leads & Pipeline", path: "/app/pipeline", icon: Columns3 },
       { name: "Propostas", path: "/app/propostas", icon: FileText },
       { name: "Clientes", path: "/app/clientes", icon: Users },
     ],

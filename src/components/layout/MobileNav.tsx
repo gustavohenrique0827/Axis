@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import {
   LayoutDashboard,
-  Target,
   Columns3,
   Users,
   Menu,
@@ -34,8 +33,7 @@ export function MobileNav({ isMobileMoreOpen, setIsMobileMoreOpen }: MobileNavPr
       <nav className="sm:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#111827]/95 backdrop-blur-lg border-t border-white/10 flex items-center justify-around px-2 z-40 pb-safe shadow-[0_-10px_35px_rgba(0,0,0,0.5)]">
         {[
           { name: "Painel", path: "/app/dashboard", icon: LayoutDashboard },
-          { name: "Leads", path: "/app/leads", icon: Target },
-          { name: "Pipeline", path: "/app/pipeline", icon: Columns3 },
+          { name: "Leads", path: "/app/pipeline", icon: Columns3 },
           { name: "Clientes", path: "/app/clientes", icon: Users },
         ].map((tab) => {
           const isActive = location.pathname.startsWith(tab.path);

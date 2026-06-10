@@ -17,7 +17,6 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Layout from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
-import Leads from "./pages/crm/Leads";
 import Pipeline from "./pages/crm/Pipeline";
 import Clientes from "./pages/crm/Clientes";
 import Tarefas from "./pages/operative/Tarefas";
@@ -120,7 +119,7 @@ function AppContent() {
         }>
           <Route index element={<Navigate to="/app/dashboard" />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="leads" element={<Leads />} />
+          <Route path="leads" element={<Navigate to="/app/pipeline" replace />} />
           <Route path="pipeline" element={<Pipeline />} />
           <Route path="performance-ia" element={<PerformanceIA />} />
           <Route path="clinica">
