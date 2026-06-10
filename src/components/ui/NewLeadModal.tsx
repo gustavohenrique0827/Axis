@@ -45,6 +45,8 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1" }: { isOpen: 
   );
   const isCnpjDuplicate = leads.some((l) => l.cnpj === cnpjValue && cnpjValue !== "");
 
+  const [selectedSeller, setSelectedSeller] = useState<string>("");
+
   // Sellers from colaboradores, fallback to leads-derived list
   const sellerOptions = useMemo<string[]>(() => {
     if (colaboradores && colaboradores.length > 0) {
@@ -54,6 +56,20 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1" }: { isOpen: 
     }
     return Array.from(new Set(leads.map((l: any) => l.seller).filter(Boolean))) as string[];
   }, [colaboradores, leads]);
+
+  // Auto-set default seller
+  useMemo(() => {
+    if (!selectedSeller && sellerOptions.length > 0) setSelectedSeller(sellerOptions[0]);
+  }, [sellerOptions]);
+
+  // Detect pipeline based on seller's cargo
+  const sellerPipelineId = useMemo(() => {
+    if (!selectedSeller || !colaboradores?.length) return "comercial";
+    const colab = colaboradores.find((c: any) => c.nome === selectedSeller);
+    if (!colab) return "comercial";
+    const cargo = (colab.cargo || "").toLowerCase();
+    return cargo.includes("sdr") ? "sdr" : "comercial";
+  }, [selectedSeller, colaboradores]);
 
   // Filtered clients for search dropdown
   const filteredClients = useMemo(() => {
@@ -207,9 +223,10 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1" }: { isOpen: 
       status: "Novo",
       value: "R$ 0",
       date: "Hoje",
-      seller: (formData.get("seller") as string) || sellerOptions[0] || "Não Atribuído",
+      seller: selectedSeller || sellerOptions[0] || "Não Atribuído",
       title: "Novo Negócio",
       priority: "Média",
+      pipelineId: sellerPipelineId,
       stageId: firstStageId,
       lead_interesse_cliente: formData.get("lead_interesse_cliente") as string,
       tenantName: selectedTenant,
@@ -230,6 +247,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1" }: { isOpen: 
     setClientSearch("");
     setSelectedClientId("");
     setSelectedClientName("");
+    setSelectedSeller(sellerOptions[0] || "");
     setCnpjStatus({ status: "idle" });
     onClose();
   };
@@ -420,6 +438,8 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1" }: { isOpen: 
               </label>
               <select
                 name="seller"
+                value={selectedSeller}
+                onChange={(e) => setSelectedSeller(e.target.value)}
                 className="w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all"
               >
                 {sellerOptions.length > 0 ? (
@@ -436,6 +456,12 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1" }: { isOpen: 
                   </>
                 )}
               </select>
+              {selectedSeller && (
+                <p className={`text-[10px] font-black flex items-center gap-1 ${sellerPipelineId === "sdr" ? "text-purple-400" : "text-blue-400"}`}>
+                  <Target className="w-3 h-3" />
+                  Pipeline: {sellerPipelineId === "sdr" ? "SDR (pré-venda)" : "Comercial (closer)"}
+                </p>
+              )}
             </div>
           </div>
         </div>

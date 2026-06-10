@@ -44,7 +44,7 @@ export function SdrReportSection({
 
   // Generic mapping from custom fields
   const getField = (key: string, fallback: string = 'Não informado') => {
-    if (!lead.customFields) return fallback;
+    if (!lead.customFields || !Array.isArray(lead.customFields)) return fallback;
     const field = lead.customFields.find((f: any) => f.name.toLowerCase().includes(key.toLowerCase()));
     return field?.value || fallback;
   };
