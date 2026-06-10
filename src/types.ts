@@ -60,6 +60,8 @@ export interface Lead {
   timeIdle?: number;
   customFields?: Record<string, string | number>;
   tenantName?: string;
+  clientId?: string;
+  clientName?: string;
 }
 
 export interface Task {

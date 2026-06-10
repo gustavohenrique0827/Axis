@@ -1,10 +1,10 @@
-import React from 'react';
+import { useState } from 'react';
 import { Card } from '../../../components/ui/card';
-import { 
-  Phone, Mail, Flame, MoreVertical, Calendar, FileText, 
-  History, ArrowRight, FileDown, Activity, Brain, Zap, Clock 
+import {
+  Phone, Mail, Flame, MoreVertical, Calendar, FileText,
+  History, ArrowRight, FileDown, Activity, Brain, Zap
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { RevenueIntelligenceModal } from './RevenueIntelligenceModal';
 
 interface LeadCardProps {
   item: any;
@@ -21,6 +21,8 @@ interface LeadCardProps {
   handleExportIAResume: (e: any, lead: any) => void;
   setWebhookModalLead: (lead: any) => void;
   currentPipeline: 'comercial' | 'sdr';
+  stageName?: string;
+  pipelineName?: string;
 }
 
 export function LeadCard({
@@ -37,8 +39,11 @@ export function LeadCard({
   handleTransferToComercial,
   handleExportIAResume,
   setWebhookModalLead,
-  currentPipeline
+  currentPipeline,
+  stageName = '',
+  pipelineName = '',
 }: LeadCardProps) {
+  const [showRIModal, setShowRIModal] = useState(false);
   const hasDelayedTask = tasks.some(t => (t.related === item.name || t.related === item.company) && t.status === 'Atrasado');
   const isDragging = draggedLeadId === item.id;
 
@@ -135,6 +140,14 @@ export function LeadCard({
                          <History className="w-3.5 h-3.5" /> Ver Histórico
                       </button>
                       
+                      <div className="h-px bg-white/5 my-1" />
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setOpenDropdownId(null); setShowRIModal(true); }}
+                        className="flex items-center gap-2 w-full p-2 hover:bg-blue-500/10 rounded-lg text-xs font-medium text-blue-400 transition-colors border-none bg-transparent cursor-pointer text-left"
+                      >
+                        <Brain className="w-3.5 h-3.5 shrink-0" /> Analisar Ligação IA
+                      </button>
+
                       {currentPipeline === 'sdr' && (
                         <>
                           <div className="h-px bg-white/5 my-1" />
@@ -202,6 +215,15 @@ export function LeadCard({
            <span className="text-[9px]">{item.seller?.split(' ')[0]}</span>
          </div>
       </div>
+
+      {showRIModal && (
+        <RevenueIntelligenceModal
+          lead={item}
+          stageName={stageName}
+          pipelineName={pipelineName}
+          onClose={() => setShowRIModal(false)}
+        />
+      )}
     </Card>
   );
 }

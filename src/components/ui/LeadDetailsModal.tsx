@@ -7,6 +7,7 @@ import {
   Brain, BadgeCent, ShieldCheck
 } from "lucide-react";
 import { useLeadDetails } from "./lead-details/useLeadDetails";
+import { RevenueIntelligenceModal } from "../../pages/crm/components/RevenueIntelligenceModal";
 import { ProfileSection } from "./lead-details/ProfileSection";
 import { TimelineSection } from "./lead-details/TimelineSection";
 import { SdrReportSection } from "./lead-details/SdrReportSection";
@@ -227,6 +228,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
               {[
                 { id: 'timeline', label: 'TIMELINE & HISTÓRICO', icon: Calendar },
                 { id: 'sdrReport', label: '⚡ RELATÓRIO IA CLOSER', icon: Brain },
+                { id: 'revenueIntel', label: '🧠 ANÁLISE IA', icon: Brain },
                 { id: 'whatsapp', label: 'DIRECT MESSAGING', icon: MessageSquare },
                 { id: 'products', label: 'METAS & PRODUTOS', icon: BadgeCent },
                 { id: 'logs', label: 'RBAC AUDITOR & LOGS', icon: ShieldCheck }
@@ -298,14 +300,25 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
             {/* TAB CONTENT: SDR IA REPORT BLUEPRINT FOR CLOSER */}
             {activeTab === 'sdrReport' && (
-              <SdrReportSection 
-                lead={lead} 
+              <SdrReportSection
+                lead={lead}
                 reportContextOverride={reportContextOverride}
                 setReportContextOverride={setReportContextOverride}
                 leadName={leadName}
                 companyName={companyName}
                 seller={seller}
                 score={score}
+              />
+            )}
+
+            {/* TAB CONTENT: REVENUE INTELLIGENCE ENGINE */}
+            {activeTab === 'revenueIntel' && (
+              <RevenueIntelligenceModal
+                lead={lead}
+                stageName={stagesDef.find(s => s.id === lead.stageId)?.name ?? ''}
+                pipelineName="Pipeline CRM"
+                onClose={() => setActiveTab('timeline')}
+                embedded
               />
             )}
 
