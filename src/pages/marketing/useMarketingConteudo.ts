@@ -1,17 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 import { DropResult } from "@hello-pangea/dnd";
-
-const initialColumns = [
-  { id: "ideia", title: "Ideias", color: "bg-slate-500" },
-  { id: "producao", title: "Em Produção", color: "bg-blue-500" },
-  { id: "revisao", title: "Em Revisão", color: "bg-yellow-500" },
-  { id: "agendado", title: "Agendado", color: "bg-purple-500" },
-  { id: "publicado", title: "Publicado", color: "bg-emerald-500" },
-];
-
 import { useData } from "../../contexts/DataContext";
+import { readKanbanConfig, KANBAN_KEYS, KANBAN_COR_CLASS } from "../../hooks/useKanbanConfig";
+
+function getMarketingColumns() {
+  return readKanbanConfig(KANBAN_KEYS.marketing).map(c => ({
+    id: c.id,
+    title: c.nome,
+    color: KANBAN_COR_CLASS[c.cor] ?? "bg-slate-500",
+  }));
+}
 
 export function useMarketingConteudo() {
   const { marketingContent: tasks, setMarketingContent: setTasks } = useData();
@@ -95,7 +95,7 @@ export function useMarketingConteudo() {
       setTasks(updatedTasks);
       setTasks(updatedTasks);
 
-      const colName = initialColumns.find(c => c.id === destColId)?.title;
+      const colName = getMarketingColumns().find(c => c.id === destColId)?.title;
       toast.success(`"${movedTask.title}" movido para ${colName}`);
       
       await updateTaskInDatabase(updatedMovedTask);
@@ -173,7 +173,7 @@ export function useMarketingConteudo() {
     newDate, setNewDate,
     newDesc, setNewDesc,
     newPriority, setNewPriority,
-    initialColumns,
+    initialColumns: getMarketingColumns(),
     onDragEnd,
     handleCreateTask,
     openTask,

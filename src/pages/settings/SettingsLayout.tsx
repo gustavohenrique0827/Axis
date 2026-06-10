@@ -54,6 +54,7 @@ export default function SettingsLayout() {
 
   const secProdutividade = [
     { title: "Categorias de tarefas", path: "/app/configuracoes/produtividade/categorias" },
+    { title: "Funis & Kanbans", path: "/app/configuracoes/kanbans" },
   ];
 
   const secFinanceiro = [

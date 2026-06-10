@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { readKanbanConfig, KANBAN_KEYS, KANBAN_COR_DOT } from "../../hooks/useKanbanConfig";
 import {
   Search, Plus, FileText, Video,
   HelpCircle, MoreVertical, Download, Layers,
@@ -107,11 +108,11 @@ export default function Conteudo() {
     return matchesSearch && (c.type === typeMap[selectedCategory]);
   });
 
-  const columns: { id: ContentItem['status']; label: string; color: string }[] = [
-    { id: 'Rascunho', label: 'Rascunhos', color: 'bg-slate-500/20 text-slate-400' },
-    { id: 'Em Revisão', label: 'Em Revisão', color: 'bg-amber-500/20 text-amber-400' },
-    { id: 'Publicado', label: 'Publicado', color: 'bg-emerald-500/20 text-emerald-400' },
-  ];
+  const columns = readKanbanConfig(KANBAN_KEYS.educacao).map(c => ({
+    id: c.id as ContentItem['status'],
+    label: c.nome,
+    dotColor: KANBAN_COR_DOT[c.cor] ?? KANBAN_COR_DOT.slate,
+  }));
 
   const totalAcessos = content.reduce((acc, c) => acc + (c.accessCount || 0), 0);
   const totalAcessosFmt = totalAcessos >= 1000 ? `${(totalAcessos / 1000).toFixed(1)}k` : String(totalAcessos);
@@ -268,7 +269,7 @@ export default function Conteudo() {
                  <div key={col.id} className="space-y-4">
                     <div className="flex items-center justify-between px-2">
                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center gap-2">
-                          <span className={`w-2 h-2 rounded-full ${col.id === 'Publicado' ? 'bg-emerald-500' : col.id === 'Em Revisão' ? 'bg-amber-500' : 'bg-slate-500'}`}></span>
+                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: col.dotColor }}></span>
                           {col.label}
                        </h4>
                        <Badge className="bg-white/5 border-white/5 text-slate-600 text-[9px] font-bold">

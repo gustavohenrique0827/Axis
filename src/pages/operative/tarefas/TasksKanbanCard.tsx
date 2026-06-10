@@ -2,20 +2,21 @@ import { Card } from "../../../components/ui/card";
 import { Badge } from "../../../components/ui/badge";
 import { Edit, CheckCircle2, Trash2, Clock, AlertTriangle, Sparkles } from "lucide-react";
 import { Task } from "../../../types";
+import { KanbanColConfig } from "../../../hooks/useKanbanConfig";
 
 interface TasksKanbanCardProps {
   task: Task;
   draggedTaskId: string | null;
   setDraggedTaskId: (id: string | null) => void;
-  setDraggedOverCol: (col: 'Atrasado' | 'Em Aberto' | 'Concluída' | null) => void;
+  setDraggedOverCol: (col: string | null) => void;
   getPriorityColor: (p: string) => string;
   updateTask: (id: string, updates: Partial<Task>) => void;
   setSearchQuery: (q: string) => void;
   openEditTaskModal: (task: Task) => void;
   toggleTaskStatus: (id: string, currentStatus: string) => void;
   handleDeleteTask: (id: string) => void;
-  moveTaskStatus: (id: string, newStatus: 'Atrasado' | 'Em Aberto' | 'Concluída') => void;
-  columns: ('Atrasado' | 'Em Aberto' | 'Concluída')[];
+  moveTaskStatus: (id: string, newStatus: string) => void;
+  columns: KanbanColConfig[];
 }
 
 export function TasksKanbanCard({
@@ -155,17 +156,17 @@ export function TasksKanbanCard({
         <div className="flex items-center justify-between border-t border-white/5 pt-2 mt-1">
           <span className="text-[8px] text-slate-500 uppercase font-black tracking-wider">Mudar Etapa</span>
           <div className="flex gap-1">
-            {columns.map(statusOption => (
+            {columns.map(col => (
               <button
-                key={statusOption}
-                onClick={() => moveTaskStatus(task.id, statusOption)}
+                key={col.id}
+                onClick={() => moveTaskStatus(task.id, col.id)}
                 className={`text-[8px] font-bold px-1.5 py-0.5 rounded transition-all border-none bg-transparent cursor-pointer ${
-                  task.status === statusOption
+                  task.status === col.id
                     ? 'bg-white/10 text-white font-extrabold border border-white/10'
                     : 'text-slate-500 hover:text-white hover:bg-white/5'
                 }`}
               >
-                {statusOption === "Em Aberto" ? "Aberto" : statusOption === "Concluída" ? "Concluir" : "Atrasar"}
+                {col.nome}
               </button>
             ))}
           </div>

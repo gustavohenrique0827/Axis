@@ -8,3 +8,4 @@ export { ConfigIntegracoesApps, ConfigIntegracoesSMTP, ConfigIntegracoesSDR } fr
 export { ConfigNotificacoesPreferencias } from "./sections/SettingsNotificacoes";
 export { ConfigSistemaBackups } from "./sections/SettingsSistema";
 export { ConfigRodizioLeads } from "./sections/SettingsRodizioLeads";
+export { ConfigKanbanBoards } from "./sections/SettingsKanbanBoards";

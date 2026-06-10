@@ -1,19 +1,19 @@
-import React from "react";
 import { Card } from "../../../components/ui/card";
 import { 
   CheckCircle2, Calendar, Edit, Trash2, CheckSquare, Sparkles
 } from "lucide-react";
 import { Task } from "../../../types";
+import { KanbanColConfig } from "../../../hooks/useKanbanConfig";
 
 interface TasksListModeProps {
   filteredTasks: Task[];
   toggleTaskStatus: (id: string, status: string) => void;
-  moveTaskStatus: (id: string, newStatus: 'Atrasado' | 'Em Aberto' | 'Concluída') => void;
+  moveTaskStatus: (id: string, newStatus: string) => void;
   openEditTaskModal: (task: Task) => void;
   handleDeleteTask: (id: string) => void;
   updateTask: any;
   getPriorityColor: (p: string) => string;
-  columns: ('Atrasado' | 'Em Aberto' | 'Concluída')[];
+  columns: KanbanColConfig[];
 }
 
 export function TasksListMode({
@@ -117,15 +117,15 @@ export function TasksListMode({
                 <div className="flex gap-1 items-center bg-[#0B1120] border border-white/5 rounded-lg p-0.5">
                   {columns.map(col => (
                     <button
-                      key={col}
-                      onClick={() => moveTaskStatus(t.id, col)}
+                      key={col.id}
+                      onClick={() => moveTaskStatus(t.id, col.id)}
                       className={`text-[9px] font-black px-2 py-1 rounded transition-colors cursor-pointer ${
-                        t.status === col 
-                        ? 'bg-[#2563EB] text-white' 
+                        t.status === col.id
+                        ? 'bg-[#2563EB] text-white'
                         : 'text-slate-500 hover:text-white hover:bg-white/5'
                       }`}
                     >
-                      {col}
+                      {col.nome}
                     </button>
                   ))}
                 </div>

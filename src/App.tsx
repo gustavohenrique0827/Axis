@@ -63,7 +63,8 @@ import {
   ConfigSistemaBackups,
   ConfigIntegracoesSDR,
   ConfigFinanceiroSquads,
-  ConfigRodizioLeads
+  ConfigRodizioLeads,
+  ConfigKanbanBoards
 } from "./pages/settings/SettingsPages";
 import { ConfigIntegracoesWebhooks } from "./pages/settings/ConfigIntegracoesWebhooks";
 import SettingsGenericForm from "./pages/settings/SettingsGenericForm";
@@ -200,6 +201,7 @@ function AppContent() {
             <Route path="crm/rodizio" element={<ConfigRodizioLeads />} />
 
             <Route path="produtividade/categorias" element={<ConfigProdutividadeCategorias />} />
+            <Route path="kanbans" element={<ConfigKanbanBoards />} />
 
             <Route path="financeiro/categorias" element={<ConfigFinanceiroCategorias />} />
             <Route path="financeiro/squads" element={<ConfigFinanceiroSquads />} />

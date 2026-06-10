@@ -1,20 +1,20 @@
-import { Card } from "../../../components/ui/card";
 import { Plus } from "lucide-react";
 import { motion } from "motion/react";
 import { Task } from "../../../types";
 import { TasksKanbanCard } from "./TasksKanbanCard";
+import { KanbanColConfig, KANBAN_COR_CLASS, KANBAN_COR_DOT } from "../../../hooks/useKanbanConfig";
 
 interface TasksKanbanModeProps {
-  columns: ('Atrasado' | 'Em Aberto' | 'Concluída')[];
+  columns: KanbanColConfig[];
   filteredTasks: Task[];
-  mobileActiveCol: 'Atrasado' | 'Em Aberto' | 'Concluída';
-  setMobileActiveCol: (col: 'Atrasado' | 'Em Aberto' | 'Concluída') => void;
+  mobileActiveCol: string;
+  setMobileActiveCol: (col: string) => void;
   draggedTaskId: string | null;
   setDraggedTaskId: (id: string | null) => void;
-  draggedOverCol: 'Atrasado' | 'Em Aberto' | 'Concluída' | null;
-  setDraggedOverCol: (col: 'Atrasado' | 'Em Aberto' | 'Concluída' | null) => void;
+  draggedOverCol: string | null;
+  setDraggedOverCol: (col: string | null) => void;
   openNewTaskModal: () => void;
-  moveTaskStatus: (id: string, newStatus: 'Atrasado' | 'Em Aberto' | 'Concluída') => void;
+  moveTaskStatus: (id: string, newStatus: string) => void;
   updateTask: (id: string, updates: Partial<Task>) => void;
   openEditTaskModal: (task: Task) => void;
   toggleTaskStatus: (id: string, currentStatus: string) => void;
@@ -43,25 +43,19 @@ export function TasksKanbanMode({
 }: TasksKanbanModeProps) {
   return (
     <div className="space-y-4">
-      {/* Mobile Segments Header: hidden on desktop, visible on mobile to prevent squishing */}
+      {/* Mobile Segments Header */}
       <div className="flex md:hidden bg-[#0A1120] border border-white/10 rounded-2xl p-1 w-full shrink-0 relative">
         {columns.map(col => {
-          const isActive = mobileActiveCol === col;
-          const count = filteredTasks.filter(t => t.status === col).length;
-
-          const getThemeColor = () => {
-            if (col === "Atrasado") return "bg-rose-500";
-            if (col === "Em Aberto") return "bg-amber-500";
-            return "bg-emerald-500";
-          };
+          const isActive = mobileActiveCol === col.id;
+          const count = filteredTasks.filter(t => t.status === col.id).length;
+          const dotColor = KANBAN_COR_DOT[col.cor] ?? '#64748b';
 
           return (
             <button
-              key={col}
-              onClick={() => setMobileActiveCol(col)}
+              key={col.id}
+              onClick={() => setMobileActiveCol(col.id)}
               className="flex-1 text-center py-2.5 text-xs font-bold rounded-xl transition-all relative flex items-center justify-center gap-2 select-none cursor-pointer border-none bg-transparent"
             >
-              {/* Sliding selection background */}
               {isActive && (
                 <motion.div
                   layoutId="activeKanbanTabIndicator"
@@ -69,14 +63,18 @@ export function TasksKanbanMode({
                   transition={{ type: "spring", stiffness: 350, damping: 28 }}
                 />
               )}
-
               <span className="relative z-10 flex items-center gap-1.5">
-                <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]' : getThemeColor()}`} />
-                <span className={isActive ? "text-white font-extrabold" : "text-slate-400 font-medium hover:text-white"}>{col}</span>
+                <span
+                  className="w-1.5 h-1.5 rounded-full"
+                  style={{ backgroundColor: isActive ? '#60a5fa' : dotColor }}
+                />
+                <span className={isActive ? "text-white font-extrabold" : "text-slate-400 font-medium hover:text-white"}>
+                  {col.nome}
+                </span>
               </span>
-
-              <span className={`relative z-10 text-[9px] px-1.5 py-0.5 rounded-full font-black transition-colors ${isActive ? 'bg-[#2563EB]/20 text-blue-400 border border-[#2563EB]/30' : 'bg-white/5 text-slate-500'
-                }`}>{count}</span>
+              <span className={`relative z-10 text-[9px] px-1.5 py-0.5 rounded-full font-black transition-colors ${
+                isActive ? 'bg-[#2563EB]/20 text-blue-400 border border-[#2563EB]/30' : 'bg-white/5 text-slate-500'
+              }`}>{count}</span>
             </button>
           );
         })}
@@ -84,28 +82,24 @@ export function TasksKanbanMode({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {columns.map(col => {
-          const count = filteredTasks.filter(t => t.status === col).length;
-
-          // In mobile mode, dynamic visibility: show ONLY chosen column in Segment Tabs
-          const isVisibleOnMobile = mobileActiveCol === col;
+          const count = filteredTasks.filter(t => t.status === col.id).length;
+          const isVisibleOnMobile = mobileActiveCol === col.id;
+          const dotColor = KANBAN_COR_DOT[col.cor] ?? '#64748b';
+          const dotClass = KANBAN_COR_CLASS[col.cor] ?? 'bg-slate-500';
 
           return (
             <motion.div
-              key={col}
+              key={col.id}
               initial={{ opacity: 0, x: isVisibleOnMobile ? 12 : 0 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.2 }}
-              className={`flex flex-col gap-4 min-w-0 ${isVisibleOnMobile ? 'flex' : 'hidden md:flex'
-                }`}
+              className={`flex flex-col gap-4 min-w-0 ${isVisibleOnMobile ? 'flex' : 'hidden md:flex'}`}
             >
-              {/* Header of Column */}
+              {/* Column Header */}
               <div className="flex items-center justify-between px-2 shrink-0 border-b border-white/5 pb-2">
                 <div className="flex items-center gap-2">
-                  <span className={`w-2 h-2 rounded-full ${col === 'Concluída' ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' :
-                      col === 'Atrasado' ? 'bg-rose-500 shadow-[0_0_8px_#f43f5e]' :
-                        'bg-amber-500 shadow-[0_0_8px_#f59e0b]'
-                    }`}></span>
-                  <h3 className="text-xs font-black text-white uppercase tracking-widest">{col}</h3>
+                  <span className={`w-2 h-2 rounded-full ${dotClass}`} style={{ boxShadow: `0 0 8px ${dotColor}80` }} />
+                  <h3 className="text-xs font-black text-white uppercase tracking-widest">{col.nome}</h3>
                   <span className="text-[10px] bg-white/5 px-2 py-0.5 rounded-full text-slate-400 font-extrabold">{count}</span>
                 </div>
                 <button className="text-slate-500 hover:text-white transition-colors bg-transparent border-none p-0 cursor-pointer" onClick={openNewTaskModal}>
@@ -115,34 +109,24 @@ export function TasksKanbanMode({
 
               {/* Column Contents */}
               <div
-                onDragOver={(e) => {
-                  e.preventDefault();
-                }}
-                onDragEnter={(e) => {
-                  e.preventDefault();
-                  setDraggedOverCol(col);
-                }}
-                onDragLeave={() => {
-                  if (draggedOverCol === col) {
-                    setDraggedOverCol(null);
-                  }
-                }}
+                onDragOver={(e) => e.preventDefault()}
+                onDragEnter={(e) => { e.preventDefault(); setDraggedOverCol(col.id); }}
+                onDragLeave={() => { if (draggedOverCol === col.id) setDraggedOverCol(null); }}
                 onDrop={(e) => {
                   e.preventDefault();
                   const taskId = e.dataTransfer.getData("text/plain");
-                  if (taskId) {
-                    moveTaskStatus(taskId, col);
-                  }
+                  if (taskId) moveTaskStatus(taskId, col.id);
                   setDraggedOverCol(null);
                   setDraggedTaskId(null);
                 }}
-                className={`space-y-4 pr-1 min-h-[350px] rounded-2xl transition-all duration-300 ${draggedOverCol === col
+                className={`space-y-4 pr-1 min-h-[350px] rounded-2xl transition-all duration-300 ${
+                  draggedOverCol === col.id
                     ? 'bg-[#2563EB]/10 ring-2 ring-[#2563EB]/40 border-2 border-dashed border-[#2563EB]/50 p-2'
                     : 'p-0'
-                  }`}
+                }`}
               >
-                {filteredTasks.filter(t => t.status === col).length > 0 ? (
-                  filteredTasks.filter(t => t.status === col).map(task => (
+                {filteredTasks.filter(t => t.status === col.id).length > 0 ? (
+                  filteredTasks.filter(t => t.status === col.id).map(task => (
                     <div key={task.id}>
                       <TasksKanbanCard
                         task={task}
@@ -156,7 +140,7 @@ export function TasksKanbanMode({
                         toggleTaskStatus={toggleTaskStatus}
                         handleDeleteTask={handleDeleteTask}
                         moveTaskStatus={moveTaskStatus}
-                        columns={columns}
+                        columns={columns.map(c => c.id) as any}
                       />
                     </div>
                   ))

@@ -4,6 +4,7 @@ import { NovaTarefaSprintModal, type TarefaSprintPayload } from "./modals/NovaTa
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
 import { useDevSprints, type Column } from "./hooks/useDevSprints";
+import { readKanbanConfig, KANBAN_KEYS, KANBAN_COR_CLASS } from "../../hooks/useKanbanConfig";
 
 const PRIORITY_STYLE: Record<string, string> = {
   crítica: 'bg-red-500/15 text-red-400 border-red-500/25',
@@ -26,15 +27,17 @@ const TYPE_COLOR: Record<string, string> = {
   refactor: 'text-indigo-400',
 };
 
-const COLUMNS: { id: Column; label: string; accent: string; dotColor: string }[] = [
-  { id: 'backlog', label: 'Backlog', accent: 'border-slate-700', dotColor: 'bg-slate-500' },
-  { id: 'todo', label: 'A Fazer', accent: 'border-blue-500/30', dotColor: 'bg-blue-500' },
-  { id: 'inprogress', label: 'Em Progresso', accent: 'border-amber-500/30', dotColor: 'bg-amber-500' },
-  { id: 'review', label: 'Em Review', accent: 'border-indigo-500/30', dotColor: 'bg-indigo-500' },
-  { id: 'done', label: 'Concluído', accent: 'border-emerald-500/30', dotColor: 'bg-emerald-500' },
-];
+function getSprintColumns(): { id: Column; label: string; accent: string; dotColor: string }[] {
+  return readKanbanConfig(KANBAN_KEYS.sprint).map(c => ({
+    id: c.id as Column,
+    label: c.nome,
+    accent: `border-${c.cor}-500/30`,
+    dotColor: KANBAN_COR_CLASS[c.cor] ?? 'bg-slate-500',
+  }));
+}
 
 export default function Sprints() {
+  const COLUMNS = getSprintColumns();
   const { tasks, addTask, moveTask } = useDevSprints();
   const [draggedId, setDraggedId] = useState<string | number | null>(null);
   const [dragOverCol, setDragOverCol] = useState<Column | null>(null);

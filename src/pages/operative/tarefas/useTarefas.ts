@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useData } from "../../../contexts/DataContext";
+import { readKanbanConfig, KANBAN_KEYS, KanbanColConfig } from "../../../hooks/useKanbanConfig";
 import { Task } from "../../../types";
 import { initAuth, googleSignIn, getAccessToken } from "../../../lib/firebase";
 import { toast } from "sonner";
@@ -88,9 +89,9 @@ export function useTarefas() {
     }
   };
 
-  const [mobileActiveCol, setMobileActiveCol] = useState<'Atrasado' | 'Em Aberto' | 'Concluída'>('Em Aberto');
+  const [mobileActiveCol, setMobileActiveCol] = useState<string>('Em Aberto');
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
-  const [draggedOverCol, setDraggedOverCol] = useState<'Atrasado' | 'Em Aberto' | 'Concluída' | null>(null);
+  const [draggedOverCol, setDraggedOverCol] = useState<string | null>(null);
 
   const parseTaskDate = (dateStr: string): Date => {
     const now = new Date();
@@ -287,7 +288,7 @@ export function useTarefas() {
     setTaskToDelete(id);
   };
   return {
-    columns: ['Atrasado', 'Em Aberto', 'Concluída'] as ('Atrasado' | 'Em Aberto' | 'Concluída')[],
+    columns: readKanbanConfig(KANBAN_KEYS.tarefas) as KanbanColConfig[],
     getPriorityColor: (p: string) => {
       switch(p) {
         case "Alta": return "text-rose-400 bg-rose-500/10 border-rose-500/20";
