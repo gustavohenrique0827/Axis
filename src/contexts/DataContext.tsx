@@ -621,7 +621,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addLead = async (lead: Omit<Lead, 'id'>) => {
-    const newLead = { ...lead, id: Math.random().toString(36).substr(2, 9), scoreIA: 50 };
+    const newId = crypto.randomUUID();
+    const newLead = { ...lead, id: newId, scoreIA: 50 };
     setLeads(prev => [newLead, ...prev]);
     toast.success('Novo lead adicionado com sucesso!');
     addNotification({
@@ -632,7 +633,40 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     if (supabase) {
       try {
-        await supabase.from('leads').insert(newLead);
+        // Parse numeric value: strip "R$ " prefix before saving
+        const rawValue = typeof lead.value === 'string'
+          ? parseFloat(lead.value.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
+          : (lead.value ?? 0);
+
+        const dbPayload = {
+          id: newId,
+          name: lead.name,
+          company: lead.company ?? '',
+          email: lead.email ?? '',
+          phone: lead.phone ?? '',
+          cnpj: lead.cnpj ?? '',
+          seller: lead.seller ?? '',
+          title: lead.title ?? '',
+          date: lead.date ?? '',
+          status: lead.status ?? 'Novo',
+          priority: lead.priority ?? 'Média',
+          temperature: lead.temperature ?? undefined,
+          value: rawValue,
+          stageId: lead.stageId ?? '1',
+          pipelineId: lead.pipelineId ?? 'comercial',
+          scoreIA: 50,
+          tenantName: lead.tenantName ?? '',
+          lead_interesse_cliente: lead.lead_interesse_cliente ?? '',
+          customFields: lead.customFields ?? {},
+          clientId: lead.clientId ?? '',
+          clientName: lead.clientName ?? '',
+          source: lead.source ?? '',
+        };
+
+        const { error } = await supabase.from('leads').insert(dbPayload);
+        if (error) {
+          console.error("Supabase add lead failed:", error.message, error.details);
+        }
       } catch (err) {
         console.error("Supabase add lead failed:", err);
       }
@@ -684,7 +718,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
     if (supabase) {
       try {
-        await supabase.from('leads').update(updates).eq('id', id);
+        // Strip unknown / non-DB fields and fix value type
+        const { customTags, ...safeUpdates } = updates as any;
+        if (safeUpdates.value !== undefined && typeof safeUpdates.value === 'string') {
+          safeUpdates.value = parseFloat(safeUpdates.value.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        }
+        const { error } = await supabase.from('leads').update(safeUpdates).eq('id', id);
+        if (error) console.error("Supabase update lead failed:", error.message);
       } catch (err) {
         console.error("Supabase update lead failed:", err);
       }

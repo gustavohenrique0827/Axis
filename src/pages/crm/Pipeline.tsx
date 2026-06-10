@@ -667,7 +667,7 @@ export default function Pipeline() {
         )}
       </div>
 
-      <NewLeadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <NewLeadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} firstStageId={activePipelineStages[0]?.id ?? "1"} />
       <LeadDetailsModal isOpen={!!selectedLead} onClose={() => setSelectedLead(null)} lead={selectedLead} />
 
       <WebhookModal
