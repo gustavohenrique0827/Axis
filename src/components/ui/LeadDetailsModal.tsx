@@ -6,7 +6,7 @@ import {
   Brain, BadgeCent, ShieldCheck
 } from "lucide-react";
 import { useLeadDetails } from "./lead-details/useLeadDetails";
-import { RevenueIntelligenceModal } from "../../pages/crm/components/RevenueIntelligenceModal";
+import { IACopilot } from "./IACopilot";
 import { ProfileSection } from "./lead-details/ProfileSection";
 import { TimelineSection } from "./lead-details/TimelineSection";
 import { SdrReportSection } from "./lead-details/SdrReportSection";
@@ -311,14 +311,11 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
               />
             )}
 
-            {/* TAB CONTENT: REVENUE INTELLIGENCE ENGINE */}
+            {/* TAB CONTENT: IA COPILOT */}
             {activeTab === 'revenueIntel' && (
-              <RevenueIntelligenceModal
-                lead={lead}
-                stageName={stagesDef.find(s => s.id === lead.stageId)?.name ?? ''}
-                pipelineName="Pipeline CRM"
-                onClose={() => setActiveTab('timeline')}
-                embedded
+              <IACopilot
+                leadName={leadName}
+                companyName={companyName}
               />
             )}
 
