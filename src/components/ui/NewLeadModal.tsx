@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 import { formatPhone, validatePhone } from "../../lib/utils";
 
-export function NewLeadModal({ isOpen, onClose, firstStageId = "1" }: { isOpen: boolean; onClose: () => void; firstStageId?: string }) {
+export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComercialStageId, firstSdrStageId }: { isOpen: boolean; onClose: () => void; firstStageId?: string; firstComercialStageId?: string; firstSdrStageId?: string }) {
   const [loading, setLoading] = useState(false);
   const [tags, setTags] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
@@ -227,7 +227,9 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1" }: { isOpen: 
       title: "Novo Negócio",
       priority: "Média",
       pipelineId: sellerPipelineId,
-      stageId: firstStageId,
+      stageId: sellerPipelineId === "sdr"
+        ? (firstSdrStageId ?? firstStageId)
+        : (firstComercialStageId ?? firstStageId),
       lead_interesse_cliente: formData.get("lead_interesse_cliente") as string,
       tenantName: selectedTenant,
       clientId: selectedClientId || undefined,

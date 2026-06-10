@@ -226,6 +226,18 @@ export function usePipeline() {
   const lastStageId = activePipelineStages.length > 0
     ? activePipelineStages[activePipelineStages.length - 1].id
     : null;
+
+  const firstComercialStageId = useMemo(() => {
+    const f = comercialFunis[0];
+    if (!f) return "1";
+    return getStageId(f.id, 0);
+  }, [comercialFunis]);
+
+  const firstSdrStageId = useMemo(() => {
+    const f = sdrFunis[0];
+    if (!f) return "sdr-1";
+    return getStageId(f.id, 0);
+  }, [sdrFunis]);
   const closedWonCount  = filteredItemsList.filter(
     (l: any) => (lastStageId && l.stageId === lastStageId) || l.status === "Fechado"
   ).length;
@@ -354,6 +366,8 @@ export function usePipeline() {
     activeFunil,
     comercialFunis, sdrFunis,
     isSdrEnabled,
+    firstComercialStageId,
+    firstSdrStageId,
     draggedLeadId, setDraggedLeadId,
     draggedOverStageId, setDraggedOverStageId,
     draggedColumnId, setDraggedColumnId,

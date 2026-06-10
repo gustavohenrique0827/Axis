@@ -46,6 +46,7 @@ export default function Pipeline() {
     currentPipeline, setCurrentPipeline,
     selectedFunilId, setSelectedFunilId,
     comercialFunis, sdrFunis,
+    firstComercialStageId, firstSdrStageId,
     draggedLeadId, setDraggedLeadId,
     draggedOverStageId, setDraggedOverStageId,
     tenantsList,
@@ -667,7 +668,7 @@ export default function Pipeline() {
         )}
       </div>
 
-      <NewLeadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} firstStageId={activePipelineStages[0]?.id ?? "1"} />
+      <NewLeadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} firstComercialStageId={firstComercialStageId} firstSdrStageId={firstSdrStageId} />
       <LeadDetailsModal isOpen={!!selectedLead} onClose={() => setSelectedLead(null)} lead={selectedLead} />
 
       <WebhookModal
