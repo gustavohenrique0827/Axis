@@ -186,7 +186,7 @@ export function ProdutoModal({
         </div>
 
         {/* Modal Forms fields body */}
-        <form onSubmit={handleSaveProduct} className="flex-1 overflow-y-auto p-6 space-y-6">
+        <form id="produto-erp-form" onSubmit={handleSaveProduct} className="flex-1 overflow-y-auto p-6 space-y-6">
           <AnimatePresence mode="wait">
             {activeTab === "info" && (
               <motion.div
@@ -836,8 +836,9 @@ export function ProdutoModal({
                 Avançar <ArrowRight className="w-3.5 h-3.5" />
               </Button>
             ) : (
-              <Button 
+              <Button
                 type="submit"
+                form="produto-erp-form"
                 className="flex-1 sm:flex-initial h-9 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl px-5 transition-all gap-1.5"
               >
                 <Check className="w-4 h-4" /> Salvar Produto ERP

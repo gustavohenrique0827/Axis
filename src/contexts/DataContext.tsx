@@ -916,7 +916,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         stateSetter(prev => [item, ...prev]);
         if (supabase) {
           const { error } = await supabase.from(tableName).insert(item);
-          if (error) console.error(`[Supabase] insert ${tableName} error:`, error.message, error.details);
+          if (error) {
+            console.error(`[Supabase] insert ${tableName} error:`, error.message, error.details);
+            toast.error(`Erro ao salvar: ${error.message}`);
+          }
         }
       },
       update: async (id: string, updates: any) => {
