@@ -404,8 +404,6 @@ export default function Pipeline() {
                                 handleExportIAResume={handleExportIAResume}
                                 setWebhookModalLead={setWebhookModalLead}
                                 currentPipeline={currentPipeline}
-                                stageName={stage.name}
-                                pipelineName={currentPipeline === 'sdr' ? 'Pipeline SDR' : 'Pipeline Comercial'}
                               />
                             </motion.div>
                           ))}

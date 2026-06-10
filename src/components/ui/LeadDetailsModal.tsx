@@ -1,4 +1,3 @@
-import React from "react";
 import { Modal } from "./modal";
 import { Button } from "./button";
 import { ConfirmModal } from "./ConfirmModal";
@@ -47,12 +46,12 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
     value, setValue,
     seller, setSeller,
     priority, setPriority,
-    score, setScore,
-    temperature, setTemperature,
-    probability, setProbability,
+    score,
+    temperature,
+    probability,
     slaStatus,
     timeIdle,
-    customTags, setCustomTags,
+    customTags,
     newTagInput, setNewTagInput,
     alterationLogs, setAlterationLogs,
     estimatedSum,
@@ -78,13 +77,14 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
   const headerActionPill = (
     <div className="flex gap-2">
-      <Button 
-        variant="outline" 
+      <Button
+        variant="outline"
         onClick={() => {
-          updateLead(lead.id, { stageId: '5', status: 'Fechado' });
+          const lastStage = stagesDef[stagesDef.length - 1];
+          updateLead(lead.id, { stageId: lastStage?.id ?? '5', status: 'Fechado' });
           toast.success('Parabéns! Lead fechado com status GANHO! 🏆');
           setAlterationLogs((prev: any[]) => [
-            { id: Date.now().toString(), author: "Carlos Eduardo Mendes", desc: "MARCOU COMO GANHO - Negócio concluído", time: "Agora" },
+            { id: Date.now().toString(), author: seller || "Sistema", desc: "MARCOU COMO GANHO - Negócio concluído", time: "Agora" },
             ...prev
           ]);
         }}
@@ -92,13 +92,13 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
       >
         <Trophy className="w-4 h-4 animate-bounce" /> Ganho
       </Button>
-      <Button 
+      <Button
         variant="outline"
         onClick={() => {
           updateLead(lead.id, { status: 'Perdido' });
           toast.warning('Negócio marcado como Perdido. Fica para a próxima.');
           setAlterationLogs((prev: any[]) => [
-            { id: Date.now().toString(), author: "Carlos Eduardo Mendes", desc: "MARCOU COMO PERDIDO - Motivo: Preço/timing do cliente", time: "Agora" },
+            { id: Date.now().toString(), author: seller || "Sistema", desc: "MARCOU COMO PERDIDO", time: "Agora" },
             ...prev
           ]);
         }}
