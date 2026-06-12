@@ -223,7 +223,7 @@ const FORMS: FormDefinition[] = [
     description: "Formulário de inscrição da landing page E-EMPREENDA+.",
     previewUrl:  import.meta.env.DEV
                    ? "http://localhost:5175/inscricao"
-                   : "https://empreenda.pluppex.com.br/inscricao",
+                   : "https://escolaempreendamais.pluppex.com.br/inscricao",
     source:      "landing_empreenda",
     active:      true,
   },

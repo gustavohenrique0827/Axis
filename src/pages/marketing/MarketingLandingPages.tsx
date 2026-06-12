@@ -16,7 +16,7 @@ import { useData } from "../../contexts/DataContext";
 
 const PREVIEW_URL = import.meta.env.DEV
   ? "http://localhost:5175"
-  : "https://empreenda.pluppex.com.br";
+  : "https://escolaempreendamais.pluppex.com.br";
 
 export default function MarketingLandingPages() {
   const navigate = useNavigate();
