@@ -86,6 +86,7 @@ export const navSections = [
       { name: "Conteúdo", path: "/app/marketing/conteudo", icon: Edit3 },
       { name: "Social Media", path: "/app/marketing/social", icon: Share2 },
       { name: "Landing Pages", path: "/app/marketing/landing-pages", icon: Globe },
+      { name: "Formulários", path: "/app/marketing/formularios", icon: FileText },
       { name: "Campanhas", path: "/app/marketing/campanhas", icon: Megaphone },
       { name: "Métricas", path: "/app/marketing/analytics", icon: BarChart2 },
     ],

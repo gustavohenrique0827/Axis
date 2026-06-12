@@ -81,6 +81,7 @@ import MarketingCampanhas from "./pages/marketing/MarketingCampanhas";
 import MarketingAnalytics from "./pages/marketing/MarketingAnalytics";
 import MarketingSocial from "./pages/marketing/MarketingSocial";
 import MarketingLandingPages from "./pages/marketing/MarketingLandingPages";
+import MarketingFormularios from "./pages/marketing/MarketingFormularios";
 import RHColaboradores from "./pages/hr/RHColaboradores";
 import PainelDev from "./pages/dev/PainelDev";
 import ProjetosDev from "./pages/dev/Projetos";
@@ -157,6 +158,7 @@ function AppContent() {
             <Route path="analytics" element={<MarketingAnalytics />} />
             <Route path="social" element={<MarketingSocial />} />
             <Route path="landing-pages" element={<MarketingLandingPages />} />
+            <Route path="formularios" element={<MarketingFormularios />} />
           </Route>
 
           <Route path="mensageria" element={<Messaging />} />

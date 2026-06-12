@@ -129,14 +129,21 @@ export default function Inscricao() {
     setLoading(true)
     setError('')
 
-    const perfilLabel = PERFIL_OPTIONS.find(o => o.value === formData.perfil)?.label ?? formData.perfil
+    const perfilLabel  = PERFIL_OPTIONS.find(o => o.value === formData.perfil)?.label  ?? formData.perfil
     const desafioLabel = DESAFIO_OPTIONS.find(o => o.value === formData.desafio)?.label ?? formData.desafio
+
+    // Rodízio: busca o próximo SDR disponível no Axis CRM
+    const { data: sdrRows } = await supabase.rpc('claim_next_form_sdr', {
+      p_tenant_id: AXIS.TENANT_ID,
+    })
+    const sdr = sdrRows?.[0]
+    const sellerId = sdr?.user_id ?? AXIS.SELLER_ID
 
     const { error: dbError } = await supabase.from('leads').insert({
       tenant_id:              AXIS.TENANT_ID,
       pipeline_id:            AXIS.PIPELINE_ID,
       stage_id:               AXIS.STAGE_ID,
-      seller_id:              AXIS.SELLER_ID,
+      seller_id:              sellerId,
       pipelineId:             AXIS.PIPELINE_SLUG,
       stageId:                AXIS.STAGE_SLUG,
       name:                   formData.nome,
@@ -162,7 +169,13 @@ export default function Inscricao() {
       setError('Erro ao enviar. Tente novamente.')
       return
     }
-    navigate('/obrigado')
+    navigate('/obrigado', {
+      state: {
+        consultor: sdr
+          ? { nome: sdr.nome, phone: sdr.phone }
+          : null,
+      },
+    })
   }
 
   const isCardStep = step === 2 || step === 3
