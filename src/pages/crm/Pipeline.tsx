@@ -4,7 +4,7 @@ import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import {
   Plus, Filter, Search, Briefcase, Target, Zap, BarChart3, PieChart,
-  Building2, ChevronDown, Settings2, ChevronRight,
+  Building2, Settings2, ChevronRight,
   LayoutList, Columns3, Mail, Phone, Calendar, MoreHorizontal,
   Users, Flame, CheckCircle2,
 } from "lucide-react";
@@ -155,44 +155,44 @@ export default function Pipeline() {
         </div>
       }
     >
-      <div className="flex flex-col space-y-6 flex-1 min-h-0">
+      <div className="flex flex-col space-y-4 flex-1 min-h-0">
 
         {/* KPIs */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-3 shrink-0">
-          <Card className="p-4 border-blue-500/20 bg-[#111827]/80 backdrop-blur-xl hover:scale-[1.02] transition-all">
-            <div className="flex justify-between items-start mb-1.5">
-              <span className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">Total</span>
-              <Users className="w-3.5 h-3.5 text-blue-400" />
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-2 shrink-0">
+          <Card className="p-3 border-blue-500/20 bg-[#111827]/80 backdrop-blur-xl hover:scale-[1.02] transition-all">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">Total</span>
+              <Users className="w-3 h-3 text-blue-400" />
             </div>
-            <h3 className="text-2xl font-extrabold text-white">{kpis.total}</h3>
+            <h3 className="text-xl font-extrabold text-white">{kpis.total}</h3>
           </Card>
-          <Card className="p-4 border-yellow-500/20 bg-[#111827]/80 backdrop-blur-xl hover:scale-[1.02] transition-all">
-            <div className="flex justify-between items-start mb-1.5">
-              <span className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">Alta Prior.</span>
-              <Flame className="w-3.5 h-3.5 text-yellow-500 animate-pulse" />
+          <Card className="p-3 border-yellow-500/20 bg-[#111827]/80 backdrop-blur-xl hover:scale-[1.02] transition-all">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">Alta Prior.</span>
+              <Flame className="w-3 h-3 text-yellow-500 animate-pulse" />
             </div>
-            <h3 className="text-2xl font-extrabold text-yellow-500">{kpis.hot}</h3>
+            <h3 className="text-xl font-extrabold text-yellow-500">{kpis.hot}</h3>
           </Card>
-          <Card className="p-4 border-emerald-500/20 bg-[#111827]/80 backdrop-blur-xl hover:scale-[1.02] transition-all">
-            <div className="flex justify-between items-start mb-1.5">
-              <span className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">Ganhos</span>
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+          <Card className="p-3 border-emerald-500/20 bg-[#111827]/80 backdrop-blur-xl hover:scale-[1.02] transition-all">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">Ganhos</span>
+              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
             </div>
-            <h3 className="text-2xl font-extrabold text-emerald-400">{kpis.closed}</h3>
+            <h3 className="text-xl font-extrabold text-emerald-400">{kpis.closed}</h3>
           </Card>
-          <Card className="p-4 border-white/5 bg-[#111827]/80 backdrop-blur-xl hover:scale-[1.02] transition-all">
-            <div className="flex justify-between items-start mb-1.5">
-              <span className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">Win Rate</span>
-              <Target className="w-3.5 h-3.5 text-pink-400" />
+          <Card className="p-3 border-white/5 bg-[#111827]/80 backdrop-blur-xl hover:scale-[1.02] transition-all">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">Win Rate</span>
+              <Target className="w-3 h-3 text-pink-400" />
             </div>
-            <h3 className="text-2xl font-extrabold text-pink-400">{winRate}%</h3>
+            <h3 className="text-xl font-extrabold text-pink-400">{winRate}%</h3>
           </Card>
-          <Card className="p-4 border-white/5 bg-[#111827]/80 backdrop-blur-xl hover:scale-[1.02] transition-all col-span-2 md:col-span-1">
-            <div className="flex justify-between items-start mb-1.5">
-              <span className="text-slate-400 text-[9px] font-bold uppercase tracking-widest">Valor Total</span>
-              <BarChart3 className="w-3.5 h-3.5 text-cyan-400" />
+          <Card className="p-3 border-white/5 bg-[#111827]/80 backdrop-blur-xl hover:scale-[1.02] transition-all col-span-2 md:col-span-1">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">Valor Total</span>
+              <BarChart3 className="w-3 h-3 text-cyan-400" />
             </div>
-            <h3 className="text-xl font-extrabold text-white font-mono">{formattedTotalValue}</h3>
+            <h3 className="text-base font-extrabold text-white font-mono">{formattedTotalValue}</h3>
           </Card>
         </div>
 
@@ -219,140 +219,110 @@ export default function Pipeline() {
               </Card>
             )}
 
-            {/* Funil selector + filters */}
-            <div className="flex flex-wrap items-center justify-between gap-4 shrink-0">
-              <div className="flex items-center gap-2">
-                {comercialFunis.length === 1 ? (
-                  <button
-                    onClick={() => { setCurrentPipeline("comercial"); setSelectedFunilId(comercialFunis[0].id); }}
-                    className={`px-5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer border flex items-center gap-2 ${
-                      currentPipeline === "comercial"
-                        ? "bg-blue-600/20 text-blue-400 border-blue-500/30"
-                        : "text-slate-500 hover:text-white border-transparent bg-[#111827]/80"
-                    }`}
-                  >
-                    <Briefcase className="w-3.5 h-3.5" /> {comercialFunis[0].nome}
-                  </button>
-                ) : comercialFunis.length > 1 ? (
-                  <div className={`flex items-center gap-1 px-3 py-1.5 rounded-xl border transition-all ${
-                    currentPipeline === "comercial" ? "bg-blue-600/20 border-blue-500/30" : "bg-[#111827]/80 border-white/5"
-                  }`}>
-                    <Briefcase className="w-3.5 h-3.5 text-blue-400" />
-                    <select
-                      value={selectedFunilId}
-                      onChange={(e) => { setCurrentPipeline("comercial"); setSelectedFunilId(e.target.value); }}
-                      className="bg-transparent border-none text-blue-400 focus:outline-none text-xs font-bold cursor-pointer"
+            {/* Funil selector + Kanban filters — single compact bar */}
+            <div className="flex flex-wrap items-center gap-2 shrink-0">
+              {/* Pipeline toggles */}
+              {(comercialFunis.length > 0 || sdrFunis.length > 0) && (
+                <div className="flex items-center gap-1.5 bg-[#111827]/80 border border-white/5 rounded-xl px-2 py-1.5 h-[38px]">
+                  {comercialFunis.length === 1 ? (
+                    <button
+                      onClick={() => { setCurrentPipeline("comercial"); setSelectedFunilId(comercialFunis[0].id); }}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                        currentPipeline === "comercial" ? "bg-blue-600/20 text-blue-400" : "text-slate-500 hover:text-white"
+                      }`}
                     >
-                      {comercialFunis.map((f: any) => (
-                        <option key={f.id} value={f.id} className="bg-[#111827] text-white">{f.nome}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="w-3 h-3 text-blue-400" />
-                  </div>
-                ) : null}
+                      <Briefcase className="w-3 h-3" /> {comercialFunis[0].nome}
+                    </button>
+                  ) : comercialFunis.length > 1 ? (
+                    <div className={`flex items-center gap-1 px-2 rounded-lg transition-all ${currentPipeline === "comercial" ? "text-blue-400" : "text-slate-500"}`}>
+                      <Briefcase className="w-3 h-3" />
+                      <select value={selectedFunilId} onChange={(e) => { setCurrentPipeline("comercial"); setSelectedFunilId(e.target.value); }} className="bg-transparent border-none focus:outline-none text-[10px] font-bold cursor-pointer">
+                        {comercialFunis.map((f: any) => <option key={f.id} value={f.id} className="bg-[#111827] text-white">{f.nome}</option>)}
+                      </select>
+                    </div>
+                  ) : null}
 
-                {sdrFunis.length === 1 ? (
-                  <button
-                    onClick={() => { setCurrentPipeline("sdr"); setSelectedFunilId(sdrFunis[0].id); }}
-                    className={`px-5 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer border flex items-center gap-2 ${
-                      currentPipeline === "sdr"
-                        ? "bg-pink-600/20 text-pink-400 border-pink-500/30"
-                        : "text-slate-500 hover:text-pink-400 border-transparent bg-[#111827]/80"
-                    }`}
-                  >
-                    <Zap className="w-3.5 h-3.5" /> {sdrFunis[0].nome}
-                  </button>
-                ) : sdrFunis.length > 1 ? (
-                  <div className={`flex items-center gap-1 px-3 py-1.5 rounded-xl border transition-all ${
-                    currentPipeline === "sdr" ? "bg-pink-600/20 border-pink-500/30" : "bg-[#111827]/80 border-white/5"
-                  }`}>
-                    <Zap className="w-3.5 h-3.5 text-pink-400" />
-                    <select
-                      value={selectedFunilId}
-                      onChange={(e) => { setCurrentPipeline("sdr"); setSelectedFunilId(e.target.value); }}
-                      className="bg-transparent border-none text-pink-400 focus:outline-none text-xs font-bold cursor-pointer"
+                  {comercialFunis.length > 0 && sdrFunis.length > 0 && (
+                    <div className="w-px h-4 bg-white/10" />
+                  )}
+
+                  {sdrFunis.length === 1 ? (
+                    <button
+                      onClick={() => { setCurrentPipeline("sdr"); setSelectedFunilId(sdrFunis[0].id); }}
+                      className={`flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer ${
+                        currentPipeline === "sdr" ? "bg-pink-600/20 text-pink-400" : "text-slate-500 hover:text-pink-400"
+                      }`}
                     >
-                      {sdrFunis.map((f: any) => (
-                        <option key={f.id} value={f.id} className="bg-[#111827] text-white">{f.nome}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="w-3 h-3 text-pink-400" />
-                  </div>
-                ) : null}
-              </div>
-            </div>
+                      <Zap className="w-3 h-3" /> {sdrFunis[0].nome}
+                    </button>
+                  ) : sdrFunis.length > 1 ? (
+                    <div className={`flex items-center gap-1 px-2 rounded-lg transition-all ${currentPipeline === "sdr" ? "text-pink-400" : "text-slate-500"}`}>
+                      <Zap className="w-3 h-3" />
+                      <select value={selectedFunilId} onChange={(e) => { setCurrentPipeline("sdr"); setSelectedFunilId(e.target.value); }} className="bg-transparent border-none focus:outline-none text-[10px] font-bold cursor-pointer">
+                        {sdrFunis.map((f: any) => <option key={f.id} value={f.id} className="bg-[#111827] text-white">{f.nome}</option>)}
+                      </select>
+                    </div>
+                  ) : null}
+                </div>
+              )}
 
-            {/* Kanban filters bar */}
-            <Card className="p-3 bg-[#111827]/60 border border-white/5 shadow-md flex flex-wrap gap-2 rounded-2xl shrink-0">
-              <div className="relative flex-1 min-w-[180px]">
-                <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+              {/* Search */}
+              <div className="relative flex-1 min-w-[160px]">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="text"
                   placeholder="Buscar negócios..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-[#0B1120] border border-white/10 rounded-xl pl-10 pr-4 py-2 text-xs text-white focus:outline-none focus:border-blue-500 w-full h-[38px]"
+                  className="bg-[#111827]/80 border border-white/5 rounded-xl pl-9 pr-3 text-xs text-white focus:outline-none focus:border-blue-500 w-full h-[38px]"
                 />
               </div>
-              <div className="flex items-center gap-2 bg-[#0B1120] px-3 py-1.5 rounded-xl border border-white/10 h-[38px]">
-                <Building2 className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                <select
-                  className="bg-transparent border-none text-white focus:outline-none text-xs font-bold cursor-pointer"
-                  value={companyFilter}
-                  onChange={(e) => setCompanyFilter(e.target.value)}
-                >
-                  {companiesList.map((c) => (
-                    <option key={c} value={c} className="bg-[#111827]">{c === "Todos" ? "Todas as empresas" : c}</option>
-                  ))}
+
+              {/* Company */}
+              <div className="flex items-center gap-1.5 bg-[#111827]/80 px-3 rounded-xl border border-white/5 h-[38px]">
+                <Building2 className="w-3 h-3 text-slate-500 shrink-0" />
+                <select className="bg-transparent border-none text-white focus:outline-none text-xs font-bold cursor-pointer" value={companyFilter} onChange={(e) => setCompanyFilter(e.target.value)}>
+                  {companiesList.map((c) => <option key={c} value={c} className="bg-[#111827]">{c === "Todos" ? "Todas as empresas" : c}</option>)}
                 </select>
               </div>
+
+              {/* Tenant (master only) */}
               {isMaster && (
-                <div className="flex items-center gap-2 bg-[#0B1120] px-3 py-1.5 rounded-xl border border-white/10 h-[38px]">
-                  <Target className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                  <select
-                    className="bg-transparent border-none text-white focus:outline-none text-xs font-bold cursor-pointer"
-                    value={tenantFilter}
-                    onChange={(e) => setTenantFilter(e.target.value)}
-                  >
+                <div className="flex items-center gap-1.5 bg-[#111827]/80 px-3 rounded-xl border border-white/5 h-[38px]">
+                  <Target className="w-3 h-3 text-blue-400 shrink-0" />
+                  <select className="bg-transparent border-none text-white focus:outline-none text-xs font-bold cursor-pointer" value={tenantFilter} onChange={(e) => setTenantFilter(e.target.value)}>
                     <option value="" className="bg-[#111827]">Todos os parceiros</option>
-                    {(tenantsList as { id: string; name: string }[]).map((t) => (
-                      <option key={t.id} value={t.id} className="bg-[#111827]">{t.name}</option>
-                    ))}
+                    {(tenantsList as { id: string; name: string }[]).map((t) => <option key={t.id} value={t.id} className="bg-[#111827]">{t.name}</option>)}
                   </select>
                 </div>
               )}
+
+              {/* Client */}
               {clientsList.length > 0 && (
-                <div className="flex items-center gap-2 bg-[#0B1120] px-3 py-1.5 rounded-xl border border-white/10 h-[38px]">
-                  <Building2 className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
-                  <select
-                    className="bg-transparent border-none text-white focus:outline-none text-xs font-bold cursor-pointer"
-                    value={clientFilter}
-                    onChange={(e) => setClientFilter(e.target.value)}
-                  >
+                <div className="flex items-center gap-1.5 bg-[#111827]/80 px-3 rounded-xl border border-white/5 h-[38px]">
+                  <Building2 className="w-3 h-3 text-indigo-400 shrink-0" />
+                  <select className="bg-transparent border-none text-white focus:outline-none text-xs font-bold cursor-pointer" value={clientFilter} onChange={(e) => setClientFilter(e.target.value)}>
                     <option value="Todos" className="bg-[#111827]">Todos os clientes</option>
-                    {clientsList.map((c) => (
-                      <option key={c} value={c} className="bg-[#111827]">{c}</option>
-                    ))}
+                    {clientsList.map((c) => <option key={c} value={c} className="bg-[#111827]">{c}</option>)}
                   </select>
                 </div>
               )}
-              <div className="flex items-center gap-2 bg-[#0B1120] px-3 py-1.5 rounded-xl border border-white/10 h-[38px]">
-                <Filter className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                <select
-                  className="bg-transparent border-none text-white focus:outline-none text-xs font-bold cursor-pointer"
-                  value={sellerFilter}
-                  onChange={(e) => setSellerFilter(e.target.value)}
-                >
-                  {sellers.map((s) => (
-                    <option key={s} value={s} className="bg-[#111827]">{s === "Todos" ? "Todos os vendedores" : s}</option>
-                  ))}
+
+              {/* Seller */}
+              <div className="flex items-center gap-1.5 bg-[#111827]/80 px-3 rounded-xl border border-white/5 h-[38px]">
+                <Filter className="w-3 h-3 text-slate-500 shrink-0" />
+                <select className="bg-transparent border-none text-white focus:outline-none text-xs font-bold cursor-pointer" value={sellerFilter} onChange={(e) => setSellerFilter(e.target.value)}>
+                  {sellers.map((s) => <option key={s} value={s} className="bg-[#111827]">{s === "Todos" ? "Todos os vendedores" : s}</option>)}
                 </select>
               </div>
-            </Card>
+            </div>
 
             {/* Kanban board */}
             {activePipelineStages.length > 0 ? (
-              <div className="flex gap-4 overflow-x-auto pb-4 flex-1 scrollbar-thin items-start">
+              <div
+                className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin"
+                style={{ height: `calc(100dvh - ${showAnalytics ? 620 : 400}px)`, minHeight: "320px" }}
+              >
                 {activePipelineStages.map((stage: any, idx: number) => {
                   const stageLeads = filteredItemsList.filter((l: any) => l.stageId === stage.id);
                   const isLastStage = idx === activePipelineStages.length - 1;
@@ -374,7 +344,7 @@ export default function Pipeline() {
                         setDraggedOverStageId(null);
                         setDraggedLeadId(null);
                       }}
-                      className={`shrink-0 flex flex-col bg-[#0B1120]/40 border rounded-3xl transition-all duration-300 ${
+                      className={`shrink-0 flex flex-col bg-[#0B1120]/40 border rounded-3xl transition-all duration-300 h-full ${
                         isMinimized ? "w-[56px] p-2" : "w-[300px] p-4"
                       } ${
                         draggedOverStageId === stage.id
@@ -421,7 +391,7 @@ export default function Pipeline() {
                             </div>
                           </div>
 
-                          <div className="flex-1 overflow-y-auto space-y-3 min-h-[300px] pb-10 scrollbar-none">
+                          <div className="flex-1 overflow-y-auto space-y-3 min-h-0 pb-6 scrollbar-none">
                             <AnimatePresence mode="popLayout">
                               {stageLeads.map((item: any) => (
                                 <motion.div

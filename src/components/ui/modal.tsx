@@ -6,11 +6,12 @@ import { motion, AnimatePresence } from "motion/react";
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string | React.ReactNode;
+  title?: string | React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   maxWidth?: string;
   position?: "center" | "right";
+  noPadding?: boolean;
 }
 
 export function Modal({
@@ -21,6 +22,7 @@ export function Modal({
   footer,
   maxWidth = "max-w-md",
   position = "center",
+  noPadding = false,
 }: ModalProps) {
   useEffect(() => {
     if (!isOpen) return;
@@ -114,7 +116,9 @@ export function Modal({
             )}
 
             {/* Content */}
-            <div className="p-6 overflow-y-auto w-full">{children}</div>
+            <div className={`flex-1 min-h-0 w-full ${noPadding ? "overflow-hidden" : "p-6 overflow-y-auto"}`}>
+              {children}
+            </div>
 
             {/* Footer */}
             {footer && (
