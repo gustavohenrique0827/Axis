@@ -416,7 +416,7 @@ export default function Pipeline() {
                             </div>
                             <div className="text-[10px] font-mono text-slate-400 font-bold bg-[#0B1120] border border-white/5 px-2 py-1 rounded-lg w-fit shadow-inner">
                               {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(
-                                stageLeads.reduce((sum, item: any) => sum + (parseFloat((item.value || "").replace(/[^\d]/g, "")) || 0), 0)
+                                stageLeads.reduce((sum, item: any) => sum + (parseFloat(String(item.value ?? "").replace(/[^\d]/g, "")) || 0), 0)
                               )}
                             </div>
                           </div>

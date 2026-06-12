@@ -220,7 +220,7 @@ export function usePipeline() {
   );
 
   const totalValueSum = filteredItemsList.reduce((sum, item) => {
-    return sum + (parseFloat((item.value || "").replace(/[^\d]/g, "")) || 0);
+    return sum + (parseFloat(String(item.value ?? "").replace(/[^\d]/g, "")) || 0);
   }, 0);
 
   const formattedTotalValue = new Intl.NumberFormat("pt-BR", {
