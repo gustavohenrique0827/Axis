@@ -6,6 +6,7 @@ import {
   Trophy, ThumbsDown, Trash, X,
   Phone, Activity, TrendingUp, Brain,
 } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
 import { useLeadDetails } from "./lead-details/useLeadDetails";
 import { IACopilot } from "./IACopilot";
 import { ProfileSection } from "./lead-details/ProfileSection";
@@ -158,15 +159,23 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
       >
         <div className="flex h-full">
 
-          {/* ── LEFT: IA Copilot panel (toggle) ── */}
-          {showCopilot && (
-            <div className="w-[264px] shrink-0 border-r border-white/10 overflow-y-auto bg-[#070E1A]/70 p-5">
-              <IACopilot leadName={leadName} companyName={companyName} />
-            </div>
-          )}
+          {/* ── Lead details (full width) ── */}
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
 
-          {/* ── RIGHT: Lead details ── */}
-          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+            {/* IA Copilot: slide-in overlay from left — modal width never changes */}
+            <AnimatePresence>
+              {showCopilot && (
+                <motion.div
+                  initial={{ x: "-100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "-100%" }}
+                  transition={{ type: "spring", stiffness: 340, damping: 30 }}
+                  className="absolute inset-y-0 left-0 w-[240px] z-20 border-r border-white/10 overflow-y-auto bg-[#070E1A]/98 backdrop-blur-sm p-4 shadow-2xl"
+                >
+                  <IACopilot leadName={leadName} companyName={companyName} />
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* ── Header: avatar + name + stats + actions ── */}
             <div className="px-5 pt-4 pb-3 border-b border-white/5 shrink-0 space-y-3">

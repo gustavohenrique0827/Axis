@@ -150,6 +150,14 @@ export function usePipeline() {
     }
   }, [currentPipeline, sdrFunis, comercialFunis]);
 
+  // Reset filters when switching pipeline type so stale filters don't hide leads
+  useEffect(() => {
+    setSellerFilter("Todos");
+    setCompanyFilter("Todos");
+    setClientFilter("Todos");
+    setSearchQuery("");
+  }, [currentPipeline]);
+
   const activeFunil = useMemo(() => {
     const pool = currentPipeline === "sdr" ? sdrFunis : comercialFunis;
     return pool.find((f) => f.id === selectedFunilId) ?? pool[0] ?? null;

@@ -321,7 +321,7 @@ export default function Pipeline() {
             {activePipelineStages.length > 0 ? (
               <div
                 className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin"
-                style={{ height: `calc(100dvh - ${showAnalytics ? 620 : 400}px)`, minHeight: "320px" }}
+                style={{ height: `calc(100dvh - ${showAnalytics ? 580 : 360}px)`, minHeight: "520px" }}
               >
                 {activePipelineStages.map((stage: any, idx: number) => {
                   const stageLeads = filteredItemsList.filter((l: any) => l.stageId === stage.id);
@@ -392,16 +392,14 @@ export default function Pipeline() {
                           </div>
 
                           <div className="flex-1 overflow-y-auto space-y-3 min-h-0 pb-6 scrollbar-none">
-                            <AnimatePresence mode="popLayout">
+                            <AnimatePresence>
                               {stageLeads.map((item: any) => (
                                 <motion.div
                                   key={item.id}
-                                  layoutId={item.id}
-                                  layout
-                                  initial={{ opacity: 0, scale: 0.95 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  exit={{ opacity: 0, scale: 0.95 }}
-                                  transition={{ type: "spring", stiffness: 400, damping: 25, mass: 1 }}
+                                  initial={{ opacity: 0, y: 6 }}
+                                  animate={{ opacity: 1, y: 0 }}
+                                  exit={{ opacity: 0, y: -6 }}
+                                  transition={{ duration: 0.18 }}
                                 >
                                   <LeadCard
                                     item={item}
