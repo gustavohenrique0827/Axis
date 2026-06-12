@@ -178,25 +178,37 @@
   align-items: flex-start;
   gap: 16px;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 92, 0, 0.05);
   padding: 24px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 92, 0, 0.25);
+  transition: border-color 0.2s, background 0.2s;
+  margin-top: 8px;
+}
+
+.checkboxLabel:hover {
+  background: rgba(255, 92, 0, 0.08);
+  border-color: rgba(255, 92, 0, 0.45);
+}
+
+.checkboxLabelChecked {
+  background: rgba(255, 92, 0, 0.1) !important;
+  border-color: var(--orange, #FF5C00) !important;
 }
 
 .checkboxLabel input[type='checkbox'] {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
+  width: 26px;
+  height: 26px;
+  min-width: 26px;
   accent-color: var(--orange, #FF5C00);
-  margin-top: 2px;
+  margin-top: 1px;
   cursor: pointer;
   border: none;
 }
 
 .checkboxLabel span {
   font-size: 16px;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.85);
   line-height: 1.6;
 }
 

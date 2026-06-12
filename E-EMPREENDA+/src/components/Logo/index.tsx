@@ -38,6 +38,7 @@ export default function Logo({ size = 48, column = false, showText = true }: Log
           textTransform: 'uppercase',
           color: '#FFFFFF',
           lineHeight: 1,
+          whiteSpace: 'nowrap',
         }}>
           E-EMPREENDA <span style={{ color: '#FF5C00' }}>+</span>
         </span>

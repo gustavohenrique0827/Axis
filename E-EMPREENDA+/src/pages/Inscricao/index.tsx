@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import Logo from '../../components/Logo'
 import styles from './Inscricao.module.css'
 import { supabase, AXIS } from '../../lib/supabase'
+import { useLandingSection } from '../../lib/useLandingConfig'
 
 interface FormData {
   nome: string
@@ -16,35 +17,46 @@ interface FormData {
 
 const INITIAL: FormData = {
   nome: '', email: '', telefone: '',
-  perfil: '', desafio: '', programa: '', lgpd: false,
+  perfil: '', desafio: '', programa: 'imersao', lgpd: false,
 }
 
-const PERFIL_OPTIONS = [
-  { value: 'aspirante', label: 'Quero Empreender', sub: 'Tenho uma ideia ou vontade de abrir um negócio', icon: '🌱' },
-  { value: 'iniciante', label: 'Estou Começando', sub: 'Tenho um negócio recente (menos de 2 anos)', icon: '🚀' },
-  { value: 'pequeno', label: 'Já Empreendo', sub: 'Tenho empresa, mas quero crescer e estruturar', icon: '📈' },
-  { value: 'retomada', label: 'Quero Recomeçar', sub: 'Já empreendi antes e quero retomar', icon: '🔄' },
-]
+interface CardOption { value: string; label: string; sub?: string; icon?: string }
+interface StepConfig { indicator: string; label: string; options?: CardOption[]; description?: string }
+interface FormStepsConfig { step0: StepConfig; step1: StepConfig; step2: StepConfig; step3: StepConfig; step4: StepConfig }
 
-const DESAFIO_OPTIONS = [
-  { value: 'validar', label: 'Validar minha ideia', icon: '💡' },
-  { value: 'clientes', label: 'Conseguir meus primeiros clientes', icon: '🤝' },
-  { value: 'gestao', label: 'Organizar e estruturar o negócio', icon: '⚙️' },
-  { value: 'escalar', label: 'Escalar e crescer com consistência', icon: '⚡' },
-]
-
-const PROGRAMA_OPTIONS = [
-  { value: 'metodo_eplus', label: 'Método E+', sub: 'Formação completa — 12 semanas online' },
-  // { value: 'imersao', label: 'Imersão Despertar', sub: 'Aceleração presencial — 3 dias intensivos' },
-  // { value: 'mentoria', label: 'Mentoria Individual', sub: 'Acompanhamento personalizado 1:1' },
-  // { value: 'nao_sei', label: 'Me Indica', sub: 'Nossa equipe escolhe o melhor caminho' },
-]
+const DEFAULT_FORM_STEPS: FormStepsConfig = {
+  step0: { indicator: '1 → IDENTIFICAÇÃO', label: 'Qual é o seu nome?' },
+  step1: { indicator: '2 → CONTATO',       label: 'Como podemos te encontrar?' },
+  step2: {
+    indicator: '3 → SEU PERFIL', label: 'Qual melhor descreve você hoje?',
+    options: [
+      { value: 'aspirante', label: 'Quero Empreender', sub: 'Tenho uma ideia ou vontade de abrir um negócio', icon: '🌱' },
+      { value: 'iniciante', label: 'Estou Começando',  sub: 'Tenho um negócio recente (menos de 2 anos)',      icon: '🚀' },
+      { value: 'pequeno',   label: 'Já Empreendo',     sub: 'Tenho empresa, mas quero crescer e estruturar',   icon: '📈' },
+      { value: 'retomada',  label: 'Quero Recomeçar',  sub: 'Já empreendi antes e quero retomar',              icon: '🔄' },
+    ],
+  },
+  step3: {
+    indicator: '4 → SEU DESAFIO', label: 'Qual é seu maior desafio agora?',
+    options: [
+      { value: 'validar',  label: 'Validar minha ideia',               icon: '💡' },
+      { value: 'clientes', label: 'Conseguir meus primeiros clientes',  icon: '🤝' },
+      { value: 'gestao',   label: 'Organizar e estruturar o negócio',   icon: '⚙️' },
+      { value: 'escalar',  label: 'Escalar e crescer com consistência', icon: '⚡' },
+    ],
+  },
+  step4: {
+    indicator: '5 → FINALIZAR', label: 'Confirme sua inscrição.',
+    description: 'Você está solicitando uma vaga na Turma 3 da E-EMPREENDA+. Nossa equipe entrará em contato em até 48h para confirmar sua participação.',
+  },
+}
 
 const TOTAL_STEPS = 5
 
 export default function Inscricao() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  const [formSteps] = useLandingSection<FormStepsConfig>('form_steps', DEFAULT_FORM_STEPS)
   const [formData, setFormData] = useState<FormData>({
     ...INITIAL,
     programa: searchParams.get('programa') || '',
@@ -94,7 +106,6 @@ export default function Inscricao() {
         if (!formData.desafio) { setError('Selecione seu maior desafio agora.'); return false }
         break
       case 4:
-        if (!formData.programa) { setError('Selecione um programa de interesse.'); return false }
         if (!formData.lgpd) { setError('Aceite a Política de Privacidade para continuar.'); return false }
         break
     }
@@ -129,8 +140,8 @@ export default function Inscricao() {
     setLoading(true)
     setError('')
 
-    const perfilLabel  = PERFIL_OPTIONS.find(o => o.value === formData.perfil)?.label  ?? formData.perfil
-    const desafioLabel = DESAFIO_OPTIONS.find(o => o.value === formData.desafio)?.label ?? formData.desafio
+    const perfilLabel  = (formSteps.step2.options ?? []).find((o: CardOption) => o.value === formData.perfil)?.label  ?? formData.perfil
+    const desafioLabel = (formSteps.step3.options ?? []).find((o: CardOption) => o.value === formData.desafio)?.label ?? formData.desafio
 
     // Rodízio: busca o próximo SDR disponível no Axis CRM
     const { data: sdrRows } = await supabase.rpc('claim_next_form_sdr', {
@@ -156,7 +167,7 @@ export default function Inscricao() {
       temperature:            'Warm',
       priority:               'Medium',
       lead_interesse_cliente: 'Método E+ – O Despertar do Empreendedor',
-      iaSummary:              `Perfil: ${perfilLabel}. Desafio: ${desafioLabel}. Programa: Método E+.`,
+      iaSummary:              `Perfil: ${perfilLabel}. Desafio: ${desafioLabel}. Programa: E-EMPREENDA+ Imersão.`,
       customFields: {
         perfil:   formData.perfil,
         desafio:  formData.desafio,
@@ -273,11 +284,11 @@ export default function Inscricao() {
             {/* STEP 2 — PERFIL (cards visuais, auto-avança) */}
             {step === 2 && (
               <div className={`${styles.questionContainer} ${styles.animateSlideUp}`}>
-                <div className={styles.stepIndicator}>3 → SEU PERFIL</div>
-                <label>Qual melhor descreve você hoje?</label>
+                <div className={styles.stepIndicator}>{formSteps.step2.indicator}</div>
+                <label>{formSteps.step2.label}</label>
                 <p className={styles.cardHint}>Selecione para avançar automaticamente</p>
                 <div className={styles.visualCardGrid}>
-                  {PERFIL_OPTIONS.map(opt => (
+                  {(formSteps.step2.options ?? []).map((opt: CardOption) => (
                     <button
                       key={opt.value}
                       type="button"
@@ -298,11 +309,11 @@ export default function Inscricao() {
             {/* STEP 3 — MAIOR DESAFIO (cards visuais, auto-avança) */}
             {step === 3 && (
               <div className={`${styles.questionContainer} ${styles.animateSlideUp}`}>
-                <div className={styles.stepIndicator}>4 → SEU DESAFIO</div>
-                <label>Qual é seu maior desafio agora?</label>
+                <div className={styles.stepIndicator}>{formSteps.step3.indicator}</div>
+                <label>{formSteps.step3.label}</label>
                 <p className={styles.cardHint}>Selecione para avançar automaticamente</p>
                 <div className={styles.visualCardGrid}>
-                  {DESAFIO_OPTIONS.map(opt => (
+                  {(formSteps.step3.options ?? []).map((opt: CardOption) => (
                     <button
                       key={opt.value}
                       type="button"
@@ -317,41 +328,29 @@ export default function Inscricao() {
               </div>
             )}
 
-            {/* STEP 4 — PROGRAMA + LGPD */}
+            {/* STEP 4 — LGPD + CONFIRMAÇÃO */}
             {step === 4 && (
               <div className={`${styles.questionContainer} ${styles.animateSlideUp}`}>
                 <div className={styles.stepIndicator}>5 → FINALIZAR</div>
                 <label>
-                  {firstName ? `Quase lá, ${firstName}! Por onde quer começar?` : 'Por onde quer começar?'}
+                  {firstName ? `Quase lá, ${firstName}! Confirme sua inscrição.` : 'Confirme sua inscrição.'}
                 </label>
-                <div className={styles.programCardGrid}>
-                  {PROGRAMA_OPTIONS.map(opt => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      className={`${styles.programVisualCard} ${formData.programa === opt.value ? styles.visualCardSelected : ''}`}
-                      onClick={() => set('programa', opt.value)}
-                    >
-                      <span className={styles.progCardLabel}>{opt.label}</span>
-                      <span className={styles.progCardSub}>{opt.sub}</span>
-                    </button>
-                  ))}
-                </div>
+                <p className={styles.finalText}>
+                  Você está solicitando uma vaga na <strong>Turma 3 da E-EMPREENDA+</strong>. Nossa equipe entrará em contato em até 48h para confirmar sua participação.
+                </p>
 
-                <div className={styles.finalExtras}>
-                  <label className={styles.checkboxLabel}>
-                    <input
-                      type="checkbox"
-                      checked={formData.lgpd}
-                      onChange={(e) => set('lgpd', e.target.checked)}
-                    />
-                    <span>
-                      Concordo com a{' '}
-                      <a href="#" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
-                      {' '}e autorizo o contato da equipe do Método E+.
-                    </span>
-                  </label>
-                </div>
+                <label className={`${styles.checkboxLabel} ${formData.lgpd ? styles.checkboxLabelChecked : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={formData.lgpd}
+                    onChange={(e) => set('lgpd', e.target.checked)}
+                  />
+                  <span>
+                    Li e concordo com a{' '}
+                    <a href="#" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
+                    {' '}e autorizo o contato da equipe da E-EMPREENDA+.
+                  </span>
+                </label>
               </div>
             )}
 

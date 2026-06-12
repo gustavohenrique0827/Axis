@@ -1,10 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { PageContainer } from "../../components/PageContainer";
 import { Card } from "../../components/ui/card";
-import { 
-  Globe, Plus, Link as LinkIcon, Eye, MousePointerClick, 
-  TrendingUp, Edit2, Trash2, CheckCircle2, Clock, Settings, 
-  X, Activity, Sparkles 
+import {
+  Globe, Plus, Link as LinkIcon, Eye, MousePointerClick,
+  TrendingUp, Edit2, Trash2, CheckCircle2, Clock, Settings,
+  X, Activity, Sparkles, Pencil, ExternalLink
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { motion } from "motion/react";
@@ -13,7 +14,12 @@ import { toast } from "sonner";
 
 import { useData } from "../../contexts/DataContext";
 
+const PREVIEW_URL = import.meta.env.DEV
+  ? "http://localhost:5175"
+  : "https://empreenda.pluppex.com.br";
+
 export default function MarketingLandingPages() {
+  const navigate = useNavigate();
   const { marketingLandingPages: pages, addMarketingLandingPage, updateMarketingLandingPage, deleteMarketingLandingPage } = useData();
 
   const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false);
@@ -96,6 +102,44 @@ export default function MarketingLandingPages() {
         >
           <Plus className="w-4 h-4" /> Criar Página
         </Button>
+      </div>
+
+      {/* Card fixo E-EMPREENDA+ */}
+      <div className="grid grid-cols-1 gap-4 mb-2">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <Card className="p-5 bg-gradient-to-r from-orange-500/5 to-transparent border border-orange-500/20 hover:border-orange-500/40 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="flex items-start gap-4 flex-1">
+              <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-400 shrink-0">
+                <Globe className="w-6 h-6" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-1">
+                  <h4 className="font-bold text-white text-base">E-EMPREENDA+</h4>
+                  <span className="text-[9px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase">Online</span>
+                  <span className="text-[9px] font-black text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full uppercase">Conectado</span>
+                </div>
+                <a href={PREVIEW_URL} target="_blank" rel="noreferrer"
+                  className="text-xs text-blue-400 hover:text-blue-300 hover:underline flex items-center gap-1">
+                  <LinkIcon className="w-3 h-3" /> {PREVIEW_URL.replace("https://", "")}
+                </a>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 shrink-0">
+              <Button variant="ghost" size="icon" asChild
+                className="hover:bg-white/5 text-slate-400 hover:text-white" title="Abrir site">
+                <a href={PREVIEW_URL} target="_blank" rel="noreferrer">
+                  <ExternalLink className="w-4 h-4" />
+                </a>
+              </Button>
+              <Button
+                onClick={() => navigate("/app/marketing/landing-pages/eempreenda")}
+                className="bg-orange-500 hover:bg-orange-600 text-white gap-2 font-bold text-xs uppercase tracking-wider px-5 rounded-xl h-9"
+              >
+                <Pencil className="w-3.5 h-3.5" /> Editar Conteúdo
+              </Button>
+            </div>
+          </Card>
+        </motion.div>
       </div>
 
       <div className="grid grid-cols-1 gap-4">

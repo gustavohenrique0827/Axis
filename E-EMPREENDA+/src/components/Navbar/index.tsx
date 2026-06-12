@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import Logo from '../Logo'
 import styles from './Navbar.module.css'
 
@@ -28,9 +27,6 @@ export default function Navbar() {
           <a href="/#mentores" className={styles.link} onClick={() => setMenuOpen(false)}>Mentores</a>
           <a href="/#depoimentos" className={styles.link} onClick={() => setMenuOpen(false)}>Cases</a>
           <a href="/#faq" className={styles.link} onClick={() => setMenuOpen(false)}>FAQ</a>
-          <Link to="/inscricao" className={styles.cta} onClick={() => setMenuOpen(false)}>
-            Solicitar Vaga
-          </Link>
         </nav>
         <button
           className={`${styles.burger} ${menuOpen ? styles.burgerOpen : ''}`}
