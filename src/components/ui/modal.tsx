@@ -81,11 +81,7 @@ export function Modal({
                 : { opacity: 0, scale: 0.95, y: 16 }
             }
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
-            className={`relative ${
-              position === "right"
-                ? `w-screen sm:w-[95vw] ${maxWidth}`
-                : `w-[95vw] sm:w-full ${maxWidth}`
-            } bg-[#111827] shadow-2xl shadow-black/60 overflow-hidden flex flex-col ${
+            className={`relative w-[95vw] sm:w-full ${maxWidth} bg-[#111827] shadow-2xl shadow-black/60 overflow-hidden flex flex-col ${
               position === "right"
                 ? "h-full border-l border-white/10 rounded-l-2xl max-h-screen"
                 : "border border-white/10 rounded-3xl max-h-[90vh]"
