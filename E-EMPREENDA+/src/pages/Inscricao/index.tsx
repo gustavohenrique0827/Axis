@@ -137,6 +137,8 @@ export default function Inscricao() {
       pipeline_id:            AXIS.PIPELINE_ID,
       stage_id:               AXIS.STAGE_ID,
       seller_id:              AXIS.SELLER_ID,
+      pipelineId:             AXIS.PIPELINE_SLUG,
+      stageId:                AXIS.STAGE_SLUG,
       name:                   formData.nome,
       email:                  formData.email,
       mobile_wa:              formData.telefone,

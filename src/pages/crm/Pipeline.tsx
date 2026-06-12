@@ -88,10 +88,10 @@ export default function Pipeline() {
 
   // KPI stats
   const kpis = useMemo(() => ({
-    total: leads.length,
-    hot: leads.filter((l: any) => l.priority === "Alta").length,
-    closed: leads.filter((l: any) => l.status === "Fechado").length,
-  }), [leads]);
+    total: filteredItemsList.length,
+    hot: filteredItemsList.filter((l: any) => l.priority === "Alta").length,
+    closed: filteredItemsList.filter((l: any) => l.status === "Fechado").length,
+  }), [filteredItemsList]);
 
   // Lista view filtered leads
   const listaLeads = useMemo(() => {

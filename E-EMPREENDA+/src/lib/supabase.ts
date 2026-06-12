@@ -27,5 +27,8 @@ export const AXIS = {
   PIPELINE_ID: 'edb44aee-8569-48e1-a52c-61e0a31317e2', // SDR (pré-venda)
   STAGE_ID:    '7542d9bc-5322-403c-9eab-89f0047ea631', // Novo Lead
   SELLER_ID:   '40a13d8c-1b21-444b-b987-88ad84b9effe', // ANNA CRISTINY
+  // Campos camelCase usados pelo CRM para filtrar leads no kanban
+  PIPELINE_SLUG: 'sdr',
+  STAGE_SLUG:    'sdr-1',
 }
 
