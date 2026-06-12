@@ -11,7 +11,7 @@ import {
 import { NewLeadModal } from "../../components/ui/NewLeadModal";
 import { LeadDetailsModal } from "../../components/ui/LeadDetailsModal";
 import { toast } from "sonner";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { Link } from "react-router-dom";
 
 import { usePipeline } from "./usePipeline";
@@ -392,34 +392,31 @@ export default function Pipeline() {
                           </div>
 
                           <div className="flex-1 overflow-y-auto space-y-3 min-h-0 pb-6 scrollbar-none">
-                            <AnimatePresence>
-                              {stageLeads.map((item: any) => (
-                                <motion.div
-                                  key={item.id}
-                                  initial={{ opacity: 0, y: 6 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: -6 }}
-                                  transition={{ duration: 0.18 }}
-                                >
-                                  <LeadCard
-                                    item={item}
-                                    tasks={tasks}
-                                    draggedLeadId={draggedLeadId}
-                                    setDraggedLeadId={setDraggedLeadId}
-                                    updateLead={updateLead}
-                                    tempDropdownId={tempDropdownId}
-                                    setTempDropdownId={setTempDropdownId}
-                                    openDropdownId={openDropdownId}
-                                    setOpenDropdownId={setOpenDropdownId}
-                                    setSelectedLead={setSelectedLead}
-                                    handleTransferToComercial={handleTransferToComercial}
-                                    handleExportIAResume={handleExportIAResume}
-                                    setWebhookModalLead={setWebhookModalLead}
-                                    currentPipeline={currentPipeline}
-                                  />
-                                </motion.div>
-                              ))}
-                            </AnimatePresence>
+                            {stageLeads.map((item: any) => (
+                              <motion.div
+                                key={item.id}
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.18 }}
+                              >
+                                <LeadCard
+                                  item={item}
+                                  tasks={tasks}
+                                  draggedLeadId={draggedLeadId}
+                                  setDraggedLeadId={setDraggedLeadId}
+                                  updateLead={updateLead}
+                                  tempDropdownId={tempDropdownId}
+                                  setTempDropdownId={setTempDropdownId}
+                                  openDropdownId={openDropdownId}
+                                  setOpenDropdownId={setOpenDropdownId}
+                                  setSelectedLead={setSelectedLead}
+                                  handleTransferToComercial={handleTransferToComercial}
+                                  handleExportIAResume={handleExportIAResume}
+                                  setWebhookModalLead={setWebhookModalLead}
+                                  currentPipeline={currentPipeline}
+                                />
+                              </motion.div>
+                            ))}
 
                             <button
                               onClick={() => setIsModalOpen(true)}

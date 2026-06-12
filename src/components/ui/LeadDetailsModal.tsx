@@ -7,7 +7,7 @@ import {
   Trophy, ThumbsDown, Trash, X,
   Phone, Activity, TrendingUp, Brain,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { useLeadDetails } from "./lead-details/useLeadDetails";
 import { IACopilot } from "./IACopilot";
 import { ProfileSection } from "./lead-details/ProfileSection";
@@ -436,20 +436,15 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
         </div>
       </Modal>
 
-      {createPortal(
-        <AnimatePresence>
-          {showCopilot && isOpen && (
-            <motion.div
-              initial={{ x: "100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "100%" }}
-              transition={{ type: "spring", stiffness: 340, damping: 30 }}
-              className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[100] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl"
-            >
-              <IACopilot leadName={leadName} companyName={companyName} />
-            </motion.div>
-          )}
-        </AnimatePresence>,
+      {isOpen && showCopilot && createPortal(
+        <motion.div
+          initial={{ x: "100%" }}
+          animate={{ x: 0 }}
+          transition={{ type: "spring", stiffness: 340, damping: 30 }}
+          className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[100] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl"
+        >
+          <IACopilot leadName={leadName} companyName={companyName} />
+        </motion.div>,
         document.body
       )}
 
