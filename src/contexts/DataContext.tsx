@@ -655,6 +655,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           stageId: lead.stageId ?? '1',
           pipelineId: lead.pipelineId ?? 'comercial',
           scoreIA: 50,
+          tenant_id: lead.tenantId ?? null,
           tenantName: lead.tenantName ?? '',
           lead_interesse_cliente: lead.lead_interesse_cliente ?? '',
           customFields: lead.customFields ?? {},

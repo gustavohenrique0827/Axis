@@ -314,9 +314,9 @@ export default function Pipeline() {
                     value={tenantFilter}
                     onChange={(e) => setTenantFilter(e.target.value)}
                   >
-                    <option value="Todos" className="bg-[#111827]">Todos os parceiros</option>
-                    {(tenantsList as string[]).filter(Boolean).map((t) => (
-                      <option key={t} value={t} className="bg-[#111827]">{t}</option>
+                    <option value="" className="bg-[#111827]">Todos os parceiros</option>
+                    {(tenantsList as { id: string; name: string }[]).map((t) => (
+                      <option key={t.id} value={t.id} className="bg-[#111827]">{t.name}</option>
                     ))}
                   </select>
                 </div>

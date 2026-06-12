@@ -60,6 +60,7 @@ export interface Lead {
   timeIdle?: number;
   customFields?: Record<string, string | number>;
   tenantName?: string;
+  tenantId?: string;
   clientId?: string;
   clientName?: string;
   productIds?: string[];

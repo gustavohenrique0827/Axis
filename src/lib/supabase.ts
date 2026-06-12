@@ -160,6 +160,7 @@ export async function signIn(
         name: data.name,
         email: data.email,
         role: data.role,
+        tenantId: tenant?.id,
         tenantName: tenant?.name,
         tenantNiche: tenant?.niche,
         isMaster: data.is_master
@@ -302,6 +303,23 @@ export async function fetchTenants() {
     return tenantModules;
   } catch (err) {
     console.error('[Tenants] ❌ Erro ao carregar tenants:', err);
+    return {};
+  }
+}
+
+/**
+ * Returns a map of tenant name → tenant UUID for all active tenants
+ */
+export async function fetchTenantIdMap(): Promise<Record<string, string>> {
+  if (!supabase) return {};
+  try {
+    const { data } = await supabase
+      .from('tenants')
+      .select('id, name')
+      .eq('status', 'Active');
+    if (!data) return {};
+    return Object.fromEntries(data.map((t: any) => [t.name, t.id]));
+  } catch {
     return {};
   }
 }

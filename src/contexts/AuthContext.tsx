@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { fetchTenants, updateTenantModulesInDB } from "../lib/supabase";
+import { fetchTenants, fetchTenantIdMap, updateTenantModulesInDB } from "../lib/supabase";
 
 export type TenantNiche = "Master" | "Solar" | "Imobiliária" | "Clínica" | "Tecnologia" | "Parceira";
 
@@ -7,6 +7,7 @@ export interface UserSession {
   name: string;
   email: string;
   role: string;
+  tenantId?: string;
   tenantName: string;
   tenantNiche: TenantNiche;
   isMaster: boolean;
@@ -22,6 +23,7 @@ interface AuthContextType {
   updateTenantModules: (tenantName: string, modules: TenantModules) => Promise<void>;
   getTenantModules: (tenantName: string) => TenantModules;
   allTenantModules: Record<string, TenantModules>;
+  tenantIdMap: Record<string, string>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -53,16 +55,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Start with only G-Tech Master, always load from Supabase
   const [allTenantModules, setAllTenantModules] = useState<Record<string, TenantModules>>(DEFAULT_TENANT_MODULES);
+  // tenantIdMap: name → UUID (ex: "PLUPPEX DIGITAL MACHINES LTDA" → "27ef95ee-...")
+  const [tenantIdMap, setTenantIdMap] = useState<Record<string, string>>({});
 
   // Carrega os tenants e as configurações de módulos do banco
   useEffect(() => {
     const loadTenantsFromDB = async () => {
       console.log('[AuthContext] 🔄 Carregando tenants do banco de dados (sempre)...');
-      const dbTenants = await fetchTenants();
+      const [dbTenants, idMap] = await Promise.all([fetchTenants(), fetchTenantIdMap()]);
 
       if (Object.keys(dbTenants).length > 0) {
         console.log('[AuthContext] ✅ Tenants do banco carregados:', Object.keys(dbTenants));
-        // Merge G-Tech Master + database tenants
         const merged = {
           "G-Tech Master": DEFAULT_TENANT_MODULES["G-Tech Master"],
           ...dbTenants
@@ -70,6 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setAllTenantModules(merged);
       } else {
         console.warn('[AuthContext] ⚠️ Nenhum tenant encontrado no banco, usando apenas G-Tech Master');
+      }
+
+      if (Object.keys(idMap).length > 0) {
+        setTenantIdMap(idMap);
       }
     };
 
@@ -125,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isModuleEnabled, updateTenantModules, getTenantModules, allTenantModules }}>
+    <AuthContext.Provider value={{ user, login, logout, isModuleEnabled, updateTenantModules, getTenantModules, allTenantModules, tenantIdMap }}>
       {children}
     </AuthContext.Provider>
   );

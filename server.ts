@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
+import { randomUUID } from "crypto";
 
 // types for WhatsApp Business Evolution API simulator
 interface WhatsAppInstance {
@@ -87,6 +88,117 @@ async function startServer() {
   const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
   app.use(express.json());
+
+  // =========================================================================
+  // CORS — permite chamadas da página externa (landing page, etc.)
+  // =========================================================================
+  const allowedOrigin = process.env.AXIS_CORS_ORIGIN || "*";
+  app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-api-key");
+    if (req.method === "OPTIONS") return res.sendStatus(204);
+    next();
+  });
+
+  // =========================================================================
+  // API PÚBLICA — Autenticação por API Key (header x-api-key)
+  // Suporta múltiplas chaves via AXIS_API_KEYS (vírgula) ou AXIS_API_KEY_MAIN/FORM
+  // =========================================================================
+  const validApiKeys = new Set(
+    (process.env.AXIS_API_KEYS || "")
+      .split(",")
+      .map(k => k.trim())
+      .filter(Boolean)
+  );
+
+  function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
+    if (validApiKeys.size === 0) {
+      return res.status(503).json({ error: "Nenhuma API Key configurada. Defina AXIS_API_KEYS no .env." });
+    }
+    const key = req.headers["x-api-key"] as string | undefined;
+    if (!key || !validApiKeys.has(key)) {
+      return res.status(401).json({ error: "API Key inválida ou ausente." });
+    }
+    next();
+  }
+
+  // Tenant e cliente padrão para leads criados via API (configurados no .env)
+  const FORM_TENANT_ID = process.env.AXIS_FORM_TENANT_ID || "";
+  const FORM_CLIENT_ID = process.env.AXIS_FORM_CLIENT_ID || "";
+
+  // POST /api/v1/leads — Cria um lead via API externa (padrão: pipeline SDR)
+  app.post("/api/v1/leads", requireApiKey, async (req, res) => {
+    const {
+      name, company = "", email = "", phone = "", cnpj = "",
+      title = "", seller = "", source = "", status = "Novo",
+      priority = "Média", value = 0, stageId = "sdr-1",
+      pipelineId = "sdr", lead_interesse_cliente = "",
+      customFields = {}, clientId = FORM_CLIENT_ID, clientName = "",
+      productIds = [],
+      tenantId = FORM_TENANT_ID,
+      tenantName = ""
+    } = req.body;
+
+    if (!name) {
+      return res.status(400).json({ error: "O campo 'name' é obrigatório." });
+    }
+
+    if (!email && !phone) {
+      return res.status(400).json({ error: "Informe ao menos 'email' ou 'phone'." });
+    }
+
+    const id = randomUUID();
+    const now = new Date().toISOString().split("T")[0];
+
+    const rawValue = typeof value === "string"
+      ? parseFloat(value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0
+      : (value ?? 0);
+
+    const newLead = {
+      id, name, company, email, phone, cnpj, title, seller, source,
+      status, priority, value: rawValue, stageId, pipelineId,
+      lead_interesse_cliente, customFields, clientId, clientName,
+      productIds, tenant_id: tenantId || null, tenantName, scoreIA: 50, date: now,
+      createdAt: new Date().toISOString()
+    };
+
+    if (!supabase) {
+      return res.status(503).json({ error: "Banco de dados não configurado no servidor." });
+    }
+
+    const { data, error } = await supabase.from("leads").insert(newLead).select().maybeSingle();
+    if (error) {
+      console.error("[API v1] Erro ao criar lead:", error.message);
+      return res.status(500).json({ error: "Falha ao salvar lead no banco.", details: error.message });
+    }
+
+    return res.status(201).json({ success: true, lead: data ?? newLead });
+  });
+
+  // GET /api/v1/leads — Lista leads via API externa
+  app.get("/api/v1/leads", requireApiKey, async (req, res) => {
+    if (!supabase) {
+      return res.status(503).json({ error: "Banco de dados não configurado no servidor." });
+    }
+
+    const { tenantId, tenantName, seller, status, limit = "100", offset = "0" } = req.query as Record<string, string>;
+
+    let query = supabase.from("leads").select("*").order("createdAt", { ascending: false })
+      .limit(parseInt(limit)).range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
+
+    if (tenantId)   query = query.eq("tenant_id", tenantId);
+    else if (tenantName) query = query.eq("tenantName", tenantName);
+    if (seller) query = query.eq("seller", seller);
+    if (status) query = query.eq("status", status);
+
+    const { data, error } = await query;
+    if (error) {
+      return res.status(500).json({ error: "Falha ao buscar leads.", details: error.message });
+    }
+
+    return res.json({ success: true, count: data?.length ?? 0, leads: data ?? [] });
+  });
 
   // AI Client Initializer
   const keysAvailable = !!process.env.GEMINI_API_KEY;

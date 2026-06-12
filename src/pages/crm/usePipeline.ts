@@ -84,10 +84,10 @@ export function usePipeline() {
   const [webhookModalLead, setWebhookModalLead] = useState<any>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
   const { leads, updateLead, tasks, addTask } = useData();
-  const { user, allTenantModules } = useAuth();
+  const { user, allTenantModules, tenantIdMap } = useAuth();
 
   const isMaster = user?.isMaster || user?.tenantName?.includes("G-Tech");
-  const [tenantFilter, setTenantFilter] = useState(user?.tenantName || "G-Tech Master");
+  const [tenantFilter, setTenantFilter] = useState(user?.tenantId || "");
 
   const [clientFilter, setClientFilter] = useState("Todos");
   const [clientsList, setClientsList] = useState<string[]>([]);
@@ -173,13 +173,18 @@ export function usePipeline() {
   }, [activeFunil]);
 
   // ─── Lists for dropdowns ──────────────────────────────────────────────────────
+  // tenantsList: { id: UUID, name: string }[] — used by Pipeline.tsx dropdown
   const tenantsList = useMemo(() => {
-    if (!isMaster) return [user?.tenantName];
-    return Array.from(new Set([
-      ...Object.keys(allTenantModules),
-      ...leads.map((l: any) => l.tenantName).filter(Boolean),
-    ]));
-  }, [isMaster, allTenantModules, leads, user]);
+    if (!isMaster) {
+      return user?.tenantId ? [{ id: user.tenantId, name: user.tenantName }] : [];
+    }
+    // Build from tenantIdMap (DB source), falling back to allTenantModules names
+    const mapEntries = Object.entries(tenantIdMap).map(([name, id]) => ({ id, name }));
+    if (mapEntries.length > 0) return mapEntries;
+    return Object.keys(allTenantModules)
+      .filter(n => !n.includes("G-Tech"))
+      .map(name => ({ id: name, name }));
+  }, [isMaster, tenantIdMap, allTenantModules, user]);
 
   const sellers      = useMemo(() => ["Todos", ...Array.from(new Set(leads.map((l: any) => l.seller).filter(Boolean)))], [leads]);
   const companiesList = useMemo(() => [
@@ -189,7 +194,7 @@ export function usePipeline() {
 
   // ─── Filtered leads ───────────────────────────────────────────────────────────
   const filteredItemsList = useMemo(() => leads.filter((item: any) => {
-    const matchesTenant  = !isMaster || tenantFilter === "Todos" || item.tenantName === tenantFilter;
+    const matchesTenant  = !isMaster || !tenantFilter || item.tenantId === tenantFilter;
     const matchesPipeline = currentPipeline === "sdr"
       ? item.pipelineId === "sdr"
       : !item.pipelineId || item.pipelineId === "comercial";
@@ -198,9 +203,9 @@ export function usePipeline() {
     const matchesClient  = clientFilter  === "Todos" || item.clientName === clientFilter;
     const q = searchQuery.toLowerCase();
     const matchesSearch  =
-      item.name.toLowerCase().includes(q) ||
-      item.company.toLowerCase().includes(q) ||
-      item.title.toLowerCase().includes(q);
+      (item.name   ?? "").toLowerCase().includes(q) ||
+      (item.company ?? "").toLowerCase().includes(q) ||
+      (item.title   ?? "").toLowerCase().includes(q);
     return matchesTenant && matchesPipeline && matchesSeller && matchesCompany && matchesClient && matchesSearch;
   }), [leads, currentPipeline, sellerFilter, searchQuery, tenantFilter, isMaster, companyFilter, clientFilter]);
 
