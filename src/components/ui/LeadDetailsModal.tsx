@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { Modal } from "./modal";
 import { Button } from "./button";
 import { ConfirmModal } from "./ConfirmModal";
@@ -160,22 +161,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
         <div className="flex h-full">
 
           {/* ── Lead details (full width) ── */}
-          <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
-
-            {/* IA Copilot: slide-in overlay from left — modal width never changes */}
-            <AnimatePresence>
-              {showCopilot && (
-                <motion.div
-                  initial={{ x: "-100%" }}
-                  animate={{ x: 0 }}
-                  exit={{ x: "-100%" }}
-                  transition={{ type: "spring", stiffness: 340, damping: 30 }}
-                  className="absolute inset-y-0 left-0 w-[240px] z-20 border-r border-white/10 overflow-y-auto bg-[#070E1A]/98 backdrop-blur-sm p-4 shadow-2xl"
-                >
-                  <IACopilot leadName={leadName} companyName={companyName} />
-                </motion.div>
-              )}
-            </AnimatePresence>
+          <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
             {/* ── Header: avatar + name + stats + actions ── */}
             <div className="px-5 pt-4 pb-3 border-b border-white/5 shrink-0 space-y-3">
@@ -449,6 +435,23 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
           </div>
         </div>
       </Modal>
+
+      {createPortal(
+        <AnimatePresence>
+          {showCopilot && isOpen && (
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", stiffness: 340, damping: 30 }}
+              className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[100] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl"
+            >
+              <IACopilot leadName={leadName} companyName={companyName} />
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       <ConfirmModal
         isOpen={isConfirmDeleteOpen}

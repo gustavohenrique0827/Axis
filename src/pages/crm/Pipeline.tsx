@@ -321,7 +321,7 @@ export default function Pipeline() {
             {activePipelineStages.length > 0 ? (
               <div
                 className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin"
-                style={{ height: `calc(100dvh - ${showAnalytics ? 580 : 360}px)`, minHeight: "520px" }}
+                style={{ height: `calc(100dvh - ${showAnalytics ? 580 : 360}px)`, minHeight: "380px" }}
               >
                 {activePipelineStages.map((stage: any, idx: number) => {
                   const stageLeads = filteredItemsList.filter((l: any) => l.stageId === stage.id);
