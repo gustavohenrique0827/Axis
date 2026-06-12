@@ -4,7 +4,7 @@ import { Button } from "./button";
 import { ConfirmModal } from "./ConfirmModal";
 import {
   Trophy, ThumbsDown, Trash, X,
-  Phone, Activity, TrendingUp,
+  Phone, Activity, TrendingUp, Brain,
 } from "lucide-react";
 import { useLeadDetails } from "./lead-details/useLeadDetails";
 import { IACopilot } from "./IACopilot";
