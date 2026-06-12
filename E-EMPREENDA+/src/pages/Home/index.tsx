@@ -39,10 +39,10 @@ const DEFAULT_GROUP_BENEFITS = [
 ]
 
 const DEFAULT_HERO = {
-  h1:       'Seu negócio não cresce porque ninguém te ensinou o caminho.',
-  subtitle: 'A maioria das pessoas sonha em empreender. Poucas têm coragem de começar. A Turma 3 da E-Empreenda+ é a sua oportunidade para construir um negócio lucrativo com propósito e visão estratégica.',
-  quote:    'Empreender transforma vidas.',
-  ctaText:  'Garantir Minha Vaga',
+  h1: 'Seu negócio não cresce porque ninguém te ensinou o caminho.',
+  subtitle: 'A maioria das pessoas sonha em empreender, mas poucas têm coragem de começar. A Turma 3 da E-Empreenda+ é a sua oportunidade para construir um negócio lucrativo com propósito e visão estratégica.',
+  quote: 'Empreender transforma vidas.',
+  ctaText: 'Garantir Minha Vaga',
 }
 
 const targetAudience = [
@@ -54,11 +54,11 @@ const targetAudience = [
 
 export default function Home() {
   const [faqOpen, setFaqOpen] = useState<number | null>(null)
-  const [pilares]       = useLandingSection('pillars',      DEFAULT_PILARES)
-  const [testimonials]  = useLandingSection('testimonials', DEFAULT_TESTIMONIALS)
-  const [groupBenefits] = useLandingSection('benefits',     DEFAULT_GROUP_BENEFITS)
-  const [hero]          = useLandingSection('hero',         DEFAULT_HERO)
-  const [faqItems]      = useLandingSection('faq',          DEFAULT_FAQS)
+  const [pilares] = useLandingSection('pillars', DEFAULT_PILARES)
+  const [testimonials] = useLandingSection('testimonials', DEFAULT_TESTIMONIALS)
+  const [groupBenefits] = useLandingSection('benefits', DEFAULT_GROUP_BENEFITS)
+  const [hero] = useLandingSection('hero', DEFAULT_HERO)
+  const [faqItems] = useLandingSection('faq', DEFAULT_FAQS)
 
   return (
     <div className={styles.pageContainer}>
@@ -82,7 +82,7 @@ export default function Home() {
 
             <div className={styles.heroCredentials}>
               <div className={styles.credItem}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" /><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" /></svg>
                 <span className={styles.heroQuote}>"{hero.quote}" Esteja pronto para liderar com consciência e valores inegociáveis.</span>
               </div>
             </div>
@@ -152,7 +152,7 @@ export default function Home() {
               <div className={styles.movementChecks}>
                 {targetAudience.map((item) => (
                   <div key={item} className={styles.movementCheckItem}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     <span>{item}</span>
                   </div>
                 ))}
@@ -169,7 +169,7 @@ export default function Home() {
               </p>
               <Link to="/inscricao" className={styles.btnPrimary} style={{ marginTop: '32px' }}>
                 Garantir Minha Vaga
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
               </Link>
             </div>
           </div>
@@ -210,7 +210,7 @@ export default function Home() {
             ))}
           </div>
           <div className={styles.groupWarning}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /><line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /><line x1="12" y1="17" x2="12.01" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
             <span>APENAS 50 VAGAS PRESENCIAIS — Prezamos pela curadoria detalhada. Uma vez preenchidas, não abriremos exceções para a Turma 3.</span>
           </div>
         </div>
@@ -246,7 +246,7 @@ export default function Home() {
         <div className="container">
           <div className={`${styles.guaranteeBanner} ${styles.glass}`}>
             <div className={styles.guaranteeIcon}>
-              <svg viewBox="0 0 24 24" fill="none" width="40" height="40"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <svg viewBox="0 0 24 24" fill="none" width="40" height="40"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </div>
             <div className={styles.guaranteeContent}>
               <span className={styles.sectionLabel}>Nossa Garantia</span>
@@ -258,7 +258,7 @@ export default function Home() {
               <div className={styles.guaranteeItems}>
                 {['Resultado validado em +2.400 empreendedores', 'Mentores com negócios reais e ativos', 'Comunidade permanente garantida'].map(item => (
                   <div key={item} className={styles.guaranteeItem}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#FF5C00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="#FF5C00" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     {item}
                   </div>
                 ))}
@@ -279,7 +279,7 @@ export default function Home() {
                 <button className={styles.faqBtn} onClick={() => setFaqOpen(faqOpen === i ? null : i)}>
                   {f.q}
                   <div className={`${styles.faqIcon} ${faqOpen === i ? styles.faqIconOpen : ''}`}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   </div>
                 </button>
                 <div className={styles.faqAnswer}>
@@ -299,7 +299,7 @@ export default function Home() {
           <p>A decisão que separa seu 2026 dos seus últimos 5 anos. Esteja pronto para liderar com consciência e valores inegociáveis.</p>
           <Link to="/inscricao" className={styles.btnPrimary} style={{ margin: '0 auto', display: 'inline-flex' }}>
             Garantir Minha Vaga
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </Link>
           <div className={styles.ctaTrustRow}>
             <span>Garantia total de resultados</span>

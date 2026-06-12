@@ -77,11 +77,11 @@
 
 .heroLeft {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   position: relative;
   background: #02040A;
-  padding-top: 40px;
-  padding-bottom: 60px;
+  padding-top: 72px;
+  padding-bottom: 72px;
 }
 
 /* Use max-width to match .container but left-aligned */
@@ -122,9 +122,9 @@
 }
 
 .heroH1 {
-  font-size: clamp(28px, 3vw, 46px);
+  font-size: clamp(28px, 2.6vw, 38px);
   font-weight: 900;
-  line-height: 1.12;
+  line-height: 1.14;
   margin-bottom: 16px;
   letter-spacing: -0.025em;
   color: #fff;
