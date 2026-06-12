@@ -201,21 +201,32 @@ export function usePipeline() {
   ], [leads]);
 
   // ─── Filtered leads ───────────────────────────────────────────────────────────
-  const filteredItemsList = useMemo(() => leads.filter((item: any) => {
-    const matchesTenant  = !isMaster || !tenantFilter || item.tenantId === tenantFilter;
-    const matchesPipeline = currentPipeline === "sdr"
-      ? item.pipelineId === "sdr"
-      : !item.pipelineId || item.pipelineId === "comercial";
-    const matchesSeller  = sellerFilter  === "Todos" || item.seller  === sellerFilter;
-    const matchesCompany = companyFilter === "Todos" || item.company === companyFilter;
-    const matchesClient  = clientFilter  === "Todos" || item.clientName === clientFilter;
-    const q = searchQuery.toLowerCase();
-    const matchesSearch  =
-      (item.name   ?? "").toLowerCase().includes(q) ||
-      (item.company ?? "").toLowerCase().includes(q) ||
-      (item.title   ?? "").toLowerCase().includes(q);
-    return matchesTenant && matchesPipeline && matchesSeller && matchesCompany && matchesClient && matchesSearch;
-  }), [leads, currentPipeline, sellerFilter, searchQuery, tenantFilter, isMaster, companyFilter, clientFilter]);
+  const filteredItemsList = useMemo(() => leads
+    .filter((item: any) => {
+      const matchesTenant   = !isMaster || !tenantFilter || item.tenantId === tenantFilter;
+      const matchesPipeline = currentPipeline === "sdr"
+        ? item.pipelineId === "sdr"
+        : !item.pipelineId || item.pipelineId === "comercial";
+      const matchesSeller  = sellerFilter  === "Todos" || item.seller  === sellerFilter;
+      const matchesCompany = companyFilter === "Todos" || item.company === companyFilter;
+      const matchesClient  = clientFilter  === "Todos" || item.clientName === clientFilter;
+      const q = searchQuery.toLowerCase();
+      const matchesSearch  =
+        (item.name   ?? "").toLowerCase().includes(q) ||
+        (item.company ?? "").toLowerCase().includes(q) ||
+        (item.title   ?? "").toLowerCase().includes(q);
+      return matchesTenant && matchesPipeline && matchesSeller && matchesCompany && matchesClient && matchesSearch;
+    })
+    // Newest leads first — uses Supabase's auto-set created_at
+    .sort((a: any, b: any) => {
+      const da: string = a.created_at ?? a.createdAt ?? "";
+      const db: string = b.created_at ?? b.createdAt ?? "";
+      if (!da && !db) return 0;
+      if (!da) return 1;
+      if (!db) return -1;
+      return db > da ? -1 : db < da ? 1 : 0;
+    }),
+  [leads, currentPipeline, sellerFilter, searchQuery, tenantFilter, isMaster, companyFilter, clientFilter]);
 
   // ─── Metrics ─────────────────────────────────────────────────────────────────
   const analyticsData = useMemo(() =>

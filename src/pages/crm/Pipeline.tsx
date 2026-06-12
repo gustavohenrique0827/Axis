@@ -345,7 +345,7 @@ export default function Pipeline() {
                         setDraggedLeadId(null);
                       }}
                       className={`shrink-0 flex flex-col bg-[#0B1120]/40 border rounded-3xl transition-all duration-300 h-full ${
-                        isMinimized ? "w-[56px] p-2" : "w-[300px] p-4"
+                        isMinimized ? "w-[56px] p-2" : "w-[280px] p-3"
                       } ${
                         draggedOverStageId === stage.id
                           ? "border-blue-500/50 bg-blue-500/10 scale-[1.02]"
@@ -372,26 +372,26 @@ export default function Pipeline() {
                         </button>
                       ) : (
                         <>
-                          <div className="flex flex-col gap-2 mb-4 shrink-0 text-left">
-                            <div className="flex items-center justify-between">
-                              <button onClick={() => toggleColumn(stage.id)} className="flex items-center gap-2 cursor-pointer group">
-                                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: stage.color }} />
-                                <h3 className="text-xs font-bold text-white uppercase tracking-wider group-hover:text-slate-300 transition-colors">
-                                  {stage.name}
-                                </h3>
-                              </button>
-                              <span className="text-[10px] font-black text-slate-500 bg-white/5 px-2 py-0.5 rounded-full">
+                          <div className="flex items-center justify-between gap-2 mb-3 shrink-0">
+                            <button onClick={() => toggleColumn(stage.id)} className="flex items-center gap-2 cursor-pointer group min-w-0">
+                              <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: stage.color }} />
+                              <h3 className="text-[11px] font-black text-white uppercase tracking-widest group-hover:text-slate-300 transition-colors truncate">
+                                {stage.name}
+                              </h3>
+                            </button>
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <span className="text-[9px] font-mono font-bold text-slate-600">
+                                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(
+                                  stageLeads.reduce((sum, item: any) => sum + (parseFloat(String(item.value ?? "").replace(/[^\d]/g, "")) || 0), 0)
+                                )}
+                              </span>
+                              <span className="text-[10px] font-black text-white bg-white/10 px-2 py-0.5 rounded-full shrink-0">
                                 {stageLeads.length}
                               </span>
                             </div>
-                            <div className="text-[10px] font-mono text-slate-400 font-bold bg-[#0B1120] border border-white/5 px-2 py-1 rounded-lg w-fit shadow-inner">
-                              {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(
-                                stageLeads.reduce((sum, item: any) => sum + (parseFloat(String(item.value ?? "").replace(/[^\d]/g, "")) || 0), 0)
-                              )}
-                            </div>
                           </div>
 
-                          <div className="flex-1 overflow-y-auto space-y-3 min-h-0 pb-6 scrollbar-none">
+                          <div className="flex-1 overflow-y-auto space-y-2 min-h-0 pb-3 scrollbar-none">
                             {stageLeads.map((item: any) => (
                               <motion.div
                                 key={item.id}
@@ -420,9 +420,9 @@ export default function Pipeline() {
 
                             <button
                               onClick={() => setIsModalOpen(true)}
-                              className="w-full py-3 border border-dashed border-white/10 rounded-2xl text-slate-600 hover:text-slate-400 hover:bg-white/5 transition-all flex items-center justify-center gap-2 text-xs font-semibold cursor-pointer bg-transparent"
+                              className="w-full py-2.5 border border-dashed border-white/10 rounded-2xl text-slate-600 hover:text-slate-400 hover:border-white/20 hover:bg-white/5 transition-all flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest cursor-pointer bg-transparent"
                             >
-                              <Plus className="w-3.5 h-3.5" /> Adicionar
+                              <Plus className="w-3 h-3" /> Novo Lead
                             </button>
                           </div>
                         </>
