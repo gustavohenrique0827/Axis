@@ -137,20 +137,33 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
             <Button
               variant="outline"
               onClick={() => setIsConfirmDeleteOpen(true)}
-              className="border-white/5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 gap-1.5 h-9 px-4"
+              className="border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 gap-1.5 h-9 px-4"
             >
-              <Trash className="w-4 h-4" /> Excluir
+              <Trash className="w-4 h-4" />
+              Excluir
             </Button>
-            <div className="flex gap-2">
-              <Button variant="ghost" onClick={onClose} className="text-slate-400 font-bold px-4 h-9">
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                onClick={onClose}
+                className="text-slate-400 font-bold px-4 h-9 hover:text-white"
+              >
                 Fechar
               </Button>
+
               {isEditingInline ? (
-                <Button onClick={handleSaveAll} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 h-9">
+                <Button
+                  onClick={handleSaveAll}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 h-9 shadow-sm shadow-emerald-500/10"
+                >
                   Salvar
                 </Button>
               ) : (
-                <Button onClick={() => setIsEditingInline(true)} className="bg-[#2563EB] hover:bg-blue-600 text-white font-bold px-5 h-9">
+                <Button
+                  onClick={() => setIsEditingInline(true)}
+                  className="bg-[#2563EB] hover:bg-blue-600 text-white font-bold px-5 h-9 shadow-sm shadow-blue-500/10"
+                >
                   Editar
                 </Button>
               )}
@@ -158,13 +171,13 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
           </div>
         }
       >
-        <div className="flex h-full">
+        <div className="flex h-full bg-gradient-to-b from-white/[0.02] to-transparent">
 
           {/* ── Lead details (full width) ── */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
             {/* ── Header: avatar + name + stats + actions ── */}
-            <div className="px-5 pt-4 pb-3 border-b border-white/5 shrink-0 space-y-3">
+            <div className="px-5 pt-4 pb-3 border-b border-white/5 shrink-0 space-y-3 bg-gradient-to-r from-white/[0.02] via-transparent to-white/[0.01]">
 
               {/* Row 1: identity + action buttons */}
               <div className="flex items-center justify-between gap-3">
@@ -196,9 +209,12 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button
+                    type="button"
                     onClick={() => setShowCopilot((v) => !v)}
                     title="IA Copilot"
-                    className={`p-1.5 rounded-lg border transition-all ${
+                    aria-pressed={showCopilot}
+                    aria-label="Alternar IA Copilot"
+                    className={`p-1.5 rounded-lg border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40 ${
                       showCopilot
                         ? "bg-violet-500/20 border-violet-500/40 text-violet-400"
                         : "border-white/10 text-slate-500 hover:text-violet-400 hover:border-violet-500/30 hover:bg-violet-500/10"
@@ -236,8 +252,10 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                     <ThumbsDown className="w-3.5 h-3.5" /> Perdido
                   </Button>
                   <button
+                    type="button"
                     onClick={onClose}
-                    className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-white transition-colors ml-1"
+                    aria-label="Fechar modal"
+                    className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-white transition-colors ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400/40"
                   >
                     <X className="w-4 h-4" />
                   </button>
