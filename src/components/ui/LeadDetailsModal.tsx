@@ -127,7 +127,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
       <Modal
         isOpen={isOpen}
         onClose={onClose}
-        maxWidth="max-w-[780px]"
+        maxWidth="max-w-[546px]"
         position="right"
         noPadding
         footer={
