@@ -42,6 +42,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
   const { updateLead } = useData();
   const { leadActivities } = useData();
   const [currentTab, setCurrentTab] = useState("informacoes");
+  const [showCopilot, setShowCopilot] = useState(false);
 
   const {
     isConfirmDeleteOpen, setIsConfirmDeleteOpen,
@@ -157,10 +158,12 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
       >
         <div className="flex h-full">
 
-          {/* ── LEFT: IA Copilot panel ── */}
-          <div className="w-[264px] shrink-0 border-r border-white/10 overflow-y-auto bg-[#070E1A]/70 p-5">
-            <IACopilot leadName={leadName} companyName={companyName} />
-          </div>
+          {/* ── LEFT: IA Copilot panel (toggle) ── */}
+          {showCopilot && (
+            <div className="w-[264px] shrink-0 border-r border-white/10 overflow-y-auto bg-[#070E1A]/70 p-5">
+              <IACopilot leadName={leadName} companyName={companyName} />
+            </div>
+          )}
 
           {/* ── RIGHT: Lead details ── */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -197,6 +200,17 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                 </div>
 
                 <div className="flex items-center gap-1.5 shrink-0">
+                  <button
+                    onClick={() => setShowCopilot((v) => !v)}
+                    title="IA Copilot"
+                    className={`p-1.5 rounded-lg border transition-all ${
+                      showCopilot
+                        ? "bg-violet-500/20 border-violet-500/40 text-violet-400"
+                        : "border-white/10 text-slate-500 hover:text-violet-400 hover:border-violet-500/30 hover:bg-violet-500/10"
+                    }`}
+                  >
+                    <Brain className="w-4 h-4" />
+                  </button>
                   <Button
                     variant="outline"
                     onClick={() => {
