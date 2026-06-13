@@ -52,7 +52,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
   const sellerOptions = useMemo<string[]>(() => {
     if (colaboradores && colaboradores.length > 0) {
       return colaboradores
-        .filter((c: any) => c.nome && c.status !== "Desligado")
+        .filter((c: any) => c.nome && c.status !== "Desligado" && c.departamento === "Vendas")
         .map((c: any) => c.nome as string);
     }
     return Array.from(new Set(leads.map((l: any) => l.seller).filter(Boolean))) as string[];

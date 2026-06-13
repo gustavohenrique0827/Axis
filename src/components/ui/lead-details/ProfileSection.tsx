@@ -70,7 +70,7 @@ export function ProfileSection({
 
   const sellerOptions = useMemo(() => {
     const fromColab = (colaboradores as any[])
-      .filter((c: any) => c.status !== "Desligado")
+      .filter((c: any) => c.status !== "Desligado" && c.departamento === "Vendas")
       .map((c: any) => c.nome)
       .filter(Boolean);
     if (fromColab.length > 0) return fromColab as string[];

@@ -35,7 +35,7 @@ export function TasksKanbanCard({
 }: TasksKanbanCardProps) {
   const { colaboradores } = useData();
   const sellerOptions = (colaboradores as any[])
-    .filter(c => c.status !== "Desligado")
+    .filter(c => c.status !== "Desligado" && c.departamento === "Vendas")
     .map(c => c.nome as string)
     .filter(Boolean);
 

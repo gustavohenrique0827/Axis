@@ -49,7 +49,7 @@ export function NovaTarefaModal({
   const { colaboradores } = useData();
 
   const sellerOptions = useMemo(
-    () => (colaboradores as any[]).filter(c => c.status !== "Desligado").map(c => c.nome as string).filter(Boolean),
+    () => (colaboradores as any[]).filter(c => c.status !== "Desligado" && c.departamento === "Vendas").map(c => c.nome as string).filter(Boolean),
     [colaboradores]
   );
 
