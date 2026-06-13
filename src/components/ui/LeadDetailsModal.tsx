@@ -6,6 +6,7 @@ import { ConfirmModal } from "./ConfirmModal";
 import {
   Trophy, ThumbsDown, Trash, X,
   Phone, Activity, TrendingUp, Brain,
+  Info, Clock, Zap, MessageCircle, Package, ScrollText,
 } from "lucide-react";
 import { motion } from "motion/react";
 import { useLeadDetails } from "./lead-details/useLeadDetails";
@@ -26,12 +27,12 @@ interface LeadDetailsModalProps {
 }
 
 const TABS = [
-  { id: "informacoes", label: "INFORMAÇÕES" },
-  { id: "historico",   label: "HISTÓRICO"   },
-  { id: "relatorio",   label: "⚡ RELATÓRIO IA" },
-  { id: "mensagens",   label: "MENSAGENS"   },
-  { id: "produtos",    label: "PRODUTOS"    },
-  { id: "logs",        label: "LOGS"        },
+  { id: "informacoes", label: "INFO",     icon: Info          },
+  { id: "historico",   label: "HISTÓRICO", icon: Clock        },
+  { id: "relatorio",   label: "RELAT. IA", icon: Zap          },
+  { id: "mensagens",   label: "CHAT",     icon: MessageCircle },
+  { id: "produtos",    label: "PRODUTOS",  icon: Package      },
+  { id: "logs",        label: "LOGS",     icon: ScrollText    },
 ];
 
 const TEMP_COLOR: Record<string, string> = {
@@ -176,13 +177,24 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
           {/* ── Lead details (full width) ── */}
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
+            {/* Temperature accent stripe */}
+            <div className={`h-[3px] shrink-0 ${
+              temperature === "Quente" ? "bg-gradient-to-r from-rose-500 via-amber-400 to-transparent" :
+              temperature === "Morno"  ? "bg-gradient-to-r from-amber-400 via-yellow-300 to-transparent" :
+                                        "bg-gradient-to-r from-blue-500 via-cyan-400 to-transparent"
+            }`} />
+
             {/* ── Header: avatar + name + stats + actions ── */}
             <div className="px-5 pt-4 pb-3 border-b border-white/5 shrink-0 space-y-3 bg-gradient-to-r from-white/[0.02] via-transparent to-white/[0.01]">
 
               {/* Row 1: identity + action buttons */}
               <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600/30 to-cyan-500/20 border border-blue-500/20 flex items-center justify-center text-sm font-black text-blue-300 shrink-0">
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-black shrink-0 ring-2 ring-offset-2 ring-offset-[#070E1A] ${
+                    temperature === "Quente" ? "bg-rose-500/20  text-rose-300  ring-rose-500/30"  :
+                    temperature === "Morno"  ? "bg-amber-500/20 text-amber-300 ring-amber-500/30" :
+                                              "bg-blue-500/20  text-blue-300  ring-blue-500/30"
+                  }`}>
                     {(companyName || leadName || "?")[0]?.toUpperCase()}
                   </div>
                   <div className="min-w-0">
@@ -284,18 +296,19 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
             </div>
 
             {/* ── Tabs ── */}
-            <div className="flex border-b border-white/5 overflow-x-auto scrollbar-none shrink-0 px-4">
+            <div className="flex border-b border-white/5 overflow-x-auto scrollbar-none shrink-0 bg-[#0B1120]/30">
               {TABS.map((tab) => (
                 <button
                   key={tab.id}
                   onClick={() => setCurrentTab(tab.id)}
-                  className={`pb-2.5 pt-2 px-3 text-[10px] font-bold tracking-widest border-b-2 whitespace-nowrap transition-all shrink-0 cursor-pointer ${
+                  className={`flex flex-col items-center gap-0.5 pb-2 pt-2 px-3.5 text-[8px] font-bold tracking-widest border-b-2 whitespace-nowrap transition-all shrink-0 cursor-pointer min-w-[62px] ${
                     currentTab === tab.id
                       ? "border-[#06B6D4] text-[#06B6D4]"
-                      : "border-transparent text-slate-500 hover:text-white"
+                      : "border-transparent text-slate-500 hover:text-slate-300"
                   }`}
                 >
-                  {tab.label}
+                  <tab.icon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
                 </button>
               ))}
             </div>
@@ -308,24 +321,59 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                 <div className="px-5 py-4 space-y-4">
                   {/* Stats row */}
                   <div className="grid grid-cols-3 gap-2">
-                    <div className="bg-[#0B1120] border border-white/5 rounded-xl p-3 text-center">
-                      <Activity className="w-4 h-4 text-blue-400 mx-auto mb-1" />
-                      <div className="text-xl font-black text-white">{leadActs.length}</div>
-                      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">INTERAÇÕES</div>
-                    </div>
-                    <div className={`border rounded-xl p-3 text-center ${timeIdleNum > 7 ? "bg-rose-500/10 border-rose-500/20" : "bg-[#0B1120] border-white/5"}`}>
-                      <Phone className={`w-4 h-4 mx-auto mb-1 ${timeIdleNum > 7 ? "text-rose-400" : "text-slate-400"}`} />
-                      <div className={`text-xl font-black ${timeIdleNum > 7 ? "text-rose-400" : "text-white"}`}>
-                        {timeIdleNum}d
+                    {/* Interações */}
+                    <div className="bg-[#0B1120] border border-blue-500/10 rounded-xl p-3 text-center group hover:border-blue-500/20 transition-colors">
+                      <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center mx-auto mb-1.5">
+                        <Activity className="w-3.5 h-3.5 text-blue-400" />
                       </div>
-                      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">SEM CONTATO</div>
+                      <div className="text-xl font-black text-white tabular-nums">{leadActs.length}</div>
+                      <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">INTERAÇÕES</div>
                     </div>
-                    <div className={`border rounded-xl p-3 text-center ${probNum >= 70 ? "bg-emerald-500/10 border-emerald-500/20" : probNum >= 40 ? "bg-amber-500/10 border-amber-500/20" : "bg-[#0B1120] border-white/5"}`}>
-                      <TrendingUp className={`w-4 h-4 mx-auto mb-1 ${probNum >= 70 ? "text-emerald-400" : probNum >= 40 ? "text-amber-400" : "text-slate-400"}`} />
-                      <div className={`text-xl font-black ${probNum >= 70 ? "text-emerald-400" : probNum >= 40 ? "text-amber-400" : "text-white"}`}>
-                        {probNum}%
+
+                    {/* Sem contato */}
+                    <div className={`rounded-xl p-3 text-center border transition-colors ${
+                      timeIdleNum > 7 ? "bg-rose-500/10 border-rose-500/25" :
+                      timeIdleNum > 3 ? "bg-amber-500/10 border-amber-500/20" :
+                                        "bg-[#0B1120] border-white/5"
+                    }`}>
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-1.5 ${
+                        timeIdleNum > 7 ? "bg-rose-500/15" : timeIdleNum > 3 ? "bg-amber-500/15" : "bg-slate-700/50"
+                      }`}>
+                        <Phone className={`w-3.5 h-3.5 ${
+                          timeIdleNum > 7 ? "text-rose-400 animate-pulse" : timeIdleNum > 3 ? "text-amber-400" : "text-slate-500"
+                        }`} />
                       </div>
-                      <div className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">PROB. GANHO</div>
+                      <div className={`text-xl font-black tabular-nums ${
+                        timeIdleNum > 7 ? "text-rose-400" : timeIdleNum > 3 ? "text-amber-400" : "text-white"
+                      }`}>{timeIdleNum}d</div>
+                      <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">SEM CONTATO</div>
+                    </div>
+
+                    {/* Probabilidade de ganho */}
+                    <div className={`rounded-xl p-3 text-center border transition-colors ${
+                      probNum >= 70 ? "bg-emerald-500/10 border-emerald-500/20" :
+                      probNum >= 40 ? "bg-amber-500/10 border-amber-500/15" :
+                                      "bg-[#0B1120] border-white/5"
+                    }`}>
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-1.5 ${
+                        probNum >= 70 ? "bg-emerald-500/15" : probNum >= 40 ? "bg-amber-500/15" : "bg-slate-700/50"
+                      }`}>
+                        <TrendingUp className={`w-3.5 h-3.5 ${
+                          probNum >= 70 ? "text-emerald-400" : probNum >= 40 ? "text-amber-400" : "text-slate-500"
+                        }`} />
+                      </div>
+                      <div className={`text-xl font-black tabular-nums ${
+                        probNum >= 70 ? "text-emerald-400" : probNum >= 40 ? "text-amber-400" : "text-white"
+                      }`}>{probNum}%</div>
+                      <div className="mt-1.5 h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-700 ${
+                            probNum >= 70 ? "bg-emerald-400" : probNum >= 40 ? "bg-amber-400" : "bg-slate-600"
+                          }`}
+                          style={{ width: `${probNum}%` }}
+                        />
+                      </div>
+                      <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-1">PROB. GANHO</div>
                     </div>
                   </div>
 

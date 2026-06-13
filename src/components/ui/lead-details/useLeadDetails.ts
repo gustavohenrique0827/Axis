@@ -155,6 +155,8 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     setSeller(lead.seller || "");
     setPriority(lead.priority || "Média");
     setCustomFieldsState(lead.customFields || {});
+    setLinkedProductIds(Array.isArray(lead.productIds) ? lead.productIds : []);
+    setCustomTags(Array.isArray(lead.tags) ? lead.tags : []);
 
     const rawScore = lead.scoreIA ?? 45;
     const t = (lead.temperature ?? "").toLowerCase();
@@ -192,13 +194,17 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     const tag = newTagInput.trim();
     if (!tag) return;
     if (customTags.includes(tag)) { toast.error("Tag já adicionada."); return; }
-    setCustomTags(prev => [...prev, tag]);
+    const next = [...customTags, tag];
+    setCustomTags(next);
     setNewTagInput("");
+    if (supabase) supabase.from("leads").update({ tags: next }).eq("id", lead.id).then(() => {});
     toast.success("Tag adicionada!");
   };
 
   const handleRemoveTag = (tag: string) => {
-    setCustomTags(prev => prev.filter(t => t !== tag));
+    const next = customTags.filter(t => t !== tag);
+    setCustomTags(next);
+    if (supabase) supabase.from("leads").update({ tags: next }).eq("id", lead.id).then(() => {});
     toast.info("Tag removida.");
   };
 
@@ -257,7 +263,10 @@ export function useLeadDetails(lead: any, onClose: () => void) {
   };
 
   const handleSaveAll = () => {
-    updateLead(lead.id, { name: leadName, company: companyName, phone, email, title, value, seller, priority, customFields: customFieldsState });
+    updateLead(lead.id, {
+      name: leadName, company: companyName, phone, email, title, value, seller, priority,
+      customFields: customFieldsState, productIds: linkedProductIds,
+    });
     setAlterationLogs(prev => [
       { id: Date.now().toString(), author: seller || "Sistema", desc: "Informações do lead atualizadas", time: "Agora" },
       ...prev,
@@ -279,13 +288,14 @@ export function useLeadDetails(lead: any, onClose: () => void) {
       .replace("{seller}", seller || "Consultor");
 
   const toggleProductLink = (prodId: string) => {
-    if (linkedProductIds.includes(prodId)) {
-      setLinkedProductIds(prev => prev.filter(id => id !== prodId));
-      toast.info("Produto removido do orçamento.");
-    } else {
-      setLinkedProductIds(prev => [...prev, prodId]);
-      toast.success("Produto adicionado ao orçamento!");
-    }
+    const newIds = linkedProductIds.includes(prodId)
+      ? linkedProductIds.filter(id => id !== prodId)
+      : [...linkedProductIds, prodId];
+    setLinkedProductIds(newIds);
+    updateLead(lead.id, { productIds: newIds });
+    toast[newIds.includes(prodId) ? "success" : "info"](
+      newIds.includes(prodId) ? "Produto adicionado ao orçamento!" : "Produto removido do orçamento."
+    );
   };
 
   // ─── Visual helpers ───────────────────────────────────────────────────────────

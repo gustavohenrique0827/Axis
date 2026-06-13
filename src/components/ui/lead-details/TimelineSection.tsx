@@ -43,7 +43,6 @@ export function TimelineSection({
   selectedFiles,
   setSelectedFiles,
   handleRegisterActivity,
-  seller
 }: TimelineSectionProps) {
   return (
     <div className="space-y-6">
@@ -56,10 +55,10 @@ export function TimelineSection({
         {/* Channel selectors */}
         <div className="grid grid-cols-4 gap-1">
           {[
-            { type: 'Ligação', label: 'Telefonou', color: 'text-cyan-400 bg-cyan-450/10' },
-            { type: 'E-mail', label: 'E-mail', color: 'text-amber-400 bg-amber-450/10' },
-            { type: 'Reunião', label: 'Reunião', color: 'text-purple-400 bg-purple-450/10' },
-            { type: 'Outro', label: 'Nota Interna', color: 'text-slate-400 bg-slate-450/10' }
+            { type: 'Ligação', label: 'Telefonou', color: 'text-cyan-400 bg-cyan-400/10' },
+            { type: 'E-mail', label: 'E-mail', color: 'text-amber-400 bg-amber-400/10' },
+            { type: 'Reunião', label: 'Reunião', color: 'text-purple-400 bg-purple-400/10' },
+            { type: 'Outro', label: 'Nota Interna', color: 'text-slate-400 bg-slate-400/10' }
           ].map((item) => (
             <button
               key={item.type}
@@ -86,17 +85,17 @@ export function TimelineSection({
             className="bg-[#111827] border border-white/5 rounded-xl px-3 py-2 text-xs text-white"
           />
           <div className="grid grid-cols-2 gap-2">
-            <input 
-              type="date" 
+            <input
+              type="date"
               value={activityDate}
               onChange={(e) => setActivityDate(e.target.value)}
-              className="bg-[#111827] border border-white/5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono text-slate-350"
+              className="bg-[#111827] border border-white/5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono text-slate-300"
             />
-            <input 
-              type="time" 
+            <input
+              type="time"
               value={activityTime}
               onChange={(e) => setActivityTime(e.target.value)}
-              className="bg-[#111827] border border-white/5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono text-slate-350"
+              className="bg-[#111827] border border-white/5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono text-slate-300"
             />
           </div>
         </div>
@@ -113,7 +112,7 @@ export function TimelineSection({
             }}
             className="w-full bg-[#111827] border border-white/5 rounded-xl p-3 text-xs text-white placeholder-slate-600"
           />
-          {activityError && <p className="text-[10.5px] text-rose-455 text-rose-400 font-bold font-sans">⚠️ {activityError}</p>}
+          {activityError && <p className="text-[10.5px] text-rose-400 font-bold font-sans">⚠️ {activityError}</p>}
         </div>
 
         {/* File Simulator Uploader */}
