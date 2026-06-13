@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import {
-  Brain, Wallet, Sparkles, Trophy,
-  Pencil, Trash2, UserPlus, X, Users, ImagePlus
+  Brain, Trophy,
+  Pencil, Trash2, UserPlus, X, Users
 } from "lucide-react";
-import { Button } from "../../../components/ui/button";
 import { Card } from "../../../components/ui/card";
-import { Input } from "../../../components/ui/input";
 import { toast } from "sonner";
 import { Squad } from "../../../types";
 import { useData } from "../../../contexts/DataContext";
 import { supabase } from "../../../lib/supabase";
+import { SquadEditModal } from "./SquadEditModal";
+import { SquadOTECalculator } from "./SquadOTECalculator";
 
 interface SquadsTabContentProps {
   squads: Squad[];

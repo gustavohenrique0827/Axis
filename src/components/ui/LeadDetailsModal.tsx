@@ -1,15 +1,12 @@
 import { useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { Modal } from "./modal";
-import { Button } from "./button";
-import { ConfirmModal } from "./ConfirmModal";
-import {
-  Trophy, ThumbsDown, Trash, X,
-  Phone, Activity, TrendingUp, Brain,
-  Info, Clock, Zap, MessageCircle, Package, ScrollText,
-  Flame, Snowflake, Sun, ChevronRight, User,
-  CheckCircle2, AlertTriangle,
-} from "lucide-react";
+import { Trophy, ThumbsDown, X, Phone, Activity, TrendingUp, Brain, ChevronRight, User, AlertTriangle } from "lucide-react";
+
+import { LeadDetailsModalTabs } from "./lead-details/LeadDetailsModal.constants";
+import { LeadDetailsTempCfg } from "./lead-details/LeadDetailsModal.constants";
+import { formatLeadValueBRL, safeParseTimeIdle, safeParseProbability, handleMarkLead } from "./lead-details/LeadDetailsModal.helpers";
+import { LeadDetailsModalFooter } from "./lead-details/LeadDetailsModal.Footer";
 import { motion, AnimatePresence } from "motion/react";
 import { useLeadDetails } from "./lead-details/useLeadDetails";
 import { IACopilot } from "./IACopilot";
@@ -22,6 +19,7 @@ import { LogsSection } from "./lead-details/LogsSection";
 import { useData } from "../../contexts/DataContext";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
+import { ConfirmModal } from "./ConfirmModal";
 
 interface LeadDetailsModalProps {
   isOpen: boolean;
@@ -29,47 +27,7 @@ interface LeadDetailsModalProps {
   lead: any;
 }
 
-const TABS = [
-  { id: "informacoes", label: "Informações", short: "INFO",    icon: Info          },
-  { id: "historico",   label: "Histórico",   short: "HIST.",   icon: Clock         },
-  { id: "relatorio",   label: "Relatório IA",short: "IA",      icon: Zap           },
-  { id: "mensagens",   label: "Chat",        short: "CHAT",    icon: MessageCircle },
-  { id: "produtos",    label: "Produtos",    short: "PROD.",   icon: Package       },
-  { id: "logs",        label: "Logs",        short: "LOGS",    icon: ScrollText    },
-];
 
-const TEMP_CFG = {
-  Quente: {
-    stripe:   "from-rose-500 via-orange-400 to-rose-500/0",
-    hero:     "from-rose-900/40 via-rose-800/10 to-transparent",
-    avatar:   "bg-rose-500/25 text-rose-200 ring-rose-500/50",
-    badge:    "bg-rose-500/15 border-rose-500/30 text-rose-400",
-    icon:     Flame,
-    iconCls:  "text-rose-400",
-    label:    "Quente",
-    dot:      "bg-rose-400",
-  },
-  Morno: {
-    stripe:   "from-amber-400 via-yellow-300 to-amber-400/0",
-    hero:     "from-amber-900/40 via-amber-800/10 to-transparent",
-    avatar:   "bg-amber-500/25 text-amber-200 ring-amber-500/50",
-    badge:    "bg-amber-500/15 border-amber-500/30 text-amber-400",
-    icon:     Sun,
-    iconCls:  "text-amber-400",
-    label:    "Morno",
-    dot:      "bg-amber-400",
-  },
-  Frio: {
-    stripe:   "from-blue-500 via-cyan-400 to-blue-500/0",
-    hero:     "from-blue-900/40 via-blue-800/10 to-transparent",
-    avatar:   "bg-blue-500/25 text-blue-200 ring-blue-500/50",
-    badge:    "bg-blue-500/15 border-blue-500/30 text-blue-400",
-    icon:     Snowflake,
-    iconCls:  "text-blue-400",
-    label:    "Frio",
-    dot:      "bg-blue-400",
-  },
-} as const;
 
 export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProps) {
   const { updateLead, leadActivities } = useData();
@@ -131,27 +89,29 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
   if (!lead) return null;
 
-  const leadActs    = leadActivities.filter((a: any) => a.leadId === lead.id);
-  const timeIdleNum = typeof timeIdle === "number" ? timeIdle : parseInt(String(timeIdle)) || 0;
-  const probNum     = Math.round(Number(probability) || 0);
+  const leadActs = leadActivities.filter((a: any) => a.leadId === lead.id);
+  const timeIdleNum = safeParseTimeIdle(timeIdle);
+  const probNum = safeParseProbability(probability);
 
-  const tc = TEMP_CFG[temperature as keyof typeof TEMP_CFG] || TEMP_CFG.Frio;
+  const tc = LeadDetailsTempCfg[temperature as keyof typeof LeadDetailsTempCfg] || LeadDetailsTempCfg.Frio;
   const TempIcon = tc.icon;
 
-  const formattedValue = new Intl.NumberFormat("pt-BR", {
-    style: "currency", currency: "BRL",
-  }).format(
-    parseFloat(String(value ?? "0").replace(/[^\d,.-]/g, "").replace(",", ".")) || 0
-  );
+  const formattedValue = formatLeadValueBRL(value);
 
   const moveToStage = (stg: any) => {
     updateLead(lead.id, { stageId: stg.id, status: stg.status });
     toast.success(`Etapa: ${stg.name}`);
     setAlterationLogs((prev: any[]) => [
-      { id: Date.now().toString(), author: seller || "Sistema", desc: `Moveu para '${stg.name}'`, time: "Agora" },
+      {
+        id: Date.now().toString(),
+        author: seller || "Sistema",
+        desc: `Moveu para '${stg.name}'`,
+        time: "Agora",
+      },
       ...prev,
     ]);
   };
+
 
   const initials = ((companyName || leadName || "LD").substring(0, 2)).toUpperCase();
 
@@ -164,41 +124,18 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
         position="right"
         noPadding
         footer={
-          <div className="flex items-center justify-between w-full gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsConfirmDeleteOpen(true)}
-              className="border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 gap-1.5 h-9 px-4 text-xs"
-            >
-              <Trash className="w-3.5 h-3.5" />
-              Excluir
-            </Button>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                onClick={onClose}
-                className="text-slate-400 font-bold px-4 h-9 hover:text-white text-xs"
-              >
-                Fechar
-              </Button>
-              {isEditingInline ? (
-                <Button
-                  onClick={handleSaveAll}
-                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 h-9 text-xs shadow-sm shadow-emerald-500/20"
-                >
-                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-                  Salvar
-                </Button>
-              ) : (
-                <Button
-                  onClick={() => setIsEditingInline(true)}
-                  className="bg-[#2563EB] hover:bg-blue-600 text-white font-bold px-5 h-9 text-xs shadow-sm shadow-blue-500/20"
-                >
-                  Editar Lead
-                </Button>
-              )}
-            </div>
-          </div>
+          <LeadDetailsModalFooter
+            isEditingInline={isEditingInline}
+            setIsEditingInline={setIsEditingInline}
+            handleSaveAll={handleSaveAll}
+
+            isConfirmDeleteOpen={isConfirmDeleteOpen}
+            setIsConfirmDeleteOpen={setIsConfirmDeleteOpen}
+            onClose={onClose}
+            onConfirmDelete={handleConfirmDelete}
+            companyName={companyName}
+            leadName={leadName}
+          />
         }
       >
         <div className="flex flex-col h-full bg-[#0B1120]">
@@ -355,7 +292,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
           {/* ── Tab bar ── */}
           <div className="flex border-b border-white/[0.06] overflow-x-auto scrollbar-none shrink-0 bg-[#0B1120]">
-            {TABS.map((tab) => {
+            {LeadDetailsModalTabs.map((tab) => {
               const isActive = currentTab === tab.id;
               return (
                 <button

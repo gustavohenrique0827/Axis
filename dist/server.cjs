@@ -26,6 +26,8 @@ var import_express = __toESM(require("express"), 1);
 var import_path = __toESM(require("path"), 1);
 var import_vite = require("vite");
 var import_genai = require("@google/genai");
+var import_supabase_js = require("@supabase/supabase-js");
+var import_crypto = require("crypto");
 var instances = [
   {
     id: "evo_inst_1",
@@ -39,15 +41,139 @@ var instances = [
 ];
 var contacts = [];
 var messages = {};
-var chatbotRules = [
-  { id: "rule_1", trigger: "ol\xE1", response: "Ol\xE1! Seja muito bem-vindo ao Axis CRM \u{1F680}\nComo podemos te ajudar hoje?\n\nDigite o n\xFAmero da op\xE7\xE3o desejada:\n1\uFE0F\u20E3 Conhecer nossos Servi\xE7os\n2\uFE0F\u20E3 Falar com setor Comercial\n3\uFE0F\u20E3 Suporte T\xE9cnico\n4\uFE0F\u20E3 Financeiro", matchType: "contains", active: true },
-  { id: "rule_2", trigger: "pre\xE7o", response: "Nossos planos come\xE7am em R$ 99/m\xEAs para o plano Starter, R$ 249/m\xEAs no plano Pro e Enterprise sob consulta!\n\nGostaria de agendar uma reuni\xE3o comercial para demonstra\xE7\xE3o do sistema?", matchType: "contains", active: true },
-  { id: "rule_3", trigger: "suporte", response: "Voc\xEA selecionou Suporte T\xE9cnico. Para acelerar seu atendimento, digite seu CNPJ ou e-mail de cadastro, por favor.", matchType: "contains", active: true }
+var sources = [
+  { id: "1", name: "Instagram" },
+  { id: "2", name: "WhatsApp" },
+  { id: "3", name: "Indica\xE7\xE3o" },
+  { id: "4", name: "Site" },
+  { id: "5", name: "Google Ads" }
+];
+var customFields = [
+  { id: "1", label: "CPF/CNPJ", type: "text", required: true },
+  { id: "2", label: "Setor", type: "select", options: ["Varejo", "Servi\xE7os", "Ind\xFAstria"] }
+];
+var taskCategories = [
+  { id: "1", name: "Follow-up", color: "bg-blue-500" },
+  { id: "2", name: "Reuni\xE3o", color: "purple" },
+  { id: "3", name: "Proposta", color: "emerald" }
+];
+var templates = [
+  { id: "1", name: "Sauda\xE7\xE3o Inicial", content: "Ol\xE1 {{name}}, como posso ajudar?", category: "Vendas" }
 ];
 async function startServer() {
   const app = (0, import_express.default)();
   const PORT = 3002;
+  const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
+  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+  const supabase = supabaseUrl && supabaseKey ? (0, import_supabase_js.createClient)(supabaseUrl, supabaseKey) : null;
   app.use(import_express.default.json());
+  const allowedOrigin = process.env.AXIS_CORS_ORIGIN || "*";
+  app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-api-key");
+    if (req.method === "OPTIONS") return res.sendStatus(204);
+    next();
+  });
+  const validApiKeys = new Set(
+    (process.env.AXIS_API_KEYS || "").split(",").map((k) => k.trim()).filter(Boolean)
+  );
+  function requireApiKey(req, res, next) {
+    if (validApiKeys.size === 0) {
+      return res.status(503).json({ error: "Nenhuma API Key configurada. Defina AXIS_API_KEYS no .env." });
+    }
+    const key = req.headers["x-api-key"];
+    if (!key || !validApiKeys.has(key)) {
+      return res.status(401).json({ error: "API Key inv\xE1lida ou ausente." });
+    }
+    next();
+  }
+  const FORM_TENANT_ID = process.env.AXIS_FORM_TENANT_ID || "";
+  const FORM_CLIENT_ID = process.env.AXIS_FORM_CLIENT_ID || "";
+  app.post("/api/v1/leads", requireApiKey, async (req, res) => {
+    const {
+      name,
+      company = "",
+      email = "",
+      phone = "",
+      cnpj = "",
+      title = "",
+      seller = "",
+      source = "",
+      status = "Novo",
+      priority = "M\xE9dia",
+      value = 0,
+      stageId = "sdr-1",
+      pipelineId = "sdr",
+      lead_interesse_cliente = "",
+      customFields: customFields2 = {},
+      clientId = FORM_CLIENT_ID,
+      clientName = "",
+      productIds = [],
+      tenantId = FORM_TENANT_ID,
+      tenantName = ""
+    } = req.body;
+    if (!name) {
+      return res.status(400).json({ error: "O campo 'name' \xE9 obrigat\xF3rio." });
+    }
+    if (!email && !phone) {
+      return res.status(400).json({ error: "Informe ao menos 'email' ou 'phone'." });
+    }
+    const id = (0, import_crypto.randomUUID)();
+    const now = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+    const rawValue = typeof value === "string" ? parseFloat(value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0 : value ?? 0;
+    const newLead = {
+      id,
+      name,
+      company,
+      email,
+      phone,
+      cnpj,
+      title,
+      seller,
+      source,
+      status,
+      priority,
+      value: rawValue,
+      stageId,
+      pipelineId,
+      lead_interesse_cliente,
+      customFields: customFields2,
+      clientId,
+      clientName,
+      productIds,
+      tenant_id: tenantId || null,
+      tenantName,
+      scoreIA: 50,
+      date: now,
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    if (!supabase) {
+      return res.status(503).json({ error: "Banco de dados n\xE3o configurado no servidor." });
+    }
+    const { data, error } = await supabase.from("leads").insert(newLead).select().maybeSingle();
+    if (error) {
+      console.error("[API v1] Erro ao criar lead:", error.message);
+      return res.status(500).json({ error: "Falha ao salvar lead no banco.", details: error.message });
+    }
+    return res.status(201).json({ success: true, lead: data ?? newLead });
+  });
+  app.get("/api/v1/leads", requireApiKey, async (req, res) => {
+    if (!supabase) {
+      return res.status(503).json({ error: "Banco de dados n\xE3o configurado no servidor." });
+    }
+    const { tenantId, tenantName, seller, status, limit = "100", offset = "0" } = req.query;
+    let query = supabase.from("leads").select("*").order("createdAt", { ascending: false }).limit(parseInt(limit)).range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
+    if (tenantId) query = query.eq("tenant_id", tenantId);
+    else if (tenantName) query = query.eq("tenantName", tenantName);
+    if (seller) query = query.eq("seller", seller);
+    if (status) query = query.eq("status", status);
+    const { data, error } = await query;
+    if (error) {
+      return res.status(500).json({ error: "Falha ao buscar leads.", details: error.message });
+    }
+    return res.json({ success: true, count: data?.length ?? 0, leads: data ?? [] });
+  });
   const keysAvailable = !!process.env.GEMINI_API_KEY;
   const ai = new import_genai.GoogleGenAI({
     apiKey: process.env.GEMINI_API_KEY || "dummy_key_to_prevent_crash_at_load_time",
@@ -169,7 +295,7 @@ async function startServer() {
   app.post("/api/leads/calculate-score", async (req, res) => {
     const { lead, activities } = req.body;
     if (!lead) {
-      return res.status(400).json({ error: "Lead are required for score calculation" });
+      return res.status(400).json({ error: "Lead data is required for score calculation" });
     }
     if (process.env.GEMINI_API_KEY) {
       try {
@@ -243,7 +369,256 @@ async function startServer() {
       iaSummary
     });
   });
-  app.get("/api/whatsapp/instances", (req, res) => {
+  app.post("/api/ai/performance-audit", async (req, res) => {
+    const { mrr, cac, ltv, leadsCount, dealsCount } = req.body;
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: "Chave de IA n\xE3o configurada." });
+    }
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `Voc\xEA \xE9 o Master IA do Axis CRM. Analise estes indicadores:
+        MRR: ${mrr}, CAC: ${cac}, LTV: ${ltv}, Leads: ${leadsCount}, Fechamentos: ${dealsCount}.
+
+        Gere 3 recomenda\xE7\xF5es estrat\xE9gicas baseadas em dados para otimizar o ROI.
+        Retorne estritamente um JSON array de objetos: [{"title": string, "desc": string, "impact": string, "color": "text-blue-400" | "text-emerald-400" | "text-purple-400"}].`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: import_genai.Type.ARRAY,
+            items: {
+              type: import_genai.Type.OBJECT,
+              properties: {
+                title: { type: import_genai.Type.STRING },
+                desc: { type: import_genai.Type.STRING },
+                impact: { type: import_genai.Type.STRING },
+                color: { type: import_genai.Type.STRING }
+              },
+              required: ["title", "desc", "impact", "color"]
+            }
+          }
+        }
+      });
+      res.json(JSON.parse(response.text));
+    } catch (error) {
+      res.status(500).json({ error: "Falha na auditoria cerebral." });
+    }
+  });
+  app.post("/api/ai/pipeline-audit", async (req, res) => {
+    const { stageName, leads } = req.body;
+    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `Analise a etapa "${stageName}" do funil com estes leads:
+        ${JSON.stringify(leads.map((l) => ({ name: l.name, score: l.scoreIA, temp: l.temperature })))}
+        
+        Forne\xE7a um insight r\xE1pido e uma a\xE7\xE3o imediata para o vendedor.
+        Retorne JSON: {"insight": string, "action": string}.`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: import_genai.Type.OBJECT,
+            properties: {
+              insight: { type: import_genai.Type.STRING },
+              action: { type: import_genai.Type.STRING }
+            },
+            required: ["insight", "action"]
+          }
+        }
+      });
+      res.json(JSON.parse(response.text));
+    } catch (error) {
+      res.status(500).json({ error: "Falha ao auditar funil." });
+    }
+  });
+  app.post("/api/ai/marketing-advisor", async (req, res) => {
+    const { leads, spent } = req.body;
+    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
+    try {
+      const sourceData = leads.reduce((acc, l) => {
+        const src = l.source || "Org\xE2nico";
+        acc[src] = (acc[src] || 0) + 1;
+        return acc;
+      }, {});
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `An\xE1lise de Marketing:
+        Gasto Total: R$ ${spent}
+        Convers\xE3o por Origem: ${JSON.stringify(sourceData)}
+        
+        Sugira onde realocar verba para diminuir o CAC.
+        Retorne JSON: {"suggestion": string, "rationale": string}.`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: import_genai.Type.OBJECT,
+            properties: {
+              suggestion: { type: import_genai.Type.STRING },
+              rationale: { type: import_genai.Type.STRING }
+            },
+            required: ["suggestion", "rationale"]
+          }
+        }
+      });
+      res.json(JSON.parse(response.text));
+    } catch (error) {
+      res.status(500).json({ error: "Falha na an\xE1lise de marketing." });
+    }
+  });
+  app.post("/api/ai/settings-audit", async (req, res) => {
+    const { type, config } = req.body;
+    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `Voc\xEA \xE9 o Auditor Master do Axis CRM. Analise esta configura\xE7\xE3o de ${type}:
+        ${JSON.stringify(config)}
+        
+        Identifique poss\xEDveis gargalos, regras redundantes ou melhorias na l\xF3gica.
+        Retorne estritamente um JSON: {"audit": string, "suggestions": string[]}.`,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: import_genai.Type.OBJECT,
+            properties: {
+              audit: { type: import_genai.Type.STRING },
+              suggestions: { type: import_genai.Type.ARRAY, items: { type: import_genai.Type.STRING } }
+            },
+            required: ["audit", "suggestions"]
+          }
+        }
+      });
+      res.json(JSON.parse(response.text));
+    } catch (error) {
+      res.status(500).json({ error: "Falha ao auditar configura\xE7\xF5es." });
+    }
+  });
+  app.get("/api/settings/:category", async (req, res) => {
+    const { category } = req.params;
+    if (supabase) {
+      const tableName = `crm_${category.replace("-", "_")}`;
+      const { data, error } = await supabase.from(tableName).select("*");
+      if (!error && data) return res.json(data);
+    }
+    switch (category) {
+      case "sources":
+        return res.json(sources);
+      case "fields":
+      case "custom-fields":
+      case "custom_lead_fields":
+        return res.json(customFields);
+      case "task-categories":
+      case "categories":
+        return res.json(taskCategories);
+      case "templates":
+        return res.json(templates);
+      default:
+        res.status(404).json({ error: "Categoria n\xE3o encontrada" });
+    }
+  });
+  app.post("/api/settings/:category", async (req, res) => {
+    const { category } = req.params;
+    const item = req.body;
+    const id = Math.random().toString(36).substring(2, 9);
+    const newItem = { id, ...item };
+    if (supabase) {
+      const tableName = `crm_${category.replace("-", "_")}`;
+      const { data, error } = await supabase.from(tableName).insert([newItem]).select();
+      if (!error && data) return res.json(data[0]);
+    }
+    switch (category) {
+      case "sources":
+        const newSource = { id, name: item.name || item.nome };
+        sources.push(newSource);
+        return res.json(newSource);
+      case "fields":
+      case "custom-fields":
+      case "custom_lead_fields":
+        customFields.push(newItem);
+        return res.json(newItem);
+      case "task-categories":
+        taskCategories.push(newItem);
+        return res.json(newItem);
+      case "templates":
+        templates.push(newItem);
+        return res.json(newItem);
+      default:
+        res.status(404).json({ error: "Categoria inv\xE1lida" });
+    }
+  });
+  app.delete("/api/settings/:category/:id", async (req, res) => {
+    const { category, id } = req.params;
+    if (supabase) {
+      const tableName = `crm_${category.replace("-", "_")}`;
+      await supabase.from(tableName).delete().eq("id", id);
+    }
+    switch (category) {
+      case "sources":
+        sources = sources.filter((s) => s.id !== id);
+        break;
+      case "fields":
+      case "custom-fields":
+      case "custom_lead_fields":
+        customFields = customFields.filter((f) => f.id !== id);
+        break;
+      case "task-categories":
+      case "categories":
+        taskCategories = taskCategories.filter((c) => c.id !== id);
+        break;
+      case "templates":
+        templates = templates.filter((t) => t.id !== id);
+        break;
+    }
+    res.json({ success: true });
+  });
+  app.post("/api/ai/suggest-new-config", async (req, res) => {
+    const { type } = req.body;
+    if (!process.env.GEMINI_API_KEY) return res.json({ suggestion: null });
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `Voc\xEA \xE9 um consultor de CRM. Sugira um exemplo para "${type}".
+        N\xC3O inclua campos como 'target'. Use os campos exatos abaixo.
+
+        Responda APENAS com JSON:
+        - Se for "Campo Personalizado": {"name": "Data de Anivers\xE1rio", "type": "Data", "required": false}
+        - Se for "Origem": {"nome": "Indica\xE7\xE3o Parceiro Premium"}
+        - Se for "Categoria de Tarefa": {"nome": "Follow-up Estrat\xE9gico", "cor": "bg-purple-500"}
+        - Se for "Modelo": {"name": "Boas-vindas", "content": "Ol\xE1 {{name}}, seja bem-vindo!", "category": "Vendas"}`,
+        config: { responseMimeType: "application/json" }
+      });
+      res.json(JSON.parse(response.text));
+    } catch (error) {
+      res.status(500).json({ error: "Erro na sugest\xE3o da IA" });
+    }
+  });
+  app.post("/api/ai/generic-insight", async (req, res) => {
+    const { context, data } = req.body;
+    if (!process.env.GEMINI_API_KEY) {
+      return res.json({ insight: "A Master IA est\xE1 em modo offline no momento. Conecte sua API Key para obter insights estrat\xE9gicos." });
+    }
+    try {
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: `Voc\xEA \xE9 o c\xE9rebro anal\xEDtico do Axis CRM. 
+        Contexto da solicita\xE7\xE3o: ${context}.
+        Dados brutos para an\xE1lise: ${JSON.stringify(data)}.
+
+        Sua tarefa: Forne\xE7a um insight estrat\xE9gico curto, direto e acion\xE1vel em portugu\xEAs (m\xE1ximo 3 frases). 
+        Foque em melhoria de ROI, convers\xE3o ou reten\xE7\xE3o.`
+      });
+      res.json({ insight: response.text });
+    } catch (error) {
+      console.error("Erro na Master IA:", error);
+      res.status(500).json({ error: "Falha ao processar insight cerebral." });
+    }
+  });
+  app.get("/api/whatsapp/instances", async (req, res) => {
+    if (supabase) {
+      const { data, error } = await supabase.from("whatsapp_instances").select("*").order("created_at", { ascending: false });
+      if (!error && data) return res.json(data);
+    }
     res.json(instances);
   });
   app.post("/api/whatsapp/instances", (req, res) => {
@@ -341,11 +716,15 @@ async function startServer() {
     }
     res.json(newContact);
   });
-  app.get("/api/whatsapp/messages/:contactId", (req, res) => {
+  app.get("/api/whatsapp/messages/:contactId", async (req, res) => {
     const { contactId } = req.params;
+    if (supabase) {
+      const { data, error } = await supabase.from("chat_messages").select("*").eq("contact_id", contactId).order("timestamp", { ascending: true });
+      if (!error && data) return res.json(data);
+    }
     res.json(messages[contactId] || []);
   });
-  app.post("/api/whatsapp/messages/send", (req, res) => {
+  app.post("/api/whatsapp/messages/send", async (req, res) => {
     const { contactId, text } = req.body;
     if (!contactId || !text) {
       return res.status(400).json({ error: "ID do contato e texto s\xE3o obrigat\xF3rios" });
@@ -363,41 +742,26 @@ async function startServer() {
       messages[contactId] = [];
     }
     messages[contactId].push(userMsg);
+    if (supabase) {
+      await supabase.from("chat_messages").insert([{
+        id: userMsg.id,
+        text: userMsg.text,
+        sender: userMsg.sender,
+        time: userMsg.time,
+        status: userMsg.status,
+        timestamp: userMsg.timestamp,
+        contact_id: contactId
+      }]);
+      await supabase.from("chat_contacts").update({ lastMessage: text, time: timeString }).eq("id", contactId);
+    }
     const contact = contacts.find((c) => c.id === contactId);
     if (contact) {
       contact.lastMessage = text;
       contact.time = timeString;
     }
     res.json({ success: true, message: userMsg });
-    const loweredText = text.toLowerCase();
-    const matchedRule = chatbotRules.find((r) => {
-      if (!r.active) return false;
-      if (r.matchType === "equals") {
-        return loweredText === r.trigger.toLowerCase();
-      } else {
-        return loweredText.includes(r.trigger.toLowerCase());
-      }
-    });
-    if (matchedRule) {
-      setTimeout(() => {
-        const autoReply = {
-          id: "msg_bot_" + Math.random().toString(36).substring(2, 9),
-          text: matchedRule.response,
-          sender: "them",
-          time: (/* @__PURE__ */ new Date()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          timestamp: Date.now(),
-          status: "read"
-        };
-        messages[contactId].push(autoReply);
-        if (contact) {
-          contact.lastMessage = matchedRule.response;
-          contact.time = autoReply.time;
-          contact.unread = contact.unread + 1;
-        }
-      }, 1500);
-    }
   });
-  app.post("/api/whatsapp/simulate-incoming", (req, res) => {
+  app.post("/api/whatsapp/simulate-incoming", async (req, res) => {
     const { contactId, text } = req.body;
     if (!contactId || !text) {
       return res.status(400).json({ error: "contactId e texto s\xE3o obrigat\xF3rios" });
@@ -421,68 +785,18 @@ async function startServer() {
     contact.lastMessage = text;
     contact.time = timeString;
     contact.unread = contact.unread + 1;
+    if (supabase) {
+      await supabase.from("chat_messages").insert([{
+        id: inMsg.id,
+        text: inMsg.text,
+        sender: inMsg.sender,
+        time: inMsg.time,
+        timestamp: inMsg.timestamp,
+        contact_id: contactId
+      }]);
+      await supabase.from("chat_contacts").update({ lastMessage: text, time: timeString, unread: contact.unread }).eq("id", contactId);
+    }
     res.json({ message: inMsg, contact });
-    const loweredText = text.toLowerCase();
-    const matchedRule = chatbotRules.find((r) => {
-      if (!r.active) return false;
-      if (r.matchType === "equals") {
-        return loweredText === r.trigger.toLowerCase();
-      } else {
-        return loweredText.includes(r.trigger.toLowerCase());
-      }
-    });
-    if (matchedRule) {
-      setTimeout(() => {
-        const autoReply = {
-          id: "msg_bot_" + Math.random().toString(36).substring(2, 9),
-          text: matchedRule.response,
-          sender: "them",
-          // Wait! Automatic replies are sent by ME (our business)
-          time: (/* @__PURE__ */ new Date()).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-          timestamp: Date.now(),
-          status: "read"
-        };
-        messages[contactId].push(autoReply);
-        contact.lastMessage = matchedRule.response;
-        contact.time = autoReply.time;
-      }, 1500);
-    }
-  });
-  app.get("/api/whatsapp/chatbot/rules", (req, res) => {
-    res.json(chatbotRules);
-  });
-  app.post("/api/whatsapp/chatbot/rules", (req, res) => {
-    const { trigger, response, matchType = "contains" } = req.body;
-    if (!trigger || !response) {
-      return res.status(400).json({ error: "Gatilho e Resposta s\xE3o obrigat\xF3rios" });
-    }
-    const newRule = {
-      id: "rule_" + Math.random().toString(36).substring(2, 9),
-      trigger,
-      response,
-      matchType,
-      active: true
-    };
-    chatbotRules.push(newRule);
-    res.json(newRule);
-  });
-  app.put("/api/whatsapp/chatbot/rules/:id", (req, res) => {
-    const { id } = req.params;
-    const { trigger, response, matchType, active } = req.body;
-    const rule = chatbotRules.find((r) => r.id === id);
-    if (!rule) {
-      return res.status(404).json({ error: "Regra n\xE3o encontrada" });
-    }
-    if (trigger !== void 0) rule.trigger = trigger;
-    if (response !== void 0) rule.response = response;
-    if (matchType !== void 0) rule.matchType = matchType;
-    if (active !== void 0) rule.active = active;
-    res.json(rule);
-  });
-  app.delete("/api/whatsapp/chatbot/rules/:id", (req, res) => {
-    const { id } = req.params;
-    chatbotRules = chatbotRules.filter((r) => r.id !== id);
-    res.json({ success: true, id });
   });
   app.post("/api/whatsapp/copilot/analyze", async (req, res) => {
     const { contactId } = req.body;
