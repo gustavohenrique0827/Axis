@@ -413,7 +413,6 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                     handleAddTag={handleAddTag}
                     handleRemoveTag={handleRemoveTag}
                     handleConvertLead={handleConvertLead}
-                    addLeadActivity={handleRegisterActivity}
                     setAlterationLogs={setAlterationLogs}
                     setActiveTab={handleSetActiveTab}
                     setChatChannel={() => {}}
@@ -479,7 +478,6 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
               {currentTab === "produtos" && (
                 <div className="px-5 py-4">
                   <ProductsSection
-                    lead={lead}
                     estimatedSum={estimatedSum}
                     availableProducts={availableProducts}
                     linkedProductIds={linkedProductIds}

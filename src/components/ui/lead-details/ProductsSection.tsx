@@ -1,11 +1,9 @@
-import React from "react";
 import { Card } from "../card";
 import { Button } from "../button";
-import { FileText, BadgeCent } from "lucide-react";
+import { FileText } from "lucide-react";
 import { toast } from "sonner";
 
 interface ProductsSectionProps {
-  lead: any;
   estimatedSum: number;
   availableProducts: any[];
   linkedProductIds: string[];
@@ -15,7 +13,6 @@ interface ProductsSectionProps {
 }
 
 export function ProductsSection({
-  lead,
   estimatedSum,
   availableProducts,
   linkedProductIds,
@@ -90,7 +87,7 @@ export function ProductsSection({
             onClick={() => {
               toast.success("Documento em formato PDF gerado no servidor!");
               setAlterationLogs((prev: any[]) => [
-                { id: Date.now().toString(), author: "Carlos Eduardo Mendes", desc: `Proposta comercial eletrônica criada de R$ ${estimatedSum.toLocaleString('pt-BR')}`, time: "Agora" },
+                { id: Date.now().toString(), author: seller || "Sistema", desc: `Proposta comercial eletrônica criada de R$ ${estimatedSum.toLocaleString('pt-BR')}`, time: "Agora" },
                 ...prev
               ]);
             }}
