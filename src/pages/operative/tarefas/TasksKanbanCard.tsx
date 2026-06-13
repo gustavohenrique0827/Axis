@@ -1,8 +1,8 @@
 import { Card } from "../../../components/ui/card";
-import { Badge } from "../../../components/ui/badge";
 import { Edit, CheckCircle2, Trash2, Clock, AlertTriangle, Sparkles } from "lucide-react";
 import { Task } from "../../../types";
 import { KanbanColConfig } from "../../../hooks/useKanbanConfig";
+import { useData } from "../../../contexts/DataContext";
 
 interface TasksKanbanCardProps {
   task: Task;
@@ -33,6 +33,12 @@ export function TasksKanbanCard({
   moveTaskStatus,
   columns,
 }: TasksKanbanCardProps) {
+  const { colaboradores } = useData();
+  const sellerOptions = (colaboradores as any[])
+    .filter(c => c.status !== "Desligado")
+    .map(c => c.nome as string)
+    .filter(Boolean);
+
   return (
     <Card
       draggable
@@ -76,10 +82,9 @@ export function TasksKanbanCard({
           className={`bg-transparent text-[10px] ${task.seller ? 'text-slate-300' : 'text-rose-400 font-black'} font-bold focus:outline-none focus:ring-1 focus:ring-[#2563EB] rounded px-1 cursor-pointer w-full`}
         >
           <option value="" className="text-rose-400 font-bold bg-[#0B1120]">Nenhum (Atenção!)</option>
-          <option value="Carlos Eduardo Mendes" className="text-white bg-[#0B1120]">Carlos Eduardo Mendes</option>
-          <option value="Ana Silva" className="text-white bg-[#0B1120]">Ana Silva</option>
-          <option value="Roberto Ramos" className="text-white bg-[#0B1120]">Roberto Ramos</option>
-          <option value="Juliana Costa" className="text-white bg-[#0B1120]">Juliana Costa</option>
+          {sellerOptions.map(name => (
+            <option key={name} value={name} className="text-white bg-[#0B1120]">{name}</option>
+          ))}
         </select>
         {!task.seller && <AlertTriangle className="w-3 h-3 text-rose-400 shrink-0"/>}
       </div>

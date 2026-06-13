@@ -1,9 +1,10 @@
 import { Card } from "../../../components/ui/card";
-import { 
+import {
   CheckCircle2, Calendar, Edit, Trash2, CheckSquare, Sparkles
 } from "lucide-react";
 import { Task } from "../../../types";
 import { KanbanColConfig } from "../../../hooks/useKanbanConfig";
+import { useData } from "../../../contexts/DataContext";
 
 interface TasksListModeProps {
   filteredTasks: Task[];
@@ -26,6 +27,12 @@ export function TasksListMode({
   getPriorityColor,
   columns
 }: TasksListModeProps) {
+  const { colaboradores } = useData();
+  const sellerOptions = (colaboradores as any[])
+    .filter(c => c.status !== "Desligado")
+    .map(c => c.nome as string)
+    .filter(Boolean);
+
   return (
     <Card className="bg-[#111827]/80 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl rounded-3xl">
       <div className="px-5 py-4 border-b border-white/10 bg-white/[0.01] flex flex-wrap items-center justify-between gap-3 text-left">
@@ -82,10 +89,9 @@ export function TasksListMode({
                         className="bg-[#111827] text-[10px] text-slate-300 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1.5 py-0.5 border border-white/10 cursor-pointer hover:bg-white/10"
                       >
                         <option value="" className="text-slate-400">Sem responsável</option>
-                        <option value="Carlos Eduardo Mendes" className="text-white">Carlos Eduardo Mendes</option>
-                        <option value="Ana Silva" className="text-white">Ana Silva</option>
-                        <option value="Roberto Ramos" className="text-white">Roberto Ramos</option>
-                        <option value="Juliana Costa" className="text-white">Juliana Costa</option>
+                        {sellerOptions.map(name => (
+                          <option key={name} value={name} className="text-white">{name}</option>
+                        ))}
                       </select>
                     </span>
                     

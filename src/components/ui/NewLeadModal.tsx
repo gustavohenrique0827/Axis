@@ -465,11 +465,9 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
                     </option>
                   ))
                 ) : (
-                  <>
-                    <option value="Carlos Eduardo Mendes" className="bg-[#111827]">Carlos Eduardo Mendes</option>
-                    <option value="Ana Silva" className="bg-[#111827]">Ana Silva</option>
-                    <option value="Roberto Ramos" className="bg-[#111827]">Roberto Ramos</option>
-                  </>
+                  <option value="" disabled className="bg-[#111827] text-slate-500">
+                    Nenhum colaborador cadastrado
+                  </option>
                 )}
               </select>
               {selectedSeller && (

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ClipboardList, Layers, Users, ShieldCheck, Loader2 } from "lucide-react";
+import { ClipboardList, Layers, Users } from "lucide-react";
 import { Modal } from "./modal";
 import { Button } from "./button";
+import { useData } from "../../contexts/DataContext";
 
 type NovaTarefaPayload = {
   nome: string;
@@ -37,8 +38,6 @@ const taskTypes = [
 
 const priorities = ["Alta", "Média", "Baixa"];
 
-const sellers = ["Carlos Eduardo Mendes", "Ana Silva", "Roberto Ramos", "Juliana Costa"];
-
 export function NovaTarefaModal({
   isOpen,
   onClose,
@@ -47,12 +46,19 @@ export function NovaTarefaModal({
   title = "Nova Tarefa / Compromisso",
   submitText = "Agendar Tarefa",
 }: NovaTarefaModalProps) {
+  const { colaboradores } = useData();
+
+  const sellerOptions = useMemo(
+    () => (colaboradores as any[]).filter(c => c.status !== "Desligado").map(c => c.nome as string).filter(Boolean),
+    [colaboradores]
+  );
+
   const [nome, setNome] = useState(initialValue?.nome || "");
   const [tipo, setTipo] = useState(initialValue?.tipo || taskTypes[0]);
   const [prioridade, setPrioridade] = useState(initialValue?.prioridade || "Média");
   const [data, setData] = useState(initialValue?.data || new Date().toISOString().substring(0, 16));
   const [relacionado, setRelacionado] = useState(initialValue?.relacionado || "");
-  const [vendedor, setVendedor] = useState(initialValue?.vendedor || sellers[0]);
+  const [vendedor, setVendedor] = useState(initialValue?.vendedor || "");
   const [produtos, setProdutos] = useState(initialValue?.produtos || "");
   const [tags, setTags] = useState(initialValue?.tags || "");
 
@@ -63,7 +69,7 @@ export function NovaTarefaModal({
     setPrioridade(initialValue?.prioridade || "Média");
     setData(initialValue?.data || new Date().toISOString().substring(0, 16));
     setRelacionado(initialValue?.relacionado || "");
-    setVendedor(initialValue?.vendedor || sellers[0]);
+    setVendedor(initialValue?.vendedor || "");
     setProdutos(initialValue?.produtos || "");
     setTags(initialValue?.tags || "");
   }, [isOpen, initialValue]);
@@ -172,9 +178,13 @@ export function NovaTarefaModal({
           <div className="space-y-2">
             <label className={labelClass}>Vendedor Responsável</label>
             <select value={vendedor} onChange={(e) => setVendedor(e.target.value)} className={fieldClass}>
-              {sellers.map((option) => (
+              <option value="">Não Atribuído</option>
+              {sellerOptions.map((option) => (
                 <option key={option} value={option}>{option}</option>
               ))}
+              {sellerOptions.length === 0 && (
+                <option value="" disabled>Nenhum colaborador cadastrado</option>
+              )}
             </select>
           </div>
         </div>

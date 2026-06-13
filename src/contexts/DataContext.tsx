@@ -485,7 +485,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               date: "Amanhã, 09:00",
               status: "Em Aberto",
               priority: "Média",
-              seller: lead.seller || "Roberto Ramos",
+              seller: lead.seller || "",
               tags: ["reengajamento", "Frio", "Automação"]
             };
 
