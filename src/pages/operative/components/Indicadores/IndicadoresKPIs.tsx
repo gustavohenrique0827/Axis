@@ -1,0 +1,78 @@
+import { Card } from "../../../../components/ui/card";
+import { Button } from "../../../../components/ui/button";
+import { motion, AnimatePresence } from "motion/react";
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis } from "recharts";
+
+interface KpiCard {
+  label: string;
+  value: string;
+  trend: string;
+  icon: React.ElementType;
+  color: string;
+}
+
+interface IndicadoresKPIsProps {
+  kpiCards: KpiCard[];
+  criticalKPIs: string[];
+  selectedKPI: KpiCard | null;
+  onSelectKPI: (kpi: KpiCard) => void;
+  onCloseKPI: () => void;
+}
+
+export function IndicadoresKPIs({ kpiCards, criticalKPIs, selectedKPI, onSelectKPI, onCloseKPI }: IndicadoresKPIsProps) {
+  return (
+    <>
+      <AnimatePresence>
+        {selectedKPI && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={onCloseKPI}
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              className="bg-[#111827] border border-white/10 p-8 rounded-2xl max-w-lg w-full"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-xl font-bold text-white mb-4">{selectedKPI.label} - Histórico (30 dias)</h3>
+              <div className="h-64">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={[...Array(30).keys()].map((i) => ({ day: i, value: 0 }))}>
+                    <Line type="monotone" dataKey="value" stroke="#3B82F6" strokeWidth={2} dot={false} />
+                    <XAxis dataKey="day" hide />
+                    <YAxis hide />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+              <Button className="mt-6 w-full" onClick={onCloseKPI}>Fechar</Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        {kpiCards.map((kpi) => (
+          <div key={kpi.label} className="h-full">
+            <Card
+              className={`p-6 bg-[#111827]/80 border-white/5 backdrop-blur-xl relative overflow-hidden group ${criticalKPIs.includes(kpi.label) ? "animate-pulse" : ""}`}
+              onDoubleClick={() => onSelectKPI(kpi)}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className="p-2.5 rounded-xl bg-white/5 border border-white/5 group-hover:border-white/10 transition-colors">
+                  <kpi.icon className={`w-5 h-5 ${kpi.color}`} />
+                </div>
+                <span className={`text-[10px] font-bold ${kpi.trend.startsWith("+") ? "text-emerald-400" : "text-rose-400"}`}>{kpi.trend}</span>
+              </div>
+              <h3 className="text-2xl font-black text-white mb-1 tracking-tight">{kpi.value}</h3>
+              <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest">{kpi.label}</p>
+            </Card>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}

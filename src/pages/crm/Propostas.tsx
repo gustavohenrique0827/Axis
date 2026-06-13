@@ -1,85 +1,42 @@
 import { useState } from "react";
-import {
-  FileText,
-  Search,
-  Plus,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  User,
-  Download,
-  Trash2,
-  History,
-  Send,
-  ArrowUpRight,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import { Button } from "../../components/ui/button";
-import { Card } from "../../components/ui/card";
-import { Input } from "../../components/ui/input";
-import { Badge } from "../../components/ui/badge";
 import { PageContainer } from "../../components/PageContainer";
 import { toast } from "sonner";
 import { useData } from "../../contexts/DataContext";
-import { Proposta, handleDownloadPdf } from "./utils/proposalPdf";
 import { CriarPropostaModal } from "../../components/ui/CriarPropostaModal";
 import { NovaPropostaRapidaModal } from "../../components/ui/NovaPropostaRapidaModal";
 
+import { PropostasKPIs } from "./components/Propostas/PropostasKPIs";
+import { PropostasTable } from "./components/Propostas/PropostasTable";
+
 export default function Propostas() {
   const { proposals: propostas, addProposal, updateProposal, deleteProposal } = useData();
-  
+
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPropostaModalOpen, setIsPropostaModalOpen] = useState(false);
-  
+
+  const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+
   const handleCreatePropostaNew = (data: any) => {
-    const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-    const today = new Date();
     addProposal({
       id: Math.random().toString(36).substring(2, 9),
       cliente: data.cliente,
       titulo: data.titulo,
       valor: `R$ ${parseFloat(data.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      dataCriacao: fmt(today),
+      dataCriacao: fmt(new Date()),
       vencimento: new Date(data.dataValidade).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }),
       status: "Enviada",
-      vendedor: "Sistema Axis"
+      vendedor: "Sistema Axis",
     });
     toast.success("✨ Proposta criada com sucesso! Pronta para envio.");
     setIsPropostaModalOpen(false);
   };
 
-  const handleDeleteProposta = (id: string) => {
-    deleteProposal(id);
-    toast.success("Proposta de venda excluída.");
-  };
-
-  const handleUpdateStatus = (id: string, newStatus: Proposta["status"]) => {
+  const handleUpdateStatus = (id: string, newStatus: any) => {
     updateProposal(id, { status: newStatus });
     toast.success(`Proposta atualizada para: ${newStatus}`);
-  };
-
-  const filteredPropostas = propostas.filter(
-    (p) =>
-      p.cliente.toLowerCase().includes(search.toLowerCase()) ||
-      p.titulo.toLowerCase().includes(search.toLowerCase()),
-  );
-
-  const getStatusInfo = (status: string) => {
-    switch (status) {
-      case "Aceita":
-        return {
-          color: "text-emerald-400 bg-emerald-500/20 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)]",
-          icon: CheckCircle2,
-        };
-      case "Enviada":
-        return { color: "text-blue-400 bg-blue-500/20 border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.15)]", icon: Send };
-      case "Aberta":
-        return { color: "text-amber-400 bg-amber-500/20 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]", icon: Clock };
-      case "Recusada":
-        return { color: "text-rose-400 bg-rose-500/20 border border-rose-500/30 shadow-[0_0_15px_rgba(244,63,94,0.15)]", icon: XCircle };
-      default:
-        return { color: "text-slate-300 bg-slate-500/20 border border-slate-500/30 shadow-[0_0_15px_rgba(100,116,139,0.15)]", icon: History };
-    }
   };
 
   return (
@@ -88,15 +45,13 @@ export default function Propostas() {
       description="Gestão de orçamentos, contratos e follow-up de vendas de alta conversão."
       actions={
         <div className="flex items-center gap-3">
-          <Button 
+          <Button
             className="bg-white/5 hover:bg-white/10 text-white border-white/10 h-11 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px]"
-            onClick={() => {
-              toast.info("Apenas modelos premium de engenharia e tecnologia estão ativos no plano.");
-            }}
+            onClick={() => toast.info("Apenas modelos premium de engenharia e tecnologia estão ativos no plano.")}
           >
             Modelos
           </Button>
-          <Button 
+          <Button
             onClick={() => setIsPropostaModalOpen(true)}
             className="bg-[#2563EB] hover:bg-blue-605 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20"
           >
@@ -105,202 +60,25 @@ export default function Propostas() {
         </div>
       }
     >
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[
-          {
-            label: "Aguardando Aceite",
-            value: propostas.filter(p => p.status === 'Enviada').reduce((acc, curr) => acc + parseFloat(curr.valor.replace(/[^0-9.,]/g, '').replace(',', '.')), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-            icon: Send,
-            color: "text-blue-500",
-            bg: "bg-blue-500/10",
-          },
-          {
-            label: "Convertidas (Mês)",
-            value: propostas.filter(p => p.status === 'Aceita').reduce((acc, curr) => acc + parseFloat(curr.valor.replace(/[^0-9.,]/g, '').replace(',', '.')), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-            icon: CheckCircle2,
-            color: "text-emerald-500",
-            bg: "bg-emerald-500/10",
-          },
-          {
-            label: "Taxa de Conversão",
-            value: propostas.length > 0 ? Math.round((propostas.filter(p => p.status === 'Aceita').length / propostas.length) * 100) + "%" : "0%",
-            icon: ArrowUpRight,
-            color: "text-indigo-500",
-            bg: "bg-indigo-500/10",
-          },
-          {
-            label: "Propostas Ativas",
-            value: propostas.length.toString(),
-            icon: FileText,
-            color: "text-amber-500",
-            bg: "bg-amber-500/10",
-          },
-        ].map((stat, i) => (
-          <Card
-            key={i}
-            className="p-5 bg-[#111827]/80 border-white/5 backdrop-blur-md flex items-center justify-between"
-          >
-            <div>
-              <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">
-                {stat.label}
-              </div>
-              <div className="text-2xl font-black text-white italic">
-                {stat.value}
-              </div>
-            </div>
-            <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
-              <stat.icon className="w-5 h-5" />
-            </div>
-          </Card>
-        ))}
-      </div>
+      <PropostasKPIs propostas={propostas as any} />
 
-      <Card className="p-4 bg-[#111827]/50 border-white/5 flex flex-col md:flex-row gap-4 items-center mb-6">
-        <div className="relative flex-1 w-full">
-          <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
-          <Input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar por cliente ou título..."
-            className="w-full bg-transparent border-white/5 pl-12 h-12 rounded-xl text-sm italic text-white"
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            onClick={() => toast.info("Filtros extras ativados automaticamente para seller ativo.")}
-            className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white"
-          >
-            Filtros Avançados
-          </Button>
-        </div>
-      </Card>
-
-      <div className="overflow-x-auto pb-12">
-        <table className="w-full border-separate border-spacing-y-3">
-          <thead>
-            <tr className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-4">
-              <th className="text-left pb-2 pl-6">Cliente / Título</th>
-              <th className="text-left pb-2">Valor</th>
-              <th className="text-left pb-2">Status</th>
-              <th className="text-left pb-2">Datas</th>
-              <th className="text-left pb-2">Vendedor</th>
-              <th className="text-right pb-2 pr-6">Ações</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredPropostas.map((item) => {
-              const status = getStatusInfo(item.status);
-              return (
-                <tr
-                  key={item.id}
-                  className="group bg-[#111827]/80 hover:bg-white/[0.03] transition-all"
-                >
-                  <td className="py-5 pl-6 rounded-l-2xl border-y border-l border-white/5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-blue-400 transition-colors">
-                        <FileText className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold text-white uppercase tracking-tight">
-                          {item.cliente}
-                        </div>
-                        <div className="text-xs text-slate-500 italic">
-                          {item.titulo}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-5 border-y border-white/5">
-                    <div className="text-sm font-black text-white">
-                      {item.valor}
-                    </div>
-                  </td>
-                  <td className="py-5 border-y border-white/5">
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant="secondary"
-                        className={`${status.color} font-black uppercase tracking-widest text-[9px] px-2.5 py-1 flex items-center gap-1.5 w-fit`}
-                      >
-                        <status.icon className="w-3 h-3" />
-                        {item.status}
-                      </Badge>
-                      
-                      {/* Quick Status Adjustments */}
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity flex gap-1">
-                        <button 
-                          onClick={() => handleUpdateStatus(item.id, "Aceita")}
-                          className="px-1.5 py-0.5 text-[8px] font-extrabold uppercase bg-emerald-500/10 text-emerald-400 rounded hover:bg-emerald-500/20"
-                          title="Marcar como Aceita"
-                        >
-                          Aceitar
-                        </button>
-                        <button 
-                          onClick={() => handleUpdateStatus(item.id, "Recusada")}
-                          className="px-1.5 py-0.5 text-[8px] font-extrabold uppercase bg-rose-500/10 text-rose-400 rounded hover:bg-rose-500/20"
-                          title="Marcar como Recusada"
-                        >
-                          Recusar
-                        </button>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-5 border-y border-white/5">
-                    <div className="text-[10px] font-bold text-slate-400">
-                      Criada: {item.dataCriacao}
-                    </div>
-                    <div className="text-[10px] font-bold text-rose-500">
-                      Venc: {item.vencimento}
-                    </div>
-                  </td>
-                  <td className="py-5 border-y border-white/5">
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-lg bg-indigo-500/20 flex items-center justify-center">
-                        <User className="w-3 h-3 text-indigo-400" />
-                      </div>
-                      <span className="text-xs font-bold text-slate-300">
-                        {item.vendedor}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-5 pr-6 rounded-r-2xl border-y border-r border-white/5 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        onClick={() => handleDownloadPdf(item)}
-                        title="Baixar Contrato (PDF)"
-                        className="p-2 text-slate-400 hover:text-white hover:bg-blue-500/10 rounded-lg transition-colors"
-                      >
-                        <Download className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteProposta(item.id)}
-                        title="Deletar Proposta"
-                        className="p-2 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      <PropostasTable
+        propostas={propostas as any}
+        search={search}
+        onSearchChange={setSearch}
+        onUpdateStatus={handleUpdateStatus}
+        onDelete={(id) => { deleteProposal(id); toast.success("Proposta de venda excluída."); }}
+      />
 
       <NovaPropostaRapidaModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={({ cliente, titulo, valor, vencimento, vendedor }) => {
           const today = new Date();
-          const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-          const valDate = vencimento
-            ? fmt(new Date(vencimento))
-            : fmt(new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000));
+          const valDate = vencimento ? fmt(new Date(vencimento)) : fmt(new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000));
           addProposal({
             id: Math.random().toString(36).substring(2, 9),
-            cliente,
-            titulo,
+            cliente, titulo,
             valor: valor.startsWith("R$") ? valor : `R$ ${parseFloat(valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
             dataCriacao: fmt(today),
             vencimento: valDate,
