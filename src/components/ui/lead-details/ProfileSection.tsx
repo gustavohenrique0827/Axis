@@ -3,6 +3,7 @@ import { Card } from "../card";
 import { Sparkles, Brain, ArrowRight, Edit, Tag, Trophy, Phone, MessageSquare, Mail, FileCheck, Search } from "lucide-react";
 import { Button } from "../button";
 import { useData } from "../../../contexts/DataContext";
+import { toast } from "sonner";
 
 interface ProfileSectionProps {
   lead: any;
@@ -39,7 +40,6 @@ interface ProfileSectionProps {
   handleAddTag: () => void;
   handleRemoveTag: (tag: string) => void;
   handleConvertLead: () => void;
-  addLeadActivity: any;
   setAlterationLogs: any;
   setActiveTab: (tab: string) => void;
   setChatChannel: (ch: any) => void;
@@ -62,16 +62,27 @@ export function ProfileSection({
   isEditingInline, setIsEditingInline,
   tempColors, customLeadFields, customFieldsState, setCustomFieldsState,
   handleAddTag, handleRemoveTag, handleConvertLead,
-  addLeadActivity, setAlterationLogs, setActiveTab, setChatChannel,
+  setAlterationLogs, setActiveTab, setChatChannel,
   applyMessageTemplate, updateLead,
 }: ProfileSectionProps) {
   const [cnpjFetching, setCnpjFetching] = useState(false);
-  const { leads: allLeads } = useData();
+  const { leads: allLeads, colaboradores, addLeadActivity: addActivityCtx } = useData();
 
-  const sellerOptions = useMemo(
-    () => [...new Set((allLeads as any[]).map((l: any) => l.seller).filter(Boolean))] as string[],
-    [allLeads]
-  );
+  const sellerOptions = useMemo(() => {
+    const fromColab = (colaboradores as any[])
+      .filter((c: any) => c.status !== "Desligado")
+      .map((c: any) => c.nome)
+      .filter(Boolean);
+    if (fromColab.length > 0) return fromColab as string[];
+    return [...new Set((allLeads as any[]).map((l: any) => l.seller).filter(Boolean))] as string[];
+  }, [colaboradores, allLeads]);
+
+  const displayValue = useMemo(() => {
+    if (!value) return "R$ 0,00";
+    const num = parseFloat(String(value).replace(/[^\d,.-]/g, "").replace(",", "."));
+    if (isNaN(num) || num === 0) return value as string;
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(num);
+  }, [value]);
 
   const fetchCnpjData = async () => {
     const digits = (lead.cnpj || "").replace(/\D/g, "");
@@ -126,7 +137,7 @@ export function ProfileSection({
           <div className="min-w-0 flex-1 pr-28">
             <h3 className="text-sm font-black text-white leading-tight truncate">{companyName || leadName}</h3>
             <p className="text-[11px] text-slate-400 mt-0.5 truncate">Contato: {leadName}</p>
-            <p className="text-[11px] font-bold text-emerald-400 mt-0.5 font-mono">{value || 'R$ 0'}</p>
+            <p className="text-[11px] font-bold text-emerald-400 mt-0.5 font-mono">{displayValue}</p>
           </div>
         </div>
 
@@ -169,7 +180,10 @@ export function ProfileSection({
             {
               label: 'VoIP', icon: Phone, color: 'text-cyan-400',
               bg: 'bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-500/20',
-              action: () => addLeadActivity(lead.id, 'Ligação', 'Tentativa de Ligação', 'Discagem virtual executada.', seller || 'Sistema'),
+              action: () => {
+                addActivityCtx(lead.id, 'Ligação', 'Ligação VoIP', 'Discagem virtual executada pelo sistema Axis.', seller || 'Sistema');
+                toast.success('Ligação VoIP registrada!');
+              },
             },
             {
               label: 'E-mail', icon: Mail, color: 'text-amber-400',
