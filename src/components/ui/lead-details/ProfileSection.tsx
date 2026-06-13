@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Card } from "../card";
 import { Sparkles, Brain, ArrowRight, Edit, Tag, Trophy, Phone, MessageSquare, Mail, FileCheck, Search } from "lucide-react";
 import { Button } from "../button";
+import { useData } from "../../../contexts/DataContext";
 
 interface ProfileSectionProps {
   lead: any;
@@ -48,47 +49,29 @@ interface ProfileSectionProps {
 
 export function ProfileSection({
   lead,
-  companyName,
-  setCompanyName,
-  leadName,
-  setLeadName,
-  phone,
-  setPhone,
-  email,
-  setEmail,
-  title,
-  setTitle,
+  companyName, setCompanyName,
+  leadName, setLeadName,
+  phone, setPhone,
+  email, setEmail,
+  title, setTitle,
   value,
-  setValue,
-  seller,
-  setSeller,
-  priority,
-  setPriority,
-  score,
-  temperature,
-  probability,
-  slaStatus,
-  timeIdle,
-  customTags,
-  newTagInput,
-  setNewTagInput,
-  isEditingInline,
-  setIsEditingInline,
-  tempColors,
-  customLeadFields,
-  customFieldsState,
-  setCustomFieldsState,
-  handleAddTag,
-  handleRemoveTag,
-  handleConvertLead,
-  addLeadActivity,
-  setAlterationLogs,
-  setActiveTab,
-  setChatChannel,
-  applyMessageTemplate,
-  updateLead
+  seller, setSeller,
+  priority, setPriority,
+  score, temperature, probability, slaStatus, timeIdle,
+  customTags, newTagInput, setNewTagInput,
+  isEditingInline, setIsEditingInline,
+  tempColors, customLeadFields, customFieldsState, setCustomFieldsState,
+  handleAddTag, handleRemoveTag, handleConvertLead,
+  addLeadActivity, setAlterationLogs, setActiveTab, setChatChannel,
+  applyMessageTemplate, updateLead,
 }: ProfileSectionProps) {
   const [cnpjFetching, setCnpjFetching] = useState(false);
+  const { leads: allLeads } = useData();
+
+  const sellerOptions = useMemo(
+    () => [...new Set((allLeads as any[]).map((l: any) => l.seller).filter(Boolean))] as string[],
+    [allLeads]
+  );
 
   const fetchCnpjData = async () => {
     const digits = (lead.cnpj || "").replace(/\D/g, "");
@@ -114,249 +97,192 @@ export function ProfileSection({
     }
   };
 
+  const inputClass = "w-full bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-white mt-1 text-xs focus:outline-none focus:border-blue-500/50";
+
   return (
-    <div className="space-y-6">
-      {/* Header Block with Avatar, Score & Temperature indicators */}
-      <Card className="p-5 border-white/10 bg-[#111827]/70 backdrop-blur-xl relative overflow-hidden">
-        <div className="absolute top-2 right-2 flex gap-1">
-          <span className={`text-[9px] px-2.5 py-0.5 rounded-full border tracking-wide uppercase ${tempColors[temperature]}`}>
+    <div className="space-y-4">
+
+      {/* Profile card */}
+      <Card className="p-4 border-white/10 bg-[#111827]/70 backdrop-blur-xl relative overflow-hidden">
+        {/* Status badges */}
+        <div className="absolute top-3 right-3 flex gap-1.5">
+          <span className={`text-[9px] px-2 py-0.5 rounded-full border tracking-wide uppercase ${tempColors[temperature]}`}>
             🔥 {temperature}
           </span>
-          <span className={`text-[9px] px-2.5 py-0.5 rounded-full border tracking-wide uppercase ${
+          <span className={`text-[9px] px-2 py-0.5 rounded-full border tracking-wide uppercase ${
             slaStatus === 'Em Dia' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' :
-            slaStatus === 'Atendimento Crítico' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+            slaStatus === 'Crítico'  ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
             'bg-rose-500/10 border-rose-500/20 text-rose-400'
           }`}>
-            🕔 SLA: {slaStatus}
+            SLA: {slaStatus}
           </span>
         </div>
 
-        <div className="flex items-center gap-4 py-2 mt-4">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-cyan-300 overflow-hidden shrink-0 flex items-center justify-center text-2xl font-black font-mono">
+        {/* Avatar + name */}
+        <div className="flex items-center gap-3 pt-1 pb-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 text-cyan-300 shrink-0 flex items-center justify-center text-lg font-black font-mono">
             {(companyName || leadName || "LD").substring(0, 2).toUpperCase()}
           </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-black text-white leading-tight truncate">
-                {companyName || leadName}
-              </h3>
-            </div>
-            <p className="text-xs text-slate-400 mt-0.5">Contato: {leadName}</p>
-            <p className="text-xs font-semibold text-emerald-400 mt-1 font-mono">Orçamento: {value || 'R$ 0'}</p>
+          <div className="min-w-0 flex-1 pr-28">
+            <h3 className="text-sm font-black text-white leading-tight truncate">{companyName || leadName}</h3>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">Contato: {leadName}</p>
+            <p className="text-[11px] font-bold text-emerald-400 mt-0.5 font-mono">{value || 'R$ 0'}</p>
           </div>
         </div>
 
-        {/* Advanced Indicators */}
-        <div className="grid grid-cols-3 gap-2.5 mt-4 pt-4 border-t border-white/5">
-          <div className="bg-[#0B1120] p-2.5 rounded-xl border border-white/5 flex flex-col justify-center items-center text-center">
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Lead Score</span>
+        {/* Indicators */}
+        <div className="grid grid-cols-3 gap-2 pt-3 border-t border-white/5">
+          <div className="bg-[#0B1120] p-2 rounded-xl border border-white/5 flex flex-col items-center text-center">
+            <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Lead Score</span>
             <div className="flex items-center gap-1 mt-1 text-cyan-400 font-black text-sm">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>{score}</span><span className="text-[9px] text-slate-600">/100</span>
+              <Sparkles className="w-3 h-3" />
+              <span>{score}</span>
+              <span className="text-[8px] text-slate-600">/100</span>
             </div>
           </div>
-          <div className="bg-[#0B1120] p-2.5 rounded-xl border border-white/5 flex flex-col justify-center items-center text-center">
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Conversão %</span>
-            <div className="flex items-center gap-1 mt-1 text-emerald-400 font-mono font-black text-sm">
-              <span>{probability}%</span>
-            </div>
+          <div className="bg-[#0B1120] p-2 rounded-xl border border-white/5 flex flex-col items-center text-center">
+            <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Conversão</span>
+            <div className="text-sm text-emerald-400 font-mono font-black mt-1">{probability}%</div>
           </div>
-          <div className="bg-[#0B1120] p-2.5 rounded-xl border border-white/5 flex flex-col justify-center items-center text-center">
-            <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Tempo Parado</span>
-            <span className="text-[10px] text-slate-300 font-bold mt-1 text-center truncate w-full">{timeIdle}</span>
+          <div className="bg-[#0B1120] p-2 rounded-xl border border-white/5 flex flex-col items-center text-center">
+            <span className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Parado</span>
+            <span className="text-xs text-slate-300 font-bold mt-1 truncate w-full text-center">{timeIdle || '—'}</span>
           </div>
         </div>
       </Card>
 
-      {/* Quick Interactive Actions Panel */}
+      {/* Quick actions */}
       <Card className="p-4 border-white/10 bg-[#111827]/70 backdrop-blur-xl">
-        <h4 className="text-[10px] font-black uppercase tracking-widest text-[#06B6D4] mb-3">Atalhos e Ações Rápidas</h4>
-        <div className="grid grid-cols-2 gap-2">
-          <button 
-            onClick={() => {
-              const numberOnly = phone.replace(/\D/g, '');
-              window.open(`https://wa.me/55${numberOnly}`, '_blank');
-            }}
-            className="flex items-center gap-2 px-3 py-2.5 bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/20 text-[#25D366] text-xs font-bold rounded-xl transition-all"
-          >
-            <MessageSquare className="w-4 h-4 shrink-0" /> Abrir WhatsApp
-          </button>
-          <button 
-            onClick={() => window.open(`https://instagram.com`, '_blank')}
-            className="flex items-center gap-2 px-3 py-2.5 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 text-pink-400 text-xs font-bold rounded-xl transition-all"
-          >
-            <Phone className="w-4 h-4 shrink-0" /> Instagram Direct
-          </button>
-          <button 
-            onClick={() => {
-              addLeadActivity(lead.id, 'Ligação', 'Tentativa de Ligação Direta', 'Executou discagem virtual e enviou notificação do contato.', seller || 'Carlos');
-            }}
-            className="flex items-center gap-2 px-3 py-2.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/20 text-cyan-400 text-xs font-bold rounded-xl transition-all"
-          >
-            <Phone className="w-4 h-4 shrink-0" /> Ligação VoIP
-          </button>
-          <button 
-            onClick={() => window.open(`mailto:${email}`)}
-            className="flex items-center gap-2 px-3 py-2.5 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/20 text-amber-400 text-xs font-bold rounded-xl transition-all"
-          >
-            <Mail className="w-4 h-4 shrink-0" /> Enviar E-mail
-          </button>
-          <button 
-            onClick={() => {
-              setAlterationLogs((prev: any[]) => [
-                { id: Date.now().toString(), author: "Carlos Eduardo Mendes", desc: "Contrato de Prestação de Serviços criado e enviado via DocuSign", time: "Agora" },
+        <h4 className="text-[9px] font-black uppercase tracking-widest text-[#06B6D4] mb-3">Atalhos Rápidos</h4>
+        <div className="grid grid-cols-3 gap-1.5">
+          {[
+            {
+              label: 'WhatsApp', icon: MessageSquare, color: 'text-[#25D366]',
+              bg: 'bg-[#25D366]/10 hover:bg-[#25D366]/20 border-[#25D366]/20',
+              action: () => window.open(`https://wa.me/55${phone.replace(/\D/g, '')}`, '_blank'),
+            },
+            {
+              label: 'Instagram', icon: Phone, color: 'text-pink-400',
+              bg: 'bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20',
+              action: () => window.open(`https://instagram.com`, '_blank'),
+            },
+            {
+              label: 'VoIP', icon: Phone, color: 'text-cyan-400',
+              bg: 'bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-500/20',
+              action: () => addLeadActivity(lead.id, 'Ligação', 'Tentativa de Ligação', 'Discagem virtual executada.', seller || 'Sistema'),
+            },
+            {
+              label: 'E-mail', icon: Mail, color: 'text-amber-400',
+              bg: 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20',
+              action: () => window.open(`mailto:${email}`),
+            },
+            {
+              label: 'Contrato', icon: FileCheck, color: 'text-emerald-400',
+              bg: 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/20',
+              action: () => setAlterationLogs((prev: any[]) => [
+                { id: Date.now().toString(), author: seller || "Sistema", desc: "Contrato criado via DocuSign", time: "Agora" },
                 ...prev
-              ]);
-            }}
-            className="flex items-center gap-2 px-3 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-xl transition-all"
-          >
-            <FileCheck className="w-4 h-4 shrink-0" /> Criar Contrato
-          </button>
-          <button 
-            onClick={handleConvertLead}
-            className="flex items-center gap-2 px-3 py-2.5 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 text-purple-400 text-xs font-bold rounded-xl transition-all"
-          >
-            <Trophy className="w-4 h-4 shrink-0" /> Converter Lead
-          </button>
+              ]),
+            },
+            {
+              label: 'Converter', icon: Trophy, color: 'text-purple-400',
+              bg: 'bg-purple-500/10 hover:bg-purple-500/20 border-purple-500/20',
+              action: handleConvertLead,
+            },
+          ].map(({ label, icon: Icon, color, bg, action }) => (
+            <button key={label} onClick={action}
+              className={`flex flex-col items-center gap-1.5 py-2.5 px-1 ${bg} border rounded-xl transition-all cursor-pointer`}>
+              <Icon className={`w-4 h-4 ${color}`} />
+              <span className={`text-[8px] font-black uppercase ${color}`}>{label}</span>
+            </button>
+          ))}
         </div>
       </Card>
 
-      {/* Smart AI suggested next action */}
+      {/* AI recommendation */}
       <Card className="p-4 border-cyan-500/20 bg-cyan-950/20 backdrop-blur-xl relative overflow-hidden">
-        <div className="absolute top-2 right-2 animate-pulse flex items-center gap-1.5 bg-[#06B6D4]/20 px-2 py-0.5 rounded-full border border-[#06B6D4]/30 text-[#06B6D4] text-[8px] font-black uppercase">
-          <Sparkles className="w-2.5 h-2.5" /> IA Copilot
+        <div className="absolute top-2.5 right-2.5 flex items-center gap-1 bg-[#06B6D4]/20 px-2 py-0.5 rounded-full border border-[#06B6D4]/30 text-[#06B6D4] text-[8px] font-black uppercase">
+          <Sparkles className="w-2 h-2 animate-pulse" /> IA Copilot
         </div>
-        <h4 className="text-[10px] font-black uppercase tracking-widest text-[#06B6D4] flex items-center gap-1.5">
-          <Brain className="w-4 h-4" /> Recomendação Axis CoPilot
+        <h4 className="text-[9px] font-black uppercase tracking-widest text-[#06B6D4] flex items-center gap-1.5 mb-2">
+          <Brain className="w-3.5 h-3.5" /> Recomendação Axis CoPilot
         </h4>
-        <p className="text-xs text-slate-300 font-medium leading-relaxed mt-2.5">
-          &ldquo;O lead de pontuação <strong className="text-cyan-300">{score}</strong> demonstrou alto interesse em produtos recorrentes. Sugiro enviar o template de proposta <strong className="text-white">Consultoria Enterprise + Licença Usuário</strong> hoje mesmo para antecipar o fechamento.&rdquo;
+        <p className="text-[11px] text-slate-300 leading-relaxed">
+          Score <strong className="text-cyan-300">{score}</strong> indica interesse em produtos recorrentes.
+          Envie a proposta <strong className="text-white">Consultoria Enterprise</strong> hoje.
         </p>
-        <div className="mt-3.5 bg-[#0B1120]/45 p-2 rounded-lg border border-[#06B6D4]/20 flex items-center justify-between text-[11px]">
-          <span className="text-slate-400">Sugestão:</span>
-          <button 
+        <div className="mt-3 bg-[#0B1120]/45 p-2 rounded-lg border border-[#06B6D4]/20 flex items-center justify-between text-[10px]">
+          <span className="text-slate-500">Sugestão de ação:</span>
+          <button
             onClick={() => {
               setActiveTab('whatsapp');
               setChatChannel('whatsapp');
-              applyMessageTemplate("Olá {client}! Preparei a proposta oficial para a {company}. Inclui a {seller} no loop. Segue anexo com nosso cronograma.");
+              applyMessageTemplate("Olá {client}! Preparei a proposta para {company}. Segue em anexo.");
             }}
             className="text-cyan-400 font-bold hover:underline flex items-center gap-1"
           >
-            Aplicar Proposta <ArrowRight className="w-3.5 h-3.5" />
+            Aplicar Proposta <ArrowRight className="w-3 h-3" />
           </button>
         </div>
       </Card>
 
-      {/* Editable Attributes Panel */}
-      <Card className="p-4 border-white/10 bg-[#111827]/70 space-y-3.5">
+      {/* Editable fields */}
+      <Card className="p-4 border-white/10 bg-[#111827]/70 space-y-3">
         <div className="flex items-center justify-between border-b border-white/5 pb-2">
-          <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400">Dados Principais</h4>
-          <button 
+          <h4 className="text-[9px] font-black uppercase tracking-widest text-slate-400">Dados Principais</h4>
+          <button
             onClick={() => setIsEditingInline(!isEditingInline)}
-            className="text-xs font-bold text-blue-400 hover:underline flex items-center gap-1"
+            className="text-[10px] font-bold text-blue-400 hover:text-blue-300 flex items-center gap-1"
           >
-            <Edit className="w-3 h-3" /> {isEditingInline ? 'Bloquear' : 'Editar Inline'}
+            <Edit className="w-3 h-3" /> {isEditingInline ? 'Bloquear' : 'Editar'}
           </button>
         </div>
 
         <div className="space-y-2.5 text-xs">
-          <div>
-            <label className="text-slate-500 font-bold block">Empresa/Lead</label>
-            {isEditingInline ? (
-              <input 
-                type="text" 
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-white mt-1 text-xs" 
-              />
-            ) : (
-              <span className="text-white font-semibold mt-0.5 block">{companyName || 'Nenhuma'}</span>
-            )}
-          </div>
+          {[
+            { label: 'Empresa/Lead', val: companyName, set: setCompanyName, placeholder: '' },
+            { label: 'Contato Principal', val: leadName, set: setLeadName, placeholder: '' },
+            { label: 'E-mail', val: email, set: setEmail, placeholder: '' },
+            { label: 'Telefone', val: phone, set: setPhone, placeholder: '' },
+            { label: 'Iniciativa / Produto', val: title, set: setTitle, placeholder: '' },
+          ].map(({ label, val, set }) => (
+            <div key={label}>
+              <label className="text-slate-500 font-bold block">{label}</label>
+              {isEditingInline ? (
+                <input type="text" value={val} onChange={(e) => set(e.target.value)} className={inputClass} />
+              ) : (
+                <span className="text-white font-semibold mt-0.5 block">{val || '—'}</span>
+              )}
+            </div>
+          ))}
 
-          <div>
-            <label className="text-slate-500 font-bold block">Contato Principal</label>
-            {isEditingInline ? (
-              <input 
-                type="text" 
-                value={leadName}
-                onChange={(e) => setLeadName(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-white mt-1 text-xs" 
-              />
-            ) : (
-              <span className="text-white font-semibold mt-0.5 block">{leadName}</span>
-            )}
-          </div>
-
+          {/* CNPJ */}
           <div>
             <label className="text-slate-500 font-bold block">CNPJ</label>
             {isEditingInline ? (
               <div className="flex gap-1 mt-1">
                 <input
-                  type="text"
-                  maxLength={18}
+                  type="text" maxLength={18}
                   value={lead.cnpj || ''}
                   onChange={(e) => {
                     import('../../../lib/utils').then(({ formatCNPJ }) => {
                       updateLead(lead.id, { cnpj: formatCNPJ(e.target.value) });
                     });
                   }}
-                  className="flex-1 bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-white text-xs font-mono"
+                  className="flex-1 bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-white text-xs font-mono focus:outline-none focus:border-blue-500/50"
                 />
                 <button
                   type="button"
                   onClick={fetchCnpjData}
                   disabled={cnpjFetching || (lead.cnpj || '').replace(/\D/g, '').length !== 14}
                   className="px-2 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="Buscar dados da Receita Federal"
+                  title="Buscar na Receita Federal"
                 >
                   <Search className={`w-3 h-3 ${cnpjFetching ? 'animate-spin' : ''}`} />
                 </button>
               </div>
             ) : (
-              <span className="text-white font-mono mt-0.5 block">{lead.cnpj || '-'}</span>
-            )}
-          </div>
-
-          <div>
-            <label className="text-slate-500 font-bold block">E-mail</label>
-            {isEditingInline ? (
-              <input 
-                type="text" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-white mt-1 text-xs" 
-              />
-            ) : (
-              <span className="text-white font-mono mt-0.5 block">{email || '-'}</span>
-            )}
-          </div>
-
-          <div>
-            <label className="text-slate-500 font-bold block">Telefone</label>
-            {isEditingInline ? (
-              <input 
-                type="text" 
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-white mt-1 text-xs" 
-              />
-            ) : (
-              <span className="text-white font-mono mt-0.5 block">{phone || '-'}</span>
-            )}
-          </div>
-
-          <div>
-            <label className="text-slate-500 font-bold block">Iniciativa / Produto</label>
-            {isEditingInline ? (
-              <input 
-                type="text" 
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-white mt-1 text-xs" 
-              />
-            ) : (
-              <span className="text-white font-medium mt-0.5 block">{title || '-'}</span>
+              <span className="text-white font-mono mt-0.5 block">{lead.cnpj || '—'}</span>
             )}
           </div>
 
@@ -364,37 +290,25 @@ export function ProfileSection({
             <div>
               <label className="text-slate-500 font-bold block">Responsável</label>
               {isEditingInline ? (
-                <select 
-                  value={seller} 
-                  onChange={(e) => setSeller(e.target.value)}
-                  className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-1.5 text-white mt-1 text-xs"
-                >
+                <select value={seller} onChange={(e) => setSeller(e.target.value)} className={inputClass}>
                   <option value="">Não Atribuído</option>
-                  <option value="Carlos Eduardo Mendes">Carlos Eduardo Mendes</option>
-                  <option value="Ana Silva">Ana Silva</option>
-                  <option value="Roberto Ramos">Roberto Ramos</option>
-                  <option value="Juliana Costa">Juliana Costa</option>
+                  {sellerOptions.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               ) : (
                 <span className="text-[#06B6D4] font-bold mt-0.5 block">{seller || 'Não Atribuído'}</span>
               )}
             </div>
-
             <div>
               <label className="text-slate-500 font-bold block">Prioridade</label>
               {isEditingInline ? (
-                <select 
-                  value={priority} 
-                  onChange={(e) => setPriority(e.target.value as any)}
-                  className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-1.5 text-white mt-1 text-xs"
-                >
+                <select value={priority} onChange={(e) => setPriority(e.target.value as any)} className={inputClass}>
                   <option value="Alta">Alta</option>
                   <option value="Média">Média</option>
                   <option value="Baixa">Baixa</option>
                 </select>
               ) : (
                 <span className={`font-bold mt-0.5 block ${
-                  priority === 'Alta' ? 'text-rose-450 text-rose-400' : priority === 'Média' ? 'text-amber-400' : 'text-slate-400'
+                  priority === 'Alta' ? 'text-rose-400' : priority === 'Média' ? 'text-amber-400' : 'text-blue-400'
                 }`}>{priority}</span>
               )}
             </div>
@@ -402,21 +316,21 @@ export function ProfileSection({
         </div>
 
         {customLeadFields.length > 0 && (
-          <div className="mt-4 pt-4 border-t border-white/5 space-y-3">
-            <h4 className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Campos Personalizados</h4>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="pt-3 border-t border-white/5 space-y-3">
+            <h4 className="text-[9px] font-black uppercase tracking-widest text-emerald-400">Campos Personalizados</h4>
+            <div className="grid grid-cols-2 gap-3">
               {customLeadFields.map((field) => (
                 <div key={field.id}>
                   <label className="text-slate-500 font-bold block">{field.name}</label>
                   {isEditingInline ? (
-                    <input 
+                    <input
                       type={field.type === 'Data' ? 'date' : field.type === 'Número' ? 'number' : 'text'}
                       value={customFieldsState[field.id] || ''}
                       onChange={(e) => setCustomFieldsState(prev => ({ ...prev, [field.id]: e.target.value }))}
-                      className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-white mt-1 text-xs" 
+                      className={inputClass}
                     />
                   ) : (
-                    <span className="text-white font-medium mt-0.5 block">{lead.customFields?.[field.id] || '-'}</span>
+                    <span className="text-white font-medium mt-0.5 block">{lead.customFields?.[field.id] || '—'}</span>
                   )}
                 </div>
               ))}
@@ -425,31 +339,35 @@ export function ProfileSection({
         )}
       </Card>
 
-      {/* Custom tags list */}
+      {/* Tags */}
       <Card className="p-4 border-white/10 bg-[#111827]/70 space-y-3">
-        <h4 className="text-[10px] font-black uppercase tracking-widest text-[#06B6D4]">Tags Corporativas</h4>
+        <h4 className="text-[9px] font-black uppercase tracking-widest text-[#06B6D4]">Tags Corporativas</h4>
         <div className="flex flex-wrap gap-1.5">
           {customTags.map((tag) => (
-            <span 
-              key={tag} 
-              className="group flex items-center gap-1.5 bg-white/5 hover:bg-rose-500/10 text-slate-350 text-slate-300 hover:text-rose-400 border border-white/10 hover:border-rose-500/20 text-[10px] font-bold px-2.5 py-1 rounded-full transition-all cursor-pointer"
+            <span
+              key={tag}
               onClick={() => handleRemoveTag(tag)}
-              title="Clique para excluir tag"
+              title="Clique para remover"
+              className="group flex items-center gap-1.5 bg-white/5 hover:bg-rose-500/10 text-slate-300 hover:text-rose-400 border border-white/10 hover:border-rose-500/20 text-[10px] font-bold px-2.5 py-1 rounded-full transition-all cursor-pointer"
             >
-              <Tag className="w-3 h-3" /> {tag}
+              <Tag className="w-2.5 h-2.5" /> {tag}
               <span className="text-[8px] font-black opacity-0 group-hover:opacity-100">&times;</span>
             </span>
           ))}
+          {customTags.length === 0 && (
+            <span className="text-[10px] text-slate-600 italic">Nenhuma tag adicionada</span>
+          )}
         </div>
         <div className="flex gap-1">
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Nova tag..."
             value={newTagInput}
             onChange={(e) => setNewTagInput(e.target.value)}
-            className="flex-1 bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white"
+            onKeyDown={(e) => e.key === 'Enter' && handleAddTag()}
+            className="flex-1 bg-[#0B1120] border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-blue-500/50"
           />
-          <Button size="sm" onClick={handleAddTag} className="bg-slate-800 text-white hover:bg-slate-750 px-3 font-bold block shrink-0">+</Button>
+          <Button size="sm" onClick={handleAddTag} className="bg-slate-800 text-white hover:bg-slate-700 px-3 font-bold shrink-0">+</Button>
         </div>
       </Card>
     </div>
