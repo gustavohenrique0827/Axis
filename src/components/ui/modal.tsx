@@ -39,15 +39,17 @@ export function Modal({
     };
   }, [isOpen, onClose]);
 
+  if (!isOpen) return null;
+
   const titleId = typeof title === "string" ? "axis-modal-title" : undefined;
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-[100] flex transition-all duration-200 ${
+      className={`fixed inset-0 z-[100] flex ${
         position === "right"
           ? "justify-end"
           : "items-center justify-center p-4 sm:p-6"
-      } ${isOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
+      }`}
       role="presentation"
     >
       {/* Backdrop */}
@@ -60,16 +62,10 @@ export function Modal({
 
       {/* Dialog */}
       <div
-        className={`relative w-[95vw] sm:w-full ${maxWidth} bg-[#111827] shadow-2xl shadow-black/60 overflow-hidden flex flex-col transition-all duration-200 ${
+        className={`relative w-[95vw] sm:w-full ${maxWidth} bg-[#111827] shadow-2xl shadow-black/60 overflow-hidden flex flex-col ${
           position === "right"
-            ? `h-full border-l border-white/10 rounded-l-2xl max-h-screen ${
-                isOpen ? "translate-x-0" : "translate-x-full"
-              }`
-            : `border border-white/10 rounded-3xl max-h-[90vh] ${
-                isOpen
-                  ? "opacity-100 scale-100 translate-y-0"
-                  : "opacity-0 scale-95 translate-y-4"
-              }`
+            ? "h-full border-l border-white/10 rounded-l-2xl max-h-screen"
+            : "border border-white/10 rounded-3xl max-h-[90vh]"
         }`}
         role="dialog"
         aria-modal="true"

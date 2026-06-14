@@ -1,8 +1,6 @@
-import React from "react";
 import { Modal } from "../../modal";
 import { Button } from "../../button";
 import { AlertTriangle } from "lucide-react";
-import { motion } from "motion/react";
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -31,24 +29,13 @@ export function ConfirmModal({
       maxWidth="max-w-md"
       footer={null}
     >
-      <motion.div 
-        initial={{ opacity: 0, scale: 0.95, y: 10 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95, y: 10 }}
-        transition={{ type: "spring", stiffness: 300, damping: 25 }}
-        className="flex flex-col items-center text-center space-y-4 pt-4 pb-2"
-      >
-        <motion.div 
-          initial={{ rotate: -15, scale: 0 }}
-          animate={{ rotate: 0, scale: 1 }}
-          transition={{ type: "spring", stiffness: 300, damping: 15, delay: 0.1 }}
-          className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 shadow-xl shadow-rose-950/40 mb-2"
-        >
+      <div className="flex flex-col items-center text-center space-y-4 pt-4 pb-2">
+        <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 shadow-xl shadow-rose-950/40 mb-2">
           <AlertTriangle className="w-8 h-8" />
-        </motion.div>
+        </div>
 
         <h3 className="text-xl font-bold tracking-tight text-white">{title}</h3>
-        
+
         <p className="text-sm text-slate-300 font-sans leading-relaxed max-w-sm px-4">
           {message}
         </p>
@@ -86,7 +73,7 @@ export function ConfirmModal({
             </span>
           </Button>
         </div>
-      </motion.div>
+      </div>
     </Modal>
   );
 }
