@@ -33,8 +33,16 @@ interface ProfileDataFormProps {
   onFetchCnpj: () => void;
 }
 
-const inputClass =
+const inputActiveClass =
   "w-full bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600";
+
+function viewCls(colorCls = "text-white font-semibold") {
+  return `w-full bg-transparent border-none px-0 py-0 text-xs outline-none cursor-text appearance-none transition-all ${colorCls} placeholder:text-slate-500`;
+}
+
+function viewSelectCls(colorCls = "text-white font-bold") {
+  return `w-full bg-transparent border-none px-0 py-0 text-xs outline-none cursor-default appearance-none pointer-events-none transition-all ${colorCls}`;
+}
 
 export function ProfileDataForm({
   isEditingInline,
@@ -80,21 +88,27 @@ export function ProfileDataForm({
             <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
               <Building2 className="w-3 h-3" /> Empresa/Líder
             </div>
-            {isEditingInline ? (
-              <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={inputClass} placeholder="Nome da empresa" />
-            ) : (
-              <span className="text-xs text-white font-semibold">{companyName || <span className="text-slate-500 italic">—</span>}</span>
-            )}
+            <input
+              type="text"
+              value={companyName}
+              placeholder="—"
+              readOnly={!isEditingInline}
+              onChange={(e) => setCompanyName(e.target.value)}
+              className={isEditingInline ? inputActiveClass : viewCls()}
+            />
           </div>
           <div className="p-3">
             <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
               <User className="w-3 h-3" /> Contato
             </div>
-            {isEditingInline ? (
-              <input type="text" value={leadName} onChange={(e) => setLeadName(e.target.value)} className={inputClass} placeholder="Nome do contato" />
-            ) : (
-              <span className="text-xs text-white font-semibold">{leadName || <span className="text-slate-500 italic">—</span>}</span>
-            )}
+            <input
+              type="text"
+              value={leadName}
+              placeholder="—"
+              readOnly={!isEditingInline}
+              onChange={(e) => setLeadName(e.target.value)}
+              className={isEditingInline ? inputActiveClass : viewCls()}
+            />
           </div>
         </div>
 
@@ -102,55 +116,61 @@ export function ProfileDataForm({
           <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
             <Mail className="w-3 h-3" /> E-mail
           </div>
-          {isEditingInline ? (
-            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="email@empresa.com" />
-          ) : (
-            <span className={`text-xs font-semibold ${email ? "text-amber-400" : "text-slate-500 italic"}`}>{email || "—"}</span>
-          )}
+          <input
+            type="email"
+            value={email}
+            placeholder="—"
+            readOnly={!isEditingInline}
+            onChange={(e) => setEmail(e.target.value)}
+            className={isEditingInline ? inputActiveClass : viewCls(email ? "text-amber-400 font-semibold" : "text-slate-500")}
+          />
         </div>
 
         <div className="p-3">
           <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
             <Phone className="w-3 h-3" /> Telefone
           </div>
-          {isEditingInline ? (
-            <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} placeholder="(00) 00000-0000" />
-          ) : (
-            <span className={`text-xs font-semibold font-mono ${phone ? "text-emerald-400" : "text-slate-500 italic"}`}>{phone || "—"}</span>
-          )}
+          <input
+            type="text"
+            value={phone}
+            placeholder="—"
+            readOnly={!isEditingInline}
+            onChange={(e) => setPhone(e.target.value)}
+            className={isEditingInline ? inputActiveClass : viewCls(phone ? "text-emerald-400 font-semibold font-mono" : "text-slate-500 font-mono")}
+          />
         </div>
 
         <div className="p-3">
           <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
             <FileCheck className="w-3 h-3" /> CNPJ
           </div>
-          {isEditingInline ? (
-            <div className="flex gap-1.5">
-              <input
-                type="text"
-                maxLength={18}
-                value={lead.cnpj || ""}
-                onChange={(e) => {
-                  import("../../../lib/utils").then(({ formatCNPJ }) => {
-                    updateLead(lead.id, { cnpj: formatCNPJ(e.target.value) });
-                  });
-                }}
-                className="flex-1 bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-blue-500/50 transition-all"
-                placeholder="00.000.000/0000-00"
-              />
-              <button
-                type="button"
-                onClick={onFetchCnpj}
-                disabled={cnpjFetching || (lead.cnpj || "").replace(/\D/g, "").length !== 14}
-                className="px-2.5 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                title="Buscar na Receita Federal"
-              >
-                <Search className={`w-3.5 h-3.5 ${cnpjFetching ? "animate-spin" : ""}`} />
-              </button>
-            </div>
-          ) : (
-            <span className={`text-xs font-mono ${lead.cnpj ? "text-white" : "text-slate-500 italic"}`}>{lead.cnpj || "—"}</span>
-          )}
+          <div className="flex gap-1.5 items-center">
+            <input
+              type="text"
+              maxLength={18}
+              value={lead.cnpj || ""}
+              placeholder="—"
+              readOnly={!isEditingInline}
+              onChange={(e) => {
+                if (!isEditingInline) return;
+                import("../../../lib/utils").then(({ formatCNPJ }) => {
+                  updateLead(lead.id, { cnpj: (formatCNPJ as (v: string) => string)(e.target.value) });
+                });
+              }}
+              className={isEditingInline
+                ? "flex-1 bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-600"
+                : `flex-1 ${viewCls(lead.cnpj ? "text-white font-mono" : "text-slate-500")}`}
+            />
+            <button
+              type="button"
+              onClick={onFetchCnpj}
+              disabled={cnpjFetching || (lead.cnpj || "").replace(/\D/g, "").length !== 14}
+              className={`px-2.5 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed${!isEditingInline ? " hidden" : ""}`}
+              title="Buscar na Receita Federal"
+            >
+              <Search className={`w-3.5 h-3.5 ${cnpjFetching ? "animate-spin" : ""}`} />
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 divide-x divide-white/[0.04]">
@@ -158,21 +178,27 @@ export function ProfileDataForm({
             <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
               <Briefcase className="w-3 h-3" /> Iniciativa
             </div>
-            {isEditingInline ? (
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} placeholder="Ex: Novo Negócio" />
-            ) : (
-              <span className={`text-xs font-semibold ${title ? "text-white" : "text-slate-500 italic"}`}>{title || "—"}</span>
-            )}
+            <input
+              type="text"
+              value={title}
+              placeholder="—"
+              readOnly={!isEditingInline}
+              onChange={(e) => setTitle(e.target.value)}
+              className={isEditingInline ? inputActiveClass : viewCls(title ? "text-white font-semibold" : "text-slate-500")}
+            />
           </div>
           <div className="p-3">
             <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
               <DollarSign className="w-3 h-3" /> Valor
             </div>
-            {isEditingInline ? (
-              <input type="text" value={value} onChange={(e) => setValue(e.target.value)} className={inputClass} placeholder="0,00" />
-            ) : (
-              <span className="text-xs font-bold font-mono text-emerald-400">{displayValue}</span>
-            )}
+            <input
+              type="text"
+              value={isEditingInline ? value : displayValue}
+              placeholder="—"
+              readOnly={!isEditingInline}
+              onChange={(e) => setValue(e.target.value)}
+              className={isEditingInline ? inputActiveClass : viewCls("text-emerald-400 font-bold font-mono")}
+            />
           </div>
         </div>
 
@@ -181,32 +207,32 @@ export function ProfileDataForm({
             <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
               <User className="w-3 h-3" /> Responsável
             </div>
-            {isEditingInline ? (
-              <select value={seller} onChange={(e) => setSeller(e.target.value)} className={inputClass}>
-                <option value="">Não Atribuído</option>
-                {sellerOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
-            ) : (
-              <span className={`text-xs font-bold ${seller ? "text-cyan-400" : "text-slate-500 italic"}`}>
-                {seller || "Não Atribuído"}
-              </span>
-            )}
+            <select
+              value={seller}
+              onChange={(e) => setSeller(e.target.value)}
+              tabIndex={isEditingInline ? 0 : -1}
+              className={isEditingInline
+                ? inputActiveClass
+                : viewSelectCls(seller ? "text-cyan-400 font-bold" : "text-slate-500")}
+            >
+              <option value="">Não Atribuído</option>
+              {sellerOptions.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
           </div>
           <div className="p-3">
             <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Prioridade</div>
-            {isEditingInline ? (
-              <select value={priority} onChange={(e) => setPriority(e.target.value as any)} className={inputClass}>
-                <option value="Alta">Alta</option>
-                <option value="Média">Média</option>
-                <option value="Baixa">Baixa</option>
-              </select>
-            ) : (
-              <span className={`text-xs font-black ${
-                priority === "Alta" ? "text-rose-400" : priority === "Média" ? "text-amber-400" : "text-blue-400"
-              }`}>
-                {priority || <span className="text-slate-500 italic font-normal">—</span>}
-              </span>
-            )}
+            <select
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as any)}
+              tabIndex={isEditingInline ? 0 : -1}
+              className={isEditingInline
+                ? inputActiveClass
+                : viewSelectCls(`font-black ${priority === "Alta" ? "text-rose-400" : priority === "Média" ? "text-amber-400" : "text-blue-400"}`)}
+            >
+              <option value="Alta">Alta</option>
+              <option value="Média">Média</option>
+              <option value="Baixa">Baixa</option>
+            </select>
           </div>
         </div>
       </div>
@@ -218,16 +244,14 @@ export function ProfileDataForm({
             {customLeadFields.map((field) => (
               <div key={field.id}>
                 <div className="text-[9px] font-bold text-slate-500 mb-1 uppercase tracking-wider">{field.name}</div>
-                {isEditingInline ? (
-                  <input
-                    type={field.type === "Data" ? "date" : field.type === "Número" ? "number" : "text"}
-                    value={customFieldsState[field.id] || ""}
-                    onChange={(e) => setCustomFieldsState((prev) => ({ ...prev, [field.id]: e.target.value }))}
-                    className={inputClass}
-                  />
-                ) : (
-                  <span className="text-xs text-white font-semibold">{lead.customFields?.[field.id] || <span className="text-slate-500 italic">—</span>}</span>
-                )}
+                <input
+                  type={field.type === "Data" ? "date" : field.type === "Número" ? "number" : "text"}
+                  value={customFieldsState[field.id] || ""}
+                  placeholder="—"
+                  readOnly={!isEditingInline}
+                  onChange={(e) => setCustomFieldsState((prev) => ({ ...prev, [field.id]: e.target.value }))}
+                  className={isEditingInline ? inputActiveClass : viewCls("text-white font-semibold")}
+                />
               </div>
             ))}
           </div>
