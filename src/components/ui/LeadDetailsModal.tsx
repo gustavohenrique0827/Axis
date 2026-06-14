@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { Modal } from "./modal";
 import { Phone, Activity, TrendingUp, AlertTriangle } from "lucide-react";
 
@@ -362,20 +362,15 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
         </div>
       </Modal>
 
-      {createPortal(
-        <AnimatePresence>
-          {showCopilot && (
-            <motion.div
-              initial={{ x: 40, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 40, opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-              className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[100] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl"
-            >
-              <IACopilot leadName={leadName} companyName={companyName} />
-            </motion.div>
-          )}
-        </AnimatePresence>,
+      {showCopilot && createPortal(
+        <motion.div
+          initial={{ x: 40, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
+          className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[100] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl"
+        >
+          <IACopilot leadName={leadName} companyName={companyName} />
+        </motion.div>,
         document.body
       )}
     </>

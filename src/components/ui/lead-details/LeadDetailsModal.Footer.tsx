@@ -44,22 +44,19 @@ export function LeadDetailsModalFooter(props: {
           >
             Fechar
           </Button>
-          {props.isEditingInline ? (
-            <Button
-              onClick={props.handleSaveAll}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 h-9 text-xs shadow-sm shadow-emerald-500/20"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-              Salvar
-            </Button>
-          ) : (
-            <Button
-              onClick={() => props.setIsEditingInline(true)}
-              className="bg-[#2563EB] hover:bg-blue-600 text-white font-bold px-5 h-9 text-xs shadow-sm shadow-blue-500/20"
-            >
-              Editar Lead
-            </Button>
-          )}
+          <Button
+            onClick={props.handleSaveAll}
+            className={`bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 h-9 text-xs shadow-sm shadow-emerald-500/20${!props.isEditingInline ? " hidden" : ""}`}
+          >
+            <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+            Salvar
+          </Button>
+          <Button
+            onClick={() => props.setIsEditingInline(true)}
+            className={`bg-[#2563EB] hover:bg-blue-600 text-white font-bold px-5 h-9 text-xs shadow-sm shadow-blue-500/20${props.isEditingInline ? " hidden" : ""}`}
+          >
+            Editar Lead
+          </Button>
         </div>
       </div>
     </>

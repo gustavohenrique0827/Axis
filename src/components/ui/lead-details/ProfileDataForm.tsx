@@ -76,9 +76,9 @@ export function ProfileDataForm({
               : "text-blue-400 border-blue-500/20 bg-blue-500/10 hover:bg-blue-500/15"
           }`}
         >
-          {isEditingInline
-            ? <><Lock className="w-2.5 h-2.5" /> Bloquear</>
-            : <><Edit className="w-2.5 h-2.5" /> Editar</>}
+          <Lock className={`w-2.5 h-2.5 shrink-0${!isEditingInline ? " hidden" : ""}`} />
+          <Edit className={`w-2.5 h-2.5 shrink-0${isEditingInline ? " hidden" : ""}`} />
+          {isEditingInline ? "Bloquear" : "Editar"}
         </button>
       </div>
 
