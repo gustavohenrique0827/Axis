@@ -19,6 +19,7 @@ interface LeadDetailsModalHeroProps {
   priority: string;
   slaStatus: string;
   stagesDef: any[];
+  currentStageId: string;
   lead: any;
   seller: string;
   setAlterationLogs: React.Dispatch<React.SetStateAction<any[]>>;
@@ -38,6 +39,7 @@ export function LeadDetailsModalHero({
   priority,
   slaStatus,
   stagesDef,
+  currentStageId,
   lead,
   seller,
   setAlterationLogs,
@@ -48,7 +50,7 @@ export function LeadDetailsModalHero({
   moveToStage,
 }: LeadDetailsModalHeroProps) {
   const TempIcon = tc.icon;
-  const currentStageIdx = stagesDef.findIndex((s) => s.id === lead.stageId);
+  const currentStageIdx = stagesDef.findIndex((s) => s.id === currentStageId);
 
   return (
     <>
@@ -181,7 +183,7 @@ export function LeadDetailsModalHero({
         <div className="relative px-5 pb-4 overflow-x-auto scrollbar-none">
           <div className="flex items-center min-w-max">
             {stagesDef.map((stg: any, idx: number) => {
-              const isActive = lead.stageId === stg.id;
+              const isActive = currentStageId === stg.id;
               const isPast = currentStageIdx > idx;
               const isLast = idx === stagesDef.length - 1;
               return (

@@ -125,6 +125,7 @@ export function useLeadDetails(lead: any, onClose: () => void) {
   // ── Estágios do funil ─────────────────────────────────────────────────────────
   const isSDR = lead?.pipelineId === "sdr";
   const [stagesDef, setStagesDef] = useState(() => loadStagesFromLocalStorage(isSDR) ?? []);
+  const [currentStageId, setCurrentStageId] = useState<string>(lead?.stageId ?? "");
 
   useEffect(() => {
     const fromStorage = loadStagesFromLocalStorage(isSDR);
@@ -157,6 +158,7 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     setCustomFieldsState(lead.customFields || {});
     setLinkedProductIds(Array.isArray(lead.productIds) ? lead.productIds : []);
     setCustomTags(Array.isArray(lead.tags) ? lead.tags : []);
+    setCurrentStageId(lead.stageId ?? "");
 
     const rawScore = lead.scoreIA ?? 45;
     const t = (lead.temperature ?? "").toLowerCase();
@@ -344,6 +346,7 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     alterationLogs, setAlterationLogs,
     // Stages
     stagesDef,
+    currentStageId, setCurrentStageId,
     // Report
     reportContextOverride, setReportContextOverride,
     // Custom fields config

@@ -70,6 +70,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
     availableProducts,
     linkedProductIds,
     stagesDef,
+    currentStageId, setCurrentStageId,
     reportContextOverride, setReportContextOverride,
     tempColors,
     customLeadFields,
@@ -96,6 +97,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
   const initials = ((companyName || leadName || "LD").substring(0, 2)).toUpperCase();
 
   const moveToStage = (stg: any) => {
+    setCurrentStageId(stg.id);
     updateLead(lead.id, { stageId: stg.id, status: stg.status });
     toast.success(`Etapa: ${stg.name}`);
     setAlterationLogs((prev: any[]) => [
@@ -137,6 +139,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
             priority={priority}
             slaStatus={slaStatus}
             stagesDef={stagesDef}
+            currentStageId={currentStageId}
             lead={lead}
             seller={seller}
             setAlterationLogs={setAlterationLogs}
