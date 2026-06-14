@@ -20,7 +20,6 @@ import { LogsSection } from "./lead-details/LogsSection";
 import { useData } from "../../contexts/DataContext";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
-import { ConfirmModal } from "./modals/shared/ConfirmModal";
 
 interface LeadDetailsModalProps {
   isOpen: boolean;
@@ -149,7 +148,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
           />
 
           {/* ── Tab bar ── */}
-          <div className="flex border-b border-white/[0.06] overflow-x-auto scrollbar-none shrink-0 bg-[#0B1120]">
+          <div className="flex border-b border-white/[0.06] overflow-x-auto scrollbar-none shrink-0 bg-[#0B1120] px-1 pt-1 gap-0.5">
             {LeadDetailsModalTabs.map((tab) => {
               const isActive = currentTab === tab.id;
               return (
@@ -157,18 +156,18 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                   key={tab.id}
                   onClick={() => setCurrentTab(tab.id)}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-0.5 pt-2.5 pb-2 px-4 border-b-2 text-[8px] font-black tracking-widest whitespace-nowrap transition-all shrink-0 cursor-pointer min-w-[68px] relative",
+                    "relative flex flex-col items-center justify-center gap-0.5 pt-2 pb-2.5 px-3.5 text-[8px] font-black tracking-widest whitespace-nowrap transition-all shrink-0 cursor-pointer min-w-[64px] rounded-t-lg",
                     isActive
-                      ? "border-[#06B6D4] text-[#06B6D4]"
-                      : "border-transparent text-slate-500 hover:text-slate-300 hover:border-white/10"
+                      ? "text-[#06B6D4] bg-cyan-500/[0.07]"
+                      : "text-slate-600 hover:text-slate-300 hover:bg-white/[0.03]"
                   )}
                 >
-                  <tab.icon className={cn("w-4 h-4 transition-transform", isActive && "scale-110")} />
+                  <tab.icon className={cn("w-3.5 h-3.5 transition-all", isActive ? "scale-110 text-[#06B6D4]" : "text-slate-600")} />
                   <span>{tab.short}</span>
                   {isActive && (
                     <motion.div
-                      layoutId="tab-active-dot"
-                      className="absolute bottom-0 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-cyan-400"
+                      layoutId="tab-underline"
+                      className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-[#06B6D4]"
                     />
                   )}
                 </button>
@@ -191,23 +190,27 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                   <div className="px-5 py-4 space-y-4">
                     {/* Stats trio */}
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="bg-[#111827] border border-blue-500/10 rounded-xl p-3 text-center hover:border-blue-500/20 transition-colors group">
-                        <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center mx-auto mb-1.5 group-hover:bg-blue-500/15 transition-colors">
+                      {/* Interações */}
+                      <div className="group bg-[#111827] border border-white/[0.06] hover:border-blue-500/20 rounded-xl p-3 text-center transition-all hover:bg-blue-500/[0.04]">
+                        <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-500/20 transition-colors">
                           <Activity className="w-3.5 h-3.5 text-blue-400" />
                         </div>
-                        <div className="text-2xl font-black text-white tabular-nums leading-none">{leadActs.length}</div>
-                        <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-1">Interações</div>
+                        <div className="text-[22px] font-black text-white tabular-nums leading-none">{leadActs.length}</div>
+                        <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-1.5">Interações</div>
                       </div>
 
+                      {/* Sem Contato */}
                       <div className={cn(
-                        "rounded-xl p-3 text-center border transition-colors",
-                        timeIdleNum > 7 ? "bg-rose-500/10 border-rose-500/25"
-                        : timeIdleNum > 3 ? "bg-amber-500/10 border-amber-500/20"
-                        : "bg-[#111827] border-white/5"
+                        "rounded-xl p-3 text-center border transition-all",
+                        timeIdleNum > 7
+                          ? "bg-rose-500/[0.08] border-rose-500/20 hover:bg-rose-500/[0.12]"
+                          : timeIdleNum > 3
+                          ? "bg-amber-500/[0.08] border-amber-500/15 hover:bg-amber-500/[0.12]"
+                          : "bg-[#111827] border-white/[0.06] hover:border-white/10"
                       )}>
                         <div className={cn(
-                          "w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-1.5",
-                          timeIdleNum > 7 ? "bg-rose-500/15" : timeIdleNum > 3 ? "bg-amber-500/15" : "bg-slate-700/50"
+                          "w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-2",
+                          timeIdleNum > 7 ? "bg-rose-500/15" : timeIdleNum > 3 ? "bg-amber-500/15" : "bg-slate-700/40"
                         )}>
                           {timeIdleNum > 7
                             ? <AlertTriangle className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
@@ -215,23 +218,26 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                           }
                         </div>
                         <div className={cn(
-                          "text-2xl font-black tabular-nums leading-none",
+                          "text-[22px] font-black tabular-nums leading-none",
                           timeIdleNum > 7 ? "text-rose-400" : timeIdleNum > 3 ? "text-amber-400" : "text-white"
                         )}>
-                          {timeIdleNum}d
+                          {timeIdleNum}<span className="text-sm">d</span>
                         </div>
-                        <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-1">Sem Contato</div>
+                        <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-1.5">Sem Contato</div>
                       </div>
 
+                      {/* Probabilidade */}
                       <div className={cn(
-                        "rounded-xl p-3 text-center border transition-colors",
-                        probNum >= 70 ? "bg-emerald-500/10 border-emerald-500/20"
-                        : probNum >= 40 ? "bg-amber-500/10 border-amber-500/15"
-                        : "bg-[#111827] border-white/5"
+                        "rounded-xl p-3 text-center border transition-all",
+                        probNum >= 70
+                          ? "bg-emerald-500/[0.08] border-emerald-500/20 hover:bg-emerald-500/[0.12]"
+                          : probNum >= 40
+                          ? "bg-amber-500/[0.08] border-amber-500/15 hover:bg-amber-500/[0.12]"
+                          : "bg-[#111827] border-white/[0.06] hover:border-white/10"
                       )}>
                         <div className={cn(
-                          "w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-1.5",
-                          probNum >= 70 ? "bg-emerald-500/15" : probNum >= 40 ? "bg-amber-500/15" : "bg-slate-700/50"
+                          "w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-2",
+                          probNum >= 70 ? "bg-emerald-500/15" : probNum >= 40 ? "bg-amber-500/15" : "bg-slate-700/40"
                         )}>
                           <TrendingUp className={cn(
                             "w-3.5 h-3.5",
@@ -239,12 +245,12 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                           )} />
                         </div>
                         <div className={cn(
-                          "text-2xl font-black tabular-nums leading-none",
+                          "text-[22px] font-black tabular-nums leading-none",
                           probNum >= 70 ? "text-emerald-400" : probNum >= 40 ? "text-amber-400" : "text-white"
                         )}>
-                          {probNum}%
+                          {probNum}<span className="text-sm">%</span>
                         </div>
-                        <div className="mt-1.5 h-1 bg-white/5 rounded-full overflow-hidden">
+                        <div className="mt-2 h-[3px] bg-white/5 rounded-full overflow-hidden">
                           <div
                             className={cn(
                               "h-full rounded-full transition-all duration-700",
@@ -253,7 +259,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                             style={{ width: `${probNum}%` }}
                           />
                         </div>
-                        <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-1">Prob. Ganho</div>
+                        <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-1.5">Prob. Ganho</div>
                       </div>
                     </div>
 
@@ -371,13 +377,6 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
         document.body
       )}
 
-      <ConfirmModal
-        isOpen={isConfirmDeleteOpen}
-        onClose={() => setIsConfirmDeleteOpen(false)}
-        onConfirm={handleConfirmDelete}
-        title="Remover Lead Permanentemente?"
-        message={`Você tem certeza ABSOLUTA de que deseja deletar o lead "${companyName || leadName}"? Todos os relatórios de alteração, e-mails de interações e produtos vinculados no faturamento serão destruídos.`}
-      />
     </>
   );
 }

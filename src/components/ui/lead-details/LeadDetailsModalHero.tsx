@@ -1,5 +1,5 @@
 import React from "react";
-import { Trophy, ThumbsDown, X, Brain, ChevronRight, User } from "lucide-react";
+import { Trophy, ThumbsDown, X, Brain, ChevronRight, User, Check } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { toast } from "sonner";
 
@@ -48,15 +48,20 @@ export function LeadDetailsModalHero({
   moveToStage,
 }: LeadDetailsModalHeroProps) {
   const TempIcon = tc.icon;
+  const currentStageIdx = stagesDef.findIndex((s) => s.id === lead.stageId);
 
   return (
     <>
+      {/* Temperature stripe */}
       <div className={`h-[3px] shrink-0 bg-gradient-to-r ${tc.stripe}`} />
 
-      <div className={`relative shrink-0 bg-gradient-to-b ${tc.hero} border-b border-white/[0.06]`}>
+      <div className={`relative shrink-0 bg-gradient-to-b ${tc.hero} border-b border-white/[0.06] overflow-hidden`}>
+        {/* Ambient glow */}
+        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-[0.08] bg-white pointer-events-none" />
+
         {/* Top action bar */}
-        <div className="flex items-center justify-between px-5 pt-4 pb-3">
-          <div className="flex items-center gap-2">
+        <div className="relative flex items-center justify-between px-5 pt-4 pb-3">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => {
                 const lastStage = stagesDef[stagesDef.length - 1];
@@ -67,7 +72,7 @@ export function LeadDetailsModalHero({
                   ...prev,
                 ]);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-emerald-500/10 active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-emerald-500/10 active:scale-95"
             >
               <Trophy className="w-3 h-3" /> Ganho
             </button>
@@ -80,7 +85,7 @@ export function LeadDetailsModalHero({
                   ...prev,
                 ]);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-black uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-rose-500/10 active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-black uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-rose-500/10 active:scale-95"
             >
               <ThumbsDown className="w-3 h-3" /> Perdido
             </button>
@@ -94,7 +99,7 @@ export function LeadDetailsModalHero({
               className={cn(
                 "p-1.5 rounded-lg border transition-all",
                 showCopilot
-                  ? "bg-violet-500/20 border-violet-500/40 text-violet-400"
+                  ? "bg-violet-500/20 border-violet-500/40 text-violet-400 shadow-md shadow-violet-500/20"
                   : "border-white/10 text-slate-500 hover:text-violet-400 hover:border-violet-500/30 hover:bg-violet-500/10"
               )}
             >
@@ -103,7 +108,7 @@ export function LeadDetailsModalHero({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-white transition-colors ml-0.5"
+              className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-white transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
@@ -111,9 +116,10 @@ export function LeadDetailsModalHero({
         </div>
 
         {/* Lead identity */}
-        <div className="flex items-center gap-4 px-5 pb-4">
+        <div className="relative flex items-center gap-4 px-5 pb-4">
           <div className={cn(
-            "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black shrink-0 ring-2 ring-offset-2 ring-offset-[#0B1120] select-none",
+            "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black shrink-0 shadow-lg",
+            "ring-2 ring-offset-2 ring-offset-[#0B1120] select-none",
             tc.avatar
           )}>
             {initials}
@@ -135,16 +141,16 @@ export function LeadDetailsModalHero({
 
             {companyName && leadName && (
               <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-                <User className="w-3 h-3 shrink-0" />
+                <User className="w-3 h-3 shrink-0 text-slate-500" />
                 <span className="truncate">{leadName}</span>
               </p>
             )}
 
-            <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+            <div className="flex items-center gap-2 mt-1.5 flex-wrap">
               <span className="text-sm font-black text-emerald-400 font-mono tracking-tight">
                 {formattedValue}
               </span>
-              <span className="text-[9px] text-slate-600">·</span>
+              <div className="w-px h-3 bg-white/10 shrink-0" />
               <span className={cn(
                 "text-[10px] font-bold px-2 py-0.5 rounded-full border",
                 priority === "Alta"
@@ -171,26 +177,43 @@ export function LeadDetailsModalHero({
           </div>
         </div>
 
-        {/* Stage pills */}
-        <div className="flex items-center gap-2 px-5 pb-3 overflow-x-auto scrollbar-none">
-          <ChevronRight className="w-3.5 h-3.5 text-slate-600 shrink-0" />
-          {stagesDef.map((stg: any) => {
-            const isActive = lead.stageId === stg.id;
-            return (
-              <button
-                key={stg.id}
-                onClick={() => moveToStage(stg)}
-                className={cn(
-                  "px-3 py-1 rounded-full text-[10px] font-bold whitespace-nowrap shrink-0 transition-all border cursor-pointer",
-                  isActive
-                    ? "bg-[#2563EB] text-white border-[#2563EB] shadow-md shadow-blue-500/25"
-                    : "bg-[#111827] border-white/10 text-slate-400 hover:text-white hover:border-white/25 hover:bg-white/5"
-                )}
-              >
-                {stg.name}
-              </button>
-            );
-          })}
+        {/* Stage stepper */}
+        <div className="relative px-5 pb-4 overflow-x-auto scrollbar-none">
+          <div className="flex items-center min-w-max">
+            {stagesDef.map((stg: any, idx: number) => {
+              const isActive = lead.stageId === stg.id;
+              const isPast = currentStageIdx > idx;
+              const isLast = idx === stagesDef.length - 1;
+              return (
+                <React.Fragment key={stg.id}>
+                  <button
+                    onClick={() => moveToStage(stg)}
+                    className={cn(
+                      "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer border",
+                      isActive
+                        ? "bg-blue-500/15 text-blue-300 border-blue-500/35 shadow-sm shadow-blue-500/15"
+                        : isPast
+                        ? "text-emerald-500/70 border-transparent hover:border-white/10 hover:bg-white/5"
+                        : "text-slate-600 border-transparent hover:text-slate-300 hover:border-white/10 hover:bg-white/5"
+                    )}
+                  >
+                    {isActive && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shrink-0" />
+                    )}
+                    {isPast && (
+                      <span className="w-3.5 h-3.5 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
+                        <Check className="w-2 h-2 text-emerald-400" />
+                      </span>
+                    )}
+                    {stg.name}
+                  </button>
+                  {!isLast && (
+                    <ChevronRight className="w-3 h-3 text-slate-700 shrink-0 mx-0.5" />
+                  )}
+                </React.Fragment>
+              );
+            })}
+          </div>
         </div>
       </div>
     </>
