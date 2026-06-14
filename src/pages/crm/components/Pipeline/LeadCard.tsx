@@ -1,12 +1,15 @@
+import { useData } from '../../../../contexts/DataContext';
 import { Card } from '../../../../components/ui/card';
 import {
   Flame, MoreVertical, Calendar, FileText,
   History, ArrowRight, FileDown, Activity,
+  Zap, Package,
 } from 'lucide-react';
 
 interface LeadCardProps {
   item: any;
   tasks: any[];
+  stageName?: string;
   draggedLeadId: string | null;
   setDraggedLeadId: (id: string | null) => void;
   updateLead: (id: string, updates: Partial<any>) => void;
@@ -27,8 +30,11 @@ const TEMP: Record<string, { flame: string; accent: string }> = {
   frio:   { flame: 'text-blue-500',  accent: 'border-l-blue-500/30'  },
 };
 
-const SCORE_COLOR = (s: number) =>
+const SCORE_BAR = (s: number) =>
   s > 80 ? 'bg-emerald-500' : s > 50 ? 'bg-amber-500' : 'bg-rose-500';
+
+const SCORE_TEXT = (s: number) =>
+  s > 80 ? 'text-emerald-400' : s > 50 ? 'text-amber-400' : 'text-rose-400';
 
 const PRIORITY_BADGE: Record<string, string> = {
   Alta:  'bg-rose-500/10 text-rose-400 border-rose-500/20',
@@ -36,16 +42,22 @@ const PRIORITY_BADGE: Record<string, string> = {
   Baixa: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
 };
 
+const PRIORITY_LABEL: Record<string, string> = {
+  Alta: 'ALTO', Média: 'MÉDIO', Baixa: 'BAIXO',
+};
+
 function initials(name: string) {
   return (name ?? "").split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase() || "–";
 }
 
 export function LeadCard({
-  item, tasks, draggedLeadId, setDraggedLeadId, updateLead,
+  item, tasks, stageName, draggedLeadId, setDraggedLeadId, updateLead,
   tempDropdownId, setTempDropdownId, openDropdownId, setOpenDropdownId,
   setSelectedLead, handleTransferToComercial, handleExportIAResume,
   setWebhookModalLead, currentPipeline,
 }: LeadCardProps) {
+  const { products } = useData();
+
   const isDragging = draggedLeadId === item.id;
   const hasDelayedTask = tasks.some(
     t => (t.related === item.name || t.related === item.company) && t.status === 'Atrasado'
@@ -53,6 +65,12 @@ export function LeadCard({
   const temp = (item.temperature || 'frio').toLowerCase() as keyof typeof TEMP;
   const score = item.scoreIA ?? 45;
   const tempStyle = TEMP[temp] ?? TEMP.frio;
+  const tags = Array.isArray(item.tags) ? item.tags : [];
+  const timeIdleNum = Number(item.timeIdle) || 0;
+
+  const linkedProduct = (products || []).find((p: any) =>
+    (item.productIds || []).includes(p.id)
+  );
 
   return (
     <Card
@@ -68,7 +86,6 @@ export function LeadCard({
         isDragging ? "opacity-40 scale-[0.97] ring-1 ring-blue-500/40" : "",
       ].join(" ")}
     >
-      {/* Delayed task ping */}
       {hasDelayedTask && (
         <span className="absolute top-2.5 right-2.5 flex h-2 w-2 z-10 pointer-events-none">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-rose-500 opacity-60" />
@@ -76,33 +93,28 @@ export function LeadCard({
         </span>
       )}
 
-      <div className="p-3 flex flex-col gap-2">
+      <div className="p-3 flex flex-col gap-2.5">
 
-        {/* Row 1 — seller + temp + menu */}
+        {/* Row 1 — avatar + flame + priority + menu */}
         <div className="flex items-center justify-between gap-1">
           <div className="flex items-center gap-1.5 min-w-0">
-            <div className="w-5 h-5 rounded-full bg-blue-500/20 border border-blue-500/25 flex items-center justify-center text-[8px] font-black text-blue-300 shrink-0">
-              {initials(item.seller)}
+            <div className="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-500/25 flex items-center justify-center text-[8px] font-black text-blue-300 shrink-0">
+              {initials(item.seller || item.name)}
             </div>
-            <span className="text-[9px] font-semibold text-slate-500 truncate">
-              {item.seller?.split(' ')[0] || '—'}
-            </span>
-          </div>
 
-          <div className="flex items-center gap-0.5 shrink-0">
-            {/* Temperature */}
+            {/* Temperature dropdown */}
             <div className="relative">
               <button
                 onClick={(e) => { e.stopPropagation(); setTempDropdownId(tempDropdownId === item.id ? null : item.id); }}
                 title={`Temperatura: ${temp}`}
-                className="p-1 rounded hover:bg-white/5 border-none bg-transparent cursor-pointer"
+                className="p-0.5 rounded hover:bg-white/5 border-none bg-transparent cursor-pointer"
               >
                 <Flame className={`w-3 h-3 ${tempStyle.flame}`} />
               </button>
               {tempDropdownId === item.id && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setTempDropdownId(null); }} />
-                  <div className="absolute right-0 top-full mt-1 bg-[#0B1120] border border-white/10 rounded-xl shadow-2xl p-1 z-50 flex gap-1" onClick={(e) => e.stopPropagation()}>
+                  <div className="absolute left-0 top-full mt-1 bg-[#0B1120] border border-white/10 rounded-xl shadow-2xl p-1 z-50 flex gap-1" onClick={(e) => e.stopPropagation()}>
                     {(['quente', 'morno', 'frio'] as const).map((t) => (
                       <button key={t} onClick={() => { updateLead(item.id, { temperature: t }); setTempDropdownId(null); }}
                         className={`p-2 hover:bg-white/5 rounded-lg border-none bg-transparent cursor-pointer ${TEMP[t].flame}`} title={t}>
@@ -114,88 +126,121 @@ export function LeadCard({
               )}
             </div>
 
-            {/* More menu */}
-            <div className="relative">
-              <button
-                onClick={(e) => { e.stopPropagation(); setOpenDropdownId(openDropdownId === item.id ? null : item.id); }}
-                className="p-1 rounded hover:bg-white/5 border-none bg-transparent cursor-pointer text-slate-600 hover:text-slate-300 transition-colors"
-              >
-                <MoreVertical className="w-3 h-3" />
-              </button>
-              {openDropdownId === item.id && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpenDropdownId(null); }} />
-                  <div className="absolute right-0 top-full mt-1 w-52 bg-[#0B1120] border border-white/10 rounded-xl shadow-2xl p-1 z-50 overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                    {[
-                      { icon: Calendar,  label: 'Agendar Follow-up',  action: () => setOpenDropdownId(null) },
-                      { icon: FileText,  label: 'Enviar Proposta',    action: () => setOpenDropdownId(null) },
-                      { icon: History,   label: 'Ver Histórico',      action: () => { setOpenDropdownId(null); setSelectedLead(item); } },
-                    ].map(({ icon: Icon, label, action }) => (
-                      <button key={label} onClick={action}
-                        className="flex items-center gap-2 w-full p-2 hover:bg-white/5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-colors border-none bg-transparent cursor-pointer text-left">
-                        <Icon className="w-3.5 h-3.5 shrink-0" /> {label}
-                      </button>
-                    ))}
-
-                    {currentPipeline === 'sdr' && (
-                      <>
-                        <div className="h-px bg-white/5 my-1" />
-                        <button onClick={(e) => handleTransferToComercial(e, item)}
-                          className="flex items-center gap-2 w-full p-2 hover:bg-blue-500/10 rounded-lg text-xs font-semibold text-blue-400 transition-colors border-none bg-transparent cursor-pointer text-left">
-                          <ArrowRight className="w-3.5 h-3.5 shrink-0" /> Transf. Inteligente
-                        </button>
-                        <button onClick={(e) => handleExportIAResume(e, item)}
-                          className="flex items-center gap-2 w-full p-2 hover:bg-emerald-500/10 rounded-lg text-xs font-semibold text-emerald-400 transition-colors border-none bg-transparent cursor-pointer text-left">
-                          <FileDown className="w-3.5 h-3.5 shrink-0" /> Exportar Resumo IA
-                        </button>
-                        <button onClick={(e) => { e.stopPropagation(); setOpenDropdownId(null); setWebhookModalLead(item); }}
-                          className="flex items-center gap-2 w-full p-2 hover:bg-purple-500/10 rounded-lg text-xs font-semibold text-purple-400 transition-colors border-none bg-transparent cursor-pointer text-left">
-                          <Activity className="w-3.5 h-3.5 shrink-0" /> Configurar Webhook
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Row 2 — name + company */}
-        <div>
-          <h4 className="text-[12px] font-bold text-white leading-tight line-clamp-1 group-hover:text-blue-300 transition-colors">
-            {item.name}
-          </h4>
-          <p className="text-[10px] text-slate-500 truncate mt-0.5">{item.company}</p>
-        </div>
-
-        {/* SDR score bar */}
-        {currentPipeline === 'sdr' && (
-          <div className="flex items-center gap-2">
-            <div className="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
-              <div className={`h-full rounded-full ${SCORE_COLOR(score)}`} style={{ width: `${score}%` }} />
-            </div>
-            <span className="text-[9px] font-black text-slate-400 tabular-nums w-6 text-right">{score}%</span>
-          </div>
-        )}
-
-        {/* Footer — value + priority + idle */}
-        <div className="flex items-center justify-between pt-2 border-t border-white/[0.06]">
-          <span className="font-mono text-[11px] font-bold text-emerald-400">{item.value || 'R$ 0'}</span>
-          <div className="flex items-center gap-1">
-            <span className={`text-[8px] font-black px-1.5 py-0.5 rounded border uppercase ${PRIORITY_BADGE[item.priority] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20'}`}>
-              {item.priority}
-            </span>
-            {item.timeIdle !== undefined && item.timeIdle > 0 && (
-              <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded ${
-                item.timeIdle > 7
-                  ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse'
-                  : 'bg-slate-800/80 text-slate-500'
-              }`}>
-                {item.timeIdle}d
+            {/* Priority badge */}
+            {item.priority && (
+              <span className={`text-[8px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wide ${PRIORITY_BADGE[item.priority] ?? 'bg-slate-700/40 border-white/10 text-slate-400'}`}>
+                {PRIORITY_LABEL[item.priority] ?? item.priority}
               </span>
             )}
           </div>
+
+          {/* More menu */}
+          <div className="relative shrink-0">
+            <button
+              onClick={(e) => { e.stopPropagation(); setOpenDropdownId(openDropdownId === item.id ? null : item.id); }}
+              className="p-1 rounded hover:bg-white/5 border-none bg-transparent cursor-pointer text-slate-600 hover:text-slate-300 transition-colors"
+            >
+              <MoreVertical className="w-3 h-3" />
+            </button>
+            {openDropdownId === item.id && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpenDropdownId(null); }} />
+                <div className="absolute right-0 top-full mt-1 w-52 bg-[#0B1120] border border-white/10 rounded-xl shadow-2xl p-1 z-50 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                  {[
+                    { icon: Calendar,  label: 'Agendar Follow-up',  action: () => setOpenDropdownId(null) },
+                    { icon: FileText,  label: 'Enviar Proposta',    action: () => setOpenDropdownId(null) },
+                    { icon: History,   label: 'Ver Histórico',      action: () => { setOpenDropdownId(null); setSelectedLead(item); } },
+                  ].map(({ icon: Icon, label, action }) => (
+                    <button key={label} onClick={action}
+                      className="flex items-center gap-2 w-full p-2 hover:bg-white/5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-colors border-none bg-transparent cursor-pointer text-left">
+                      <Icon className="w-3.5 h-3.5 shrink-0" /> {label}
+                    </button>
+                  ))}
+
+                  {currentPipeline === 'sdr' && (
+                    <>
+                      <div className="h-px bg-white/5 my-1" />
+                      <button onClick={(e) => handleTransferToComercial(e, item)}
+                        className="flex items-center gap-2 w-full p-2 hover:bg-blue-500/10 rounded-lg text-xs font-semibold text-blue-400 transition-colors border-none bg-transparent cursor-pointer text-left">
+                        <ArrowRight className="w-3.5 h-3.5 shrink-0" /> Transf. Inteligente
+                      </button>
+                      <button onClick={(e) => handleExportIAResume(e, item)}
+                        className="flex items-center gap-2 w-full p-2 hover:bg-emerald-500/10 rounded-lg text-xs font-semibold text-emerald-400 transition-colors border-none bg-transparent cursor-pointer text-left">
+                        <FileDown className="w-3.5 h-3.5 shrink-0" /> Exportar Resumo IA
+                      </button>
+                      <button onClick={(e) => { e.stopPropagation(); setOpenDropdownId(null); setWebhookModalLead(item); }}
+                        className="flex items-center gap-2 w-full p-2 hover:bg-purple-500/10 rounded-lg text-xs font-semibold text-purple-400 transition-colors border-none bg-transparent cursor-pointer text-left">
+                        <Activity className="w-3.5 h-3.5 shrink-0" /> Configurar Webhook
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Lead name */}
+        <div>
+          <h4 className="text-[12px] font-black text-white leading-tight line-clamp-2 group-hover:text-blue-300 transition-colors uppercase tracking-wide">
+            {item.name || item.company || '—'}
+          </h4>
+          {item.company && item.name && (
+            <p className="text-[9px] text-slate-600 truncate mt-0.5">{item.company}</p>
+          )}
+        </div>
+
+        {/* Stage pill */}
+        {stageName && (
+          <div className="flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[9px] font-black px-2.5 py-1 rounded-full uppercase tracking-wider">
+              <Zap className="w-2.5 h-2.5" />
+              {stageName}
+            </span>
+          </div>
+        )}
+
+        {/* Score bar */}
+        <div className="flex items-center gap-1.5">
+          <Zap className={`w-3 h-3 shrink-0 ${SCORE_TEXT(score)}`} />
+          <div className="flex-1 h-1.5 bg-white/[0.05] rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all duration-700 ${SCORE_BAR(score)}`}
+              style={{ width: `${score}%` }}
+            />
+          </div>
+          <span className={`text-[9px] font-black tabular-nums ${SCORE_TEXT(score)}`}>{score}%</span>
+        </div>
+
+        {/* Tags + product */}
+        {(tags.length > 0 || linkedProduct) && (
+          <div className="flex flex-wrap gap-1">
+            {tags.slice(0, 3).map((tag: string) => (
+              <span key={tag} className="text-[8px] font-bold px-2 py-0.5 rounded-full bg-slate-800/80 border border-white/[0.06] text-slate-400 uppercase tracking-wide">
+                {tag}
+              </span>
+            ))}
+            {linkedProduct && (
+              <span className="inline-flex items-center gap-1 text-[8px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 uppercase tracking-wide">
+                <Package className="w-2 h-2 shrink-0" />
+                {linkedProduct.name}
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Footer — value + idle */}
+        <div className="flex items-center justify-between pt-1.5 border-t border-white/[0.06]">
+          <span className="font-mono text-[11px] font-bold text-emerald-400">{item.value || 'R$ 0'}</span>
+          <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 ${
+            timeIdleNum > 7
+              ? 'bg-rose-500/15 text-rose-400 border-rose-500/20 animate-pulse'
+              : timeIdleNum > 3
+              ? 'bg-amber-500/15 text-amber-400 border-amber-500/20'
+              : 'bg-slate-800/60 text-slate-500 border-white/[0.05]'
+          }`}>
+            ⏳ {timeIdleNum} dias ocioso
+          </span>
         </div>
 
       </div>

@@ -180,7 +180,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
           {/* ── Tab content ── */}
           <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
               <motion.div
                 key={currentTab}
                 initial={{ opacity: 0, y: 6 }}

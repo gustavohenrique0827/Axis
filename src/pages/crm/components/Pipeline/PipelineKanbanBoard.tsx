@@ -1,5 +1,4 @@
 import { motion } from "motion/react";
-import { Card } from "../../../../components/ui/card";
 import { Plus, ChevronRight } from "lucide-react";
 import { LeadCard } from "./LeadCard";
 
@@ -103,7 +102,7 @@ export function PipelineKanbanBoard({
                   {stageLeads.map((item: any) => (
                     <motion.div key={item.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }}>
                       <LeadCard
-                        item={item} tasks={tasks} draggedLeadId={draggedLeadId} setDraggedLeadId={setDraggedLeadId}
+                        item={item} tasks={tasks} stageName={stage.name} draggedLeadId={draggedLeadId} setDraggedLeadId={setDraggedLeadId}
                         updateLead={updateLead} tempDropdownId={tempDropdownId} setTempDropdownId={setTempDropdownId}
                         openDropdownId={openDropdownId} setOpenDropdownId={setOpenDropdownId}
                         setSelectedLead={setSelectedLead} handleTransferToComercial={handleTransferToComercial}
