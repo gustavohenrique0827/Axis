@@ -168,10 +168,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                   <tab.icon className={cn("w-3.5 h-3.5 transition-all", isActive ? "scale-110 text-[#06B6D4]" : "text-slate-600")} />
                   <span>{tab.short}</span>
                   {isActive && (
-                    <motion.div
-                      layoutId="tab-underline"
-                      className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-[#06B6D4]"
-                    />
+                    <div className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-[#06B6D4]" />
                   )}
                 </button>
               );
@@ -180,13 +177,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
           {/* ── Tab content ── */}
           <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-              <motion.div
-                key={currentTab}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.15 }}
-                className="h-full"
-              >
+              <div key={currentTab} className="h-full">
                 {currentTab === "informacoes" && (
                   <div className="px-5 py-4 space-y-3">
                     <ProfileSection
@@ -358,7 +349,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                     <LogsSection alterationLogs={alterationLogs} />
                   </div>
                 )}
-              </motion.div>
+              </div>
           </div>
         </div>
       </Modal>
