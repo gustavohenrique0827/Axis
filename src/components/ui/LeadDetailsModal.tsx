@@ -107,7 +107,8 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
   };
 
   return (
-    <>
+    /* Usamos um div com display: contents como âncora estável para evitar erros de insertBefore com Portals */
+    <div key={lead?.id} style={{ display: 'contents' }}>
       <Modal
         isOpen={isOpen}
         onClose={onClose}
@@ -354,13 +355,14 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
         </div>
       </Modal>
 
-      {/* Removido portal do Copilot para evitar erro de reconciliacao/notFoundError no insertBefore */}
-      {isOpen && showCopilot && (
+      {/* Restauramos o Portal dentro de uma estrutura estável. Isso garante que o Copilot
+          seja renderizado no mesmo nível do Modal no document.body, evitando conflitos de irmãos no DOM. */}
+      {isOpen && showCopilot && createPortal(
         <div className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[100] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl">
           <IACopilot leadName={leadName} companyName={companyName} />
-        </div>
+        </div>,
+        document.body
       )}
-
-    </>
+    </div>
   );
 }
