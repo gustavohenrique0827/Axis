@@ -158,7 +158,6 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     setCustomFieldsState(lead.customFields || {});
     setLinkedProductIds(Array.isArray(lead.productIds) ? lead.productIds : []);
     setCustomTags(Array.isArray(lead.tags) ? lead.tags : []);
-    setCurrentStageId(lead.stageId ?? "");
 
     const rawScore = lead.scoreIA ?? 45;
     const t = (lead.temperature ?? "").toLowerCase();
@@ -173,6 +172,11 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     setTemperature(derivedTemp);
     setProbability(rawScore > 80 ? 80 : rawScore > 50 ? 50 : 25);
   }, [lead]);
+
+  // Reseta stageId apenas quando muda de lead (não quando o objeto atualiza)
+  useEffect(() => {
+    setCurrentStageId(lead?.stageId ?? "");
+  }, [lead?.id]);
 
   // Popula log de alterações com atividades reais
   useEffect(() => {

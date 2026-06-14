@@ -190,82 +190,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                 className="h-full"
               >
                 {currentTab === "informacoes" && (
-                  <div className="px-5 py-4 space-y-4">
-                    {/* Stats trio */}
-                    <div className="grid grid-cols-3 gap-2">
-                      {/* Interações */}
-                      <div className="group bg-[#111827] border border-white/[0.06] hover:border-blue-500/20 rounded-xl p-3 text-center transition-all hover:bg-blue-500/[0.04]">
-                        <div className="w-7 h-7 rounded-lg bg-blue-500/10 flex items-center justify-center mx-auto mb-2 group-hover:bg-blue-500/20 transition-colors">
-                          <Activity className="w-3.5 h-3.5 text-blue-400" />
-                        </div>
-                        <div className="text-[22px] font-black text-white tabular-nums leading-none">{leadActs.length}</div>
-                        <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-1.5">Interações</div>
-                      </div>
-
-                      {/* Sem Contato */}
-                      <div className={cn(
-                        "rounded-xl p-3 text-center border transition-all",
-                        timeIdleNum > 7
-                          ? "bg-rose-500/[0.08] border-rose-500/20 hover:bg-rose-500/[0.12]"
-                          : timeIdleNum > 3
-                          ? "bg-amber-500/[0.08] border-amber-500/15 hover:bg-amber-500/[0.12]"
-                          : "bg-[#111827] border-white/[0.06] hover:border-white/10"
-                      )}>
-                        <div className={cn(
-                          "w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-2",
-                          timeIdleNum > 7 ? "bg-rose-500/15" : timeIdleNum > 3 ? "bg-amber-500/15" : "bg-slate-700/40"
-                        )}>
-                          {timeIdleNum > 7
-                            ? <AlertTriangle className="w-3.5 h-3.5 text-rose-400 animate-pulse" />
-                            : <Phone className={cn("w-3.5 h-3.5", timeIdleNum > 3 ? "text-amber-400" : "text-slate-500")} />
-                          }
-                        </div>
-                        <div className={cn(
-                          "text-[22px] font-black tabular-nums leading-none",
-                          timeIdleNum > 7 ? "text-rose-400" : timeIdleNum > 3 ? "text-amber-400" : "text-white"
-                        )}>
-                          {timeIdleNum}<span className="text-sm">d</span>
-                        </div>
-                        <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-1.5">Sem Contato</div>
-                      </div>
-
-                      {/* Probabilidade */}
-                      <div className={cn(
-                        "rounded-xl p-3 text-center border transition-all",
-                        probNum >= 70
-                          ? "bg-emerald-500/[0.08] border-emerald-500/20 hover:bg-emerald-500/[0.12]"
-                          : probNum >= 40
-                          ? "bg-amber-500/[0.08] border-amber-500/15 hover:bg-amber-500/[0.12]"
-                          : "bg-[#111827] border-white/[0.06] hover:border-white/10"
-                      )}>
-                        <div className={cn(
-                          "w-7 h-7 rounded-lg flex items-center justify-center mx-auto mb-2",
-                          probNum >= 70 ? "bg-emerald-500/15" : probNum >= 40 ? "bg-amber-500/15" : "bg-slate-700/40"
-                        )}>
-                          <TrendingUp className={cn(
-                            "w-3.5 h-3.5",
-                            probNum >= 70 ? "text-emerald-400" : probNum >= 40 ? "text-amber-400" : "text-slate-500"
-                          )} />
-                        </div>
-                        <div className={cn(
-                          "text-[22px] font-black tabular-nums leading-none",
-                          probNum >= 70 ? "text-emerald-400" : probNum >= 40 ? "text-amber-400" : "text-white"
-                        )}>
-                          {probNum}<span className="text-sm">%</span>
-                        </div>
-                        <div className="mt-2 h-[3px] bg-white/5 rounded-full overflow-hidden">
-                          <div
-                            className={cn(
-                              "h-full rounded-full transition-all duration-700",
-                              probNum >= 70 ? "bg-emerald-400" : probNum >= 40 ? "bg-amber-400" : "bg-slate-600"
-                            )}
-                            style={{ width: `${probNum}%` }}
-                          />
-                        </div>
-                        <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-1.5">Prob. Ganho</div>
-                      </div>
-                    </div>
-
+                  <div className="px-5 py-4 space-y-3">
                     <ProfileSection
                       lead={lead}
                       companyName={companyName}    setCompanyName={setCompanyName}
@@ -298,6 +223,80 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                       applyMessageTemplate={applyMessageTemplate}
                       updateLead={updateLead}
                     />
+
+                    {/* Stats compactas */}
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="flex items-center gap-2 bg-[#111827] border border-white/[0.06] rounded-xl px-3 py-2.5">
+                        <div className="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                          <Activity className="w-3 h-3 text-blue-400" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-black text-white tabular-nums leading-none">{leadActs.length}</div>
+                          <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Interações</div>
+                        </div>
+                      </div>
+
+                      <div className={cn(
+                        "flex items-center gap-2 rounded-xl px-3 py-2.5 border",
+                        timeIdleNum > 7 ? "bg-rose-500/[0.08] border-rose-500/20"
+                        : timeIdleNum > 3 ? "bg-amber-500/[0.08] border-amber-500/15"
+                        : "bg-[#111827] border-white/[0.06]"
+                      )}>
+                        <div className={cn(
+                          "w-6 h-6 rounded-lg flex items-center justify-center shrink-0",
+                          timeIdleNum > 7 ? "bg-rose-500/15" : timeIdleNum > 3 ? "bg-amber-500/15" : "bg-slate-700/40"
+                        )}>
+                          {timeIdleNum > 7
+                            ? <AlertTriangle className="w-3 h-3 text-rose-400 animate-pulse" />
+                            : <Phone className={cn("w-3 h-3", timeIdleNum > 3 ? "text-amber-400" : "text-slate-500")} />
+                          }
+                        </div>
+                        <div>
+                          <div className={cn(
+                            "text-sm font-black tabular-nums leading-none",
+                            timeIdleNum > 7 ? "text-rose-400" : timeIdleNum > 3 ? "text-amber-400" : "text-white"
+                          )}>
+                            {timeIdleNum}<span className="text-[10px]">d</span>
+                          </div>
+                          <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Sem Contato</div>
+                        </div>
+                      </div>
+
+                      <div className={cn(
+                        "flex items-center gap-2 rounded-xl px-3 py-2.5 border",
+                        probNum >= 70 ? "bg-emerald-500/[0.08] border-emerald-500/20"
+                        : probNum >= 40 ? "bg-amber-500/[0.08] border-amber-500/15"
+                        : "bg-[#111827] border-white/[0.06]"
+                      )}>
+                        <div className={cn(
+                          "w-6 h-6 rounded-lg flex items-center justify-center shrink-0",
+                          probNum >= 70 ? "bg-emerald-500/15" : probNum >= 40 ? "bg-amber-500/15" : "bg-slate-700/40"
+                        )}>
+                          <TrendingUp className={cn(
+                            "w-3 h-3",
+                            probNum >= 70 ? "text-emerald-400" : probNum >= 40 ? "text-amber-400" : "text-slate-500"
+                          )} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className={cn(
+                            "text-sm font-black tabular-nums leading-none",
+                            probNum >= 70 ? "text-emerald-400" : probNum >= 40 ? "text-amber-400" : "text-white"
+                          )}>
+                            {probNum}<span className="text-[10px]">%</span>
+                          </div>
+                          <div className="mt-1 h-[2px] bg-white/5 rounded-full overflow-hidden">
+                            <div
+                              className={cn(
+                                "h-full rounded-full transition-all duration-700",
+                                probNum >= 70 ? "bg-emerald-400" : probNum >= 40 ? "bg-amber-400" : "bg-slate-600"
+                              )}
+                              style={{ width: `${probNum}%` }}
+                            />
+                          </div>
+                          <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">Prob. Ganho</div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
 
