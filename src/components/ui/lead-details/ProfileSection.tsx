@@ -3,7 +3,6 @@ import { Card } from "../card";
 import {
   Sparkles, Brain, ArrowRight, Tag, Trophy,
   Phone, MessageSquare, Mail, FileCheck,
-  Building2, Copy, CheckCheck,
 } from "lucide-react";
 import { Button } from "../button";
 import { useData } from "../../../contexts/DataContext";
@@ -72,7 +71,6 @@ export function ProfileSection({
   applyMessageTemplate, updateLead,
 }: ProfileSectionProps) {
   const [cnpjFetching, setCnpjFetching] = useState(false);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
   const { leads: allLeads, colaboradores, addLeadActivity: addActivityCtx } = useData();
 
   const sellerOptions = useMemo(() => {
@@ -90,14 +88,6 @@ export function ProfileSection({
     if (isNaN(num) || num === 0) return value as string;
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(num);
   }, [value]);
-
-  const copyToClipboard = (text: string, field: string) => {
-    if (!text || text === "—") return;
-    navigator.clipboard.writeText(text);
-    setCopiedField(field);
-    setTimeout(() => setCopiedField(null), 2000);
-    toast.success(`${field} copiado!`);
-  };
 
   const fetchCnpjData = async () => {
     const digits = (lead.cnpj || "").replace(/\D/g, "");
@@ -162,12 +152,6 @@ export function ProfileSection({
     },
   ];
 
-  const contactRows = [
-    { icon: Phone, label: "Telefone", val: phone, color: "text-emerald-400", bg: "bg-emerald-500/10", href: phone ? `tel:${phone}` : null },
-    { icon: Mail, label: "E-mail", val: email, color: "text-amber-400", bg: "bg-amber-500/10", href: email ? `mailto:${email}` : null },
-    { icon: Building2, label: "Empresa", val: companyName, color: "text-blue-400", bg: "bg-blue-500/10", href: null },
-  ];
-
   return (
     <div className="space-y-3">
 
@@ -183,42 +167,27 @@ export function ProfileSection({
         timeIdle={timeIdle}
       />
 
-      {/* ── Contact Info ── */}
-      <Card className="border-white/10 bg-[#111827]/70 overflow-hidden p-0">
-        <div className="px-4 py-2.5 border-b border-white/[0.05] bg-white/[0.01]">
-          <span className="text-[8px] font-black uppercase tracking-widest text-slate-500">Informações de Contato</span>
-        </div>
-        <div className="divide-y divide-white/[0.04]">
-          {contactRows.map(({ icon: Icon, label, val, color, bg, href }) => (
-            <div key={label} className="flex items-center gap-3 px-4 py-2.5 group hover:bg-white/[0.015] transition-colors">
-              <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${bg} shrink-0`}>
-                <Icon className={`w-3.5 h-3.5 ${color}`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-[9px] text-slate-500 leading-none mb-0.5">{label}</div>
-                {href && val ? (
-                  <a href={href} className={`text-xs font-bold truncate block hover:underline ${color}`}>{val}</a>
-                ) : (
-                  <div className={`text-xs font-semibold truncate ${val ? "text-white" : "text-slate-500 italic"}`}>
-                    {val || "—"}
-                  </div>
-                )}
-              </div>
-              {val && val !== "—" && (
-                <button
-                  onClick={() => copyToClipboard(val, label)}
-                  className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-white/10 rounded-lg transition-all"
-                  title="Copiar"
-                >
-                  {copiedField === label
-                    ? <CheckCheck className="w-3 h-3 text-emerald-400" />
-                    : <Copy className="w-3 h-3 text-slate-400" />}
-                </button>
-              )}
-            </div>
-          ))}
-        </div>
-      </Card>
+      <ProfileDataForm
+        isEditingInline={isEditingInline}
+        setIsEditingInline={setIsEditingInline}
+        companyName={companyName} setCompanyName={setCompanyName}
+        leadName={leadName} setLeadName={setLeadName}
+        phone={phone} setPhone={setPhone}
+        email={email} setEmail={setEmail}
+        title={title} setTitle={setTitle}
+        value={value} setValue={setValue}
+        displayValue={displayValue}
+        seller={seller} setSeller={setSeller}
+        priority={priority} setPriority={setPriority}
+        sellerOptions={sellerOptions}
+        lead={lead}
+        updateLead={updateLead}
+        customLeadFields={customLeadFields}
+        customFieldsState={customFieldsState}
+        setCustomFieldsState={setCustomFieldsState}
+        cnpjFetching={cnpjFetching}
+        onFetchCnpj={fetchCnpjData}
+      />
 
       {/* ── Quick Actions ── */}
       <Card className="border-white/10 bg-[#111827]/70 p-4">
@@ -274,28 +243,6 @@ export function ProfileSection({
           </div>
         </div>
       </div>
-
-      <ProfileDataForm
-        isEditingInline={isEditingInline}
-        setIsEditingInline={setIsEditingInline}
-        companyName={companyName} setCompanyName={setCompanyName}
-        leadName={leadName} setLeadName={setLeadName}
-        phone={phone} setPhone={setPhone}
-        email={email} setEmail={setEmail}
-        title={title} setTitle={setTitle}
-        value={value} setValue={setValue}
-        displayValue={displayValue}
-        seller={seller} setSeller={setSeller}
-        priority={priority} setPriority={setPriority}
-        sellerOptions={sellerOptions}
-        lead={lead}
-        updateLead={updateLead}
-        customLeadFields={customLeadFields}
-        customFieldsState={customFieldsState}
-        setCustomFieldsState={setCustomFieldsState}
-        cnpjFetching={cnpjFetching}
-        onFetchCnpj={fetchCnpjData}
-      />
 
       {/* ── Tags ── */}
       <Card className="border-white/10 bg-[#111827]/70 overflow-hidden p-0">
