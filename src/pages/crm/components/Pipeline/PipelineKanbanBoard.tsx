@@ -1,4 +1,3 @@
-import { motion } from "motion/react";
 import { Plus, ChevronRight } from "lucide-react";
 import { LeadCard } from "./LeadCard";
 
@@ -100,7 +99,7 @@ export function PipelineKanbanBoard({
                 </div>
                 <div className="flex-1 overflow-y-auto space-y-2 min-h-0 pb-3 scrollbar-none">
                   {stageLeads.map((item: any) => (
-                    <motion.div key={item.id} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }}>
+                    <div key={item.id}>
                       <LeadCard
                         item={item} tasks={tasks} stageName={stage.name} draggedLeadId={draggedLeadId} setDraggedLeadId={setDraggedLeadId}
                         updateLead={updateLead} tempDropdownId={tempDropdownId} setTempDropdownId={setTempDropdownId}
@@ -109,7 +108,7 @@ export function PipelineKanbanBoard({
                         handleExportIAResume={handleExportIAResume} setWebhookModalLead={setWebhookModalLead}
                         currentPipeline={currentPipeline}
                       />
-                    </motion.div>
+                    </div>
                   ))}
                   <button
                     onClick={() => setIsModalOpen(true)}

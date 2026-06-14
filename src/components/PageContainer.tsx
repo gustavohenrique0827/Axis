@@ -1,7 +1,6 @@
-import { motion } from "motion/react";
 import { ReactNode } from "react";
 import { ChevronRight, Home } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 interface PageContainerProps {
   children: ReactNode;
@@ -20,16 +19,10 @@ export function PageContainer({
   actions,
   breadcrumb 
 }: PageContainerProps) {
-  const location = useLocation();
   const displayDescription = description || subtitle;
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, ease: "easeOut" }}
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -79,6 +72,6 @@ export function PageContainer({
           {children}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }

@@ -3,7 +3,7 @@ import { Card } from '../../../../components/ui/card';
 import { Button } from '../../../../components/ui/button';
 import { ResponsiveContainer, BarChart, XAxis, Tooltip, Bar, Cell } from 'recharts';
 import { Activity, Download } from 'lucide-react';
-import { motion } from 'motion/react';
+
 
 interface PipelineAnalyticsProps {
   showAnalytics: boolean;
@@ -19,12 +19,7 @@ export function PipelineAnalytics({
   if (!showAnalytics) return null;
 
   return (
-    <motion.div
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: "auto", opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      className="overflow-hidden text-left"
-    >
+    <div className="overflow-hidden text-left">
       <Card className="p-6 bg-[#111827]/80 border border-white/10 rounded-2xl flex flex-col md:flex-row gap-6 mb-2">
         <div className="flex-1 min-h-[200px]">
           <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -55,6 +50,6 @@ export function PipelineAnalytics({
           </div>
         </div>
       </Card>
-    </motion.div>
+    </div>
   );
 }

@@ -8,7 +8,7 @@ import { LeadDetailsTempCfg } from "./lead-details/LeadDetailsModal.constants";
 import { formatLeadValueBRL, safeParseTimeIdle, safeParseProbability } from "./lead-details/LeadDetailsModal.helpers";
 import { LeadDetailsModalFooter } from "./lead-details/LeadDetailsModal.Footer";
 import { LeadDetailsModalHero } from "./lead-details/LeadDetailsModalHero";
-import { motion } from "motion/react";
+
 import { useLeadDetails } from "./lead-details/useLeadDetails";
 import { IACopilot } from "./IACopilot";
 import { ProfileSection } from "./lead-details/ProfileSection";
@@ -356,15 +356,9 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
       {/* Removido portal do Copilot para evitar erro de reconciliacao/notFoundError no insertBefore */}
       {isOpen && showCopilot && (
-        <motion.div
-          initial={{ x: "100%", opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          exit={{ x: "100%", opacity: 0 }}
-          transition={{ type: "spring", stiffness: 340, damping: 30 }}
-          className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[100] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl"
-        >
+        <div className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[100] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl">
           <IACopilot leadName={leadName} companyName={companyName} />
-        </motion.div>
+        </div>
       )}
 
     </>
