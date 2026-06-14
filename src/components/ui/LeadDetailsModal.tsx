@@ -8,7 +8,7 @@ import { LeadDetailsTempCfg } from "./lead-details/LeadDetailsModal.constants";
 import { formatLeadValueBRL, safeParseTimeIdle, safeParseProbability } from "./lead-details/LeadDetailsModal.helpers";
 import { LeadDetailsModalFooter } from "./lead-details/LeadDetailsModal.Footer";
 import { LeadDetailsModalHero } from "./lead-details/LeadDetailsModalHero";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { useLeadDetails } from "./lead-details/useLeadDetails";
 import { IACopilot } from "./IACopilot";
 import { ProfileSection } from "./lead-details/ProfileSection";
@@ -180,12 +180,10 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
           {/* ── Tab content ── */}
           <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-            <AnimatePresence>
               <motion.div
                 key={currentTab}
                 initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
                 transition={{ duration: 0.15 }}
                 className="h-full"
               >
@@ -361,7 +359,6 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                   </div>
                 )}
               </motion.div>
-            </AnimatePresence>
           </div>
         </div>
       </Modal>
