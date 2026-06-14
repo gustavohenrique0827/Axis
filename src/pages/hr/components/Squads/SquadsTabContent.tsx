@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Brain } from "lucide-react";
 import { toast } from "sonner";
-import { Squad } from "../../../types";
-import { useData } from "../../../contexts/DataContext";
-import { supabase } from "../../../lib/supabase";
+import { Squad } from "../../../../types";
+import { useData } from "../../../../contexts/DataContext";
+import { supabase } from "../../../../lib/supabase";
 import { SquadEditModal } from "./SquadEditModal";
 import { SquadOTECalculator } from "./SquadOTECalculator";
 import { SquadsPanel } from "./SquadsPanel";

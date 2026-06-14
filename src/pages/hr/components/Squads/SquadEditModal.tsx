@@ -1,6 +1,6 @@
 import { X, ImagePlus } from "lucide-react";
-import { Input } from "../../../components/ui/input";
-import { Squad } from "../../../types";
+import { Input } from "../../../../components/ui/input";
+import { Squad } from "../../../../types";
 
 interface SquadEditModalProps {
   editingSquad: Squad | null;

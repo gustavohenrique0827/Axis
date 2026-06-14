@@ -3,7 +3,7 @@ import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Plus } from "lucide-react";
 import { useData } from "../../../../contexts/DataContext";
-import { NovoCampoCRMModal } from "../../../../components/ui/NovoCampoCRMModal";
+import { NovoCampoCRMModal } from "../../../../components/ui/modals/crm/NovoCampoCRMModal";
 
 export function ConfigCRMCampos() {
   const { customLeadFields, setCustomLeadFields } = useData();

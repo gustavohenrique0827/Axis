@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "../../components/ui/button";
 import { Plus } from "lucide-react";
-import { NovaAutomacaoModal } from "../../components/ui/NovaAutomacaoModal";
+import { NovaAutomacaoModal } from "../../components/ui/modals/marketing/NovaAutomacaoModal";
 import { toast } from "sonner";
 import { EvolutionSection } from "./components/Automations/EvolutionSection";
 import { SystemWorkflowsSection } from "./components/Automations/SystemWorkflowsSection";

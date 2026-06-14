@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { MessageSquare, ExternalLink, Bell, Plus, Sparkles } from "lucide-react";
-import { NovoModeloModal } from "../../../components/ui/NovoModeloModal";
+import { NovoModeloModal } from "../../../components/ui/modals/marketing/NovoModeloModal";
 import { Reorder } from "motion/react";
 import { toast } from "sonner";
 import { useData } from "../../../contexts/DataContext";

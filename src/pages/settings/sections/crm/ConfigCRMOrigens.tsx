@@ -3,7 +3,7 @@ import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Plus, Target } from "lucide-react";
 import { toast } from "sonner";
-import { NovaOrigemCRMModal } from "../../../../components/ui/NovaOrigemCRMModal";
+import { NovaOrigemCRMModal } from "../../../../components/ui/modals/crm/NovaOrigemCRMModal";
 
 export function ConfigCRMOrigens() {
   const [isModalOpen, setIsModalOpen] = useState(false);

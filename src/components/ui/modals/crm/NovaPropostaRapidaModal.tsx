@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, FileText, User, DollarSign, Calendar, Briefcase, Loader2 } from "lucide-react";
-import { Button } from "./button";
+import { Button } from "../../button";
 
 interface NovaPropostaRapidaModalProps {
   isOpen: boolean;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Pencil, X } from "lucide-react";
-import { useData } from "../../contexts/DataContext";
+import { useData } from "../../../../contexts/DataContext";
 
 type EditarColabModalProps = {
   colab: any | null;

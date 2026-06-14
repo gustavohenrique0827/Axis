@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { NovoMembroModal } from "../../components/ui/NovoMembroModal";
-import { EditarMembroModal } from "../../components/ui/EditarMembroModal";
+import { NovoMembroModal } from "../../components/ui/modals/hr/NovoMembroModal";
+import { EditarMembroModal } from "../../components/ui/modals/hr/EditarMembroModal";
 import { AnimatePresence } from "motion/react";
 import { useEquipe, TeamMember } from "./hooks/useEquipe";
 import { SquadsTab } from "./components/SquadsTab";

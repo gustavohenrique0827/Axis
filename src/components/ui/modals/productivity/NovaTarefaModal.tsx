@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ClipboardList, Layers, Users } from "lucide-react";
-import { Modal } from "./modal";
-import { Button } from "./button";
-import { useData } from "../../contexts/DataContext";
+import { Modal } from "../../modal";
+import { Button } from "../../button";
+import { useData } from "../../../../contexts/DataContext";
 
 type NovaTarefaPayload = {
   nome: string;

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Building2, ShieldCheck, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { Modal } from "./modal";
-import { Button } from "./button";
+import { Modal } from "../../modal";
+import { Button } from "../../button";
 
 type FilialPayload = {
   nome: string;

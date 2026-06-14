@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Building2, Mail, Phone, FileText, MapPin, Briefcase, Loader2, ShieldCheck, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { Modal } from "./modal";
-import { Button } from "./button";
+import { Modal } from "../../modal";
+import { Button } from "../../button";
 
 type Setor = "Tecnologia" | "Engenharia" | "Saúde" | "Varejo" | "Indústria" | "Educação" | "Financeiro" | "Outros";
 

@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from "react";
-import { Modal } from "./modal";
-import { Button } from "./button";
-import { useData } from "../../contexts/DataContext";
-import { useAuth } from "../../contexts/AuthContext";
-import { formatPhone, validatePhone } from "../../lib/utils";
-import { ClientSelectorBlock } from "./new-lead/ClientSelectorBlock";
-import { BasicInfoBlock } from "./new-lead/BasicInfoBlock";
-import { CompanyBlock } from "./new-lead/CompanyBlock";
-import { QualificationBlock } from "./new-lead/QualificationBlock";
+import { Modal } from "../../modal";
+import { Button } from "../../button";
+import { useData } from "../../../../contexts/DataContext";
+import { useAuth } from "../../../../contexts/AuthContext";
+import { formatPhone, validatePhone } from "../../../../lib/utils";
+import { ClientSelectorBlock } from "../../new-lead/ClientSelectorBlock";
+import { BasicInfoBlock } from "../../new-lead/BasicInfoBlock";
+import { CompanyBlock } from "../../new-lead/CompanyBlock";
+import { QualificationBlock } from "../../new-lead/QualificationBlock";
 
 interface NewLeadModalProps {
   isOpen: boolean;
@@ -99,7 +99,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => setPhoneValue(formatPhone(e.target.value));
 
   const handleCnpjChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { formatCNPJ } = await import("../../lib/utils");
+    const { formatCNPJ } = await import("../../../../lib/utils");
     const formatted = formatCNPJ(e.target.value);
     setCnpjValue(formatted);
     const clean = formatted.replace(/\D/g, "");
@@ -154,7 +154,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
     if (!validatePhone(phoneValue)) { import("sonner").then(({ toast }) => toast.error("Telefone inválido!")); return; }
     if (cnpjStatus.status === "inactive") import("sonner").then(({ toast }) => toast.warning(`CNPJ INATIVO: ${cnpjStatus.message}`));
 
-    const { validateCNPJ } = await import("../../lib/utils");
+    const { validateCNPJ } = await import("../../../../lib/utils");
     if (cnpjValue && !validateCNPJ(cnpjValue)) { import("sonner").then(({ toast }) => toast.error("Estrutura do CNPJ inválida!")); return; }
 
     setLoading(true);

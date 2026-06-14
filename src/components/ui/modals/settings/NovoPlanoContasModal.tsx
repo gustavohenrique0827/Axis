@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { DollarSign, ShieldCheck } from "lucide-react";
-import { Modal } from "./modal";
-import { Button } from "./button";
+import { Modal } from "../../modal";
+import { Button } from "../../button";
 
 type NovoPlanoContasPayload = {
     nome: string;

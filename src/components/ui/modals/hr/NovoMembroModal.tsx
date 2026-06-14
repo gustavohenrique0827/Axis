@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { UserPlus, ShieldCheck, Eye, EyeOff } from "lucide-react";
-import { Modal } from "./modal";
-import { Button } from "./button";
-import { useData } from "../../contexts/DataContext";
+import { Modal } from "../../modal";
+import { Button } from "../../button";
+import { useData } from "../../../../contexts/DataContext";
 
 export type NovoMembroPayload = {
     nome: string;

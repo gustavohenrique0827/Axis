@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useInView } from 'motion/react';
 import { useData } from '../contexts/DataContext';
 import { toast } from 'sonner';
 import { Webhook } from 'lucide-react';
-import { SDRWebhookModal } from './ui/SDRWebhookModal';
+import { SDRWebhookModal } from './ui/modals/crm/SDRWebhookModal';
 
 interface MascotProps {
   className?: string;

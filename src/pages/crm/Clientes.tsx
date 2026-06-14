@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "../../components/ui/button";
 import { Plus } from "lucide-react";
-import { NovoClienteModal } from "../../components/ui/NovoClienteModal";
+import { NovoClienteModal } from "../../components/ui/modals/crm/NovoClienteModal";
 import { toast } from "sonner";
 import { PageContainer } from "../../components/PageContainer";
 import { supabase } from "../../lib/supabase";

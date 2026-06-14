@@ -3,15 +3,17 @@ import { Button } from "../../../../components/ui/button";
 import { Plus, LayoutDashboard, TrendingUp, BarChart3 } from "lucide-react";
 import { motion } from "motion/react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { TeamMember, Squad, Log } from "../../hooks/useEquipe";
+import { TeamMember, Squad } from "../../hooks/useEquipe";
+
 
 interface EquipeOverviewProps {
   team: TeamMember[];
   squads: Squad[];
-  logs: Log[];
+  logs: Array<{ name: string; from: string; to: string; date: string }>;
   onAdmitir: () => void;
   onGoLogs: () => void;
 }
+
 
 export function EquipeOverview({ team, squads, logs, onAdmitir, onGoLogs }: EquipeOverviewProps) {
   const stats = [

@@ -4,8 +4,8 @@ import { Button } from "../../../components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Plus, DollarSign, TrendingUp, AlertCircle, Briefcase, Target, Zap } from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
-import { NovaCategoriaTarefaModal } from "../../../components/ui/NovaCategoriaTarefaModal";
-import { NovoPlanoContasModal } from "../../../components/ui/NovoPlanoContasModal";
+import { NovaCategoriaTarefaModal } from "../../../components/ui/modals/productivity/NovaCategoriaTarefaModal";
+import { NovoPlanoContasModal } from "../../../components/ui/modals/settings/NovoPlanoContasModal";
 import { toast } from "sonner";
 
 export function ConfigProdutividadeCategorias() {

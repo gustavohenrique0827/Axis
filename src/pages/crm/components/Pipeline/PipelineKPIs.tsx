@@ -1,4 +1,4 @@
-import { Card } from "../../../components/ui/card";
+import { Card } from "../../../../components/ui/card";
 import { Users, Flame, CheckCircle2, Target, BarChart3 } from "lucide-react";
 
 interface PipelineKPIsProps {

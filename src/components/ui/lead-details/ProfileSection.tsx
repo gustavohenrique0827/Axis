@@ -1,13 +1,15 @@
 import React, { useState, useMemo } from "react";
 import { Card } from "../card";
 import {
-  Sparkles, Brain, ArrowRight, Edit, Tag, Trophy,
-  Phone, MessageSquare, Mail, FileCheck, Search,
-  User, Building2, Lock, Copy, CheckCheck, DollarSign, Briefcase,
+  Sparkles, Brain, ArrowRight, Tag, Trophy,
+  Phone, MessageSquare, Mail, FileCheck,
+  Building2, Copy, CheckCheck,
 } from "lucide-react";
 import { Button } from "../button";
 import { useData } from "../../../contexts/DataContext";
 import { toast } from "sonner";
+import { ProfileHeroCard } from "./ProfileHeroCard";
+import { ProfileDataForm } from "./ProfileDataForm";
 
 interface ProfileSectionProps {
   lead: any;
@@ -51,30 +53,6 @@ interface ProfileSectionProps {
   updateLead: any;
 }
 
-const TEMP_CFG = {
-  Quente: {
-    gradient: "from-rose-600/20 via-rose-500/5 to-transparent",
-    badge: "bg-rose-500/10 border-rose-500/25 text-rose-400",
-    avatar: "bg-rose-500/20 text-rose-200 ring-rose-500/40",
-    ring: "ring-rose-500/40",
-    emoji: "🔥",
-  },
-  Morno: {
-    gradient: "from-amber-500/20 via-amber-400/5 to-transparent",
-    badge: "bg-amber-500/10 border-amber-500/25 text-amber-400",
-    avatar: "bg-amber-500/20 text-amber-200 ring-amber-500/40",
-    ring: "ring-amber-500/40",
-    emoji: "☀️",
-  },
-  Frio: {
-    gradient: "from-blue-600/20 via-blue-500/5 to-transparent",
-    badge: "bg-blue-500/10 border-blue-500/25 text-blue-400",
-    avatar: "bg-blue-500/20 text-blue-200 ring-blue-500/40",
-    ring: "ring-blue-500/40",
-    emoji: "❄️",
-  },
-};
-
 export function ProfileSection({
   lead,
   companyName, setCompanyName,
@@ -113,11 +91,6 @@ export function ProfileSection({
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(num);
   }, [value]);
 
-  const probNum = Math.round(Number(probability) || 0);
-  const timeIdleNum = parseInt(String(timeIdle)) || 0;
-
-  const tc = TEMP_CFG[temperature] || TEMP_CFG.Frio;
-
   const copyToClipboard = (text: string, field: string) => {
     if (!text || text === "—") return;
     navigator.clipboard.writeText(text);
@@ -148,9 +121,6 @@ export function ProfileSection({
       setCnpjFetching(false);
     }
   };
-
-  const inputClass =
-    "w-full bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600";
 
   const quickActions = [
     {
@@ -196,115 +166,22 @@ export function ProfileSection({
     { icon: Phone, label: "Telefone", val: phone, color: "text-emerald-400", bg: "bg-emerald-500/10", href: phone ? `tel:${phone}` : null },
     { icon: Mail, label: "E-mail", val: email, color: "text-amber-400", bg: "bg-amber-500/10", href: email ? `mailto:${email}` : null },
     { icon: Building2, label: "Empresa", val: companyName, color: "text-blue-400", bg: "bg-blue-500/10", href: null },
-    { icon: User, label: "Responsável", val: seller || "Não Atribuído", color: "text-cyan-400", bg: "bg-cyan-500/10", href: null },
   ];
 
   return (
     <div className="space-y-3">
 
-      {/* ── Hero Card ── */}
-      <div className={`rounded-2xl border border-white/10 overflow-hidden bg-gradient-to-br ${tc.gradient} bg-[#111827]`}>
-        <div className="p-4">
-          {/* Top badges */}
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-1.5">
-              <span className={`text-[9px] px-2.5 py-1 rounded-full border font-black uppercase tracking-wider ${tc.badge}`}>
-                {tc.emoji} {temperature}
-              </span>
-              <span className={`text-[9px] px-2.5 py-1 rounded-full border font-black uppercase tracking-wider ${
-                slaStatus === "Em Dia"
-                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                  : slaStatus === "Crítico"
-                  ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                  : "bg-rose-500/10 border-rose-500/20 text-rose-400"
-              }`}>
-                SLA · {slaStatus}
-              </span>
-            </div>
-            <span className={`text-[9px] px-2.5 py-1 rounded-full border font-black uppercase tracking-wider ${
-              priority === "Alta"
-                ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
-                : priority === "Média"
-                ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                : "bg-slate-700/40 border-white/10 text-slate-400"
-            }`}>
-              ▲ {priority}
-            </span>
-          </div>
-
-          {/* Avatar + identity */}
-          <div className="flex items-center gap-4 mb-4">
-            <div className={`w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black shrink-0 ring-2 ring-offset-2 ring-offset-[#111827] ${tc.avatar}`}>
-              {(companyName || leadName || "LD").substring(0, 2).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-base font-black text-white leading-tight truncate">
-                {companyName || leadName || <span className="text-slate-500 italic font-normal text-sm">Sem nome cadastrado</span>}
-              </h3>
-              {companyName && leadName && (
-                <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-                  <User className="w-3 h-3 shrink-0" />
-                  <span className="truncate">{leadName}</span>
-                </p>
-              )}
-              <div className="mt-2">
-                <span className="text-2xl font-black text-emerald-400 font-mono tracking-tight">{displayValue}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Metrics row */}
-          <div className="grid grid-cols-3 gap-2">
-            {/* Score */}
-            <div className="bg-[#070E1A]/70 rounded-xl p-3 border border-white/[0.05]">
-              <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Score</div>
-              <div className="flex items-baseline gap-1 mt-1">
-                <span className="text-xl font-black text-cyan-400">{score}</span>
-                <span className="text-[9px] text-slate-600">/100</span>
-              </div>
-              <div className="mt-2 h-1 bg-white/[0.04] rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-700"
-                  style={{ width: `${score}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Conversão */}
-            <div className="bg-[#070E1A]/70 rounded-xl p-3 border border-white/[0.05]">
-              <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Conversão</div>
-              <div className="mt-1">
-                <span className={`text-xl font-black ${
-                  probNum >= 70 ? "text-emerald-400" : probNum >= 40 ? "text-amber-400" : "text-slate-400"
-                }`}>{probNum}%</span>
-              </div>
-              <div className="mt-2 h-1 bg-white/[0.04] rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-700 ${
-                    probNum >= 70 ? "bg-emerald-400" : probNum >= 40 ? "bg-amber-400" : "bg-slate-600"
-                  }`}
-                  style={{ width: `${probNum}%` }}
-                />
-              </div>
-            </div>
-
-            {/* Parado */}
-            <div className={`rounded-xl p-3 border ${
-              timeIdleNum > 7
-                ? "bg-rose-500/10 border-rose-500/20"
-                : timeIdleNum > 3
-                ? "bg-amber-500/10 border-amber-500/20"
-                : "bg-[#070E1A]/70 border-white/[0.05]"
-            }`}>
-              <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Parado</div>
-              <div className={`text-xl font-black mt-1 ${
-                timeIdleNum > 7 ? "text-rose-400" : timeIdleNum > 3 ? "text-amber-400" : "text-slate-300"
-              }`}>{timeIdle || "0d"}</div>
-              <div className="text-[8px] text-slate-600 mt-1">sem contato</div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ProfileHeroCard
+        temperature={temperature}
+        companyName={companyName}
+        leadName={leadName}
+        displayValue={displayValue}
+        slaStatus={slaStatus}
+        priority={priority}
+        score={score}
+        probability={probability}
+        timeIdle={timeIdle}
+      />
 
       {/* ── Contact Info ── */}
       <Card className="border-white/10 bg-[#111827]/70 overflow-hidden p-0">
@@ -322,12 +199,12 @@ export function ProfileSection({
                 {href && val ? (
                   <a href={href} className={`text-xs font-bold truncate block hover:underline ${color}`}>{val}</a>
                 ) : (
-                  <div className={`text-xs font-semibold truncate ${val && val !== "Não Atribuído" ? "text-white" : "text-slate-500 italic"}`}>
+                  <div className={`text-xs font-semibold truncate ${val ? "text-white" : "text-slate-500 italic"}`}>
                     {val || "—"}
                   </div>
                 )}
               </div>
-              {val && val !== "Não Atribuído" && val !== "—" && (
+              {val && val !== "—" && (
                 <button
                   onClick={() => copyToClipboard(val, label)}
                   className="p-1.5 opacity-0 group-hover:opacity-100 hover:bg-white/10 rounded-lg transition-all"
@@ -398,192 +275,27 @@ export function ProfileSection({
         </div>
       </div>
 
-      {/* ── Dados Principais ── */}
-      <Card className="border-white/10 bg-[#111827]/70 overflow-hidden p-0">
-        <div className="px-4 py-2.5 border-b border-white/[0.05] bg-white/[0.01] flex items-center justify-between">
-          <h4 className="text-[8px] font-black uppercase tracking-widest text-slate-400">Dados Principais</h4>
-          <button
-            onClick={() => setIsEditingInline(!isEditingInline)}
-            className={`text-[9px] font-black flex items-center gap-1.5 px-2.5 py-1 rounded-full border transition-all ${
-              isEditingInline
-                ? "text-rose-400 border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/15"
-                : "text-blue-400 border-blue-500/20 bg-blue-500/10 hover:bg-blue-500/15"
-            }`}
-          >
-            {isEditingInline
-              ? <><Lock className="w-2.5 h-2.5" /> Bloquear</>
-              : <><Edit className="w-2.5 h-2.5" /> Editar</>}
-          </button>
-        </div>
-
-        <div className="divide-y divide-white/[0.04]">
-
-          {/* Empresa + Contato */}
-          <div className="grid grid-cols-2 divide-x divide-white/[0.04]">
-            <div className="p-3">
-              <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
-                <Building2 className="w-3 h-3" /> Empresa/Líder
-              </div>
-              {isEditingInline ? (
-                <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={inputClass} placeholder="Nome da empresa" />
-              ) : (
-                <span className="text-xs text-white font-semibold">{companyName || <span className="text-slate-500 italic">—</span>}</span>
-              )}
-            </div>
-            <div className="p-3">
-              <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
-                <User className="w-3 h-3" /> Contato
-              </div>
-              {isEditingInline ? (
-                <input type="text" value={leadName} onChange={(e) => setLeadName(e.target.value)} className={inputClass} placeholder="Nome do contato" />
-              ) : (
-                <span className="text-xs text-white font-semibold">{leadName || <span className="text-slate-500 italic">—</span>}</span>
-              )}
-            </div>
-          </div>
-
-          {/* E-mail */}
-          <div className="p-3">
-            <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
-              <Mail className="w-3 h-3" /> E-mail
-            </div>
-            {isEditingInline ? (
-              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={inputClass} placeholder="email@empresa.com" />
-            ) : (
-              <span className={`text-xs font-semibold ${email ? "text-amber-400" : "text-slate-500 italic"}`}>{email || "—"}</span>
-            )}
-          </div>
-
-          {/* Telefone */}
-          <div className="p-3">
-            <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
-              <Phone className="w-3 h-3" /> Telefone
-            </div>
-            {isEditingInline ? (
-              <input type="text" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputClass} placeholder="(00) 00000-0000" />
-            ) : (
-              <span className={`text-xs font-semibold font-mono ${phone ? "text-emerald-400" : "text-slate-500 italic"}`}>{phone || "—"}</span>
-            )}
-          </div>
-
-          {/* CNPJ */}
-          <div className="p-3">
-            <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
-              <FileCheck className="w-3 h-3" /> CNPJ
-            </div>
-            {isEditingInline ? (
-              <div className="flex gap-1.5">
-                <input
-                  type="text"
-                  maxLength={18}
-                  value={lead.cnpj || ""}
-                  onChange={(e) => {
-                    import("../../../lib/utils").then(({ formatCNPJ }) => {
-                      updateLead(lead.id, { cnpj: formatCNPJ(e.target.value) });
-                    });
-                  }}
-                  className="flex-1 bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-blue-500/50 transition-all"
-                  placeholder="00.000.000/0000-00"
-                />
-                <button
-                  type="button"
-                  onClick={fetchCnpjData}
-                  disabled={cnpjFetching || (lead.cnpj || "").replace(/\D/g, "").length !== 14}
-                  className="px-2.5 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 text-blue-400 rounded-lg transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="Buscar na Receita Federal"
-                >
-                  <Search className={`w-3.5 h-3.5 ${cnpjFetching ? "animate-spin" : ""}`} />
-                </button>
-              </div>
-            ) : (
-              <span className={`text-xs font-mono ${lead.cnpj ? "text-white" : "text-slate-500 italic"}`}>{lead.cnpj || "—"}</span>
-            )}
-          </div>
-
-          {/* Iniciativa + Valor */}
-          <div className="grid grid-cols-2 divide-x divide-white/[0.04]">
-            <div className="p-3">
-              <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
-                <Briefcase className="w-3 h-3" /> Iniciativa
-              </div>
-              {isEditingInline ? (
-                <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className={inputClass} placeholder="Ex: Novo Negócio" />
-              ) : (
-                <span className={`text-xs font-semibold ${title ? "text-white" : "text-slate-500 italic"}`}>{title || "—"}</span>
-              )}
-            </div>
-            <div className="p-3">
-              <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
-                <DollarSign className="w-3 h-3" /> Valor
-              </div>
-              {isEditingInline ? (
-                <input type="text" value={value} onChange={(e) => setValue(e.target.value)} className={inputClass} placeholder="0,00" />
-              ) : (
-                <span className="text-xs font-bold font-mono text-emerald-400">{displayValue}</span>
-              )}
-            </div>
-          </div>
-
-          {/* Responsável + Prioridade */}
-          <div className="grid grid-cols-2 divide-x divide-white/[0.04]">
-            <div className="p-3">
-              <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider flex items-center gap-1">
-                <User className="w-3 h-3" /> Responsável
-              </div>
-              {isEditingInline ? (
-                <select value={seller} onChange={(e) => setSeller(e.target.value)} className={inputClass}>
-                  <option value="">Não Atribuído</option>
-                  {sellerOptions.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-              ) : (
-                <span className={`text-xs font-bold ${seller ? "text-cyan-400" : "text-slate-500 italic"}`}>
-                  {seller || "Não Atribuído"}
-                </span>
-              )}
-            </div>
-            <div className="p-3">
-              <div className="text-[9px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider">Prioridade</div>
-              {isEditingInline ? (
-                <select value={priority} onChange={(e) => setPriority(e.target.value as any)} className={inputClass}>
-                  <option value="Alta">Alta</option>
-                  <option value="Média">Média</option>
-                  <option value="Baixa">Baixa</option>
-                </select>
-              ) : (
-                <span className={`text-xs font-black ${
-                  priority === "Alta" ? "text-rose-400" : priority === "Média" ? "text-amber-400" : "text-blue-400"
-                }`}>
-                  {priority || <span className="text-slate-500 italic font-normal">—</span>}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Custom fields */}
-        {customLeadFields.length > 0 && (
-          <div className="border-t border-white/[0.05] p-3 space-y-2.5">
-            <div className="text-[8px] font-black uppercase tracking-widest text-emerald-400 mb-2">Campos Personalizados</div>
-            <div className="grid grid-cols-2 gap-2.5">
-              {customLeadFields.map((field) => (
-                <div key={field.id}>
-                  <div className="text-[9px] font-bold text-slate-500 mb-1 uppercase tracking-wider">{field.name}</div>
-                  {isEditingInline ? (
-                    <input
-                      type={field.type === "Data" ? "date" : field.type === "Número" ? "number" : "text"}
-                      value={customFieldsState[field.id] || ""}
-                      onChange={(e) => setCustomFieldsState((prev) => ({ ...prev, [field.id]: e.target.value }))}
-                      className={inputClass}
-                    />
-                  ) : (
-                    <span className="text-xs text-white font-semibold">{lead.customFields?.[field.id] || <span className="text-slate-500 italic">—</span>}</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </Card>
+      <ProfileDataForm
+        isEditingInline={isEditingInline}
+        setIsEditingInline={setIsEditingInline}
+        companyName={companyName} setCompanyName={setCompanyName}
+        leadName={leadName} setLeadName={setLeadName}
+        phone={phone} setPhone={setPhone}
+        email={email} setEmail={setEmail}
+        title={title} setTitle={setTitle}
+        value={value} setValue={setValue}
+        displayValue={displayValue}
+        seller={seller} setSeller={setSeller}
+        priority={priority} setPriority={setPriority}
+        sellerOptions={sellerOptions}
+        lead={lead}
+        updateLead={updateLead}
+        customLeadFields={customLeadFields}
+        customFieldsState={customFieldsState}
+        setCustomFieldsState={setCustomFieldsState}
+        cnpjFetching={cnpjFetching}
+        onFetchCnpj={fetchCnpjData}
+      />
 
       {/* ── Tags ── */}
       <Card className="border-white/10 bg-[#111827]/70 overflow-hidden p-0">

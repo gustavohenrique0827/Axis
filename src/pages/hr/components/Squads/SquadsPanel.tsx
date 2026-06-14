@@ -1,5 +1,5 @@
 import { Trophy, Pencil, Trash2, Users } from "lucide-react";
-import { Squad } from "../../../types";
+import { Squad } from "../../../../types";
 
 interface SquadsPanelProps {
   squads: Squad[];

@@ -1,10 +1,10 @@
 import { useState, useMemo } from "react";
 import { Button } from "../../components/ui/button";
-import { NewLeadModal } from "../../components/ui/NewLeadModal";
+import { NewLeadModal } from "../../components/ui/modals/crm/NewLeadModal";
 import { LeadDetailsModal } from "../../components/ui/LeadDetailsModal";
 import { useData } from "../../contexts/DataContext";
 import { PageContainer } from "../../components/PageContainer";
-import { LeadsKPIs } from "./components/Leads/LeadsKPIs";
+import { LeadsKpis } from "./components/Leads/LeadsKPIs";
 import { LeadsTable } from "./components/Leads/LeadsTable";
 
 const TEMP_ORDER: Record<string, number> = { quente: 3, morno: 2, frio: 1 };
@@ -56,7 +56,7 @@ export default function Leads() {
         </Button>
       }
     >
-      <LeadsKPIs stats={stats} />
+      <LeadsKpis stats={stats} />
 
       <LeadsTable
         leads={filteredLeads}

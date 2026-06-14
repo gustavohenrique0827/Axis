@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Pencil } from "lucide-react";
-import { Modal } from "./modal";
-import { Button } from "./button";
-import { TeamMember } from "../../pages/operative/hooks/useEquipe";
-import { useData } from "../../contexts/DataContext";
+import { Modal } from "../../modal";
+import { Button } from "../../button";
+import { TeamMember } from "../../../../pages/operative/hooks/useEquipe";
+import { useData } from "../../../../contexts/DataContext";
 
 type EditarMembroModalProps = {
   isOpen: boolean;

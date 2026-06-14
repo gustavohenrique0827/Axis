@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, GraduationCap, BookOpen, User, Users, Clock, Calendar, Loader2 } from "lucide-react";
-import { Button } from "./button";
+import { Button } from "../../button";
 
 interface NovaTurmaForm {
   nome: string;

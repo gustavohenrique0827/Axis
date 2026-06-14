@@ -4,8 +4,8 @@ import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
 import { toast } from "sonner";
 import { useData } from "../../contexts/DataContext";
-import { CriarPropostaModal } from "../../components/ui/CriarPropostaModal";
-import { NovaPropostaRapidaModal } from "../../components/ui/NovaPropostaRapidaModal";
+import { CriarPropostaModal } from "../../components/ui/modals/crm/CriarPropostaModal";
+import { NovaPropostaRapidaModal } from "../../components/ui/modals/crm/NovaPropostaRapidaModal";
 
 import { PropostasKPIs } from "./components/Propostas/PropostasKPIs";
 import { PropostasTable } from "./components/Propostas/PropostasTable";

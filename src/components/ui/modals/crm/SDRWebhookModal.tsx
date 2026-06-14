@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Modal } from "./modal";
-import { Button } from "./button";
+import { Modal } from "../../modal";
+import { Button } from "../../button";
 import { Webhook, Activity, ShieldCheck, Zap } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";

@@ -1,6 +1,6 @@
 import { Trash, CheckCircle2 } from "lucide-react";
 import { Button } from "../button";
-import { ConfirmModal } from "../ConfirmModal";
+import { ConfirmModal } from "../modals/shared/ConfirmModal";
 
 export function LeadDetailsModalFooter(props: {
   isEditingInline: boolean;

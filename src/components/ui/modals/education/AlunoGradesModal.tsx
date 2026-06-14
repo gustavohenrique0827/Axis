@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Brain, Zap, Plus, Trash2, Calculator, RefreshCw, TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { Button } from "./button";
+import { Button } from "../../button";
 
 interface Grade {
   subject: string;

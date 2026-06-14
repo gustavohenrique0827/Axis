@@ -1,5 +1,5 @@
 import { X, UserPlus, Trophy, Users } from "lucide-react";
-import { Squad } from "../../../types";
+import { Squad } from "../../../../types";
 
 interface SquadDetailPanelProps {
   selectedSquad: Squad | null;

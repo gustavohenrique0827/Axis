@@ -1,6 +1,6 @@
 import { X, Users, Mail, Calendar } from "lucide-react";
-import { Badge } from "../../../components/ui/badge";
-import { Button } from "../../../components/ui/button";
+import { Badge } from "../../../../components/ui/badge";
+import { Button } from "../../../../components/ui/button";
 
 interface PerfilColabModalProps {
   colab: any | null;

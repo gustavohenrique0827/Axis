@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "../../components/ui/button";
 import { Modal } from "../../components/ui/modal";
-import { ConfirmModal } from "../../components/ui/ConfirmModal";
+import { ConfirmModal } from "../../components/ui/modals/shared/ConfirmModal";
 import { Plus } from "lucide-react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";

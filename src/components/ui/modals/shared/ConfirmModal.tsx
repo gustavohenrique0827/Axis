@@ -1,6 +1,6 @@
 import React from "react";
-import { Modal } from "./modal";
-import { Button } from "./button";
+import { Modal } from "../../modal";
+import { Button } from "../../button";
 import { AlertTriangle } from "lucide-react";
 import { motion } from "motion/react";
 

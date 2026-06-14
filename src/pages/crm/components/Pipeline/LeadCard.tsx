@@ -1,4 +1,4 @@
-import { Card } from '../../../components/ui/card';
+import { Card } from '../../../../components/ui/card';
 import {
   Flame, MoreVertical, Calendar, FileText,
   History, ArrowRight, FileDown, Activity,

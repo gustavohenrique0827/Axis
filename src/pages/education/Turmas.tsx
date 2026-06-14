@@ -5,7 +5,7 @@ import EducationTurmaDetalhes from "./EducationTurmaDetalhes";
 import { useData } from "../../contexts/DataContext";
 import { PageContainer } from "../../components/PageContainer";
 import { toast } from "sonner";
-import { NovaTurmaModal } from "../../components/ui/NovaTurmaModal";
+import { NovaTurmaModal } from "../../components/ui/modals/education/NovaTurmaModal";
 import { TurmasKPIs } from "./components/Turmas/TurmasKPIs";
 import { TurmasFilters } from "./components/Turmas/TurmasFilters";
 import { TurmasGrid } from "./components/Turmas/TurmasGrid";

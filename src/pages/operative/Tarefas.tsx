@@ -2,9 +2,9 @@ import { useState } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import { LayoutGrid, List as ListIcon, RefreshCw, Plus } from "lucide-react";
-import { NovaTarefaModal } from "../../components/ui/NovaTarefaModal";
-import { ConfirmModal } from "../../components/ui/ConfirmModal";
-import { NovaPautaModal } from "../../components/ui/NovaPautaModal";
+import { NovaTarefaModal } from "../../components/ui/modals/productivity/NovaTarefaModal";
+import { ConfirmModal } from "../../components/ui/modals/shared/ConfirmModal";
+import { NovaPautaModal } from "../../components/ui/modals/productivity/NovaPautaModal";
 
 import { useTarefas } from "./tarefas/useTarefas";
 import { PerformanceMetrics } from "./tarefas/PerformanceMetrics";

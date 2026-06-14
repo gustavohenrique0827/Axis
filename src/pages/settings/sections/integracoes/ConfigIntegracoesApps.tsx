@@ -5,7 +5,7 @@ import { Zap, Settings, MessageSquare } from "lucide-react";
 import { useData } from "../../../../contexts/DataContext";
 import { toast } from "sonner";
 import { Modal } from "../../../../components/ui/modal";
-import { NovaIntegracaoModal } from "../../../../components/ui/NovaIntegracaoModal";
+import { NovaIntegracaoModal } from "../../../../components/ui/modals/settings/NovaIntegracaoModal";
 
 export function ConfigIntegracoesApps() {
   const [integrations, setIntegrations] = useState<any[]>([]);

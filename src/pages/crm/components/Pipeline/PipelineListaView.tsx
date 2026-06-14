@@ -1,4 +1,4 @@
-import { Card } from "../../../components/ui/card";
+import { Card } from "../../../../components/ui/card";
 import { Search, Filter, Mail, Phone, Calendar, MoreHorizontal } from "lucide-react";
 
 interface PipelineListaViewProps {

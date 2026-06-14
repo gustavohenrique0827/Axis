@@ -10,7 +10,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { navSections } from "./navData";
-import { SDRWebhookModal } from "../ui/SDRWebhookModal";
+import { SDRWebhookModal } from "../ui/modals/crm/SDRWebhookModal";
 
 interface MobileNavProps {
   isMobileMoreOpen: boolean;

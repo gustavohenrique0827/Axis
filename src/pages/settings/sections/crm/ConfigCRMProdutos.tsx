@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Plus, ExternalLink } from "lucide-react";
-import { NovoCampoCRMModal } from "../../../../components/ui/NovoCampoCRMModal";
+import { NovoCampoCRMModal } from "../../../../components/ui/modals/crm/NovoCampoCRMModal";
 
 export function ConfigCRMProdutos() {
   const [isModalOpen, setIsModalOpen] = useState(false);

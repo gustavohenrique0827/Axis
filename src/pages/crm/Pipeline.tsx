@@ -6,18 +6,21 @@ import { Plus, BarChart3, PieChart, Settings2, LayoutList, Columns3 } from "luci
 
 import { PipelineTopActions } from "./components/Pipeline/PipelineTopActions";
 
-import { NewLeadModal } from "../../components/ui/NewLeadModal";
+import { NewLeadModal } from "../../components/ui/modals/crm/NewLeadModal";
 import { LeadDetailsModal } from "../../components/ui/LeadDetailsModal";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 
 import { usePipeline } from "./usePipeline";
-import { PipelineAnalytics } from "./components/PipelineAnalytics";
-import { WebhookModal } from "./components/WebhookModal";
-import { PipelineKPIs } from "./components/PipelineKPIs";
-import { PipelineListaView } from "./components/PipelineListaView";
+import { PipelineAnalytics } from "./components/Pipeline/PipelineAnalytics";
+import { WebhookModal } from "./components/Pipeline/WebhookModal";
+import { PipelineKPIs } from "./components/Pipeline/PipelineKPIs";
+import { PipelineListaView } from "./components/Pipeline/PipelineListaView";
 import { PipelineFilterBar } from "./components/Pipeline/PipelineFilterBar";
 import { PipelineKanbanBoard } from "./components/Pipeline/PipelineKanbanBoard";
+import { PipelineViewShell } from "./components/Pipeline/PipelineViewShell";
+import { PipelineDefaultState } from "./components/Pipeline/PipelineDefaultState";
+import { PipelineEmptySelection } from "./components/Pipeline/PipelineEmptySelection";
 
 type ViewMode = "kanban" | "lista";
 
@@ -114,18 +117,8 @@ export default function Pipeline() {
           <>
             <PipelineAnalytics showAnalytics={showAnalytics} analyticsData={analyticsData} exportPDF={exportPDF} />
 
-            {noPipelineConfigured && (
-              <Card className="p-6 bg-[#111827]/60 border border-amber-500/20 rounded-2xl flex items-center gap-4">
-                <Settings2 className="w-8 h-8 text-amber-400 shrink-0" />
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-white">Nenhum funil configurado</p>
-                  <p className="text-xs text-slate-400 mt-0.5">Configure seus funis nas configurações do CRM.</p>
-                </div>
-                <Link to="/app/configuracoes/crm/funis" className="shrink-0 px-4 py-2 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-amber-500/20 transition-all">
-                  Configurar →
-                </Link>
-              </Card>
-            )}
+            {noPipelineConfigured ? <PipelineDefaultState /> : null}
+
 
             <PipelineFilterBar
               comercialFunis={comercialFunis} sdrFunis={sdrFunis}
@@ -155,11 +148,8 @@ export default function Pipeline() {
                 handleTransferToComercial={handleTransferToComercial} handleExportIAResume={handleExportIAResume}
                 setWebhookModalLead={setWebhookModalLead} triggerCelebration={triggerCelebration}
               />
-            ) : !noPipelineConfigured ? (
-              <Card className="flex-1 flex items-center justify-center p-12 bg-[#111827]/40 border border-white/5 rounded-3xl">
-                <p className="text-sm font-bold text-slate-400">Selecione um funil para visualizar o pipeline.</p>
-              </Card>
-            ) : null}
+            ) : !noPipelineConfigured ? <PipelineEmptySelection /> : null}
+
           </>
         )}
 

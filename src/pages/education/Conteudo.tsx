@@ -4,7 +4,7 @@ import { Layers, Globe, Star, Download, Plus } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { toast } from "sonner";
 import { PageContainer } from "../../components/PageContainer";
-import { NovoConteudoModal } from "../../components/ui/NovoConteudoModal";
+import { NovoConteudoModal } from "../../components/ui/modals/education/NovoConteudoModal";
 import { ConteudoKPIs } from "./components/Conteudo/ConteudoKPIs";
 import { ConteudoFilters } from "./components/Conteudo/ConteudoFilters";
 import { ConteudoTable } from "./components/Conteudo/ConteudoTable";

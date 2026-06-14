@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { Card } from "../../../../components/ui/card";
 import { Plus, ChevronRight } from "lucide-react";
-import { LeadCard } from "../LeadCard";
+import { LeadCard } from "./LeadCard";
 
 interface PipelineKanbanBoardProps {
   activePipelineStages: any[];

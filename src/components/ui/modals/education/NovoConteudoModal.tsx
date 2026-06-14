@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, BookOpen, Video, FileText, HelpCircle, Clock, Layers, Globe, Loader2, Upload } from "lucide-react";
-import { Button } from "./button";
+import { Button } from "../../button";
 
 type ContentType = "Video" | "PDF" | "Quiz" | "Artigo";
 type ContentStatus = "Publicado" | "Rascunho" | "Em Revisão" | "Arquivado";

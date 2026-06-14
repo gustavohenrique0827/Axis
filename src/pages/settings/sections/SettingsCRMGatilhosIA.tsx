@@ -5,7 +5,7 @@ import { Zap, Plus } from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
 import { toast } from "sonner";
 
-import { NovaRegraIAAutomacaoModal } from "../../../components/ui/NovaRegraIAAutomacaoModal";
+import { NovaRegraIAAutomacaoModal } from "../../../components/ui/modals/marketing/NovaRegraIAAutomacaoModal";
 
 export function ConfigCRMGatilhosIA() {
   const { leadScoreTriggers, setLeadScoreTriggers } = useData();
