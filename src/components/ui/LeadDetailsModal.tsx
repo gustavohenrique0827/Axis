@@ -129,9 +129,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
           />
         }
       >
-        {/* Mantemos o container externo sem KEY para que o React não destrua o nó pai do Portal */}
         <div className="flex flex-col h-full bg-[#0B1120]">
-          {/* Aplicamos a KEY apenas ao conteúdo que precisa resetar quando o lead muda */}
           <div key={lead?.id} className="flex flex-col h-full overflow-hidden">
           <LeadDetailsModalHero
             tc={tc}
@@ -356,27 +354,25 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
             </div>
           </div>
 
-          {/* O Portal do Copilot fica FORA da div com key={lead.id}. 
-              Assim, a mudança de Lead apenas atualiza os dados em vez de remontar o portal, 
-              resolvendo o erro NotFoundError: Failed to execute 'insertBefore' on 'Node'. */}
-          {createPortal(
-            <AnimatePresence>
-              {showCopilot && (
-                <motion.div
-                  initial={{ x: 40, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  exit={{ x: 40, opacity: 0 }}
-                  transition={{ duration: 0.25, ease: "easeOut" }}
-                  className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[100] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl"
-                >
-                  <IACopilot leadName={leadName} companyName={companyName} />
-                </motion.div>
-              )}
-            </AnimatePresence>,
-            document.body
-          )}
         </div>
       </Modal>
+
+      {createPortal(
+        <AnimatePresence>
+          {showCopilot && (
+            <motion.div
+              initial={{ x: 40, opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: 40, opacity: 0 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[100] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl"
+            >
+              <IACopilot leadName={leadName} companyName={companyName} />
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </>
   );
 }
