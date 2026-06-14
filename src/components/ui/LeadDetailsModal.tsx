@@ -364,8 +364,8 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
         >
           <IACopilot leadName={leadName} companyName={companyName} />
         </motion.div>,
-        // evita falha intermitente de reconciliacao quando o Modal desmonta
-        document.body
+        // estabiliza o target do portal
+        document.body as HTMLElement
       )}
 
     </>
