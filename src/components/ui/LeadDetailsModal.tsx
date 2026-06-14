@@ -354,7 +354,8 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
         </div>
       </Modal>
 
-      {isOpen && showCopilot && createPortal(
+      {/* Removido portal do Copilot para evitar erro de reconciliacao/notFoundError no insertBefore */}
+      {isOpen && showCopilot && (
         <motion.div
           initial={{ x: "100%", opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
@@ -363,9 +364,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
           className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[100] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl"
         >
           <IACopilot leadName={leadName} companyName={companyName} />
-        </motion.div>,
-        // estabiliza o target do portal
-        document.body as HTMLElement
+        </motion.div>
       )}
 
     </>
