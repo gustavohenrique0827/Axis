@@ -173,9 +173,10 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     setProbability(rawScore > 80 ? 80 : rawScore > 50 ? 50 : 25);
   }, [lead]);
 
-  // Reseta stageId apenas quando muda de lead (não quando o objeto atualiza)
+  // Reseta stageId e modo de edição quando muda de lead
   useEffect(() => {
     setCurrentStageId(lead?.stageId ?? "");
+    setIsEditingInline(false);
   }, [lead?.id]);
 
   // Popula log de alterações com atividades reais

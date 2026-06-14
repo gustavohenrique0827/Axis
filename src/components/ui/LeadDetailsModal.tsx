@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "motion/react";
 import { Modal } from "./modal";
@@ -78,6 +78,11 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
     applyMessageTemplate,
   } = useLeadDetails(lead, onClose);
 
+  useEffect(() => {
+    setCurrentTab("informacoes");
+    setShowCopilot(false);
+  }, [lead?.id]);
+
   const handleSetActiveTab = useCallback((tab: string) => {
     const map: Record<string, string> = {
       timeline: "historico", sdrReport: "relatorio",
@@ -130,7 +135,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
         }
       >
         <div className="flex flex-col h-full bg-[#0B1120]">
-          <div key={lead?.id} className="flex flex-col h-full overflow-hidden">
+          <div className="flex flex-col h-full overflow-hidden">
           <LeadDetailsModalHero
             tc={tc}
             initials={initials}
@@ -178,7 +183,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
           {/* ── Tab content ── */}
           <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
-              <div key={currentTab} className="h-full">
+              <div className="h-full">
                 {currentTab === "informacoes" && (
                   <div className="px-5 py-4 space-y-3">
                     <ProfileSection
