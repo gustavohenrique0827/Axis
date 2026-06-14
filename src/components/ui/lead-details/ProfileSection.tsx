@@ -84,8 +84,12 @@ export function ProfileSection({
 
   const displayValue = useMemo(() => {
     if (!value) return "R$ 0,00";
-    const num = parseFloat(String(value).replace(/[^\d,.-]/g, "").replace(",", "."));
-    if (isNaN(num) || num === 0) return value as string;
+    // Strip currency symbols/spaces, then treat dots as thousands sep and comma as decimal (pt-BR)
+    const cleaned = String(value).replace(/[^\d,.]/g, "");
+    if (!cleaned) return "R$ 0,00";
+    const normalized = cleaned.replace(/\./g, "").replace(",", ".");
+    const num = parseFloat(normalized);
+    if (isNaN(num) || num === 0) return "R$ 0,00";
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(num);
   }, [value]);
 

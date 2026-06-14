@@ -76,6 +76,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
     tempColors,
     customLeadFields,
     applyMessageTemplate,
+    enrollInLinkedTurmas,
   } = useLeadDetails(lead, onClose);
 
   useEffect(() => {
@@ -110,6 +111,9 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
       { id: Date.now().toString(), author: seller || "Sistema", desc: `Moveu para '${stg.name}'`, time: "Agora" },
       ...prev,
     ]);
+    if (stg.status === "Fechado" || stg.id === stagesDef[stagesDef.length - 1]?.id) {
+      enrollInLinkedTurmas();
+    }
   };
 
   return (

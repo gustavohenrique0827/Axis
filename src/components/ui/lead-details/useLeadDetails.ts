@@ -37,7 +37,7 @@ function loadStagesFromLocalStorage(isSDR: boolean) {
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useLeadDetails(lead: any, onClose: () => void) {
-  const { leadActivities, addLeadActivity, updateLead, deleteLead, customLeadFields, products } = useData();
+  const { leadActivities, addLeadActivity, updateLead, deleteLead, customLeadFields, products, turmas, addTurma, updateTurma } = useData();
 
   // ── Exclusão ─────────────────────────────────────────────────────────────────
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
@@ -115,12 +115,12 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     [linkedProductIds, availableProducts]
   );
 
-  // Sincroniza o campo value com o total dos produtos enquanto edita
+  // Sincroniza o campo value com o total dos produtos vinculados (view e edição)
   useEffect(() => {
-    if (linkedProductIds.length > 0 && isEditingInline) {
+    if (linkedProductIds.length > 0) {
       setValue(`R$ ${estimatedSum.toLocaleString("pt-BR")}`);
     }
-  }, [linkedProductIds, estimatedSum, isEditingInline]);
+  }, [linkedProductIds, estimatedSum]);
 
   // ── Estágios do funil ─────────────────────────────────────────────────────────
   const isSDR = lead?.pipelineId === "sdr";
@@ -195,6 +195,35 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     );
   }, [lead?.id, leadActivities]);
 
+  // ─── Helpers de turma ────────────────────────────────────────────────────────
+
+  const EDUCATION_CATEGORIES = ["mentoria", "curso", "treinamento", "workshop", "capacitação", "aula", "ead"];
+
+  const isEducationProduct = (product: { category?: string }) =>
+    EDUCATION_CATEGORIES.some(c => (product.category || "").toLowerCase().includes(c));
+
+  const enrollInLinkedTurmas = () => {
+    const educationProducts = availableProducts.filter(
+      p => linkedProductIds.includes(p.id) && isEducationProduct(p)
+    );
+    for (const product of educationProducts) {
+      const turma = (turmas as any[]).find(
+        t => t.productId === product.id || t.curso === product.name
+      );
+      if (!turma) continue;
+      const current: any[] = Array.isArray(turma.students) ? turma.students : [];
+      const enrolled = current.some(s =>
+        (typeof s === "string" ? s : s.leadId ?? s.id) === lead.id
+      );
+      if (!enrolled) {
+        updateTurma(turma.id, {
+          students: [...current, { leadId: lead.id, name: leadName || companyName, enrolledAt: new Date().toISOString() }],
+        });
+        toast.success(`${leadName || companyName} matriculado em ${turma.nome || turma.name}!`);
+      }
+    }
+  };
+
   // ─── Handlers ────────────────────────────────────────────────────────────────
 
   const handleAddTag = () => {
@@ -223,6 +252,7 @@ export function useLeadDetails(lead: any, onClose: () => void) {
       { id: Date.now().toString(), author: seller || "Sistema", desc: "Lead convertido em Cliente Ativo", time: "Agora" },
       ...prev,
     ]);
+    enrollInLinkedTurmas();
   };
 
   const handleRegisterActivity = () => {
@@ -295,13 +325,39 @@ export function useLeadDetails(lead: any, onClose: () => void) {
       .replace("{seller}", seller || "Consultor");
 
   const toggleProductLink = (prodId: string) => {
-    const newIds = linkedProductIds.includes(prodId)
-      ? linkedProductIds.filter(id => id !== prodId)
-      : [...linkedProductIds, prodId];
+    const isAdding = !linkedProductIds.includes(prodId);
+    const newIds = isAdding
+      ? [...linkedProductIds, prodId]
+      : linkedProductIds.filter(id => id !== prodId);
     setLinkedProductIds(newIds);
     updateLead(lead.id, { productIds: newIds });
-    toast[newIds.includes(prodId) ? "success" : "info"](
-      newIds.includes(prodId) ? "Produto adicionado ao orçamento!" : "Produto removido do orçamento."
+
+    if (isAdding) {
+      const product = availableProducts.find(p => p.id === prodId);
+      if (product && isEducationProduct(product)) {
+        const existing = (turmas as any[]).find(
+          t => t.productId === prodId || t.curso === product.name
+        );
+        if (!existing) {
+          addTurma({
+            nome: `Turma — ${product.name}`,
+            curso: product.name,
+            professor: "Não definido",
+            productId: prodId,
+            vagas: 30,
+            shift: "Manhã",
+            data_inicio: new Date().toISOString().slice(0, 10),
+            status: "Planejamento",
+            progress: 0,
+            students: [],
+          });
+          toast.success(`Turma criada automaticamente para ${product.name}!`);
+        }
+      }
+    }
+
+    toast[isAdding ? "success" : "info"](
+      isAdding ? "Produto adicionado ao orçamento!" : "Produto removido do orçamento."
     );
   };
 
@@ -366,5 +422,6 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     handleSaveAll,
     handleConfirmDelete,
     applyMessageTemplate,
+    enrollInLinkedTurmas,
   };
 }
