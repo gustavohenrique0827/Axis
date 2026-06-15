@@ -118,6 +118,12 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
     navigate("/app/reunioes/" + reuniaoId);
   };
 
+  const productTotal = useMemo(() => {
+    const ids: string[] = Array.isArray(lead?.productIds) ? lead.productIds : [];
+    if (ids.length === 0) return 0;
+    return (products as any[]).reduce((s, p) => ids.includes(p.id) ? s + (Number(p.price) || 0) : s, 0);
+  }, [lead?.productIds, products]);
+
   if (!lead) return null;
 
   const leadActs = leadActivities.filter((a: any) => a.leadId === lead.id);
@@ -125,12 +131,6 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
   const probNum = safeParseProbability(probability);
 
   const tc = LeadDetailsTempCfg[temperature as keyof typeof LeadDetailsTempCfg] || LeadDetailsTempCfg.Frio;
-  const productTotal = useMemo(() => {
-    const ids: string[] = Array.isArray(lead?.productIds) ? lead.productIds : [];
-    if (ids.length === 0) return 0;
-    return (products as any[]).reduce((s, p) => ids.includes(p.id) ? s + (Number(p.price) || 0) : s, 0);
-  }, [lead?.productIds, products]);
-
   const formattedValue = productTotal > 0
     ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(productTotal)
     : formatLeadValueBRL(lead?.value ?? value);
