@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Brain, Sparkles, X, Zap, AlertTriangle,
   MessageSquare, ChevronDown, ChevronUp, Copy,
@@ -74,7 +74,12 @@ export function LeadCopilot({ leadContext, onClose }: LeadCopilotProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leadContext }),
       });
-      const data = await res.json();
+      let data: any;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error("Servidor indisponível ou retornou resposta inválida. Tente novamente.");
+      }
       if (!res.ok || data.error) throw new Error(data.error ?? "Erro desconhecido");
       setAnalysis(data.analysis ?? null);
       setHasAnalyzed(true);
@@ -92,11 +97,6 @@ export function LeadCopilot({ leadContext, onClose }: LeadCopilotProps) {
     setShowRecomendacoes(false);
   };
 
-  // Auto-analyze on first open
-  useEffect(() => {
-    if (leadContext?.name || leadContext?.company) analyze();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [leadContext?.name, leadContext?.company]);
 
   const tempCfg = TEMP_CFG[leadContext.temperature ?? ""] ?? null;
   const prob    = analysis?.probabilidade_fechamento;
