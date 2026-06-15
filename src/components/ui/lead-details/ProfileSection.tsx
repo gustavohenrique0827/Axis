@@ -71,7 +71,7 @@ export function ProfileSection({
   applyMessageTemplate, updateLead,
 }: ProfileSectionProps) {
   const [cnpjFetching, setCnpjFetching] = useState(false);
-  const { leads: allLeads, colaboradores, addLeadActivity: addActivityCtx } = useData();
+  const { leads: allLeads, colaboradores, addLeadActivity: addActivityCtx, products } = useData();
 
   const sellerOptions = useMemo(() => {
     const fromColab = (colaboradores as any[])
@@ -83,15 +83,25 @@ export function ProfileSection({
   }, [colaboradores, allLeads]);
 
   const displayValue = useMemo(() => {
+    // Produto vinculado tem prioridade sobre o valor manual
+    const ids: string[] = Array.isArray(lead?.productIds) ? lead.productIds : [];
+    if (ids.length > 0) {
+      const total = (products as any[]).reduce(
+        (s: number, p: any) => ids.includes(p.id) ? s + (Number(p.price) || 0) : s,
+        0
+      );
+      if (total > 0) {
+        return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(total);
+      }
+    }
     if (!value) return "R$ 0,00";
-    // Strip currency symbols/spaces, then treat dots as thousands sep and comma as decimal (pt-BR)
     const cleaned = String(value).replace(/[^\d,.]/g, "");
     if (!cleaned) return "R$ 0,00";
     const normalized = cleaned.replace(/\./g, "").replace(",", ".");
     const num = parseFloat(normalized);
     if (isNaN(num) || num === 0) return "R$ 0,00";
     return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(num);
-  }, [value]);
+  }, [lead?.productIds, products, value]);
 
   const fetchCnpjData = async () => {
     const digits = (lead.cnpj || "").replace(/\D/g, "");
