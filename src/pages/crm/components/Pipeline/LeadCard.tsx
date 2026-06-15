@@ -56,15 +56,11 @@ function initials(name: string) {
   return (name ?? "").split(" ").slice(0, 2).map(n => n[0]).join("").toUpperCase() || "–";
 }
 
-function formatRelativeDate(iso: string | undefined | null): string | null {
+function formatCreatedAt(iso: string | undefined | null): string | null {
   if (!iso) return null;
   const d = new Date(iso);
   if (isNaN(d.getTime())) return null;
-  const diffDays = Math.floor((Date.now() - d.getTime()) / 86_400_000);
-  if (diffDays === 0) return 'Hoje';
-  if (diffDays === 1) return 'Ontem';
-  if (diffDays < 7) return `${diffDays}d atrás`;
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  return d.toLocaleDateString('pt-BR', { day: 'numeric', month: 'long', year: 'numeric' });
 }
 
 function formatCurrency(value: number) {
@@ -102,7 +98,7 @@ export function LeadCard({
   ) ?? null;
 
   // Creation date
-  const createdLabel = formatRelativeDate(item.created_at ?? item.createdAt);
+  const createdLabel = formatCreatedAt(item.created_at ?? item.createdAt);
 
   // Source
   const source = item.source as string | undefined;
