@@ -83,7 +83,7 @@ export function usePipeline() {
   const [tempDropdownId, setTempDropdownId] = useState<string | null>(null);
   const [webhookModalLead, setWebhookModalLead] = useState<any>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
-  const { leads, updateLead, tasks, addTask } = useData();
+  const { leads, updateLead, tasks, addTask, products } = useData();
   const { user, allTenantModules, tenantIdMap } = useAuth();
 
   const isMaster = user?.isMaster || user?.tenantName?.includes("G-Tech");
@@ -239,7 +239,15 @@ export function usePipeline() {
   );
 
   const totalValueSum = filteredItemsList.reduce((sum, item) => {
-    return sum + (parseFloat(String(item.value ?? "").replace(/[^\d]/g, "")) || 0);
+    const ids: string[] = Array.isArray(item.productIds) ? item.productIds : [];
+    if (ids.length > 0) {
+      const productTotal = (products as any[]).reduce(
+        (s: number, p: any) => ids.includes(p.id) ? s + (Number(p.price) || 0) : s,
+        0
+      );
+      if (productTotal > 0) return sum + productTotal;
+    }
+    return sum + (parseFloat(String(item.value ?? "").replace(/[^\d,]/g, "").replace(",", ".")) || 0);
   }, 0);
 
   const formattedTotalValue = new Intl.NumberFormat("pt-BR", {
