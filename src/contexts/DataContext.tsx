@@ -224,6 +224,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [proposals, setProposals] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
   const [turmas, setTurmas] = useState<any[]>([]);
+  const [reunioes, setReunioes] = useState<Reuniao[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [colaboradores, setColaboradores] = useState<any[]>([]);
   const [squadMetas, setSquadMetas] = useState<any[]>([]);
@@ -947,6 +948,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const productCrud = createCrudHelper('products', setProducts);
   const proposalCrud = createCrudHelper('proposals', setProposals);
   const turmaCrud = createCrudHelper('turmas', setTurmas);
+  const reuniaoCrud = createCrudHelper('reunioes', setReunioes as any);
   const studentCrud = createCrudHelper('students', setStudents);
   const colabCrud = createCrudHelper('colaboradores', setColaboradores);
   const mktCampCrud = createCrudHelper('marketing_campaigns', setMarketingCampaigns);
@@ -1130,6 +1132,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setClienteBase,
       reunioes,
       addReuniao: (r: Omit<Reuniao, 'id' | 'createdAt'>) => reuniaoCrud.add({ ...r, id: `r${Math.random().toString(36).substring(2, 9)}`, createdAt: new Date().toISOString() }),
+      addReuniao: (r: Omit<Reuniao, 'id' | 'createdAt'>) => {
+        reuniaoCrud.add({ ...r, id: crypto.randomUUID(), createdAt: new Date().toISOString() });
+      },
       updateReuniao: reuniaoCrud.update,
       deleteReuniao: reuniaoCrud.del,
     }}>
