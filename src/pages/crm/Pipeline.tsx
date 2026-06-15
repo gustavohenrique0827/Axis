@@ -50,7 +50,7 @@ export default function Pipeline() {
     leads, updateLead, tasks,
     isMaster, tenantFilter, setTenantFilter,
     clientFilter, setClientFilter, clientsList,
-    currentPipeline, setCurrentPipeline,
+    currentPipeline, switchPipeline,
     selectedFunilId, setSelectedFunilId,
     comercialFunis, sdrFunis,
     firstComercialStageId, firstSdrStageId,
@@ -149,7 +149,7 @@ export default function Pipeline() {
 
             <PipelineFilterBar
               comercialFunis={comercialFunis} sdrFunis={sdrFunis}
-              currentPipeline={currentPipeline} setCurrentPipeline={setCurrentPipeline}
+              currentPipeline={currentPipeline} setCurrentPipeline={switchPipeline as any}
               selectedFunilId={selectedFunilId} setSelectedFunilId={setSelectedFunilId}
               searchQuery={searchQuery} setSearchQuery={setSearchQuery}
               companyFilter={companyFilter} setCompanyFilter={setCompanyFilter}

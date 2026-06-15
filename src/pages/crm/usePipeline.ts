@@ -150,13 +150,14 @@ export function usePipeline() {
     }
   }, [currentPipeline, sdrFunis, comercialFunis]);
 
-  // Reset filters when switching pipeline type so stale filters don't hide leads
-  useEffect(() => {
+  // Wrapper that resets filters synchronously when switching pipelines
+  const switchPipeline = (pipeline: "comercial" | "sdr") => {
+    setCurrentPipeline(pipeline);
     setSellerFilter("Todos");
     setCompanyFilter("Todos");
     setClientFilter("Todos");
     setSearchQuery("");
-  }, [currentPipeline]);
+  };
 
   const activeFunil = useMemo(() => {
     const pool = currentPipeline === "sdr" ? sdrFunis : comercialFunis;
@@ -427,7 +428,7 @@ export function usePipeline() {
     leads, updateLead, tasks, addTask,
     isMaster, tenantFilter, setTenantFilter,
     clientFilter, setClientFilter, clientsList,
-    currentPipeline, setCurrentPipeline,
+    currentPipeline, setCurrentPipeline, switchPipeline,
     selectedFunilId, setSelectedFunilId,
     activeFunil,
     comercialFunis, sdrFunis,
