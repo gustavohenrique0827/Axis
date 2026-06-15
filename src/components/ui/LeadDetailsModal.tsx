@@ -431,8 +431,9 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
       )}
 
       {showCopilot && (
-        <div className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[110] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl animate-in slide-in-from-right-10 duration-200">
+        <div className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[110] bg-[#070E1A] border-r border-white/10 overflow-hidden shadow-2xl rounded-l-2xl animate-in slide-in-from-right-10 duration-200 flex flex-col">
           <LeadCopilot
+            onClose={() => setShowCopilot(false)}
             leadContext={{
               name: leadName,
               company: companyName,
