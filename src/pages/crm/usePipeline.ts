@@ -83,7 +83,7 @@ export function usePipeline() {
   const [tempDropdownId, setTempDropdownId] = useState<string | null>(null);
   const [webhookModalLead, setWebhookModalLead] = useState<any>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
-  const { leads, updateLead, tasks, addTask, products } = useData();
+  const { leads, updateLead, tasks, addTask, products, clienteBase } = useData();
   const { user, allTenantModules, tenantIdMap } = useAuth();
 
   const isMaster = user?.isMaster || user?.tenantName?.includes("G-Tech");
@@ -180,6 +180,27 @@ export function usePipeline() {
     }));
   }, [activeFunil]);
 
+  // ─── Leads do pipeline atual (usado para montar os dropdowns de filtro) ──────
+  // Filtra apenas por pipeline+tenant — sem seller/company/client — para que os
+  // dropdowns mostrem só as opções relevantes ao pipeline que está sendo visto.
+  const pipelineLeads = useMemo(() => leads.filter((item: any) => {
+    const matchesTenant   = !isMaster || !tenantFilter || item.tenantId === tenantFilter;
+    const matchesPipeline = currentPipeline === "sdr"
+      ? item.pipelineId === "sdr"
+      : !item.pipelineId || item.pipelineId === "comercial";
+    return matchesTenant && matchesPipeline;
+  }), [leads, currentPipeline, isMaster, tenantFilter]);
+
+  // Mapa clientName → clientId para filtrar leads que têm clientId mas não clientName
+  const clientNameToId = useMemo(() => {
+    const map: Record<string, string> = {};
+    (clienteBase as any[])?.forEach((c: any) => {
+      const name = c.name || c.nome;
+      if (name && c.id) map[name] = c.id;
+    });
+    return map;
+  }, [clienteBase]);
+
   // ─── Lists for dropdowns ──────────────────────────────────────────────────────
   // tenantsList: { id: UUID, name: string }[] — used by Pipeline.tsx dropdown
   const tenantsList = useMemo(() => {
@@ -194,11 +215,12 @@ export function usePipeline() {
       .map(name => ({ id: name, name }));
   }, [isMaster, tenantIdMap, allTenantModules, user]);
 
-  const sellers      = useMemo(() => ["Todos", ...Array.from(new Set(leads.map((l: any) => l.seller).filter(Boolean)))], [leads]);
+  // Dropdowns mostram apenas vendedores/empresas do pipeline atual
+  const sellers      = useMemo(() => ["Todos", ...Array.from(new Set(pipelineLeads.map((l: any) => l.seller).filter(Boolean)))], [pipelineLeads]);
   const companiesList = useMemo(() => [
     "Todos",
-    ...Array.from(new Set(leads.map((l: any) => l.company).filter(Boolean))).sort() as string[],
-  ], [leads]);
+    ...Array.from(new Set(pipelineLeads.map((l: any) => l.company).filter(Boolean))).sort() as string[],
+  ], [pipelineLeads]);
 
   // ─── Filtered leads ───────────────────────────────────────────────────────────
   const filteredItemsList = useMemo(() => leads
@@ -209,7 +231,10 @@ export function usePipeline() {
         : !item.pipelineId || item.pipelineId === "comercial";
       const matchesSeller  = sellerFilter  === "Todos" || item.seller  === sellerFilter;
       const matchesCompany = companyFilter === "Todos" || item.company === companyFilter;
-      const matchesClient  = clientFilter  === "Todos" || item.clientName === clientFilter;
+      const clientId = clientNameToId[clientFilter];
+      const matchesClient  = clientFilter  === "Todos"
+        || item.clientName === clientFilter
+        || (clientId && item.clientId === clientId);
       const q = searchQuery.toLowerCase();
       const matchesSearch  =
         (item.name   ?? "").toLowerCase().includes(q) ||

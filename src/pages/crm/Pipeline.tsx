@@ -117,12 +117,11 @@ export default function Pipeline() {
   }), [filteredItemsList]);
 
   const listaLeads = useMemo(() =>
-    (leads as any[])
-      .filter(l => !searchQuery || ["name", "company", "email"].some(k => l[k]?.toLowerCase().includes(searchQuery.toLowerCase())))
-      .filter(l => sellerFilter === "Todos" || l.seller === sellerFilter)
-      .filter(l => temperatureFilter === "Todas" || l.temperature === temperatureFilter)
-      .sort((a, b) => sortOrder === "desc" ? (tempOrder[b.temperature] || 0) - (tempOrder[a.temperature] || 0) : (tempOrder[a.temperature] || 0) - (tempOrder[b.temperature] || 0)),
-    [leads, searchQuery, sellerFilter, temperatureFilter, sortOrder]);
+    (filteredItemsList as any[])
+      .filter((l: any) => !searchQuery || ["name", "company", "email"].some((k: string) => l[k]?.toLowerCase().includes(searchQuery.toLowerCase())))
+      .filter((l: any) => temperatureFilter === "Todas" || l.temperature === temperatureFilter)
+      .sort((a: any, b: any) => sortOrder === "desc" ? (tempOrder[b.temperature] || 0) - (tempOrder[a.temperature] || 0) : (tempOrder[a.temperature] || 0) - (tempOrder[b.temperature] || 0)),
+    [filteredItemsList, searchQuery, temperatureFilter, sortOrder]);
 
   return (
     <PageContainer
