@@ -103,13 +103,17 @@ const FORM_CLIENT_ID = process.env.AXIS_FORM_CLIENT_ID || "";
 
 const app = express();
 
-app.use(express.json());
+// Vercel pre-parses the body before passing to Express — skip json() if already parsed
+app.use((req: any, res, next) => {
+  if (req.body !== undefined) return next();
+  express.json({ limit: "5mb" })(req, res, next);
+});
 
 const allowedOrigin = process.env.AXIS_CORS_ORIGIN || "*";
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-api-key");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-api-key, Authorization");
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
@@ -753,6 +757,14 @@ app.post("/api/whatsapp/copilot/analyze", async (req, res) => {
   } catch (e) {
     console.error("Copilot analysis failure:", e);
     res.status(500).json({ error: "Erro de processamento da IA" });
+  }
+});
+
+// Global error handler — catches any unhandled throws in async routes
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("[Axis] Unhandled error:", err?.message || err);
+  if (!res.headersSent) {
+    res.status(500).json({ error: err?.message || "Internal Server Error" });
   }
 });
 
