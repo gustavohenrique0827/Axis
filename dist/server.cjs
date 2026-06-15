@@ -642,6 +642,22 @@ Responda APENAS com este JSON:
     return res.status(500).json({ error: "Erro ao analisar transcri\xE7\xE3o: " + (err?.message ?? "desconhecido") });
   }
 });
+app.post("/api/ai/corrigir-nota", async (req, res) => {
+  const { texto } = req.body ?? {};
+  if (!texto?.trim()) return res.json({ corrigido: texto ?? "" });
+  const hasAI = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
+  if (!hasAI) return res.json({ corrigido: texto });
+  try {
+    const corrigido = await generateAI(
+      `Corrija apenas os erros ortogr\xE1ficos e de digita\xE7\xE3o do texto abaixo. Mantenha exatamente o mesmo estilo, tom e conte\xFAdo. Retorne APENAS o texto corrigido, sem explica\xE7\xF5es, sem aspas, sem prefixos.
+
+Texto: ${texto}`
+    );
+    return res.json({ corrigido: corrigido.trim() || texto });
+  } catch {
+    return res.json({ corrigido: texto });
+  }
+});
 app.post("/api/ai/lead-copilot", async (req, res) => {
   const { leadContext } = req.body ?? {};
   const hasAI = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;

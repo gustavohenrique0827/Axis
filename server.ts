@@ -666,6 +666,22 @@ Responda APENAS com este JSON:
   }
 });
 
+// ── Correção ortográfica de notas ─────────────────────────────────────────────
+app.post("/api/ai/corrigir-nota", async (req: any, res: any) => {
+  const { texto } = req.body ?? {};
+  if (!texto?.trim()) return res.json({ corrigido: texto ?? "" });
+  const hasAI = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
+  if (!hasAI) return res.json({ corrigido: texto });
+  try {
+    const corrigido = await generateAI(
+      `Corrija apenas os erros ortográficos e de digitação do texto abaixo. Mantenha exatamente o mesmo estilo, tom e conteúdo. Retorne APENAS o texto corrigido, sem explicações, sem aspas, sem prefixos.\n\nTexto: ${texto}`
+    );
+    return res.json({ corrigido: corrigido.trim() || texto });
+  } catch {
+    return res.json({ corrigido: texto });
+  }
+});
+
 // ── Copilot de Lead (pré-reunião — análise estática do perfil) ────────────────
 app.post("/api/ai/lead-copilot", async (req: any, res: any) => {
   const { leadContext } = req.body ?? {};
