@@ -47,9 +47,12 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
   } catch (error: any) {
     if (error?.code === 'auth/unauthorized-domain') {
       const domain = window.location.hostname;
-      console.warn(`[Firebase] Domínio "${domain}" não autorizado. Adicione-o em Firebase Console → Authentication → Settings → Authorized domains.`);
-      return null;
+      throw new Error(
+        `Domínio "${domain}" não autorizado no Firebase. ` +
+        `Acesse Firebase Console → Authentication → Settings → Authorized domains e adicione "${domain}".`
+      );
     }
+    if (error?.code === 'auth/popup-closed-by-user') return null;
     console.error('Sign in error:', error);
     throw error;
   } finally {

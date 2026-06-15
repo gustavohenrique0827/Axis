@@ -25,6 +25,8 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
   const [googleEmail, setGoogleEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [createdMeeting, setCreatedMeeting] = useState<{ id: string; meetLink: string } | null>(null);
+  const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
+  const [manualLink, setManualLink] = useState("");
 
   const [closerName, setCloserName] = useState(lead.seller || "");
   const [closerEmail, setCloserEmail] = useState("");
@@ -70,13 +72,16 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
   const handleConnectGoogle = async () => {
     try {
       setLoading(true);
+      setGoogleAuthError(null);
       const result = await googleSignIn();
       if (result) {
         setGoogleEmail(result.user.email || "Conectado");
         toast.success("Google conectado!");
       }
     } catch (err: any) {
-      toast.error("Erro ao conectar: " + (err.message || "Tente novamente"));
+      const msg: string = err.message || "Tente novamente";
+      setGoogleAuthError(msg);
+      toast.error(msg, { duration: 8000 });
     } finally {
       setLoading(false);
     }
@@ -85,6 +90,28 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
   const handleCreateMeeting = async () => {
     if (!closerName) { toast.error("Selecione o closer responsável."); return; }
     if (!date || !time) { toast.error("Informe data e horário."); return; }
+
+    const startISO = `${date}T${time}:00`;
+    const endDate = new Date(`${date}T${time}:00`);
+    endDate.setMinutes(endDate.getMinutes() + duration);
+    const endISO = endDate.toISOString().slice(0, 19);
+    const reuniaoId = `r${Math.random().toString(36).slice(2, 9)}`;
+
+    // Fallback: usa link manual se Google não estiver conectado
+    if (googleAuthError || !googleEmail) {
+      const link = manualLink.trim();
+      if (!link) { toast.error("Insira um link do Google Meet ou conecte sua conta Google."); return; }
+      addReuniao({
+        leadId: lead.id, clienteId: lead.clienteId,
+        leadName: lead.name, companyName: lead.company,
+        leadEmail, closerName, closerEmail,
+        scheduledAt: startISO, durationMinutes: duration,
+        meetLink: link, status: "Agendada", pauta: pauta || undefined,
+      });
+      setCreatedMeeting({ id: reuniaoId, meetLink: link });
+      toast.success("Reunião agendada com link manual!");
+      return;
+    }
 
     setLoading(true);
     try {
@@ -97,44 +124,27 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       }
 
       const meetSpace = await createMeetSpace(token);
-
-      const startISO = `${date}T${time}:00`;
-      const endDate = new Date(`${date}T${time}:00`);
-      endDate.setMinutes(endDate.getMinutes() + duration);
-      const endISO = endDate.toISOString().slice(0, 19);
-
       const attendees = [leadEmail, closerEmail].filter(Boolean);
       let googleEventId: string | undefined;
       try {
         const calEvent = await createCalendarEvent(token, {
           title: `Reunião — ${lead.company || lead.name}`,
           description: pauta || `Reunião comercial com ${lead.name}${lead.company ? ` (${lead.company})` : ""}.`,
-          startISO,
-          endISO,
-          attendeeEmails: attendees,
+          startISO, endISO, attendeeEmails: attendees,
         });
         googleEventId = calEvent.id;
       } catch {
         toast.warning("Reunião criada, mas convite de calendário não enviado.");
       }
 
-      const reuniaoId = `r${Math.random().toString(36).slice(2, 9)}`;
       addReuniao({
-        leadId: lead.id,
-        clienteId: lead.clienteId,
-        leadName: lead.name,
-        companyName: lead.company,
-        leadEmail,
-        closerName,
-        closerEmail,
-        scheduledAt: startISO,
-        durationMinutes: duration,
-        meetLink: meetSpace.meetingUri,
-        googleEventId,
-        status: "Agendada",
-        pauta: pauta || undefined,
+        leadId: lead.id, clienteId: lead.clienteId,
+        leadName: lead.name, companyName: lead.company,
+        leadEmail, closerName, closerEmail,
+        scheduledAt: startISO, durationMinutes: duration,
+        meetLink: meetSpace.meetingUri, googleEventId,
+        status: "Agendada", pauta: pauta || undefined,
       });
-
       setCreatedMeeting({ id: reuniaoId, meetLink: meetSpace.meetingUri });
       toast.success("Reunião agendada! Convite enviado ao lead e ao closer.");
     } catch (err: any) {
@@ -201,32 +211,55 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
 
         {/* Google Connect */}
         <div className={cn(
-          "flex items-center justify-between p-3 rounded-xl border",
+          "rounded-xl border p-3 space-y-2",
           googleEmail
             ? "bg-emerald-500/[0.07] border-emerald-500/20"
+            : googleAuthError
+            ? "bg-rose-500/[0.07] border-rose-500/20"
             : "bg-amber-500/[0.05] border-amber-500/20"
         )}>
-          <div className="flex items-center gap-2">
-            {googleEmail
-              ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-              : <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />}
-            <div>
-              <div className={cn("text-xs font-bold", googleEmail ? "text-emerald-400" : "text-amber-400")}>
-                {googleEmail ? "Google Conectado" : "Google não conectado"}
-              </div>
-              <div className="text-[10px] text-slate-500">
-                {googleEmail || "Conecte para criar sala Meet e enviar convite"}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              {googleEmail
+                ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                : <AlertCircle className={cn("w-4 h-4 shrink-0", googleAuthError ? "text-rose-400" : "text-amber-400")} />}
+              <div className="min-w-0">
+                <div className={cn("text-xs font-bold", googleEmail ? "text-emerald-400" : googleAuthError ? "text-rose-400" : "text-amber-400")}>
+                  {googleEmail ? "Google Conectado" : googleAuthError ? "Erro de autenticação" : "Google não conectado"}
+                </div>
+                <div className="text-[10px] text-slate-500 truncate">
+                  {googleEmail || "Conecte para criar sala Meet automaticamente"}
+                </div>
               </div>
             </div>
+            {!googleEmail && (
+              <Button
+                onClick={handleConnectGoogle}
+                disabled={loading}
+                className="bg-white text-gray-800 hover:bg-gray-100 font-bold px-3 h-7 text-xs shrink-0"
+              >
+                Conectar
+              </Button>
+            )}
           </div>
-          {!googleEmail && (
-            <Button
-              onClick={handleConnectGoogle}
-              disabled={loading}
-              className="bg-white text-gray-800 hover:bg-gray-100 font-bold px-3 h-7 text-xs shrink-0"
-            >
-              Conectar
-            </Button>
+
+          {/* Erro de domínio não autorizado → campo de link manual */}
+          {googleAuthError && (
+            <div className="space-y-1.5 pt-1">
+              <p className="text-[10px] text-rose-300 leading-relaxed">{googleAuthError}</p>
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 block">
+                  <Video className="w-3 h-3 inline mr-1" />Link manual do Google Meet
+                </label>
+                <input
+                  type="url"
+                  value={manualLink}
+                  onChange={(e) => setManualLink(e.target.value)}
+                  placeholder="https://meet.google.com/abc-defg-hij"
+                  className="w-full bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-600"
+                />
+              </div>
+            </div>
           )}
         </div>
 
