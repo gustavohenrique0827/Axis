@@ -367,7 +367,7 @@ export function usePipeline() {
 
   const handleTransferToComercial = (e: any, lead: any) => {
     e.stopPropagation();
-    updateLead(lead.id, { pipelineId: "comercial", stageId: "1" });
+    updateLead(lead.id, { pipelineId: "comercial", stageId: firstComercialStageId });
     addTask({
       title: "Bem-vindo ao Comercial",
       desc: `Apresentação recebida do SDR. Lead: ${lead.name}`,
