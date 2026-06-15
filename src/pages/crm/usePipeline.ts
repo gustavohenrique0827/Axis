@@ -232,9 +232,14 @@ export function usePipeline() {
       const matchesSeller  = sellerFilter  === "Todos" || item.seller  === sellerFilter;
       const matchesCompany = companyFilter === "Todos" || item.company === companyFilter;
       const clientId = clientNameToId[clientFilter];
+      // Match by lead's own clientName/clientId OR via any linked product's client
       const matchesClient  = clientFilter  === "Todos"
         || item.clientName === clientFilter
-        || (clientId && item.clientId === clientId);
+        || (clientId && item.clientId === clientId)
+        || (products as any[]).some((p: any) =>
+            Array.isArray(item.productIds) && item.productIds.includes(p.id) &&
+            (p.clientName === clientFilter || (clientId && p.clientId === clientId))
+          );
       const q = searchQuery.toLowerCase();
       const matchesSearch  =
         (item.name   ?? "").toLowerCase().includes(q) ||
@@ -251,7 +256,7 @@ export function usePipeline() {
       if (!db) return -1;
       return db > da ? 1 : db < da ? -1 : 0;
     }),
-  [leads, currentPipeline, sellerFilter, searchQuery, tenantFilter, isMaster, companyFilter, clientFilter]);
+  [leads, currentPipeline, sellerFilter, searchQuery, tenantFilter, isMaster, companyFilter, clientFilter, clientNameToId, products]);
 
   // ─── Metrics ─────────────────────────────────────────────────────────────────
   const analyticsData = useMemo(() =>

@@ -97,6 +97,12 @@ export function LeadCard({
     (s.membros || []).some((m: string) => m === item.seller || m === item.sellerId)
   ) ?? null;
 
+  // Client name — from lead directly or inferred from first linked product
+  const clientName: string | null =
+    item.clientName ||
+    linkedProducts.find((p: any) => p.clientName)?.clientName ||
+    null;
+
   // Creation date
   const createdLabel = formatCreatedAt(item.created_at ?? item.createdAt);
 
@@ -254,8 +260,14 @@ export function LeadCard({
         </div>
 
         {/* Tags + squad + product */}
-        {(tags.length > 0 || leadSquad || primaryProduct) && (
+        {(tags.length > 0 || leadSquad || primaryProduct || clientName) && (
           <div className="flex flex-wrap gap-1">
+            {/* Client badge */}
+            {clientName && (
+              <span className="inline-flex items-center gap-1 text-[8px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 uppercase tracking-wide">
+                ◈ {clientName}
+              </span>
+            )}
             {/* Squad badge */}
             {leadSquad && (
               <span
