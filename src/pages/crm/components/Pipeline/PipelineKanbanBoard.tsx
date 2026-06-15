@@ -51,13 +51,17 @@ export function PipelineKanbanBoard({
     return parseFloat(String(item.value ?? "").replace(/[^\d,]/g, "").replace(",", ".")) || 0;
   }
 
+  const knownStageIds = new Set(activePipelineStages.map((s: any) => s.id));
+
   return (
     <div
       className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin"
       style={{ height: `calc(100dvh - ${showAnalytics ? 580 : 360}px)`, minHeight: "380px" }}
     >
       {activePipelineStages.map((stage: any, idx: number) => {
-        const stageLeads = filteredItemsList.filter((l: any) => l.stageId === stage.id);
+        const stageLeads = filteredItemsList.filter((l: any) =>
+          l.stageId === stage.id || (idx === 0 && !knownStageIds.has(l.stageId))
+        );
         const isLastStage = idx === activePipelineStages.length - 1;
         const isMinimized = minimizedColumns.has(stage.id);
 

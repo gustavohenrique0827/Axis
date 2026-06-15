@@ -367,7 +367,8 @@ export function usePipeline() {
 
   const handleTransferToComercial = (e: any, lead: any) => {
     e.stopPropagation();
-    updateLead(lead.id, { pipelineId: "comercial", stageId: firstComercialStageId });
+    const targetStageId = firstComercialStageId || "1";
+    updateLead(lead.id, { pipelineId: "comercial", stageId: targetStageId });
     addTask({
       title: "Bem-vindo ao Comercial",
       desc: `Apresentação recebida do SDR. Lead: ${lead.name}`,
@@ -377,6 +378,9 @@ export function usePipeline() {
     });
     toast.success("Transferência Inteligente: Lead movido para o Comercial e tarefa criada!");
     setOpenDropdownId(null);
+    // Switch to comercial view so the user sees the lead immediately
+    setCurrentPipeline("comercial");
+    if (comercialFunis[0]) setSelectedFunilId(comercialFunis[0].id);
   };
 
   return {
