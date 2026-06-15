@@ -625,34 +625,50 @@ app.post("/api/ai/lead-copilot", async (req: any, res: any) => {
     return res.status(400).json({ error: "Contexto do lead ausente." });
   }
   try {
-    const prompt = `Você é o Copilot de CRM do Axis. Com base no perfil do lead abaixo, retorne APENAS um objeto JSON válido (sem markdown).
+    const prompt = `Você é o Copilot de CRM do Axis. Analise o perfil do lead e retorne SOMENTE o JSON abaixo preenchido, sem texto adicional, sem markdown, sem explicações.
 
-LEAD:
-- Nome: ${leadContext.name ?? "?"} | Empresa: ${leadContext.company ?? "?"}
-- Score IA: ${leadContext.scoreIA ?? "N/A"} | Temperatura: ${leadContext.temperature ?? "N/A"}
-- Estágio: ${leadContext.stage ?? "Desconhecido"}
-- Interesse: ${leadContext.lead_interesse ?? "Não informado"}
-- Resumo SDR: ${leadContext.iaSummary ?? "Sem histórico"}
-- Último contato: ${leadContext.lastContact ?? "Não informado"}
-- Produto de interesse: ${leadContext.product ?? "Não definido"}
+PERFIL DO LEAD:
+Nome: ${leadContext.name ?? "Não informado"}
+Empresa: ${leadContext.company ?? "Não informado"}
+Score IA: ${leadContext.scoreIA ?? "N/A"}
+Temperatura: ${leadContext.temperature ?? "N/A"}
+Estágio: ${leadContext.stage ?? "Desconhecido"}
+Interesse declarado: ${leadContext.lead_interesse ?? "Não informado"}
+Resumo SDR: ${leadContext.iaSummary ?? "Sem histórico"}
+Produto de interesse: ${leadContext.product ?? "Não definido"}
 
-Retorne:
-{"recomendacao_proximo_passo":"...","abordagem_ideal":"...","objecoes_previstas":["..."],"pergunta_abertura":"...","probabilidade_fechamento":0,"alerta":"","resumo_curto":"..."}`;
+Responda APENAS com este JSON (substitua os valores):
+{"resumo_curto":"...","probabilidade_fechamento":70,"recomendacao_proximo_passo":"...","abordagem_ideal":"...","pergunta_abertura":"...","objecoes_previstas":["...","..."],"alerta":""}`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: prompt,
     });
 
-    let text = (response.text ?? "").trim();
-    text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    // Extrai text de forma segura (v1.x pode jogar exceção em safety blocks)
+    let text = "";
+    try {
+      text = (typeof response.text === "function"
+        ? (response as any).text()
+        : response.text ?? "") as string;
+    } catch {
+      text = response?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+    }
+    text = text.trim()
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
+
     const start = text.indexOf("{");
     const end   = text.lastIndexOf("}");
-    if (start === -1 || end === -1) throw new Error("Resposta sem JSON: " + text.slice(0, 200));
+    if (start === -1 || end === -1) {
+      console.error("[Copilot Lead] Sem JSON na resposta:", text.slice(0, 300));
+      throw new Error("Modelo não retornou JSON válido.");
+    }
     const data = JSON.parse(text.slice(start, end + 1));
     return res.json({ analysis: data });
   } catch (err: any) {
-    console.error("[Copilot Lead]", err?.message);
+    console.error("[Copilot Lead] Erro:", err?.message);
     return res.status(500).json({ error: "Erro ao analisar lead: " + (err?.message ?? "desconhecido") });
   }
 });
