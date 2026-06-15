@@ -1,8 +1,8 @@
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
 
-const app = initializeApp(firebaseConfig);
+const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 const provider = new GoogleAuthProvider();
@@ -42,6 +42,11 @@ export const googleSignIn = async (): Promise<{ user: User; accessToken: string 
     cachedAccessToken = credential.accessToken;
     return { user: result.user, accessToken: cachedAccessToken };
   } catch (error: any) {
+    if (error?.code === 'auth/unauthorized-domain') {
+      const domain = window.location.hostname;
+      console.warn(`[Firebase] Domínio "${domain}" não autorizado. Adicione-o em Firebase Console → Authentication → Settings → Authorized domains.`);
+      return null;
+    }
     console.error('Sign in error:', error);
     throw error;
   } finally {

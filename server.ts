@@ -221,7 +221,7 @@ async function startServer() {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: `Suggest 3-5 relevant tags for a lead with the following info:
         Name: ${name}
         Company: ${company}
@@ -236,7 +236,7 @@ async function startServer() {
         },
       });
 
-      const tags = JSON.parse(response.text);
+      const tags = JSON.parse(response.text ?? "[]");
       res.json({ tags });
     } catch (error) {
       console.error("AI Tag Suggestion Error:", error);
@@ -358,7 +358,7 @@ async function startServer() {
     if (process.env.GEMINI_API_KEY) {
       try {
         const response = await ai.models.generateContent({
-          model: "gemini-3.5-flash",
+          model: "gemini-2.0-flash",
           contents: `Analyze this CRM lead and its recent activities, and compute:
           1. An AI score (0 to 100) indicating closeness to buying or closing.
           2. A lead temperature ('frio', 'morno', or 'quente').
@@ -452,7 +452,7 @@ async function startServer() {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: `Você é o Master IA do Axis CRM. Analise estes indicadores:
         MRR: ${mrr}, CAC: ${cac}, LTV: ${ltv}, Leads: ${leadsCount}, Fechamentos: ${dealsCount}.
 
@@ -475,7 +475,7 @@ async function startServer() {
           }
         }
       });
-      res.json(JSON.parse(response.text));
+      res.json(JSON.parse(response.text ?? "{}"));
     } catch (error) {
       res.status(500).json({ error: "Falha na auditoria cerebral." });
     }
@@ -488,7 +488,7 @@ async function startServer() {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: `Analise a etapa "${stageName}" do funil com estes leads:
         ${JSON.stringify(leads.map((l: any) => ({ name: l.name, score: l.scoreIA, temp: l.temperature })))}
         
@@ -506,7 +506,7 @@ async function startServer() {
           }
         }
       });
-      res.json(JSON.parse(response.text));
+      res.json(JSON.parse(response.text ?? "{}"));
     } catch (error) {
       res.status(500).json({ error: "Falha ao auditar funil." });
     }
@@ -525,7 +525,7 @@ async function startServer() {
       }, {});
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: `Análise de Marketing:
         Gasto Total: R$ ${spent}
         Conversão por Origem: ${JSON.stringify(sourceData)}
@@ -544,7 +544,7 @@ async function startServer() {
           }
         }
       });
-      res.json(JSON.parse(response.text));
+      res.json(JSON.parse(response.text ?? "{}"));
     } catch (error) {
       res.status(500).json({ error: "Falha na análise de marketing." });
     }
@@ -557,7 +557,7 @@ async function startServer() {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: `Você é o Auditor Master do Axis CRM. Analise esta configuração de ${type}:
         ${JSON.stringify(config)}
         
@@ -575,7 +575,7 @@ async function startServer() {
           }
         }
       });
-      res.json(JSON.parse(response.text));
+      res.json(JSON.parse(response.text ?? "{}"));
     } catch (error) {
       res.status(500).json({ error: "Falha ao auditar configurações." });
     }
@@ -667,7 +667,7 @@ async function startServer() {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: `Você é um consultor de CRM. Sugira um exemplo para "${type}".
         NÃO inclua campos como 'target'. Use os campos exatos abaixo.
 
@@ -679,7 +679,7 @@ async function startServer() {
         config: { responseMimeType: "application/json" }
       });
 
-      res.json(JSON.parse(response.text));
+      res.json(JSON.parse(response.text ?? "{}"));
     } catch (error) {
       res.status(500).json({ error: "Erro na sugestão da IA" });
     }
@@ -695,7 +695,7 @@ async function startServer() {
 
     try {
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: `Você é o cérebro analítico do Axis CRM. 
         Contexto da solicitação: ${context}.
         Dados brutos para análise: ${JSON.stringify(data)}.
@@ -704,7 +704,7 @@ async function startServer() {
         Foque em melhoria de ROI, conversão ou retenção.`,
       });
 
-      res.json({ insight: response.text });
+      res.json({ insight: response.text ?? "" });
     } catch (error) {
       console.error("Erro na Master IA:", error);
       res.status(500).json({ error: "Falha ao processar insight cerebral." });
@@ -996,7 +996,7 @@ async function startServer() {
       }
 
       const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-2.0-flash",
         contents: promptContext,
         config: {
           responseMimeType: "application/json",
@@ -1012,7 +1012,7 @@ async function startServer() {
         },
       });
 
-      const parsed = JSON.parse(response.text);
+      const parsed = JSON.parse(response.text ?? "{}");
       res.json(parsed);
     } catch (e) {
       console.error("Copilot analysis failure:", e);
