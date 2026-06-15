@@ -2,15 +2,8 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "installCommand": "npm install",
-  "framework": "vite",
-  "functions": {
-    "api/index.ts": {
-      "memory": 512,
-      "maxDuration": 30
-    }
-  },
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/index" },
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
