@@ -1,0 +1,329 @@
+import { useState, useEffect } from "react";
+import { Modal } from "../../modal";
+import { Button } from "../../button";
+import {
+  Calendar, Clock, User, FileText, Video,
+  Copy, ExternalLink, Loader2, CheckCircle2, AlertCircle,
+} from "lucide-react";
+import { googleSignIn, getAccessToken } from "../../../../lib/google-auth";
+import { createMeetSpace } from "../../../../lib/meet";
+import { createCalendarEvent } from "../../../../lib/google-calendar";
+import { useData } from "../../../../contexts/DataContext";
+import { toast } from "sonner";
+import { cn } from "../../../../lib/utils";
+
+interface AgendarReuniaoModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  lead: { id: string; name: string; company: string; email: string; seller: string };
+  onConfirm: (reuniaoId: string, meetLink: string) => void;
+}
+
+export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: AgendarReuniaoModalProps) {
+  const { colaboradores, leads, addReuniao } = useData();
+
+  const [googleEmail, setGoogleEmail] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [createdMeeting, setCreatedMeeting] = useState<{ id: string; meetLink: string } | null>(null);
+
+  const [closerName, setCloserName] = useState(lead.seller || "");
+  const [closerEmail, setCloserEmail] = useState("");
+  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [time, setTime] = useState("09:00");
+  const [duration, setDuration] = useState(60);
+  const [leadEmail, setLeadEmail] = useState(lead.email || "");
+  const [pauta, setPauta] = useState("");
+
+  const closerOptions: { name: string; email: string }[] = (() => {
+    const fromColab = (colaboradores as any[])
+      .filter((c: any) => c.status !== "Desligado")
+      .map((c: any) => ({ name: c.nome || c.name || "", email: c.email || "" }))
+      .filter((c) => c.name);
+    if (fromColab.length > 0) return fromColab;
+    const sellers = [...new Set((leads as any[]).map((l: any) => l.seller).filter(Boolean))];
+    return (sellers as string[]).map((s) => ({ name: s, email: "" }));
+  })();
+
+  useEffect(() => {
+    const found = (colaboradores as any[]).find(
+      (c: any) => (c.nome || c.name) === closerName
+    );
+    setCloserEmail(found?.email || "");
+  }, [closerName, colaboradores]);
+
+  useEffect(() => {
+    getAccessToken().then((token) => {
+      if (token) setGoogleEmail("Conectado");
+    });
+  }, []);
+
+  // Reset when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setCreatedMeeting(null);
+      setCloserName(lead.seller || "");
+      setLeadEmail(lead.email || "");
+      setPauta("");
+    }
+  }, [isOpen, lead.seller, lead.email]);
+
+  const handleConnectGoogle = async () => {
+    try {
+      setLoading(true);
+      const result = await googleSignIn();
+      if (result) {
+        setGoogleEmail(result.user.email || "Conectado");
+        toast.success("Google conectado!");
+      }
+    } catch (err: any) {
+      toast.error("Erro ao conectar: " + (err.message || "Tente novamente"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateMeeting = async () => {
+    if (!closerName) { toast.error("Selecione o closer responsável."); return; }
+    if (!date || !time) { toast.error("Informe data e horário."); return; }
+
+    setLoading(true);
+    try {
+      let token = await getAccessToken();
+      if (!token) {
+        const result = await googleSignIn();
+        if (!result) throw new Error("Login cancelado");
+        token = result.accessToken;
+        setGoogleEmail(result.user.email || "Conectado");
+      }
+
+      const meetSpace = await createMeetSpace(token);
+
+      const startISO = `${date}T${time}:00`;
+      const endDate = new Date(`${date}T${time}:00`);
+      endDate.setMinutes(endDate.getMinutes() + duration);
+      const endISO = endDate.toISOString().slice(0, 19);
+
+      const attendees = [leadEmail, closerEmail].filter(Boolean);
+      let googleEventId: string | undefined;
+      try {
+        const calEvent = await createCalendarEvent(token, {
+          title: `Reunião — ${lead.company || lead.name}`,
+          description: pauta || `Reunião comercial com ${lead.name}${lead.company ? ` (${lead.company})` : ""}.`,
+          startISO,
+          endISO,
+          attendeeEmails: attendees,
+        });
+        googleEventId = calEvent.id;
+      } catch {
+        toast.warning("Reunião criada, mas convite de calendário não enviado.");
+      }
+
+      const reuniaoId = `r${Math.random().toString(36).slice(2, 9)}`;
+      addReuniao({
+        leadId: lead.id,
+        leadName: lead.name,
+        companyName: lead.company,
+        leadEmail,
+        closerName,
+        closerEmail,
+        scheduledAt: startISO,
+        durationMinutes: duration,
+        meetLink: meetSpace.meetingUri,
+        googleEventId,
+        status: "Agendada",
+        pauta: pauta || undefined,
+      });
+
+      setCreatedMeeting({ id: reuniaoId, meetLink: meetSpace.meetingUri });
+      toast.success("Reunião agendada! Convite enviado ao lead e ao closer.");
+    } catch (err: any) {
+      toast.error("Erro ao criar reunião: " + (err.message || "Tente novamente"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputCls =
+    "w-full bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600";
+  const labelCls =
+    "text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 flex items-center gap-1.5";
+
+  return (
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Agendar Reunião"
+      maxWidth="max-w-lg"
+      footer={
+        <div className="flex items-center justify-between w-full gap-3">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            className="text-slate-400 hover:text-white px-4 h-9 text-sm"
+          >
+            Cancelar
+          </Button>
+          {createdMeeting ? (
+            <Button
+              onClick={() => onConfirm(createdMeeting.id, createdMeeting.meetLink)}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 h-9 text-sm"
+            >
+              <Video className="w-3.5 h-3.5 mr-1.5" />
+              Entrar na Reunião
+            </Button>
+          ) : (
+            <Button
+              onClick={handleCreateMeeting}
+              disabled={loading}
+              className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 h-9 text-sm disabled:opacity-50"
+            >
+              {loading
+                ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                : <Video className="w-3.5 h-3.5 mr-1.5" />}
+              {loading ? "Criando..." : "Criar Reunião no Google Meet"}
+            </Button>
+          )}
+        </div>
+      }
+    >
+      <div className="space-y-4 py-1">
+        {/* Lead info */}
+        <div className="flex items-center gap-3 p-3 bg-white/[0.03] border border-white/[0.06] rounded-xl">
+          <div className="w-9 h-9 rounded-xl bg-blue-500/15 flex items-center justify-center shrink-0 text-sm font-black text-blue-300 select-none">
+            {((lead.company || lead.name || "R").slice(0, 2)).toUpperCase()}
+          </div>
+          <div className="min-w-0">
+            <div className="text-sm font-bold text-white truncate">{lead.company || lead.name}</div>
+            <div className="text-xs text-slate-400 truncate">{lead.name}{lead.email ? ` · ${lead.email}` : ""}</div>
+          </div>
+        </div>
+
+        {/* Google Connect */}
+        <div className={cn(
+          "flex items-center justify-between p-3 rounded-xl border",
+          googleEmail
+            ? "bg-emerald-500/[0.07] border-emerald-500/20"
+            : "bg-amber-500/[0.05] border-amber-500/20"
+        )}>
+          <div className="flex items-center gap-2">
+            {googleEmail
+              ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              : <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />}
+            <div>
+              <div className={cn("text-xs font-bold", googleEmail ? "text-emerald-400" : "text-amber-400")}>
+                {googleEmail ? "Google Conectado" : "Google não conectado"}
+              </div>
+              <div className="text-[10px] text-slate-500">
+                {googleEmail || "Conecte para criar sala Meet e enviar convite"}
+              </div>
+            </div>
+          </div>
+          {!googleEmail && (
+            <Button
+              onClick={handleConnectGoogle}
+              disabled={loading}
+              className="bg-white text-gray-800 hover:bg-gray-100 font-bold px-3 h-7 text-xs shrink-0"
+            >
+              Conectar
+            </Button>
+          )}
+        </div>
+
+        {/* Form */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="col-span-2">
+            <label className={labelCls}><User className="w-3 h-3" /> Closer Responsável</label>
+            <select value={closerName} onChange={(e) => setCloserName(e.target.value)} className={inputCls}>
+              <option value="">Selecione o closer...</option>
+              {closerOptions.map((c) => (
+                <option key={c.name} value={c.name}>{c.name}{c.email ? ` — ${c.email}` : ""}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className={labelCls}><Calendar className="w-3 h-3" /> Data</label>
+            <input
+              type="date"
+              value={date}
+              min={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setDate(e.target.value)}
+              className={inputCls}
+            />
+          </div>
+
+          <div>
+            <label className={labelCls}><Clock className="w-3 h-3" /> Horário</label>
+            <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={inputCls} />
+          </div>
+
+          <div>
+            <label className={labelCls}><Clock className="w-3 h-3" /> Duração</label>
+            <select value={duration} onChange={(e) => setDuration(Number(e.target.value))} className={inputCls}>
+              <option value={30}>30 minutos</option>
+              <option value={45}>45 minutos</option>
+              <option value={60}>1 hora</option>
+              <option value={90}>1h 30min</option>
+              <option value={120}>2 horas</option>
+            </select>
+          </div>
+
+          <div>
+            <label className={labelCls}><User className="w-3 h-3" /> E-mail do Lead</label>
+            <input
+              type="email"
+              value={leadEmail}
+              onChange={(e) => setLeadEmail(e.target.value)}
+              placeholder="email@lead.com"
+              className={inputCls}
+            />
+          </div>
+
+          <div className="col-span-2">
+            <label className={labelCls}><FileText className="w-3 h-3" /> Pauta (opcional)</label>
+            <textarea
+              value={pauta}
+              onChange={(e) => setPauta(e.target.value)}
+              placeholder="Objetivo da reunião, pontos a discutir..."
+              rows={3}
+              className={cn(inputCls, "resize-none")}
+            />
+          </div>
+        </div>
+
+        {/* Result after creation */}
+        {createdMeeting && (
+          <div className="bg-emerald-500/[0.08] border border-emerald-500/20 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2 text-emerald-400 font-black text-sm">
+              <CheckCircle2 className="w-4 h-4" />
+              Reunião criada! Convite enviado.
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                readOnly
+                value={createdMeeting.meetLink}
+                className="flex-1 bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-slate-300 font-mono min-w-0"
+              />
+              <button
+                onClick={() => { navigator.clipboard.writeText(createdMeeting.meetLink); toast.success("Link copiado!"); }}
+                className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-xs text-slate-400 hover:text-white transition-all"
+              >
+                <Copy className="w-3 h-3" />
+              </button>
+              <a href={createdMeeting.meetLink} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                <button className="flex items-center gap-1 px-2.5 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-xs text-slate-400 hover:text-white transition-all">
+                  <ExternalLink className="w-3 h-3" />
+                </button>
+              </a>
+            </div>
+            {(leadEmail || closerEmail) && (
+              <p className="text-[10px] text-slate-500">
+                Convite enviado para: {[leadEmail, closerEmail].filter(Boolean).join(", ")}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+    </Modal>
+  );
+}

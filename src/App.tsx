@@ -84,6 +84,8 @@ import MarketingLandingPages from "./pages/marketing/MarketingLandingPages";
 import EEmpreendaEditor from "./pages/marketing/EEmpreendaEditor";
 import MarketingFormularios from "./pages/marketing/MarketingFormularios";
 import RHColaboradores from "./pages/hr/RHColaboradores";
+import ReunioesList from "./pages/reunioes/index";
+import ReuniaoRoom from "./pages/reunioes/ReuniaoRoom";
 import PainelDev from "./pages/dev/PainelDev";
 import ProjetosDev from "./pages/dev/Projetos";
 import SprintsDev from "./pages/dev/Sprints";
@@ -231,6 +233,11 @@ function AppContent() {
             <Route path="issues" element={<IssuesDev />} />
             <Route path="repositorios" element={<RepositoriosDev />} />
             <Route path="ambientes" element={<AmbientesDev />} />
+          </Route>
+
+          <Route path="reunioes">
+            <Route index element={<ReunioesList />} />
+            <Route path=":id" element={<ReuniaoRoom />} />
           </Route>
 
           <Route path="admin" element={<AdminSaaS />} />

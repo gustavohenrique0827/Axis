@@ -1,6 +1,9 @@
 import { useState, useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
+import { useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
+import { AgendarReuniaoModal } from "./modals/crm/AgendarReuniaoModal";
+import { supabase } from "../../lib/supabase";
 import { Modal } from "./modal";
 import { Phone, Activity, TrendingUp, AlertTriangle } from "lucide-react";
 
@@ -30,8 +33,10 @@ interface LeadDetailsModalProps {
 
 export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProps) {
   const { updateLead, leadActivities } = useData();
+  const navigate = useNavigate();
   const [currentTab, setCurrentTab] = useState("informacoes");
   const [showCopilot, setShowCopilot] = useState(false);
+  const [showAgendarReuniao, setShowAgendarReuniao] = useState(false);
 
   const {
     isConfirmDeleteOpen, setIsConfirmDeleteOpen,
@@ -93,6 +98,27 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
     setCurrentTab(map[tab] || tab);
   }, []);
 
+  const handleReuniaoConfirm = async (reuniaoId: string, _meetLink: string) => {
+    setShowAgendarReuniao(false);
+    let targetStageId = "1";
+    if (supabase) {
+      try {
+        const { data } = await supabase
+          .from("app_settings")
+          .select("value")
+          .eq("key", "axis_reuniao_config")
+          .maybeSingle();
+        if (data?.value) {
+          const cfg = typeof data.value === "string" ? JSON.parse(data.value) : data.value;
+          if (cfg?.promotionStageId) targetStageId = cfg.promotionStageId;
+        }
+      } catch {}
+    }
+    updateLead(lead.id, { pipelineId: "comercial", stageId: targetStageId });
+    toast.success("Lead promovido para o funil Comercial!");
+    navigate("/app/reunioes/" + reuniaoId);
+  };
+
   if (!lead) return null;
 
   const leadActs = leadActivities.filter((a: any) => a.leadId === lead.id);
@@ -100,17 +126,23 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
   const probNum = safeParseProbability(probability);
 
   const tc = LeadDetailsTempCfg[temperature as keyof typeof LeadDetailsTempCfg] || LeadDetailsTempCfg.Frio;
-  const formattedValue = formatLeadValueBRL(value);
+  const formattedValue = linkedProductIds.length > 0 && estimatedSum > 0
+    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(estimatedSum)
+    : formatLeadValueBRL(value);
   const initials = ((companyName || leadName || "LD").substring(0, 2)).toUpperCase();
 
   const moveToStage = (stg: any) => {
     setCurrentStageId(stg.id);
     updateLead(lead.id, { stageId: stg.id, status: stg.status });
-    toast.success(`Etapa: ${stg.name}`);
     setAlterationLogs((prev: any[]) => [
       { id: Date.now().toString(), author: seller || "Sistema", desc: `Moveu para '${stg.name}'`, time: "Agora" },
       ...prev,
     ]);
+    if ((stg.name || "").toLowerCase().includes("reuni")) {
+      setShowAgendarReuniao(true);
+      return;
+    }
+    toast.success(`Etapa: ${stg.name}`);
     if (stg.status === "Fechado" || stg.id === stagesDef[stagesDef.length - 1]?.id) {
       enrollInLinkedTurmas();
     }
@@ -365,6 +397,15 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
         </div>
       </Modal>
+
+      {lead && (
+        <AgendarReuniaoModal
+          isOpen={showAgendarReuniao}
+          onClose={() => setShowAgendarReuniao(false)}
+          lead={{ id: lead.id, name: leadName, company: companyName, email: email, seller }}
+          onConfirm={handleReuniaoConfirm}
+        />
+      )}
 
       {showCopilot && createPortal(
         <motion.div

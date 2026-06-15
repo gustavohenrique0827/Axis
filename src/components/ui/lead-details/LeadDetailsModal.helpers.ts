@@ -1,12 +1,11 @@
 import { toast } from "sonner";
 
 export function formatLeadValueBRL(value: unknown) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(
-    parseFloat(String(value ?? "0").replace(/[^\d,.-]/g, "").replace(",", ".")) || 0
-  );
+  const cleaned = String(value ?? "0").replace(/[^\d,.]/g, "");
+  // pt-BR: dots = thousands separator, comma = decimal → remove dots first, then swap comma
+  const normalized = cleaned.replace(/\./g, "").replace(",", ".");
+  const num = parseFloat(normalized) || 0;
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(num);
 }
 
 export function safeParseTimeIdle(timeIdle: unknown) {

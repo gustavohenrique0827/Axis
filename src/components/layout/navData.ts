@@ -45,6 +45,7 @@ export const navSections = [
     reqModule: "crm",
     items: [
       { name: "Leads & Pipeline", path: "/app/pipeline", icon: Columns3 },
+      { name: "Reuniões", path: "/app/reunioes", icon: Video },
       { name: "Propostas", path: "/app/propostas", icon: FileText },
       { name: "Clientes", path: "/app/clientes", icon: Users },
     ],
