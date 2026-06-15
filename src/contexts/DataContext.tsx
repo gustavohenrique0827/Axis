@@ -16,10 +16,10 @@ import {
   defaultNotifications,
   defaultLeadScoreTriggers
 } from './dataMocks';
-import { DataContext, DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, useData } from './DataContextTypes';
+import { DataContext, DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, Reuniao, useData } from './DataContextTypes';
 
 export { useData };
-export type { DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry };
+export type { DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, Reuniao };
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<'dark' | 'light'>(
@@ -224,6 +224,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [proposals, setProposals] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
   const [turmas, setTurmas] = useState<any[]>([]);
+  const [reunioes, setReunioes] = useState<Reuniao[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [colaboradores, setColaboradores] = useState<any[]>([]);
   const [squadMetas, setSquadMetas] = useState<any[]>([]);
@@ -281,6 +282,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'squad_metas' }, () => fetchTableData('squad_metas', setSquadMetas))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'cargos' }, () => fetchTableData('cargos', setCargos))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'certificates' }, () => fetchTableData('certificates', setCertificates))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'reunioes' }, () => fetchTableData('reunioes', setReunioes as any))
         .subscribe();
     }
 
@@ -300,7 +302,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes,
               notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
               productsRes, proposalsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
-              clienteBaseRes
+              clienteBaseRes, reunioesRes
             ] = await Promise.all([
               supabase.from('leads').select('*'),
               supabase.from('tasks').select('*'),
@@ -322,7 +324,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('squad_metas').select('*'),
               supabase.from('certificates').select('*'),
               supabase.from('cargos').select('*'),
-              supabase.from('clientes').select('*')
+              supabase.from('clientes').select('*'),
+              supabase.from('reunioes').select('*'),
             ]);
 
             if (!leadsRes.error && leadsRes.data) setLeads(leadsRes.data as Lead[]);
@@ -356,6 +359,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!certRes.error && certRes.data) setCertificates(certRes.data);
             if (!cargosRes.error && cargosRes.data) setCargos(cargosRes.data);
             if (!clienteBaseRes.error && clienteBaseRes.data) setClienteBase(clienteBaseRes.data);
+            if (!reunioesRes.error && reunioesRes.data) setReunioes(reunioesRes.data as Reuniao[]);
 
             if (!settingsRes.error && settingsRes.data) {
               settingsRes.data.forEach((setting: any) => {
@@ -943,6 +947,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const productCrud = createCrudHelper('products', setProducts);
   const proposalCrud = createCrudHelper('proposals', setProposals);
   const turmaCrud = createCrudHelper('turmas', setTurmas);
+  const reuniaoCrud = createCrudHelper('reunioes', setReunioes as any);
   const studentCrud = createCrudHelper('students', setStudents);
   const colabCrud = createCrudHelper('colaboradores', setColaboradores);
   const mktCampCrud = createCrudHelper('marketing_campaigns', setMarketingCampaigns);
@@ -1123,6 +1128,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       deleteCargo: cargoCrud.del,
       clienteBase,
       setClienteBase,
+      reunioes,
+      addReuniao: (r: Omit<Reuniao, 'id' | 'createdAt'>) => {
+        reuniaoCrud.add({ ...r, id: crypto.randomUUID(), createdAt: new Date().toISOString() });
+      },
+      updateReuniao: reuniaoCrud.update,
+      deleteReuniao: reuniaoCrud.del,
     }}>
       {children}
     </DataContext.Provider>

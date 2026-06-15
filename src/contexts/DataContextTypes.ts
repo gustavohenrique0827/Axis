@@ -55,6 +55,24 @@ export type Appointment = {
   date: string;
 };
 
+export interface Reuniao {
+  id: string;
+  leadId: string;
+  leadName: string;
+  companyName: string;
+  leadEmail: string;
+  closerName: string;
+  closerEmail: string;
+  scheduledAt: string;
+  durationMinutes: number;
+  meetLink: string;
+  googleEventId?: string;
+  status: 'Agendada' | 'Em Andamento' | 'Concluída' | 'Cancelada';
+  pauta?: string;
+  relatorio?: string;
+  createdAt: string;
+}
+
 export interface DataContextType {
   leads: Lead[];
   tasks: Task[];
@@ -168,6 +186,10 @@ export interface DataContextType {
   deleteCargo: (id: string) => void;
   clienteBase: any[];
   setClienteBase: (v: any[]) => void;
+  reunioes: Reuniao[];
+  addReuniao: (r: Omit<Reuniao, 'id' | 'createdAt'>) => void;
+  updateReuniao: (id: string, updates: Partial<Reuniao>) => void;
+  deleteReuniao: (id: string) => void;
 }
 
 export const DataContext = createContext<DataContextType | undefined>(undefined);
