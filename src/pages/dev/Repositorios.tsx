@@ -6,6 +6,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { NovoRepositorioDevModal, type NovoRepositorioPayload } from "./modals/NovoRepositorioDevModal";
 import { ConectarGitHubModal } from "./modals/ConectarGitHubModal";
 import { useDevRepositorios } from "./hooks/useDevRepositorios";
+import { useAuth } from "../../contexts/AuthContext";
 
 const LANG_COLORS: Record<string, string> = {
   TypeScript: '#3B82F6',
@@ -24,7 +25,8 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export default function Repositorios() {
-  const { repos, addRepo, githubConn, setGithubConn, disconnectGitHub, loadGithubRepos } = useDevRepositorios();
+  const { user } = useAuth();
+  const { repos, addRepo, githubConn, setGithubConn, disconnectGitHub } = useDevRepositorios();
   const [search, setSearch] = useState('');
   const [filterVisibility, setFilterVisibility] = useState<'todos' | 'public' | 'private'>('todos');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -246,6 +248,7 @@ export default function Repositorios() {
         isOpen={isGitHubModalOpen}
         onClose={() => setIsGitHubModalOpen(false)}
         onConnected={handleGitHubConnected}
+        tenantId={user?.tenantId}
       />
     </PageContainer>
   );

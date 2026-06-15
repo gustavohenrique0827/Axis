@@ -8,9 +8,10 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onConnected: (username: string) => void;
+  tenantId?: string;
 }
 
-export function ConectarGitHubModal({ isOpen, onClose, onConnected }: Props) {
+export function ConectarGitHubModal({ isOpen, onClose, onConnected, tenantId }: Props) {
   const [pat, setPat] = useState("");
   const [showPat, setShowPat] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -33,10 +34,18 @@ export function ConectarGitHubModal({ isOpen, onClose, onConnected }: Props) {
       const user = await res.json();
 
       if (supabase) {
-        await supabase.from("app_settings").upsert(
-          { key: "github_config", value: { pat: token, username: user.login, avatar: user.avatar_url, connected_at: new Date().toISOString() } },
-          { onConflict: "key" }
-        );
+        const configValue = { pat: token, username: user.login, avatar: user.avatar_url, connected_at: new Date().toISOString() };
+        const { data: existing } = await supabase
+          .from("app_settings")
+          .select("id")
+          .eq("key", "github_config")
+          .eq("tenant_id", tenantId)
+          .maybeSingle();
+        if (existing?.id) {
+          await supabase.from("app_settings").update({ value: configValue, updated_at: new Date().toISOString() }).eq("id", existing.id);
+        } else {
+          await supabase.from("app_settings").insert({ id: crypto.randomUUID(), key: "github_config", tenant_id: tenantId, value: configValue });
+        }
       }
 
       toast.success(`GitHub conectado como @${user.login}`);
