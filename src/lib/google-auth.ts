@@ -94,7 +94,7 @@ export const googleSignIn = async (): Promise<{ user: GoogleUser; accessToken: s
         reject(new Error(err?.message || "Erro ao autenticar com Google"));
       },
     });
-    client.requestToken();
+    client.requestAccessToken();
   });
 };
 
