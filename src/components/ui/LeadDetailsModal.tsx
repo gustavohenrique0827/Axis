@@ -1,5 +1,4 @@
 import { useState, useCallback, useEffect, useMemo } from "react";
-import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { AgendarReuniaoModal } from "./modals/crm/AgendarReuniaoModal";
 import { supabase } from "../../lib/supabase";
@@ -412,11 +411,10 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
         />
       )}
 
-      {showCopilot && createPortal(
-        <div className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[100] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl animate-in slide-in-from-right-10 duration-200">
+      {showCopilot && (
+        <div className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[110] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl animate-in slide-in-from-right-10 duration-200">
           <IACopilot leadName={leadName} companyName={companyName} />
-        </div>,
-        document.body
+        </div>
       )}
     </>
   );

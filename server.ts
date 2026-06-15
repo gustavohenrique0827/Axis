@@ -1,11 +1,11 @@
 import express from "express";
 import path from "path";
-import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
 
-// types for WhatsApp Business Evolution API simulator
+// ── Types ──────────────────────────────────────────────────────────────────
+
 interface WhatsAppInstance {
   id: string;
   name: string;
@@ -41,7 +41,8 @@ interface ChatMessage {
   timestamp: number;
 }
 
-// In-Memory Database State
+// ── In-Memory State ────────────────────────────────────────────────────────
+
 let instances: WhatsAppInstance[] = [
   {
     id: "evo_inst_1",
@@ -57,7 +58,6 @@ let instances: WhatsAppInstance[] = [
 let contacts: ChatContact[] = [];
 let messages: Record<string, ChatMessage[]> = {};
 
-// CRM Settings State
 let sources: any[] = [
   { id: "1", name: "Instagram" },
   { id: "2", name: "WhatsApp" },
@@ -78,968 +78,704 @@ let templates = [
   { id: "1", name: "Saudação Inicial", content: "Olá {{name}}, como posso ajudar?", category: "Vendas" }
 ];
 
-async function startServer() {
-  const app = express();
-  const PORT = 3002;
+// ── Singletons ─────────────────────────────────────────────────────────────
 
-  // Supabase Client for Backend Persistence
-  const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
-  const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || "";
-  const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
+const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || "";
+const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
-  app.use(express.json());
+const ai = new GoogleGenAI({
+  apiKey: process.env.GEMINI_API_KEY || "dummy_key_to_prevent_crash_at_load_time",
+  httpOptions: { headers: { "User-Agent": "aistudio-build" } },
+});
 
-  // =========================================================================
-  // CORS — permite chamadas da página externa (landing page, etc.)
-  // =========================================================================
-  const allowedOrigin = process.env.AXIS_CORS_ORIGIN || "*";
-  app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
-    res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-api-key");
-    if (req.method === "OPTIONS") return res.sendStatus(204);
-    next();
-  });
+const validApiKeys = new Set(
+  (process.env.AXIS_API_KEYS || "")
+    .split(",")
+    .map((k) => k.trim())
+    .filter(Boolean)
+);
 
-  // =========================================================================
-  // API PÚBLICA — Autenticação por API Key (header x-api-key)
-  // Suporta múltiplas chaves via AXIS_API_KEYS (vírgula) ou AXIS_API_KEY_MAIN/FORM
-  // =========================================================================
-  const validApiKeys = new Set(
-    (process.env.AXIS_API_KEYS || "")
-      .split(",")
-      .map(k => k.trim())
-      .filter(Boolean)
-  );
+const FORM_TENANT_ID = process.env.AXIS_FORM_TENANT_ID || "";
+const FORM_CLIENT_ID = process.env.AXIS_FORM_CLIENT_ID || "";
 
-  function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
-    if (validApiKeys.size === 0) {
-      return res.status(503).json({ error: "Nenhuma API Key configurada. Defina AXIS_API_KEYS no .env." });
-    }
-    const key = req.headers["x-api-key"] as string | undefined;
-    if (!key || !validApiKeys.has(key)) {
-      return res.status(401).json({ error: "API Key inválida ou ausente." });
-    }
-    next();
+// ── Express App ────────────────────────────────────────────────────────────
+
+const app = express();
+
+app.use(express.json());
+
+const allowedOrigin = process.env.AXIS_CORS_ORIGIN || "*";
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-api-key");
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
+
+function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
+  if (validApiKeys.size === 0) {
+    return res.status(503).json({ error: "Nenhuma API Key configurada. Defina AXIS_API_KEYS no .env." });
   }
+  const key = req.headers["x-api-key"] as string | undefined;
+  if (!key || !validApiKeys.has(key)) {
+    return res.status(401).json({ error: "API Key inválida ou ausente." });
+  }
+  next();
+}
 
-  // Tenant e cliente padrão para leads criados via API (configurados no .env)
-  const FORM_TENANT_ID = process.env.AXIS_FORM_TENANT_ID || "";
-  const FORM_CLIENT_ID = process.env.AXIS_FORM_CLIENT_ID || "";
+// ── API PÚBLICA ────────────────────────────────────────────────────────────
 
-  // POST /api/v1/leads — Cria um lead via API externa (padrão: pipeline SDR)
-  app.post("/api/v1/leads", requireApiKey, async (req, res) => {
-    const {
-      name, company = "", email = "", phone = "", cnpj = "",
-      title = "", seller = "", source = "", status = "Novo",
-      priority = "Média", value = 0, stageId = "sdr-1",
-      pipelineId = "sdr", lead_interesse_cliente = "",
-      customFields = {}, clientId = FORM_CLIENT_ID, clientName = "",
-      productIds = [],
-      tenantId = FORM_TENANT_ID,
-      tenantName = ""
-    } = req.body;
+app.post("/api/v1/leads", requireApiKey, async (req, res) => {
+  const {
+    name, company = "", email = "", phone = "", cnpj = "",
+    title = "", seller = "", source = "", status = "Novo",
+    priority = "Média", value = 0, stageId = "sdr-1",
+    pipelineId = "sdr", lead_interesse_cliente = "",
+    customFields = {}, clientId = FORM_CLIENT_ID, clientName = "",
+    productIds = [],
+    tenantId = FORM_TENANT_ID,
+    tenantName = ""
+  } = req.body;
 
-    if (!name) {
-      return res.status(400).json({ error: "O campo 'name' é obrigatório." });
-    }
+  if (!name) return res.status(400).json({ error: "O campo 'name' é obrigatório." });
+  if (!email && !phone) return res.status(400).json({ error: "Informe ao menos 'email' ou 'phone'." });
 
-    if (!email && !phone) {
-      return res.status(400).json({ error: "Informe ao menos 'email' ou 'phone'." });
-    }
+  const id = randomUUID();
+  const now = new Date().toISOString().split("T")[0];
+  const rawValue = typeof value === "string"
+    ? parseFloat(value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0
+    : (value ?? 0);
 
-    const id = randomUUID();
-    const now = new Date().toISOString().split("T")[0];
+  const newLead = {
+    id, name, company, email, phone, cnpj, title, seller, source,
+    status, priority, value: rawValue, stageId, pipelineId,
+    lead_interesse_cliente, customFields, clientId, clientName,
+    productIds, tenant_id: tenantId || null, tenantName, scoreIA: 50, date: now,
+    createdAt: new Date().toISOString()
+  };
 
-    const rawValue = typeof value === "string"
-      ? parseFloat(value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0
-      : (value ?? 0);
+  if (!supabase) return res.status(503).json({ error: "Banco de dados não configurado no servidor." });
 
-    const newLead = {
-      id, name, company, email, phone, cnpj, title, seller, source,
-      status, priority, value: rawValue, stageId, pipelineId,
-      lead_interesse_cliente, customFields, clientId, clientName,
-      productIds, tenant_id: tenantId || null, tenantName, scoreIA: 50, date: now,
-      createdAt: new Date().toISOString()
-    };
+  const { data, error } = await supabase.from("leads").insert(newLead).select().maybeSingle();
+  if (error) {
+    console.error("[API v1] Erro ao criar lead:", error.message);
+    return res.status(500).json({ error: "Falha ao salvar lead no banco.", details: error.message });
+  }
+  return res.status(201).json({ success: true, lead: data ?? newLead });
+});
 
-    if (!supabase) {
-      return res.status(503).json({ error: "Banco de dados não configurado no servidor." });
-    }
+app.get("/api/v1/leads", requireApiKey, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: "Banco de dados não configurado no servidor." });
 
-    const { data, error } = await supabase.from("leads").insert(newLead).select().maybeSingle();
-    if (error) {
-      console.error("[API v1] Erro ao criar lead:", error.message);
-      return res.status(500).json({ error: "Falha ao salvar lead no banco.", details: error.message });
-    }
+  const { tenantId, tenantName, seller, status, limit = "100", offset = "0" } = req.query as Record<string, string>;
 
-    return res.status(201).json({ success: true, lead: data ?? newLead });
-  });
+  let query = supabase.from("leads").select("*").order("createdAt", { ascending: false })
+    .limit(parseInt(limit)).range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
 
-  // GET /api/v1/leads — Lista leads via API externa
-  app.get("/api/v1/leads", requireApiKey, async (req, res) => {
-    if (!supabase) {
-      return res.status(503).json({ error: "Banco de dados não configurado no servidor." });
-    }
+  if (tenantId) query = query.eq("tenant_id", tenantId);
+  else if (tenantName) query = query.eq("tenantName", tenantName);
+  if (seller) query = query.eq("seller", seller);
+  if (status) query = query.eq("status", status);
 
-    const { tenantId, tenantName, seller, status, limit = "100", offset = "0" } = req.query as Record<string, string>;
+  const { data, error } = await query;
+  if (error) return res.status(500).json({ error: "Falha ao buscar leads.", details: error.message });
+  return res.json({ success: true, count: data?.length ?? 0, leads: data ?? [] });
+});
 
-    let query = supabase.from("leads").select("*").order("createdAt", { ascending: false })
-      .limit(parseInt(limit)).range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
+// ── AI Routes ──────────────────────────────────────────────────────────────
 
-    if (tenantId)   query = query.eq("tenant_id", tenantId);
-    else if (tenantName) query = query.eq("tenantName", tenantName);
-    if (seller) query = query.eq("seller", seller);
-    if (status) query = query.eq("status", status);
-
-    const { data, error } = await query;
-    if (error) {
-      return res.status(500).json({ error: "Falha ao buscar leads.", details: error.message });
-    }
-
-    return res.json({ success: true, count: data?.length ?? 0, leads: data ?? [] });
-  });
-
-  // AI Client Initializer
-  const keysAvailable = !!process.env.GEMINI_API_KEY;
-  const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY || "dummy_key_to_prevent_crash_at_load_time",
-    httpOptions: {
-      headers: {
-        "User-Agent": "aistudio-build",
+app.post("/api/leads/suggest-tags", async (req, res) => {
+  const { name, company, notes } = req.body;
+  if (!process.env.GEMINI_API_KEY) return res.json({ tags: ["Interesse", "Novo Lead", "PME"] });
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Suggest 3-5 relevant tags for a lead with the following info:
+      Name: ${name}
+      Company: ${company}
+      Description: ${notes}
+      Return the tags as a JSON array of strings.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: { type: Type.ARRAY, items: { type: Type.STRING } },
       },
-    },
-  });
-
-  // API Route for Tag Suggestions (Existing CRM Service)
-  app.post("/api/leads/suggest-tags", async (req, res) => {
-    const { name, company, notes } = req.body;
-
-    if (!process.env.GEMINI_API_KEY) {
-      return res.json({ tags: ["Interesse", "Novo Lead", "PME"] });
-    }
-
-    try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: `Suggest 3-5 relevant tags for a lead with the following info:
-        Name: ${name}
-        Company: ${company}
-        Description: ${notes}
-        Return the tags as a JSON array of strings.`,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.ARRAY,
-            items: { type: Type.STRING },
-          },
-        },
-      });
-
-      const tags = JSON.parse(response.text ?? "[]");
-      res.json({ tags });
-    } catch (error) {
-      console.error("AI Tag Suggestion Error:", error);
-      res.status(500).json({ error: "Failed to suggest tags" });
-    }
-  });
-
-  // Real-time CNPJ validation and activity-checking API using BrasilAPI/ReceitaWS with Math fallback
-  app.post("/api/cnpj/validate", async (req, res) => {
-    const { cnpj } = req.body;
-    if (!cnpj) {
-      return res.status(400).json({ error: "O CNPJ é obrigatório" });
-    }
-
-    const cleanCnpj = cnpj.replace(/\D/g, "");
-    if (cleanCnpj.length !== 14) {
-      return res.json({ valid: false, message: "O CNPJ precisa conter exatamente 14 dígitos." });
-    }
-
-    // Mathematical pattern check function
-    const validateCNPJPattern = (val: string): boolean => {
-      if (/^(\d)\1+$/.test(val)) return false;
-      let size = val.length - 2;
-      let numbers = val.substring(0, size);
-      const digits = val.substring(size);
-      let sum = 0;
-      let pos = size - 7;
-
-      for (let i = size; i >= 1; i--) {
-        sum += Number(numbers.charAt(size - i)) * pos--;
-        if (pos < 2) pos = 9;
-      }
-
-      let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-      if (result !== Number(digits.charAt(0))) return false;
-
-      size = size + 1;
-      numbers = val.substring(0, size);
-      sum = 0;
-      pos = size - 7;
-      for (let i = size; i >= 1; i--) {
-        sum += Number(numbers.charAt(size - i)) * pos--;
-        if (pos < 2) pos = 9;
-      }
-
-      result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
-      if (result !== Number(digits.charAt(1))) return false;
-      return true;
-    };
-
-    if (!validateCNPJPattern(cleanCnpj)) {
-      return res.json({ valid: false, message: "CNPJ possui dígito verificador matemático inválido!" });
-    }
-
-    try {
-      // Step A: Attempt BrasilAPI
-      const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`);
-      if (response.ok) {
-        const data = await response.json();
-        // Ativo if "ATIVA" or status cadastral is 2
-        const isCnpjActive = data.descricao_situacao_cadastral === "ATIVA" || data.situacao_cadastral === 2 || data.situacao_cadastral === "2";
-        return res.json({
-          valid: true,
-          active: isCnpjActive,
-          statusText: data.descricao_situacao_cadastral || "ATIVA",
-          companyName: data.razao_social || data.nome_fantasia || "Empresa sob análise",
-          message: isCnpjActive
-            ? `Empresa ativa: ${data.razao_social || data.nome_fantasia}`
-            : `Alerta: Situação cadastral ${data.descricao_situacao_cadastral || 'INATIVA'} na Receita Federal.`
-        });
-      }
-
-      // Step B: Fallback to ReceitaWS
-      const receitaResponse = await fetch(`https://receitaws.com.br/v1/cnpj/${cleanCnpj}`);
-      if (receitaResponse.ok) {
-        const rData = await receitaResponse.json();
-        if (rData.status === "ERROR") {
-          return res.json({ valid: false, message: rData.message || "CNPJ não localizado na Receita Federal." });
-        }
-        const isCnpjActive = rData.situacao === "ATIVA";
-        return res.json({
-          valid: true,
-          active: isCnpjActive,
-          statusText: rData.situacao || "ATIVA",
-          companyName: rData.nome || "Empresa sob análise",
-          message: isCnpjActive
-            ? `Empresa ativa: ${rData.nome}`
-            : `Alerta: Situação cadastral ${rData.situacao || 'INATIVA'} na Receita Federal.`
-        });
-      }
-
-      // If both fail but the pattern is mathematically valid
-      return res.json({
-        valid: true,
-        active: true,
-        companyName: "Empresa Cadastrada (Validação Offline)",
-        message: "CNPJ com padrão matemático correto (Bancos de dados federais offline)."
-      });
-
-    } catch (err) {
-      console.error("Third party CNPJ fetch failed:", err);
-      return res.json({
-        valid: true,
-        active: true,
-        companyName: "Empresa Cadastrada (Validação Offline)",
-        message: "CNPJ computacionalmente válido (Bancos de dados federais instáveis)."
-      });
-    }
-  });
-
-  // Automated AI Lead Scoring & recalculation service
-  app.post("/api/leads/calculate-score", async (req, res) => {
-    const { lead, activities } = req.body;
-    if (!lead) {
-      return res.status(400).json({ error: "Lead data is required for score calculation" });
-    }
-
-    // 1. If Gemini API is available, perform expert AI appraisal
-    if (process.env.GEMINI_API_KEY) {
-      try {
-        const response = await ai.models.generateContent({
-          model: "gemini-2.0-flash",
-          contents: `Analyze this CRM lead and its recent activities, and compute:
-          1. An AI score (0 to 100) indicating closeness to buying or closing.
-          2. A lead temperature ('frio', 'morno', or 'quente').
-          3. A brief, informative summary of why the score was given.
-          
-          Lead Details:
-          - Name: ${lead.name}
-          - Title: ${lead.title}
-          - Company: ${lead.company}
-          - Current Status: ${lead.status}
-          - Estimated Value: ${lead.value}
-          - Priority: ${lead.priority}
-          
-          Recent Activities:
-          ${JSON.stringify(activities || [])}
-          
-          Return the result strictly as a JSON object with properties: "scoreIA" (integer), "temperature" (string: 'frio' | 'morno' | 'quente'), "iaSummary" (string).`,
-          config: {
-            responseMimeType: "application/json",
-            responseSchema: {
-              type: Type.OBJECT,
-              properties: {
-                scoreIA: { type: Type.INTEGER },
-                temperature: { type: Type.STRING },
-                iaSummary: { type: Type.STRING }
-              },
-              required: ["scoreIA", "temperature", "iaSummary"]
-            }
-          }
-        });
-
-        const result = JSON.parse(response.text || "{}");
-        return res.json({
-          scoreIA: result.scoreIA ?? 50,
-          temperature: result.temperature ?? "morno",
-          iaSummary: result.iaSummary ?? "Não foi possível gerar a justificativa da IA."
-        });
-      } catch (error) {
-        console.error("AI Lead Scoring generation failed, falling back to deterministic:", error);
-      }
-    }
-
-    // 2. Deterministic offline calculation fallback
-    let score = 50;
-
-    // Status metrics
-    if (lead.status === 'Novo') score += 5;
-    else if (lead.status === 'Prospecção') score += 10;
-    else if (lead.status === 'Qualificado') score += 20;
-    else if (lead.status === 'Em Negociação') score += 30;
-    else if (lead.status === 'Fechado') score += 50;
-    else if (lead.status === 'Perdido') score -= 30;
-
-    // Priority metrics
-    if (lead.priority === 'Alta') score += 15;
-    else if (lead.priority === 'Média') score += 5;
-    else if (lead.priority === 'Baixa') score -= 10;
-
-    // Activities metrics
-    if (activities && Array.isArray(activities)) {
-      const leadActivities = activities.filter((a: any) => a.leadId === lead.id);
-      score += leadActivities.length * 8;
-
-      const hasMeeting = leadActivities.some((a: any) => a.type === 'Reunião');
-      if (hasMeeting) score += 15;
-    }
-
-    score = Math.max(0, Math.min(100, score));
-
-    let temp: 'frio' | 'morno' | 'quente' = 'morno';
-    if (score < 45) temp = 'frio';
-    else if (score > 75) temp = 'quente';
-
-    const actCount = activities ? activities.filter((a: any) => a.leadId === lead.id).length : 0;
-    const iaSummary = `Cálculo automático (Offline): Lead com prioridade ${lead.priority} na etapa ${lead.status}. Possui ${actCount} atividades registradas no histórico recente.`;
-
-    res.json({
-      scoreIA: score,
-      temperature: temp,
-      iaSummary
     });
-  });
+    res.json({ tags: JSON.parse(response.text ?? "[]") });
+  } catch (error) {
+    console.error("AI Tag Suggestion Error:", error);
+    res.status(500).json({ error: "Failed to suggest tags" });
+  }
+});
 
-  // Auditoria de Performance e Negócios
-  app.post("/api/ai/performance-audit", async (req, res) => {
-    const { mrr, cac, ltv, leadsCount, dealsCount } = req.body;
+app.post("/api/cnpj/validate", async (req, res) => {
+  const { cnpj } = req.body;
+  if (!cnpj) return res.status(400).json({ error: "O CNPJ é obrigatório" });
 
-    if (!process.env.GEMINI_API_KEY) {
-      return res.status(500).json({ error: "Chave de IA não configurada." });
+  const cleanCnpj = cnpj.replace(/\D/g, "");
+  if (cleanCnpj.length !== 14) return res.json({ valid: false, message: "O CNPJ precisa conter exatamente 14 dígitos." });
+
+  const validateCNPJPattern = (val: string): boolean => {
+    if (/^(\d)\1+$/.test(val)) return false;
+    let size = val.length - 2;
+    let numbers = val.substring(0, size);
+    const digits = val.substring(size);
+    let sum = 0;
+    let pos = size - 7;
+    for (let i = size; i >= 1; i--) {
+      sum += Number(numbers.charAt(size - i)) * pos--;
+      if (pos < 2) pos = 9;
     }
+    let result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    if (result !== Number(digits.charAt(0))) return false;
+    size += 1;
+    numbers = val.substring(0, size);
+    sum = 0;
+    pos = size - 7;
+    for (let i = size; i >= 1; i--) {
+      sum += Number(numbers.charAt(size - i)) * pos--;
+      if (pos < 2) pos = 9;
+    }
+    result = sum % 11 < 2 ? 0 : 11 - (sum % 11);
+    return result === Number(digits.charAt(1));
+  };
 
-    try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: `Você é o Master IA do Axis CRM. Analise estes indicadores:
-        MRR: ${mrr}, CAC: ${cac}, LTV: ${ltv}, Leads: ${leadsCount}, Fechamentos: ${dealsCount}.
+  if (!validateCNPJPattern(cleanCnpj)) return res.json({ valid: false, message: "CNPJ possui dígito verificador matemático inválido!" });
 
-        Gere 3 recomendações estratégicas baseadas em dados para otimizar o ROI.
-        Retorne estritamente um JSON array de objetos: [{"title": string, "desc": string, "impact": string, "color": "text-blue-400" | "text-emerald-400" | "text-purple-400"}].`,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.ARRAY,
-            items: {
-              type: Type.OBJECT,
-              properties: {
-                title: { type: Type.STRING },
-                desc: { type: Type.STRING },
-                impact: { type: Type.STRING },
-                color: { type: Type.STRING }
-              },
-              required: ["title", "desc", "impact", "color"]
-            }
-          }
-        }
+  try {
+    const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cleanCnpj}`);
+    if (response.ok) {
+      const data = await response.json();
+      const isCnpjActive = data.descricao_situacao_cadastral === "ATIVA" || data.situacao_cadastral === 2 || data.situacao_cadastral === "2";
+      return res.json({
+        valid: true, active: isCnpjActive,
+        statusText: data.descricao_situacao_cadastral || "ATIVA",
+        companyName: data.razao_social || data.nome_fantasia || "Empresa sob análise",
+        message: isCnpjActive
+          ? `Empresa ativa: ${data.razao_social || data.nome_fantasia}`
+          : `Alerta: Situação cadastral ${data.descricao_situacao_cadastral || "INATIVA"} na Receita Federal.`
       });
-      res.json(JSON.parse(response.text ?? "{}"));
-    } catch (error) {
-      res.status(500).json({ error: "Falha na auditoria cerebral." });
     }
-  });
-
-  // Auditoria de Etapa do Pipeline
-  app.post("/api/ai/pipeline-audit", async (req, res) => {
-    const { stageName, leads } = req.body;
-    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
-
-    try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: `Analise a etapa "${stageName}" do funil com estes leads:
-        ${JSON.stringify(leads.map((l: any) => ({ name: l.name, score: l.scoreIA, temp: l.temperature })))}
-        
-        Forneça um insight rápido e uma ação imediata para o vendedor.
-        Retorne JSON: {"insight": string, "action": string}.`,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              insight: { type: Type.STRING },
-              action: { type: Type.STRING }
-            },
-            required: ["insight", "action"]
-          }
-        }
+    const receitaResponse = await fetch(`https://receitaws.com.br/v1/cnpj/${cleanCnpj}`);
+    if (receitaResponse.ok) {
+      const rData = await receitaResponse.json();
+      if (rData.status === "ERROR") return res.json({ valid: false, message: rData.message || "CNPJ não localizado na Receita Federal." });
+      const isCnpjActive = rData.situacao === "ATIVA";
+      return res.json({
+        valid: true, active: isCnpjActive,
+        statusText: rData.situacao || "ATIVA",
+        companyName: rData.nome || "Empresa sob análise",
+        message: isCnpjActive ? `Empresa ativa: ${rData.nome}` : `Alerta: Situação cadastral ${rData.situacao || "INATIVA"} na Receita Federal.`
       });
-      res.json(JSON.parse(response.text ?? "{}"));
-    } catch (error) {
-      res.status(500).json({ error: "Falha ao auditar funil." });
     }
-  });
+    return res.json({ valid: true, active: true, companyName: "Empresa Cadastrada (Validação Offline)", message: "CNPJ com padrão matemático correto (Bancos de dados federais offline)." });
+  } catch {
+    return res.json({ valid: true, active: true, companyName: "Empresa Cadastrada (Validação Offline)", message: "CNPJ computacionalmente válido (Bancos de dados federais instáveis)." });
+  }
+});
 
-  // Recomendação de Marketing (Canais e Verba)
-  app.post("/api/ai/marketing-advisor", async (req, res) => {
-    const { leads, spent } = req.body;
-    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
+app.post("/api/leads/calculate-score", async (req, res) => {
+  const { lead, activities } = req.body;
+  if (!lead) return res.status(400).json({ error: "Lead data is required for score calculation" });
 
-    try {
-      const sourceData = leads.reduce((acc: any, l: any) => {
-        const src = l.source || 'Orgânico';
-        acc[src] = (acc[src] || 0) + 1;
-        return acc;
-      }, {});
-
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: `Análise de Marketing:
-        Gasto Total: R$ ${spent}
-        Conversão por Origem: ${JSON.stringify(sourceData)}
-        
-        Sugira onde realocar verba para diminuir o CAC.
-        Retorne JSON: {"suggestion": string, "rationale": string}.`,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              suggestion: { type: Type.STRING },
-              rationale: { type: Type.STRING }
-            },
-            required: ["suggestion", "rationale"]
-          }
-        }
-      });
-      res.json(JSON.parse(response.text ?? "{}"));
-    } catch (error) {
-      res.status(500).json({ error: "Falha na análise de marketing." });
-    }
-  });
-
-  // Auditoria de Configurações (Campos, Score e Webhooks)
-  app.post("/api/ai/settings-audit", async (req, res) => {
-    const { type, config } = req.body;
-    if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
-
+  if (process.env.GEMINI_API_KEY) {
     try {
       const response = await ai.models.generateContent({
         model: "gemini-2.0-flash",
-        contents: `Você é o Auditor Master do Axis CRM. Analise esta configuração de ${type}:
-        ${JSON.stringify(config)}
-        
-        Identifique possíveis gargalos, regras redundantes ou melhorias na lógica.
-        Retorne estritamente um JSON: {"audit": string, "suggestions": string[]}.`,
+        contents: `Analyze this CRM lead and its recent activities, and compute:
+        1. An AI score (0 to 100) indicating closeness to buying or closing.
+        2. A lead temperature ('frio', 'morno', or 'quente').
+        3. A brief, informative summary of why the score was given.
+
+        Lead Details:
+        - Name: ${lead.name}
+        - Title: ${lead.title}
+        - Company: ${lead.company}
+        - Current Status: ${lead.status}
+        - Estimated Value: ${lead.value}
+        - Priority: ${lead.priority}
+
+        Recent Activities:
+        ${JSON.stringify(activities || [])}
+
+        Return the result strictly as a JSON object with properties: "scoreIA" (integer), "temperature" (string: 'frio' | 'morno' | 'quente'), "iaSummary" (string).`,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              audit: { type: Type.STRING },
-              suggestions: { type: Type.ARRAY, items: { type: Type.STRING } }
+              scoreIA: { type: Type.INTEGER },
+              temperature: { type: Type.STRING },
+              iaSummary: { type: Type.STRING }
             },
-            required: ["audit", "suggestions"]
+            required: ["scoreIA", "temperature", "iaSummary"]
           }
         }
       });
-      res.json(JSON.parse(response.text ?? "{}"));
-    } catch (error) {
-      res.status(500).json({ error: "Falha ao auditar configurações." });
-    }
-  });
-
-  // API de Configurações (CRUD com Persistência em Banco)
-  app.get("/api/settings/:category", async (req, res) => {
-    const { category } = req.params;
-
-    // Tentativa de buscar do Supabase se disponível
-    if (supabase) {
-      const tableName = `crm_${category.replace('-', '_')}`;
-      const { data, error } = await supabase.from(tableName).select('*');
-      if (!error && data) return res.json(data);
-    }
-
-    // Fallback para memória se o banco falhar ou não existir
-    switch (category) {
-      case "sources": return res.json(sources);
-      case "fields": case "custom-fields": case "custom_lead_fields": return res.json(customFields);
-      case "task-categories": case "categories": return res.json(taskCategories);
-      case "templates": return res.json(templates);
-      default: res.status(404).json({ error: "Categoria não encontrada" });
-    }
-  });
-
-  app.post("/api/settings/:category", async (req, res) => {
-    const { category } = req.params;
-    const item = req.body;
-    const id = Math.random().toString(36).substring(2, 9);
-    const newItem = { id, ...item };
-
-    // Persistência no Supabase
-    if (supabase) {
-      const tableName = `crm_${category.replace('-', '_')}`;
-      const { data, error } = await supabase.from(tableName).insert([newItem]).select();
-      if (!error && data) return res.json(data[0]);
-    }
-
-    // Fallback In-Memory (Sincronização com o estado do "sistema")
-    switch (category) {
-      case "sources":
-        // Aceita 'name' ou 'nome' vindo do modal de Origem
-        const newSource = { id, name: item.name || item.nome };
-        sources.push(newSource);
-        return res.json(newSource);
-      case "fields": case "custom-fields": case "custom_lead_fields":
-        customFields.push(newItem);
-        return res.json(newItem);
-      case "task-categories":
-        taskCategories.push(newItem);
-        return res.json(newItem);
-      case "templates":
-        templates.push(newItem);
-        return res.json(newItem);
-      default: res.status(404).json({ error: "Categoria inválida" });
-    }
-  });
-
-  app.delete("/api/settings/:category/:id", async (req, res) => {
-    const { category, id } = req.params;
-
-    if (supabase) {
-      const tableName = `crm_${category.replace('-', '_')}`;
-      await supabase.from(tableName).delete().eq('id', id);
-    }
-
-    switch (category) {
-      case "sources":
-        sources = sources.filter(s => s.id !== id);
-        break;
-      case "fields": case "custom-fields": case "custom_lead_fields":
-        customFields = customFields.filter(f => f.id !== id);
-        break;
-      case "task-categories": case "categories":
-        taskCategories = taskCategories.filter(c => c.id !== id);
-        break;
-      case "templates":
-        templates = templates.filter(t => t.id !== id);
-        break;
-    }
-    res.json({ success: true });
-  });
-
-  // IA Sugestão para Novos Modais (Melhoria de UX)
-  app.post("/api/ai/suggest-new-config", async (req, res) => {
-    const { type } = req.body;
-    if (!process.env.GEMINI_API_KEY) return res.json({ suggestion: null });
-
-    try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: `Você é um consultor de CRM. Sugira um exemplo para "${type}".
-        NÃO inclua campos como 'target'. Use os campos exatos abaixo.
-
-        Responda APENAS com JSON:
-        - Se for "Campo Personalizado": {"name": "Data de Aniversário", "type": "Data", "required": false}
-        - Se for "Origem": {"nome": "Indicação Parceiro Premium"}
-        - Se for "Categoria de Tarefa": {"nome": "Follow-up Estratégico", "cor": "bg-purple-500"}
-        - Se for "Modelo": {"name": "Boas-vindas", "content": "Olá {{name}}, seja bem-vindo!", "category": "Vendas"}`,
-        config: { responseMimeType: "application/json" }
+      const result = JSON.parse(response.text || "{}");
+      return res.json({
+        scoreIA: result.scoreIA ?? 50,
+        temperature: result.temperature ?? "morno",
+        iaSummary: result.iaSummary ?? "Não foi possível gerar a justificativa da IA."
       });
-
-      res.json(JSON.parse(response.text ?? "{}"));
     } catch (error) {
-      res.status(500).json({ error: "Erro na sugestão da IA" });
+      console.error("AI Lead Scoring failed, falling back to deterministic:", error);
     }
-  });
-
-  // Endpoint de Insights Genéricos para a "IA em todo Axis"
-  app.post("/api/ai/generic-insight", async (req, res) => {
-    const { context, data } = req.body;
-
-    if (!process.env.GEMINI_API_KEY) {
-      return res.json({ insight: "A Master IA está em modo offline no momento. Conecte sua API Key para obter insights estratégicos." });
-    }
-
-    try {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: `Você é o cérebro analítico do Axis CRM. 
-        Contexto da solicitação: ${context}.
-        Dados brutos para análise: ${JSON.stringify(data)}.
-
-        Sua tarefa: Forneça um insight estratégico curto, direto e acionável em português (máximo 3 frases). 
-        Foque em melhoria de ROI, conversão ou retenção.`,
-      });
-
-      res.json({ insight: response.text ?? "" });
-    } catch (error) {
-      console.error("Erro na Master IA:", error);
-      res.status(500).json({ error: "Falha ao processar insight cerebral." });
-    }
-  });
-
-  // =========================================================================
-  // 1. EVOLUTION API INSTANCES ENDPOINTS
-  // =========================================================================
-  app.get("/api/whatsapp/instances", async (req, res) => {
-    if (supabase) {
-      const { data, error } = await supabase
-        .from('whatsapp_instances')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (!error && data) return res.json(data);
-    }
-    res.json(instances);
-  });
-
-  app.post("/api/whatsapp/instances", (req, res) => {
-    const { name, phone = "-", webhookUrl = "" } = req.body;
-    if (!name) {
-      return res.status(400).json({ error: "Nome da instância é obrigatório" });
-    }
-
-    const newInst: WhatsAppInstance = {
-      id: "evo_inst_" + Math.random().toString(36).substring(2, 9),
-      name,
-      phone,
-      status: "DISCONNECTED",
-      apiKey: "evo_apikey_" + Math.random().toString(36).substring(2, 12),
-      webhookUrl: webhookUrl || "https://axis-crm.cloud/api/webhooks/whatsapp",
-      qrcode: "",
-      createdAt: new Date().toISOString()
-    };
-    instances.push(newInst);
-    res.json(newInst);
-  });
-
-  app.post("/api/whatsapp/instances/:id/qrcode", (req, res) => {
-    const { id } = req.params;
-    const inst = instances.find(i => i.id === id);
-    if (!inst) {
-      return res.status(404).json({ error: "Instância não encontrada" });
-    }
-
-    inst.status = "CONNECTING";
-    // Simulated UUID in QR Code
-    inst.qrcode = `00020101021226450014br.gov.bcb.pix2523evo-wa-connection-token-key-${inst.id}`;
-    res.json({ status: "CONNECTING", qrcode: inst.qrcode });
-  });
-
-  app.post("/api/whatsapp/instances/:id/connect", (req, res) => {
-    const { id } = req.params;
-    const { phone } = bodyWithFallback(req);
-    const inst = instances.find(i => i.id === id);
-    if (!inst) {
-      return res.status(404).json({ error: "Instância não encontrada" });
-    }
-
-    inst.status = "CONNECTED";
-    inst.phone = phone || "+55 11 9" + Math.floor(1000 + Math.random() * 9000) + "-" + Math.floor(1000 + Math.random() * 9000);
-    delete inst.qrcode;
-    res.json({ status: "CONNECTED", instance: inst });
-  });
-
-  app.delete("/api/whatsapp/instances/:id", (req, res) => {
-    const { id } = req.params;
-    instances = instances.filter(i => i.id !== id);
-    res.json({ success: true, message: `Instância ${id} removida` });
-  });
-
-  app.put("/api/whatsapp/instances/:id", (req, res) => {
-    const { id } = req.params;
-    const { webhookUrl, name, phone, status } = req.body;
-    const inst = instances.find(i => i.id === id);
-    if (!inst) {
-      return res.status(404).json({ error: "Instância não encontrada" });
-    }
-    if (webhookUrl !== undefined) inst.webhookUrl = webhookUrl;
-    if (name !== undefined) inst.name = name;
-    if (phone !== undefined) inst.phone = phone;
-    if (status !== undefined) inst.status = status;
-    res.json(inst);
-  });
-
-  function bodyWithFallback(req: any) {
-    return req.body || {};
   }
 
-  // =========================================================================
-  // 2. CONTACTS ENDPOINTS
-  // =========================================================================
-  app.get("/api/whatsapp/contacts", (req, res) => {
-    res.json(contacts);
+  let score = 50;
+  if (lead.status === "Novo") score += 5;
+  else if (lead.status === "Prospecção") score += 10;
+  else if (lead.status === "Qualificado") score += 20;
+  else if (lead.status === "Em Negociação") score += 30;
+  else if (lead.status === "Fechado") score += 50;
+  else if (lead.status === "Perdido") score -= 30;
+  if (lead.priority === "Alta") score += 15;
+  else if (lead.priority === "Média") score += 5;
+  else if (lead.priority === "Baixa") score -= 10;
+  if (activities && Array.isArray(activities)) {
+    const leadActivities = activities.filter((a: any) => a.leadId === lead.id);
+    score += leadActivities.length * 8;
+    if (leadActivities.some((a: any) => a.type === "Reunião")) score += 15;
+  }
+  score = Math.max(0, Math.min(100, score));
+
+  let temp: "frio" | "morno" | "quente" = "morno";
+  if (score < 45) temp = "frio";
+  else if (score > 75) temp = "quente";
+
+  const actCount = activities ? activities.filter((a: any) => a.leadId === lead.id).length : 0;
+  return res.json({
+    scoreIA: score,
+    temperature: temp,
+    iaSummary: `Cálculo automático (Offline): Lead com prioridade ${lead.priority} na etapa ${lead.status}. Possui ${actCount} atividades registradas no histórico recente.`
   });
+});
 
-  app.post("/api/whatsapp/contacts", (req, res) => {
-    const { name, phone, email, tags = ["lead"] } = req.body;
-    if (!name || !phone) {
-      return res.status(400).json({ error: "Nome e Telefone são obrigatórios" });
-    }
-
-    // Clean phone number format
-    const cleanPhone = phone.startsWith("+") ? phone : `+55 ${phone}`;
-
-    // Check if contact already exists
-    const existing = contacts.find(c => c.phone === cleanPhone);
-    if (existing) {
-      return res.json(existing);
-    }
-
-    const initials = name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase() || "WA";
-
-    const newContact: ChatContact = {
-      id: Math.random().toString(36).substring(2, 9),
-      name,
-      avatar: initials,
-      channel: "WhatsApp",
-      lastMessage: "Nova conversa iniciada",
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      unread: 0,
-      online: Math.random() > 0.5,
-      phone: cleanPhone,
-      email,
-      tags,
-      slaStatus: "Dentro do Prazo"
-    };
-
-    contacts.unshift(newContact);
-    if (!messages[newContact.id]) {
-      messages[newContact.id] = [];
-    }
-
-    res.json(newContact);
-  });
-
-  // =========================================================================
-  // 3. MESSAGES SENDER / POLLER & AUTOMATIONS (WEBHOOK / CHATBOT)
-  // =========================================================================
-  app.get("/api/whatsapp/messages/:contactId", async (req, res) => {
-    const { contactId } = req.params;
-    if (supabase) {
-      const { data, error } = await supabase.from('chat_messages').select('*').eq('contact_id', contactId).order('timestamp', { ascending: true });
-      if (!error && data) return res.json(data);
-    }
-    res.json(messages[contactId] || []);
-  });
-
-  app.post("/api/whatsapp/messages/send", async (req, res) => {
-    const { contactId, text } = req.body;
-    if (!contactId || !text) {
-      return res.status(400).json({ error: "ID do contato e texto são obrigatórios" });
-    }
-
-    const timeString = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const userMsg: ChatMessage = {
-      id: "msg_" + Math.random().toString(36).substring(2, 9),
-      text,
-      sender: "me",
-      time: timeString,
-      status: "sent",
-      timestamp: Date.now()
-    };
-
-    if (!messages[contactId]) {
-      messages[contactId] = [];
-    }
-    messages[contactId].push(userMsg);
-
-    if (supabase) {
-      await supabase.from('chat_messages').insert([{
-        id: userMsg.id,
-        text: userMsg.text,
-        sender: userMsg.sender,
-        time: userMsg.time,
-        status: userMsg.status,
-        timestamp: userMsg.timestamp,
-        contact_id: contactId
-      }]);
-      await supabase.from('chat_contacts').update({ lastMessage: text, time: timeString }).eq('id', contactId);
-    }
-
-    // Update last message in contact
-    const contact = contacts.find(c => c.id === contactId);
-    if (contact) {
-      contact.lastMessage = text;
-      contact.time = timeString;
-    }
-
-    res.json({ success: true, message: userMsg });
-  });
-
-  // Simulated Webhook triggers from outside (Simulation panel)
-  app.post("/api/whatsapp/simulate-incoming", async (req, res) => {
-    const { contactId, text } = req.body;
-    if (!contactId || !text) {
-      return res.status(400).json({ error: "contactId e texto são obrigatórios" });
-    }
-
-    const contact = contacts.find(c => c.id === contactId);
-    if (!contact) {
-      return res.status(404).json({ error: "Contato não encontrado" });
-    }
-
-    const timeString = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    const inMsg: ChatMessage = {
-      id: "msg_sim_" + Math.random().toString(36).substring(2, 9),
-      text: text,
-      sender: "them",
-      time: timeString,
-      timestamp: Date.now()
-    };
-
-    if (!messages[contactId]) {
-      messages[contactId] = [];
-    }
-    messages[contactId].push(inMsg);
-
-    contact.lastMessage = text;
-    contact.time = timeString;
-    contact.unread = contact.unread + 1;
-
-    if (supabase) {
-      await supabase.from('chat_messages').insert([{
-        id: inMsg.id,
-        text: inMsg.text,
-        sender: inMsg.sender,
-        time: inMsg.time,
-        timestamp: inMsg.timestamp,
-        contact_id: contactId
-      }]);
-      await supabase.from('chat_contacts').update({ lastMessage: text, time: timeString, unread: contact.unread }).eq('id', contactId);
-    }
-
-    res.json({ message: inMsg, contact });
-  });
-
-  // =========================================================================
-  // 5. AXIS COPILOT (GEMINI AI HELP)
-  // =========================================================================
-  app.post("/api/whatsapp/copilot/analyze", async (req, res) => {
-    const { contactId } = req.body;
-    if (!contactId) {
-      return res.status(400).json({ error: "contactId é obrigatório" });
-    }
-
-    const chatHistory = messages[contactId] || [];
-    const contact = contacts.find(c => c.id === contactId);
-
-    if (chatHistory.length === 0) {
-      return res.json({
-        suggestion: "Ainda não há mensagens registradas com este contato para analisar. Tente fazer uma saudação cortês, introduzindo o Axis CRM e perguntando como pode auxiliá-lo.",
-        sentiment: "Neutro"
-      });
-    }
-
-    // Format chat logs
-    const conversationText = chatHistory.map(m => `${m.sender === "me" ? "Vendedor/Atendente" : "Cliente"}: ${m.text}`).join("\n");
-
-    const promptContext = `Você é o Axis Copilot, um assistente especializado em CRM, Vendas e Atendimento via WhatsApp.
-    O cliente se chama: ${contact ? contact.name : "Cliente"}.
-    O histórico de mensagens é este:
-    ${conversationText}
-
-    Sua tarefa é:
-    1. Analisar brevemente o status/intenção do cliente (especialmente dúvidas de frete, preço, fechamento).
-    2. Sugerir a RESPOSTA PERFEITA em português para o vendedor copiar e enviar. A resposta deve ser acolhedora, profissional, concisa (em tom de WhatsApp, usando emojis se apropriado) e focada em conversão/ajuda.
-    
-    Retorne a resposta no formato JSON com duas propriedades:
-    - analysis (uma frase resumindo o sentimento e status das negociações)
-    - suggestion (o rascunho exato da mensagem pronta para o vendedor usar)
-    - sentiment (Positivo, Neutro ou Negativo)`;
-
-    try {
-      if (!process.env.GEMINI_API_KEY) {
-        // Fallback if no API Key
-        const lastMsg = chatHistory[chatHistory.length - 1];
-        let sugg = `Olá ${contact ? contact.name : ""}, compreendo sua dúvida! Estamos analisando sua solicitação de frete com nossa logística. De qualquer forma, gostaria de agendar uma ligação rápida hoje às 14h para fecharmos os detalhes?`;
-        if (lastMsg.text.toLowerCase().includes("frete")) {
-          sugg = `Olá ${contact ? contact.name : ""}, com certeza! Para sua região, nós conseguimos fazer o frete com um desconto especial de 50%, ou até GRÁTIS se fecharmos o contrato Pro hoje. O que acha?`;
-        }
-        return res.json({
-          analysis: "O cliente demonstrou interesse inicial. A IA sugere oferecer atendimento ágil para acelerar o fechamento.",
-          suggestion: sugg,
-          sentiment: "Positivo"
-        });
-      }
-
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: promptContext,
-        config: {
-          responseMimeType: "application/json",
-          responseSchema: {
+app.post("/api/ai/performance-audit", async (req, res) => {
+  const { mrr, cac, ltv, leadsCount, dealsCount } = req.body;
+  if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "Chave de IA não configurada." });
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Você é o Master IA do Axis CRM. Analise estes indicadores:
+      MRR: ${mrr}, CAC: ${cac}, LTV: ${ltv}, Leads: ${leadsCount}, Fechamentos: ${dealsCount}.
+      Gere 3 recomendações estratégicas baseadas em dados para otimizar o ROI.
+      Retorne estritamente um JSON array de objetos: [{"title": string, "desc": string, "impact": string, "color": "text-blue-400" | "text-emerald-400" | "text-purple-400"}].`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
             type: Type.OBJECT,
             properties: {
-              analysis: { type: Type.STRING },
-              suggestion: { type: Type.STRING },
-              sentiment: { type: Type.STRING }
+              title: { type: Type.STRING }, desc: { type: Type.STRING },
+              impact: { type: Type.STRING }, color: { type: Type.STRING }
             },
-            required: ["analysis", "suggestion", "sentiment"]
-          },
-        },
-      });
-
-      const parsed = JSON.parse(response.text ?? "{}");
-      res.json(parsed);
-    } catch (e) {
-      console.error("Copilot analysis failure:", e);
-      res.status(500).json({ error: "Erro de processamento da IA" });
-    }
-  });
-
-  // =========================================================================
-
-  // Vite middleware for development
-  if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
+            required: ["title", "desc", "impact", "color"]
+          }
+        }
+      }
     });
+    res.json(JSON.parse(response.text ?? "[]"));
+  } catch {
+    res.status(500).json({ error: "Falha na auditoria cerebral." });
+  }
+});
+
+app.post("/api/ai/pipeline-audit", async (req, res) => {
+  const { stageName, leads } = req.body;
+  if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Analise a etapa "${stageName}" do funil com estes leads:
+      ${JSON.stringify(leads.map((l: any) => ({ name: l.name, score: l.scoreIA, temp: l.temperature })))}
+      Forneça um insight rápido e uma ação imediata para o vendedor.
+      Retorne JSON: {"insight": string, "action": string}.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: { insight: { type: Type.STRING }, action: { type: Type.STRING } },
+          required: ["insight", "action"]
+        }
+      }
+    });
+    res.json(JSON.parse(response.text ?? "{}"));
+  } catch {
+    res.status(500).json({ error: "Falha ao auditar funil." });
+  }
+});
+
+app.post("/api/ai/marketing-advisor", async (req, res) => {
+  const { leads, spent } = req.body;
+  if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
+  try {
+    const sourceData = leads.reduce((acc: any, l: any) => {
+      const src = l.source || "Orgânico";
+      acc[src] = (acc[src] || 0) + 1;
+      return acc;
+    }, {});
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Análise de Marketing:
+      Gasto Total: R$ ${spent}
+      Conversão por Origem: ${JSON.stringify(sourceData)}
+      Sugira onde realocar verba para diminuir o CAC.
+      Retorne JSON: {"suggestion": string, "rationale": string}.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: { suggestion: { type: Type.STRING }, rationale: { type: Type.STRING } },
+          required: ["suggestion", "rationale"]
+        }
+      }
+    });
+    res.json(JSON.parse(response.text ?? "{}"));
+  } catch {
+    res.status(500).json({ error: "Falha na análise de marketing." });
+  }
+});
+
+app.post("/api/ai/settings-audit", async (req, res) => {
+  const { type, config } = req.body;
+  if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Você é o Auditor Master do Axis CRM. Analise esta configuração de ${type}:
+      ${JSON.stringify(config)}
+      Identifique possíveis gargalos, regras redundantes ou melhorias na lógica.
+      Retorne estritamente um JSON: {"audit": string, "suggestions": string[]}.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            audit: { type: Type.STRING },
+            suggestions: { type: Type.ARRAY, items: { type: Type.STRING } }
+          },
+          required: ["audit", "suggestions"]
+        }
+      }
+    });
+    res.json(JSON.parse(response.text ?? "{}"));
+  } catch {
+    res.status(500).json({ error: "Falha ao auditar configurações." });
+  }
+});
+
+app.get("/api/settings/:category", async (req, res) => {
+  const { category } = req.params;
+  if (supabase) {
+    const tableName = `crm_${category.replace("-", "_")}`;
+    const { data, error } = await supabase.from(tableName).select("*");
+    if (!error && data) return res.json(data);
+  }
+  switch (category) {
+    case "sources": return res.json(sources);
+    case "fields": case "custom-fields": case "custom_lead_fields": return res.json(customFields);
+    case "task-categories": case "categories": return res.json(taskCategories);
+    case "templates": return res.json(templates);
+    default: return res.status(404).json({ error: "Categoria não encontrada" });
+  }
+});
+
+app.post("/api/settings/:category", async (req, res) => {
+  const { category } = req.params;
+  const item = req.body;
+  const id = Math.random().toString(36).substring(2, 9);
+  const newItem = { id, ...item };
+  if (supabase) {
+    const tableName = `crm_${category.replace("-", "_")}`;
+    const { data, error } = await supabase.from(tableName).insert([newItem]).select();
+    if (!error && data) return res.json(data[0]);
+  }
+  switch (category) {
+    case "sources":
+      const newSource = { id, name: item.name || item.nome };
+      sources.push(newSource);
+      return res.json(newSource);
+    case "fields": case "custom-fields": case "custom_lead_fields":
+      customFields.push(newItem);
+      return res.json(newItem);
+    case "task-categories":
+      taskCategories.push(newItem);
+      return res.json(newItem);
+    case "templates":
+      templates.push(newItem);
+      return res.json(newItem);
+    default: return res.status(404).json({ error: "Categoria inválida" });
+  }
+});
+
+app.delete("/api/settings/:category/:id", async (req, res) => {
+  const { category, id } = req.params;
+  if (supabase) {
+    const tableName = `crm_${category.replace("-", "_")}`;
+    await supabase.from(tableName).delete().eq("id", id);
+  }
+  switch (category) {
+    case "sources": sources = sources.filter((s) => s.id !== id); break;
+    case "fields": case "custom-fields": case "custom_lead_fields": customFields = customFields.filter((f) => f.id !== id); break;
+    case "task-categories": case "categories": taskCategories = taskCategories.filter((c) => c.id !== id); break;
+    case "templates": templates = templates.filter((t) => t.id !== id); break;
+  }
+  res.json({ success: true });
+});
+
+app.post("/api/ai/suggest-new-config", async (req, res) => {
+  const { type } = req.body;
+  if (!process.env.GEMINI_API_KEY) return res.json({ suggestion: null });
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Você é um consultor de CRM. Sugira um exemplo para "${type}".
+      NÃO inclua campos como 'target'. Use os campos exatos abaixo.
+      Responda APENAS com JSON:
+      - Se for "Campo Personalizado": {"name": "Data de Aniversário", "type": "Data", "required": false}
+      - Se for "Origem": {"nome": "Indicação Parceiro Premium"}
+      - Se for "Categoria de Tarefa": {"nome": "Follow-up Estratégico", "cor": "bg-purple-500"}
+      - Se for "Modelo": {"name": "Boas-vindas", "content": "Olá {{name}}, seja bem-vindo!", "category": "Vendas"}`,
+      config: { responseMimeType: "application/json" }
+    });
+    res.json(JSON.parse(response.text ?? "{}"));
+  } catch {
+    res.status(500).json({ error: "Erro na sugestão da IA" });
+  }
+});
+
+app.post("/api/ai/generic-insight", async (req, res) => {
+  const { context, data } = req.body;
+  if (!process.env.GEMINI_API_KEY) {
+    return res.json({ insight: "A Master IA está em modo offline no momento. Conecte sua API Key para obter insights estratégicos." });
+  }
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Você é o cérebro analítico do Axis CRM.
+      Contexto da solicitação: ${context}.
+      Dados brutos para análise: ${JSON.stringify(data)}.
+      Sua tarefa: Forneça um insight estratégico curto, direto e acionável em português (máximo 3 frases).
+      Foque em melhoria de ROI, conversão ou retenção.`,
+    });
+    res.json({ insight: response.text ?? "" });
+  } catch (error) {
+    console.error("Erro na Master IA:", error);
+    res.status(500).json({ error: "Falha ao processar insight cerebral." });
+  }
+});
+
+// ── WhatsApp / Evolution API Simulator ────────────────────────────────────
+
+function bodyWithFallback(req: any) { return req.body || {}; }
+
+app.get("/api/whatsapp/instances", async (req, res) => {
+  if (supabase) {
+    const { data, error } = await supabase.from("whatsapp_instances").select("*").order("created_at", { ascending: false });
+    if (!error && data) return res.json(data);
+  }
+  res.json(instances);
+});
+
+app.post("/api/whatsapp/instances", (req, res) => {
+  const { name, phone = "-", webhookUrl = "" } = req.body;
+  if (!name) return res.status(400).json({ error: "Nome da instância é obrigatório" });
+  const newInst: WhatsAppInstance = {
+    id: "evo_inst_" + Math.random().toString(36).substring(2, 9),
+    name, phone, status: "DISCONNECTED",
+    apiKey: "evo_apikey_" + Math.random().toString(36).substring(2, 12),
+    webhookUrl: webhookUrl || "https://axis-crm.cloud/api/webhooks/whatsapp",
+    qrcode: "", createdAt: new Date().toISOString()
+  };
+  instances.push(newInst);
+  res.json(newInst);
+});
+
+app.post("/api/whatsapp/instances/:id/qrcode", (req, res) => {
+  const { id } = req.params;
+  const inst = instances.find((i) => i.id === id);
+  if (!inst) return res.status(404).json({ error: "Instância não encontrada" });
+  inst.status = "CONNECTING";
+  inst.qrcode = `00020101021226450014br.gov.bcb.pix2523evo-wa-connection-token-key-${inst.id}`;
+  res.json({ status: "CONNECTING", qrcode: inst.qrcode });
+});
+
+app.post("/api/whatsapp/instances/:id/connect", (req, res) => {
+  const { id } = req.params;
+  const { phone } = bodyWithFallback(req);
+  const inst = instances.find((i) => i.id === id);
+  if (!inst) return res.status(404).json({ error: "Instância não encontrada" });
+  inst.status = "CONNECTED";
+  inst.phone = phone || "+55 11 9" + Math.floor(1000 + Math.random() * 9000) + "-" + Math.floor(1000 + Math.random() * 9000);
+  delete inst.qrcode;
+  res.json({ status: "CONNECTED", instance: inst });
+});
+
+app.delete("/api/whatsapp/instances/:id", (req, res) => {
+  const { id } = req.params;
+  instances = instances.filter((i) => i.id !== id);
+  res.json({ success: true, message: `Instância ${id} removida` });
+});
+
+app.put("/api/whatsapp/instances/:id", (req, res) => {
+  const { id } = req.params;
+  const { webhookUrl, name, phone, status } = req.body;
+  const inst = instances.find((i) => i.id === id);
+  if (!inst) return res.status(404).json({ error: "Instância não encontrada" });
+  if (webhookUrl !== undefined) inst.webhookUrl = webhookUrl;
+  if (name !== undefined) inst.name = name;
+  if (phone !== undefined) inst.phone = phone;
+  if (status !== undefined) inst.status = status;
+  res.json(inst);
+});
+
+app.get("/api/whatsapp/contacts", (req, res) => res.json(contacts));
+
+app.post("/api/whatsapp/contacts", (req, res) => {
+  const { name, phone, email, tags = ["lead"] } = req.body;
+  if (!name || !phone) return res.status(400).json({ error: "Nome e Telefone são obrigatórios" });
+  const cleanPhone = phone.startsWith("+") ? phone : `+55 ${phone}`;
+  const existing = contacts.find((c) => c.phone === cleanPhone);
+  if (existing) return res.json(existing);
+  const initials = name.split(" ").map((n: string) => n[0]).join("").substring(0, 2).toUpperCase() || "WA";
+  const newContact: ChatContact = {
+    id: Math.random().toString(36).substring(2, 9),
+    name, avatar: initials, channel: "WhatsApp",
+    lastMessage: "Nova conversa iniciada",
+    time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+    unread: 0, online: Math.random() > 0.5,
+    phone: cleanPhone, email, tags, slaStatus: "Dentro do Prazo"
+  };
+  contacts.unshift(newContact);
+  if (!messages[newContact.id]) messages[newContact.id] = [];
+  res.json(newContact);
+});
+
+app.get("/api/whatsapp/messages/:contactId", async (req, res) => {
+  const { contactId } = req.params;
+  if (supabase) {
+    const { data, error } = await supabase.from("chat_messages").select("*").eq("contact_id", contactId).order("timestamp", { ascending: true });
+    if (!error && data) return res.json(data);
+  }
+  res.json(messages[contactId] || []);
+});
+
+app.post("/api/whatsapp/messages/send", async (req, res) => {
+  const { contactId, text } = req.body;
+  if (!contactId || !text) return res.status(400).json({ error: "ID do contato e texto são obrigatórios" });
+  const timeString = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const userMsg: ChatMessage = {
+    id: "msg_" + Math.random().toString(36).substring(2, 9),
+    text, sender: "me", time: timeString, status: "sent", timestamp: Date.now()
+  };
+  if (!messages[contactId]) messages[contactId] = [];
+  messages[contactId].push(userMsg);
+  if (supabase) {
+    await supabase.from("chat_messages").insert([{ id: userMsg.id, text: userMsg.text, sender: userMsg.sender, time: userMsg.time, status: userMsg.status, timestamp: userMsg.timestamp, contact_id: contactId }]);
+    await supabase.from("chat_contacts").update({ lastMessage: text, time: timeString }).eq("id", contactId);
+  }
+  const contact = contacts.find((c) => c.id === contactId);
+  if (contact) { contact.lastMessage = text; contact.time = timeString; }
+  res.json({ success: true, message: userMsg });
+});
+
+app.post("/api/whatsapp/simulate-incoming", async (req, res) => {
+  const { contactId, text } = req.body;
+  if (!contactId || !text) return res.status(400).json({ error: "contactId e texto são obrigatórios" });
+  const contact = contacts.find((c) => c.id === contactId);
+  if (!contact) return res.status(404).json({ error: "Contato não encontrado" });
+  const timeString = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  const inMsg: ChatMessage = {
+    id: "msg_sim_" + Math.random().toString(36).substring(2, 9),
+    text, sender: "them", time: timeString, timestamp: Date.now()
+  };
+  if (!messages[contactId]) messages[contactId] = [];
+  messages[contactId].push(inMsg);
+  contact.lastMessage = text;
+  contact.time = timeString;
+  contact.unread += 1;
+  if (supabase) {
+    await supabase.from("chat_messages").insert([{ id: inMsg.id, text: inMsg.text, sender: inMsg.sender, time: inMsg.time, timestamp: inMsg.timestamp, contact_id: contactId }]);
+    await supabase.from("chat_contacts").update({ lastMessage: text, time: timeString, unread: contact.unread }).eq("id", contactId);
+  }
+  res.json({ message: inMsg, contact });
+});
+
+app.post("/api/whatsapp/copilot/analyze", async (req, res) => {
+  const { contactId } = req.body;
+  if (!contactId) return res.status(400).json({ error: "contactId é obrigatório" });
+  const chatHistory = messages[contactId] || [];
+  const contact = contacts.find((c) => c.id === contactId);
+  if (chatHistory.length === 0) {
+    return res.json({
+      suggestion: "Ainda não há mensagens registradas com este contato para analisar. Tente fazer uma saudação cortês, introduzindo o Axis CRM e perguntando como pode auxiliá-lo.",
+      sentiment: "Neutro"
+    });
+  }
+  const conversationText = chatHistory.map((m) => `${m.sender === "me" ? "Vendedor/Atendente" : "Cliente"}: ${m.text}`).join("\n");
+  const promptContext = `Você é o Axis Copilot, um assistente especializado em CRM, Vendas e Atendimento via WhatsApp.
+  O cliente se chama: ${contact ? contact.name : "Cliente"}.
+  O histórico de mensagens é este:
+  ${conversationText}
+  Sua tarefa é:
+  1. Analisar brevemente o status/intenção do cliente (especialmente dúvidas de frete, preço, fechamento).
+  2. Sugerir a RESPOSTA PERFEITA em português para o vendedor copiar e enviar.
+  Retorne a resposta no formato JSON:
+  - analysis (uma frase resumindo o sentimento e status das negociações)
+  - suggestion (o rascunho exato da mensagem pronta para o vendedor usar)
+  - sentiment (Positivo, Neutro ou Negativo)`;
+  try {
+    if (!process.env.GEMINI_API_KEY) {
+      const lastMsg = chatHistory[chatHistory.length - 1];
+      let sugg = `Olá ${contact ? contact.name : ""}, compreendo sua dúvida! Estamos analisando sua solicitação. De qualquer forma, gostaria de agendar uma ligação rápida hoje às 14h para fecharmos os detalhes?`;
+      if (lastMsg.text.toLowerCase().includes("frete")) {
+        sugg = `Olá ${contact ? contact.name : ""}, com certeza! Para sua região, nós conseguimos fazer o frete com um desconto especial de 50%, ou até GRÁTIS se fecharmos o contrato Pro hoje. O que acha?`;
+      }
+      return res.json({ analysis: "O cliente demonstrou interesse inicial. A IA sugere oferecer atendimento ágil para acelerar o fechamento.", suggestion: sugg, sentiment: "Positivo" });
+    }
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: promptContext,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: { analysis: { type: Type.STRING }, suggestion: { type: Type.STRING }, sentiment: { type: Type.STRING } },
+          required: ["analysis", "suggestion", "sentiment"]
+        },
+      },
+    });
+    res.json(JSON.parse(response.text ?? "{}"));
+  } catch (e) {
+    console.error("Copilot analysis failure:", e);
+    res.status(500).json({ error: "Erro de processamento da IA" });
+  }
+});
+
+// ── Export for Vercel Serverless ───────────────────────────────────────────
+
+export default app;
+
+// ── Local Dev Server (not used on Vercel) ──────────────────────────────────
+
+async function startServer() {
+  const PORT = 3002;
+  if (process.env.NODE_ENV !== "production") {
+    const { createServer: createViteServer } = await import("vite");
+    const vite = await createViteServer({ server: { middlewareMode: true }, appType: "spa" });
     app.use(vite.middlewares);
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
+    const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
+    app.get("*", (req, res) => res.sendFile(path.join(distPath, "index.html")));
   }
-
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
 }
 
-startServer();
+if (!process.env.VERCEL) startServer();
