@@ -8,6 +8,7 @@ import {
 import { googleSignIn, getAccessToken } from "../../../../lib/google-auth";
 import { createMeetSpace } from "../../../../lib/meet";
 import { createCalendarEvent } from "../../../../lib/google-calendar";
+import { generateJitsiLink } from "../../JitsiEmbed";
 import { useData } from "../../../../contexts/DataContext";
 import { toast } from "sonner";
 import { cn } from "../../../../lib/utils";
@@ -27,6 +28,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
   const [createdMeeting, setCreatedMeeting] = useState<{ id: string; meetLink: string } | null>(null);
   const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
   const [manualLink, setManualLink] = useState("");
+  const [videoProvider, setVideoProvider] = useState<"axis" | "google">("axis");
 
   const [closerName, setCloserName] = useState(lead.seller || "");
   const [closerEmail, setCloserEmail] = useState("");
@@ -95,19 +97,58 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
     const endDate = new Date(`${date}T${time}:00`);
     endDate.setMinutes(endDate.getMinutes() + duration);
     const endISO = endDate.toISOString().slice(0, 19);
-    const reuniaoId = `r${Math.random().toString(36).slice(2, 9)}`;
+    // ID determinístico: usado tanto no estado local quanto no Supabase
+    const reuniaoId = `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    const attendees = [leadEmail, closerEmail].filter(Boolean);
 
-    // Fallback: usa link manual se Google não estiver conectado
+    const baseReuniao = {
+      leadId: lead.id, clienteId: lead.clienteId,
+      leadName: lead.name, companyName: lead.company,
+      leadEmail, closerName, closerEmail,
+      scheduledAt: startISO, durationMinutes: duration,
+      status: "Agendada" as const, pauta: pauta || undefined,
+    };
+
+    // ── Sala Axis com Jitsi embutido ──────────────────────────────────────
+    if (videoProvider === "axis") {
+      setLoading(true);
+      try {
+        const jitsiLink = generateJitsiLink(reuniaoId);
+        // Tenta criar evento no Google Calendar com link Jitsi na descrição
+        if (googleEmail) {
+          try {
+            let token = await getAccessToken();
+            if (!token) {
+              const r = await googleSignIn();
+              if (r) { token = r.accessToken; setGoogleEmail(r.user.email || "Conectado"); }
+            }
+            if (token) {
+              await createCalendarEvent(token, {
+                title: `Reunião — ${lead.company || lead.name}`,
+                description: `${pauta ? pauta + "\n\n" : ""}Sala de vídeo: ${jitsiLink}`,
+                startISO, endISO, attendeeEmails: attendees,
+              });
+            }
+          } catch {
+            toast.warning("Sala criada, mas convite de calendário não enviado.");
+          }
+        }
+        (addReuniao as any)({ id: reuniaoId, ...baseReuniao, meetLink: jitsiLink });
+        setCreatedMeeting({ id: reuniaoId, meetLink: jitsiLink });
+        toast.success("Sala Axis criada! O vídeo abre direto no sistema.");
+      } catch (err: any) {
+        toast.error("Erro ao criar sala: " + (err.message || "Tente novamente"));
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    // ── Google Meet (link manual ou via API) ──────────────────────────────
     if (googleAuthError || !googleEmail) {
       const link = manualLink.trim();
       if (!link) { toast.error("Insira um link do Google Meet ou conecte sua conta Google."); return; }
-      addReuniao({
-        leadId: lead.id, clienteId: lead.clienteId,
-        leadName: lead.name, companyName: lead.company,
-        leadEmail, closerName, closerEmail,
-        scheduledAt: startISO, durationMinutes: duration,
-        meetLink: link, status: "Agendada", pauta: pauta || undefined,
-      });
+      (addReuniao as any)({ id: reuniaoId, ...baseReuniao, meetLink: link });
       setCreatedMeeting({ id: reuniaoId, meetLink: link });
       toast.success("Reunião agendada com link manual!");
       return;
@@ -124,7 +165,6 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       }
 
       const meetSpace = await createMeetSpace(token);
-      const attendees = [leadEmail, closerEmail].filter(Boolean);
       let googleEventId: string | undefined;
       try {
         const calEvent = await createCalendarEvent(token, {
@@ -137,14 +177,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
         toast.warning("Reunião criada, mas convite de calendário não enviado.");
       }
 
-      addReuniao({
-        leadId: lead.id, clienteId: lead.clienteId,
-        leadName: lead.name, companyName: lead.company,
-        leadEmail, closerName, closerEmail,
-        scheduledAt: startISO, durationMinutes: duration,
-        meetLink: meetSpace.meetingUri, googleEventId,
-        status: "Agendada", pauta: pauta || undefined,
-      });
+      (addReuniao as any)({ id: reuniaoId, ...baseReuniao, meetLink: meetSpace.meetingUri, googleEventId });
       setCreatedMeeting({ id: reuniaoId, meetLink: meetSpace.meetingUri });
       toast.success("Reunião agendada! Convite enviado ao lead e ao closer.");
     } catch (err: any) {
@@ -209,59 +242,92 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
           </div>
         </div>
 
-        {/* Google Connect */}
-        <div className={cn(
-          "rounded-xl border p-3 space-y-2",
-          googleEmail
-            ? "bg-emerald-500/[0.07] border-emerald-500/20"
-            : googleAuthError
-            ? "bg-rose-500/[0.07] border-rose-500/20"
-            : "bg-amber-500/[0.05] border-amber-500/20"
-        )}>
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2 min-w-0">
-              {googleEmail
-                ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                : <AlertCircle className={cn("w-4 h-4 shrink-0", googleAuthError ? "text-rose-400" : "text-amber-400")} />}
-              <div className="min-w-0">
-                <div className={cn("text-xs font-bold", googleEmail ? "text-emerald-400" : googleAuthError ? "text-rose-400" : "text-amber-400")}>
-                  {googleEmail ? "Google Conectado" : googleAuthError ? "Erro de autenticação" : "Google não conectado"}
-                </div>
-                <div className="text-[10px] text-slate-500 truncate">
-                  {googleEmail || "Conecte para criar sala Meet automaticamente"}
+        {/* Video provider toggle */}
+        <div>
+          <label className={labelCls}><Video className="w-3 h-3" /> Tipo de Sala</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setVideoProvider("axis")}
+              className={cn(
+                "flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all",
+                videoProvider === "axis"
+                  ? "bg-blue-500/15 border-blue-500/30 text-blue-300"
+                  : "bg-white/[0.03] border-white/[0.08] text-slate-400 hover:border-white/20"
+              )}
+            >
+              <span className="text-xs font-black">🖥️ Sala Axis</span>
+              <span className="text-[10px] leading-tight opacity-70">Vídeo embutido no CRM — sem sair do sistema</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setVideoProvider("google")}
+              className={cn(
+                "flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all",
+                videoProvider === "google"
+                  ? "bg-blue-500/15 border-blue-500/30 text-blue-300"
+                  : "bg-white/[0.03] border-white/[0.08] text-slate-400 hover:border-white/20"
+              )}
+            >
+              <span className="text-xs font-black">📹 Google Meet</span>
+              <span className="text-[10px] leading-tight opacity-70">Cria sala no Google Meet e envia convite</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Google Connect — só aparece quando provider = google */}
+        {videoProvider === "google" && (
+          <div className={cn(
+            "rounded-xl border p-3 space-y-2",
+            googleEmail
+              ? "bg-emerald-500/[0.07] border-emerald-500/20"
+              : googleAuthError
+              ? "bg-rose-500/[0.07] border-rose-500/20"
+              : "bg-amber-500/[0.05] border-amber-500/20"
+          )}>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                {googleEmail
+                  ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  : <AlertCircle className={cn("w-4 h-4 shrink-0", googleAuthError ? "text-rose-400" : "text-amber-400")} />}
+                <div className="min-w-0">
+                  <div className={cn("text-xs font-bold", googleEmail ? "text-emerald-400" : googleAuthError ? "text-rose-400" : "text-amber-400")}>
+                    {googleEmail ? "Google Conectado" : googleAuthError ? "Erro de autenticação" : "Google não conectado"}
+                  </div>
+                  <div className="text-[10px] text-slate-500 truncate">
+                    {googleEmail || "Conecte para criar sala Meet automaticamente"}
+                  </div>
                 </div>
               </div>
+              {!googleEmail && (
+                <Button
+                  onClick={handleConnectGoogle}
+                  disabled={loading}
+                  className="bg-white text-gray-800 hover:bg-gray-100 font-bold px-3 h-7 text-xs shrink-0"
+                >
+                  Conectar
+                </Button>
+              )}
             </div>
-            {!googleEmail && (
-              <Button
-                onClick={handleConnectGoogle}
-                disabled={loading}
-                className="bg-white text-gray-800 hover:bg-gray-100 font-bold px-3 h-7 text-xs shrink-0"
-              >
-                Conectar
-              </Button>
+            {googleAuthError && (
+              <div className="space-y-1.5 pt-1">
+                <p className="text-[10px] text-rose-300 leading-relaxed">{googleAuthError}</p>
+                <div>
+                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 block">
+                    <Video className="w-3 h-3 inline mr-1" />Link manual do Google Meet
+                  </label>
+                  <input
+                    type="url"
+                    value={manualLink}
+                    onChange={(e) => setManualLink(e.target.value)}
+                    placeholder="https://meet.google.com/abc-defg-hij"
+                    className="w-full bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-600"
+                  />
+                </div>
+              </div>
             )}
           </div>
-
-          {/* Erro de domínio não autorizado → campo de link manual */}
-          {googleAuthError && (
-            <div className="space-y-1.5 pt-1">
-              <p className="text-[10px] text-rose-300 leading-relaxed">{googleAuthError}</p>
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 block">
-                  <Video className="w-3 h-3 inline mr-1" />Link manual do Google Meet
-                </label>
-                <input
-                  type="url"
-                  value={manualLink}
-                  onChange={(e) => setManualLink(e.target.value)}
-                  placeholder="https://meet.google.com/abc-defg-hij"
-                  className="w-full bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-600"
-                />
-              </div>
-            </div>
-          )}
-        </div>
+        )}
 
         {/* Form */}
         <div className="grid grid-cols-2 gap-3">

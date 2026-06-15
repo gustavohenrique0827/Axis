@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
 import { IACopilot } from "../../components/ui/IACopilot";
-import { Card } from "../../components/ui/card";
+import { JitsiEmbed, isJitsiLink, jitsiRoomName } from "../../components/ui/JitsiEmbed";
 import { Button } from "../../components/ui/button";
 import {
   Brain, ArrowLeft, Video, Clock, User, Copy, ExternalLink,
@@ -208,54 +208,83 @@ export default function ReuniaoRoom() {
         {/* ════ PANEL 1 — Sala Ativa + Notas (left, ~50%) ════ */}
         <div className="flex flex-col w-[50%] border-r border-white/[0.06] overflow-y-auto">
 
-          {/* Meet banner */}
-          <div className="p-4 border-b border-white/[0.04]">
-            <div className="rounded-2xl bg-[#0B1120] border border-white/[0.08] overflow-hidden">
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-                <div className="flex items-center gap-2">
+          {/* Video area */}
+          {isJitsiLink(reuniao.meetLink) ? (
+            <div className="relative border-b border-white/[0.04]" style={{ height: "420px" }}>
+              {/* overlay bar */}
+              <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-2 bg-[#070E1A]/80 backdrop-blur-sm border-b border-white/[0.06]">
+                <div className="flex items-center gap-1.5">
                   {isActive
-                    ? <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /><span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Sala Ativa</span></div>
-                    : <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Reunião Concluída</span>
+                    ? <><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /><span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Ao Vivo</span></>
+                    : <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Encerrada</span>
                   }
                 </div>
                 <div className="flex items-center gap-2">
-                  <button onClick={copyMeetLink} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] rounded-lg text-[10px] text-slate-400 hover:text-white transition-all font-bold">
-                    <Copy className="w-3 h-3" /> Copiar link
+                  <button onClick={copyMeetLink} className="flex items-center gap-1.5 px-2 py-1 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-[10px] text-slate-400 hover:text-white transition-all font-bold">
+                    <Copy className="w-3 h-3" /> Link
                   </button>
                   <a href={reuniao.meetLink} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-[10px] text-blue-400 font-bold transition-all"
+                    className="flex items-center gap-1 px-2 py-1 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-[10px] text-slate-400 hover:text-white transition-all"
                   >
-                    <ExternalLink className="w-3 h-3" /> Abrir Meet
+                    <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
               </div>
-
-              {/* Instruction */}
-              <div className="flex flex-col items-center justify-center py-8 px-6 text-center gap-3">
-                <div className="w-16 h-16 rounded-2xl bg-blue-600/15 border border-blue-500/20 flex items-center justify-center">
-                  <Video className="w-8 h-8 text-blue-400" />
-                </div>
-                <div>
-                  <p className="font-black text-white text-sm">Conduza o Meet em paralelo</p>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed max-w-xs">
-                    Abra o Google Meet numa aba separada e use esta tela como central de inteligência enquanto conversa com o cliente.
-                  </p>
-                </div>
-                <a href={reuniao.meetLink} target="_blank" rel="noopener noreferrer">
-                  <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-black text-[11px] uppercase tracking-widest rounded-xl transition-all">
-                    <Video className="w-4 h-4" /> Abrir Google Meet <ExternalLink className="w-3.5 h-3.5 opacity-60" />
-                  </button>
-                </a>
-                {reuniao.pauta && (
-                  <div className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-left mt-1">
-                    <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Pauta</p>
-                    <p className="text-xs text-slate-400 leading-relaxed">{reuniao.pauta}</p>
-                  </div>
-                )}
+              <div className="absolute inset-0 pt-9">
+                <JitsiEmbed
+                  roomName={jitsiRoomName(reuniao.meetLink)}
+                  displayName={reuniao.closerName || "Closer"}
+                  email={reuniao.closerEmail}
+                  onLeave={isActive ? handleEnd : undefined}
+                />
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="p-4 border-b border-white/[0.04]">
+              <div className="rounded-2xl bg-[#0B1120] border border-white/[0.08] overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+                  <div className="flex items-center gap-2">
+                    {isActive
+                      ? <div className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /><span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Sala Ativa</span></div>
+                      : <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Reunião Concluída</span>
+                    }
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button onClick={copyMeetLink} className="flex items-center gap-1.5 px-2.5 py-1.5 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] rounded-lg text-[10px] text-slate-400 hover:text-white transition-all font-bold">
+                      <Copy className="w-3 h-3" /> Copiar link
+                    </button>
+                    <a href={reuniao.meetLink} target="_blank" rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 rounded-lg text-[10px] text-blue-400 font-bold transition-all"
+                    >
+                      <ExternalLink className="w-3 h-3" /> Abrir Meet
+                    </a>
+                  </div>
+                </div>
+                <div className="flex flex-col items-center justify-center py-8 px-6 text-center gap-3">
+                  <div className="w-16 h-16 rounded-2xl bg-blue-600/15 border border-blue-500/20 flex items-center justify-center">
+                    <Video className="w-8 h-8 text-blue-400" />
+                  </div>
+                  <div>
+                    <p className="font-black text-white text-sm">Google Meet — abre em nova aba</p>
+                    <p className="text-xs text-slate-500 mt-1 leading-relaxed max-w-xs">
+                      Reuniões criadas como "Sala Axis" ficam embutidas aqui. Para novos agendamentos, escolha "Sala Axis" no modal.
+                    </p>
+                  </div>
+                  <a href={reuniao.meetLink} target="_blank" rel="noopener noreferrer">
+                    <button className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-black text-[11px] uppercase tracking-widest rounded-xl transition-all">
+                      <Video className="w-4 h-4" /> Abrir Google Meet <ExternalLink className="w-3.5 h-3.5 opacity-60" />
+                    </button>
+                  </a>
+                  {reuniao.pauta && (
+                    <div className="w-full px-4 py-3 bg-white/[0.03] border border-white/[0.06] rounded-xl text-left mt-1">
+                      <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Pauta</p>
+                      <p className="text-xs text-slate-400 leading-relaxed">{reuniao.pauta}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Notes */}
           <div className="flex-1 p-4 space-y-3">
