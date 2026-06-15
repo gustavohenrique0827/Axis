@@ -574,55 +574,86 @@ app.post("/api/ai/generic-insight", async (req, res) => {
 
 // ── Reunião Copilot & Post-Meeting Report ─────────────────────────────────
 
+// ── Copilot de Reunião (tempo real — BANT + transcrição) ──────────────────────
 app.post("/api/ai/reuniao-copilot", async (req: any, res: any) => {
   const { transcript, leadContext } = req.body ?? {};
   if (!process.env.GEMINI_API_KEY) {
-    return res.json({ analysis: "API Key não configurada. Configure GEMINI_API_KEY nas variáveis de ambiente." });
+    return res.json({ analysis: null, error: "GEMINI_API_KEY não configurada." });
   }
   if (!transcript?.trim()) {
     return res.status(400).json({ error: "Transcrição vazia." });
   }
   try {
-    const leadInfo = leadContext ? `
-CONTEXTO DO LEAD:
-- Nome: ${leadContext.name} | Empresa: ${leadContext.company}
-- Score IA: ${leadContext.scoreIA ?? "N/A"} | Temperatura: ${leadContext.temperature ?? "N/A"}
-- Relatório SDR: ${leadContext.iaSummary ?? "Sem relatório SDR"}
-- Interesse declarado: ${leadContext.lead_interesse ?? "Não informado"}
-- Pauta da reunião: ${leadContext.pauta ?? "Não definida"}` : "";
+    const leadInfo = leadContext
+      ? `\nCONTEXTO DO LEAD:\n- Nome: ${leadContext.name ?? "?"} | Empresa: ${leadContext.company ?? "?"}\n- Score: ${leadContext.scoreIA ?? "N/A"} | Temperatura: ${leadContext.temperature ?? "N/A"}\n- SDR Summary: ${leadContext.iaSummary ?? "Sem relatório"}\n- Interesse: ${leadContext.lead_interesse ?? "Não informado"}\n- Pauta: ${leadContext.pauta ?? "Não definida"}`
+      : "";
+
+    const prompt = `Você é o Copilot de vendas Axis CRM. Analise a transcrição abaixo e retorne APENAS um objeto JSON válido (sem markdown, sem comentários).${leadInfo}
+
+TRANSCRIÇÃO: "${transcript.slice(0, 4000)}"
+
+JSON esperado:
+{"bant":{"budget":{"status":"identificado","nota":"..."},"authority":{"status":"parcial","nota":"..."},"need":{"status":"identificado","nota":"..."},"timeline":{"status":"nao_identificado","nota":"..."}},"score_fechamento":65,"objecoes_detectadas":["..."],"proxima_acao":"...","pergunta_poderosa":"...","alerta":""}`;
 
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: `Você é o Copilot de vendas do Axis CRM, especialista em fechamento. Ajude o Closer em tempo real.
-${leadInfo}
-
-TRANSCRIÇÃO DA REUNIÃO ATÉ AGORA:
-"${transcript}"
-
-Forneça uma análise BANT objetiva e ações imediatas no formato JSON:
-{
-  "bant": {
-    "budget": { "status": "identificado|parcial|nao_identificado", "nota": "..." },
-    "authority": { "status": "identificado|parcial|nao_identificado", "nota": "..." },
-    "need": { "status": "identificado|parcial|nao_identificado", "nota": "..." },
-    "timeline": { "status": "identificado|parcial|nao_identificado", "nota": "..." }
-  },
-  "score_fechamento": 0-100,
-  "objecoes_detectadas": ["..."],
-  "proxima_acao": "...",
-  "pergunta_poderosa": "...",
-  "alerta": "..."
-}
-Responda APENAS com JSON válido, sem markdown.`,
+      contents: prompt,
     });
 
-    let text = response.text?.trim() ?? "{}";
-    if (text.startsWith("```")) text = text.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
-    const data = JSON.parse(text);
-    res.json({ analysis: data });
+    let text = (response.text ?? "").trim();
+    // Strip markdown fences if present
+    text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    // Find the first { and last } to extract JSON
+    const start = text.indexOf("{");
+    const end   = text.lastIndexOf("}");
+    if (start === -1 || end === -1) throw new Error("Resposta sem JSON: " + text.slice(0, 200));
+    const data = JSON.parse(text.slice(start, end + 1));
+    return res.json({ analysis: data });
   } catch (err: any) {
     console.error("[Copilot Reunião]", err?.message);
-    res.status(500).json({ error: "Erro ao analisar transcrição." });
+    return res.status(500).json({ error: "Erro ao analisar transcrição: " + (err?.message ?? "desconhecido") });
+  }
+});
+
+// ── Copilot de Lead (pré-reunião — análise estática do perfil) ────────────────
+app.post("/api/ai/lead-copilot", async (req: any, res: any) => {
+  const { leadContext } = req.body ?? {};
+  if (!process.env.GEMINI_API_KEY) {
+    return res.json({ analysis: null, error: "GEMINI_API_KEY não configurada." });
+  }
+  if (!leadContext) {
+    return res.status(400).json({ error: "Contexto do lead ausente." });
+  }
+  try {
+    const prompt = `Você é o Copilot de CRM do Axis. Com base no perfil do lead abaixo, retorne APENAS um objeto JSON válido (sem markdown).
+
+LEAD:
+- Nome: ${leadContext.name ?? "?"} | Empresa: ${leadContext.company ?? "?"}
+- Score IA: ${leadContext.scoreIA ?? "N/A"} | Temperatura: ${leadContext.temperature ?? "N/A"}
+- Estágio: ${leadContext.stage ?? "Desconhecido"}
+- Interesse: ${leadContext.lead_interesse ?? "Não informado"}
+- Resumo SDR: ${leadContext.iaSummary ?? "Sem histórico"}
+- Último contato: ${leadContext.lastContact ?? "Não informado"}
+- Produto de interesse: ${leadContext.product ?? "Não definido"}
+
+Retorne:
+{"recomendacao_proximo_passo":"...","abordagem_ideal":"...","objecoes_previstas":["..."],"pergunta_abertura":"...","probabilidade_fechamento":0,"alerta":"","resumo_curto":"..."}`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: prompt,
+    });
+
+    let text = (response.text ?? "").trim();
+    text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+    const start = text.indexOf("{");
+    const end   = text.lastIndexOf("}");
+    if (start === -1 || end === -1) throw new Error("Resposta sem JSON: " + text.slice(0, 200));
+    const data = JSON.parse(text.slice(start, end + 1));
+    return res.json({ analysis: data });
+  } catch (err: any) {
+    console.error("[Copilot Lead]", err?.message);
+    return res.status(500).json({ error: "Erro ao analisar lead: " + (err?.message ?? "desconhecido") });
   }
 });
 

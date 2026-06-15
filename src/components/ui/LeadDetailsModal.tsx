@@ -12,7 +12,7 @@ import { LeadDetailsModalFooter } from "./lead-details/LeadDetailsModal.Footer";
 import { LeadDetailsModalHero } from "./lead-details/LeadDetailsModalHero";
 
 import { useLeadDetails } from "./lead-details/useLeadDetails";
-import { IACopilot } from "./IACopilot";
+import { LeadCopilot } from "./LeadCopilot";
 import { ProfileSection } from "./lead-details/ProfileSection";
 import { TimelineSection } from "./lead-details/TimelineSection";
 import { SdrReportSection } from "./lead-details/SdrReportSection";
@@ -432,7 +432,18 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
       {showCopilot && (
         <div className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[110] bg-[#070E1A] border-r border-white/10 overflow-y-auto shadow-2xl rounded-l-2xl animate-in slide-in-from-right-10 duration-200">
-          <IACopilot leadName={leadName} companyName={companyName} />
+          <LeadCopilot
+            leadContext={{
+              name: leadName,
+              company: companyName,
+              iaSummary: lead.iaSummary,
+              scoreIA: lead.scoreIA,
+              temperature: lead.temperature,
+              lead_interesse: lead.lead_interesse_cliente,
+              stage: lead.stageId,
+              product: lead.productIds?.join(", "),
+            }}
+          />
         </div>
       )}
     </>
