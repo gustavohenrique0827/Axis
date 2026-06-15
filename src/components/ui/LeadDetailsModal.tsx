@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { AgendarReuniaoModal } from "./modals/crm/AgendarReuniaoModal";
@@ -31,7 +31,7 @@ interface LeadDetailsModalProps {
 }
 
 export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProps) {
-  const { updateLead, leadActivities } = useData();
+  const { updateLead, leadActivities, products } = useData();
   const navigate = useNavigate();
   const [currentTab, setCurrentTab] = useState("informacoes");
   const [showCopilot, setShowCopilot] = useState(false);
@@ -125,9 +125,15 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
   const probNum = safeParseProbability(probability);
 
   const tc = LeadDetailsTempCfg[temperature as keyof typeof LeadDetailsTempCfg] || LeadDetailsTempCfg.Frio;
-  const formattedValue = linkedProductIds.length > 0 && estimatedSum > 0
-    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(estimatedSum)
-    : formatLeadValueBRL(value);
+  const productTotal = useMemo(() => {
+    const ids: string[] = Array.isArray(lead?.productIds) ? lead.productIds : [];
+    if (ids.length === 0) return 0;
+    return (products as any[]).reduce((s, p) => ids.includes(p.id) ? s + (Number(p.price) || 0) : s, 0);
+  }, [lead?.productIds, products]);
+
+  const formattedValue = productTotal > 0
+    ? new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(productTotal)
+    : formatLeadValueBRL(lead?.value ?? value);
   const initials = ((companyName || leadName || "LD").substring(0, 2)).toUpperCase();
 
   const moveToStage = (stg: any) => {
