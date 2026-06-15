@@ -1132,12 +1132,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       deleteCargo: cargoCrud.del,
       clienteBase,
       setClienteBase,
-      reunioes,
-      addReuniao: (r: Omit<Reuniao, 'id' | 'createdAt'>) => {
-        reuniaoCrud.add({ ...r, id: crypto.randomUUID(), createdAt: new Date().toISOString() });
-      },
-      updateReuniao: reuniaoCrud.update,
-      deleteReuniao: reuniaoCrud.del,
     }}>
       {children}
     </DataContext.Provider>

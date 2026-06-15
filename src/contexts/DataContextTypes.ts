@@ -164,10 +164,6 @@ export interface DataContextType {
   addTurma: (t: any) => void;
   updateTurma: (id: string, updates: any) => void;
   deleteTurma: (id: string) => void;
-  reunioes: Reuniao[];
-  addReuniao: (r: Omit<Reuniao, 'id' | 'createdAt'>) => void;
-  updateReuniao: (id: string, updates: Partial<Reuniao>) => void;
-  deleteReuniao: (id: string) => void;
   students: any[];
   setStudents: (v: any[]) => void;
   addStudent: (s: any) => void;
