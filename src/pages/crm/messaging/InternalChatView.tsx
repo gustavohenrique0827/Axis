@@ -47,6 +47,29 @@ interface SidebarProps {
   onNewDM: () => void;
 }
 
+function chAvatar(ch: InternalChannel): string {
+  if (ch.type === "direct") return (ch.name.split(" & ")[1] ?? ch.name).slice(0, 2).toUpperCase();
+  return ch.name.slice(0, 2).toUpperCase();
+}
+
+function chDisplayName(ch: InternalChannel): string {
+  if (ch.type === "direct") return ch.name.replace(/.*& /, "");
+  if (ch.type === "geral") return `# ${ch.name}`;
+  if (ch.type === "squad") return `⚡ ${ch.name}`;
+  return ch.name;
+}
+
+function chBadgeIcon(type: string) {
+  if (type === "geral") return <Hash className="w-[14px] h-[14px] text-blue-400" />;
+  if (type === "squad") return <Users className="w-[14px] h-[14px] text-violet-400" />;
+  return <MessageSquare className="w-[14px] h-[14px] text-emerald-400" />;
+}
+
+function fmtTime(iso?: string) {
+  if (!iso) return "";
+  return new Date(iso).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+}
+
 function InternalSidebar({ channels, activeChannelId, onSelectChannel, onNewDM }: SidebarProps) {
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("Todos");
@@ -63,16 +86,12 @@ function InternalSidebar({ channels, activeChannelId, onSelectChannel, onNewDM }
   });
 
   return (
-    <div className={`w-[320px] lg:w-[380px] h-full flex flex-col shrink-0 border-r border-white/5 bg-[#0B1120] z-10`}>
-      {/* Header */}
+    <div className="w-[320px] lg:w-[380px] h-full flex flex-col shrink-0 border-r border-white/5 bg-[#0B1120] z-10">
+      {/* Header — igual ao ChatListSidebar */}
       <div className="shrink-0 h-[72px] px-5 flex items-center justify-between border-b border-white/5">
         <h1 className="text-xl font-bold text-white tracking-tight">Chat Interno</h1>
-        <div className="flex items-center gap-2 text-slate-400">
-          <button
-            onClick={onNewDM}
-            title="Nova mensagem direta"
-            className="p-2 hover:bg-white/5 rounded-full transition-colors"
-          >
+        <div className="flex items-center gap-3 text-slate-400">
+          <button onClick={onNewDM} title="Nova mensagem direta" className="p-2 hover:bg-white/5 rounded-full transition-colors">
             <Plus className="w-5 h-5" />
           </button>
           <button className="p-2 hover:bg-white/5 rounded-full transition-colors">
@@ -87,7 +106,7 @@ function InternalSidebar({ channels, activeChannelId, onSelectChannel, onNewDM }
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`whitespace-nowrap px-4 py-1.5 text-[13px] font-medium rounded-full transition-all ${
+            className={`whitespace-nowrap px-4 py-1.5 text-[13px] font-medium rounded-full transition-all cursor-pointer ${
               activeTab === tab
                 ? "bg-blue-600 text-white shadow-md shadow-blue-900/20"
                 : "bg-white/5 hover:bg-white/10 text-slate-300"
@@ -120,48 +139,56 @@ function InternalSidebar({ channels, activeChannelId, onSelectChannel, onNewDM }
         </div>
       </div>
 
-      {/* Channel List */}
-      <div className="flex-1 overflow-y-auto pb-20 scrollbar-none">
+      {/* Channel List — mesmo estilo do ChatListSidebar */}
+      <div className="scrollbar-none flex-1 overflow-y-auto pb-20">
         {filtered.length === 0 && (
-          <div className="p-10 flex flex-col items-center gap-4 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
-              <Search className="w-7 h-7" strokeWidth={1.5} />
+          <div className="p-10 flex flex-col items-center justify-center gap-4 text-center">
+            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 shadow-lg">
+              <Search className="w-8 h-8 text-slate-400" strokeWidth={1.5} />
             </div>
-            <p className="text-xs text-slate-400">Nenhum canal encontrado</p>
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-white">Nenhum canal encontrado</h4>
+              <p className="text-xs text-slate-400">Não encontramos nenhum canal ou usuário com esse nome.</p>
+            </div>
           </div>
         )}
         {filtered.map(ch => {
           const isActive = activeChannelId === ch.id;
-          const isDirect = ch.type === "direct";
+          const preview = ch.lastMessage || ch.description || (ch.type === "geral" ? "Canal geral" : ch.type === "squad" ? "Canal do squad" : "Mensagem direta");
+          const timeStr = fmtTime(ch.lastAt);
           return (
             <button
               key={ch.id}
               onClick={() => onSelectChannel(ch.id)}
-              className={`w-full flex items-center gap-4 py-4 transition-all border-b border-white/5 text-left border-l-4 pl-[16px] pr-5 ${
+              className={`w-full flex items-center gap-4 py-4 transition-all border-b border-white/5 text-left cursor-pointer group border-l-4 ${
                 isActive
-                  ? "border-l-blue-500 bg-blue-500/10 shadow-[inset_4px_0_15px_rgba(59,130,246,0.15)] ring-1 ring-blue-500/20 text-white"
-                  : "border-transparent hover:bg-white/5 text-slate-300"
+                  ? "border-l-blue-500 bg-blue-500/10 pl-[16px] pr-5 shadow-[inset_4px_0_15px_rgba(59,130,246,0.15),0_0_15px_rgba(59,130,246,0.1)] ring-1 ring-blue-500/20 text-white"
+                  : "border-transparent pl-[16px] pr-5 hover:bg-white/5"
               }`}
             >
-              {/* Avatar */}
+              {/* Avatar com badge de tipo */}
               <div className="relative shrink-0">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-inner bg-gradient-to-br ${channelColor(ch.name)}`}>
-                  {isDirect
-                    ? ch.name.split(" & ")[1]?.slice(0, 2).toUpperCase() || "DM"
-                    : channelTypeIcon(ch.type)}
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-inner bg-gradient-to-br ${channelColor(ch.name)}`}>
+                  {chAvatar(ch)}
+                </div>
+                <div className="absolute -bottom-1 -right-1 bg-[#0F172A] rounded-full p-[3px] shadow-sm ring-2 ring-[#0B1120]">
+                  {chBadgeIcon(ch.type)}
                 </div>
               </div>
 
-              {/* Content */}
-              <div className="flex-1 min-w-0 flex flex-col gap-1">
+              {/* Conteúdo */}
+              <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
                 <div className="flex justify-between items-center">
                   <h3 className={`font-semibold text-[15px] truncate ${isActive ? "text-white" : "text-slate-200"}`}>
-                    {isDirect ? ch.name.replace(/.*& /, "") : `${ch.type === "geral" ? "#" : ch.type === "squad" ? "⚡ " : ""}${ch.name}`}
+                    {chDisplayName(ch)}
                   </h3>
+                  {timeStr && (
+                    <span className="text-[11px] font-medium text-slate-500 shrink-0 ml-2">{timeStr}</span>
+                  )}
                 </div>
-                <p className="text-[13px] text-slate-500 truncate">
-                  {ch.description || (ch.type === "geral" ? "Canal geral" : ch.type === "squad" ? "Canal do squad" : "Mensagem direta")}
-                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-[13px] truncate flex-1 leading-snug text-slate-500">{preview}</p>
+                </div>
               </div>
             </button>
           );
@@ -387,7 +414,7 @@ export function InternalChatView() {
     channels, activeChannelId, setActiveChannelId, activeChannel,
     activeMessages, otherUsers,
     inputText, setInputText,
-    loading, sendMessage, openDirectMessage, senderName,
+    loading, sendMessage, sendMessageText, openDirectMessage, senderName,
   } = useInternalChat();
 
   const [showDMSearch, setShowDMSearch] = useState(false);
@@ -400,12 +427,8 @@ export function InternalChatView() {
   };
 
 
-  // Custom sendSticker that bypasses inputText state
   const handleSendSticker = (sticker: string) => {
-    const prev = inputText;
-    setInputText(sticker);
-    setTimeout(sendMessage, 0);
-    setInputText(prev);
+    sendMessageText(sticker);
   };
 
   if (loading && channels.length === 0) {

@@ -54,7 +54,7 @@ export function useInternalChat() {
   const [otherUsers, setOtherUsers] = useState<OtherUser[]>([]);
   const [inputText, setInputText] = useState("");
   const [loading, setLoading] = useState(true);
-  const realtimeRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const realtimeRef = useRef<{ unsubscribe: () => void } | null>(null);
 
   // Ensure Geral channel exists, load all channels + squads
   const loadChannels = useCallback(async () => {
@@ -118,7 +118,31 @@ export function useInternalChat() {
       .order("type", { ascending: true })
       .order("name", { ascending: true });
 
-    if (chs) setChannels(chs as InternalChannel[]);
+    if (chs && chs.length > 0) {
+      // Fetch last message per channel in one query
+      const channelIds = chs.map(c => c.id);
+      const { data: lastMsgs } = await supabase
+        .from("internal_messages")
+        .select("channel_id, content, sender_name, created_at")
+        .in("channel_id", channelIds)
+        .order("created_at", { ascending: false })
+        .limit(channelIds.length * 10);
+
+      const lastMsgMap: Record<string, { content: string; created_at: string }> = {};
+      if (lastMsgs) {
+        for (const m of lastMsgs) {
+          if (!lastMsgMap[m.channel_id]) lastMsgMap[m.channel_id] = m;
+        }
+      }
+
+      setChannels(chs.map(ch => ({
+        ...ch,
+        lastMessage: lastMsgMap[ch.id]?.content,
+        lastAt: lastMsgMap[ch.id]?.created_at,
+      })) as InternalChannel[]);
+    } else {
+      setChannels((chs ?? []) as InternalChannel[]);
+    }
     setLoading(false);
   }, [tenantId]);
 
@@ -189,19 +213,24 @@ export function useInternalChat() {
     }
   }, [channels, activeChannelId]);
 
-  const sendMessage = useCallback(async () => {
-    const text = inputText.trim();
-    if (!text || !activeChannelId) return;
-    setInputText("");
+  const sendMessageText = useCallback(async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || !activeChannelId) return;
 
+    const now = new Date().toISOString();
     const msg: Omit<InternalMessage, "id"> = {
       channel_id: activeChannelId,
       sender_id: user?.email || "anon",
       sender_name: senderName,
       sender_avatar: undefined,
-      content: text,
-      created_at: new Date().toISOString(),
+      content: trimmed,
+      created_at: now,
     };
+
+    // Optimistically update channel preview
+    setChannels(prev => prev.map(ch =>
+      ch.id === activeChannelId ? { ...ch, lastMessage: trimmed, lastAt: now } : ch
+    ));
 
     if (!supabase) {
       const fakeMsg = { ...msg, id: crypto.randomUUID() } as InternalMessage;
@@ -210,7 +239,14 @@ export function useInternalChat() {
     }
 
     await supabase.from("internal_messages").insert({ ...msg, tenant_id: tenantId });
-  }, [inputText, activeChannelId, user, senderName, tenantId]);
+  }, [activeChannelId, user, senderName, tenantId]);
+
+  const sendMessage = useCallback(async () => {
+    const text = inputText.trim();
+    if (!text) return;
+    setInputText("");
+    await sendMessageText(text);
+  }, [inputText, sendMessageText]);
 
   const openDirectMessage = useCallback(async (other: OtherUser) => {
     if (!supabase) return;
@@ -256,7 +292,7 @@ export function useInternalChat() {
     activeChannelId, setActiveChannelId, activeChannel,
     activeMessages, otherUsers,
     inputText, setInputText,
-    loading, sendMessage, openDirectMessage,
+    loading, sendMessage, sendMessageText, openDirectMessage,
     senderName,
   };
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useData } from "../../../contexts/DataContext";
 import { toast } from "sonner";
 
@@ -191,7 +191,10 @@ export function useMessaging() {
 
   const fetchContacts = () => {
     fetch("/api/whatsapp/contacts")
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then(data => {
         if (data && data.length > 0) {
           setContacts(data);
@@ -212,7 +215,10 @@ export function useMessaging() {
   const handleManualRetry = () => {
     toast.info("Tentando reconectar...", { id: "retry-fetch" });
     fetch("/api/whatsapp/contacts")
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then(data => {
         if (data && data.length > 0) {
           setContacts(data);
@@ -220,14 +226,17 @@ export function useMessaging() {
         setIsOffline(false);
         toast.success("Conexão restabelecida!", { id: "retry-fetch" });
       })
-      .catch(err => {
+      .catch(() => {
         setIsOffline(true);
         toast.error("Falha ao reconectar. O backend ainda está offline.", { id: "retry-fetch" });
       });
 
     if (activeChat) {
       fetch(`/api/whatsapp/messages/${activeChat}`)
-        .then(res => res.json())
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          return res.json();
+        })
         .then(data => {
           if (data) {
             setMessages(prev => ({ ...prev, [activeChat]: data }));
@@ -291,7 +300,7 @@ export function useMessaging() {
         console.warn("Could not retrieve Copilot analysis (backend might be offline/initializing):", err.message || err);
         setSentiment("Neutro");
       });
-  }, [activeChat, messages[activeChat]?.length]);
+  }, [activeChat, messages[activeChat as string]?.length]);
 
   const handleAiAsk = () => {
     if (!aiPrompt.trim() || aiTyping) return;
