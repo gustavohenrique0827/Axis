@@ -40,7 +40,8 @@ export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) 
   const [isRecording, setIsRecording] = useState(false);
   const [authorName, setAuthorName] = useState("Usuário");
 
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef  = useRef<any>(null);
+  const inputPrefixRef  = useRef("");          // texto digitado antes de iniciar gravação
 
   useEffect(() => { setNotes(parseNotes(lead?.notes)); }, [lead?.id]);
 
@@ -113,6 +114,9 @@ export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) 
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SR) { toast.error("Gravação de voz não suportada. Use Chrome ou Edge."); return; }
 
+    // Preserva o que já foi digitado — voz vai CONTINUAR de onde parou
+    inputPrefixRef.current = input.trim();
+
     const r = new SR();
     r.lang = "pt-BR";
     r.continuous = true;
@@ -125,8 +129,10 @@ export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) 
         if (e.results[i].isFinal) final += t + " ";
         else interim += t;
       }
-      // Voz vai direto para o textarea — mesmo fluxo que digitação
-      setInput((final + interim).trim());
+      const voiceText = (final + interim).trim();
+      const prefix = inputPrefixRef.current;
+      // Voz vai DENTRO do textarea — continua do texto pré-existente
+      setInput(prefix ? `${prefix} ${voiceText}` : voiceText);
     };
 
     r.onerror = (e: any) => {
@@ -215,9 +221,12 @@ export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) 
           }
         </button>
       </div>
-      <p className="text-[8px] text-slate-700 text-right -mt-1">
-        ⌘+Enter para salvar · IA corrige ortografia automaticamente
-      </p>
+      <div className="flex items-center justify-between -mt-1">
+        <p className="text-[8px] text-slate-600">
+          Anotando como <span className="text-slate-400 font-semibold">{authorName}</span>
+        </p>
+        <p className="text-[8px] text-slate-700">⌘+Enter · IA corrige ortografia</p>
+      </div>
 
       {/* ── Cards de notas ── */}
       {notes.length > 0 ? (
