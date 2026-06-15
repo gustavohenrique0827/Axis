@@ -19,6 +19,8 @@ import { SdrReportSection } from "./lead-details/SdrReportSection";
 import { MessagingSection } from "./lead-details/MessagingSection";
 import { ProductsSection } from "./lead-details/ProductsSection";
 import { LogsSection } from "./lead-details/LogsSection";
+import { NotasSection } from "./lead-details/NotasSection";
+import { TarefasSection } from "./lead-details/TarefasSection";
 import { useData } from "../../contexts/DataContext";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
@@ -194,6 +196,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
             setShowCopilot={setShowCopilot}
             onClose={onClose}
             moveToStage={moveToStage}
+            onAgendarReuniao={() => setShowAgendarReuniao(true)}
           />
 
           {/* ── Tab bar ── */}
@@ -333,6 +336,22 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                       </div>
                     </div>
                   </div>
+                )}
+
+                {currentTab === "notas" && (
+                  <NotasSection
+                    lead={lead}
+                    leadName={leadName}
+                    updateLead={updateLead}
+                  />
+                )}
+
+                {currentTab === "tarefas" && (
+                  <TarefasSection
+                    lead={lead}
+                    leadName={leadName}
+                    seller={seller}
+                  />
                 )}
 
                 {currentTab === "historico" && (

@@ -1,12 +1,14 @@
-import { AlertTriangle, Clock, Flame, Info, MessageCircle, Package, ScrollText, Sun, Zap } from "lucide-react";
+import { Clock, Flame, Info, MessageCircle, Package, ScrollText, Sun, Zap, StickyNote, ListTodo } from "lucide-react";
 
 export const LeadDetailsModalTabs = [
-  { id: "informacoes", label: "Informações", short: "INFO", icon: Info },
-  { id: "historico", label: "Histórico", short: "HIST.", icon: Clock },
-  { id: "relatorio", label: "Relatório IA", short: "IA", icon: Zap },
-  { id: "mensagens", label: "Chat", short: "CHAT", icon: MessageCircle },
-  { id: "produtos", label: "Produtos", short: "PROD.", icon: Package },
-  { id: "logs", label: "Logs", short: "LOGS", icon: ScrollText },
+  { id: "informacoes", label: "Informações",  short: "INFO",     icon: Info          },
+  { id: "notas",       label: "Notas",        short: "NOTAS",    icon: StickyNote    },
+  { id: "tarefas",     label: "Tarefas",      short: "TAREFAS",  icon: ListTodo      },
+  { id: "historico",   label: "Histórico",    short: "HIST.",    icon: Clock         },
+  { id: "mensagens",   label: "Chat",         short: "CHAT",     icon: MessageCircle },
+  { id: "relatorio",   label: "Relatório IA", short: "IA",       icon: Zap           },
+  { id: "produtos",    label: "Produtos",     short: "PROD.",    icon: Package       },
+  { id: "logs",        label: "Logs",         short: "LOGS",     icon: ScrollText    },
 ] as const;
 
 export const LeadDetailsTempCfg = {
@@ -41,4 +43,3 @@ export const LeadDetailsTempCfg = {
     dot: "bg-blue-400",
   },
 } as const;
-

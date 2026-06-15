@@ -64,6 +64,8 @@ export interface Lead {
   clientId?: string;
   clientName?: string;
   productIds?: string[];
+  notes?: string;
+  tags?: string[];
 }
 
 export interface Task {

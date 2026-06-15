@@ -1,5 +1,5 @@
 import React from "react";
-import { Trophy, ThumbsDown, X, Brain, ChevronRight, User, Check } from "lucide-react";
+import { Trophy, ThumbsDown, X, Brain, ChevronRight, User, Check, CalendarPlus } from "lucide-react";
 import { cn } from "../../../lib/utils";
 import { toast } from "sonner";
 
@@ -28,6 +28,7 @@ interface LeadDetailsModalHeroProps {
   setShowCopilot: (v: boolean) => void;
   onClose: () => void;
   moveToStage: (stg: any) => void;
+  onAgendarReuniao?: () => void;
 }
 
 export function LeadDetailsModalHero({
@@ -48,6 +49,7 @@ export function LeadDetailsModalHero({
   setShowCopilot,
   onClose,
   moveToStage,
+  onAgendarReuniao,
 }: LeadDetailsModalHeroProps) {
   const TempIcon = tc.icon;
   const currentStageIdx = stagesDef.findIndex((s) => s.id === currentStageId);
@@ -94,6 +96,17 @@ export function LeadDetailsModalHero({
           </div>
 
           <div className="flex items-center gap-1">
+            {onAgendarReuniao && (
+              <button
+                type="button"
+                onClick={onAgendarReuniao}
+                title="Agendar Reunião"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-blue-500/25 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[9px] font-black uppercase tracking-wider transition-all"
+              >
+                <CalendarPlus className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Reunião</span>
+              </button>
+            )}
             <button
               type="button"
               onClick={() => setShowCopilot(!showCopilot)}

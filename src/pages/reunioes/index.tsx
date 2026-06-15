@@ -4,10 +4,11 @@ import { useData } from "../../contexts/DataContext";
 import { PageContainer } from "../../components/PageContainer";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
+import { NovaReuniaoModal } from "../../components/ui/modals/reunioes/NovaReuniaoModal";
 import {
   Video, Calendar, Clock, User, Search, ExternalLink, Copy,
   LayoutList, CalendarDays, ChevronLeft, ChevronRight,
-  CheckCircle2, PlayCircle, Zap, AlertCircle,
+  CheckCircle2, PlayCircle, Zap, AlertCircle, Plus,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { toast } from "sonner";
@@ -62,6 +63,7 @@ export default function ReunioesList() {
   const [calYear, setCalYear] = useState(() => new Date().getFullYear());
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [showNovaReuniao, setShowNovaReuniao] = useState(false);
 
   const all = reunioes as Reuniao[];
 
@@ -132,6 +134,12 @@ export default function ReunioesList() {
       description={`${all.length} reuniões registradas · Gerencie e acompanhe em lista ou calendário.`}
       actions={
         <div className="flex items-center gap-3">
+          <Button
+            onClick={() => setShowNovaReuniao(true)}
+            className="bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-widest h-9 px-4 gap-2 rounded-xl shadow-sm shadow-blue-500/20"
+          >
+            <Plus className="w-3.5 h-3.5" /> Nova Reunião
+          </Button>
           <div className="flex items-center bg-white/5 border border-white/10 rounded-xl p-1 gap-0.5">
             <button
               onClick={() => setView("lista")}
@@ -464,6 +472,11 @@ export default function ReunioesList() {
 
         </div>
       </div>
+
+      <NovaReuniaoModal
+        isOpen={showNovaReuniao}
+        onClose={() => setShowNovaReuniao(false)}
+      />
     </PageContainer>
   );
 }
