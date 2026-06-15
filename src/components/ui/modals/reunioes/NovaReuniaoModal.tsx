@@ -3,7 +3,7 @@ import { Modal } from "../../modal";
 import { Button } from "../../button";
 import {
   Calendar, Clock, User, FileText, Video,
-  Copy, Building2, Users, Loader2, CheckCircle2, ExternalLink,
+  Copy, Building2, Users, Loader2, CheckCircle2, ExternalLink, MessageCircle,
 } from "lucide-react";
 import { generateJitsiLink } from "../../JitsiEmbed";
 import { googleSignIn, getAccessToken } from "../../../../lib/google-auth";
@@ -136,6 +136,37 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
     }
   };
 
+  const buildWhatsAppUrl = (meetLink: string) => {
+    const dateStr = new Date(`${date}T${time}:00`).toLocaleDateString("pt-BR");
+    const displayTitle = title.trim() || (
+      meetingType === "cliente"
+        ? `Reunião com ${linkedLead?.company || linkedLead?.name || "Cliente"}`
+        : meetingType === "equipe" ? "Reunião de Equipe" : "Reunião Interna"
+    );
+    const msg = [
+      `Olá! 👋`,
+      "",
+      `Você foi convidado para: *${displayTitle}*`,
+      "",
+      `📅 *Data:* ${dateStr} às ${time}`,
+      `⏱️ *Duração:* ${duration} minutos`,
+      pauta ? `\n📋 *Pauta:*\n${pauta}` : "",
+      "",
+      `🔗 *Link de acesso:*\n${meetLink}`,
+      "",
+      "Acesse direto pelo navegador — sem precisar instalar nada. ✅",
+    ].join("\n");
+
+    const encoded = encodeURIComponent(msg);
+    const phone = (linkedLead as any)?.phone as string | undefined;
+    if (phone) {
+      const digits = phone.replace(/\D/g, "");
+      const number = digits.startsWith("55") ? digits : `55${digits}`;
+      return `https://wa.me/${number}?text=${encoded}`;
+    }
+    return `https://wa.me/?text=${encoded}`;
+  };
+
   const handleEnter = () => {
     if (!created) return;
     onClose();
@@ -224,6 +255,16 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
               </div>
             )}
           </div>
+          <a
+            href={buildWhatsAppUrl(created.meetLink)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/25 text-[#25D366] text-[11px] font-black uppercase tracking-widest transition-all"
+          >
+            <MessageCircle className="w-3.5 h-3.5" />
+            {(linkedLead as any)?.phone ? "Enviar convite pelo WhatsApp" : "Compartilhar via WhatsApp"}
+          </a>
+
           <p className="text-[10px] text-slate-600">
             {created.calendarLink ? "Participantes receberão o convite por e-mail." : "Compartilhe o link com os participantes."}
           </p>

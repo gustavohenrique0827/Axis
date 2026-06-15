@@ -3,7 +3,7 @@ import { Modal } from "../../modal";
 import { Button } from "../../button";
 import {
   Calendar, Clock, User, FileText, Video,
-  Copy, ExternalLink, Loader2, CheckCircle2, AlertCircle,
+  Copy, ExternalLink, Loader2, CheckCircle2, AlertCircle, MessageCircle, Phone,
 } from "lucide-react";
 import { googleSignIn, getAccessToken } from "../../../../lib/google-auth";
 import { createMeetSpace } from "../../../../lib/meet";
@@ -16,7 +16,7 @@ import { cn } from "../../../../lib/utils";
 interface AgendarReuniaoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  lead: { id: string; name: string; company: string; email: string; seller: string; clienteId?: string };
+  lead: { id: string; name: string; company: string; email: string; phone?: string; seller: string; clienteId?: string };
   onConfirm: (reuniaoId: string, meetLink: string) => void;
 }
 
@@ -36,7 +36,8 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
   const [time, setTime] = useState("09:00");
   const [duration, setDuration] = useState(60);
   const [leadEmail, setLeadEmail] = useState(lead.email || "");
-  const [pauta, setPauta] = useState("");
+  const [pauta, setPauta]             = useState("");
+  const [leadPhone, setLeadPhone]     = useState(lead.phone || "");
 
   const closerOptions: { name: string; email: string }[] = (() => {
     const fromColab = (colaboradores as any[])
@@ -67,6 +68,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       setCreatedMeeting(null);
       setCloserName(lead.seller || "");
       setLeadEmail(lead.email || "");
+      setLeadPhone(lead.phone || "");
       setPauta("");
     }
   }, [isOpen, lead.seller, lead.email]);
@@ -200,6 +202,32 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
     } finally {
       setLoading(false);
     }
+  };
+
+  const buildWhatsAppUrl = (meetLink: string) => {
+    const dateStr = new Date(`${date}T${time}:00`).toLocaleDateString("pt-BR");
+    const msg = [
+      `Olá, ${lead.name}! 👋`,
+      "",
+      `Sua reunião com *${lead.company || "a Axis"}* foi confirmada. 🎯`,
+      "",
+      `📅 *Data:* ${dateStr} às ${time}`,
+      `⏱️ *Duração:* ${duration} minutos`,
+      closerName ? `👤 *Responsável:* ${closerName}` : "",
+      pauta ? `\n📋 *Pauta:*\n${pauta}` : "",
+      "",
+      `🔗 *Link de acesso:*\n${meetLink}`,
+      "",
+      "Acesse direto pelo navegador — sem precisar instalar nada. ✅",
+    ].filter((l) => l !== undefined).join("\n");
+
+    const encoded = encodeURIComponent(msg);
+    if (leadPhone) {
+      const digits = leadPhone.replace(/\D/g, "");
+      const number = digits.startsWith("55") ? digits : `55${digits}`;
+      return `https://wa.me/${number}?text=${encoded}`;
+    }
+    return `https://wa.me/?text=${encoded}`;
   };
 
   const inputCls =
@@ -394,6 +422,17 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
             />
           </div>
 
+          <div>
+            <label className={labelCls}><Phone className="w-3 h-3" /> WhatsApp do Lead</label>
+            <input
+              type="tel"
+              value={leadPhone}
+              onChange={(e) => setLeadPhone(e.target.value)}
+              placeholder="(11) 99999-9999"
+              className={inputCls}
+            />
+          </div>
+
           <div className="col-span-2">
             <label className={labelCls}><FileText className="w-3 h-3" /> Pauta (opcional)</label>
             <textarea
@@ -452,6 +491,17 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
                 </a>
               </div>
             )}
+
+            {/* Botão WhatsApp */}
+            <a
+              href={buildWhatsAppUrl(createdMeeting.meetLink)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/25 text-[#25D366] text-[11px] font-black uppercase tracking-widest transition-all"
+            >
+              <MessageCircle className="w-3.5 h-3.5" />
+              {leadPhone ? "Enviar convite pelo WhatsApp" : "Compartilhar via WhatsApp"}
+            </a>
 
             {(leadEmail || closerEmail) && (
               <p className="text-[10px] text-slate-500">
