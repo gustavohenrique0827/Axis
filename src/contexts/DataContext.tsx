@@ -230,6 +230,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [squadMetas, setSquadMetas] = useState<any[]>([]);
   const [cargos, setCargos] = useState<any[]>([]);
   const [clienteBase, setClienteBase] = useState<any[]>([]);
+  const [reunioes, setReunioes] = useState<Reuniao[]>([]);
 
   const addStudent = async (student: any) => {
     const newStudent = { ...student, id: `st${Math.random().toString(36).substring(2, 9)}` };
@@ -325,7 +326,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('certificates').select('*'),
               supabase.from('cargos').select('*'),
               supabase.from('clientes').select('*'),
-              supabase.from('reunioes').select('*'),
+              supabase.from('reunioes').select('*')
             ]);
 
             if (!leadsRes.error && leadsRes.data) setLeads(leadsRes.data as Lead[]);
@@ -956,6 +957,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const mktAutoCrud = createCrudHelper('marketing_automations', setMarketingAutomations);
   const squadMetaCrud = createCrudHelper('squad_metas', setSquadMetas);
   const cargoCrud = createCrudHelper('cargos', setCargos);
+  const reuniaoCrud = createCrudHelper('reunioes', setReunioes as any);
 
   const addFinanceEntry = async (entry: Omit<FinanceEntry, 'id'>) => {
     const newEntry = { ...entry, id: `f${Math.random().toString(36).substring(2, 9)}` };
@@ -1129,6 +1131,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       clienteBase,
       setClienteBase,
       reunioes,
+      addReuniao: (r: Omit<Reuniao, 'id' | 'createdAt'>) => reuniaoCrud.add({ ...r, id: `r${Math.random().toString(36).substring(2, 9)}`, createdAt: new Date().toISOString() }),
       addReuniao: (r: Omit<Reuniao, 'id' | 'createdAt'>) => {
         reuniaoCrud.add({ ...r, id: crypto.randomUUID(), createdAt: new Date().toISOString() });
       },

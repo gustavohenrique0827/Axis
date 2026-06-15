@@ -12,6 +12,8 @@ export async function createCalendarEvent(
     startISO: string;
     endISO: string;
     attendeeEmails: string[];
+  }
+): Promise<CalendarEvent> {
     meetLink?: string;
   }
 ): Promise<CalendarEvent> {
@@ -49,6 +51,26 @@ export async function createCalendarEvent(
         Authorization: `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
+      body: JSON.stringify({
+        summary: params.title,
+        description: params.description,
+        start: { dateTime: params.startISO, timeZone: 'America/Sao_Paulo' },
+        end: { dateTime: params.endISO, timeZone: 'America/Sao_Paulo' },
+        attendees: params.attendeeEmails.map((email) => ({ email })),
+        conferenceData: {
+          createRequest: {
+            requestId: Math.random().toString(36).substring(2),
+            conferenceSolutionKey: { type: 'hangoutsMeet' },
+          },
+        },
+      }),
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as any)?.error?.message || 'Falha ao criar evento no Google Calendar');
+  }
+  return res.json();
       body: JSON.stringify(body),
     }
   );
