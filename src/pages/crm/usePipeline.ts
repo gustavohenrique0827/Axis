@@ -224,7 +224,7 @@ export function usePipeline() {
       if (!da && !db) return 0;
       if (!da) return 1;
       if (!db) return -1;
-      return db > da ? -1 : db < da ? 1 : 0;
+      return db > da ? 1 : db < da ? -1 : 0;
     }),
   [leads, currentPipeline, sellerFilter, searchQuery, tenantFilter, isMaster, companyFilter, clientFilter]);
 
