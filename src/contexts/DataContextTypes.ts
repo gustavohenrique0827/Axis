@@ -71,6 +71,9 @@ export interface Reuniao {
   status: 'Agendada' | 'Em Andamento' | 'Concluída' | 'Cancelada';
   pauta?: string;
   relatorio?: string;
+  transcricao?: string;
+  notas_closer?: string;
+  relatorio_ia?: string;
   createdAt: string;
 }
 

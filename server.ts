@@ -572,6 +572,108 @@ app.post("/api/ai/generic-insight", async (req, res) => {
   }
 });
 
+// ── Reunião Copilot & Post-Meeting Report ─────────────────────────────────
+
+app.post("/api/ai/reuniao-copilot", async (req: any, res: any) => {
+  const { transcript, leadContext } = req.body ?? {};
+  if (!process.env.GEMINI_API_KEY) {
+    return res.json({ analysis: "API Key não configurada. Configure GEMINI_API_KEY nas variáveis de ambiente." });
+  }
+  if (!transcript?.trim()) {
+    return res.status(400).json({ error: "Transcrição vazia." });
+  }
+  try {
+    const leadInfo = leadContext ? `
+CONTEXTO DO LEAD:
+- Nome: ${leadContext.name} | Empresa: ${leadContext.company}
+- Score IA: ${leadContext.scoreIA ?? "N/A"} | Temperatura: ${leadContext.temperature ?? "N/A"}
+- Relatório SDR: ${leadContext.iaSummary ?? "Sem relatório SDR"}
+- Interesse declarado: ${leadContext.lead_interesse ?? "Não informado"}
+- Pauta da reunião: ${leadContext.pauta ?? "Não definida"}` : "";
+
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Você é o Copilot de vendas do Axis CRM, especialista em fechamento. Ajude o Closer em tempo real.
+${leadInfo}
+
+TRANSCRIÇÃO DA REUNIÃO ATÉ AGORA:
+"${transcript}"
+
+Forneça uma análise BANT objetiva e ações imediatas no formato JSON:
+{
+  "bant": {
+    "budget": { "status": "identificado|parcial|nao_identificado", "nota": "..." },
+    "authority": { "status": "identificado|parcial|nao_identificado", "nota": "..." },
+    "need": { "status": "identificado|parcial|nao_identificado", "nota": "..." },
+    "timeline": { "status": "identificado|parcial|nao_identificado", "nota": "..." }
+  },
+  "score_fechamento": 0-100,
+  "objecoes_detectadas": ["..."],
+  "proxima_acao": "...",
+  "pergunta_poderosa": "...",
+  "alerta": "..."
+}
+Responda APENAS com JSON válido, sem markdown.`,
+    });
+
+    let text = response.text?.trim() ?? "{}";
+    if (text.startsWith("```")) text = text.replace(/```json?\n?/g, "").replace(/```/g, "").trim();
+    const data = JSON.parse(text);
+    res.json({ analysis: data });
+  } catch (err: any) {
+    console.error("[Copilot Reunião]", err?.message);
+    res.status(500).json({ error: "Erro ao analisar transcrição." });
+  }
+});
+
+app.post("/api/ai/reuniao-relatorio", async (req: any, res: any) => {
+  const { transcript, notes, leadContext, pauta, reuniaoId } = req.body ?? {};
+  if (!process.env.GEMINI_API_KEY) {
+    return res.json({ relatorio: "Relatório não disponível — configure GEMINI_API_KEY." });
+  }
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Você é o analista de vendas do Axis CRM. Gere um relatório completo desta reunião.
+
+LEAD: ${leadContext?.name ?? "N/A"} | ${leadContext?.company ?? "N/A"}
+Score IA: ${leadContext?.scoreIA ?? "N/A"} | Temperatura: ${leadContext?.temperature ?? "N/A"}
+Relatório SDR: ${leadContext?.iaSummary ?? "Sem relatório"}
+Pauta: ${pauta ?? "Não definida"}
+
+TRANSCRIÇÃO:
+${transcript ?? "Sem transcrição capturada"}
+
+NOTAS DO CLOSER:
+${notes ?? "Sem notas"}
+
+Gere um relatório executivo em markdown com:
+## Resumo Executivo
+## Pontos-Chave Discutidos
+## Análise BANT Final
+## Objeções e Como Foram Tratadas
+## Próximos Passos (com responsáveis e prazos)
+## Recomendação de Fechamento (Alta/Média/Baixa probabilidade e por quê)`,
+    });
+
+    const relatorio = response.text ?? "";
+
+    if (supabase && reuniaoId) {
+      await supabase.from("reunioes").update({
+        relatorio_ia: relatorio,
+        ...(transcript ? { transcricao: transcript } : {}),
+        ...(notes ? { notas_closer: notes } : {}),
+        status: "Concluída",
+      }).eq("id", reuniaoId);
+    }
+
+    res.json({ relatorio });
+  } catch (err: any) {
+    console.error("[Relatório Reunião]", err?.message);
+    res.status(500).json({ error: "Erro ao gerar relatório." });
+  }
+});
+
 // ── WhatsApp / Evolution API Simulator ────────────────────────────────────
 
 function bodyWithFallback(req: any) { return req.body || {}; }
