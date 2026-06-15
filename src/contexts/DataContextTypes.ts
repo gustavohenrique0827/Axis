@@ -58,6 +58,7 @@ export type Appointment = {
 export interface Reuniao {
   id: string;
   leadId: string;
+  clienteId?: string;
   leadName: string;
   companyName: string;
   leadEmail: string;

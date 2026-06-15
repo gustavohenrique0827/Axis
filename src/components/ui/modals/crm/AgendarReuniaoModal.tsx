@@ -15,7 +15,7 @@ import { cn } from "../../../../lib/utils";
 interface AgendarReuniaoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  lead: { id: string; name: string; company: string; email: string; seller: string };
+  lead: { id: string; name: string; company: string; email: string; seller: string; clienteId?: string };
   onConfirm: (reuniaoId: string, meetLink: string) => void;
 }
 
@@ -121,6 +121,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       const reuniaoId = `r${Math.random().toString(36).slice(2, 9)}`;
       addReuniao({
         leadId: lead.id,
+        clienteId: lead.clienteId,
         leadName: lead.name,
         companyName: lead.company,
         leadEmail,

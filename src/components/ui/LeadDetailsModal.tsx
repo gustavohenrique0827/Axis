@@ -402,7 +402,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
         <AgendarReuniaoModal
           isOpen={showAgendarReuniao}
           onClose={() => setShowAgendarReuniao(false)}
-          lead={{ id: lead.id, name: leadName, company: companyName, email: email, seller }}
+          lead={{ id: lead.id, name: leadName, company: companyName, email: email, seller, clienteId: lead.clientId }}
           onConfirm={handleReuniaoConfirm}
         />
       )}
