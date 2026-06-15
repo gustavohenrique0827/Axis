@@ -12,31 +12,39 @@ export async function createCalendarEvent(
     startISO: string;
     endISO: string;
     attendeeEmails: string[];
+    /** true = Sala Axis (Jitsi link na descrição, sem criar Google Meet) */
+    skipConferenceData?: boolean;
   }
 ): Promise<CalendarEvent> {
-  const res = await fetch(
-    'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all',
-    {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+  const url = params.skipConferenceData
+    ? 'https://www.googleapis.com/calendar/v3/calendars/primary/events?sendUpdates=all'
+    : 'https://www.googleapis.com/calendar/v3/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all';
+
+  const body: Record<string, unknown> = {
+    summary: params.title,
+    description: params.description,
+    start: { dateTime: params.startISO, timeZone: 'America/Sao_Paulo' },
+    end: { dateTime: params.endISO, timeZone: 'America/Sao_Paulo' },
+    attendees: params.attendeeEmails.filter(Boolean).map((email) => ({ email })),
+  };
+
+  if (!params.skipConferenceData) {
+    body.conferenceData = {
+      createRequest: {
+        requestId: Math.random().toString(36).substring(2),
+        conferenceSolutionKey: { type: 'hangoutsMeet' },
       },
-      body: JSON.stringify({
-        summary: params.title,
-        description: params.description,
-        start: { dateTime: params.startISO, timeZone: 'America/Sao_Paulo' },
-        end: { dateTime: params.endISO, timeZone: 'America/Sao_Paulo' },
-        attendees: params.attendeeEmails.filter(Boolean).map((email) => ({ email })),
-        conferenceData: {
-          createRequest: {
-            requestId: Math.random().toString(36).substring(2),
-            conferenceSolutionKey: { type: 'hangoutsMeet' },
-          },
-        },
-      }),
-    }
-  );
+    };
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
   if (!res.ok) {
     const err = await res.json().catch(() => ({}));
     throw new Error((err as any)?.error?.message || 'Falha ao criar evento no Google Calendar');

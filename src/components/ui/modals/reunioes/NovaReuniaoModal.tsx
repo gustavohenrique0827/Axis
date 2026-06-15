@@ -3,9 +3,11 @@ import { Modal } from "../../modal";
 import { Button } from "../../button";
 import {
   Calendar, Clock, User, FileText, Video,
-  Copy, Building2, Users, Loader2, CheckCircle2,
+  Copy, Building2, Users, Loader2, CheckCircle2, ExternalLink,
 } from "lucide-react";
 import { generateJitsiLink } from "../../JitsiEmbed";
+import { googleSignIn, getAccessToken } from "../../../../lib/google-auth";
+import { createCalendarEvent } from "../../../../lib/google-calendar";
 import { useData } from "../../../../contexts/DataContext";
 import { toast } from "sonner";
 import { cn } from "../../../../lib/utils";
@@ -40,16 +42,19 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
   const [linkedLeadId, setLinkedLeadId] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [created, setCreated] = useState<{ id: string; meetLink: string } | null>(null);
+  const [created, setCreated] = useState<{ id: string; meetLink: string; calendarLink?: string } | null>(null);
 
-  const closerOptions: string[] = (() => {
+  const closerOptions: { name: string; email: string }[] = (() => {
     const fromColab = (colaboradores as any[])
       .filter((c: any) => c.status !== "Desligado")
-      .map((c: any) => c.nome || c.name || "")
-      .filter(Boolean);
+      .map((c: any) => ({ name: c.nome || c.name || "", email: c.email || "" }))
+      .filter((c) => c.name);
     if (fromColab.length > 0) return fromColab;
-    return [...new Set((leads as any[]).map((l: any) => l.seller).filter(Boolean))] as string[];
+    const sellers = [...new Set((leads as any[]).map((l: any) => l.seller).filter(Boolean))] as string[];
+    return sellers.map((s) => ({ name: s, email: "" }));
   })();
+
+  const closerEmail = closerOptions.find((c) => c.name === closerName)?.email ?? "";
 
   const linkedLead = linkedLeadId
     ? (leads as any[]).find((l) => l.id === linkedLeadId)
@@ -80,7 +85,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
         companyName:  linkedLead?.company ?? displayTitle,
         leadEmail:    linkedLead?.email ?? "",
         closerName,
-        closerEmail:  "",
+        closerEmail,
         scheduledAt,
         durationMinutes: duration,
         meetLink,
@@ -90,8 +95,40 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
         createdAt: new Date().toISOString(),
       });
 
-      setCreated({ id: reuniaoId, meetLink });
-      toast.success("Reunião criada com sucesso!");
+      // Tenta criar evento no Google Calendar com link Jitsi na descrição
+      let calendarLink: string | undefined;
+      try {
+        let token = await getAccessToken();
+        if (!token) {
+          const r = await googleSignIn();
+          if (r) token = r.accessToken;
+        }
+        if (token) {
+          const startISO = `${date}T${time}:00`;
+          const endDate  = new Date(`${date}T${time}:00`);
+          endDate.setMinutes(endDate.getMinutes() + duration);
+          const attendees = [linkedLead?.email, closerEmail].filter(Boolean) as string[];
+          const calEvent = await createCalendarEvent(token, {
+            title: displayTitle,
+            description: [
+              "🖥️ Sala de vídeo Axis (Jitsi)",
+              `🔗 Acesse: ${meetLink}`,
+              "Nenhum app necessário — funciona direto no navegador.",
+              pauta ? `\n📋 Pauta:\n${pauta}` : "",
+            ].filter(Boolean).join("\n"),
+            startISO,
+            endISO: endDate.toISOString().slice(0, 19),
+            attendeeEmails: attendees,
+            skipConferenceData: true,
+          });
+          calendarLink = calEvent.htmlLink;
+        }
+      } catch {
+        // Sala foi criada com sucesso — convite de calendário é opcional
+      }
+
+      setCreated({ id: reuniaoId, meetLink, calendarLink });
+      toast.success(calendarLink ? "Reunião criada! Convite enviado pelo Google Calendar." : "Reunião criada com sucesso!");
     } catch (err) {
       toast.error("Erro ao criar reunião.");
     } finally {
@@ -163,13 +200,33 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
           </div>
           <div>
             <p className="text-base font-black text-white">Reunião Criada!</p>
-            <p className="text-xs text-slate-500 mt-1">Sala Axis pronta para uso</p>
+            <p className="text-xs text-slate-500 mt-1">
+              {created.calendarLink ? "Convite enviado pelo Google Calendar." : "Sala Axis pronta para uso"}
+            </p>
           </div>
-          <div className="w-full px-4 py-3 bg-[#070E1A] border border-white/[0.08] rounded-xl text-left">
-            <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Link da Sala</p>
-            <p className="text-[11px] text-blue-400 font-mono break-all">{created.meetLink}</p>
+          <div className="w-full px-4 py-3 bg-[#070E1A] border border-white/[0.08] rounded-xl text-left space-y-3">
+            <div>
+              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Link da Sala</p>
+              <p className="text-[11px] text-blue-400 font-mono break-all">{created.meetLink}</p>
+            </div>
+            {created.calendarLink && (
+              <div>
+                <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Evento no Google Calendar</p>
+                <a
+                  href={created.calendarLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-[11px] text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  <ExternalLink className="w-3 h-3 shrink-0" />
+                  Abrir evento no Calendar
+                </a>
+              </div>
+            )}
           </div>
-          <p className="text-[10px] text-slate-600">Compartilhe o link com os participantes.</p>
+          <p className="text-[10px] text-slate-600">
+            {created.calendarLink ? "Participantes receberão o convite por e-mail." : "Compartilhe o link com os participantes."}
+          </p>
         </div>
       ) : (
         /* ── Form ── */
@@ -179,7 +236,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
           <div className="space-y-1.5">
             <label className="text-[8px] font-black uppercase tracking-widest text-slate-500">Tipo de Reunião</label>
             <div className="grid grid-cols-3 gap-2">
-              {MEETING_TYPES.map(({ id, label, desc, icon: Icon }) => (
+              {MEETING_TYPES.map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   onClick={() => setMeetingType(id)}
@@ -248,8 +305,8 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
                 className="w-full bg-[#0B1120] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
               >
                 <option value="">Selecionar responsável...</option>
-                {closerOptions.map((name) => (
-                  <option key={name} value={name}>{name}</option>
+                {closerOptions.map((c) => (
+                  <option key={c.name} value={c.name}>{c.name}</option>
                 ))}
               </select>
             ) : (

@@ -25,7 +25,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
 
   const [googleEmail, setGoogleEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [createdMeeting, setCreatedMeeting] = useState<{ id: string; meetLink: string } | null>(null);
+  const [createdMeeting, setCreatedMeeting] = useState<{ id: string; meetLink: string; calendarLink?: string } | null>(null);
   const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
   const [manualLink, setManualLink] = useState("");
   const [videoProvider, setVideoProvider] = useState<"axis" | "google">("axis");
@@ -114,28 +114,43 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       setLoading(true);
       try {
         const jitsiLink = generateJitsiLink(reuniaoId);
-        // Tenta criar evento no Google Calendar com link Jitsi na descrição
-        if (googleEmail) {
-          try {
-            let token = await getAccessToken();
-            if (!token) {
-              const r = await googleSignIn();
-              if (r) { token = r.accessToken; setGoogleEmail(r.user.email || "Conectado"); }
-            }
-            if (token) {
-              await createCalendarEvent(token, {
-                title: `Reunião — ${lead.company || lead.name}`,
-                description: `${pauta ? pauta + "\n\n" : ""}Sala de vídeo: ${jitsiLink}`,
-                startISO, endISO, attendeeEmails: attendees,
-              });
-            }
-          } catch {
-            toast.warning("Sala criada, mas convite de calendário não enviado.");
+
+        // Sempre tenta criar evento no Google Calendar com link Jitsi na descrição
+        let calendarLink: string | undefined;
+        try {
+          let token = await getAccessToken();
+          if (!token) {
+            const r = await googleSignIn();
+            if (r) { token = r.accessToken; setGoogleEmail(r.user.email || "Conectado"); }
           }
+          if (token) {
+            const endDate = new Date(`${date}T${time}:00`);
+            endDate.setMinutes(endDate.getMinutes() + duration);
+            const calEvent = await createCalendarEvent(token, {
+              title: `Reunião — ${lead.company || lead.name}`,
+              description: [
+                "🖥️ Sala de vídeo Axis (Jitsi)",
+                `🔗 Acesse: ${jitsiLink}`,
+                "Nenhum app necessário — funciona direto no navegador.",
+                pauta ? `\n📋 Pauta:\n${pauta}` : "",
+              ].filter(Boolean).join("\n"),
+              startISO,
+              endISO: endDate.toISOString().slice(0, 19),
+              attendeeEmails: attendees,
+              skipConferenceData: true,
+            });
+            calendarLink = calEvent.htmlLink;
+          }
+        } catch {
+          toast.warning("Sala criada, mas convite de calendário não enviado.");
         }
+
         (addReuniao as any)({ id: reuniaoId, ...baseReuniao, meetLink: jitsiLink });
-        setCreatedMeeting({ id: reuniaoId, meetLink: jitsiLink });
-        toast.success("Sala Axis criada! O vídeo abre direto no sistema.");
+        setCreatedMeeting({ id: reuniaoId, meetLink: jitsiLink, calendarLink });
+        toast.success(calendarLink
+          ? "Sala Axis criada! Convite enviado pelo Google Calendar."
+          : "Sala Axis criada! O vídeo abre direto no sistema."
+        );
       } catch (err: any) {
         toast.error("Erro ao criar sala: " + (err.message || "Tente novamente"));
       } finally {
@@ -396,29 +411,52 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
           <div className="bg-emerald-500/[0.08] border border-emerald-500/20 rounded-xl p-4 space-y-3">
             <div className="flex items-center gap-2 text-emerald-400 font-black text-sm">
               <CheckCircle2 className="w-4 h-4" />
-              Reunião criada! Convite enviado.
+              Reunião criada! {createdMeeting.calendarLink ? "Convite enviado pelo Google Calendar." : "Sala pronta."}
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                readOnly
-                value={createdMeeting.meetLink}
-                className="flex-1 bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-slate-300 font-mono min-w-0"
-              />
-              <button
-                onClick={() => { navigator.clipboard.writeText(createdMeeting.meetLink); toast.success("Link copiado!"); }}
-                className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-xs text-slate-400 hover:text-white transition-all"
-              >
-                <Copy className="w-3 h-3" />
-              </button>
-              <a href={createdMeeting.meetLink} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                <button className="flex items-center gap-1 px-2.5 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-xs text-slate-400 hover:text-white transition-all">
-                  <ExternalLink className="w-3 h-3" />
+
+            {/* Link da sala */}
+            <div>
+              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Link da Sala</p>
+              <div className="flex items-center gap-2">
+                <input
+                  readOnly
+                  value={createdMeeting.meetLink}
+                  className="flex-1 bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-slate-300 font-mono min-w-0"
+                />
+                <button
+                  onClick={() => { navigator.clipboard.writeText(createdMeeting.meetLink); toast.success("Link copiado!"); }}
+                  className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-xs text-slate-400 hover:text-white transition-all"
+                >
+                  <Copy className="w-3 h-3" />
                 </button>
-              </a>
+                <a href={createdMeeting.meetLink} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                  <button className="flex items-center gap-1 px-2.5 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-xs text-slate-400 hover:text-white transition-all">
+                    <ExternalLink className="w-3 h-3" />
+                  </button>
+                </a>
+              </div>
             </div>
+
+            {/* Link do evento no Google Calendar */}
+            {createdMeeting.calendarLink && (
+              <div>
+                <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Evento no Google Calendar</p>
+                <a
+                  href={createdMeeting.calendarLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-[11px] text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  <ExternalLink className="w-3 h-3 shrink-0" />
+                  Abrir evento no Calendar
+                </a>
+              </div>
+            )}
+
             {(leadEmail || closerEmail) && (
               <p className="text-[10px] text-slate-500">
-                Convite enviado para: {[leadEmail, closerEmail].filter(Boolean).join(", ")}
+                {createdMeeting.calendarLink ? "Convite enviado para:" : "Participantes:"}{" "}
+                {[leadEmail, closerEmail].filter(Boolean).join(", ")}
               </p>
             )}
           </div>
