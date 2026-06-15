@@ -2,6 +2,7 @@ import express from "express";
 import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
+import axios from "axios";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -97,6 +98,69 @@ const validApiKeys = new Set(
 
 const FORM_TENANT_ID = process.env.AXIS_FORM_TENANT_ID || "";
 const FORM_CLIENT_ID = process.env.AXIS_FORM_CLIENT_ID || "";
+
+// ── AI Helpers: Gemini → Groq fallback ────────────────────────────────────
+
+async function callGroq(prompt: string): Promise<string> {
+  const key = process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
+  if (!key) throw new Error("GROQ_API_KEY não configurada.");
+  const res = await axios.post(
+    "https://api.groq.com/openai/v1/chat/completions",
+    {
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.3,
+      max_tokens: 1500,
+    },
+    {
+      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+      timeout: 20000,
+    }
+  );
+  return (res.data.choices?.[0]?.message?.content ?? "") as string;
+}
+
+async function callGemini(prompt: string): Promise<string> {
+  const response = await ai.models.generateContent({
+    model: "gemini-2.0-flash",
+    contents: prompt,
+  });
+  let text = "";
+  try {
+    text = (typeof response.text === "function"
+      ? (response as any).text()
+      : response.text ?? "") as string;
+  } catch {
+    text = (response as any)?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  }
+  return text;
+}
+
+// Tenta Gemini; se falhar, usa Groq automaticamente
+async function generateAI(prompt: string): Promise<string> {
+  if (process.env.GEMINI_API_KEY) {
+    try {
+      const text = await callGemini(prompt);
+      if (text.trim()) return text;
+      throw new Error("Gemini retornou vazio.");
+    } catch (err) {
+      console.warn("[AI] Gemini falhou, usando Groq:", (err as any)?.message?.slice(0, 100));
+    }
+  }
+  return callGroq(prompt);
+}
+
+// Extrai JSON de respostas que podem ter markdown ou texto extra
+function extractJSON(raw: string): any {
+  let text = raw.trim()
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```$/i, "")
+    .trim();
+  const start = text.indexOf("{");
+  const end   = text.lastIndexOf("}");
+  if (start === -1 || end === -1) throw new Error("Sem JSON válido na resposta: " + text.slice(0, 200));
+  return JSON.parse(text.slice(start, end + 1));
+}
 
 // ── Express App ────────────────────────────────────────────────────────────
 
@@ -577,37 +641,24 @@ app.post("/api/ai/generic-insight", async (req, res) => {
 // ── Copilot de Reunião (tempo real — BANT + transcrição) ──────────────────────
 app.post("/api/ai/reuniao-copilot", async (req: any, res: any) => {
   const { transcript, leadContext } = req.body ?? {};
-  if (!process.env.GEMINI_API_KEY) {
-    return res.json({ analysis: null, error: "GEMINI_API_KEY não configurada." });
-  }
-  if (!transcript?.trim()) {
-    return res.status(400).json({ error: "Transcrição vazia." });
-  }
+  const hasAI = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
+  if (!hasAI) return res.json({ analysis: null, error: "Nenhuma chave de IA configurada." });
+  if (!transcript?.trim()) return res.status(400).json({ error: "Transcrição vazia." });
+
   try {
     const leadInfo = leadContext
       ? `\nCONTEXTO DO LEAD:\n- Nome: ${leadContext.name ?? "?"} | Empresa: ${leadContext.company ?? "?"}\n- Score: ${leadContext.scoreIA ?? "N/A"} | Temperatura: ${leadContext.temperature ?? "N/A"}\n- SDR Summary: ${leadContext.iaSummary ?? "Sem relatório"}\n- Interesse: ${leadContext.lead_interesse ?? "Não informado"}\n- Pauta: ${leadContext.pauta ?? "Não definida"}`
       : "";
 
-    const prompt = `Você é o Copilot de vendas Axis CRM. Analise a transcrição abaixo e retorne APENAS um objeto JSON válido (sem markdown, sem comentários).${leadInfo}
+    const prompt = `Você é o Copilot de vendas Axis CRM. Analise a transcrição e retorne SOMENTE o JSON, sem markdown.${leadInfo}
 
 TRANSCRIÇÃO: "${transcript.slice(0, 4000)}"
 
-JSON esperado:
+Responda APENAS com este JSON:
 {"bant":{"budget":{"status":"identificado","nota":"..."},"authority":{"status":"parcial","nota":"..."},"need":{"status":"identificado","nota":"..."},"timeline":{"status":"nao_identificado","nota":"..."}},"score_fechamento":65,"objecoes_detectadas":["..."],"proxima_acao":"...","pergunta_poderosa":"...","alerta":""}`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
-    });
-
-    let text = (response.text ?? "").trim();
-    // Strip markdown fences if present
-    text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
-    // Find the first { and last } to extract JSON
-    const start = text.indexOf("{");
-    const end   = text.lastIndexOf("}");
-    if (start === -1 || end === -1) throw new Error("Resposta sem JSON: " + text.slice(0, 200));
-    const data = JSON.parse(text.slice(start, end + 1));
+    const raw  = await generateAI(prompt);
+    const data = extractJSON(raw);
     return res.json({ analysis: data });
   } catch (err: any) {
     console.error("[Copilot Reunião]", err?.message);
@@ -618,14 +669,12 @@ JSON esperado:
 // ── Copilot de Lead (pré-reunião — análise estática do perfil) ────────────────
 app.post("/api/ai/lead-copilot", async (req: any, res: any) => {
   const { leadContext } = req.body ?? {};
-  if (!process.env.GEMINI_API_KEY) {
-    return res.json({ analysis: null, error: "GEMINI_API_KEY não configurada." });
-  }
-  if (!leadContext) {
-    return res.status(400).json({ error: "Contexto do lead ausente." });
-  }
+  const hasAI = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
+  if (!hasAI) return res.json({ analysis: null, error: "Nenhuma chave de IA configurada." });
+  if (!leadContext) return res.status(400).json({ error: "Contexto do lead ausente." });
+
   try {
-    const prompt = `Você é o Copilot de CRM do Axis. Analise o perfil do lead e retorne SOMENTE o JSON abaixo preenchido, sem texto adicional, sem markdown, sem explicações.
+    const prompt = `Você é o Copilot de CRM do Axis. Analise o perfil do lead e retorne SOMENTE o JSON, sem markdown, sem texto extra.
 
 PERFIL DO LEAD:
 Nome: ${leadContext.name ?? "Não informado"}
@@ -637,51 +686,35 @@ Interesse declarado: ${leadContext.lead_interesse ?? "Não informado"}
 Resumo SDR: ${leadContext.iaSummary ?? "Sem histórico"}
 Produto de interesse: ${leadContext.product ?? "Não definido"}
 
-Responda APENAS com este JSON (substitua os valores):
+Responda APENAS com este JSON:
 {"resumo_curto":"...","probabilidade_fechamento":70,"recomendacao_proximo_passo":"...","abordagem_ideal":"...","pergunta_abertura":"...","objecoes_previstas":["...","..."],"alerta":""}`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: prompt,
-    });
-
-    // Extrai text de forma segura (v1.x pode jogar exceção em safety blocks)
-    let text = "";
-    try {
-      text = (typeof response.text === "function"
-        ? (response as any).text()
-        : response.text ?? "") as string;
-    } catch {
-      text = response?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-    }
-    text = text.trim()
-      .replace(/^```(?:json)?\s*/i, "")
-      .replace(/\s*```$/i, "")
-      .trim();
-
-    const start = text.indexOf("{");
-    const end   = text.lastIndexOf("}");
-    if (start === -1 || end === -1) {
-      console.error("[Copilot Lead] Sem JSON na resposta:", text.slice(0, 300));
-      throw new Error("Modelo não retornou JSON válido.");
-    }
-    const data = JSON.parse(text.slice(start, end + 1));
+    const raw  = await generateAI(prompt);
+    const data = extractJSON(raw);
     return res.json({ analysis: data });
   } catch (err: any) {
     console.error("[Copilot Lead] Erro:", err?.message);
-    return res.status(500).json({ error: "Erro ao analisar lead: " + (err?.message ?? "desconhecido") });
+    return res.json({
+      analysis: {
+        resumo_curto: "Análise indisponível no momento. Tente novamente.",
+        probabilidade_fechamento: null,
+        recomendacao_proximo_passo: "Clique em 'Analisar Lead' para tentar novamente.",
+        abordagem_ideal: null,
+        pergunta_abertura: null,
+        objecoes_previstas: [],
+        alerta: "Falha ao conectar com a IA: " + (err?.message ?? "erro desconhecido"),
+      },
+    });
   }
 });
 
 app.post("/api/ai/reuniao-relatorio", async (req: any, res: any) => {
   const { transcript, notes, leadContext, pauta, reuniaoId } = req.body ?? {};
-  if (!process.env.GEMINI_API_KEY) {
-    return res.json({ relatorio: "Relatório não disponível — configure GEMINI_API_KEY." });
-  }
+  const hasAI = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
+  if (!hasAI) return res.json({ relatorio: "Relatório não disponível — configure uma chave de IA." });
+
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.0-flash",
-      contents: `Você é o analista de vendas do Axis CRM. Gere um relatório completo desta reunião.
+    const relatorio = await generateAI(`Você é o analista de vendas do Axis CRM. Gere um relatório completo desta reunião.
 
 LEAD: ${leadContext?.name ?? "N/A"} | ${leadContext?.company ?? "N/A"}
 Score IA: ${leadContext?.scoreIA ?? "N/A"} | Temperatura: ${leadContext?.temperature ?? "N/A"}
@@ -689,7 +722,7 @@ Relatório SDR: ${leadContext?.iaSummary ?? "Sem relatório"}
 Pauta: ${pauta ?? "Não definida"}
 
 TRANSCRIÇÃO:
-${transcript ?? "Sem transcrição capturada"}
+${(transcript ?? "Sem transcrição capturada").slice(0, 4000)}
 
 NOTAS DO CLOSER:
 ${notes ?? "Sem notas"}
@@ -700,10 +733,7 @@ Gere um relatório executivo em markdown com:
 ## Análise BANT Final
 ## Objeções e Como Foram Tratadas
 ## Próximos Passos (com responsáveis e prazos)
-## Recomendação de Fechamento (Alta/Média/Baixa probabilidade e por quê)`,
-    });
-
-    const relatorio = response.text ?? "";
+## Recomendação de Fechamento (Alta/Média/Baixa probabilidade e por quê)`);
 
     if (supabase && reuniaoId) {
       await supabase.from("reunioes").update({
