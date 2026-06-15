@@ -1,5 +1,6 @@
 import { Plus, ChevronRight } from "lucide-react";
 import { LeadCard } from "./LeadCard";
+import { useData } from "../../../../contexts/DataContext";
 
 interface PipelineKanbanBoardProps {
   activePipelineStages: any[];
@@ -37,6 +38,19 @@ export function PipelineKanbanBoard({
   setIsModalOpen, handleTransferToComercial, handleExportIAResume,
   setWebhookModalLead, triggerCelebration, onReuniaoStageDrop,
 }: PipelineKanbanBoardProps) {
+  const { products } = useData();
+
+  function getLeadValue(item: any): number {
+    const ids: string[] = Array.isArray(item.productIds) ? item.productIds : [];
+    if (ids.length > 0) {
+      const total = (products as any[]).reduce(
+        (s: number, p: any) => ids.includes(p.id) ? s + (Number(p.price) || 0) : s, 0
+      );
+      if (total > 0) return total;
+    }
+    return parseFloat(String(item.value ?? "").replace(/[^\d,]/g, "").replace(",", ".")) || 0;
+  }
+
   return (
     <div
       className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin"
@@ -94,7 +108,7 @@ export function PipelineKanbanBoard({
                   <div className="flex items-center gap-1.5 shrink-0">
                     <span className="text-[9px] font-mono font-bold text-slate-600">
                       {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(
-                        stageLeads.reduce((sum, item: any) => sum + (parseFloat(String(item.value ?? "").replace(/[^\d]/g, "")) || 0), 0)
+                        stageLeads.reduce((sum, item: any) => sum + getLeadValue(item), 0)
                       )}
                     </span>
                     <span className="text-[10px] font-black text-white bg-white/10 px-2 py-0.5 rounded-full shrink-0">{stageLeads.length}</span>
