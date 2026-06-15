@@ -8,8 +8,10 @@ import { PipelineTopActions } from "./components/Pipeline/PipelineTopActions";
 
 import { NewLeadModal } from "../../components/ui/modals/crm/NewLeadModal";
 import { LeadDetailsModal } from "../../components/ui/LeadDetailsModal";
+import { AgendarReuniaoModal } from "../../components/ui/modals/crm/AgendarReuniaoModal";
 import { toast } from "sonner";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabase";
 
 import { usePipeline } from "./usePipeline";
 import { PipelineAnalytics } from "./components/Pipeline/PipelineAnalytics";
@@ -27,10 +29,12 @@ type ViewMode = "kanban" | "lista";
 const tempOrder: Record<string, number> = { quente: 3, morno: 2, frio: 1 };
 
 export default function Pipeline() {
+  const navigate = useNavigate();
   const [view, setView] = useState<ViewMode>("kanban");
   const [minimizedColumns, setMinimizedColumns] = useState<Set<string>>(new Set());
   const [temperatureFilter, setTemperatureFilter] = useState("Todas");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
+  const [agendarReuniaoLead, setAgendarReuniaoLead] = useState<any | null>(null);
 
   const {
     isModalOpen, setIsModalOpen,
@@ -72,6 +76,30 @@ export default function Pipeline() {
       next.has(stageId) ? next.delete(stageId) : next.add(stageId);
       return next;
     });
+
+  const handleReuniaoStageDrop = (leadId: string, _stage: any) => {
+    const lead = (leads as any[]).find((l: any) => l.id === leadId);
+    if (lead) setAgendarReuniaoLead(lead);
+  };
+
+  const handleReuniaoConfirm = async (reuniaoId: string) => {
+    setAgendarReuniaoLead(null);
+    let targetStageId = "1";
+    if (supabase) {
+      try {
+        const { data } = await supabase.from("app_settings").select("value").eq("key", "axis_reuniao_config").maybeSingle();
+        if (data?.value) {
+          const cfg = typeof data.value === "string" ? JSON.parse(data.value) : data.value;
+          if (cfg?.promotionStageId) targetStageId = cfg.promotionStageId;
+        }
+      } catch {}
+    }
+    if (agendarReuniaoLead) {
+      updateLead(agendarReuniaoLead.id, { pipelineId: "comercial", stageId: targetStageId });
+      toast.success("Lead promovido para o funil Comercial!");
+    }
+    navigate("/app/reunioes/" + reuniaoId);
+  };
 
   const checkCapacityAndOpenModal = () => {
     const count = leads.filter((l: any) => l.pipelineId === "comercial" || !l.pipelineId).length;
@@ -147,6 +175,7 @@ export default function Pipeline() {
                 setSelectedLead={setSelectedLead} setIsModalOpen={setIsModalOpen}
                 handleTransferToComercial={handleTransferToComercial} handleExportIAResume={handleExportIAResume}
                 setWebhookModalLead={setWebhookModalLead} triggerCelebration={triggerCelebration}
+                onReuniaoStageDrop={handleReuniaoStageDrop}
               />
             ) : !noPipelineConfigured ? <PipelineEmptySelection /> : null}
 
@@ -167,6 +196,14 @@ export default function Pipeline() {
       <NewLeadModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} firstComercialStageId={firstComercialStageId} firstSdrStageId={firstSdrStageId} />
       <LeadDetailsModal isOpen={!!selectedLead} onClose={() => setSelectedLead(null)} lead={selectedLead} />
       <WebhookModal webhookModalLead={webhookModalLead} setWebhookModalLead={setWebhookModalLead} webhookUrl={webhookUrl} setWebhookUrl={setWebhookUrl} />
+      {agendarReuniaoLead && (
+        <AgendarReuniaoModal
+          isOpen={!!agendarReuniaoLead}
+          onClose={() => setAgendarReuniaoLead(null)}
+          lead={{ id: agendarReuniaoLead.id, name: agendarReuniaoLead.name, company: agendarReuniaoLead.company, email: agendarReuniaoLead.email, seller: agendarReuniaoLead.seller, clienteId: agendarReuniaoLead.clientId }}
+          onConfirm={handleReuniaoConfirm}
+        />
+      )}
     </PageContainer>
   );
 }

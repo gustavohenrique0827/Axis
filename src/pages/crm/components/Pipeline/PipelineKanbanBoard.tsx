@@ -25,6 +25,7 @@ interface PipelineKanbanBoardProps {
   handleExportIAResume: (e: any, lead: any) => void;
   setWebhookModalLead: (lead: any) => void;
   triggerCelebration: () => void;
+  onReuniaoStageDrop?: (leadId: string, stage: any) => void;
 }
 
 export function PipelineKanbanBoard({
@@ -34,7 +35,7 @@ export function PipelineKanbanBoard({
   updateLead, tempDropdownId, setTempDropdownId,
   openDropdownId, setOpenDropdownId, setSelectedLead,
   setIsModalOpen, handleTransferToComercial, handleExportIAResume,
-  setWebhookModalLead, triggerCelebration,
+  setWebhookModalLead, triggerCelebration, onReuniaoStageDrop,
 }: PipelineKanbanBoardProps) {
   return (
     <div
@@ -55,8 +56,10 @@ export function PipelineKanbanBoard({
               e.preventDefault();
               const leadId = e.dataTransfer.getData("text/plain");
               if (leadId) {
+                const isReuniaoStage = (stage.name || "").toLowerCase().includes("reuni");
                 updateLead(leadId, { stageId: stage.id, status: isLastStage ? "Fechado" : "Em Negociação" });
                 if (isLastStage && currentPipeline === "comercial") triggerCelebration();
+                if (isReuniaoStage && onReuniaoStageDrop) onReuniaoStageDrop(leadId, stage);
               }
               setDraggedOverStageId(null);
               setDraggedLeadId(null);
