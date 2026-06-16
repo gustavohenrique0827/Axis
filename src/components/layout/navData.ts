@@ -145,9 +145,10 @@ export const navSections = [
     reqModule: "imobiliario",
     items: [
       { name: "Painel Imobiliário", path: "/app/imobiliario/painel", icon: Building2 },
+      { name: "Pipeline de Vendas", path: "/app/imobiliario/pipeline", icon: Columns3 },
       { name: "Imóveis", path: "/app/imobiliario/imoveis", icon: KeySquare },
       { name: "Corretores", path: "/app/imobiliario/corretores", icon: Users },
-      { name: "Leads Imobiliários", path: "/app/imobiliario/leads", icon: Columns3 },
+      { name: "Leads", path: "/app/imobiliario/leads", icon: Users },
       { name: "Visitas", path: "/app/imobiliario/visitas", icon: Calendar },
     ],
   },
