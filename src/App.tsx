@@ -249,7 +249,7 @@ function AppContent() {
             <Route path="pipeline" element={<ImobiliariosPipeline />} />
             <Route path="imoveis" element={<ImobiliariosImoveis />} />
             <Route path="corretores" element={<ImobiliariosCorretores />} />
-            <Route path="leads" element={<ImobiliariosLeads />} />
+            <Route path="leads" element={<Navigate to="/app/imobiliario/pipeline" replace />} />
             <Route path="visitas" element={<ImobiliariosVisitas />} />
           </Route>
 
