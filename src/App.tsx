@@ -86,6 +86,12 @@ import MarketingFormularios from "./pages/marketing/MarketingFormularios";
 import RHColaboradores from "./pages/hr/RHColaboradores";
 import ReunioesList from "./pages/reunioes/index";
 import ReuniaoRoom from "./pages/reunioes/ReuniaoRoom";
+import ImobiliarioPainel from "./pages/imobiliario/PainelGeral";
+import ImobiliariosImoveis from "./pages/imobiliario/Imoveis";
+import ImobiliariosCorretores from "./pages/imobiliario/Corretores";
+import ImobiliariosLeads from "./pages/imobiliario/Leads";
+import ImobiliariosVisitas from "./pages/imobiliario/Visitas";
+import PortfolioCorretor from "./pages/imobiliario/PortfolioCorretor";
 import PainelDev from "./pages/dev/PainelDev";
 import ProjetosDev from "./pages/dev/Projetos";
 import SprintsDev from "./pages/dev/Sprints";
@@ -235,6 +241,16 @@ function AppContent() {
             <Route path="ambientes" element={<AmbientesDev />} />
           </Route>
 
+          {/* Módulo Imobiliário */}
+          <Route path="imobiliario">
+            <Route index element={<Navigate to="painel" replace />} />
+            <Route path="painel" element={<ImobiliarioPainel />} />
+            <Route path="imoveis" element={<ImobiliariosImoveis />} />
+            <Route path="corretores" element={<ImobiliariosCorretores />} />
+            <Route path="leads" element={<ImobiliariosLeads />} />
+            <Route path="visitas" element={<ImobiliariosVisitas />} />
+          </Route>
+
           <Route path="reunioes">
             <Route index element={<ReunioesList />} />
             <Route path=":id" element={<ReuniaoRoom />} />
@@ -242,6 +258,9 @@ function AppContent() {
 
           <Route path="admin" element={<AdminSaaS />} />
         </Route>
+
+        {/* Portfólio público do corretor — sem autenticação */}
+        <Route path="/corretor/:slug" element={<PortfolioCorretor />} />
 
         {/* Marketing/Capture Forms Hub */}
         <Route path="/f/:niche" element={<InteractiveForm />} />

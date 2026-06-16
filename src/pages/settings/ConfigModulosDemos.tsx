@@ -29,6 +29,7 @@ export default function ConfigModulosDemos() {
     bi: true,
     clinica: true,
     dev: true,
+    imobiliario: false,
   };
 
   const [selectedTenant, setSelectedTenant] = useState<string>(() => user?.tenantName || "G-Tech Master");
@@ -88,7 +89,7 @@ export default function ConfigModulosDemos() {
     let preset: typeof activeModules;
     switch (presetName) {
       case "ALL_ACTIVE":
-        preset = { crm: true, educacao: true, produtividade: true, financeiro: true, catalogo: true, engajamento: true, rh: true, bi: true, clinica: true, marketing: true, dev: true };
+        preset = { crm: true, educacao: true, produtividade: true, financeiro: true, catalogo: true, engajamento: true, rh: true, bi: true, clinica: true, marketing: true, dev: true, imobiliario: true };
         toast.info("Aplicado Preset: Ecossistema Global (Todos Ativos)");
         break;
       case "EDUCACAO":
@@ -321,7 +322,8 @@ export default function ConfigModulosDemos() {
                   { id: 'rh', title: "RH & Colaboradores", desc: "Equipe interna, comissões de corretores/closers", icon: Users },
                   { id: 'clinica', title: "Clínica & Saúde", desc: "Prontuários, Telemedicina e Agendamento", icon: Activity },
                   { id: 'bi', title: "BI & Indicadores Relatórios", desc: "Melhores estatísticas de faturamento e OTE", icon: Columns3 },
-                  { id: 'dev', title: "Dev & Tecnologia", desc: "Projetos, Sprints, Issues, Repositórios e Equipe Dev", icon: Code2 }
+                  { id: 'dev', title: "Dev & Tecnologia", desc: "Projetos, Sprints, Issues, Repositórios e Equipe Dev", icon: Code2 },
+                  { id: 'imobiliario', title: "Imobiliário & Corretores", desc: "Portfólio de imóveis, corretores, visitas e leads imobiliários", icon: UserCheck }
                 ].map((mod) => {
                   const isEnabled = activeModules[mod.id] ?? true;
                   return (

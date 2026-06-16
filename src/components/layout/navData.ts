@@ -31,6 +31,8 @@ import {
   Bug,
   GitBranch,
   MonitorCheck,
+  Building2,
+  KeySquare,
 } from "lucide-react";
 
 export const navSections = [
@@ -136,6 +138,17 @@ export const navSections = [
       { name: "Issues & Bugs", path: "/app/dev/issues", icon: Bug },
       { name: "Repositórios", path: "/app/dev/repositorios", icon: GitBranch },
       { name: "Ambientes", path: "/app/dev/ambientes", icon: MonitorCheck },
+    ],
+  },
+  {
+    title: "Imobiliário",
+    reqModule: "imobiliario",
+    items: [
+      { name: "Painel Imobiliário", path: "/app/imobiliario/painel", icon: Building2 },
+      { name: "Imóveis", path: "/app/imobiliario/imoveis", icon: KeySquare },
+      { name: "Corretores", path: "/app/imobiliario/corretores", icon: Users },
+      { name: "Leads Imobiliários", path: "/app/imobiliario/leads", icon: Columns3 },
+      { name: "Visitas", path: "/app/imobiliario/visitas", icon: Calendar },
     ],
   },
   {
