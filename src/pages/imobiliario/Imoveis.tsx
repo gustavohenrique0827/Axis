@@ -28,16 +28,6 @@ type Imovel = {
   created_at?: string;
 };
 
-const MOCK: Imovel[] = [
-  { id: "1", titulo: "Apto 3 quartos - Moema", tipo: "Apartamento", operacao: "Venda", status: "Disponível", valor: 850000, bairro: "Moema", cidade: "São Paulo", area: 120, quartos: 3, banheiros: 2, vagas: 2, corretor: "Ana Lima", visitas: 12, descricao: "Apartamento moderno com varanda gourmet e vista para o parque. Acabamento de alto padrão, cozinha americana, 2 suítes." },
-  { id: "2", titulo: "Casa 4 quartos - Alphaville", tipo: "Casa", operacao: "Venda", status: "Vendido", valor: 1500000, bairro: "Alphaville", cidade: "Barueri", area: 280, quartos: 4, banheiros: 4, vagas: 4, corretor: "Carlos Matos", visitas: 8, descricao: "Casa ampla em condomínio fechado com segurança 24h, piscina, espaço gourmet e jardim." },
-  { id: "3", titulo: "Cobertura Duplex - Vila Olímpia", tipo: "Cobertura", operacao: "Venda", status: "Disponível", valor: 2200000, bairro: "Vila Olímpia", cidade: "São Paulo", area: 320, quartos: 4, banheiros: 5, vagas: 4, corretor: "Fernanda Rocha", visitas: 5, descricao: "Cobertura duplex exclusiva com piscina privativa, terraço gourmet e vista 360° da cidade." },
-  { id: "4", titulo: "Kitnet Centro", tipo: "Kitnet", operacao: "Locação", status: "Locado", valor: 1800, bairro: "Centro", cidade: "São Paulo", area: 28, quartos: 1, banheiros: 1, vagas: 0, corretor: "Ana Lima", visitas: 20, descricao: "Kitnet totalmente reformada, mobiliada, próxima ao metrô República. Ideal para estudantes e jovens profissionais." },
-  { id: "5", titulo: "Sala Comercial - Faria Lima", tipo: "Comercial", operacao: "Venda", status: "Disponível", valor: 950000, bairro: "Itaim Bibi", cidade: "São Paulo", area: 80, quartos: 0, banheiros: 2, vagas: 2, corretor: "Carlos Matos", visitas: 3, descricao: "Sala comercial premium no coração financeiro de São Paulo. Laje corporativa com infraestrutura completa." },
-  { id: "6", titulo: "Apartamento 2q - Pinheiros", tipo: "Apartamento", operacao: "Venda", status: "Reservado", valor: 720000, bairro: "Pinheiros", cidade: "São Paulo", area: 82, quartos: 2, banheiros: 2, vagas: 1, corretor: "Fernanda Rocha", visitas: 9, descricao: "Apto reformado com estilo contemporâneo, próximo ao metrô Fradique e Paulista." },
-  { id: "7", titulo: "Casa - Granja Viana", tipo: "Casa", operacao: "Venda", status: "Disponível", valor: 980000, bairro: "Granja Viana", cidade: "Cotia", area: 220, quartos: 3, banheiros: 3, vagas: 3, corretor: "Ana Lima", visitas: 6, descricao: "Casa em condomínio horizontal com lazer completo: piscina, quadra e salão de festas." },
-  { id: "8", titulo: "Cobertura - Higienópolis", tipo: "Cobertura", operacao: "Venda", status: "Disponível", valor: 3200000, bairro: "Higienópolis", cidade: "São Paulo", area: 420, quartos: 4, banheiros: 5, vagas: 5, corretor: "Ana Lima", visitas: 4, descricao: "Penthouse exclusivo no bairro mais nobre de São Paulo. Vista panorâmica, piscina e home theater." },
-];
 
 const TIPOS = ["Todos", "Apartamento", "Casa", "Cobertura", "Kitnet", "Comercial", "Terreno"];
 const STATUS_LIST = ["Todos", "Disponível", "Vendido", "Locado", "Reservado"];
@@ -333,7 +323,7 @@ function ImovelDetailDrawer({ im, onClose, onEdit, onDelete }: {
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function Imoveis() {
-  const [imoveis, setImoveis] = useState<Imovel[]>(MOCK);
+  const [imoveis, setImoveis] = useState<Imovel[]>([]);
   const [search, setSearch] = useState("");
   const [tipoFilter, setTipoFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
@@ -346,7 +336,7 @@ export default function Imoveis() {
   useEffect(() => {
     if (!supabase) return;
     supabase.from("imobiliario_imoveis").select("*").order("created_at", { ascending: false }).then(({ data }) => {
-      if (data && data.length) {
+      if (data) {
         setImoveis(data.map(r => ({
           id: r.id, titulo: r.titulo, tipo: r.tipo, operacao: r.operacao,
           status: r.status, valor: Number(r.valor), bairro: r.bairro ?? "",

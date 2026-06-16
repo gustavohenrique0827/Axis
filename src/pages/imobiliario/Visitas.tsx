@@ -22,15 +22,6 @@ type Visita = {
   obs: string;
 };
 
-const MOCK: Visita[] = [
-  { id: "1", imovel: "Apto 3 quartos - Moema", bairro: "Moema", cliente: "Roberto Silva", telefone: "(11) 98888-7777", corretor: "Ana Lima", data: "2026-06-17", hora: "10:00", status: "Confirmada", obs: "Cliente tem 2 filhos, quer ver o espaço dos quartos." },
-  { id: "2", imovel: "Casa 4 quartos - Alphaville", bairro: "Alphaville", cliente: "Patrícia Costa", telefone: "(11) 97777-6666", corretor: "Carlos Matos", data: "2026-06-18", hora: "14:30", status: "Agendada", obs: "" },
-  { id: "3", imovel: "Cobertura Duplex - Vila Olímpia", bairro: "Vila Olímpia", cliente: "Marcos Alves", telefone: "(11) 96666-5555", corretor: "Fernanda Rocha", data: "2026-06-19", hora: "11:00", status: "Confirmada", obs: "Trazer planta baixa e habite-se." },
-  { id: "4", imovel: "Sala Comercial - Faria Lima", bairro: "Itaim Bibi", cliente: "Luciana Torres", telefone: "(11) 95555-4444", corretor: "Carlos Matos", data: "2026-06-16", hora: "09:00", status: "Realizada", obs: "" },
-  { id: "5", imovel: "Casa - Granja Viana", bairro: "Granja Viana", cliente: "Felipe Araújo", telefone: "(11) 94444-3333", corretor: "Ana Lima", data: "2026-06-14", hora: "15:00", status: "Realizada", obs: "Cliente gostou bastante, pediu proposta." },
-  { id: "6", imovel: "Cobertura - Higienópolis", bairro: "Higienópolis", cliente: "Camila Souza", telefone: "(11) 93333-2222", corretor: "Ana Lima", data: "2026-06-20", hora: "10:30", status: "Agendada", obs: "Alta prioridade — cliente tem proposta de outro imóvel." },
-  { id: "7", imovel: "Apto 2q - Pinheiros", bairro: "Pinheiros", cliente: "Ricardo Nunes", telefone: "(11) 92222-1111", corretor: "Fernanda Rocha", data: "2026-06-13", hora: "09:30", status: "Cancelada", obs: "Cliente reagendou para próxima semana." },
-];
 
 const STATUS_COLORS: Record<string, string> = {
   Agendada: "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -276,7 +267,7 @@ function VisitaDetailDrawer({ v, onClose, onEdit, onDelete, onUpdateStatus }: {
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function Visitas() {
-  const [visitas, setVisitas] = useState<Visita[]>(MOCK);
+  const [visitas, setVisitas] = useState<Visita[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todas");
   const [showForm, setShowForm] = useState(false);
@@ -286,7 +277,7 @@ export default function Visitas() {
   useEffect(() => {
     if (!supabase) return;
     supabase.from("imobiliario_visitas").select("*").order("data", { ascending: true }).then(({ data }) => {
-      if (data && data.length) {
+      if (data) {
         setVisitas(data.map(r => ({
           id: r.id, imovel: r.imovel, bairro: r.bairro ?? "",
           cliente: r.cliente, telefone: r.telefone ?? "", corretor: r.corretor ?? "",

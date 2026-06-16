@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
@@ -64,17 +64,6 @@ const FIELD  = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 
 const SELECT = "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
 const LABEL  = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
 
-const MOCK_LEADS: Lead[] = [
-  { id: "1", cliente: "Roberto Silva",   telefone: "11988887777", email: "roberto@email.com",  interesse: "Apartamento 3q", bairro: "Moema",       orcamento: 900000,  corretor: "Ana Lima",       origem: "Instagram", etapa: "Apresentação", diasEtapa: 3,  prioridade: "Alta",  obs: "Cliente tem 2 filhos, quer ver espaço dos quartos.", tags: ["VIP", "Urgente"], status: "Ativo", criadoEm: "2026-06-10" },
-  { id: "2", cliente: "Patrícia Costa",  telefone: "11977776666", email: "patricia@email.com", interesse: "Casa 4q",        bairro: "Alphaville",  orcamento: 1500000, corretor: "Carlos Matos",   origem: "Site",      etapa: "Negociação",   diasEtapa: 5,  prioridade: "Alta",  obs: "Proposta enviada. Aguardando retorno.",             tags: ["Proposta"],       status: "Ativo", criadoEm: "2026-06-08" },
-  { id: "3", cliente: "Marcos Alves",    telefone: "11966665555", email: "",                   interesse: "Cobertura",      bairro: "Vila Olímpia",orcamento: 2500000, corretor: "Fernanda Rocha", origem: "Indicação", etapa: "Qualificação",  diasEtapa: 2,  prioridade: "Média", obs: "",                                                  tags: [],                 status: "Ativo", criadoEm: "2026-06-12" },
-  { id: "4", cliente: "Luciana Torres",  telefone: "11955554444", email: "luciana@email.com",  interesse: "Sala Comercial", bairro: "Faria Lima",  orcamento: 1200000, corretor: "Carlos Matos",   origem: "Portal Zap",etapa: "Prospecção",    diasEtapa: 1,  prioridade: "Média", obs: "",                                                  tags: [],                 status: "Ativo", criadoEm: "2026-06-14" },
-  { id: "5", cliente: "Eduardo Pinto",   telefone: "11944443333", email: "",                   interesse: "Apartamento",    bairro: "Brooklin",    orcamento: 1200000, corretor: "Ana Lima",       origem: "Google",    etapa: "Fechamento",   diasEtapa: 15, prioridade: "Baixa", obs: "Negócio fechado! Assinou em 14/06.",                tags: ["Fechado"],        status: "Ganho", criadoEm: "2026-06-01" },
-  { id: "6", cliente: "Juliana Mendes",  telefone: "11933332222", email: "",                   interesse: "Casa",           bairro: "Granja Viana",orcamento: 800000,  corretor: "Ana Lima",       origem: "Instagram", etapa: "Prospecção",    diasEtapa: 0,  prioridade: "Alta",  obs: "",                                                  tags: ["Novo"],           status: "Ativo", criadoEm: "2026-06-15" },
-  { id: "7", cliente: "Ricardo Nunes",   telefone: "11922221111", email: "",                   interesse: "Apartamento 2q", bairro: "Vila Mariana",orcamento: 650000,  corretor: "Fernanda Rocha", origem: "WhatsApp",  etapa: "Negociação",   diasEtapa: 8,  prioridade: "Alta",  obs: "Urgente — concorrência com outra imobiliária.",     tags: ["Urgente"],        status: "Ativo", criadoEm: "2026-06-07" },
-  { id: "8", cliente: "Camila Souza",    telefone: "11911110000", email: "camila@email.com",   interesse: "Cobertura",      bairro: "Higienópolis",orcamento: 3200000, corretor: "Ana Lima",       origem: "Indicação", etapa: "Negociação",   diasEtapa: 2,  prioridade: "Alta",  obs: "",                                                  tags: ["Premium"],        status: "Ativo", criadoEm: "2026-06-11" },
-  { id: "9", cliente: "Felipe Araújo",   telefone: "11900009999", email: "",                   interesse: "Apartamento 3q", bairro: "Pinheiros",   orcamento: 750000,  corretor: "Carlos Matos",   origem: "OLX",       etapa: "Qualificação",  diasEtapa: 4,  prioridade: "Baixa", obs: "",                                                  tags: [],                 status: "Ativo", criadoEm: "2026-06-09" },
-];
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 function getTemperatura(diasEtapa: number): Temperatura {
@@ -836,7 +825,7 @@ function LeadRow({ lead, onSelect }: { lead: Lead; onSelect: (l: Lead) => void }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function PipelineImobiliario() {
-  const [leads, setLeads] = useState<Lead[]>(MOCK_LEADS);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [view, setView] = useState<"kanban" | "lista">("kanban");
   const [showForm, setShowForm] = useState(false);
   const [editLead, setEditLead] = useState<Lead | null>(null);
@@ -846,6 +835,36 @@ export default function PipelineImobiliario() {
   // Drag state
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [dragOverCol, setDragOverCol] = useState<Etapa | null>(null);
+
+  // Load from Supabase on mount
+  useEffect(() => {
+    if (!supabase) return;
+    supabase
+      .from("imobiliario_leads")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        if (!data) return;
+        setLeads(data.map(r => ({
+          id: r.id,
+          cliente: r.nome ?? "",
+          telefone: r.telefone ?? "",
+          email: r.email ?? "",
+          interesse: r.interesse ?? "",
+          bairro: r.bairro ?? "",
+          orcamento: r.orcamento ?? 0,
+          corretor: r.corretor ?? "",
+          origem: r.origem ?? "",
+          etapa: (r.etapa ?? "Prospecção") as Etapa,
+          diasEtapa: r.dias_etapa ?? 0,
+          prioridade: (r.prioridade ?? "Média") as Prioridade,
+          obs: r.obs ?? "",
+          tags: r.tags ?? [],
+          status: (r.status ?? "Ativo") as Status,
+          criadoEm: r.criado_em ?? r.created_at?.split("T")[0] ?? "",
+        })));
+      });
+  }, []);
 
   // Async save to Supabase
   const saveToDB = async (lead: Lead) => {
@@ -871,7 +890,7 @@ export default function PipelineImobiliario() {
     if (selectedLead?.id === id) setSelectedLead(prev => prev ? { ...prev, ...patch } : null);
   };
 
-  const handleSave = (form: Partial<Lead>) => {
+  const handleSave = async (form: Partial<Lead>) => {
     const novo: Lead = {
       ...form as Lead,
       id: Date.now().toString(),
@@ -879,9 +898,19 @@ export default function PipelineImobiliario() {
       diasEtapa: 0,
       tags: [],
       status: "Ativo",
-      criadoEm: new Date().toLocaleDateString("pt-BR"),
+      criadoEm: new Date().toISOString().split("T")[0],
     };
     setLeads(prev => [novo, ...prev]);
+    if (supabase) {
+      const { data } = await supabase.from("imobiliario_leads").insert({
+        nome: novo.cliente, telefone: novo.telefone, email: novo.email,
+        interesse: novo.interesse, bairro: novo.bairro, orcamento: novo.orcamento,
+        corretor: novo.corretor, origem: novo.origem, etapa: novo.etapa,
+        dias_etapa: novo.diasEtapa, prioridade: novo.prioridade, obs: novo.obs,
+        status: novo.status, tags: novo.tags,
+      }).select("id").single();
+      if (data?.id) setLeads(prev => prev.map(l => l.id === novo.id ? { ...l, id: data.id } : l));
+    }
     toast.success(`Lead adicionado em ${newLeadEtapa}!`);
   };
 

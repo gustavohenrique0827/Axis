@@ -27,11 +27,6 @@ type Corretor = {
   status: "Ativo" | "Inativo";
 };
 
-const MOCK: Corretor[] = [
-  { id: "1", nome: "Ana Lima", creci: "CRECI-SP 123456", telefone: "(11) 98765-4321", email: "ana@imobiliaria.com", especialidade: "Alto Padrão", imovisAtivos: 14, vendasMes: 3, totalVendas: 47, vgvMes: 4.8, meta: 5, avaliacao: 4.9, bio: "Especialista em imóveis de alto padrão em São Paulo há 10 anos. CRECI-SP premiada consecutivamente por volume de vendas.", slug: "ana-lima", status: "Ativo" },
-  { id: "2", nome: "Carlos Matos", creci: "CRECI-SP 234567", telefone: "(11) 97654-3210", email: "carlos@imobiliaria.com", especialidade: "Residencial", imovisAtivos: 9, vendasMes: 2, totalVendas: 28, vgvMes: 2.4, meta: 4, avaliacao: 4.7, bio: "Corretor residencial com foco em famílias que buscam qualidade de vida e segurança. 8 anos de experiência.", slug: "carlos-matos", status: "Ativo" },
-  { id: "3", nome: "Fernanda Rocha", creci: "CRECI-SP 345678", telefone: "(11) 96543-2109", email: "fernanda@imobiliaria.com", especialidade: "Comercial", imovisAtivos: 6, vendasMes: 1, totalVendas: 15, vgvMes: 3.2, meta: 3, avaliacao: 4.8, bio: "Especialista em imóveis comerciais e lajes corporativas no eixo Faria Lima-Berrini.", slug: "fernanda-rocha", status: "Ativo" },
-];
 
 const ESPECIALIDADES = ["Residencial", "Comercial", "Alto Padrão", "Lançamentos", "Rural", "Industrial"];
 
@@ -293,7 +288,7 @@ function CorretorDetailDrawer({ c, idx, onClose, onEdit, onDelete }: {
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function Corretores() {
-  const [corretores, setCorretores] = useState<Corretor[]>(MOCK);
+  const [corretores, setCorretores] = useState<Corretor[]>([]);
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editCorretor, setEditCorretor] = useState<Corretor | null>(null);
@@ -303,7 +298,7 @@ export default function Corretores() {
   useEffect(() => {
     if (!supabase) return;
     supabase.from("imobiliario_corretores").select("*").order("created_at", { ascending: false }).then(({ data }) => {
-      if (data && data.length) {
+      if (data) {
         setCorretores(data.map(r => ({
           id: r.id, nome: r.nome, creci: r.creci ?? "", telefone: r.telefone ?? "",
           email: r.email ?? "", especialidade: r.especialidade, imovisAtivos: r.imoveis_ativos ?? 0,
