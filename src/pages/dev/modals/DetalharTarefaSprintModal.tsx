@@ -63,14 +63,23 @@ export function DetalharTarefaSprintModal({
         <div className="text-slate-400 text-sm">Nenhuma task selecionada.</div>
       ) : (
         <div className="space-y-5">
-          <div className="space-y-2">
-            <div className="text-sm text-slate-200 font-bold">{title}</div>
+          {/* Title + meta */}
+          <div className="space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-sm text-slate-200 font-bold">Task</div>
+                <div className="text-lg font-black text-white leading-snug mt-1 whitespace-pre-line">{title}</div>
+              </div>
+              <div className="shrink-0 flex flex-col items-end gap-2">
+                <div
+                  className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-lg border bg-white/[0.02] text-slate-300 border-white/10`}
+                >
+                  {TYPE_ICON[task.type] ?? '•'} {task.type}
+                </div>
+              </div>
+            </div>
+
             <div className="flex flex-wrap gap-2">
-              <span
-                className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-lg border bg-white/[0.02] text-slate-300 border-white/10`}
-              >
-                {TYPE_ICON[task.type] ?? '•'} {task.type}
-              </span>
               <span
                 className={`text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-lg border ${
                   PRIORITY_BADGE[task.priority] ?? 'bg-slate-500/15 text-slate-400 border-slate-500/25'
@@ -81,14 +90,18 @@ export function DetalharTarefaSprintModal({
               <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-lg border bg-white/[0.02] text-slate-300 border-white/10">
                 {task.points} pts
               </span>
+              <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-lg border bg-white/[0.02] text-slate-300 border-white/10">
+                {task.column}
+              </span>
             </div>
           </div>
 
+          {/* Tags */}
           <div className="space-y-2">
             <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Tags</div>
             {task.tags?.length ? (
               <div className="flex flex-wrap gap-2">
-                {task.tags.map((tag) => (
+                {task.tags.map(tag => (
                   <span key={tag} className="text-[9px] font-bold text-slate-500 bg-white/[0.03] px-2 py-1 rounded">
                     #{tag}
                   </span>
@@ -99,6 +112,7 @@ export function DetalharTarefaSprintModal({
             )}
           </div>
 
+          {/* Assignee */}
           <div className="space-y-2">
             <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Responsável</div>
             <div className="flex items-center gap-3">
@@ -107,14 +121,18 @@ export function DetalharTarefaSprintModal({
               </div>
               <div className="min-w-0">
                 <div className="text-sm font-bold text-white truncate">{task.assignee || '?'}</div>
-                <div className="text-xs text-slate-500">Campo assignee do card</div>
+                <div className="text-xs text-slate-500">Assignee do card (campo assignee)</div>
               </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Status no Kanban</div>
-            <div className="text-sm font-bold text-white">{task.column}</div>
+          {/* Readable hint */}
+          <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/5">
+            <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">Como ler</div>
+            <div className="text-sm text-slate-200 mt-2 leading-relaxed">
+              O <span className="text-white font-bold">title</span> já vem da IA como um roteiro: objetivo + entrega + critério de qualidade.
+              Use as tags e a prioridade para priorizar o trabalho.
+            </div>
           </div>
         </div>
       )}
