@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FolderCode, X } from "lucide-react";
+import { FolderCode } from "lucide-react";
 import { Modal } from "../../../components/ui/modal";
 import { Button } from "../../../components/ui/button";
+import { useData } from "../../../contexts/DataContext";
 
 const STACKS = ["React", "TypeScript", "Node.js", "Supabase", "PostgreSQL", "React Native", "Expo", "Fastify", "Redis", "Docker", "AWS", "Python", "Go", "Tailwind", "GraphQL", "Next.js"];
 const STATUSES = ["Em Planejamento", "Em Desenvolvimento", "Em Produção", "Pausado", "Concluído"];
