@@ -134,6 +134,19 @@ export function useProdutoForm() {
 
   const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('[Produtos] handleSaveProduct submit', {
+      editing: !!editingProduct,
+      formName,
+      formSKU,
+      formPrice,
+      formCategory,
+      formType,
+      formCommission,
+      formTags,
+      formIsBestSeller,
+      clientId,
+    });
+
     if (!formName.trim() || !formSKU.trim() || !formPrice) {
       toast.error("Por favor, preencha todos os campos obrigatórios (Nome, SKU e Preço Venda)");
       return;
