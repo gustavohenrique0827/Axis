@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Plus, Zap } from 'lucide-react';
 import { NovaTarefaSprintModal, type TarefaSprintPayload } from "./modals/NovaTarefaSprintModal";
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
 import { useDevSprints, type Column } from "./hooks/useDevSprints";
 import { readKanbanConfig, KANBAN_KEYS, KANBAN_COR_CLASS } from "../../hooks/useKanbanConfig";
+import { useDevProjectsForFilter } from './hooks/useDevProjectsForFilter';
 
 const PRIORITY_STYLE: Record<string, string> = {
   crítica: 'bg-red-500/15 text-red-400 border-red-500/25',
@@ -36,15 +37,31 @@ function getSprintColumns(): { id: Column; label: string; accent: string; dotCol
   }));
 }
 
+type DevProject = { id: string | number; name: string };
+
 export default function Sprints() {
   const COLUMNS = getSprintColumns();
 
-  // Passamos projectId via state/rota assim que você criar a página de detalhes do projeto.
-  // Por enquanto, mantemos vazio (sem projeto), para não misturar dados.
+  const projects = useDevProjectsForFilter() as DevProject[];
+
   const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+
+  const [filterColumns, setFilterColumns] = useState<Record<Column, boolean>>({
+    backlog: true,
+    todo: true,
+    inprogress: true,
+    review: true,
+    done: true,
+  });
 
   const { tasks, addTask, moveTask } = useDevSprints(activeProjectId);
 
+  const tasksFiltered = useMemo(() => {
+    return tasks.filter(t => filterColumns[t.column]);
+  }, [tasks, filterColumns]);
+
+  const totalPoints = tasksFiltered.filter(t => t.column === 'done').reduce((s, t) => s + t.points, 0);
+  const totalSprintPoints = tasksFiltered.reduce((s, t) => s + t.points, 0);
 
   const [draggedId, setDraggedId] = useState<string | number | null>(null);
   const [dragOverCol, setDragOverCol] = useState<Column | null>(null);
@@ -61,13 +78,10 @@ export default function Sprints() {
     setDragOverCol(null);
   };
 
-  const totalPoints = tasks.filter(t => t.column === 'done').reduce((s, t) => s + t.points, 0);
-  const totalSprintPoints = tasks.reduce((s, t) => s + t.points, 0);
-
   return (
     <PageContainer
       title="Sprint Atual"
-      description="Quadro Kanban do sprint em andamento — arraste os cards para mover entre etapas."
+      description="Quadro Kanban do sprint em andamento — filtre por projeto e por etapas. Arraste os cards para mover."
       breadcrumb={[{ label: "Dev & Tecnologia", path: "/app/dev/painel" }, { label: "Sprints" }]}
       actions={
         <div className="flex items-center gap-3">
@@ -77,23 +91,72 @@ export default function Sprints() {
               {totalPoints}/{totalSprintPoints} pts concluídos
             </span>
           </div>
-          <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2">
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2"
+          >
             <Plus className="w-4 h-4" /> Nova Task
           </Button>
         </div>
       }
     >
-      <div className="pb-10">
+      <div className="pb-10 space-y-4">
+        {/* Filtros */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:items-center">
+          <div className="flex-1">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Projeto</label>
+            <select
+              value={activeProjectId ?? ''}
+              onChange={(e) => setActiveProjectId(e.target.value ? e.target.value : null)}
+              className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-blue-500/50 focus:outline-none"
+            >
+              <option value="">Todos os projetos</option>
+              {projects.map(p => (
+                <option key={String(p.id)} value={String(p.id)}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex-1">
+            <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Etapas</label>
+            <div className="flex flex-wrap gap-2">
+              {(Object.keys(filterColumns) as Column[]).map(colId => {
+                const cfg = COLUMNS.find(c => c.id === colId);
+                const label = cfg?.label ?? colId;
+                const checked = filterColumns[colId];
+                return (
+                  <button
+                    key={colId}
+                    type="button"
+                    onClick={() => setFilterColumns(prev => ({ ...prev, [colId]: !prev[colId] }))}
+                    className={`px-3 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider border transition-all ${
+                      checked
+                        ? 'bg-blue-600/15 text-blue-300 border-blue-500/30'
+                        : 'bg-white/[0.02] text-slate-500 border-white/5 hover:bg-white/[0.05]'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
         {/* Board */}
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
           {COLUMNS.map(col => {
-            const colTasks = tasks.filter(t => t.column === col.id);
+            const colTasks = tasksFiltered.filter(t => t.column === col.id);
             const colPoints = colTasks.reduce((s, t) => s + t.points, 0);
+
             return (
               <div
                 key={col.id}
                 className={`flex-shrink-0 w-72 flex flex-col rounded-2xl border ${dragOverCol === col.id ? 'border-blue-500/40 bg-blue-600/[0.03]' : 'border-white/5 bg-[#0B1120]/40'} transition-all`}
-                onDragOver={e => { e.preventDefault(); setDragOverCol(col.id); }}
+                onDragOver={e => {
+                  e.preventDefault();
+                  setDragOverCol(col.id);
+                }}
                 onDragLeave={() => setDragOverCol(null)}
                 onDrop={() => handleDrop(col.id)}
               >
@@ -118,27 +181,24 @@ export default function Sprints() {
                     >
                       {/* Type + Priority */}
                       <div className="flex items-center justify-between mb-2.5">
-                        <span className={`text-[10px] font-black uppercase tracking-wider ${TYPE_COLOR[task.type]}`}>
-                          {TYPE_ICON[task.type]} {task.type}
+                        <span className={`text-[10px] font-black uppercase tracking-wider ${TYPE_COLOR[task.type] ?? 'text-slate-400'}`}>
+                          {TYPE_ICON[task.type] ?? '•'} {task.type}
                         </span>
-                        <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg border ${PRIORITY_STYLE[task.priority]}`}>
+                        <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg border ${PRIORITY_STYLE[task.priority] ?? 'bg-slate-500/10 text-slate-300 border-slate-500/20'}`}>
                           {task.priority}
                         </span>
                       </div>
 
-                      {/* Title */}
                       <p className="text-xs font-bold text-white leading-snug mb-3">{task.title}</p>
 
-                      {/* Tags */}
                       <div className="flex flex-wrap gap-1 mb-3">
-                        {task.tags.map(tag => (
+                        {(task.tags || []).map(tag => (
                           <span key={tag} className="text-[9px] font-bold text-slate-500 bg-white/[0.03] px-1.5 py-0.5 rounded">
                             #{tag}
                           </span>
                         ))}
                       </div>
 
-                      {/* Footer */}
                       <div className="flex items-center justify-between">
                         <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-black text-white border border-white/10">
                           {(task.assignee || '?').split('.')[0]}
@@ -148,7 +208,6 @@ export default function Sprints() {
                     </div>
                   ))}
 
-                  {/* Add card */}
                   <button
                     onClick={() => setIsModalOpen(true)}
                     className="w-full py-2.5 flex items-center justify-center gap-2 text-slate-600 hover:text-slate-400 hover:bg-white/[0.02] rounded-xl transition-all border border-dashed border-white/[0.04] hover:border-white/10"
@@ -171,3 +230,4 @@ export default function Sprints() {
     </PageContainer>
   );
 }
+
