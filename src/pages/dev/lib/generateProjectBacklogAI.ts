@@ -92,17 +92,19 @@ async function callGemini(prompt: string) {
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
           temperature: 0.2,
-          // Some Gemini variants are strict about mime type; keep text and parse JSON ourselves.
-          responseMimeType: 'text/plain',
         },
       }),
     }
   );
 
   if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(`Gemini error ${res.status}: ${JSON.stringify(err)}`);
+    const text = await res.text().catch(() => '');
+    console.error('[Gemini debug] status', res.status, 'text', text);
+    throw new Error(`Gemini error ${res.status}: ${text}`);
   }
+
+
+
 
   const data = await res.json();
   const raw = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
