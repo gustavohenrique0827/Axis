@@ -32,6 +32,11 @@ export function NovoProjetoDevModal({ isOpen, onClose, onSave }: Props) {
   const [productId, setProductId] = useState<string | number | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const { products } = useData();
+  const softwareProducts = useMemo(
+    () => (products || []).filter((p: any) => p?.category === "Software"),
+    [products]
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -111,16 +116,19 @@ export function NovoProjetoDevModal({ isOpen, onClose, onSave }: Props) {
               const v = e.target.value;
               const next = v ? v : null;
               setProductId(next);
-              if (next) {
-                // placeholder: quando o fluxo de produtos for conectado, aqui será buscada a descrição do produto.
-                setDescription(d => d || "Descrição do produto selecionado será carregada aqui.");
-              }
+
+              if (!next) return;
+              const selected = softwareProducts.find((p: any) => String(p.id) === String(next));
+              if (selected?.description) setDescription(selected.description);
+              else setDescription("");
             }}
           >
             <option value="">Nenhum produto</option>
-            {/* mock/placeholder para você ver o comportamento enquanto conectamos o hook de produtos */}
-            <option value="1">Produto #1 (exemplo)</option>
-            <option value="2">Produto #2 (exemplo)</option>
+            {softwareProducts.map((p: any) => (
+              <option key={p.id} value={String(p.id)}>
+                {p.name}
+              </option>
+            ))}
           </select>
           <p className="text-[10px] text-slate-500">Selecione um produto para vincular ao projeto. Ao conectar o hook de produtos, a descrição será preenchida automaticamente.</p>
         </div>
