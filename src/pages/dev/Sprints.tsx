@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Plus, Zap } from 'lucide-react';
-import { NovaTarefaSprintModal, type TarefaSprintPayload } from "./modals/NovaTarefaSprintModal";
-import { DetalharTarefaSprintModal } from "./modals/DetalharTarefaSprintModal";
-import { Button } from "../../components/ui/button";
-import { PageContainer } from "../../components/PageContainer";
-import { useDevSprints, type Column } from "./hooks/useDevSprints";
-import { readKanbanConfig, KANBAN_KEYS, KANBAN_COR_CLASS } from "../../hooks/useKanbanConfig";
+import { NovaTarefaSprintModal, type TarefaSprintPayload } from './modals/NovaTarefaSprintModal';
+import { DetalharTarefaSprintModal } from './modals/DetalharTarefaSprintModal';
+import { Button } from '../../components/ui/button';
+import { PageContainer } from '../../components/PageContainer';
+import { useDevSprints, type Column } from './hooks/useDevSprints';
+import { readKanbanConfig, KANBAN_KEYS, KANBAN_COR_CLASS } from '../../hooks/useKanbanConfig';
 import { useDevProjectsForFilter } from './hooks/useDevProjectsForFilter';
 
 const PRIORITY_STYLE: Record<string, string> = {
@@ -70,7 +70,6 @@ export default function Sprints() {
 
   const [selectedTaskId, setSelectedTaskId] = useState<string | number | null>(null);
 
-
   const handleSaveTarefa = async (data: TarefaSprintPayload) => {
     await addTask(data);
   };
@@ -84,15 +83,14 @@ export default function Sprints() {
 
   const selectedTask = useMemo(() => {
     if (selectedTaskId == null) return null;
-    return tasks.find((t) => String(t.id) === String(selectedTaskId)) ?? null;
+    return tasks.find(t => String(t.id) === String(selectedTaskId)) ?? null;
   }, [selectedTaskId, tasks]);
 
   return (
     <PageContainer
-
       title="Sprint Atual"
-      description="Quadro Kanban do sprint em andamento — filtre por projeto e por etapas. Arraste os cards para mover."
-      breadcrumb={[{ label: "Dev & Tecnologia", path: "/app/dev/painel" }, { label: "Sprints" }]}
+      description="Quadro Kanban do sprint em andamento — filtre por projeto e por etapas. Arraste os cards para mover. Clique no card para abrir detalhes."
+      breadcrumb={[{ label: 'Dev & Tecnologia', path: '/app/dev/painel' }, { label: 'Sprints' }]}
       actions={
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2 px-4 py-2 bg-blue-600/10 border border-blue-500/20 rounded-xl">
@@ -122,7 +120,9 @@ export default function Sprints() {
             >
               <option value="">Todos os projetos</option>
               {projects.map(p => (
-                <option key={String(p.id)} value={String(p.id)}>{p.name}</option>
+                <option key={String(p.id)} value={String(p.id)}>
+                  {p.name}
+                </option>
               ))}
             </select>
           </div>
@@ -162,7 +162,9 @@ export default function Sprints() {
             return (
               <div
                 key={col.id}
-                className={`flex-shrink-0 w-72 flex flex-col rounded-2xl border ${dragOverCol === col.id ? 'border-blue-500/40 bg-blue-600/[0.03]' : 'border-white/5 bg-[#0B1120]/40'} transition-all`}
+                className={`flex-shrink-0 w-72 flex flex-col rounded-2xl border ${
+                  dragOverCol === col.id ? 'border-blue-500/40 bg-blue-600/[0.03]' : 'border-white/5 bg-[#0B1120]/40'
+                } transition-all`}
                 onDragOver={e => {
                   e.preventDefault();
                   setDragOverCol(col.id);
@@ -188,34 +190,60 @@ export default function Sprints() {
                       draggable
                       onDragStart={() => setDraggedId(task.id)}
                       onClick={() => setSelectedTaskId(task.id)}
-                      className={`p-4 bg-[#111827] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing hover:border-white/10 transition-all select-none group ${draggedId === task.id ? 'opacity-40 scale-95' : ''}`}
+                      className={`p-4 bg-[#111827] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing hover:border-white/10 transition-all select-none group ${
+                        draggedId === task.id ? 'opacity-40 scale-95' : ''
+                      }`}
+                      role="button"
+                      tabIndex={0}
                     >
-
                       {/* Type + Priority */}
-                      <div className="flex items-center justify-between mb-2.5">
-                        <span className={`text-[10px] font-black uppercase tracking-wider ${TYPE_COLOR[task.type] ?? 'text-slate-400'}`}>
-                          {TYPE_ICON[task.type] ?? '•'} {task.type}
-                        </span>
-                        <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg border ${PRIORITY_STYLE[task.priority] ?? 'bg-slate-500/10 text-slate-300 border-slate-500/20'}`}>
+                      <div className="flex items-start justify-between gap-3 mb-3">
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span
+                              className={`text-[10px] font-black uppercase tracking-wider ${TYPE_COLOR[task.type] ?? 'text-slate-400'}`}
+                            >
+                              {TYPE_ICON[task.type] ?? '•'} {task.type}
+                            </span>
+                          </div>
+
+                          <p className="text-xs font-bold text-white leading-snug mt-2 line-clamp-3">{task.title}</p>
+                        </div>
+
+                        <span
+                          className={`shrink-0 text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg border ${
+                            PRIORITY_STYLE[task.priority] ?? 'bg-slate-500/10 text-slate-300 border-slate-500/20'
+                          }`}
+                        >
                           {task.priority}
                         </span>
                       </div>
 
-                      <p className="text-xs font-bold text-white leading-snug mb-3">{task.title}</p>
-
-                      <div className="flex flex-wrap gap-1 mb-3">
-                        {(task.tags || []).map(tag => (
-                          <span key={tag} className="text-[9px] font-bold text-slate-500 bg-white/[0.03] px-1.5 py-0.5 rounded">
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-black text-white border border-white/10">
-                          {(task.assignee || '?').split('.')[0]}
+                      {/* Tags */}
+                      {task.tags?.length ? (
+                        <div className="flex flex-wrap gap-1 mb-3">
+                          {(task.tags || []).slice(0, 5).map(tag => (
+                            <span key={tag} className="text-[9px] font-bold text-slate-500 bg-white/[0.03] px-1.5 py-0.5 rounded">
+                              #{tag}
+                            </span>
+                          ))}
                         </div>
-                        <span className="text-[10px] font-black text-slate-500">{task.points}pts</span>
+                      ) : (
+                        <div className="text-[10px] text-slate-500 mb-3">Sem tags</div>
+                      )}
+
+                      {/* Footer */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-7 h-7 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-black text-white border border-white/10 shrink-0">
+                            {(task.assignee || '?').split('.')[0]}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-[10px] font-black text-slate-500 truncate">{task.assignee || '?'}</div>
+                            <div className="text-[9px] text-slate-600">{task.column}</div>
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-black text-slate-500">{task.points} pts</span>
                       </div>
                     </div>
                   ))}
@@ -246,7 +274,6 @@ export default function Sprints() {
         task={selectedTask}
       />
     </PageContainer>
-
   );
 }
 
