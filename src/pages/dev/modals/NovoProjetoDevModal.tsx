@@ -28,7 +28,9 @@ export function NovoProjetoDevModal({ isOpen, onClose, onSave }: Props) {
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("Em Planejamento");
   const [stack, setStack] = useState<string[]>([]);
+  const [productId, setProductId] = useState<string | number | null>(null);
   const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     if (!isOpen) return;
@@ -99,17 +101,26 @@ export function NovoProjetoDevModal({ isOpen, onClose, onSave }: Props) {
 
         <div className="space-y-2">
           <label className={label}>Vincular Produto (opcional)</label>
-          <input
+          <select
             className={input}
-            placeholder="ID ou nome do produto (opcional)"
-            value={""}
-            disabled
-          />
-          <p className="text-[10px] text-slate-500">
-            Este campo é placeholder (o banco/fluxo de produtos precisa ser conectado). Mantido para você visualizar onde o vínculo vai entrar.
-          </p>
+            value={String((productId as any) ?? "")}
+            onChange={(e) => {
+              const v = e.target.value;
+              const next = v ? v : null;
+              setProductId(next);
+              if (next) {
+                // placeholder: quando o fluxo de produtos for conectado, aqui será buscada a descrição do produto.
+                setDescription(d => d || "Descrição do produto selecionado será carregada aqui.");
+              }
+            }}
+          >
+            <option value="">Nenhum produto</option>
+            {/* mock/placeholder para você ver o comportamento enquanto conectamos o hook de produtos */}
+            <option value="1">Produto #1 (exemplo)</option>
+            <option value="2">Produto #2 (exemplo)</option>
+          </select>
+          <p className="text-[10px] text-slate-500">Selecione um produto para vincular ao projeto. Ao conectar o hook de produtos, a descrição será preenchida automaticamente.</p>
         </div>
-
 
         <div className="space-y-2">
           <label className={label}>Stack Tecnológica</label>
