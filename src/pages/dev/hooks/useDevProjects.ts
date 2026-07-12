@@ -47,6 +47,7 @@ export function useDevProjects() {
   const [projects, setProjects] = useState<DevProject[]>(supabase ? [] : MOCK_PROJECTS);
   const [loading, setLoading] = useState(false);
 
+
   useEffect(() => {
     if (!supabase) return;
     async function load() {
@@ -172,5 +173,77 @@ export function useDevProjects() {
   }
 
 
-  return { projects, loading, addProject };
+  async function updateProject(payload: {
+    id: string | number;
+    name: string;
+    description: string;
+    status: string;
+    stack: string[];
+  }) {
+    if (!supabase) {
+      setProjects((prev) =>
+        prev.map((p) =>
+          String(p.id) === String(payload.id)
+            ? {
+                ...p,
+                name: payload.name,
+                description: payload.description,
+                status: payload.status,
+                stack: payload.stack,
+              }
+            : p
+        )
+      );
+      toast.success('Projeto atualizado!');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('dev_projects')
+      .update({
+        name: payload.name,
+        description: payload.description,
+        status: payload.status,
+        stack: payload.stack,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', payload.id);
+
+    if (error) {
+      toast.error('Erro ao atualizar projeto');
+      return;
+    }
+
+    setProjects((prev) =>
+      prev.map((p) =>
+        String(p.id) === String(payload.id)
+          ? { ...p, name: payload.name, description: payload.description, status: payload.status, stack: payload.stack }
+          : p
+      )
+    );
+
+    toast.success('Projeto atualizado!');
+  }
+
+  async function deleteProject(projectId: string | number) {
+    if (!supabase) {
+      setProjects((prev) => prev.filter((p) => String(p.id) !== String(projectId)));
+      toast.success('Projeto apagado!');
+      return;
+    }
+
+    // As tasks devem ser removidas em cascata (ON DELETE CASCADE).
+    // Se por algum motivo não estiver ativo, remover manualmente dev_sprint_tasks antes.
+    const { error } = await supabase.from('dev_projects').delete().eq('id', projectId);
+
+    if (error) {
+      toast.error('Erro ao apagar projeto');
+      return;
+    }
+
+    setProjects((prev) => prev.filter((p) => String(p.id) !== String(projectId)));
+    toast.success('Projeto apagado!');
+  }
+
+  return { projects, loading, addProject, updateProject, deleteProject };
 }

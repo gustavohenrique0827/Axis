@@ -8,6 +8,10 @@ import { NovaTarefaSprintModal, type TarefaSprintPayload } from "./modals/NovaTa
 import { useDevSprints, type Column } from "./hooks/useDevSprints";
 import { useDevProjects } from "./hooks/useDevProjects";
 import { readKanbanConfig, KANBAN_KEYS, KANBAN_COR_CLASS } from "../../hooks/useKanbanConfig";
+import { EditarProjetoDevModal } from "./modals/EditarProjetoDevModal";
+import { ApagarProjetoDevModal } from "./modals/ApagarProjetoDevModal";
+import { useNavigate } from 'react-router-dom';
+
 
 const PRIORITY_STYLE: Record<string, string> = {
   crítica: "bg-red-500/15 text-red-400 border-red-500/25",
@@ -41,12 +45,15 @@ function getSprintColumns(): { id: Column; label: string; dotColor: string }[] {
 export default function ProjetoDetalhesDev() {
   const { projectId } = useParams();
   const pid = projectId ?? null;
+  const navigate = useNavigate();
+
 
   const COLUMNS = useMemo(() => getSprintColumns(), []);
 
   // Carrega projetos pra mostrar header/status.
-  const { projects } = useDevProjects();
+  const { projects, updateProject, deleteProject } = useDevProjects();
   const project = useMemo(() => projects.find((p: any) => String(p.id) === String(pid)), [projects, pid]);
+
 
   const { tasks, addTask, moveTask } = useDevSprints(pid);
   const [draggedId, setDraggedId] = useState<string | number | null>(null);
@@ -64,6 +71,10 @@ export default function ProjetoDetalhesDev() {
     () => tasks.filter((t) => t.column === "backlog").reduce((s, t) => s + t.points, 0),
     [tasks]
   );
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
 
   const totalPointsDone = useMemo(
     () => tasks.filter((t) => t.column === "done").reduce((s, t) => s + t.points, 0),
@@ -88,11 +99,32 @@ export default function ProjetoDetalhesDev() {
             <Zap className="w-3.5 h-3.5 text-blue-400" />
             <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">{progress}% concluído</span>
           </div>
+
+          {project && (
+            <>
+              <Button
+                type="button"
+                onClick={() => setIsEditOpen(true)}
+                className="bg-white/[0.02] hover:bg-white/[0.05] text-white rounded-xl h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2 border border-white/10"
+              >
+                Editar Projeto
+              </Button>
+              <Button
+                type="button"
+                onClick={() => setIsDeleteOpen(true)}
+                className="bg-red-600 hover:bg-red-700 text-white rounded-xl h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2"
+              >
+                Apagar
+              </Button>
+            </>
+          )}
+
           <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2">
             <Plus className="w-4 h-4" /> Nova Task
           </Button>
         </div>
       }
+
     >
       <div className="pb-10">
         <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
@@ -168,7 +200,39 @@ export default function ProjetoDetalhesDev() {
         onClose={() => setIsModalOpen(false)}
         onSave={addTask}
       />
+
+      <EditarProjetoDevModal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        onSave={async (payload) => {
+          await updateProject(payload);
+        }}
+        initialData={
+          project
+            ? {
+                id: project.id,
+                name: project.name,
+                description: project.description,
+                status: project.status,
+                stack: project.stack,
+              }
+            : null
+        }
+      />
+
+      <ApagarProjetoDevModal
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        projectName={project?.name}
+        onConfirm={async () => {
+          if (!project) return;
+          await deleteProject(project.id);
+          navigate('/app/dev/projetos');
+        }}
+      />
+
     </PageContainer>
   );
+
 }
 
