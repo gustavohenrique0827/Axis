@@ -99,6 +99,8 @@ import SprintsDev from "./pages/dev/Sprints";
 import IssuesDev from "./pages/dev/Issues";
 import RepositoriosDev from "./pages/dev/Repositorios";
 import AmbientesDev from "./pages/dev/Ambientes";
+import ProjetoDetalhesDev from "./pages/dev/ProjetoDetalhesDev";
+
 import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider } from "./contexts/DataContext";
 import { Toaster } from "sonner";
@@ -240,6 +242,8 @@ function AppContent() {
             <Route path="issues" element={<IssuesDev />} />
             <Route path="repositorios" element={<RepositoriosDev />} />
             <Route path="ambientes" element={<AmbientesDev />} />
+            <Route path="projetos/:projectId" element={<ProjetoDetalhesDev />} />
+
           </Route>
 
           {/* Módulo Imobiliário */}

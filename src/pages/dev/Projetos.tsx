@@ -90,7 +90,12 @@ export default function Projetos() {
         {/* Projetos Grid */}
         <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filtered.map(project => (
-            <Card key={String(project.id)} className="p-6 bg-[#111827]/80 border-white/5 hover:border-blue-500/20 transition-all duration-200 group flex flex-col">
+            <Card
+              key={String(project.id)}
+              className="p-6 bg-[#111827]/80 border-white/5 hover:border-blue-500/20 transition-all duration-200 group flex flex-col cursor-pointer"
+              onClick={() => window.location.assign(`/app/dev/projetos/${project.id}`)}
+            >
+
               <div className="flex items-start justify-between gap-4 mb-4">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="p-2.5 rounded-xl bg-blue-600/10 text-blue-400 shrink-0 group-hover:scale-110 transition-transform">

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { toast } from 'sonner';
 import type { NovoProjetoPayload } from '../modals/NovoProjetoDevModal';
+import { generateProjectBacklogAI } from '../lib/generateProjectBacklogAI';
 
 export interface DevProject {
   id: string | number;
@@ -68,17 +69,108 @@ export function useDevProjects() {
       toast.success('Projeto criado!');
       return;
     }
-    const { data, error } = await supabase
+
+    // 1) cria projeto
+    const { data: projectRow, error: projectError } = await supabase
       .from('dev_projects')
-      .insert({ name: payload.name, description: payload.description, status: payload.status, stack: payload.stack })
+      .insert({
+        name: payload.name,
+        description: payload.description,
+        status: payload.status,
+        stack: payload.stack,
+        team: [],
+        progress: 0,
+        sprints: 1,
+      })
       .select()
       .maybeSingle();
-    if (error) { toast.error('Erro ao criar projeto'); return; }
-    if (data) {
-      setProjects(prev => [rowToProject(data), ...prev]);
-      toast.success('Projeto criado!');
+
+    if (projectError || !projectRow) {
+      toast.error('Erro ao criar projeto');
+      return;
     }
+
+    const projectId = projectRow.id;
+
+    // 2) cria backlog (tasks) diretamente na sprint
+    // Como o schema atual não tem tabela dev_sprints separada,
+    // usamos sprint_id = projectId como "chave" de sprint atual.
+    const sprintId = projectId;
+
+    const AI_TASKS_FALLBACK = [
+      { title: 'Levantamento de requisitos e escopo', type: 'chore' as const, priority: 'alta' as const, points: 3, tags: ['requisitos', 'planejamento'] },
+      { title: 'Setup inicial do projeto e padrão de desenvolvimento', type: 'chore' as const, priority: 'média' as const, points: 2, tags: ['setup', 'devops'] },
+      { title: 'Implementação do fluxo principal do projeto', type: 'feature' as const, priority: 'alta' as const, points: 5, tags: ['core', 'feature'] },
+      { title: 'Testes e validações (unitários/e2e) essenciais', type: 'chore' as const, priority: 'média' as const, points: 4, tags: ['testes', 'qualidade'] },
+      { title: 'Documentação e handoff final', type: 'chore' as const, priority: 'baixa' as const, points: 2, tags: ['docs'] },
+    ];
+
+    const backlogAIInput = {
+      productName: payload.name,
+      description: payload.description,
+    };
+
+    let backlogTasks: Array<{
+      title: string;
+      type: 'feature' | 'bug' | 'chore' | 'refactor';
+      priority: 'crítica' | 'alta' | 'média' | 'baixa';
+      points: number;
+      tags: string[];
+    }> = AI_TASKS_FALLBACK;
+
+    try {
+      const generated = await generateProjectBacklogAI(backlogAIInput, 'gemini');
+      backlogTasks = (generated.tasks || []).slice(0, 10).map(t => ({
+        title: t.title,
+        type: t.type,
+        priority: t.priority,
+        points: Math.max(1, Math.min(13, Math.round(t.points || 1))),
+        tags: Array.isArray(t.tags) ? t.tags.slice(0, 5) : [],
+      }));
+
+      if (backlogTasks.length === 0) backlogTasks = AI_TASKS_FALLBACK;
+    } catch (e: any) {
+      // Mantém fallback se a IA falhar.
+      toast.error('Falha ao gerar backlog por IA. Usando fallback genérico.');
+    }
+
+    const { error: tasksError } = await supabase
+      .from('dev_sprint_tasks')
+      .insert(
+        backlogTasks.map(t => ({
+          title: t.title,
+          type: t.type,
+          priority: t.priority,
+          points: t.points,
+          assignee: '—',
+          tags: t.tags,
+          column_id: 'backlog',
+          project: projectId,
+          sprint_id: sprintId,
+          tenant_id: null,
+        }))
+      );
+
+    if (tasksError) {
+      toast.error('Erro ao gerar backlog');
+      return;
+    }
+
+    // 3) persiste projeto e recomputa progress (0 pois tudo começa em backlog)
+    const { error: updError } = await supabase
+      .from('dev_projects')
+      .update({ progress: 0, sprints: 1 })
+      .eq('id', projectId);
+
+    if (updError) {
+      toast.error('Erro ao atualizar progresso do projeto');
+      return;
+    }
+
+    setProjects(prev => [rowToProject(projectRow), ...prev]);
+    toast.success('Projeto criado e backlog gerado!');
   }
+
 
   return { projects, loading, addProject };
 }

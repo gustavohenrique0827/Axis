@@ -331,12 +331,14 @@ create table if not exists public.dev_sprint_tasks (
   column_id text not null default 'backlog'::text,
   issue uuid null,
   project uuid null,
+  sprint_id uuid null,
   created_at timestamp with time zone not null default now(),
   updated_at timestamp with time zone not null default now(),
   tenant_id uuid null,
   constraint dev_sprint_tasks_pkey primary key (id),
   constraint dev_sprint_tasks_issue_fkey foreign KEY (issue) references dev_issues (id) on delete set null,
   constraint dev_sprint_tasks_project_fkey foreign KEY (project) references dev_projects (id) on delete set null,
+  constraint dev_sprint_tasks_sprint_fkey foreign KEY (sprint_id) references dev_projects (id) on delete set null,
   constraint dev_sprint_tasks_tenant_id_fkey foreign KEY (tenant_id) references tenants (id) on delete CASCADE
 ) TABLESPACE pg_default;
 
@@ -345,6 +347,8 @@ create index IF not exists dev_sprint_tasks_project_idx on public.dev_sprint_tas
 create index IF not exists dev_sprint_tasks_issue_idx on public.dev_sprint_tasks using btree (issue) TABLESPACE pg_default;
 
 create index IF not exists dev_sprint_tasks_column_id_idx on public.dev_sprint_tasks using btree (column_id) TABLESPACE pg_default;
+
+create index IF not exists dev_sprint_tasks_sprint_id_idx on public.dev_sprint_tasks using btree (sprint_id) TABLESPACE pg_default;
 
 create index IF not exists idx_dev_sprint_tasks_column on public.dev_sprint_tasks using btree (column_id) TABLESPACE pg_default;
 
