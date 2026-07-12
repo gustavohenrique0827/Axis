@@ -34,7 +34,9 @@ export function NovoProjetoDevModal({ isOpen, onClose, onSave }: Props) {
 
   useEffect(() => {
     if (!isOpen) return;
-    setName(""); setDescription(""); setStatus("Em Planejamento"); setStack([]); setLoading(false);
+    setName(""); setDescription(""); setStatus("Em Planejamento"); setStack([]);
+    setProductId(null);
+    setLoading(false);
   }, [isOpen]);
 
   const canSubmit = useMemo(() => !loading && Boolean(name.trim()), [loading, name]);
@@ -47,7 +49,7 @@ export function NovoProjetoDevModal({ isOpen, onClose, onSave }: Props) {
     if (!canSubmit) return;
     setLoading(true);
       try {
-      onSave({ name: name.trim(), description: description.trim(), status, stack, productId: null });
+      onSave({ name: name.trim(), description: description.trim(), status, stack, productId });
       onClose();
     } finally {
       setLoading(false);
