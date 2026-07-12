@@ -38,9 +38,14 @@ export function Modal({
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.classList.remove("axis-modal-open");
-      document.removeEventListener("keydown", handleKeyDown);
+      // Guard contra corrida onde o DOM/estado muda e o cleanup roda em momentos inesperados.
+      // Garante que só tentamos restaurar o que ainda faz sentido.
+      try {
+        document.body.style.overflow = prevOverflow;
+        document.body.classList.remove("axis-modal-open");
+      } finally {
+        document.removeEventListener("keydown", handleKeyDown);
+      }
     };
   }, [isOpen]);
 
