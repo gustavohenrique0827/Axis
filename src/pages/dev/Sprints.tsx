@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Plus, Zap } from 'lucide-react';
 import { NovaTarefaSprintModal, type TarefaSprintPayload } from "./modals/NovaTarefaSprintModal";
+import { DetalharTarefaSprintModal } from "./modals/DetalharTarefaSprintModal";
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
 import { useDevSprints, type Column } from "./hooks/useDevSprints";
@@ -67,6 +68,9 @@ export default function Sprints() {
   const [dragOverCol, setDragOverCol] = useState<Column | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  const [selectedTaskId, setSelectedTaskId] = useState<string | number | null>(null);
+
+
   const handleSaveTarefa = async (data: TarefaSprintPayload) => {
     await addTask(data);
   };
@@ -78,8 +82,14 @@ export default function Sprints() {
     setDragOverCol(null);
   };
 
+  const selectedTask = useMemo(() => {
+    if (selectedTaskId == null) return null;
+    return tasks.find((t) => String(t.id) === String(selectedTaskId)) ?? null;
+  }, [selectedTaskId, tasks]);
+
   return (
     <PageContainer
+
       title="Sprint Atual"
       description="Quadro Kanban do sprint em andamento — filtre por projeto e por etapas. Arraste os cards para mover."
       breadcrumb={[{ label: "Dev & Tecnologia", path: "/app/dev/painel" }, { label: "Sprints" }]}
@@ -177,8 +187,10 @@ export default function Sprints() {
                       key={String(task.id)}
                       draggable
                       onDragStart={() => setDraggedId(task.id)}
+                      onClick={() => setSelectedTaskId(task.id)}
                       className={`p-4 bg-[#111827] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing hover:border-white/10 transition-all select-none group ${draggedId === task.id ? 'opacity-40 scale-95' : ''}`}
                     >
+
                       {/* Type + Priority */}
                       <div className="flex items-center justify-between mb-2.5">
                         <span className={`text-[10px] font-black uppercase tracking-wider ${TYPE_COLOR[task.type] ?? 'text-slate-400'}`}>
@@ -227,7 +239,14 @@ export default function Sprints() {
         onClose={() => setIsModalOpen(false)}
         onSave={handleSaveTarefa}
       />
+
+      <DetalharTarefaSprintModal
+        isOpen={selectedTaskId !== null}
+        onClose={() => setSelectedTaskId(null)}
+        task={selectedTask}
+      />
     </PageContainer>
+
   );
 }
 
