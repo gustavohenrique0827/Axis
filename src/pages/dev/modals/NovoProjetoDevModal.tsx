@@ -11,6 +11,7 @@ export type NovoProjetoPayload = {
   description: string;
   status: string;
   stack: string[];
+  productId?: string | number | null;
 };
 
 type Props = {
@@ -43,8 +44,8 @@ export function NovoProjetoDevModal({ isOpen, onClose, onSave }: Props) {
     e.preventDefault();
     if (!canSubmit) return;
     setLoading(true);
-    try {
-      onSave({ name: name.trim(), description: description.trim(), status, stack });
+      try {
+      onSave({ name: name.trim(), description: description.trim(), status, stack, productId: null });
       onClose();
     } finally {
       setLoading(false);
@@ -95,6 +96,20 @@ export function NovoProjetoDevModal({ isOpen, onClose, onSave }: Props) {
           <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
             className={`${input} resize-none`} placeholder="Descreva o objetivo e escopo do projeto..." />
         </div>
+
+        <div className="space-y-2">
+          <label className={label}>Vincular Produto (opcional)</label>
+          <input
+            className={input}
+            placeholder="ID ou nome do produto (opcional)"
+            value={""}
+            disabled
+          />
+          <p className="text-[10px] text-slate-500">
+            Este campo é placeholder (o banco/fluxo de produtos precisa ser conectado). Mantido para você visualizar onde o vínculo vai entrar.
+          </p>
+        </div>
+
 
         <div className="space-y-2">
           <label className={label}>Stack Tecnológica</label>

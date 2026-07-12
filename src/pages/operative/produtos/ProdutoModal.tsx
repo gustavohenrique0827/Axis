@@ -2,7 +2,7 @@ import React from "react";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Package, DollarSign, Layers, FileSpreadsheet, X, Check, ArrowLeft, ArrowRight } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { Product } from "../../../types";
 import { ProdutoTabInfo } from "./produto-modal/ProdutoTabInfo";
 import { ProdutoTabComercial } from "./produto-modal/ProdutoTabComercial";
@@ -108,33 +108,36 @@ export function ProdutoModal(props: ProdutoModalProps) {
 
         {/* Body */}
         <form id="produto-erp-form" onSubmit={props.handleSaveProduct} className="flex-1 overflow-y-auto p-6 space-y-6">
-          <AnimatePresence mode="wait">
-            <motion.div key={props.activeTab} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.15 }}>
-              {props.activeTab === "info" && <ProdutoTabInfo {...props} />}
-              {props.activeTab === "comercial" && (
-                <ProdutoTabComercial
-                  formPrice={props.formPrice} setFormPrice={props.setFormPrice}
-                  formCost={props.formCost} setFormCost={props.setFormCost}
-                  formCommission={props.formCommission} setFormCommission={props.setFormCommission}
-                  simulateTax={props.simulateTax} setSimulateTax={props.setSimulateTax}
-                />
-              )}
-              {props.activeTab === "estoque" && (
-                <ProdutoTabEstoque
-                  formStockMin={props.formStockMin} setFormStockMin={props.setFormStockMin}
-                  formStockMax={props.formStockMax} setFormStockMax={props.setFormStockMax}
-                  formCurrentStock={props.formCurrentStock} setFormCurrentStock={props.setFormCurrentStock}
-                  formProvider={props.formProvider} setFormProvider={props.setFormProvider}
-                  formDimensions={props.formDimensions} setFormDimensions={props.setFormDimensions}
-                  formWeight={props.formWeight} setFormWeight={props.setFormWeight}
-                  formMaterial={props.formMaterial} setFormMaterial={props.setFormMaterial}
-                />
-              )}
-              {props.activeTab === "arquivos" && (
-                <ProdutoTabArquivos attachments={props.attachments} setAttachments={props.setAttachments} />
-              )}
-            </motion.div>
-          </AnimatePresence>
+          <motion.div
+            key={props.activeTab}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            {props.activeTab === "info" && <ProdutoTabInfo {...props} />}
+            {props.activeTab === "comercial" && (
+              <ProdutoTabComercial
+                formPrice={props.formPrice} setFormPrice={props.setFormPrice}
+                formCost={props.formCost} setFormCost={props.setFormCost}
+                formCommission={props.formCommission} setFormCommission={props.setFormCommission}
+                simulateTax={props.simulateTax} setSimulateTax={props.setSimulateTax}
+              />
+            )}
+            {props.activeTab === "estoque" && (
+              <ProdutoTabEstoque
+                formStockMin={props.formStockMin} setFormStockMin={props.setFormStockMin}
+                formStockMax={props.formStockMax} setFormStockMax={props.setFormStockMax}
+                formCurrentStock={props.formCurrentStock} setFormCurrentStock={props.setFormCurrentStock}
+                formProvider={props.formProvider} setFormProvider={props.setFormProvider}
+                formDimensions={props.formDimensions} setFormDimensions={props.setFormDimensions}
+                formWeight={props.formWeight} setFormWeight={props.setFormWeight}
+                formMaterial={props.formMaterial} setFormMaterial={props.setFormMaterial}
+              />
+            )}
+            {props.activeTab === "arquivos" && (
+              <ProdutoTabArquivos attachments={props.attachments} setAttachments={props.setAttachments} />
+            )}
+          </motion.div>
         </form>
 
         {/* Footer */}
