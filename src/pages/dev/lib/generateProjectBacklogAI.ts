@@ -90,7 +90,11 @@ async function callGemini(prompt: string) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.2, responseMimeType: 'application/json' },
+        generationConfig: {
+          temperature: 0.2,
+          // Some Gemini variants are strict about mime type; keep text and parse JSON ourselves.
+          responseMimeType: 'text/plain',
+        },
       }),
     }
   );
