@@ -205,7 +205,11 @@ export default function ProjetoDetalhesDev() {
         isOpen={isEditOpen}
         onClose={() => setIsEditOpen(false)}
         onSave={async (payload) => {
-          await updateProject(payload);
+              await updateProject({
+                ...payload,
+                id: String(payload.id),
+              });
+
         }}
         initialData={
           project

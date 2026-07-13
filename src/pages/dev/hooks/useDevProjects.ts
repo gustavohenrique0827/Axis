@@ -5,7 +5,8 @@ import type { NovoProjetoPayload } from '../modals/NovoProjetoDevModal';
 import { generateProjectBacklogAI } from '../lib/generateProjectBacklogAI';
 
 export interface DevProject {
-  id: string | number;
+  id: string;
+
   name: string;
   description: string;
   status: string;
@@ -19,13 +20,14 @@ export interface DevProject {
 }
 
 const MOCK_PROJECTS: DevProject[] = [
-  { id: 1, name: "Plataforma Axis CRM", description: "Sistema principal de CRM e gestão multitenant da G-Tech.", status: "Em Desenvolvimento", progress: 72, stack: ["React", "TypeScript", "Supabase"], team: ["G.H.", "M.L.", "A.R."], lastCommit: "2h atrás", openIssues: 8, sprints: 6, stars: 14 },
-  { id: 2, name: "API Gateway v3", description: "Novo gateway de APIs com rate limiting, autenticação e logs centralizados.", status: "Em Planejamento", progress: 20, stack: ["Node.js", "Fastify", "Redis"], team: ["G.H.", "P.C."], lastCommit: "1 dia atrás", openIssues: 3, sprints: 1, stars: 5 },
-  { id: 3, name: "App Mobile Alunos", description: "Aplicativo mobile para alunos acessarem turmas, conteúdos e certificados.", status: "Em Desenvolvimento", progress: 45, stack: ["React Native", "Expo", "Supabase"], team: ["A.R.", "L.M.", "T.S."], lastCommit: "4h atrás", openIssues: 12, sprints: 3, stars: 9 },
-  { id: 4, name: "Dashboard Analytics BI", description: "Painel de BI com métricas avançadas, gráficos e relatórios exportáveis.", status: "Em Produção", progress: 100, stack: ["React", "Recharts", "PostgreSQL"], team: ["G.H.", "M.L."], lastCommit: "5 dias atrás", openIssues: 1, sprints: 4, stars: 21 },
-  { id: 5, name: "Módulo Financeiro 2.0", description: "Refatoração completa do módulo financeiro com integração bancária open finance.", status: "Em Planejamento", progress: 8, stack: ["React", "TypeScript", "OpenFinance API"], team: ["G.H.", "P.C.", "A.R."], lastCommit: "3 dias atrás", openIssues: 0, sprints: 0, stars: 7 },
-  { id: 6, name: "SDK de Integrações", description: "SDK JavaScript/TypeScript para parceiros integrarem o Axis em suas plataformas.", status: "Concluído", progress: 100, stack: ["TypeScript", "npm", "Vitest"], team: ["M.L."], lastCommit: "2 semanas atrás", openIssues: 0, sprints: 2, stars: 33 },
+  { id: "1", name: "Plataforma Axis CRM", description: "Sistema principal de CRM e gestão multitenant da G-Tech.", status: "Em Desenvolvimento", progress: 72, stack: ["React", "TypeScript", "Supabase"], team: ["G.H.", "M.L.", "A.R."], lastCommit: "2h atrás", openIssues: 8, sprints: 6, stars: 14 },
+  { id: "2", name: "API Gateway v3", description: "Novo gateway de APIs com rate limiting, autenticação e logs centralizados.", status: "Em Planejamento", progress: 20, stack: ["Node.js", "Fastify", "Redis"], team: ["G.H.", "P.C."], lastCommit: "1 dia atrás", openIssues: 3, sprints: 1, stars: 5 },
+  { id: "3", name: "App Mobile Alunos", description: "Aplicativo mobile para alunos acessarem turmas, conteúdos e certificados.", status: "Em Desenvolvimento", progress: 45, stack: ["React Native", "Expo", "Supabase"], team: ["A.R.", "L.M.", "T.S."], lastCommit: "4h atrás", openIssues: 12, sprints: 3, stars: 9 },
+  { id: "4", name: "Dashboard Analytics BI", description: "Painel de BI com métricas avançadas, gráficos e relatórios exportáveis.", status: "Em Produção", progress: 100, stack: ["React", "Recharts", "PostgreSQL"], team: ["G.H.", "M.L."], lastCommit: "5 dias atrás", openIssues: 1, sprints: 4, stars: 21 },
+  { id: "5", name: "Módulo Financeiro 2.0", description: "Refatoração completa do módulo financeiro com integração bancária open finance.", status: "Em Planejamento", progress: 8, stack: ["React", "TypeScript", "OpenFinance API"], team: ["G.H.", "P.C.", "A.R."], lastCommit: "3 dias atrás", openIssues: 0, sprints: 0, stars: 7 },
+  { id: "6", name: "SDK de Integrações", description: "SDK JavaScript/TypeScript para parceiros integrarem o Axis em suas plataformas.", status: "Concluído", progress: 100, stack: ["TypeScript", "npm", "Vitest"], team: ["M.L."], lastCommit: "2 semanas atrás", openIssues: 0, sprints: 2, stars: 33 },
 ];
+
 
 function rowToProject(row: any): DevProject {
   return {
@@ -65,11 +67,24 @@ export function useDevProjects() {
   }, []);
 
   async function addProject(payload: NovoProjetoPayload) {
-    if (!supabase) {
-      setProjects(prev => [{ ...payload, id: Date.now(), progress: 0, team: [], lastCommit: 'agora', openIssues: 0, sprints: 0, stars: 0 }, ...prev]);
-      toast.success('Projeto criado!');
-      return;
-    }
+  if (!supabase) {
+    setProjects(prev => [
+      {
+        ...(payload as any),
+        id: String(Date.now()),
+        progress: 0,
+        team: [],
+        lastCommit: 'agora',
+        openIssues: 0,
+        sprints: 0,
+        stars: 0,
+      },
+      ...prev,
+    ]);
+    toast.success('Projeto criado!');
+    return;
+  }
+
 
     // 1) cria projeto
     const { data: projectRow, error: projectError } = await supabase
@@ -120,7 +135,7 @@ export function useDevProjects() {
     }> = AI_TASKS_FALLBACK;
 
     try {
-      const generated = await generateProjectBacklogAI(backlogAIInput, 'gemini');
+      const generated = await generateProjectBacklogAI(backlogAIInput, 'groq');
       backlogTasks = (generated.tasks || []).slice(0, 10).map(t => ({
         title: t.title,
         type: t.type,
@@ -132,8 +147,10 @@ export function useDevProjects() {
       if (backlogTasks.length === 0) backlogTasks = AI_TASKS_FALLBACK;
     } catch (e: any) {
       // Mantém fallback se a IA falhar.
+      console.error('Falha ao gerar backlog por IA:', e);
       toast.error('Falha ao gerar backlog por IA. Usando fallback genérico.');
     }
+
 
     const { error: tasksError } = await supabase
       .from('dev_sprint_tasks')
@@ -161,7 +178,8 @@ export function useDevProjects() {
     const { error: updError } = await supabase
       .from('dev_projects')
       .update({ progress: 0, sprints: 1 })
-      .eq('id', projectId);
+      .eq('id', String(projectId));
+
 
     if (updError) {
       toast.error('Erro ao atualizar progresso do projeto');
@@ -174,7 +192,8 @@ export function useDevProjects() {
 
 
   async function updateProject(payload: {
-    id: string | number;
+    id: string;
+
     name: string;
     description: string;
     status: string;
@@ -207,7 +226,8 @@ export function useDevProjects() {
         stack: payload.stack,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', payload.id);
+      .eq('id', String(payload.id));
+
 
     if (error) {
       toast.error('Erro ao atualizar projeto');
@@ -225,7 +245,8 @@ export function useDevProjects() {
     toast.success('Projeto atualizado!');
   }
 
-  async function deleteProject(projectId: string | number) {
+  async function deleteProject(projectId: string) {
+
     if (!supabase) {
       setProjects((prev) => prev.filter((p) => String(p.id) !== String(projectId)));
       toast.success('Projeto apagado!');
@@ -234,7 +255,8 @@ export function useDevProjects() {
 
     // As tasks devem ser removidas em cascata (ON DELETE CASCADE).
     // Se por algum motivo não estiver ativo, remover manualmente dev_sprint_tasks antes.
-    const { error } = await supabase.from('dev_projects').delete().eq('id', projectId);
+    const { error } = await supabase.from('dev_projects').delete().eq('id', String(projectId));
+
 
     if (error) {
       toast.error('Erro ao apagar projeto');

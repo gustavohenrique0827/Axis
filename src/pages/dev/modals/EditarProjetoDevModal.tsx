@@ -4,7 +4,8 @@ import { Modal } from '../../../components/ui/modal';
 import { Button } from '../../../components/ui/button';
 
 export type EditarProjetoPayload = {
-  id: string | number;
+  id: string;
+
   name: string;
   description: string;
   status: string;
@@ -16,7 +17,8 @@ type Props = {
   onClose: () => void;
   onSave: (payload: EditarProjetoPayload) => Promise<void> | void;
   initialData: {
-    id: string | number;
+    id: string;
+
     name: string;
     description: string;
     status: string;
