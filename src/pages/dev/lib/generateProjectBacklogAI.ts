@@ -146,7 +146,20 @@ export async function generateProjectBacklogAI(
   provider: AIProvider = 'gemini'
 ): Promise<GeneratedBacklog> {
   const prompt = buildPrompt(input);
-  if (provider === 'groq') return callGroq(prompt);
+
+  if (provider === 'groq') {
+    const groqKey = import.meta.env.VITE_GROQ_API_KEY as string | undefined;
+    if (groqKey) return callGroq(prompt);
+    // fallback seguro para não quebrar o fluxo quando Groq não está configurado
+    return callGemini(prompt);
+  }
+
+  const geminiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
+  if (!geminiKey) {
+    // preserva a mensagem de erro original, mas evita erro silencioso
+    throw new Error('VITE_GEMINI_API_KEY não configurado');
+  }
+
   return callGemini(prompt);
 }
 
