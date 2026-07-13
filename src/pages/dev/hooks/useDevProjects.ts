@@ -135,7 +135,7 @@ export function useDevProjects() {
     }> = AI_TASKS_FALLBACK;
 
     try {
-      const generated = await generateProjectBacklogAI(backlogAIInput, 'groq');
+      const generated = await generateProjectBacklogAI(backlogAIInput, 'gemini');
       backlogTasks = (generated.tasks || []).slice(0, 10).map(t => ({
         title: t.title,
         type: t.type,
