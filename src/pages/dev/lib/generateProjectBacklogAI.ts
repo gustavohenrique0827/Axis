@@ -100,8 +100,13 @@ async function callGemini(prompt: string) {
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     console.error('[Gemini debug] status', res.status, 'text', text);
+    // Se a chave estiver inválida, sinaliza explicitamente pra não tentar fallback em loop
+    if (text.includes('API key not valid') || text.includes('API_KEY_INVALID')) {
+      throw new Error('GEMINI_API_KEY_INVALID');
+    }
     throw new Error(`Gemini error ${res.status}: ${text}`);
   }
+
 
 
 
@@ -150,8 +155,10 @@ export async function generateProjectBacklogAI(
   if (provider === 'groq') {
     const groqKey = import.meta.env.VITE_GROQ_API_KEY as string | undefined;
     if (groqKey) return callGroq(prompt);
-    // fallback seguro para não quebrar o fluxo quando Groq não está configurado
-    return callGemini(prompt);
+    // Gemini fallback NÃO pode ser usado sem validação, pois a chave pode estar inválida.
+    // Retornamos erro para o caller decidir.
+    throw new Error('GROQ_API_NOT_CONFIGURED');
+
   }
 
   const geminiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;

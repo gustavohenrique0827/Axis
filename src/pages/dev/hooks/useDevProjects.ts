@@ -135,8 +135,11 @@ export function useDevProjects() {
     }> = AI_TASKS_FALLBACK;
 
     try {
-      const generated = await generateProjectBacklogAI(backlogAIInput, 'gemini');
+      const selectedProvider: 'groq' | 'gemini' = import.meta.env.VITE_GROQ_API_KEY ? 'groq' : 'gemini';
+      const generated = await generateProjectBacklogAI(backlogAIInput, selectedProvider);
       backlogTasks = (generated.tasks || []).slice(0, 10).map(t => ({
+
+
         title: t.title,
         type: t.type,
         priority: t.priority,
@@ -146,10 +149,14 @@ export function useDevProjects() {
 
       if (backlogTasks.length === 0) backlogTasks = AI_TASKS_FALLBACK;
     } catch (e: any) {
-      // Mantém fallback se a IA falhar.
+      // Se Gemini/Groq falhar (ex.: chave inválida), criamos backlog mínimo.
+      // Importante: não tenta re-rodar outro provider aqui.
       console.error('Falha ao gerar backlog por IA:', e);
-      toast.error('Falha ao gerar backlog por IA. Usando fallback genérico.');
+      toast.error('Falha ao gerar backlog por IA. Criando backlog mínimo.');
+      backlogTasks = AI_TASKS_FALLBACK;
     }
+
+
 
 
     const { error: tasksError } = await supabase
