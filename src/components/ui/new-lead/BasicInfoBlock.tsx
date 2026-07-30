@@ -43,9 +43,9 @@ export function BasicInfoBlock({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Mail className="w-3.5 h-3.5" /> E-mail Comercial
+            <Mail className="w-3.5 h-3.5" /> E-mail Comercial <span className="text-slate-600 normal-case font-normal">(opcional)</span>
           </label>
-          <input name="email" required type="email" value={emailValue} onChange={(e) => setEmailValue(e.target.value)} className={inputCls} placeholder="contato@empresa.com" />
+          <input name="email" type="email" value={emailValue} onChange={(e) => setEmailValue(e.target.value)} className={inputCls} placeholder="contato@empresa.com" />
           {isEmailDuplicate && (
             <p className="text-[10px] text-amber-500 mt-1.5 flex items-center gap-1 font-bold bg-amber-500/10 px-2 py-1 rounded-md w-fit">
               <AlertTriangle className="w-3 h-3" /> Já cadastrado no CRM!

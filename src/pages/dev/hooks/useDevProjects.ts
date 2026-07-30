@@ -135,8 +135,11 @@ export function useDevProjects() {
     }> = AI_TASKS_FALLBACK;
 
     try {
+      // Escolhe provider com base nas chaves configuradas no runtime
       const selectedProvider: 'groq' | 'gemini' = import.meta.env.VITE_GROQ_API_KEY ? 'groq' : 'gemini';
       const generated = await generateProjectBacklogAI(backlogAIInput, selectedProvider);
+
+
       backlogTasks = (generated.tasks || []).slice(0, 10).map(t => ({
 
 
@@ -149,12 +152,19 @@ export function useDevProjects() {
 
       if (backlogTasks.length === 0) backlogTasks = AI_TASKS_FALLBACK;
     } catch (e: any) {
-      // Se Gemini/Groq falhar (ex.: chave inválida), criamos backlog mínimo.
-      // Importante: não tenta re-rodar outro provider aqui.
+      // Se a IA falhar por chave inválida, cria backlog mínimo mas não deve “quebrar” a criação.
+      const msg = String(e?.message || e);
       console.error('Falha ao gerar backlog por IA:', e);
-      toast.error('Falha ao gerar backlog por IA. Criando backlog mínimo.');
-      backlogTasks = AI_TASKS_FALLBACK;
+
+      if (msg.includes('GEMINI_API_KEY_INVALID')) {
+        toast.error('Chave Gemini inválida. Criando backlog mínimo.');
+        backlogTasks = AI_TASKS_FALLBACK;
+      } else {
+        toast.error('Falha ao gerar backlog por IA. Criando backlog mínimo.');
+        backlogTasks = AI_TASKS_FALLBACK;
+      }
     }
+
 
 
 
