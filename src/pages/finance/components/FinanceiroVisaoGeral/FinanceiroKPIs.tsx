@@ -23,7 +23,7 @@ export function FinanceiroKPIs({ receita, despesa, mrr, inadimplencia }: Finance
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {kpis.map((kpi, i) => (
         <motion.div key={i} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}>
-          <Card className="p-6 border-white/5 bg-[#111827]/80 backdrop-blur-xl relative overflow-hidden group h-full">
+          <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group h-full">
             <div className="flex justify-between items-start mb-4">
               <div className={`p-2 rounded-xl ${kpi.bg} border border-white/5`}>
                 <kpi.icon className={`w-5 h-5 ${kpi.color}`} />

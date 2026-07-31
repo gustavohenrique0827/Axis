@@ -64,7 +64,7 @@ export function Modal({
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
         onMouseDown={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
@@ -72,10 +72,10 @@ export function Modal({
 
       {/* Dialog */}
       <div
-        className={`relative w-[95vw] sm:w-full ${maxWidth} bg-[#111827] shadow-2xl shadow-black/60 overflow-hidden flex flex-col ${
+        className={`relative w-[95vw] sm:w-full ${maxWidth} bg-[var(--color-surface-elevated)] shadow-2xl shadow-black/30 ring-1 ring-black/5 overflow-hidden flex flex-col animate-in fade-in duration-200 ${
           position === "right"
-            ? "h-full border-l border-white/10 rounded-l-2xl max-h-screen"
-            : "border border-white/10 rounded-3xl max-h-[90vh]"
+            ? "h-full border-l border-[var(--color-border-default)] rounded-l-2xl max-h-screen slide-in-from-right-10"
+            : "border border-[var(--color-border-default)] rounded-3xl max-h-[90vh] zoom-in-95 slide-in-from-bottom-2"
         }`}
         role="dialog"
         aria-modal="true"
@@ -84,21 +84,21 @@ export function Modal({
       >
         {/* Header */}
         {title !== undefined && title !== null && (
-          <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 shrink-0">
+          <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-[var(--color-border-default)] shrink-0">
             {typeof title === "string" ? (
               <h3
                 id={titleId}
-                className="text-base font-black text-white tracking-tight"
+                className="text-base font-black text-[var(--color-text-primary)] tracking-tight"
               >
                 {title}
               </h3>
             ) : (
-              <div className="flex-1 mr-4">{title}</div>
+              <div className="flex-1 min-w-0">{title}</div>
             )}
             <button
               type="button"
               onClick={onClose}
-              className="p-2 hover:bg-white/10 rounded-xl text-slate-500 hover:text-white transition-colors shrink-0"
+              className="p-2 hover:bg-[var(--color-surface-sunken)] rounded-xl text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors shrink-0"
               aria-label="Fechar"
             >
               <X className="w-4 h-4" />
@@ -117,7 +117,7 @@ export function Modal({
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-4 border-t border-white/10 bg-[#0B1120]/60 shrink-0 flex items-center justify-end gap-3 w-full">
+          <div className="px-6 py-4 border-t border-[var(--color-border-default)] bg-[var(--color-surface-sunken)]/60 shrink-0 flex items-center justify-end gap-3 w-full">
             {footer}
           </div>
         )}

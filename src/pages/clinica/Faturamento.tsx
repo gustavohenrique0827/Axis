@@ -97,7 +97,7 @@ export default function FaturamentoClinico() {
              { label: "Taxa de Glosa (Atrasos)", value: glosaRate, trend: "-0.5%", icon: AlertCircle, color: "text-rose-400" },
              { label: "Ticket Médio Estimado", value: fmt(avgTicket), trend: "+3%", icon: CreditCard, color: "text-amber-400" },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 relative group">
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 relative group">
                 <div className="flex items-center justify-between mb-4">
                    <div className="p-3 rounded-2xl bg-white/5">
                       <stat.icon className={`w-5 h-5 ${stat.color}`} />
@@ -117,7 +117,7 @@ export default function FaturamentoClinico() {
 
         <div className="grid lg:grid-cols-3 gap-6">
            {/* Revenue Chart */}
-           <Card className="lg:col-span-2 p-8 bg-[#111827]/80 border-white/5">
+           <Card className="lg:col-span-2 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
               <h3 className="text-sm font-black text-white uppercase tracking-widest mb-10 flex items-center gap-2">
                  <TrendingUp className="w-4 h-4 text-emerald-400" /> Evolução Financeira Trimestral
               </h3>
@@ -141,7 +141,7 @@ export default function FaturamentoClinico() {
                          <XAxis dataKey="month" stroke="#64748b30" fontSize={10} axisLine={false} tickLine={false} />
                          <YAxis stroke="#64748b30" fontSize={10} axisLine={false} tickLine={false} />
                          <Tooltip 
-                           contentStyle={{ backgroundColor: '#0B1120', border: '1px solid #ffffff05', borderRadius: '16px' }}
+                           contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid #ffffff05', borderRadius: '16px' }}
                          />
                          <Area type="monotone" dataKey="faturado" stroke="#10b981" fillOpacity={1} fill="url(#colorFat)" strokeWidth={3} />
                          <Area type="monotone" dataKey="recebido" stroke="#3b82f6" fillOpacity={0} strokeWidth={3} />
@@ -152,7 +152,7 @@ export default function FaturamentoClinico() {
            </Card>
 
            {/* Insurance Mix */}
-           <Card className="p-8 bg-[#111827]/80 border-white/5">
+           <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
               <h3 className="text-sm font-black text-white uppercase tracking-widest mb-10 flex items-center gap-2">
                  <PieIcon className="w-4 h-4 text-emerald-400" /> Mix de Recebíveis (Categoria)
               </h3>
@@ -188,7 +188,7 @@ export default function FaturamentoClinico() {
         </div>
 
         {/* Recent Transactions */}
-        <Card className="bg-[#111827]/80 border-white/5 overflow-hidden">
+        <Card className="bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
            <div className="p-6 border-b border-white/5">
               <h3 className="text-xs font-black text-white uppercase tracking-widest">Contas a Receber / Pendências (Top 5 recentes)</h3>
            </div>

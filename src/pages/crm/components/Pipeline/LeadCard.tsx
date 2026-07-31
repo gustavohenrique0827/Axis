@@ -117,8 +117,8 @@ export function LeadCard({
       onClick={() => setSelectedLead(item)}
       className={cn(
         "relative overflow-hidden cursor-grab active:cursor-grabbing group text-left select-none",
-        "bg-[#0D1525] border border-white/[0.07] border-l-2 rounded-2xl",
-        "hover:border-white/20 hover:bg-[#111827] hover:shadow-lg hover:shadow-black/40",
+        "bg-[var(--color-surface-elevated)] border border-white/[0.07] border-l-2 rounded-2xl",
+        "hover:border-white/20 hover:bg-[var(--color-surface-elevated)] hover:shadow-lg hover:shadow-black/40",
         "transition-all duration-150",
         tempStyle.accent,
         isDragging && "opacity-40 scale-[0.97] ring-1 ring-blue-500/40",
@@ -152,7 +152,7 @@ export function LeadCard({
               {tempDropdownId === item.id && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setTempDropdownId(null); }} />
-                  <div className="absolute left-0 top-full mt-1 bg-[#0B1120] border border-white/10 rounded-xl shadow-2xl p-1 z-50 flex gap-1" onClick={(e) => e.stopPropagation()}>
+                  <div className="absolute left-0 top-full mt-1 bg-[var(--color-surface)] border border-white/10 rounded-xl shadow-2xl p-1 z-50 flex gap-1" onClick={(e) => e.stopPropagation()}>
                     {(['quente', 'morno', 'frio'] as const).map((t) => (
                       <button key={t} onClick={() => { updateLead(item.id, { temperature: t }); setTempDropdownId(null); }}
                         className={`p-2 hover:bg-white/5 rounded-lg border-none bg-transparent cursor-pointer ${TEMP[t].flame}`} title={t}>
@@ -186,7 +186,7 @@ export function LeadCard({
             {openDropdownId === item.id && (
               <>
                 <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpenDropdownId(null); }} />
-                <div className="absolute right-0 top-full mt-1 w-52 bg-[#0B1120] border border-white/10 rounded-xl shadow-2xl p-1 z-50 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div className="absolute right-0 top-full mt-1 w-52 bg-[var(--color-surface)] border border-white/10 rounded-xl shadow-2xl p-1 z-50 overflow-hidden" onClick={(e) => e.stopPropagation()}>
                   {[
                     { icon: Calendar, label: 'Agendar Follow-up', action: () => setOpenDropdownId(null) },
                     { icon: FileText, label: 'Enviar Proposta',   action: () => setOpenDropdownId(null) },

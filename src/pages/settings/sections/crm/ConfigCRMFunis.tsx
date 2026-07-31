@@ -132,7 +132,7 @@ export function ConfigCRMFunis() {
           const stages = initStageConfigs(f.etapas, f.etapasConfig);
 
           return (
-            <Card key={f.id} className="bg-[#111827]/80 backdrop-blur-xl border border-white/10 hover:border-white/15 transition-all">
+            <Card key={f.id} className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 hover:border-white/15 transition-all">
               <div className="p-5 flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${f.tipo === "sdr_ia" ? "bg-blue-500/10 border border-blue-500/20" : "bg-slate-500/10 border border-slate-500/20"}`}>
                   {f.tipo === "sdr_ia" ? <Bot className="w-5 h-5 text-blue-400" /> : <Columns3 className="w-5 h-5 text-slate-400" />}

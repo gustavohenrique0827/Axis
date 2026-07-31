@@ -31,7 +31,7 @@ type Corretor = {
 const ESPECIALIDADES = ["Residencial", "Comercial", "Alto Padrão", "Lançamentos", "Rural", "Industrial"];
 
 const FIELD = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
-const SELECT = "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
+const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
 const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
 
 function StarRating({ value }: { value: number }) {
@@ -75,7 +75,7 @@ function CorretorFormModal({ onClose, onSave, initial }: {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#0F1929] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
             <h2 className="text-base font-black text-white">{isEdit ? "Editar Corretor" : "Novo Corretor"}</h2>
@@ -158,7 +158,7 @@ function CorretorDetailDrawer({ c, idx, onClose, onEdit, onDelete }: {
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="w-full max-w-md bg-[#0B1120] border-l border-white/10 flex flex-col overflow-hidden shadow-2xl">
+      <div className="w-full max-w-md bg-[var(--color-surface)] border-l border-white/10 flex flex-col overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="p-6 border-b border-white/5 bg-gradient-to-br from-blue-900/20 to-violet-900/10">
           <div className="flex items-start justify-between mb-4">
@@ -392,7 +392,7 @@ export default function Corretores() {
           { icon: Target, label: "VGV Mês", value: `R$ ${totalVGV.toFixed(1)}M`, color: "text-violet-400 bg-violet-500/10" },
           { icon: Star, label: "Média Avaliação", value: mediaAvaliacao, color: "text-amber-400 bg-amber-500/10" },
         ].map((s, i) => (
-          <div key={i} className="bg-[#111827]/80 border border-white/5 rounded-xl p-4 flex items-center gap-3">
+          <div key={i} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl p-4 flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.color}`}>
               <s.icon className="w-4 h-4" />
             </div>
@@ -408,9 +408,9 @@ export default function Corretores() {
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar corretor ou especialidade..." className="w-full bg-[#111827] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar corretor ou especialidade..." className="w-full bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50" />
         </div>
-        <div className="flex bg-[#111827] border border-white/10 rounded-xl p-1 gap-1">
+        <div className="flex bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl p-1 gap-1">
           {(["vendas", "avaliacao", "vgv"] as const).map(s => (
             <button key={s} onClick={() => setSortBy(s)} className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${sortBy === s ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "text-slate-500 hover:text-slate-300"}`}>
               {s === "vendas" ? "Vendas" : s === "avaliacao" ? "Avaliação" : "VGV"}
@@ -428,7 +428,7 @@ export default function Corretores() {
             <div
               key={c.id}
               onClick={() => setSelectedCorretor({ c, idx })}
-              className="bg-[#111827]/80 border border-white/5 rounded-2xl p-5 hover:border-blue-500/20 transition-all group cursor-pointer"
+              className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5 hover:border-blue-500/20 transition-all group cursor-pointer"
             >
               {/* Header */}
               <div className="flex items-start justify-between mb-4">

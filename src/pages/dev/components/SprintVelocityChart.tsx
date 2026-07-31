@@ -8,7 +8,7 @@ const velocityData: { sprint: string; pontos: number; bugs: number }[] = [];
 
 export function SprintVelocityChart() {
   return (
-    <Card className="lg:col-span-2 p-8 bg-[#111827]/80 border-white/5">
+    <Card className="lg:col-span-2 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
       <div className="flex justify-between items-center mb-8">
         <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
           <Activity className="w-4 h-4 text-blue-400" /> Velocidade por Sprint
@@ -31,7 +31,7 @@ export function SprintVelocityChart() {
           <XAxis dataKey="sprint" tick={{ fill: "#4B5563", fontSize: 10, fontWeight: 700 }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fill: "#4B5563", fontSize: 10 }} axisLine={false} tickLine={false} />
           <Tooltip
-            contentStyle={{ background: "#0B1120", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, fontSize: 11 }}
+            contentStyle={{ background: "var(--color-surface)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, fontSize: 11 }}
             labelStyle={{ color: "#94A3B8", fontWeight: 700 }}
           />
           <Area type="monotone" dataKey="pontos" stroke="#2563EB" strokeWidth={2} fill="url(#gPontos)" name="Story Points" />

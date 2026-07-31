@@ -204,7 +204,7 @@ export function ProfileSection({
       />
 
       {/* ── Quick Actions ── */}
-      <Card className="border-white/10 bg-[#111827]/70 p-4">
+      <Card className="border-white/10 bg-[var(--color-surface-elevated)]/70 p-4">
         <h4 className="text-[8px] font-black uppercase tracking-widest text-slate-500 mb-3">Ações Rápidas</h4>
         <div className="grid grid-cols-3 gap-2">
           {quickActions.map(({ label, icon: Icon, color, bg, action }) => (
@@ -221,7 +221,7 @@ export function ProfileSection({
       </Card>
 
       {/* ── AI Copilot Recommendation ── */}
-      <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/30 to-[#111827] p-4 relative overflow-hidden">
+      <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/30 to-[var(--color-surface-elevated)] p-4 relative overflow-hidden">
         <div className="absolute -top-6 -right-6 w-24 h-24 bg-cyan-500/[0.07] rounded-full" />
         <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-blue-500/[0.06] rounded-full" />
         <div className="relative">
@@ -242,7 +242,7 @@ export function ProfileSection({
             <strong className="text-white">Consultoria Enterprise + Licença Usuário</strong>{" "}
             hoje mesmo para antecipar o fechamento.
           </p>
-          <div className="mt-3 bg-[#070E1A]/60 rounded-xl p-2.5 border border-cyan-500/15 flex items-center justify-between">
+          <div className="mt-3 bg-[var(--color-surface)]/60 rounded-xl p-2.5 border border-cyan-500/15 flex items-center justify-between">
             <span className="text-[10px] text-slate-500">Sugestão de ação:</span>
             <button
               onClick={() => {
@@ -259,7 +259,7 @@ export function ProfileSection({
       </div>
 
       {/* ── Tags ── */}
-      <Card className="border-white/10 bg-[#111827]/70 overflow-hidden p-0">
+      <Card className="border-white/10 bg-[var(--color-surface-elevated)]/70 overflow-hidden p-0">
         <div className="px-4 py-2.5 border-b border-white/[0.05] bg-white/[0.01]">
           <h4 className="text-[8px] font-black uppercase tracking-widest text-cyan-500/60 flex items-center gap-1.5">
             <Tag className="w-3 h-3" /> Tags Corporativas
@@ -290,7 +290,7 @@ export function ProfileSection({
               value={newTagInput}
               onChange={(e) => setNewTagInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
-              className="flex-1 bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/10 transition-all"
+              className="flex-1 bg-[var(--color-surface)] border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/10 transition-all"
             />
             <Button
               size="sm"

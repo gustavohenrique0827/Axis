@@ -38,7 +38,7 @@ const STATUS_ICON: Record<string, any> = {
 };
 
 const FIELD = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
-const SELECT = "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
+const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
 const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
 
 // ─── FORM MODAL ───────────────────────────────────────────────────────────────
@@ -63,7 +63,7 @@ function VisitaFormModal({ onClose, onSave, initial }: {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#0F1929] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
             <h2 className="text-base font-black text-white">{isEdit ? "Editar Visita" : "Agendar Visita"}</h2>
@@ -148,7 +148,7 @@ function VisitaDetailDrawer({ v, onClose, onEdit, onDelete, onUpdateStatus }: {
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="w-full max-w-md bg-[#0B1120] border-l border-white/10 flex flex-col overflow-hidden shadow-2xl">
+      <div className="w-full max-w-md bg-[var(--color-surface)] border-l border-white/10 flex flex-col overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="p-6 border-b border-white/5">
           <div className="flex items-center justify-between mb-4">
@@ -348,7 +348,7 @@ export default function Visitas() {
     return (
       <div
         onClick={() => setSelectedVisita(v)}
-        className="flex items-start gap-4 p-4 bg-[#111827]/80 border border-white/5 rounded-xl hover:border-blue-500/20 transition-all cursor-pointer group"
+        className="flex items-start gap-4 p-4 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl hover:border-blue-500/20 transition-all cursor-pointer group"
       >
         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-900/30 to-violet-900/20 flex items-center justify-center shrink-0">
           <Building2 className="w-5 h-5 text-blue-400/60" />
@@ -431,7 +431,7 @@ export default function Visitas() {
           { icon: CheckCircle2, label: "Realizadas", value: realizadas.toString(), color: "text-emerald-400 bg-emerald-500/10" },
           { icon: TrendingUp, label: "Taxa Realização", value: realizadas + canceladas > 0 ? `${Math.round((realizadas / (realizadas + canceladas)) * 100)}%` : "—", color: "text-violet-400 bg-violet-500/10" },
         ].map((s, i) => (
-          <div key={i} className="bg-[#111827]/80 border border-white/5 rounded-xl p-4 flex items-center gap-3">
+          <div key={i} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl p-4 flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.color}`}>
               <s.icon className="w-4 h-4" />
             </div>
@@ -447,9 +447,9 @@ export default function Visitas() {
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar cliente, imóvel, corretor ou bairro..." className="w-full bg-[#111827] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar cliente, imóvel, corretor ou bairro..." className="w-full bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50" />
         </div>
-        <div className="flex bg-[#111827] border border-white/10 rounded-xl p-1 gap-1">
+        <div className="flex bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl p-1 gap-1">
           {["Todas", "Agendada", "Confirmada", "Realizada", "Cancelada"].map(s => (
             <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${statusFilter === s ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "text-slate-500 hover:text-slate-300"}`}>{s}</button>
           ))}

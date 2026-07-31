@@ -28,10 +28,10 @@ export function ModuleConfigModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
         {/* Backdrop */}
-        <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => setSelectedTenant(null)}></div>
-        
+        <div className="absolute inset-0 bg-black/75 backdrop-blur-sm animate-in fade-in duration-150" onClick={() => setSelectedTenant(null)}></div>
+
         {/* Modal Content */}
-        <div className="relative bg-[#0F172A] border border-white/10 rounded-2xl w-full max-w-lg p-6 overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+        <div className="relative bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg p-6 overflow-hidden shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200">
             {/* Gradient glow top */}
             <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-48 h-48 bg-cyan-500/10 blur-[60px] rounded-full pointer-events-none" />
 

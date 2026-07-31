@@ -90,7 +90,7 @@ export function AdminMetasConfig({
     <div className="space-y-6">
       
       {/* Dynamic Distribution Chart */}
-      <Card className="p-5 border-white/5 bg-[#111827]/80 backdrop-blur-xl shrink-0 rounded-3xl">
+      <Card className="p-5 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl shrink-0 rounded-3xl">
         <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-1">Evolução do Faturamento</h4>
         <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-4">Total faturado no tempo</span>
 
@@ -106,7 +106,7 @@ export function AdminMetasConfig({
                 <XAxis dataKey="name" stroke="#64748b" fontSize={9} tickLine={false} />
                 <YAxis stroke="#64748b" fontSize={9} tickFormatter={(val) => `R$ ${val / 1000}k`} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px" }}
+                  contentStyle={{ backgroundColor: "var(--color-surface)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px" }}
                   labelStyle={{ color: "white", fontSize: "10px", fontWeight: "bold" }}
                   itemStyle={{ fontSize: "10px" }}
                 />
@@ -118,7 +118,7 @@ export function AdminMetasConfig({
       </Card>
 
       {/* Formulário de Configuração - Área do Administrador */}
-      <Card className="p-5 border-white/5 bg-[#111827]/80 backdrop-blur-xl shrink-0 rounded-3xl">
+      <Card className="p-5 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl shrink-0 rounded-3xl">
         <div className="flex items-center gap-2 mb-1">
           <Target className="w-4 h-4 text-blue-400" />
           <h4 className="text-xs font-bold text-white uppercase tracking-wider">Configuração de Metas (Admin)</h4>
@@ -149,7 +149,7 @@ export function AdminMetasConfig({
             <select 
               value={selectedSquadId}
               onChange={(e) => setSelectedSquadId(e.target.value)}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
             >
               {squads.map(s => (
                 <option key={s.id} value={s.id}>{s.name}</option>
@@ -164,7 +164,7 @@ export function AdminMetasConfig({
               type="text"
               value={formName}
               onChange={(e) => setFormName(e.target.value)}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
             />
           </div>
 
@@ -175,7 +175,7 @@ export function AdminMetasConfig({
               type="text"
               value={formFocus}
               onChange={(e) => setFormFocus(e.target.value)}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
             />
           </div>
 
@@ -187,7 +187,7 @@ export function AdminMetasConfig({
                 type="number"
                 value={formMeta}
                 onChange={(e) => setFormMeta(Number(e.target.value))}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium font-mono text-white focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium font-mono text-white focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
             <div className="space-y-1">
@@ -199,7 +199,7 @@ export function AdminMetasConfig({
                   setFormPeriod(selectedPeriod);
                   setPeriod(selectedPeriod === "monthly" ? "monthly" : "quarterly");
                 }}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
               >
                 <option value="monthly">Mensal</option>
                 <option value="quarterly">Trimestral</option>
@@ -218,7 +218,7 @@ export function AdminMetasConfig({
                 max="25"
                 value={formBaseComissao}
                 onChange={(e) => setFormBaseComissao(Number(e.target.value))}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium font-mono text-white focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium font-mono text-white focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
             <div className="space-y-1">
@@ -227,7 +227,7 @@ export function AdminMetasConfig({
                 type="number"
                 value={formBonusSuperador}
                 onChange={(e) => setFormBonusSuperador(Number(e.target.value))}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium font-mono text-white focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium font-mono text-white focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
           </div>
@@ -245,7 +245,7 @@ export function AdminMetasConfig({
                   const val = Number(e.target.value);
                   setAttentionThreshold(val);
                 }}
-                className="flex-1 bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium font-mono text-white focus:outline-none focus:border-blue-500 transition-colors"
+                className="flex-1 bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium font-mono text-white focus:outline-none focus:border-blue-500 transition-colors"
               />
               <span className="text-xs text-slate-500 font-bold font-mono">%</span>
             </div>
@@ -288,7 +288,7 @@ export function AdminMetasConfig({
       </Card>
 
       {/* Alert and Warning center feeds */}
-      <Card className="p-5 border-white/5 bg-[#111827]/80 backdrop-blur-xl shrink-0 rounded-3xl">
+      <Card className="p-5 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl shrink-0 rounded-3xl">
         <div className="flex items-center justify-between mb-4">
           <h4 className="text-xs font-bold text-white uppercase tracking-wider">Histórico de Alertas & Gatilhos</h4>
           <span className="w-2 h-2 rounded-full bg-emerald-500" />

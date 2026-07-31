@@ -68,7 +68,7 @@ export default function Ambientes() {
           const isRefreshing = refreshing === env.id;
 
           return (
-            <Card key={env.id} className={`bg-[#111827]/80 border-white/5 overflow-hidden ${env.status === 'em deploy' ? 'ring-1 ring-blue-500/20' : ''}`}>
+            <Card key={env.id} className={`bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden ${env.status === 'em deploy' ? 'ring-1 ring-blue-500/20' : ''}`}>
               {/* Header */}
               <div className="p-6 border-b border-white/5">
                 <div className="flex items-center justify-between mb-4">

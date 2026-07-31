@@ -36,8 +36,8 @@ export function ProdutosGrid({
             onClick={() => handleToggleSelection(p.id)}
             className={`p-5 border relative group transition-all duration-300 select-none cursor-pointer hover:shadow-2xl hover:border-[#2563EB]/30 overflow-hidden ${
               p.active 
-                ? "bg-[#111827]/85 border-white/5" 
-                : "bg-[#111827]/40 border-white/5 opacity-50"
+                ? "bg-[var(--color-surface-elevated)]/85 border-[var(--color-border-subtle)]" 
+                : "bg-[var(--color-surface-elevated)]/40 border-[var(--color-border-subtle)] opacity-50"
             } ${isSelected ? "ring-2 ring-[#2563EB] border-[#2563EB]" : ""}`}
           >
             {/* Upper quick edit badge elements */}
@@ -98,7 +98,7 @@ export function ProdutosGrid({
 
               <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <h3 className="font-black text-sm text-white truncate leading-snug group-hover:text-blue-400 transition-colors">
+                  <h3 className="font-black text-sm text-[var(--color-text-primary)] truncate leading-snug group-hover:text-blue-400 transition-colors">
                     {p.name}
                   </h3>
                   {p.isBestSeller && (
@@ -114,37 +114,37 @@ export function ProdutosGrid({
             </div>
 
             {/* Sub-details fields */}
-            <div className="mt-5 grid grid-cols-2 gap-y-2 gap-x-4 p-3 bg-white/[0.015] border border-white/5 rounded-xl text-[11px]">
+            <div className="mt-5 grid grid-cols-2 gap-y-2 gap-x-4 p-3 bg-white/[0.015] border border-[var(--color-border-subtle)] rounded-xl text-[11px]">
               <div>
-                <span className="text-slate-500 block text-[9px] uppercase font-black">Fornecedor</span>
-                <span className="text-slate-350 truncate font-semibold block">{p.provider || "-"}</span>
+                <span className="text-[var(--color-text-muted)] block text-[9px] uppercase font-black">Fornecedor</span>
+                <span className="text-slate-300 truncate font-semibold block">{p.provider || "-"}</span>
               </div>
               <div>
-                <span className="text-slate-500 block text-[9px] uppercase font-black">Estoque</span>
-                <span className={`font-mono font-black flex items-center gap-1 ${p.currentStock <= p.stockMin ? "text-rose-400" : "text-emerald-450 text-emerald-400"}`}>
+                <span className="text-[var(--color-text-muted)] block text-[9px] uppercase font-black">Estoque</span>
+                <span className={`font-mono font-black flex items-center gap-1 ${p.currentStock <= p.stockMin ? "text-rose-400" : "text-emerald-400"}`}>
                   {p.currentStock} / {p.stockMin}
                   {p.currentStock <= p.stockMin && <ShieldAlert className="w-3 h-3"/>}
                 </span>
               </div>
               <div>
-                <span className="text-slate-500 block text-[9px] uppercase font-black">Margem Líquida</span>
+                <span className="text-[var(--color-text-muted)] block text-[9px] uppercase font-black">Margem Líquida</span>
                 <span className={`font-mono font-black ${p.margin > 60 ? "text-emerald-400" : "text-amber-400"}`}>
                   {p.margin}%
                 </span>
               </div>
               <div>
-                <span className="text-slate-500 block text-[9px] uppercase font-black">Comissão Vendedor</span>
-                <span className="text-white font-semibold flex items-center gap-1 shrink-0 font-mono">
+                <span className="text-[var(--color-text-muted)] block text-[9px] uppercase font-black">Comissão Vendedor</span>
+                <span className="text-[var(--color-text-primary)] font-semibold flex items-center gap-1 shrink-0 font-mono">
                   <Coins className="w-3 h-3 text-[#06B6D4]" /> {p.commission}%
                 </span>
               </div>
             </div>
 
             {/* Bottom line with price calculations summary */}
-            <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
+            <div className="mt-4 pt-4 border-t border-[var(--color-border-subtle)] flex items-center justify-between">
               <div>
                 <span className="text-[9px] text-[#06B6D4] font-black uppercase block tracking-wider">Preço de Venda</span>
-                <div className="flex items-center gap-1 font-mono font-black text-base text-white mt-0.5">
+                <div className="flex items-center gap-1 font-mono font-black text-base text-[var(--color-text-primary)] mt-0.5">
                   <DollarSign className="w-4 h-4 text-emerald-400" /> 
                   {p.price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   {p.type === "Assinatura" && <span className="text-[10px] text-slate-500 font-semibold uppercase tracking-wider">/Mês</span>}

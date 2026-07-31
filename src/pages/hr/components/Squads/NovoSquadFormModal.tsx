@@ -34,8 +34,8 @@ export function NovoSquadFormModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-xl bg-[#0B1120] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150" onClick={onClose}>
+      <div className="w-full max-w-xl bg-[var(--color-surface)] border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200" onClick={e => e.stopPropagation()}>
 
         <div
           className="px-8 pt-8 pb-5 border-b border-white/5 flex items-center justify-between"
@@ -64,7 +64,7 @@ export function NovoSquadFormModal({
             </div>
             <div className="space-y-1.5">
               <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Departamento</label>
-              <select value={newSquadDepartamento} onChange={e => setNewSquadDepartamento(e.target.value)} className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 h-11 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
+              <select value={newSquadDepartamento} onChange={e => setNewSquadDepartamento(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 h-11 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
                 <option value="">Selecione...</option>
                 {["Tecnologia","Vendas","Marketing","Sucesso do Cliente","Produto","Design","Financeiro","Administrativo","RH","Operações","Geral"].map(d => (
                   <option key={d} value={d}>{d}</option>
@@ -90,7 +90,7 @@ export function NovoSquadFormModal({
           {/* Gestor do Squad */}
           <div className="space-y-1.5">
             <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Gestor do Squad</label>
-            <select value={newSquadLeader} onChange={e => setNewSquadLeader(e.target.value)} className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 h-11 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
+            <select value={newSquadLeader} onChange={e => setNewSquadLeader(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 h-11 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
               <option value="">Sem gestor definido</option>
               {colaboradores.map((c: any) => <option key={c.id} value={c.nome}>{c.nome}</option>)}
             </select>

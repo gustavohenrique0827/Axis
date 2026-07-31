@@ -43,7 +43,7 @@ export function PropostasTable({ propostas, search, onSearchChange, onUpdateStat
 
   return (
     <>
-      <Card className="p-4 bg-[#111827]/50 border-white/5 flex flex-col md:flex-row gap-4 items-center mb-6">
+      <Card className="p-4 bg-[var(--color-surface-elevated)]/50 border-white/5 flex flex-col md:flex-row gap-4 items-center mb-6">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
           <Input
@@ -80,7 +80,7 @@ export function PropostasTable({ propostas, search, onSearchChange, onUpdateStat
             {filtered.map((item) => {
               const status = STATUS_CONFIG[item.status as keyof typeof STATUS_CONFIG] || DEFAULT_STATUS;
               return (
-                <tr key={item.id} className="group bg-[#111827]/80 hover:bg-white/[0.03] transition-all">
+                <tr key={item.id} className="group bg-[var(--color-surface-elevated)]/80 hover:bg-white/[0.03] transition-all">
                   <td className="py-5 pl-6 rounded-l-2xl border-y border-l border-white/5">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-slate-400 group-hover:text-blue-400 transition-colors">

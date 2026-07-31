@@ -114,7 +114,7 @@ export default function Pacientes() {
              { label: 'Taxa de Retenção', value: `${retention}%`, icon: ShieldCheck, color: 'text-purple-400', bg: 'bg-purple-500/10' },
              { label: 'Consultas Hoje', value: consultsToday.toString(), icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10' },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 flex items-center gap-6">
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 flex items-center gap-6">
                 <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
                    <stat.icon className="w-5 h-5" />
                 </div>
@@ -127,7 +127,7 @@ export default function Pacientes() {
         </div>
 
         {/* Filter & Search */}
-        <Card className="p-4 bg-[#111827]/80 border-white/5 backdrop-blur-xl">
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-xl">
            <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative group">
                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
@@ -171,7 +171,7 @@ export default function Pacientes() {
                    animate={{ opacity: 1, scale: 1 }}
                    transition={{ delay: i * 0.05 }}
                  >
-                   <Card className="p-6 bg-[#111827]/80 border-white/5 hover:border-emerald-500/20 transition-all group cursor-pointer relative overflow-hidden">
+                   <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 hover:border-emerald-500/20 transition-all group cursor-pointer relative overflow-hidden">
                       <div className="flex items-start gap-4">
                          <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-lg font-black text-slate-400 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all">
                             {patient.photo}

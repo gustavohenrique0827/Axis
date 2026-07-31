@@ -24,7 +24,7 @@ type CriarPropostaModalProps = {
 
 const labelClass = "text-[10px] font-bold text-slate-400 uppercase tracking-wider";
 const inputBaseClass =
-    "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all";
+    "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:bg-[var(--color-surface)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all";
 
 export function CriarPropostaModal({
     isOpen,
@@ -199,7 +199,7 @@ export function CriarPropostaModal({
                     </div>
                 </div>
 
-                <div className="space-y-3 border border-white/10 rounded-xl p-4 bg-[#0B1120]/50">
+                <div className="space-y-3 border border-white/10 rounded-xl p-4 bg-[var(--color-surface)]/50">
                     <div className="flex items-center justify-between">
                         <label className={labelClass}>Itens da Proposta</label>
                         <button

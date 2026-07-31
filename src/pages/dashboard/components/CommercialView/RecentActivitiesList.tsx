@@ -31,7 +31,7 @@ export function RecentActivitiesList({ recentActivities }: { recentActivities: A
   const hasActivities = recentActivities.length > 0;
 
   return (
-    <Card className="lg:col-span-2 p-8 bg-[#111827]/80 border-white/5 rounded-3xl">
+    <Card className="lg:col-span-2 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 rounded-3xl">
       <div className="flex items-center justify-between mb-10">
         <h3 className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
           <Eye className="w-4 h-4 text-emerald-400" /> Atividades Recentes

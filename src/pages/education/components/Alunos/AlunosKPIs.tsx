@@ -16,7 +16,7 @@ export function AlunosKPIs({ stats }: AlunosKPIsProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       {stats.map((stat, i) => (
-        <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 flex items-center gap-6 group hover:border-white/10 transition-colors opacity-50">
+        <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 flex items-center gap-6 group hover:border-white/10 transition-colors opacity-50">
           <div className={`p-4 rounded-2xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
             <stat.icon className="w-6 h-6" />
           </div>

@@ -137,7 +137,7 @@ export default function TelemedicinaDashboard() {
         
         {/* Virtual Room & Controls */}
         <div className="lg:col-span-3 space-y-6">
-           <Card className="aspect-video bg-[#0B1120] border-white/10 relative overflow-hidden group shadow-2xl">
+           <Card className="aspect-video bg-[var(--color-surface)] border-white/10 relative overflow-hidden group shadow-2xl">
               {activeMeeting ? (
                 <div className="absolute inset-0">
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10" />
@@ -218,7 +218,7 @@ export default function TelemedicinaDashboard() {
            </Card>
 
            <div className="grid md:grid-cols-2 gap-6">
-              <Card className="p-8 bg-[#111827]/80 border-white/5">
+              <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
                  <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-8 flex items-center gap-2">
                     <ClipboardList className="w-4 h-4 text-indigo-400" /> Notas da Consulta
                  </h4>
@@ -229,7 +229,7 @@ export default function TelemedicinaDashboard() {
                  <Button className="w-full mt-4 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest h-12 rounded-2xl hover:bg-indigo-600 hover:border-indigo-600 transition-all">Anexar ao Prontuário</Button>
               </Card>
 
-              <Card className="p-8 bg-[#111827]/80 border-white/5 flex flex-col justify-between">
+              <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 flex flex-col justify-between">
                  <div>
                     <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-8 flex items-center gap-2">
                        <MessageSquare className="w-4 h-4 text-indigo-400" /> Chat com Paciente
@@ -258,7 +258,7 @@ export default function TelemedicinaDashboard() {
 
         {/* Call Queue & Health Data */}
         <div className="space-y-6">
-           <Card className="p-8 bg-[#111827]/80 border-white/5">
+           <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
               <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-8">Fila Virtual</h4>
               <div className="space-y-4">
                  {activeConferences.map((conf) => (

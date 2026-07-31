@@ -14,21 +14,21 @@ export function AdminBillingTab({ revenueData, CustomTooltip }: AdminBillingTabP
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 opacity-50">
-        <Card className="p-6 bg-gradient-to-br from-[#0B1120] to-[#111827] border-white/10">
+        <Card className="p-6 bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-surface-elevated)] border-white/10">
           <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2">ARPU (Ticket Médio)</p>
           <h3 className="text-2xl font-bold text-white">R$ 0,00</h3>
         </Card>
-        <Card className="p-6 bg-[#111827] border-white/10">
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/10">
           <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2">Churn Rate</p>
           <h3 className="text-2xl font-bold text-white">0%</h3>
         </Card>
-        <Card className="p-6 bg-[#111827] border-white/10">
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/10">
           <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2">LTV Estimado</p>
           <h3 className="text-2xl font-bold text-blue-400">R$ 0,00</h3>
         </Card>
       </div>
 
-      <Card className="p-5 bg-[#111827]/80 border-white/10">
+      <Card className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/10">
         <h3 className="font-semibold text-lg mb-6">Receita vs Churn</h3>
         {revenueData.length === 0 ? (
           <div className="h-[300px] w-full flex flex-col items-center justify-center gap-4 opacity-40">

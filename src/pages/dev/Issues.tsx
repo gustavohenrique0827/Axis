@@ -71,7 +71,7 @@ export default function Issues() {
             { label: "Críticos", value: critical, color: "text-orange-400", bg: "bg-orange-500/10", icon: Flame },
             { label: "Fechados", value: closed, color: "text-emerald-400", bg: "bg-emerald-500/10", icon: CheckCircle2 },
           ].map((s, i) => (
-            <Card key={i} className="p-5 bg-[#111827]/80 border-white/5 flex items-center gap-4">
+            <Card key={i} className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/5 flex items-center gap-4">
               <div className={`p-2.5 rounded-xl ${s.bg}`}>
                 <s.icon className={`w-4 h-4 ${s.color}`} />
               </div>
@@ -92,13 +92,13 @@ export default function Issues() {
               placeholder="Buscar por título ou label..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-[#111827] border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50"
+              className="w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50"
             />
           </div>
           <select
             value={filterStatus}
             onChange={e => setFilterStatus(e.target.value as any)}
-            className="bg-[#111827] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-blue-500/50"
+            className="bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-blue-500/50"
           >
             <option value="todos">Todos os status</option>
             <option value="aberto">Aberto</option>
@@ -109,7 +109,7 @@ export default function Issues() {
           <select
             value={filterSeverity}
             onChange={e => setFilterSeverity(e.target.value as any)}
-            className="bg-[#111827] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-blue-500/50"
+            className="bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-4 py-2.5 text-sm text-slate-300 focus:outline-none focus:border-blue-500/50"
           >
             <option value="todos">Todas severidades</option>
             <option value="crítico">Crítico</option>
@@ -120,7 +120,7 @@ export default function Issues() {
         </div>
 
         {/* Lista de Issues */}
-        <Card className="bg-[#111827]/80 border-white/5 overflow-hidden">
+        <Card className="bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
           <div className="divide-y divide-white/5">
             {filtered.map(issue => {
               const StatusIcon = STATUS_ICON[issue.status];

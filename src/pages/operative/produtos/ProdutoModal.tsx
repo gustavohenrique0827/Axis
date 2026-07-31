@@ -66,7 +66,7 @@ export function ProdutoModal(props: ProdutoModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black/75 backdrop-blur-md flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-      <Card className="w-full max-w-2xl bg-[#0B1120] border border-white/10 shadow-3xl rounded-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <Card className="w-full max-w-2xl bg-[var(--color-surface)] border border-white/10 shadow-3xl rounded-2xl overflow-hidden flex flex-col max-h-[92vh] ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200">
 
         {/* Header */}
         <div className="p-5 border-b border-white/10 flex justify-between items-start bg-white/[0.02] shrink-0">
@@ -90,7 +90,7 @@ export function ProdutoModal(props: ProdutoModalProps) {
         </div>
 
         {/* Tabs */}
-        <div className="px-5 py-2 border-b border-white/5 bg-[#0B1120] flex gap-1 overflow-x-auto scrollbar-none shrink-0">
+        <div className="px-5 py-2 border-b border-white/5 bg-[var(--color-surface)] flex gap-1 overflow-x-auto scrollbar-none shrink-0">
           {TABS.map(t => {
             const IconComp = t.icon;
             const isActive = props.activeTab === t.id;

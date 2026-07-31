@@ -34,7 +34,7 @@ const STATUS_LIST = ["Todos", "Disponível", "Vendido", "Locado", "Reservado"];
 const OPERACOES = ["Todos", "Venda", "Locação"];
 
 const FIELD = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
-const SELECT = "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
+const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
 const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
 
 const statusColor = (s: string) => {
@@ -89,7 +89,7 @@ function ImovelFormModal({ onClose, onSave, initial }: {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#0F1929] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl">
+      <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
             <h2 className="text-base font-black text-white">{isEdit ? "Editar Imóvel" : "Novo Imóvel"}</h2>
@@ -191,7 +191,7 @@ function ImovelDetailDrawer({ im, onClose, onEdit, onDelete }: {
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="w-full max-w-md bg-[#0B1120] border-l border-white/10 flex flex-col overflow-hidden shadow-2xl">
+      <div className="w-full max-w-md bg-[var(--color-surface)] border-l border-white/10 flex flex-col overflow-hidden shadow-2xl">
         {/* Header */}
         <div className={`h-36 bg-gradient-to-br ${tipoGradient(im.tipo)} flex items-end relative shrink-0`}>
           <div className="absolute top-3 right-3">
@@ -421,7 +421,7 @@ export default function Imoveis() {
           { icon: DollarSign, label: "VGV Portfólio", value: `R$ ${(vgvTotal / 1e6).toFixed(1)}M`, color: "text-violet-400 bg-violet-500/10" },
           { icon: Eye, label: "Total Visitas", value: totalVisitas.toString(), color: "text-amber-400 bg-amber-500/10" },
         ].map((s, i) => (
-          <div key={i} className="bg-[#111827]/80 border border-white/5 rounded-xl p-4 flex items-center gap-3">
+          <div key={i} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl p-4 flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.color}`}>
               <s.icon className="w-4 h-4" />
             </div>
@@ -437,18 +437,18 @@ export default function Imoveis() {
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar imóvel, bairro, corretor..." className="w-full bg-[#111827] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar imóvel, bairro, corretor..." className="w-full bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50" />
         </div>
-        <select value={tipoFilter} onChange={e => setTipoFilter(e.target.value)} className="bg-[#111827] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50">
+        <select value={tipoFilter} onChange={e => setTipoFilter(e.target.value)} className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50">
           {TIPOS.map(t => <option key={t}>{t}</option>)}
         </select>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-[#111827] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50">
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50">
           {STATUS_LIST.map(s => <option key={s}>{s}</option>)}
         </select>
-        <select value={operacaoFilter} onChange={e => setOperacaoFilter(e.target.value)} className="bg-[#111827] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50">
+        <select value={operacaoFilter} onChange={e => setOperacaoFilter(e.target.value)} className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50">
           {OPERACOES.map(o => <option key={o}>{o}</option>)}
         </select>
-        <div className="flex bg-[#111827] border border-white/10 rounded-xl p-1 gap-1">
+        <div className="flex bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl p-1 gap-1">
           <button onClick={() => setViewMode("grid")} className={`p-2 rounded-lg transition-all ${viewMode === "grid" ? "bg-blue-600/20 text-blue-400" : "text-slate-500 hover:text-white"}`}>
             <Grid3x3 className="w-4 h-4" />
           </button>
@@ -467,7 +467,7 @@ export default function Imoveis() {
             <div
               key={im.id}
               onClick={() => setSelectedImovel(im)}
-              className="bg-[#111827]/80 border border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/20 transition-all cursor-pointer group shadow-lg"
+              className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl overflow-hidden hover:border-blue-500/20 transition-all cursor-pointer group shadow-lg"
             >
               <div className={`h-40 bg-gradient-to-br ${tipoGradient(im.tipo)} flex items-center justify-center relative`}>
                 <Building2 className="w-12 h-12 text-white/10" />
@@ -478,7 +478,7 @@ export default function Imoveis() {
                   <span className="text-[9px] font-black px-2 py-1 rounded-full bg-black/40 text-slate-300">{im.tipo}</span>
                   {im.operacao === "Locação" && <span className="text-[9px] font-black px-2 py-1 rounded-full bg-violet-500/20 text-violet-300">Aluguel</span>}
                 </div>
-                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#111827] to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[var(--color-surface-elevated)] to-transparent" />
                 <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-4 text-slate-500 text-[10px]" onClick={e => e.stopPropagation()}>
                   <button onClick={() => setEditImovel(im)} className="p-1.5 rounded-lg bg-black/30 hover:bg-black/60 text-white transition-all opacity-0 group-hover:opacity-100">
                     <Edit2 className="w-3 h-3" />
@@ -515,7 +515,7 @@ export default function Imoveis() {
             <div
               key={im.id}
               onClick={() => setSelectedImovel(im)}
-              className="flex items-center gap-4 p-4 bg-[#111827]/80 border border-white/5 rounded-xl hover:border-blue-500/20 transition-all cursor-pointer group"
+              className="flex items-center gap-4 p-4 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl hover:border-blue-500/20 transition-all cursor-pointer group"
             >
               <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tipoGradient(im.tipo)} flex items-center justify-center shrink-0`}>
                 <Building2 className="w-6 h-6 text-white/30" />

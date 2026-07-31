@@ -25,7 +25,7 @@ type NovaTarefaModalProps = {
 };
 
 const labelClass = "text-[10px] font-bold text-slate-400 uppercase tracking-widest";
-const fieldClass = "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all";
+const fieldClass = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all";
 
 const taskTypes = [
   "Reunião Presencial",

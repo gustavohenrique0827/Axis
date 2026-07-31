@@ -71,7 +71,7 @@ export function TabFormularioSDR({ tenantId }: { tenantId: string }) {
         </div>
       )}
 
-      <div className="bg-[#111827]/80 border border-white/5 rounded-2xl overflow-hidden">
+      <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl overflow-hidden">
         <div className="flex items-start gap-3 p-5 border-b border-white/5">
           <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/20 mt-0.5"><FileText className="w-3.5 h-3.5 text-orange-400" /></div>
           <div className="flex-1">

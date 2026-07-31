@@ -33,7 +33,7 @@ export function SystemWorkflowsSection({ initialWorkflows }: { initialWorkflows?
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {systemWorkflows.map((wf, i) => (
-          <Card key={i} className={`p-6 border-white/5 bg-[#111827]/80 backdrop-blur-xl relative overflow-hidden group transition-all ${!wf.active && 'opacity-60'}`}>
+          <Card key={i} className={`p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group transition-all ${!wf.active && 'opacity-60'}`}>
             <div className="flex justify-between items-start mb-6">
               <div className={`p-3 rounded-xl ${wf.active ? 'bg-blue-500/20 text-blue-400' : 'bg-slate-800 text-slate-500'}`}>
                 <Zap className="w-5 h-5" />
@@ -42,19 +42,19 @@ export function SystemWorkflowsSection({ initialWorkflows }: { initialWorkflows?
             </div>
             <h3 className="font-bold text-lg mb-4">{wf.title}</h3>
             <div className="space-y-3">
-              <div className="bg-[#0B1120] p-3 rounded-lg border border-white/5">
+              <div className="bg-[var(--color-surface)] p-3 rounded-lg border border-white/5">
                 <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold block mb-1">Quando (Gatilho)</span>
                 <span className="text-sm font-medium text-slate-300">{wf.trigger}</span>
               </div>
               <div className="flex justify-center"><ArrowRight className="w-4 h-4 text-slate-600" /></div>
-              <div className="bg-[#0B1120] p-3 rounded-lg border border-white/5">
+              <div className="bg-[var(--color-surface)] p-3 rounded-lg border border-white/5">
                 <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold block mb-1">Então (Ação)</span>
                 <span className="text-sm font-medium text-slate-300">{wf.action}</span>
               </div>
             </div>
             <div className="mt-6 pt-4 border-t border-white/5 flex gap-2">
               <Button onClick={() => toggleSystemWf(i)} size="sm" variant="outline"
-                className={`w-full bg-[#0B1120] border-white/10 text-slate-300 text-xs font-bold ${wf.active ? 'hover:text-amber-400 hover:border-amber-500/20' : 'hover:text-emerald-400 hover:border-emerald-500/20'}`}>
+                className={`w-full bg-[var(--color-surface)] border-white/10 text-slate-300 text-xs font-bold ${wf.active ? 'hover:text-amber-400 hover:border-amber-500/20' : 'hover:text-emerald-400 hover:border-emerald-500/20'}`}>
                 {wf.active ? "Pausar Fluxo" : "Ativar Fluxo"}
               </Button>
               <button

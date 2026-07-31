@@ -29,7 +29,7 @@ export function FunnelConversionChart({ funnelData, topConversionRate }: FunnelC
 
   return (
     <div className="space-y-6">
-      <Card className="p-8 bg-[#111827]/80 border-white/5 relative overflow-hidden rounded-3xl">
+      <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden rounded-3xl">
         <h3 className="text-sm font-black text-white mb-8 uppercase tracking-widest flex items-center gap-2">
           <Filter className="w-4 h-4 text-emerald-400" /> Funil de Conversão
         </h3>

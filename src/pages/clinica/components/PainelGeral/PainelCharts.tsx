@@ -16,7 +16,7 @@ interface PainelChartsProps {
 export function PainelCharts({ clinicData, totalAppointments, confirmed, finalized, late, occupancyPct }: PainelChartsProps) {
   return (
     <div className="grid lg:grid-cols-3 gap-6">
-      <Card className="lg:col-span-2 p-8 bg-[#111827]/80 border-white/5 relative overflow-hidden">
+      <Card className="lg:col-span-2 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden">
         <div className="flex flex-col md:flex-row justify-between items-start mb-10 gap-4">
           <div>
             <h3 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
@@ -46,7 +46,7 @@ export function PainelCharts({ clinicData, totalAppointments, confirmed, finaliz
                 </defs>
                 <XAxis dataKey="name" stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
                 <YAxis stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: '#0B1120', border: '1px solid #ffffff05', borderRadius: '16px' }} itemStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
+                <Tooltip contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid #ffffff05', borderRadius: '16px' }} itemStyle={{ fontSize: '10px', fontWeight: 'bold' }} />
                 <Area type="monotone" dataKey="consultas" stroke="#10b981" fillOpacity={1} fill="url(#colorConsultas)" strokeWidth={4} />
                 <Area type="step" dataKey="noShow" stroke="#f43f5e" fillOpacity={0.05} strokeWidth={2} strokeDasharray="5 5" fill="#f43f5e" />
               </AreaChart>
@@ -55,7 +55,7 @@ export function PainelCharts({ clinicData, totalAppointments, confirmed, finaliz
         )}
       </Card>
 
-      <Card className="p-8 bg-[#111827]/80 border-white/5 flex flex-col items-center justify-center">
+      <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 flex flex-col items-center justify-center">
         <h3 className="text-[10px] font-black text-slate-500 mb-8 uppercase tracking-[0.25em] flex items-center gap-2 w-full">
           <Zap className="w-4 h-4 text-amber-400" /> Ocupação Hoje
         </h3>

@@ -86,7 +86,7 @@ function InternalSidebar({ channels, activeChannelId, onSelectChannel, onNewDM }
   });
 
   return (
-    <div className="w-[320px] lg:w-[380px] h-full flex flex-col shrink-0 border-r border-white/5 bg-[#0B1120] z-10">
+    <div className="w-[320px] lg:w-[380px] h-full flex flex-col shrink-0 border-r border-white/5 bg-[var(--color-surface)] z-10">
       {/* Header — igual ao ChatListSidebar */}
       <div className="shrink-0 h-[72px] px-5 flex items-center justify-between border-b border-white/5">
         <h1 className="text-xl font-bold text-white tracking-tight">Chat Interno</h1>
@@ -101,7 +101,7 @@ function InternalSidebar({ channels, activeChannelId, onSelectChannel, onNewDM }
       </div>
 
       {/* Tabs */}
-      <div className="shrink-0 flex overflow-x-auto scrollbar-none border-b border-white/5 px-3 py-3 gap-2 bg-[#0B1120]/50 backdrop-blur-md">
+      <div className="shrink-0 flex overflow-x-auto scrollbar-none border-b border-white/5 px-3 py-3 gap-2 bg-[var(--color-surface)]/50 backdrop-blur-md">
         {tabs.map(tab => (
           <button
             key={tab}
@@ -118,7 +118,7 @@ function InternalSidebar({ channels, activeChannelId, onSelectChannel, onNewDM }
       </div>
 
       {/* Search */}
-      <div className="shrink-0 px-5 py-3 border-b border-white/5 bg-[#0B1120]/40">
+      <div className="shrink-0 px-5 py-3 border-b border-white/5 bg-[var(--color-surface)]/40">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
           <input
@@ -281,7 +281,7 @@ function InternalChatArea({ channel, messages, inputText, setInputText, sendMess
       {/* Messages */}
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-[#0B1120] scrollbar-thin scrollbar-thumb-white/10"
+        className="flex-1 overflow-y-auto p-4 md:p-6 space-y-4 bg-[var(--color-surface)] scrollbar-thin scrollbar-thumb-white/10"
       >
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full opacity-50 flex-col gap-4">
@@ -354,7 +354,7 @@ function InternalChatArea({ channel, messages, inputText, setInputText, sendMess
       {/* Input */}
       <div className="p-3 sm:p-4 shrink-0 relative bg-[#0F172A]/80 border-t border-white/5 backdrop-blur-md z-10">
         <div className="flex items-end gap-2 sm:gap-3 mx-auto w-full max-w-4xl">
-          <div className="flex-1 bg-[#1E293B] border border-white/5 rounded-2xl flex items-end min-h-[50px] shadow-inner transition-colors focus-within:border-blue-500/50 min-w-0 relative">
+          <div className="flex-1 bg-[var(--color-surface-elevated)] border border-white/5 rounded-2xl flex items-end min-h-[50px] shadow-inner transition-colors focus-within:border-blue-500/50 min-w-0 relative">
 
             {/* Emoji/Sticker picker */}
             {showPicker && (

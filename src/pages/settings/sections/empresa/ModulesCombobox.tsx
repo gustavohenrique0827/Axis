@@ -37,13 +37,13 @@ export function ModulesCombobox({ selected, onChange }: ModulesComboboxProps) {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:outline-none transition-all flex items-center justify-between text-left"
+        className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:outline-none transition-all flex items-center justify-between text-left"
       >
         <span className={selected.length === 0 ? "text-slate-600" : "text-white"}>{displayText}</span>
         <ChevronDown className={`w-4 h-4 text-slate-500 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
-        <div className="absolute z-50 mt-1 w-full bg-[#0B1120] border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden">
+        <div className="absolute z-50 mt-1 w-full bg-[var(--color-surface)] border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden">
           <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5">
             <button type="button" onClick={() => onChange(ALL_MODULES.map((m) => m.id))} className="text-[10px] font-black uppercase tracking-widest text-blue-400 hover:text-blue-300 transition-colors">Todos</button>
             <span className="text-slate-700">·</span>

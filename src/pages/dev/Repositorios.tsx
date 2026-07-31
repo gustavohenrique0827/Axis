@@ -102,7 +102,7 @@ export default function Repositorios() {
             { label: "Stars Total", value: totalStars, icon: Star, color: "text-amber-400", bg: "bg-amber-500/10" },
             { label: "PRs em Aberto", value: totalPRs, icon: GitBranch, color: "text-indigo-400", bg: "bg-indigo-500/10" },
           ].map((s, i) => (
-            <Card key={i} className="p-5 bg-[#111827]/80 border-white/5 flex items-center gap-4">
+            <Card key={i} className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/5 flex items-center gap-4">
               <div className={`p-2.5 rounded-xl ${s.bg}`}>
                 <s.icon className={`w-4 h-4 ${s.color}`} />
               </div>
@@ -123,7 +123,7 @@ export default function Repositorios() {
               placeholder="Buscar repositório..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-[#111827] border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50"
+              className="w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50"
             />
           </div>
           <div className="flex gap-2">
@@ -142,7 +142,7 @@ export default function Repositorios() {
         </div>
 
         {/* Lista */}
-        <Card className="bg-[#111827]/80 border-white/5 overflow-hidden">
+        <Card className="bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
           <div className="divide-y divide-white/5">
             {filtered.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-slate-500">

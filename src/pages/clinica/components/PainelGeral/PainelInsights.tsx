@@ -63,7 +63,7 @@ export function PainelInsights({ totalAppointments, confirmed, late, activeToday
         </div>
       </Card>
 
-      <Card className="p-8 bg-[#111827]/80 border-white/5 overflow-hidden">
+      <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
         <div className="flex items-center justify-between mb-8">
           <h4 className="text-xs font-black text-white uppercase tracking-widest">Jornada do Paciente (Live)</h4>
           <div className="flex items-center gap-2">

@@ -175,7 +175,7 @@ export default function FinanceiroDRE() {
         
         {/* Dynamic setup and simulation panel */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 p-6 bg-[#111827]/80 backdrop-blur-xl border-white/5">
+          <Card className="lg:col-span-2 p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border-white/5">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
               <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-blue-500" /> Parâmetros e Simulação do DRE
@@ -233,7 +233,7 @@ export default function FinanceiroDRE() {
                       step="1000"
                       value={despesaPessoal}
                       onChange={(e) => setDespesaPessoal(Number(e.target.value))}
-                      className="w-full bg-[#1e293b]/50 border border-white/5 h-11 rounded-xl pl-8 pr-4 text-xs font-black text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--color-surface-elevated)]/50 border border-white/5 h-11 rounded-xl pl-8 pr-4 text-xs font-black text-white focus:outline-none focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -247,7 +247,7 @@ export default function FinanceiroDRE() {
                       step="500"
                       value={despesaMarketing}
                       onChange={(e) => setDespesaMarketing(Number(e.target.value))}
-                      className="w-full bg-[#1e293b]/50 border border-white/5 h-11 rounded-xl pl-8 pr-4 text-xs font-black text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--color-surface-elevated)]/50 border border-white/5 h-11 rounded-xl pl-8 pr-4 text-xs font-black text-white focus:outline-none focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -261,7 +261,7 @@ export default function FinanceiroDRE() {
                       step="500"
                       value={despesaAdmin}
                       onChange={(e) => setDespesaAdmin(Number(e.target.value))}
-                      className="w-full bg-[#1e293b]/50 border border-white/5 h-11 rounded-xl pl-8 pr-4 text-xs font-black text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--color-surface-elevated)]/50 border border-white/5 h-11 rounded-xl pl-8 pr-4 text-xs font-black text-white focus:outline-none focus:border-blue-500"
                     />
                   </div>
                 </div>
@@ -269,7 +269,7 @@ export default function FinanceiroDRE() {
             </div>
           </Card>
 
-          <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border-white/5 flex flex-col justify-between">
+          <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border-white/5 flex flex-col justify-between">
             <div>
               <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Gráfico de Lucratividade</h4>
               <div className="h-32 w-full">
@@ -277,7 +277,7 @@ export default function FinanceiroDRE() {
                   <BarChart data={chartData} layout="vertical">
                     <XAxis type="number" hide />
                     <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={9} width={80} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{ backgroundColor: "#0F172A", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }} itemStyle={{ fontSize: "10px", color: "#FFF" }} />
+                    <Tooltip contentStyle={{ backgroundColor: "var(--color-surface)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }} itemStyle={{ fontSize: "10px", color: "#FFF" }} />
                     <Bar dataKey="Valor" radius={[0, 4, 4, 0]}>
                       {chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -303,7 +303,7 @@ export default function FinanceiroDRE() {
         </div>
 
         {/* Dynamic DRE Table display */}
-        <Card className="bg-[#111827]/80 backdrop-blur-xl border-white/10 p-6 overflow-hidden shadow-2xl">
+        <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border-white/10 p-6 overflow-hidden shadow-2xl">
           <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
              <div>
                 <h3 className="text-base font-black text-white uppercase italic tracking-tight flex items-center gap-2">

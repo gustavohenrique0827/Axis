@@ -30,7 +30,7 @@ export function MobileNav({ isMobileMoreOpen, setIsMobileMoreOpen }: MobileNavPr
 
   return (
     <>
-      <nav className="sm:hidden fixed bottom-0 left-0 right-0 h-16 bg-[#111827]/95 backdrop-blur-lg border-t border-white/10 flex items-center justify-around px-2 z-40 pb-safe shadow-[0_-10px_35px_rgba(0,0,0,0.5)]">
+      <nav className="sm:hidden fixed bottom-0 left-0 right-0 h-16 bg-[var(--color-surface-elevated)]/95 backdrop-blur-lg border-t border-white/10 flex items-center justify-around px-2 z-40 pb-safe shadow-[0_-10px_35px_rgba(0,0,0,0.5)]">
         {[
           { name: "Painel", path: "/app/dashboard", icon: LayoutDashboard },
           { name: "Leads", path: "/app/pipeline", icon: Columns3 },
@@ -65,7 +65,7 @@ export function MobileNav({ isMobileMoreOpen, setIsMobileMoreOpen }: MobileNavPr
       {isMobileMoreOpen && (
         <>
           <div className="fixed inset-0 bg-black/70 backdrop-blur-md z-50 animate-in fade-in duration-200" onClick={() => setIsMobileMoreOpen(false)} />
-          <div className="fixed inset-x-0 bottom-0 z-50 bg-[#0B1120] border-t border-white/10 rounded-t-3xl max-h-[80vh] overflow-y-auto p-6 pb-12 flex flex-col gap-4 shadow-[0_-25px_50px_rgba(0,0,0,0.6)] animate-in slide-in-from-bottom duration-300">
+          <div className="fixed inset-x-0 bottom-0 z-50 bg-[var(--color-surface)] border-t border-white/10 rounded-t-3xl max-h-[80vh] overflow-y-auto p-6 pb-12 flex flex-col gap-4 shadow-[0_-25px_50px_rgba(0,0,0,0.6)] animate-in slide-in-from-bottom duration-300">
             <div className="w-12 h-1 bg-slate-700/80 rounded-full mx-auto mb-2 shrink-0"></div>
 
             <div className="flex justify-between items-center mb-1 shrink-0">

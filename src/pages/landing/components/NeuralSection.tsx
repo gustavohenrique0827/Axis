@@ -101,7 +101,7 @@ export function NeuralSection({ rotateX, rotateY }: NeuralSectionProps) {
                style={{ rotateX, rotateY }}
                className="relative glass-card rounded-3xl sm:rounded-[4rem] p-1.5 border-white/5 shadow-[0_0_150px_rgba(37,99,235,0.2)] overflow-hidden"
              >
-                <div className="bg-[#020617]/90 p-6 sm:p-10 lg:p-16 rounded-[1.4rem] sm:rounded-[3.8rem] space-y-6 sm:space-y-10 lg:space-y-12">
+                <div className="bg-[var(--color-surface)]/90 p-6 sm:p-10 lg:p-16 rounded-[1.4rem] sm:rounded-[3.8rem] space-y-6 sm:space-y-10 lg:space-y-12">
                    <div className="flex items-center justify-between">
                       <span className="text-[10px] sm:text-[12px] font-black text-slate-700 tracking-[0.3em] sm:tracking-[0.5em]">OPERATIONAL_VISOR</span>
                       <div className="flex gap-2">

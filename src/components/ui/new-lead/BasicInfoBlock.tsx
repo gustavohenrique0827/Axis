@@ -17,7 +17,7 @@ export function BasicInfoBlock({
   emailValue, setEmailValue, phoneValue, handlePhoneChange, isEmailDuplicate,
   selectedSeller, setSelectedSeller, sellerOptions, sellerPipelineId, sellerCargoLabel,
 }: BasicInfoBlockProps) {
-  const inputCls = "w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all";
+  const inputCls = "w-full bg-[var(--color-surface)]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[var(--color-surface)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all";
 
   return (
     <div className="space-y-5">
@@ -78,8 +78,8 @@ export function BasicInfoBlock({
           </label>
           <select name="seller" value={selectedSeller} onChange={(e) => setSelectedSeller(e.target.value)} className={inputCls}>
             {sellerOptions.length > 0
-              ? sellerOptions.map(s => <option key={s} value={s} className="bg-[#111827]">{s}</option>)
-              : <option value="" disabled className="bg-[#111827] text-slate-500">Nenhum colaborador cadastrado</option>
+              ? sellerOptions.map(s => <option key={s} value={s} className="bg-[var(--color-surface-elevated)]">{s}</option>)
+              : <option value="" disabled className="bg-[var(--color-surface-elevated)] text-slate-500">Nenhum colaborador cadastrado</option>
             }
           </select>
           {selectedSeller && (

@@ -34,7 +34,7 @@ export function SquadMetasSection({
   handleSliderChange
 }: SquadMetasSectionProps) {
   return (
-    <div className="xl:col-span-2 p-6 border-white/5 bg-[#111827]/80 backdrop-blur-xl flex flex-col justify-between rounded-3xl">
+    <div className="xl:col-span-2 p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl flex flex-col justify-between rounded-3xl">
       <div>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
           <div>

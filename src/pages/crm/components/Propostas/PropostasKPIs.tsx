@@ -49,7 +49,7 @@ export function PropostasKPIs({ propostas }: { propostas: Proposta[] }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {stats.map((stat, i) => (
-        <Card key={i} className="p-5 bg-[#111827]/80 border-white/5 backdrop-blur-md flex items-center justify-between">
+        <Card key={i} className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-md flex items-center justify-between">
           <div>
             <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{stat.label}</div>
             <div className="text-2xl font-black text-white italic">{stat.value}</div>

@@ -93,11 +93,11 @@ export default function AgendaClinica() {
       description="Sincronização de horários, gestão de salas e fluxo de pacientes por unidade."
       actions={
         <div className="flex items-center gap-4">
-          <Button onClick={handleSyncCalendar} disabled={isSyncing} variant="outline" className="border-white/10 bg-[#0B1120] text-white rounded-2xl h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2 hover:bg-white/5 active:scale-95 transition-all">
+          <Button onClick={handleSyncCalendar} disabled={isSyncing} variant="outline" className="border-white/10 bg-[var(--color-surface)] text-white rounded-2xl h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2 hover:bg-white/5 active:scale-95 transition-all">
             {isSyncing ? <RefreshCw className="w-4 h-4 animate-spin text-blue-400" /> : <CalendarDays className="w-4 h-4 text-blue-400" />}
             Sincronizar Google Calendar
           </Button>
-          <div className="flex bg-[#0B1120] border border-white/5 p-1 rounded-2xl shadow-inner h-11">
+          <div className="flex bg-[var(--color-surface)] border border-white/5 p-1 rounded-2xl shadow-inner h-11">
             <Button variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-white/5"><ChevronLeft className="w-5 h-5 text-slate-400" /></Button>
             <div className="px-6 flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-white min-w-[150px] justify-center">28 Maio, 2026</div>
             <Button variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-white/5"><ChevronRight className="w-5 h-5 text-slate-400" /></Button>
@@ -118,8 +118,8 @@ export default function AgendaClinica() {
         />
 
         <div className="lg:col-span-3 space-y-6">
-          <Card className="bg-[#111827]/80 border-white/5 overflow-hidden shadow-2xl">
-            <div className="flex items-center p-6 border-b border-white/5 bg-[#0B1120]/50">
+          <Card className="bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden shadow-2xl">
+            <div className="flex items-center p-6 border-b border-white/5 bg-[var(--color-surface)]/50">
               <div className="w-24 shrink-0 text-[10px] font-black text-slate-600 uppercase tracking-widest">Hora</div>
               <div className="flex-1 text-[10px] font-black text-slate-600 uppercase tracking-widest pl-4">Paciente & Especialista</div>
               <div className="hidden md:block w-32 text-center text-[10px] font-black text-slate-600 uppercase tracking-widest">Sala</div>
@@ -131,7 +131,7 @@ export default function AgendaClinica() {
                 const apts = filteredAppointments.filter(a => a.time === slot);
                 return (
                   <div key={i} className={`flex group min-h-[90px] relative transition-colors ${apts.length > 0 ? '' : 'hover:bg-white/[0.01]'}`}>
-                    <div className={`w-24 p-6 border-r border-white/5 flex flex-col items-center justify-center bg-[#0B1120]/30 shrink-0 ${apts.length > 0 ? 'border-l-4 border-l-emerald-500/40' : ''}`}>
+                    <div className={`w-24 p-6 border-r border-white/5 flex flex-col items-center justify-center bg-[var(--color-surface)]/30 shrink-0 ${apts.length > 0 ? 'border-l-4 border-l-emerald-500/40' : ''}`}>
                       <span className="text-base font-black text-white font-mono tracking-tighter">{slot}</span>
                       <span className="text-[9px] text-slate-600 font-bold uppercase mt-1">30min</span>
                     </div>

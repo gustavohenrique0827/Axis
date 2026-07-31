@@ -28,7 +28,7 @@ export function PerformanceIAEngineCards(props: {
         </div>
       </Card>
 
-      <Card className="p-8 bg-[#111827]/80 border-white/5 flex flex-col justify-between">
+      <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 flex flex-col justify-between">
         <div className="flex items-center justify-between">
           <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Score de Saúde IA</h4>
           <ShieldCheck className="w-4 h-4 text-emerald-500" />

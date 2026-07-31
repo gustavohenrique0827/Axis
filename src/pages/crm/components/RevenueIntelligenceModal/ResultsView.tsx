@@ -31,11 +31,11 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
     <div className="p-6 space-y-4">
       {/* Top stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-[#0B1120] border border-white/5 rounded-2xl p-4 text-center">
+        <div className="bg-[var(--color-surface)] border border-white/5 rounded-2xl p-4 text-center">
           <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Prob. Fechamento</p>
           <p className={`text-3xl font-black ${probColor}`}>{result.closingProbability}%</p>
         </div>
-        <div className="bg-[#0B1120] border border-white/5 rounded-2xl p-4 text-center">
+        <div className="bg-[var(--color-surface)] border border-white/5 rounded-2xl p-4 text-center">
           <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Temperatura</p>
           <p className={`text-xl font-black uppercase ${
             result.temperature === 'quente' ? 'text-rose-400'
@@ -43,7 +43,7 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
             : 'text-blue-400'
           }`}>{result.temperature}</p>
         </div>
-        <div className="bg-[#0B1120] border border-white/5 rounded-2xl p-4 text-center">
+        <div className="bg-[var(--color-surface)] border border-white/5 rounded-2xl p-4 text-center">
           <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Score BANT</p>
           <p className="text-3xl font-black text-white">{result.bantScore}<span className="text-sm text-slate-500">/8</span></p>
         </div>

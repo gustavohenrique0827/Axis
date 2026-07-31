@@ -14,7 +14,7 @@ export default function Login() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0B1120] text-[#F8FAFC] font-sans flex items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--color-surface)] text-[var(--color-text-primary)] font-sans flex items-center justify-center relative overflow-hidden">
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-[#2563EB]/10 blur-[120px] rounded-full pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] bg-[#06B6D4]/10 blur-[120px] rounded-full pointer-events-none" />
 
@@ -23,7 +23,7 @@ export default function Login() {
         {/* Left Side */}
         <div className="flex-1 w-full max-w-xl">
           <div className="text-center mb-8">
-            <div className="relative inline-block bg-[#0B1120] rounded-2xl overflow-hidden p-3 border border-white/5 mb-6">
+            <div className="relative inline-block bg-[var(--color-surface)] rounded-2xl overflow-hidden p-3 border border-white/5 mb-6">
               <img
                 src={logoDarkFull}
                 alt="Axis CRM Logo"

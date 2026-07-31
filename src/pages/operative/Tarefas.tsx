@@ -70,7 +70,7 @@ export default function Tarefas() {
       description="Organize suas demandas comerciais, reuniões de diagnóstico e follow-ups de vendas."
       actions={
         <div className="flex flex-wrap items-center gap-2 shrink-0">
-          <div className="flex items-center bg-[#111827] border border-white/10 rounded-xl p-1">
+          <div className="flex items-center bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl p-1">
             <button
               onClick={() => setViewMode('kanban')}
               className={`p-1.5 px-3 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-1.5 border-none cursor-pointer ${viewMode === 'kanban' ? 'bg-[#2563EB] text-white' : 'text-slate-400 hover:text-white bg-transparent'}`}

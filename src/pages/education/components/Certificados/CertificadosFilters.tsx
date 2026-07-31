@@ -8,7 +8,7 @@ interface CertificadosFiltersProps {
 
 export function CertificadosFilters({ search, onSearchChange }: CertificadosFiltersProps) {
   return (
-    <Card className="p-4 bg-[#111827]/80 border-white/5 backdrop-blur-xl">
+    <Card className="p-4 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-xl">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative group">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-amber-400 transition-colors" />

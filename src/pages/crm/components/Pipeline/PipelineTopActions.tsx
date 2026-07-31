@@ -19,7 +19,7 @@ export function PipelineTopActions({
 }: Props) {
   return (
     <div className="flex items-center gap-2 shrink-0">
-      <div className="flex items-center bg-[#111827] border border-white/10 rounded-xl overflow-hidden h-11">
+      <div className="flex items-center bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl overflow-hidden h-11">
         {(["lista", "kanban"] as const).map((v) => (
           <button
             key={v}

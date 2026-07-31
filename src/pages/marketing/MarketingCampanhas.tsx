@@ -71,7 +71,7 @@ export default function MarketingCampanhas() {
       subtitle="Acompanhe o ROI e performance dos seus anúncios Meta e Google."
     >
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <Card className={`p-5 flex flex-col justify-between transition-all duration-500 ${metaConnected ? 'bg-gradient-to-br from-blue-600/20 to-[#111827] border-blue-500/30' : 'bg-[#111827] border-white/5 opacity-70 grayscale'}`}>
+        <Card className={`p-5 flex flex-col justify-between transition-all duration-500 ${metaConnected ? 'bg-gradient-to-br from-blue-600/20 to-[var(--color-surface-elevated)] border-blue-500/30' : 'bg-[var(--color-surface-elevated)] border-white/5 opacity-70 grayscale'}`}>
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${metaConnected ? 'bg-blue-500/20' : 'bg-white/10'}`}>
@@ -98,7 +98,7 @@ export default function MarketingCampanhas() {
           </div>
         </Card>
         
-        <Card className={`p-5 flex flex-col justify-between transition-all duration-500 ${googleConnected ? 'bg-gradient-to-br from-emerald-600/20 to-[#111827] border-emerald-500/30' : 'bg-[#111827] border-white/5 opacity-70 grayscale'}`}>
+        <Card className={`p-5 flex flex-col justify-between transition-all duration-500 ${googleConnected ? 'bg-gradient-to-br from-emerald-600/20 to-[var(--color-surface-elevated)] border-emerald-500/30' : 'bg-[var(--color-surface-elevated)] border-white/5 opacity-70 grayscale'}`}>
           <div>
             <div className="flex items-center justify-between mb-4">
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${googleConnected ? 'bg-emerald-500/20' : 'bg-white/10'}`}>
@@ -132,7 +132,7 @@ export default function MarketingCampanhas() {
           </div>
         </Card>
 
-        <Card className="p-5 bg-[#111827] border-white/5 border-dashed flex flex-col justify-center items-center text-center cursor-pointer hover:bg-white/5 transition-all">
+        <Card className="p-5 bg-[var(--color-surface-elevated)] border-white/5 border-dashed flex flex-col justify-center items-center text-center cursor-pointer hover:bg-white/5 transition-all">
            <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mb-3">
              <Plus className="w-6 h-6 text-slate-400" />
            </div>
@@ -154,7 +154,7 @@ export default function MarketingCampanhas() {
           { label: "CPA Médio", value: cpa > 0 ? fmt(cpa) : '—', icon: Target, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
           { label: "Leads Gerados", value: totalLeads.toString(), icon: Users, color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20" },
         ].map((kpi, i) => (
-          <Card key={i} className={`p-6 bg-[#111827] border-white/5 relative overflow-hidden group`}>
+          <Card key={i} className={`p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group`}>
             <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] rounded-bl-full pointer-events-none" />
             <div className="flex items-center justify-between mb-4">
               <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center border ${kpi.border}`}>
@@ -168,7 +168,7 @@ export default function MarketingCampanhas() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card className="p-6 bg-[#111827] border-white/5">
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5">
           <h3 className="text-sm font-black text-white uppercase tracking-wider mb-6 flex items-center gap-2">
             <Target className="w-4 h-4 text-blue-500" /> Leads por Dia da Semana
           </h3>
@@ -185,7 +185,7 @@ export default function MarketingCampanhas() {
                   <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
                   <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#1E293B', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
+                    contentStyle={{ backgroundColor: 'var(--color-surface-elevated)', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
                     itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
                   />
                   <Line type="monotone" dataKey="leads" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#1E293B', strokeWidth: 2 }} activeDot={{ r: 6, stroke: '#fff' }} name="Leads" />
@@ -195,7 +195,7 @@ export default function MarketingCampanhas() {
           )}
         </Card>
         
-        <Card className="p-6 bg-[#111827] border-white/5">
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5">
           <h3 className="text-sm font-black text-white uppercase tracking-wider mb-6 flex items-center gap-2">
             <MousePointerClick className="w-4 h-4 text-blue-500" /> Volume de Leads (Bar)
           </h3>
@@ -213,7 +213,7 @@ export default function MarketingCampanhas() {
                   <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
                   <Tooltip 
                     cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    contentStyle={{ backgroundColor: '#1E293B', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
+                    contentStyle={{ backgroundColor: 'var(--color-surface-elevated)', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
                   />
                   <Bar dataKey="leads" fill="url(#colorLeads)" radius={[6, 6, 0, 0]} name="Leads" maxBarSize={40} />
                   <defs>
@@ -230,7 +230,7 @@ export default function MarketingCampanhas() {
       </div>
 
       {/* Campaigns table — empty state or summary from leads sources */}
-      <Card className="bg-[#111827] border-white/5 overflow-hidden">
+      <Card className="bg-[var(--color-surface-elevated)] border-white/5 overflow-hidden">
         <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
              <Target className="w-4 h-4 text-emerald-400" /> Origens de Leads (Fonte)

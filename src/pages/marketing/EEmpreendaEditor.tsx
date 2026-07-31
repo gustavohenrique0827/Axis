@@ -107,14 +107,14 @@ function HeroEditor({ tenantId }: { tenantId: string }) {
           rows={4}
           value={data[key]}
           onChange={e => setData(p => ({ ...p, [key]: e.target.value }))}
-          className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors resize-none leading-relaxed"
+          className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors resize-none leading-relaxed"
         />
       ) : (
         <input
           type="text"
           value={data[key]}
           onChange={e => setData(p => ({ ...p, [key]: e.target.value }))}
-          className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-11 px-4 text-sm focus:outline-none focus:border-orange-500/50 transition-colors"
+          className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-11 px-4 text-sm focus:outline-none focus:border-orange-500/50 transition-colors"
         />
       )}
     </div>
@@ -157,7 +157,7 @@ function PillarsEditor() {
   return (
     <div className="space-y-4">
       {items.map((item, i) => (
-        <div key={i} className="bg-[#1e293b]/60 border border-white/5 rounded-2xl p-5 space-y-3">
+        <div key={i} className="bg-[var(--color-surface-elevated)]/60 border border-white/5 rounded-2xl p-5 space-y-3">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest">Pilar {item.num}</span>
             {items.length > 1 && (
@@ -167,9 +167,9 @@ function PillarsEditor() {
             )}
           </div>
           <input placeholder="Título" value={item.title} onChange={e => update(i, "title", e.target.value)}
-            className="w-full bg-[#111827] text-white border border-white/10 rounded-xl h-10 px-4 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
+            className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-10 px-4 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
           <textarea placeholder="Descrição" rows={2} value={item.desc} onChange={e => update(i, "desc", e.target.value)}
-            className="w-full bg-[#111827] text-white border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 transition-colors resize-none" />
+            className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 transition-colors resize-none" />
         </div>
       ))}
       <button onClick={add} className="flex items-center gap-2 text-[11px] font-black text-slate-500 hover:text-white uppercase tracking-widest transition-colors">
@@ -205,7 +205,7 @@ function BenefitsEditor() {
   return (
     <div className="space-y-4">
       {items.map((item, i) => (
-        <div key={i} className="bg-[#1e293b]/60 border border-white/5 rounded-2xl p-5 space-y-3">
+        <div key={i} className="bg-[var(--color-surface-elevated)]/60 border border-white/5 rounded-2xl p-5 space-y-3">
           <div className="flex items-center justify-between mb-1">
             <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest">Benefício {item.step}</span>
             {items.length > 1 && (
@@ -215,9 +215,9 @@ function BenefitsEditor() {
             )}
           </div>
           <input placeholder="Título" value={item.title} onChange={e => update(i, "title", e.target.value)}
-            className="w-full bg-[#111827] text-white border border-white/10 rounded-xl h-10 px-4 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
+            className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-10 px-4 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
           <textarea placeholder="Descrição" rows={2} value={item.desc} onChange={e => update(i, "desc", e.target.value)}
-            className="w-full bg-[#111827] text-white border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 transition-colors resize-none" />
+            className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 transition-colors resize-none" />
         </div>
       ))}
       <button onClick={add} className="flex items-center gap-2 text-[11px] font-black text-slate-500 hover:text-white uppercase tracking-widest transition-colors">
@@ -253,7 +253,7 @@ function TestimonialsEditor() {
   return (
     <div className="space-y-4">
       {items.map((item, i) => (
-        <div key={i} className="bg-[#1e293b]/60 border border-white/5 rounded-2xl p-5 space-y-3">
+        <div key={i} className="bg-[var(--color-surface-elevated)]/60 border border-white/5 rounded-2xl p-5 space-y-3">
           <div className="flex items-center justify-between mb-1">
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-[10px] font-black text-white">
               {item.name ? item.name.charAt(0) : String(i + 1)}
@@ -263,14 +263,14 @@ function TestimonialsEditor() {
             </button>
           </div>
           <textarea placeholder="Depoimento" rows={3} value={item.text} onChange={e => update(i, "text", e.target.value)}
-            className="w-full bg-[#111827] text-white border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 transition-colors resize-none" />
+            className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 transition-colors resize-none" />
           <div className="grid grid-cols-3 gap-3">
             <input placeholder="Nome" value={item.name} onChange={e => update(i, "name", e.target.value)}
-              className="bg-[#111827] text-white border border-white/10 rounded-xl h-10 px-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
+              className="bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-10 px-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
             <input placeholder="Cargo / Empresa" value={item.role} onChange={e => update(i, "role", e.target.value)}
-              className="bg-[#111827] text-white border border-white/10 rounded-xl h-10 px-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
+              className="bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-10 px-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
             <input placeholder="Setor" value={item.sector} onChange={e => update(i, "sector", e.target.value)}
-              className="bg-[#111827] text-white border border-white/10 rounded-xl h-10 px-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
+              className="bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-10 px-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
           </div>
         </div>
       ))}
@@ -307,7 +307,7 @@ function FAQEditor() {
   return (
     <div className="space-y-4">
       {items.map((item, i) => (
-        <div key={i} className="bg-[#1e293b]/60 border border-white/5 rounded-2xl p-5 space-y-3">
+        <div key={i} className="bg-[var(--color-surface-elevated)]/60 border border-white/5 rounded-2xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Pergunta {i + 1}</span>
             <button onClick={() => remove(i)} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-slate-600 hover:text-rose-400 transition-colors">
@@ -315,9 +315,9 @@ function FAQEditor() {
             </button>
           </div>
           <input placeholder="Pergunta" value={item.q} onChange={e => update(i, "q", e.target.value)}
-            className="w-full bg-[#111827] text-white border border-white/10 rounded-xl h-10 px-4 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
+            className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-10 px-4 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
           <textarea placeholder="Resposta" rows={3} value={item.a} onChange={e => update(i, "a", e.target.value)}
-            className="w-full bg-[#111827] text-white border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 transition-colors resize-none" />
+            className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 transition-colors resize-none" />
         </div>
       ))}
       <button onClick={add} className="flex items-center gap-2 text-[11px] font-black text-slate-500 hover:text-white uppercase tracking-widest transition-colors">
@@ -399,7 +399,7 @@ export default function EEmpreendaEditor() {
             ))}
           </div>
 
-          <div className="bg-[#111827]/80 border border-white/5 rounded-2xl p-6">
+          <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-6">
             <AnimatePresence mode="wait">
               <motion.div key={tab} initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.14 }}>
                 {tab === "hero"         && <HeroEditor tenantId={TENANT_ID} />}
@@ -427,7 +427,7 @@ export default function EEmpreendaEditor() {
               </a>
             </div>
           </div>
-          <div className="rounded-2xl overflow-hidden border border-white/8 bg-[#040914]">
+          <div className="rounded-2xl overflow-hidden border border-white/8 bg-[var(--color-surface)]">
             <div className="flex items-center gap-2 px-4 py-3 bg-white/[0.03] border-b border-white/5">
               <div className="flex gap-1.5">
                 <div className="w-3 h-3 rounded-full bg-rose-500/60" />

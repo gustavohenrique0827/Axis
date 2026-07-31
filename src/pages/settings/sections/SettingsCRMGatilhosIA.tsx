@@ -72,7 +72,7 @@ export function ConfigCRMGatilhosIA() {
       </div>
 
       {/* Rules list */}
-      <Card className="bg-[#111827]/80 border border-white/10 overflow-hidden shadow-xl">
+      <Card className="bg-[var(--color-surface-elevated)]/80 border border-white/10 overflow-hidden shadow-xl">
         <div className="p-5 border-b border-white/5 bg-white/[0.01] flex justify-between items-center">
           <h3 className="text-xs font-black text-[#2563EB] uppercase tracking-widest font-mono">Gatilhos Ativos no SDR</h3>
           <span className="text-[10px] bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/15 px-2.5 py-0.5 rounded-full font-bold">
@@ -99,7 +99,7 @@ export function ConfigCRMGatilhosIA() {
                 <div className="flex items-center gap-3 self-end md:self-auto">
                   <button 
                     onClick={() => handleDelete(trigger.id)}
-                    className="p-1 px-2.5 text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-450 text-rose-400 font-bold rounded-lg transition-colors cursor-pointer"
+                    className="p-1 px-2.5 text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold rounded-lg transition-colors cursor-pointer"
                   >
                     Remover
                   </button>
@@ -111,7 +111,7 @@ export function ConfigCRMGatilhosIA() {
       </Card>
 
       {/* Add trigger form */}
-      <Card className="bg-[#111827]/80 border border-white/10 p-5 shadow-xl space-y-4">
+      <Card className="bg-[var(--color-surface-elevated)]/80 border border-white/10 p-5 shadow-xl space-y-4">
         <h3 className="text-xs font-black text-white uppercase tracking-widest font-mono">Criar Novo Gatilho do Lead Score</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -122,7 +122,7 @@ export function ConfigCRMGatilhosIA() {
               placeholder="Ex: Leads Altamente Qualificados para Comercial" 
               value={newTrigger.name}
               onChange={(e) => setNewTrigger({ ...newTrigger, name: e.target.value })}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
             />
           </div>
 
@@ -131,7 +131,7 @@ export function ConfigCRMGatilhosIA() {
             <select 
               value={newTrigger.condition}
               onChange={(e) => setNewTrigger({ ...newTrigger, condition: e.target.value as any })}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
             >
               <option value="greater">Maior ou Igual a</option>
               <option value="less">Menor ou Igual a</option>
@@ -148,7 +148,7 @@ export function ConfigCRMGatilhosIA() {
               max="100"
               value={newTrigger.scoreThreshold}
               onChange={(e) => setNewTrigger({ ...newTrigger, scoreThreshold: Number(e.target.value) })}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
             />
           </div>
           <div className="space-y-1">
@@ -156,7 +156,7 @@ export function ConfigCRMGatilhosIA() {
             <select 
               value={newTrigger.targetStageId}
               onChange={(e) => setNewTrigger({ ...newTrigger, targetStageId: e.target.value })}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
             >
               {Object.entries(sdrStagesMap).map(([id, name]) => (
                 <option key={id} value={id}>{name}</option>

@@ -91,7 +91,7 @@ export default function SettingsLayout() {
           >
             <Button
               onClick={() => setIsHidden(false)}
-              className="h-10 w-6 bg-[#0B1120] hover:bg-white/5 text-slate-500 hover:text-white border-y border-r border-white/10 rounded-l-none rounded-r-lg shadow-xl shadow-black/20 flex items-center justify-center p-0 group"
+              className="h-10 w-6 bg-[var(--color-surface)] hover:bg-white/5 text-slate-500 hover:text-white border-y border-r border-white/10 rounded-l-none rounded-r-lg shadow-xl shadow-black/20 flex items-center justify-center p-0 group"
               title="Abrir Sidebar"
             >
               <PanelLeftOpen className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />

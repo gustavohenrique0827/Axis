@@ -71,7 +71,7 @@ export default function Projetos() {
               placeholder="Buscar projetos..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="w-full bg-[#111827] border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30"
+              className="w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30"
             />
           </div>
           <div className="flex gap-2 flex-wrap">
@@ -92,7 +92,7 @@ export default function Projetos() {
           {filtered.map(project => (
             <Card
               key={String(project.id)}
-              className="p-6 bg-[#111827]/80 border-white/5 hover:border-blue-500/20 transition-all duration-200 group flex flex-col cursor-pointer"
+              className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 hover:border-blue-500/20 transition-all duration-200 group flex flex-col cursor-pointer"
               onClick={() => window.location.assign(`/app/dev/projetos/${project.id}`)}
             >
 

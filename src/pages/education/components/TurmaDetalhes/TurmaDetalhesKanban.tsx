@@ -34,9 +34,9 @@ export function TurmaDetalhesKanban({ students }: TurmaDetalhesKanbanProps) {
             </div>
             <Badge className="bg-white/5 text-slate-500 border-none font-black text-[9px]">{students.filter(s => s.status === col.id).length}</Badge>
           </div>
-          <div className="space-y-4 min-h-[500px] p-2 rounded-2xl bg-[#111827]/30 border border-white/5 border-dashed">
+          <div className="space-y-4 min-h-[500px] p-2 rounded-2xl bg-[var(--color-surface-elevated)]/30 border border-white/5 border-dashed">
             {students.filter(s => s.status === col.id).map((student) => (
-              <Card key={student.id} className="p-5 bg-[#111827] border-white/5 hover:border-blue-500/30 transition-all cursor-move group">
+              <Card key={student.id} className="p-5 bg-[var(--color-surface-elevated)] border-white/5 hover:border-blue-500/30 transition-all cursor-move group">
                 <div className="flex justify-between items-start mb-4">
                   <div className="text-xs font-bold text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight">{student.name}</div>
                   <button className="opacity-0 group-hover:opacity-100 transition-opacity">
@@ -57,7 +57,7 @@ export function TurmaDetalhesKanban({ students }: TurmaDetalhesKanbanProps) {
                     <Clock className="w-3 h-3" /> {student.lastPresence}
                   </div>
                   <div className="flex -space-x-2">
-                    <div className="w-5 h-5 rounded-full bg-indigo-500 border border-[#111827]" />
+                    <div className="w-5 h-5 rounded-full bg-indigo-500 border border-[var(--color-surface-elevated)]" />
                   </div>
                 </div>
               </Card>

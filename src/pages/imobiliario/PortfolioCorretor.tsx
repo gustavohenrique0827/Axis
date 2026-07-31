@@ -64,7 +64,7 @@ export default function PortfolioCorretor() {
 
   if (!corretor) {
     return (
-      <div className="min-h-screen bg-[#0B1120] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--color-surface)] flex items-center justify-center">
         <div className="text-center">
           <Building2 className="w-16 h-16 text-slate-600 mx-auto mb-4" />
           <h1 className="text-2xl font-black text-white mb-2">Corretor não encontrado</h1>
@@ -80,10 +80,10 @@ export default function PortfolioCorretor() {
   const outros = corretor.imoveis.filter(i => i.status !== "Disponível");
 
   return (
-    <div className="min-h-screen bg-[#0B1120] text-white">
+    <div className="min-h-screen bg-[var(--color-surface)] text-white">
       {/* Header */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-[#0B1120] to-violet-900/20" />
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-900/30 via-[var(--color-surface)] to-violet-900/20" />
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-blue-600/5 rounded-full blur-[100px] pointer-events-none" />
 
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 py-12">

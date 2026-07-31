@@ -10,10 +10,10 @@ export function LeadsTableDesktop(props: {
   const { filteredLeads, setSelectedLead, updateLead, sellers } = props;
 
   return (
-    <Card className="bg-[#111827]/80 backdrop-blur-xl border border-white/10 overflow-hidden hidden sm:block">
+    <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden hidden sm:block">
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-[#0B1120]/50 border-b border-white/10">
+          <thead className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-[var(--color-surface)]/50 border-b border-white/10">
             <tr>
               <th className="px-6 py-4">Nome & Empresa</th>
               <th className="px-6 py-4">Contato</th>
@@ -78,7 +78,7 @@ export function LeadsTableDesktop(props: {
                   <select
                     value={lead.seller || ""}
                     onChange={(e) => updateLead(lead.id, { seller: e.target.value })}
-                    className="bg-[#0B1120]/80 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer hover:bg-white/5"
+                    className="bg-[var(--color-surface)]/80 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer hover:bg-white/5"
                   >
                     <option value="">Sem Vendedor</option>
                     {sellers.map((s) => (

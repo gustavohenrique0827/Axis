@@ -52,7 +52,7 @@ const STATUSES = ['Em Planejamento', 'Em Desenvolvimento', 'Em Produção', 'Pau
 
 const label = 'text-[10px] font-bold text-slate-400 uppercase tracking-wider';
 const input =
-  'w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder-slate-600';
+  'w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder-slate-600';
 
 export function EditarProjetoDevModal({ isOpen, onClose, onSave, initialData }: Props) {
   const [name, setName] = useState('');
@@ -150,7 +150,7 @@ export function EditarProjetoDevModal({ isOpen, onClose, onSave, initialData }: 
 
         <div className="space-y-2">
           <label className={label}>Stack Tecnológica</label>
-          <div className="flex flex-wrap gap-2 p-3 bg-[#0B1120] border border-white/10 rounded-xl min-h-[48px]">
+          <div className="flex flex-wrap gap-2 p-3 bg-[var(--color-surface)] border border-white/10 rounded-xl min-h-[48px]">
             {STACKS.map((tech) => (
               <button
                 key={tech}

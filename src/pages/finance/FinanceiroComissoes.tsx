@@ -216,7 +216,7 @@ export default function FinanceiroComissoes() {
               {squadFilter} <ChevronDown className="w-3.5 h-3.5 opacity-60" />
             </button>
             {showSquadMenu && (
-              <div className="absolute right-0 top-12 z-30 bg-[#111827] border border-white/10 rounded-xl shadow-2xl shadow-black/50 min-w-[160px] overflow-hidden">
+              <div className="absolute right-0 top-12 z-30 bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl shadow-2xl shadow-black/50 min-w-[160px] overflow-hidden">
                 {squadNames.map(s => (
                   <button key={s} onClick={() => { setSquadFilter(s); setShowSquadMenu(false); }}
                     className={`w-full text-left px-4 py-2.5 text-[11px] font-bold hover:bg-white/5 transition-colors ${squadFilter === s ? 'text-emerald-400' : 'text-slate-300'}`}
@@ -254,7 +254,7 @@ export default function FinanceiroComissoes() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07 }}
           >
-            <Card className="p-5 bg-[#111827]/80 backdrop-blur-xl border-white/5 relative overflow-hidden group">
+            <Card className="p-5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border-white/5 relative overflow-hidden group">
               <div className="flex items-start justify-between mb-3">
                 <div className={`p-2 rounded-xl ${kpi.bg} border ${kpi.border}`}>
                   <kpi.icon className={`w-4 h-4 ${kpi.color}`} />
@@ -273,7 +273,7 @@ export default function FinanceiroComissoes() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden"
+        className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden"
       >
         {/* Tab bar */}
         <div className="flex items-center gap-0 border-b border-white/5 px-4 pt-1">

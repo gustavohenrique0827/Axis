@@ -22,7 +22,7 @@ export function ConfigEmpresaFiliais() {
 
       <div className="grid gap-4">
         {([] as any[]).map((filial: any, i: number) => (
-          <Card key={i} className="p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <Card key={i} className="p-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center">
                 <Store className="w-5 h-5 text-slate-400" />

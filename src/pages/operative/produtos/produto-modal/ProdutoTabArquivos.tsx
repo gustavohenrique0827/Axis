@@ -33,7 +33,7 @@ export function ProdutoTabArquivos({ attachments, setAttachments }: ProdutoTabAr
 
   return (
     <div className="space-y-5">
-      <div className="bg-[#111827] border border-white/5 p-4 rounded-xl flex items-center gap-3">
+      <div className="bg-[var(--color-surface-elevated)] border border-white/5 p-4 rounded-xl flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400 shrink-0 font-black text-xs font-mono">4</div>
         <div>
           <h4 className="text-xs font-black text-white uppercase tracking-wider">Mídia & Documentação Relacionada</h4>
@@ -41,7 +41,7 @@ export function ProdutoTabArquivos({ attachments, setAttachments }: ProdutoTabAr
         </div>
       </div>
 
-      <div className="relative border border-dashed border-[#2563EB]/20 bg-[#111827]/30 hover:bg-[#111827]/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all cursor-pointer group">
+      <div className="relative border border-dashed border-[#2563EB]/20 bg-[var(--color-surface-elevated)]/30 hover:bg-[var(--color-surface-elevated)]/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all cursor-pointer group">
         <input type="file" multiple onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
         <div className="w-12 h-12 rounded-full bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB] mb-3 group-hover:scale-110 transition-transform">
           <Download className="w-6 h-6" />
@@ -53,14 +53,14 @@ export function ProdutoTabArquivos({ attachments, setAttachments }: ProdutoTabAr
       <div className="space-y-2.5">
         <h5 className="text-[10px] font-black text-slate-400 uppercase tracking-widest block">Arquivos Anexados ({attachments.length})</h5>
         {attachments.length === 0 ? (
-          <p className="text-xs text-slate-500 italic p-4 bg-[#111827]/20 border border-white/5 rounded-xl text-center">Nenhum anexo registrado.</p>
+          <p className="text-xs text-slate-500 italic p-4 bg-[var(--color-surface-elevated)]/20 border border-white/5 rounded-xl text-center">Nenhum anexo registrado.</p>
         ) : (
           <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
             {attachments.map((file, idx) => {
               const isPDF = file.type === "pdf";
               const isImage = ["png", "jpg", "jpeg", "gif"].includes(file.type);
               return (
-                <div key={idx} className="flex items-center justify-between p-3 bg-[#111827] border border-white/5 rounded-xl hover:border-[#2563EB]/25 transition-all">
+                <div key={idx} className="flex items-center justify-between p-3 bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl hover:border-[#2563EB]/25 transition-all">
                   <div className="flex items-center gap-3">
                     <div className={`p-2 rounded-lg ${isPDF ? "bg-rose-500/10 text-rose-400" : isImage ? "bg-amber-500/10 text-amber-400" : "bg-blue-500/10 text-blue-400"}`}>
                       {isPDF ? <FileText className="w-4 h-4" /> : isImage ? <Image className="w-4 h-4" /> : <FileSpreadsheet className="w-4 h-4" />}

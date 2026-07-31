@@ -37,7 +37,7 @@ export function InputForm({
     <div className="p-6 space-y-5">
       <div className="flex items-center gap-3">
         <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider shrink-0">Modelo IA:</span>
-        <div className="flex gap-1 bg-[#0B1120] border border-white/5 rounded-xl p-1">
+        <div className="flex gap-1 bg-[var(--color-surface)] border border-white/5 rounded-xl p-1">
           {(['gemini', 'groq'] as AIProvider[]).map(p => (
             <button
               key={p}
@@ -71,7 +71,7 @@ export function InputForm({
               value={value}
               onChange={e => onChange(e.target.value)}
               placeholder={placeholder}
-              className="w-full bg-[#0B1120] border border-white/5 text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500/40 placeholder:text-slate-600"
+              className="w-full bg-[var(--color-surface)] border border-white/5 text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500/40 placeholder:text-slate-600"
             />
           </div>
         ))}
@@ -83,7 +83,7 @@ export function InputForm({
           value={commercialRules}
           onChange={e => onCommercialRulesChange(e.target.value)}
           placeholder="Ex: Desconto máx 10%, não negociar matrícula"
-          className="w-full bg-[#0B1120] border border-white/5 text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500/40 placeholder:text-slate-600"
+          className="w-full bg-[var(--color-surface)] border border-white/5 text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-blue-500/40 placeholder:text-slate-600"
         />
       </div>
 
@@ -96,7 +96,7 @@ export function InputForm({
           onChange={e => onTranscriptChange(e.target.value)}
           placeholder="Cole aqui a transcrição completa da ligação, reunião ou mensagens de WhatsApp..."
           rows={10}
-          className="w-full bg-[#0B1120] border border-white/5 text-xs text-white rounded-xl px-3 py-3 focus:outline-none focus:border-blue-500/40 resize-none placeholder:text-slate-600 font-mono leading-relaxed"
+          className="w-full bg-[var(--color-surface)] border border-white/5 text-xs text-white rounded-xl px-3 py-3 focus:outline-none focus:border-blue-500/40 resize-none placeholder:text-slate-600 font-mono leading-relaxed"
         />
         <p className="text-[9px] text-slate-600">{transcript.length} caracteres</p>
       </div>

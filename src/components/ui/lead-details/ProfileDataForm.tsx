@@ -34,7 +34,7 @@ interface ProfileDataFormProps {
 }
 
 const inputActiveClass =
-  "w-full bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600";
+  "w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-xs focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600";
 
 function viewCls(colorCls = "text-white font-semibold") {
   return `w-full bg-transparent border-none px-0 py-0 text-xs outline-none cursor-text appearance-none transition-all ${colorCls} placeholder:text-slate-500`;
@@ -65,7 +65,7 @@ export function ProfileDataForm({
   onFetchCnpj,
 }: ProfileDataFormProps) {
   return (
-    <div className="border border-white/10 bg-[#111827]/70 rounded-lg overflow-hidden">
+    <div className="border border-white/10 bg-[var(--color-surface-elevated)]/70 rounded-lg overflow-hidden">
       <div className="px-4 py-2.5 border-b border-white/[0.05] bg-white/[0.01] flex items-center justify-between">
         <h4 className="text-[8px] font-black uppercase tracking-widest text-slate-400">Dados Principais</h4>
         <button
@@ -158,7 +158,7 @@ export function ProfileDataForm({
                 });
               }}
               className={isEditingInline
-                ? "flex-1 bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-600"
+                ? "flex-1 bg-[var(--color-surface)] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-xs font-mono focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-600"
                 : `flex-1 ${viewCls(lead.cnpj ? "text-white font-mono" : "text-slate-500")}`}
             />
             <button

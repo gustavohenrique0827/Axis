@@ -110,7 +110,7 @@ export function FormStepsEditor() {
         const step = steps[key];
         const hasOptions = !!step.options;
         return (
-          <div key={key} className="bg-[#111827] border border-white/5 rounded-2xl overflow-hidden">
+          <div key={key} className="bg-[var(--color-surface-elevated)] border border-white/5 rounded-2xl overflow-hidden">
             <div className="flex items-center gap-3 px-5 py-3.5 border-b border-white/5 bg-white/[0.02]">
               <div className="w-2 h-2 rounded-full bg-orange-500" />
               <span className="text-[11px] font-black text-white uppercase tracking-widest">{label}</span>
@@ -119,13 +119,13 @@ export function FormStepsEditor() {
               <div>
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Pergunta</label>
                 <input value={step.label} onChange={e => updateStep(key, "label", e.target.value)}
-                  className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-10 px-4 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
+                  className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-10 px-4 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
               </div>
               {step.description !== undefined && (
                 <div>
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Descrição (texto de apoio)</label>
                   <textarea rows={2} value={step.description} onChange={e => updateStep(key, "description", e.target.value)}
-                    className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 transition-colors resize-none" />
+                    className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-orange-500/50 transition-colors resize-none" />
                 </div>
               )}
               {hasOptions && (
@@ -135,12 +135,12 @@ export function FormStepsEditor() {
                     {step.options!.map((opt, i) => (
                       <div key={i} className="flex items-center gap-2">
                         <input value={opt.icon ?? ""} onChange={e => updateOption(key, i, "icon", e.target.value)}
-                          className="w-12 bg-[#1e293b] text-white border border-white/10 rounded-lg h-9 px-2 text-center text-base focus:outline-none focus:border-orange-500/50 transition-colors" />
+                          className="w-12 bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-lg h-9 px-2 text-center text-base focus:outline-none focus:border-orange-500/50 transition-colors" />
                         <input placeholder="Label" value={opt.label} onChange={e => updateOption(key, i, "label", e.target.value)}
-                          className="flex-1 bg-[#1e293b] text-white border border-white/10 rounded-xl h-9 px-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
+                          className="flex-1 bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-9 px-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
                         {opt.sub !== undefined && (
                           <input placeholder="Subtexto" value={opt.sub} onChange={e => updateOption(key, i, "sub", e.target.value)}
-                            className="flex-1 bg-[#1e293b] text-white border border-white/10 rounded-xl h-9 px-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
+                            className="flex-1 bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-9 px-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
                         )}
                         <button onClick={() => removeOption(key, i)} disabled={(step.options?.length ?? 0) <= 1}
                           className="p-2 rounded-lg hover:bg-rose-500/10 text-slate-600 hover:text-rose-400 disabled:opacity-30 transition-colors">

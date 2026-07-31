@@ -40,7 +40,7 @@ export function ClientesList({
   });
 
   return (
-    <Card className="bg-[#111827]/80 backdrop-blur-xl border border-white/10 overflow-hidden">
+    <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden">
       {/* Filters bar */}
       <div className="p-4 border-b border-white/5 flex gap-3 flex-wrap">
         <div className="relative flex-1 min-w-[200px]">
@@ -50,13 +50,13 @@ export function ClientesList({
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
             placeholder="Buscar cliente..."
-            className="w-full bg-[#0B1120] border border-white/10 rounded-xl pl-9 pr-4 py-2 text-sm focus:border-blue-500 focus:outline-none text-white"
+            className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl pl-9 pr-4 py-2 text-sm focus:border-blue-500 focus:outline-none text-white"
           />
         </div>
         <select
           value={sectorFilter}
           onChange={(e) => onSectorChange(e.target.value)}
-          className="bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 focus:outline-none font-bold"
+          className="bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 focus:outline-none font-bold"
         >
           <option>Todos os setores</option>
           <option>Tecnologia</option>
@@ -68,7 +68,7 @@ export function ClientesList({
         <select
           value={statusFilter}
           onChange={(e) => onStatusChange(e.target.value)}
-          className="bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 focus:outline-none font-bold"
+          className="bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs text-white focus:border-blue-500 focus:outline-none font-bold"
         >
           <option>Todos as situações</option>
           <option>Ativo</option>
@@ -80,7 +80,7 @@ export function ClientesList({
       {/* Desktop table */}
       <div className="overflow-x-auto hidden sm:block">
         <table className="w-full text-sm text-left">
-          <thead className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-[#0B1120]/50 border-b border-white/10">
+          <thead className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-[var(--color-surface)]/50 border-b border-white/10">
             <tr>
               <th className="px-6 py-4">Empresa</th>
               <th className="px-6 py-4">Setor</th>

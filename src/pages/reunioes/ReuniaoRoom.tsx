@@ -91,7 +91,7 @@ export default function ReuniaoRoom() {
 
   if (!reuniao) {
     return (
-      <div className="flex flex-col items-center justify-center h-full bg-[#070E1A] text-slate-500 gap-4">
+      <div className="flex flex-col items-center justify-center h-full bg-[var(--color-surface)] text-slate-500 gap-4">
         <Video className="w-10 h-10 opacity-20" />
         <p className="font-semibold">Reunião não encontrada</p>
         <button onClick={() => navigate("/app/reunioes")} className="text-blue-400 hover:underline text-sm">
@@ -149,10 +149,10 @@ export default function ReuniaoRoom() {
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#070E1A] overflow-hidden">
+    <div className="flex flex-col h-full bg-[var(--color-surface)] overflow-hidden">
 
       {/* ── Top bar ── */}
-      <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06] bg-[#0B1120]/80 backdrop-blur shrink-0">
+      <div className="flex items-center justify-between px-5 py-3 border-b border-white/[0.06] bg-[var(--color-surface)]/80 backdrop-blur shrink-0">
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/app/reunioes")}
@@ -212,7 +212,7 @@ export default function ReuniaoRoom() {
           {isJitsiLink(reuniao.meetLink) ? (
             <div className="relative border-b border-white/[0.04]" style={{ height: "420px" }}>
               {/* overlay bar */}
-              <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-2 bg-[#070E1A]/80 backdrop-blur-sm border-b border-white/[0.06]">
+              <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-3 py-2 bg-[var(--color-surface)]/80 backdrop-blur-sm border-b border-white/[0.06]">
                 <div className="flex items-center gap-1.5">
                   {isActive
                     ? <><div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /><span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Ao Vivo</span></>
@@ -241,7 +241,7 @@ export default function ReuniaoRoom() {
             </div>
           ) : (
             <div className="p-4 border-b border-white/[0.04]">
-              <div className="rounded-2xl bg-[#0B1120] border border-white/[0.08] overflow-hidden">
+              <div className="rounded-2xl bg-[var(--color-surface)] border border-white/[0.08] overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
                   <div className="flex items-center gap-2">
                     {isActive

@@ -22,7 +22,7 @@ export function ProductsSection({
 }: ProductsSectionProps) {
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      <Card className="p-4 border-white/10 bg-[#0B1120]/60 space-y-4">
+      <Card className="p-4 border-white/10 bg-[var(--color-surface)]/60 space-y-4">
         <div className="flex items-center justify-between border-b border-white/5 pb-2">
           <h4 className="text-[10px] font-black uppercase tracking-widest text-[#06B6D4]">Estrutura de Orçamento & Produtos Vinculados</h4>
           <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">
@@ -42,7 +42,7 @@ export function ProductsSection({
                   className={`p-3.5 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
                     isLinked 
                       ? 'bg-[#2563EB]/15 border-blue-500/60 text-white shadow-md' 
-                      : 'bg-[#111827] border-white/5 text-slate-400 hover:text-white'
+                      : 'bg-[var(--color-surface-elevated)] border-white/5 text-slate-400 hover:text-white'
                   }`}
                 >
                   <div>
@@ -59,7 +59,7 @@ export function ProductsSection({
         </div>
 
         {/* Profit Margin & Commission calculations simulator */}
-        <div className="bg-[#111827] p-4 rounded-2xl border border-white/5 space-y-3">
+        <div className="bg-[var(--color-surface-elevated)] p-4 rounded-2xl border border-white/5 space-y-3">
           <h5 className="text-[10px] font-black uppercase text-[#06B6D4] tracking-wider">Detalhamento Financeiro & Comissionamento</h5>
           <div className="grid grid-cols-2 gap-4 text-xs font-mono">
             <div className="flex justify-between border-b border-white/[0.03] pb-1.5">
@@ -91,7 +91,7 @@ export function ProductsSection({
                 ...prev
               ]);
             }}
-            className="flex-1 bg-slate-800 text-white hover:bg-slate-750 text-xs font-bold gap-1.5 h-10"
+            className="flex-1 bg-slate-800 text-white hover:bg-slate-700 text-xs font-bold gap-1.5 h-10"
           >
             <FileText className="w-4 h-4" /> Visualizar PDF da Proposta
           </Button>

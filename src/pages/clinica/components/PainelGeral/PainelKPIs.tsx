@@ -16,7 +16,7 @@ export function PainelKPIs({ stats }: PainelKPIsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat, i) => (
-        <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 backdrop-blur-xl group overflow-hidden relative">
+        <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-xl group overflow-hidden relative">
           <div className="flex items-center justify-between relative z-10">
             <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
               <stat.icon className="w-5 h-5" />

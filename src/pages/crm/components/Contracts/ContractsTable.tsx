@@ -31,7 +31,7 @@ export function ContractsTable({ contracts, searchQuery, onSearchChange, onDelet
   );
 
   return (
-    <Card className="bg-[#111827]/50 backdrop-blur-xl border border-white/10 overflow-hidden">
+    <Card className="bg-[var(--color-surface-elevated)]/50 backdrop-blur-xl border border-white/10 overflow-hidden">
       <div className="p-4 border-b border-white/5 flex gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -40,10 +40,10 @@ export function ContractsTable({ contracts, searchQuery, onSearchChange, onDelet
             placeholder="Buscar contratos..."
             value={searchQuery}
             onChange={(e) => onSearchChange(e.target.value)}
-            className="bg-[#0B1120] border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] outline-none w-full"
+            className="bg-[var(--color-surface)] border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] outline-none w-full"
           />
         </div>
-        <select className="bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm text-white outline-none focus:border-[#2563EB]">
+        <select className="bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-sm text-white outline-none focus:border-[#2563EB]">
           <option>Todos os Planos</option>
           <option>Enterprise</option>
           <option>Pro</option>
@@ -52,7 +52,7 @@ export function ContractsTable({ contracts, searchQuery, onSearchChange, onDelet
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-[#0B1120]/50 border-b border-white/10">
+          <thead className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-[var(--color-surface)]/50 border-b border-white/10">
             <tr>
               <th className="px-6 py-4">Cliente</th>
               <th className="px-6 py-4">Plano</th>

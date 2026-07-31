@@ -19,7 +19,7 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Global SaaS Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 border-[#06B6D4]/20 bg-[#111827]/80 backdrop-blur-xl relative overflow-hidden group opacity-50">
+        <Card className="p-5 border-[#06B6D4]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group opacity-50">
           <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
             <Building2 className="w-12 h-12 text-[#06B6D4]" />
           </div>
@@ -27,7 +27,7 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
           <h3 className="text-3xl font-extrabold text-white">0</h3>
         </Card>
 
-        <Card className="p-5 border-[#2563EB]/20 bg-[#111827]/80 backdrop-blur-xl relative overflow-hidden group">
+        <Card className="p-5 border-[#2563EB]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
             <DollarSign className="w-12 h-12 text-[#2563EB]" />
           </div>
@@ -37,7 +37,7 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
           </h3>
         </Card>
 
-        <Card className="p-5 border-emerald-500/20 bg-[#111827]/80 backdrop-blur-xl relative overflow-hidden group opacity-50">
+        <Card className="p-5 border-emerald-500/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group opacity-50">
           <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
             <Users className="w-12 h-12 text-emerald-400" />
           </div>
@@ -45,7 +45,7 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
           <h3 className="text-3xl font-extrabold text-emerald-400">0</h3>
         </Card>
 
-        <Card className="p-5 border-purple-500/20 bg-[#111827]/80 backdrop-blur-xl relative overflow-hidden group opacity-50">
+        <Card className="p-5 border-purple-500/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group opacity-50">
           <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
             <HardDrive className="w-12 h-12 text-purple-400" />
           </div>
@@ -55,7 +55,7 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 p-5 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex flex-col">
+        <Card className="lg:col-span-2 p-5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-col">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-semibold text-lg flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-[#06B6D4]" /> Evolução de MRR Global
@@ -88,7 +88,7 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
         </Card>
 
         <div className="space-y-6">
-          <Card className="p-5 bg-[#111827]/80 border-white/10 flex flex-col" style={{ height: "calc(50% - 12px)" }}>
+          <Card className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/10 flex flex-col" style={{ height: "calc(50% - 12px)" }}>
             <h4 className="font-bold text-white mb-2 text-sm flex items-center gap-2">
               <PieChartIcon className="w-4 h-4 text-blue-400" /> Distribuição de Planos
             </h4>
@@ -98,7 +98,7 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
             </div>
           </Card>
 
-          <Card className="p-5 bg-[#111827]/80 border-white/10 overflow-hidden relative" style={{ height: "calc(50% - 12px)" }}>
+          <Card className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/10 overflow-hidden relative" style={{ height: "calc(50% - 12px)" }}>
             <h4 className="font-bold text-white mb-4 text-sm flex items-center gap-2">
               <Activity className="w-4 h-4 text-emerald-400" /> Instâncias Core
             </h4>
@@ -123,8 +123,8 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
         </div>
       </div>
 
-      <Card className="bg-[#111827]/80 backdrop-blur-xl border border-white/10 overflow-hidden">
-        <div className="p-4 border-b border-white/10 flex items-center justify-between bg-[#0B1120]/50">
+      <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden">
+        <div className="p-4 border-b border-white/10 flex items-center justify-between bg-[var(--color-surface)]/50">
           <h3 className="font-semibold flex items-center gap-2">
             <Server className="w-4 h-4 text-[#06B6D4]" /> Tenants Recentes
           </h3>

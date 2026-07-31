@@ -15,7 +15,7 @@ export function ProdutoTabComercial({
   formPrice, setFormPrice, formCost, setFormCost,
   formCommission, setFormCommission, simulateTax, setSimulateTax,
 }: ProdutoTabComercialProps) {
-  const inputCls = "w-full bg-[#111827] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#2563EB]/40 font-mono font-bold transition-all";
+  const inputCls = "w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#2563EB]/40 font-mono font-bold transition-all";
 
   const p = parseFloat(formPrice) || 0;
   const c = parseFloat(formCost) || 0;
@@ -43,7 +43,7 @@ export function ProdutoTabComercial({
 
   return (
     <div className="space-y-5">
-      <div className="bg-[#111827] border border-white/5 p-4 rounded-xl flex items-center gap-3">
+      <div className="bg-[var(--color-surface-elevated)] border border-white/5 p-4 rounded-xl flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400 shrink-0 font-black text-xs font-mono">2</div>
         <div>
           <h4 className="text-xs font-black text-white uppercase tracking-wider">Comercial & Precificação</h4>

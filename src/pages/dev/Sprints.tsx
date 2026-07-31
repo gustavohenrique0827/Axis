@@ -116,7 +116,7 @@ export default function Sprints() {
             <select
               value={activeProjectId ?? ''}
               onChange={(e) => setActiveProjectId(e.target.value ? e.target.value : null)}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-blue-500/50 focus:outline-none"
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-blue-500/50 focus:outline-none"
             >
               <option value="">Todos os projetos</option>
               {projects.map(p => (
@@ -163,7 +163,7 @@ export default function Sprints() {
               <div
                 key={col.id}
                 className={`flex-shrink-0 w-72 flex flex-col rounded-2xl border ${
-                  dragOverCol === col.id ? 'border-blue-500/40 bg-blue-600/[0.03]' : 'border-white/5 bg-[#0B1120]/40'
+                  dragOverCol === col.id ? 'border-blue-500/40 bg-blue-600/[0.03]' : 'border-white/5 bg-[var(--color-surface)]/40'
                 } transition-all`}
                 onDragOver={e => {
                   e.preventDefault();
@@ -190,7 +190,7 @@ export default function Sprints() {
                       draggable
                       onDragStart={() => setDraggedId(task.id)}
                       onClick={() => setSelectedTaskId(task.id)}
-                      className={`p-4 bg-[#111827] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing hover:border-white/10 transition-all select-none group ${
+                      className={`p-4 bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing hover:border-white/10 transition-all select-none group ${
                         draggedId === task.id ? 'opacity-40 scale-95' : ''
                       }`}
                       role="button"

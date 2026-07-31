@@ -17,15 +17,15 @@ export function ConfigCRMProdutos() {
         </div>
       </div>
 
-      <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
         <h3 className="font-bold text-lg mb-2">Acesso ao Catálogo</h3>
         <p className="text-slate-400 mb-4 text-sm">O catálogo principal foi movido para o menu lateral. Acesse "Produtos" na barra de navegação esquerda.</p>
-        <Button onClick={() => window.location.href = '/app/produtos'} className="bg-[#0B1120] border border-white/10 text-white hover:bg-white/5">
+        <Button onClick={() => window.location.href = '/app/produtos'} className="bg-[var(--color-surface)] border border-white/10 text-white hover:bg-white/5">
           Ir para Produtos <ExternalLink className="w-4 h-4 ml-2" />
         </Button>
       </Card>
 
-      <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h3 className="font-bold text-lg">Campos Personalizados</h3>
@@ -38,7 +38,7 @@ export function ConfigCRMProdutos() {
 
         <div className="space-y-3">
           {customFields.map((field) => (
-            <div key={field.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-[#0B1120] border border-white/5 rounded-xl group hover:border-white/10 transition-colors">
+            <div key={field.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-[var(--color-surface)] border border-white/5 rounded-xl group hover:border-white/10 transition-colors">
               <div className="flex flex-col">
                 <span className="font-bold text-white">{field.name}</span>
                 <span className="text-xs text-slate-500 font-mono mt-0.5">Tipo: {field.type}</span>

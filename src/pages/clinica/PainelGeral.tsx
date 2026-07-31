@@ -1,5 +1,5 @@
 import type { ComponentType } from 'react';
-import { Calendar, Users, TrendingUp, Star } from 'lucide-react';
+import { Calendar, Users, TrendingUp, Star, ChevronDown } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
@@ -22,6 +22,7 @@ export default function ClinicasDashboard() {
   const { leads, addTask, appointments } = useData();
   const [view, setView] = useState<'geral' | 'unidades' | 'operacional'>('geral');
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const totalAppointments = appointments.length;
   const confirmed = appointments.filter(a => a.status === 'Confirmado' || a.status === 'Em Atendimento').length;
@@ -66,7 +67,7 @@ export default function ClinicasDashboard() {
           <Button onClick={() => setIsBookingOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 h-10 text-[10px] font-black uppercase tracking-widest gap-2 shadow-lg shadow-emerald-900/20">
             <Plus className="w-4 h-4" /> Novo Agendamento
           </Button>
-          <div className="flex bg-[#111827]/80 border border-white/5 rounded-2xl p-1 gap-1">
+          <div className="flex bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-1 gap-1">
             {(['geral', 'unidades', 'operacional'] as const).map(t => (
               <button key={t} onClick={() => setView(t)} className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${view === t ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-500 hover:text-slate-300'}`}>
                 {t}
@@ -79,8 +80,25 @@ export default function ClinicasDashboard() {
       <div className="space-y-6 max-w-[1600px] mx-auto pb-10">
         <PainelKPIs stats={stats} />
         <PainelCharts clinicData={clinicData} totalAppointments={totalAppointments} confirmed={confirmed} finalized={finalized} late={late} occupancyPct={occupancyPct} />
-        <PainelRanking doctorRanking={doctorRanking} totalAppointments={totalAppointments} finalized={finalized} />
-        <PainelInsights totalAppointments={totalAppointments} confirmed={confirmed} late={late} activeToday={activeToday} onNewBooking={() => setIsBookingOpen(true)} />
+
+        <button
+          type="button"
+          onClick={() => setShowDetails((v) => !v)}
+          className="w-full flex items-center justify-between px-5 py-3 bg-[var(--color-surface-elevated)]/40 hover:bg-[var(--color-surface-elevated)]/60 border border-white/5 rounded-2xl transition-colors text-left"
+        >
+          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            {showDetails ? "Ver menos" : "Ver mais detalhes"}
+            {!showDetails && <span className="text-slate-600 font-medium normal-case tracking-normal">— ranking de médicos e jornada do paciente</span>}
+          </span>
+          <ChevronDown className={`w-4 h-4 text-slate-500 shrink-0 transition-transform ${showDetails ? "rotate-180" : ""}`} />
+        </button>
+
+        {showDetails && (
+          <>
+            <PainelRanking doctorRanking={doctorRanking} totalAppointments={totalAppointments} finalized={finalized} />
+            <PainelInsights totalAppointments={totalAppointments} confirmed={confirmed} late={late} activeToday={activeToday} onNewBooking={() => setIsBookingOpen(true)} />
+          </>
+        )}
       </div>
 
       <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} leads={leads} addTask={addTask} />

@@ -91,7 +91,7 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
 
       {/* Formulário nova tarefa */}
       {showForm && (
-        <div className="bg-[#111827] border border-white/[0.08] rounded-2xl p-4 space-y-3">
+        <div className="bg-[var(--color-surface-elevated)] border border-white/[0.08] rounded-2xl p-4 space-y-3">
           <p className="text-[9px] font-black uppercase tracking-widest text-blue-400 mb-2">Nova Tarefa</p>
 
           <input
@@ -100,7 +100,7 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-            className="w-full bg-[#070E1A] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all"
+            className="w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all"
           />
 
           <textarea
@@ -108,7 +108,7 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
             value={newDesc}
             onChange={(e) => setNewDesc(e.target.value)}
             rows={2}
-            className="w-full bg-[#070E1A] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all resize-none"
+            className="w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all resize-none"
           />
 
           <div className="flex items-center gap-2">
@@ -116,12 +116,12 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
               type="date"
               value={newDate}
               onChange={(e) => setNewDate(e.target.value)}
-              className="flex-1 bg-[#070E1A] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
+              className="flex-1 bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
             />
             <select
               value={newPriority}
               onChange={(e) => setNewPriority(e.target.value as any)}
-              className="flex-1 bg-[#070E1A] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
+              className="flex-1 bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
             >
               <option value="Alta">Alta</option>
               <option value="Média">Média</option>

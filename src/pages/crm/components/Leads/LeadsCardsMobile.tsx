@@ -14,7 +14,7 @@ export function LeadsCardsMobile(props: {
         <Card
           key={lead.id}
           onClick={() => setSelectedLead(lead)}
-          className="p-4 bg-[#111827]/80 border-white/5 active:border-white/20 transition-all flex flex-col gap-3 cursor-pointer"
+          className="p-4 bg-[var(--color-surface-elevated)]/80 border-white/5 active:border-white/20 transition-all flex flex-col gap-3 cursor-pointer"
         >
           <div className="flex justify-between items-start">
             <div className="min-w-0">
@@ -63,7 +63,7 @@ export function LeadsCardsMobile(props: {
           </div>
 
           <div
-            className="bg-[#0B1120] border border-white/5 px-2 py-1.5 rounded-lg flex items-center justify-between gap-2"
+            className="bg-[var(--color-surface)] border border-white/5 px-2 py-1.5 rounded-lg flex items-center justify-between gap-2"
             onClick={(e) => e.stopPropagation()}
           >
             <span className="text-[8px] text-slate-500 uppercase font-black shrink-0">Responsável:</span>

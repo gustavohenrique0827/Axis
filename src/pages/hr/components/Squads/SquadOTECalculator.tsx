@@ -30,7 +30,7 @@ export function SquadOTECalculator({
   calcVariable, calcBonus, totalOTE,
 }: SquadOTECalculatorProps) {
   return (
-    <Card className="p-6 sm:p-10 bg-[#0B1120]/80 backdrop-blur-xl border border-white/10 rounded-[3rem] mt-6 relative overflow-hidden">
+    <Card className="p-6 sm:p-10 bg-[var(--color-surface)]/80 backdrop-blur-xl border border-white/10 rounded-[3rem] mt-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
         <Wallet className="w-40 h-40 text-white" />
       </div>

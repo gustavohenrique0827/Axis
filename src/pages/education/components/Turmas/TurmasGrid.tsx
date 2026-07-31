@@ -25,7 +25,7 @@ export function TurmasGrid({ turmas, onSelect }: TurmasGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
       {turmas.map((turma) => (
-        <Card key={turma.id} className="group relative overflow-hidden bg-[#111827]/80 border-white/5 hover:border-blue-500/30 transition-all duration-300">
+        <Card key={turma.id} className="group relative overflow-hidden bg-[var(--color-surface-elevated)]/80 border-white/5 hover:border-blue-500/30 transition-all duration-300">
           <div className={`absolute top-0 left-0 w-1 h-full ${
             turma.status === "Ativa" ? "bg-emerald-500" :
             turma.status === "Planejamento" ? "bg-amber-500" : "bg-slate-700"
@@ -90,7 +90,7 @@ export function TurmasGrid({ turmas, onSelect }: TurmasGridProps) {
                 <div className="flex items-center gap-2">
                   <div className="flex -space-x-2">
                     {[1, 2, 3].map((i) => (
-                      <div key={i} className="w-6 h-6 rounded-full border border-[#0B1120] bg-slate-800 flex items-center justify-center text-[8px] font-black text-slate-400">{i}</div>
+                      <div key={i} className="w-6 h-6 rounded-full border border-[var(--color-surface)] bg-slate-800 flex items-center justify-center text-[8px] font-black text-slate-400">{i}</div>
                     ))}
                   </div>
                   <span className="text-[10px] font-black text-slate-400 ml-1">+{turma.students - 3} ALUNOS</span>

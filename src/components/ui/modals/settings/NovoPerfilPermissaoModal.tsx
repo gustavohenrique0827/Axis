@@ -33,7 +33,7 @@ const ALL_MODULES: { id: string; label: string; desc: string }[] = [
 
 const labelClass = "text-[10px] font-bold text-slate-400 uppercase tracking-wider";
 const inputBaseClass =
-  "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all";
+  "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all";
 
 function ModulesCombobox({
   selected,
@@ -71,7 +71,7 @@ function ModulesCombobox({
       </button>
 
       {open && (
-        <div className="absolute z-50 mt-1 w-full bg-[#0B1120] border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden">
+        <div className="absolute z-50 mt-1 w-full bg-[var(--color-surface)] border border-white/10 rounded-xl shadow-2xl shadow-black/60 overflow-hidden">
           {/* Ações rápidas */}
           <div className="flex items-center gap-2 px-3 py-2 border-b border-white/5">
             <button type="button" onClick={selectAll}
@@ -184,7 +184,7 @@ export function NovoPerfilPermissaoModal({
       }
     >
       <div className="space-y-4">
-        <div className="bg-[#0B1120]/40 border border-white/10 rounded-xl p-4 flex items-start gap-3">
+        <div className="bg-[var(--color-surface)]/40 border border-white/10 rounded-xl p-4 flex items-start gap-3">
           <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mt-0.5 shrink-0">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>
@@ -221,7 +221,7 @@ export function NovoPerfilPermissaoModal({
           </div>
 
           {modulos.length > 0 && (
-            <div className="bg-[#0B1120] border border-white/10 rounded-xl p-4">
+            <div className="bg-[var(--color-surface)] border border-white/10 rounded-xl p-4">
               <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">
                 Módulos selecionados
               </div>

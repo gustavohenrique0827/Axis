@@ -235,7 +235,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
               {created.calendarLink ? "Convite enviado pelo Google Calendar." : "Sala Axis pronta para uso"}
             </p>
           </div>
-          <div className="w-full px-4 py-3 bg-[#070E1A] border border-white/[0.08] rounded-xl text-left space-y-3">
+          <div className="w-full px-4 py-3 bg-[var(--color-surface)] border border-white/[0.08] rounded-xl text-left space-y-3">
             <div>
               <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Link da Sala</p>
               <p className="text-[11px] text-blue-400 font-mono break-all">{created.meetLink}</p>
@@ -309,7 +309,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
               }
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-[#0B1120] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all"
+              className="w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all"
             />
           </div>
 
@@ -322,7 +322,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
               <select
                 value={linkedLeadId}
                 onChange={(e) => setLinkedLeadId(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
+                className="w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
               >
                 <option value="">— Sem lead vinculado —</option>
                 {(leads as any[]).map((l) => (
@@ -343,7 +343,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
               <select
                 value={closerName}
                 onChange={(e) => setCloserName(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
+                className="w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
               >
                 <option value="">Selecionar responsável...</option>
                 {closerOptions.map((c) => (
@@ -356,7 +356,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
                 placeholder="Nome do responsável..."
                 value={closerName}
                 onChange={(e) => setCloserName(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all"
+                className="w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all"
               />
             )}
           </div>
@@ -371,7 +371,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
+                className="w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
               />
             </div>
             <div className="space-y-1.5">
@@ -382,7 +382,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
+                className="w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500/40 transition-all"
               />
             </div>
           </div>
@@ -418,7 +418,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
               onChange={(e) => setPauta(e.target.value)}
               placeholder="Objetivos da reunião, pontos a discutir..."
               rows={3}
-              className="w-full bg-[#0B1120] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all resize-none"
+              className="w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all resize-none"
             />
           </div>
 

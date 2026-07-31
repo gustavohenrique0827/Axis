@@ -49,7 +49,7 @@ export function ProfileHeroCard({
   const timeIdleNum = parseInt(String(timeIdle)) || 0;
 
   return (
-    <div className={`rounded-2xl border border-white/10 overflow-hidden bg-gradient-to-br ${tc.gradient} bg-[#111827]`}>
+    <div className={`rounded-2xl border border-white/10 overflow-hidden bg-gradient-to-br ${tc.gradient} bg-[var(--color-surface-elevated)]`}>
       <div className="p-4">
         {/* Top badges */}
         <div className="flex items-center justify-between mb-4">
@@ -98,7 +98,7 @@ export function ProfileHeroCard({
 
         {/* Metrics row */}
         <div className="grid grid-cols-3 gap-2">
-          <div className="bg-[#070E1A]/70 rounded-xl p-3 border border-white/[0.05]">
+          <div className="bg-[var(--color-surface)]/70 rounded-xl p-3 border border-white/[0.05]">
             <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Score</div>
             <div className="flex items-baseline gap-1 mt-1">
               <span className="text-xl font-black text-cyan-400">{score}</span>
@@ -112,7 +112,7 @@ export function ProfileHeroCard({
             </div>
           </div>
 
-          <div className="bg-[#070E1A]/70 rounded-xl p-3 border border-white/[0.05]">
+          <div className="bg-[var(--color-surface)]/70 rounded-xl p-3 border border-white/[0.05]">
             <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Conversão</div>
             <div className="mt-1">
               <span className={`text-xl font-black ${
@@ -134,7 +134,7 @@ export function ProfileHeroCard({
               ? "bg-rose-500/10 border-rose-500/20"
               : timeIdleNum > 3
               ? "bg-amber-500/10 border-amber-500/20"
-              : "bg-[#070E1A]/70 border-white/[0.05]"
+              : "bg-[var(--color-surface)]/70 border-white/[0.05]"
           }`}>
             <div className="text-[8px] font-bold text-slate-500 uppercase tracking-wider">Parado</div>
             <div className={`text-xl font-black mt-1 ${

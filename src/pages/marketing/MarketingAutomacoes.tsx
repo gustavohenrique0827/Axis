@@ -100,7 +100,7 @@ export default function MarketingAutomacoes() {
           { label: "Conversões Assist.", value: "0", icon: MousePointer2, color: "text-emerald-500" },
           { label: "Eficiência Média", value: "0%", icon: BarChart3, color: "text-amber-500" },
         ].map((stat, i) => (
-          <Card key={i} className="p-6 bg-[#111827]/50 border-white/5 backdrop-blur-md">
+          <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border-white/5 backdrop-blur-md">
             <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
             <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
             <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
@@ -108,14 +108,14 @@ export default function MarketingAutomacoes() {
         ))}
       </div>
 
-      <Card className="p-4 bg-[#111827]/50 border-white/5 flex flex-col md:flex-row gap-4 items-center">
+      <Card className="p-4 bg-[var(--color-surface-elevated)]/50 border-white/5 flex flex-col md:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
           <Input 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nome ou gatilho..." 
-            className="w-full bg-[#0B1120] border-white/5 pl-12 h-12 rounded-xl text-sm italic focus:border-purple-500/50"
+            className="w-full bg-[var(--color-surface)] border-white/5 pl-12 h-12 rounded-xl text-sm italic focus:border-purple-500/50"
           />
         </div>
         <div className="flex gap-2">
@@ -136,7 +136,7 @@ export default function MarketingAutomacoes() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filtered.map((item) => (
-          <Card key={item.id} className={`p-6 border-white/5 hover:border-purple-500/30 transition-all ${item.status === 'Pausada' ? 'bg-[#111827]/30 opacity-80' : 'bg-[#111827]/60'}`}>
+          <Card key={item.id} className={`p-6 border-white/5 hover:border-purple-500/30 transition-all ${item.status === 'Pausada' ? 'bg-[var(--color-surface-elevated)]/30 opacity-80' : 'bg-[var(--color-surface-elevated)]/60'}`}>
              <div className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-4">
                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5">
@@ -201,7 +201,7 @@ export default function MarketingAutomacoes() {
       {/* Modal de Criação */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <Card className="w-full max-w-md p-6 bg-[#0B1120] border-white/10 shadow-2xl">
+          <Card className="w-full max-w-md p-6 bg-[var(--color-surface)] border-white/10 shadow-2xl">
             <h2 className="text-xl font-bold text-white mb-4">Criar Novo Fluxo</h2>
             <div className="space-y-4">
               <div>
@@ -210,13 +210,13 @@ export default function MarketingAutomacoes() {
                   value={newFlowName}
                   onChange={(e) => setNewFlowName(e.target.value)}
                   placeholder="Ex: Boas-vindas Black Friday"
-                  className="bg-[#111827] border-white/10 text-white"
+                  className="bg-[var(--color-surface-elevated)] border-white/10 text-white"
                 />
               </div>
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 block">Gatilho Inicial</label>
                 <select 
-                  className="w-full h-10 px-3 rounded-lg bg-[#111827] border border-white/10 text-white text-sm"
+                  className="w-full h-10 px-3 rounded-lg bg-[var(--color-surface-elevated)] border border-white/10 text-white text-sm"
                   value={newFlowTrigger}
                   onChange={(e) => setNewFlowTrigger(e.target.value)}
                 >

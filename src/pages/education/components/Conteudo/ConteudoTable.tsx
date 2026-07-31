@@ -21,7 +21,7 @@ interface ConteudoTableProps {
 
 export function ConteudoTable({ items, onEdit }: ConteudoTableProps) {
   return (
-    <Card className="bg-[#111827]/80 border-white/5 overflow-hidden">
+    <Card className="bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>

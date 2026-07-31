@@ -48,7 +48,7 @@ export function ConfigEmpresaPermissoes() {
       </div>
 
       {cargos.length === 0 || comPermissao.length === 0 ? (
-        <Card className="p-8 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex flex-col items-center justify-center text-center gap-3">
+        <Card className="p-8 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-col items-center justify-center text-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
             <ShieldCheck className="w-6 h-6 text-slate-500" />
           </div>
@@ -66,7 +66,7 @@ export function ConfigEmpresaPermissoes() {
           {comPermissao.map((cargo) => {
             const nivelClass = NIVEL_COLORS[cargo.nivel as string] ?? NIVEL_COLORS["Operacional"];
             return (
-              <Card key={cargo.id} className="p-5 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
+              <Card key={cargo.id} className="p-5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="font-bold text-base text-white">{cargo.nome}</h3>
                   <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border ${nivelClass}`}>

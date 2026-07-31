@@ -21,8 +21,8 @@ export function LandingPageCreateModal({
 }: LandingPageCreateModalProps) {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-      <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200">
         <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
           <div>
             <h3 className="text-lg font-black text-white flex items-center gap-2 uppercase tracking-wide">
@@ -46,13 +46,13 @@ export function LandingPageCreateModal({
                 setNewName(e.target.value);
                 if (!newSlug) setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
               }}
-              className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-11 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-11 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors"
             />
           </div>
 
           <div>
             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Caminho / Slug (URL)</label>
-            <div className="flex items-center bg-[#1e293b] border border-white/10 rounded-xl h-11 overflow-hidden px-4 text-sm text-slate-400">
+            <div className="flex items-center bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl h-11 overflow-hidden px-4 text-sm text-slate-400">
               <span className="shrink-0">lp.seussistema.com/</span>
               <input
                 type="text" required placeholder="black-friday"
@@ -66,12 +66,12 @@ export function LandingPageCreateModal({
             <div>
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Pixel ID (Meta)</label>
               <input type="text" placeholder="Ex: 1029384756" value={pixelId} onChange={(e) => setPixelId(e.target.value)}
-                className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-11 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors" />
+                className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-11 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors" />
             </div>
             <div>
               <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1">Google Analytics ID</label>
               <input type="text" placeholder="Ex: G-XXXXXXXXXX" value={gtagId} onChange={(e) => setGtagId(e.target.value)}
-                className="w-full bg-[#1e293b] text-white border border-white/10 rounded-xl h-11 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors" />
+                className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-11 px-4 text-sm focus:outline-none focus:border-blue-500 transition-colors" />
             </div>
           </div>
 

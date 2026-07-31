@@ -135,7 +135,7 @@ export function SquadsTab({ squads, team, moveMember }: SquadsTabProps) {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 16 }}
               transition={{ duration: 0.25 }}
-              className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden flex flex-col"
+              className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden flex flex-col"
             >
               {/* Header */}
               <div className="p-5 border-b border-white/5 flex items-center justify-between">
@@ -229,7 +229,7 @@ export function SquadsTab({ squads, team, moveMember }: SquadsTabProps) {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
-              className="p-5 bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl"
+              className="p-5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl"
             >
               <div className="flex items-center gap-3 mb-3">
                 <div className={`p-2 rounded-xl ${stat.bg}`}>

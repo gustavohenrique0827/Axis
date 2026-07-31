@@ -14,7 +14,7 @@ export function PerformanceIAWhatIfSimulator(props: {
 
   return (
     <div className="grid lg:grid-cols-3 gap-6">
-      <Card className="lg:col-span-2 p-8 bg-[#111827]/80 border-white/5">
+      <Card className="lg:col-span-2 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
         <div className="flex items-center justify-between mb-10">
           <div>
             <h3 className="text-lg font-black text-white uppercase tracking-tighter flex items-center gap-3">
@@ -49,7 +49,7 @@ export function PerformanceIAWhatIfSimulator(props: {
                   <XAxis dataKey="name" stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
                   <YAxis stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "#0B1120", border: "1px solid #ffffff05", borderRadius: "16px" }}
+                    contentStyle={{ backgroundColor: "var(--color-surface)", border: "1px solid #ffffff05", borderRadius: "16px" }}
                     itemStyle={{ fontSize: "10px", fontWeight: "bold" }}
                   />
                   <Bar dataKey="mrr" fill="#312e81" radius={[8, 8, 0, 0]} barSize={40} />
@@ -76,7 +76,7 @@ export function PerformanceIAWhatIfSimulator(props: {
         )}
       </Card>
 
-      <Card className="p-8 bg-[#111827]/80 border-white/5 h-full flex flex-col">
+      <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 h-full flex flex-col">
         <h4 className="text-sm font-black text-white mb-8 uppercase tracking-widest flex items-center gap-3">
           <Lightbulb className="w-4 h-4 text-amber-500" /> Recomendações MIA
         </h4>

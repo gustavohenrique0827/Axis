@@ -91,7 +91,7 @@ export default function MarketingAnalytics() {
       subtitle="Analise CAC, LTV, ROI e performance geral dos seus canais."
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="p-6 bg-[#111827] border-white/5 relative overflow-hidden group">
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
           <div className="flex items-center justify-between mb-4">
             <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
@@ -103,7 +103,7 @@ export default function MarketingAnalytics() {
           <p className="text-3xl font-black text-white">{fmt(totalRevenue)}</p>
         </Card>
         
-        <Card className="p-6 bg-[#111827] border-white/5 relative overflow-hidden group">
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
           <div className="flex items-center justify-between mb-4">
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
@@ -114,7 +114,7 @@ export default function MarketingAnalytics() {
           <p className="text-3xl font-black text-white">{fmt(cac)}</p>
         </Card>
 
-        <Card className="p-6 bg-[#111827] border-white/5 relative overflow-hidden group">
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
           <div className="flex items-center justify-between mb-4">
             <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
@@ -125,7 +125,7 @@ export default function MarketingAnalytics() {
           <p className="text-3xl font-black text-white">{fmt(avgDeal)}</p>
         </Card>
 
-        <Card className="p-6 bg-[#111827] border-white/5 relative overflow-hidden group">
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
           <div className="flex items-center justify-between mb-4">
             <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
@@ -138,7 +138,7 @@ export default function MarketingAnalytics() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="p-6 bg-[#111827] border-white/5 lg:col-span-2">
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 lg:col-span-2">
           <h3 className="text-sm font-black text-white uppercase tracking-wider mb-6 flex items-center gap-2">
             <BarChart2 className="w-4 h-4 text-blue-500" /> Receita Marketing vs Investimento (CAC)
           </h3>
@@ -167,7 +167,7 @@ export default function MarketingAnalytics() {
                   <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
                   <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#1E293B', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
+                    contentStyle={{ backgroundColor: 'var(--color-surface-elevated)', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
                     formatter={(value: any) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)}
                   />
                   <Area type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" name="Receita" />
@@ -178,7 +178,7 @@ export default function MarketingAnalytics() {
           )}
         </Card>
 
-        <Card className="p-6 bg-[#111827] border-white/5">
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5">
           <h3 className="text-sm font-black text-white uppercase tracking-wider mb-6 flex items-center gap-2">
             <Users className="w-4 h-4 text-blue-500" /> Receita p/ Canais (Ganho)
           </h3>
@@ -208,7 +208,7 @@ export default function MarketingAnalytics() {
                     ))}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#1E293B', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
+                    contentStyle={{ backgroundColor: 'var(--color-surface-elevated)', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff' }}
                     formatter={(value: any) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)}
                   />
                 </PieChart>

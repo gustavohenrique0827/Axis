@@ -21,7 +21,7 @@ export function PerformanceMetrics({
 }: PerformanceMetricsProps) {
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card className="p-4 bg-gradient-to-br from-[#111827]/80 to-[#1e293b]/50 border border-white/5 flex flex-col justify-between shadow-lg relative overflow-hidden group rounded-3xl">
+      <Card className="p-4 bg-gradient-to-br from-[var(--color-surface-elevated)]/80 to-[var(--color-surface-elevated)]/50 border border-white/5 flex flex-col justify-between shadow-lg relative overflow-hidden group rounded-3xl">
         <div className="absolute top-0 right-0 w-16 h-16 bg-[#2563EB]/5 rounded-bl-full pointer-events-none transition-all group-hover:scale-110"></div>
         <div>
           <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Taxa de Conclusão</span>
@@ -35,7 +35,7 @@ export function PerformanceMetrics({
         </div>
       </Card>
 
-      <Card className="p-4 bg-[#111827]/80 border border-white/5 flex flex-col justify-between shadow-lg relative overflow-hidden rounded-3xl">
+      <Card className="p-4 bg-[var(--color-surface-elevated)]/80 border border-white/5 flex flex-col justify-between shadow-lg relative overflow-hidden rounded-3xl">
         <div>
           <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Atrasadas / Pendentes</span>
           <div className="text-2xl md:text-3xl font-black text-rose-400 flex items-center gap-2">
@@ -48,7 +48,7 @@ export function PerformanceMetrics({
         </div>
       </Card>
 
-      <Card className="p-4 bg-[#111827]/80 border border-white/5 flex flex-col justify-between shadow-lg relative overflow-hidden rounded-3xl">
+      <Card className="p-4 bg-[var(--color-surface-elevated)]/80 border border-white/5 flex flex-col justify-between shadow-lg relative overflow-hidden rounded-3xl">
         <div>
           <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block mb-1">Em Aberto / Hoje</span>
           <div className="text-2xl md:text-3xl font-black text-amber-400 flex items-center gap-2">
@@ -61,7 +61,7 @@ export function PerformanceMetrics({
         </div>
       </Card>
 
-      <Card className="p-4 bg-gradient-to-br from-[#111827]/80 to-[#991b1b]/10 border border-rose-500/10 flex flex-col justify-between shadow-lg relative overflow-hidden rounded-3xl">
+      <Card className="p-4 bg-gradient-to-br from-[var(--color-surface-elevated)]/80 to-[#991b1b]/10 border border-rose-500/10 flex flex-col justify-between shadow-lg relative overflow-hidden rounded-3xl">
         <div>
           <span className="text-[10px] text-rose-300 font-bold uppercase tracking-widest block mb-1">Urgente Alta Prioridade</span>
           <div className="text-2xl md:text-3xl font-black text-red-400 flex items-center gap-2">

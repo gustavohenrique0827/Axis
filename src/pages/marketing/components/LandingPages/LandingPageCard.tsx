@@ -33,7 +33,7 @@ export function LandingPageCard({ page, index, onToggleStatus, onOpenTracking, o
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05, duration: 0.3 }}
     >
-      <Card className="p-5 bg-[#111827] border-white/5 hover:border-blue-500/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
+      <Card className="p-5 bg-[var(--color-surface-elevated)] border-white/5 hover:border-blue-500/20 transition-all flex flex-col lg:flex-row lg:items-center justify-between gap-6 group">
         <div className="flex items-start gap-4 flex-1">
           <div className={`p-3 rounded-2xl flex items-center justify-center shrink-0 ${page.status === 'published' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-yellow-500/10 text-yellow-500'}`}>
             <Globe className="w-6 h-6" />

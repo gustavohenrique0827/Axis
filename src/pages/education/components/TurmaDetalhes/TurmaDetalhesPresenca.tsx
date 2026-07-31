@@ -29,7 +29,7 @@ export function TurmaDetalhesPresenca({
 }: TurmaDetalhesPresencaProps) {
   return (
     <div className="space-y-6">
-      <Card className="p-4 bg-[#111827]/50 border-white/5 flex flex-col md:flex-row gap-4 items-center justify-between">
+      <Card className="p-4 bg-[var(--color-surface-elevated)]/50 border-white/5 flex flex-col md:flex-row gap-4 items-center justify-between">
         <div className="flex items-center gap-4 w-full md:w-auto">
           <div className="relative">
             <Calendar className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
@@ -37,7 +37,7 @@ export function TurmaDetalhesPresenca({
               type="date"
               value={attendanceDate}
               onChange={(e) => onDateChange(e.target.value)}
-              className="bg-[#0B1120] border-white/5 pl-10 h-10 rounded-xl text-xs font-bold text-white w-48"
+              className="bg-[var(--color-surface)] border-white/5 pl-10 h-10 rounded-xl text-xs font-bold text-white w-48"
             />
           </div>
           <div className="relative flex-1 min-w-[250px]">
@@ -46,7 +46,7 @@ export function TurmaDetalhesPresenca({
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
               placeholder="Filtrar alunos..."
-              className="bg-[#0B1120] border-white/5 pl-10 h-10 rounded-xl text-xs text-white w-full"
+              className="bg-[var(--color-surface)] border-white/5 pl-10 h-10 rounded-xl text-xs text-white w-full"
             />
           </div>
         </div>
@@ -58,7 +58,7 @@ export function TurmaDetalhesPresenca({
         </div>
       </Card>
 
-      <Card className="overflow-hidden bg-[#111827]/60 border-white/5 min-h-[300px]">
+      <Card className="overflow-hidden bg-[var(--color-surface-elevated)]/60 border-white/5 min-h-[300px]">
         {students.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 opacity-40 gap-4">
             <Users className="w-12 h-12 text-slate-500" />

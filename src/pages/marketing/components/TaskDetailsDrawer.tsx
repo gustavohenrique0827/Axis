@@ -48,7 +48,7 @@ export function TaskDetailsDrawer({
               className={`px-3.5 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest whitespace-nowrap transition-all border shrink-0 cursor-pointer ${
                 isActive 
                   ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-500/20' 
-                  : 'bg-[#111827] border-white/10 text-slate-400 hover:text-white hover:border-white/20'
+                  : 'bg-[var(--color-surface-elevated)] border-white/10 text-slate-400 hover:text-white hover:border-white/20'
               }`}
             >
               {col.title}
@@ -141,7 +141,7 @@ export function TaskDetailsDrawer({
                        localStorage.setItem("axis_marketing_tasks", JSON.stringify(updatedTasks));
                        updateTaskInDatabase(updatedTask);
                      }}
-                     className="bg-[#1E293B] border border-white/5 rounded-xl pl-9 pr-3.5 py-2 text-xs text-white outline-none w-full cursor-pointer hover:border-white/20 transition-all font-bold"
+                     className="bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl pl-9 pr-3.5 py-2 text-xs text-white outline-none w-full cursor-pointer hover:border-white/20 transition-all font-bold"
                    />
                  </div>
                </div>
@@ -159,7 +159,7 @@ export function TaskDetailsDrawer({
                      updateTaskInDatabase(updatedTask);
                      toast.success(`Prioridade alterada para ${updatedPriority}`);
                    }}
-                   className="bg-[#1E293B] border border-white/5 rounded-xl px-3.5 py-2 text-xs text-white outline-none w-full cursor-pointer hover:border-white/20 transition-all font-bold"
+                   className="bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-3.5 py-2 text-xs text-white outline-none w-full cursor-pointer hover:border-white/20 transition-all font-bold"
                  >
                    <option value="Alta">🔴 Alta</option>
                    <option value="Média">🟡 Média</option>
@@ -180,7 +180,7 @@ export function TaskDetailsDrawer({
                      updateTaskInDatabase(updatedTask);
                      toast.success(`Plataforma alterada para ${updatedPlatform}`);
                    }}
-                   className="bg-[#1E293B] border border-white/5 rounded-xl px-3.5 py-2 text-xs text-white outline-none w-full cursor-pointer hover:border-white/20 transition-all font-bold"
+                   className="bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-3.5 py-2 text-xs text-white outline-none w-full cursor-pointer hover:border-white/20 transition-all font-bold"
                  >
                    <option value="Instagram">Instagram</option>
                    <option value="TikTok">TikTok</option>
@@ -206,7 +206,7 @@ export function TaskDetailsDrawer({
                   onBlur={() => {
                     updateTaskInDatabase(selectedTask);
                   }}
-                  className="w-full bg-[#1E293B] border border-white/5 rounded-xl p-4 text-xs text-slate-300 leading-relaxed outline-none focus:border-blue-500/50 resize-none h-24"
+                  className="w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl p-4 text-xs text-slate-300 leading-relaxed outline-none focus:border-blue-500/50 resize-none h-24"
                 />
              </div>
 

@@ -11,7 +11,7 @@ interface FinanceiroCashflowChartProps {
 export function FinanceiroCashflowChart({ chartData, stabilityScore }: FinanceiroCashflowChartProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
-      <Card className="lg:col-span-8 p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl relative overflow-hidden">
+      <Card className="lg:col-span-8 p-8 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
           <div>
             <h3 className="font-black text-lg text-white uppercase italic tracking-tighter flex items-center gap-3">
@@ -41,7 +41,7 @@ export function FinanceiroCashflowChart({ chartData, stabilityScore }: Financeir
               <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#475569", fontSize: 10, fontWeight: 900 }} dy={15} />
               <YAxis axisLine={false} tickLine={false} tick={{ fill: "#475569", fontSize: 10, fontWeight: 900 }} tickFormatter={(val) => `R$ ${val / 1000}k`} />
               <Tooltip
-                contentStyle={{ backgroundColor: "#0B1120", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "24px", padding: "20px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)" }}
+                contentStyle={{ backgroundColor: "var(--color-surface)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "24px", padding: "20px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)" }}
                 itemStyle={{ fontSize: "11px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.05em" }}
                 labelStyle={{ fontSize: "12px", fontWeight: 900, marginBottom: "12px", color: "#60a5fa", textTransform: "uppercase" }}
               />
@@ -53,7 +53,7 @@ export function FinanceiroCashflowChart({ chartData, stabilityScore }: Financeir
         </div>
       </Card>
 
-      <Card className="lg:col-span-4 p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl flex flex-col items-center justify-center text-center">
+      <Card className="lg:col-span-4 p-8 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl flex flex-col items-center justify-center text-center">
         <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Score de Estabilidade</h4>
         <div className="relative w-full aspect-square max-w-[240px] flex items-center justify-center">
           <ResponsiveContainer width="100%" height="100%">

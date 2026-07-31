@@ -29,14 +29,12 @@ export function ConfirmModal({
       maxWidth="max-w-md"
       footer={null}
     >
-      <div className="flex flex-col items-center text-center space-y-4 pt-4 pb-2">
-        <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 shadow-xl shadow-rose-950/40 mb-2">
+      <div className="flex flex-col items-center text-center space-y-4 pt-2 pb-2">
+        <div className="w-16 h-16 rounded-full bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 shadow-xl shadow-rose-950/20 mb-1">
           <AlertTriangle className="w-8 h-8" />
         </div>
 
-        <h3 className="text-xl font-bold tracking-tight text-white">{title}</h3>
-
-        <p className="text-sm text-slate-300 font-sans leading-relaxed max-w-sm px-4">
+        <p className="text-sm text-[var(--color-text-muted)] font-sans leading-relaxed max-w-sm px-4">
           {message}
         </p>
 
@@ -50,12 +48,12 @@ export function ConfirmModal({
           </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full mt-6 pt-4 border-t border-white/5">
+        <div className="flex items-center gap-3 w-full mt-6 pt-4 border-t border-[var(--color-border-default)]">
           <Button
             type="button"
             variant="ghost"
             onClick={onClose}
-            className="flex-1 text-slate-400 hover:text-white text-xs font-bold font-sans cursor-pointer h-10 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
+            className="flex-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] text-xs font-bold font-sans cursor-pointer h-10 rounded-xl bg-[var(--color-surface-sunken)] hover:bg-[var(--color-border-subtle)] transition-colors"
           >
             {cancelText}
           </Button>

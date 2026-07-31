@@ -67,7 +67,7 @@ export function MetasOverview({
   return (
     <div className="space-y-6">
       {/* Balanço Geral */}
-      <div className="p-6 bg-[#111827]/80 border border-white/5 rounded-3xl relative overflow-hidden glass-card">
+      <div className="p-6 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-3xl relative overflow-hidden glass-card">
         <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none" />
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4 pb-4 border-b border-white/5">
           <div>
@@ -86,7 +86,7 @@ export function MetasOverview({
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Mensagens sent rate */}
-          <div className="p-4 bg-[#0B1120]/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
+          <div className="p-4 bg-[var(--color-surface)]/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
             <div className="p-3 bg-purple-500/10 text-purple-400 rounded-xl">
               <Flame className="w-5 h-5 text-purple-400" />
             </div>
@@ -100,7 +100,7 @@ export function MetasOverview({
           </div>
 
           {/* Ligações dials */}
-          <div className="p-4 bg-[#0B1120]/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
+          <div className="p-4 bg-[var(--color-surface)]/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
             <div className="p-3 bg-blue-500/10 text-blue-400 rounded-xl">
               <Users className="w-5 h-5 text-blue-400" />
             </div>
@@ -139,7 +139,7 @@ export function MetasOverview({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Total revenue meta */}
-        <Card className="p-6 border-white/5 bg-[#111827]/80 backdrop-blur-xl relative overflow-hidden group">
+        <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
             <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/15 text-blue-400">
               <Target className="w-5 h-5" />
@@ -175,7 +175,7 @@ export function MetasOverview({
         </Card>
 
         {/* Provisioned commission and OTE payout based on calculations */}
-        <Card className="p-6 border-white/5 bg-[#111827]/80 backdrop-blur-xl relative overflow-hidden group">
+        <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
             <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/15 text-emerald-400">
               <DollarSign className="w-5 h-5" />
@@ -207,7 +207,7 @@ export function MetasOverview({
                   className={`text-[8.5px] font-bold px-2 py-0.5 rounded transition-colors uppercase cursor-pointer ${
                     oteActiveTab === "history" 
                       ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                      : "text-slate-500 hover:text-slate-350"
+                      : "text-slate-500 hover:text-slate-400"
                   }`}
                 >
                   Histórico 6M
@@ -217,7 +217,7 @@ export function MetasOverview({
                   className={`text-[8.5px] font-bold px-2 py-0.5 rounded transition-colors uppercase cursor-pointer ${
                     oteActiveTab === "projection" 
                       ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
-                      : "text-slate-500 hover:text-slate-350"
+                      : "text-slate-500 hover:text-slate-400"
                   }`}
                 >
                   Projeção 3M
@@ -246,7 +246,7 @@ export function MetasOverview({
                         <XAxis dataKey="name" stroke="#64748b" fontSize={8} tickLine={false} />
                         <YAxis stroke="#64748b" fontSize={8} tickFormatter={(val) => `R$ ${val / 1000}k`} />
                         <Tooltip 
-                          contentStyle={{ backgroundColor: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px" }}
+                          contentStyle={{ backgroundColor: "var(--color-surface)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px" }}
                           labelStyle={{ color: "white", fontSize: "10px", fontWeight: "bold" }}
                           itemStyle={{ fontSize: "10px", color: "#10b981" }}
                         />
@@ -278,7 +278,7 @@ export function MetasOverview({
                         <XAxis dataKey="name" stroke="#64748b" fontSize={8} tickLine={false} />
                         <YAxis stroke="#64748b" fontSize={8} tickFormatter={(val) => `R$ ${val / 1000}k`} />
                         <Tooltip 
-                          contentStyle={{ backgroundColor: "#0f172a", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px" }}
+                          contentStyle={{ backgroundColor: "var(--color-surface)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "8px" }}
                           labelStyle={{ color: "white", fontSize: "10px", fontWeight: "bold" }}
                           itemStyle={{ fontSize: "10px" }}
                         />
@@ -295,7 +295,7 @@ export function MetasOverview({
         </Card>
 
         {/* Active alert indicator status card */}
-        <Card className="p-6 border-white/5 bg-[#111827]/80 backdrop-blur-xl relative overflow-hidden group">
+        <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
             <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/15 text-purple-400">
               <Award className="w-5 h-5" />

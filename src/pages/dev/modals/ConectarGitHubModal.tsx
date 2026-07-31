@@ -59,8 +59,8 @@ export function ConectarGitHubModal({ isOpen, onClose, onConnected, tenantId }: 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-[#0F172A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
+      <div className="w-full max-w-md bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl shadow-2xl overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div className="flex items-center gap-3">
@@ -117,7 +117,7 @@ export function ConectarGitHubModal({ isOpen, onClose, onConnected, tenantId }: 
                 value={pat}
                 onChange={e => { setPat(e.target.value); setError(null); }}
                 placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                className="w-full bg-[#111827] border border-white/8 rounded-xl px-4 py-3 pr-11 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 font-mono"
+                className="w-full bg-[var(--color-surface-elevated)] border border-white/8 rounded-xl px-4 py-3 pr-11 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 font-mono"
               />
               <button
                 type="button"

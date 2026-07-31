@@ -106,7 +106,7 @@ export function SquadDetailPanel({
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Adicionar Membro</p>
               <div className="grid grid-cols-5 gap-2">
                 <div className="col-span-3">
-                  <select value={addMemberName} onChange={e => setAddMemberName(e.target.value)} className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
+                  <select value={addMemberName} onChange={e => setAddMemberName(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
                     <option value="">Usuário...</option>
                     {colaboradores.filter((c: any) => !(selectedSquad.membros ?? []).includes(c.nome)).map((c: any) => (
                       <option key={c.id} value={c.nome}>{c.nome}</option>
@@ -114,7 +114,7 @@ export function SquadDetailPanel({
                   </select>
                 </div>
                 <div className="col-span-2">
-                  <select value={addMemberRole} onChange={e => setAddMemberRole(e.target.value as "Membro" | "Gestor")} className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
+                  <select value={addMemberRole} onChange={e => setAddMemberRole(e.target.value as "Membro" | "Gestor")} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
                     <option value="Membro">Membro</option>
                     <option value="Gestor">Gestor</option>
                   </select>
@@ -153,7 +153,7 @@ export function SquadDetailPanel({
             )}
             <div className="pt-4 border-t border-white/5 space-y-3">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Atribuir Cliente</p>
-              <select value={addClientId} onChange={e => setAddClientId(e.target.value)} className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
+              <select value={addClientId} onChange={e => setAddClientId(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
                 <option value="">Selecionar cliente...</option>
                 {clienteBase.filter((c: any) => !(selectedSquad.clientes ?? []).includes(c.id)).map((c: any) => (
                   <option key={c.id} value={c.id}>{c.name} — {c.industry}</option>

@@ -25,11 +25,11 @@ export function ProdutosTable({
   deleteProduct
 }: ProdutosTableProps) {
   return (
-    <Card className="bg-[#111827]/85 border-white/5 shadow-xl overflow-hidden">
+    <Card className="bg-[var(--color-surface-elevated)]/85 border-[var(--color-border-subtle)] shadow-xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-white/5 text-[9px] uppercase font-black text-slate-400 tracking-wider border-b border-white/5">
+            <tr className="bg-[var(--color-surface-sunken)] text-[9px] uppercase font-black text-[var(--color-text-muted)] tracking-wider border-b border-[var(--color-border-subtle)]">
               <th className="py-3 px-4 w-10">
                 <input 
                   type="checkbox"
@@ -50,11 +50,11 @@ export function ProdutosTable({
               <th className="py-3 px-4 text-right">Ações</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-white/5">
+          <tbody className="divide-y divide-[var(--color-border-subtle)]">
             {filteredProducts.map((p) => {
               const isSelected = selectedIds.includes(p.id);
               return (
-                <tr 
+                <tr
                   key={p.id}
                   onClick={() => handleToggleSelection(p.id)}
                   className={`hover:bg-white/[0.02] text-xs transition-colors cursor-pointer ${!p.active ? "opacity-60" : ""} ${isSelected ? "bg-[#2563EB]/5" : ""}`}
@@ -67,7 +67,7 @@ export function ProdutosTable({
                       className="rounded bg-slate-900 border-white/22 focus:ring-[#2563EB] w-3.5 h-3.5"
                     />
                   </td>
-                  <td className="py-4 px-4 font-semibold text-white">
+                  <td className="py-4 px-4 font-semibold text-[var(--color-text-primary)]">
                     <div className="flex items-center gap-2">
                       <Package className="w-4 h-4 text-[#2563EB] shrink-0" />
                       <div className="min-w-0">
@@ -76,7 +76,7 @@ export function ProdutosTable({
                       </div>
                     </div>
                   </td>
-                  <td className="py-4 px-4 text-slate-350">{p.category}</td>
+                  <td className="py-4 px-4 text-slate-300">{p.category}</td>
                   <td className="py-4 px-4">
                     <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase ${
                       p.type === "Serviço" ? "bg-purple-500/10 text-purple-400" :
@@ -86,7 +86,7 @@ export function ProdutosTable({
                       {p.type}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-right font-mono font-black text-white">
+                  <td className="py-4 px-4 text-right font-mono font-black text-[var(--color-text-primary)]">
                     R$ {p.price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </td>
                   <td className="py-4 px-4 text-right font-mono text-slate-400">
@@ -103,7 +103,7 @@ export function ProdutosTable({
                     <button 
                       onClick={(e) => { e.stopPropagation(); toggleActiveStatus(p.id, e); }}
                       className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase leading-none ${
-                        p.active ? "bg-emerald-550/15 text-emerald-450 bg-emerald-500/10" : "bg-slate-555/15 text-slate-400"
+                        p.active ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-500/10 text-slate-400"
                       }`}
                     >
                       {p.active ? "Ativo" : "OFF"}

@@ -20,7 +20,7 @@ export function CertificadosGrid({ certs }: CertificadosGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {certs.map((cert) => (
-        <Card key={cert.id} className="group relative overflow-hidden bg-[#111827]/80 border-white/5 hover:border-amber-500/20 transition-all p-8 flex flex-col justify-between min-h-[380px] rounded-[32px]">
+        <Card key={cert.id} className="group relative overflow-hidden bg-[var(--color-surface-elevated)]/80 border-white/5 hover:border-amber-500/20 transition-all p-8 flex flex-col justify-between min-h-[380px] rounded-[32px]">
           <div className="absolute inset-0 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity pointer-events-none bg-[radial-gradient(circle_at_center,_white_1px,_transparent_1px)] bg-[size:24px_24px]" />
           <div className="relative z-10">
             <div className="flex justify-between items-start mb-8">

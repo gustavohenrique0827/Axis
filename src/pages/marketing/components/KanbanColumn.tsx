@@ -37,13 +37,13 @@ export function KanbanColumn({
         <div 
           ref={provided.innerRef}
           {...provided.droppableProps}
-          className={`min-w-[320px] w-[320px] bg-[#111827] rounded-2xl border transition-all duration-200 flex flex-col max-h-full shrink-0 ${
+          className={`min-w-[320px] w-[320px] bg-[var(--color-surface-elevated)] rounded-2xl border transition-all duration-200 flex flex-col max-h-full shrink-0 ${
             snapshot.isDraggingOver 
-              ? "border-blue-500/50 bg-[#151F30] shadow-lg shadow-blue-500/5" 
+              ? "border-blue-500/50 bg-[var(--color-surface-elevated)] shadow-lg shadow-blue-500/5" 
               : "border-white/5"
           }`}
         >
-           <div className="p-4 border-b border-white/5 flex flex-col gap-3 sticky top-0 bg-[#111827] z-10 rounded-t-2xl kanban-column-header text-left">
+           <div className="p-4 border-b border-white/5 flex flex-col gap-3 sticky top-0 bg-[var(--color-surface-elevated)] z-10 rounded-t-2xl kanban-column-header text-left">
              <div className="flex items-center justify-between">
                <div className="flex items-center gap-3 w-full">
                   <div className="flex flex-col gap-1.5 w-full">
@@ -91,7 +91,7 @@ export function KanbanColumn({
                   value={columnSearches[col.id] || ""}
                   onChange={(e) => setColumnSearches(prev => ({ ...prev, [col.id]: e.target.value }))}
                   placeholder="Filtrar por pauta, canal, prioridade..."
-                  className="w-full bg-[#1E293B] border border-white/5 rounded-lg pl-3 pr-8 py-1.5 text-xs text-white placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
+                  className="w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-lg pl-3 pr-8 py-1.5 text-xs text-white placeholder-slate-500 focus:border-blue-500/50 outline-none transition-all"
                 />
                 {columnSearches[col.id] ? (
                   <button 
@@ -129,9 +129,9 @@ export function KanbanColumn({
                        >
                          <Card 
                            onClick={() => openTask(task)}
-                           className={`p-4 bg-[#1E293B] transition-all cursor-grab active:cursor-grabbing group shadow-sm hover:shadow-xl hover:shadow-blue-900/20 rounded-2xl border ${
+                           className={`p-4 bg-[var(--color-surface-elevated)] transition-all cursor-grab active:cursor-grabbing group shadow-sm hover:shadow-xl hover:shadow-blue-900/20 rounded-2xl border ${
                              dragSnapshot.isDragging 
-                               ? "ring-2 ring-blue-500 bg-[#253248] scale-[1.02] shadow-2xl border-transparent" 
+                               ? "ring-2 ring-blue-500 bg-[var(--color-surface-elevated)] scale-[1.02] shadow-2xl border-transparent" 
                                : "border-white/5 hover:border-blue-500/30"
                            }`}
                          >

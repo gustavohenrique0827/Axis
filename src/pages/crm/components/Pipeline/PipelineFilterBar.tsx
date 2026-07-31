@@ -35,7 +35,7 @@ export function PipelineFilterBar({
   return (
     <div className="flex flex-wrap items-center gap-2 shrink-0">
       {(comercialFunis.length > 0 || sdrFunis.length > 0) && (
-        <div className="flex items-center gap-1.5 bg-[#111827]/80 border border-white/5 rounded-xl px-2 py-1.5 h-[38px]">
+        <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl px-2 py-1.5 h-[38px]">
           {comercialFunis.length === 1 ? (
             <button
               onClick={() => { setCurrentPipeline("comercial"); setSelectedFunilId(comercialFunis[0].id); }}
@@ -51,7 +51,7 @@ export function PipelineFilterBar({
                 onChange={(e) => { setCurrentPipeline("comercial"); setSelectedFunilId(e.target.value); }}
                 className="bg-transparent border-none focus:outline-none text-[10px] font-bold cursor-pointer"
               >
-                {comercialFunis.map((f: any) => <option key={f.id} value={f.id} className="bg-[#111827] text-white">{f.nome}</option>)}
+                {comercialFunis.map((f: any) => <option key={f.id} value={f.id} className="bg-[var(--color-surface-elevated)] text-white">{f.nome}</option>)}
               </select>
             </div>
           ) : null}
@@ -73,7 +73,7 @@ export function PipelineFilterBar({
                 onChange={(e) => { setCurrentPipeline("sdr"); setSelectedFunilId(e.target.value); }}
                 className="bg-transparent border-none focus:outline-none text-[10px] font-bold cursor-pointer"
               >
-                {sdrFunis.map((f: any) => <option key={f.id} value={f.id} className="bg-[#111827] text-white">{f.nome}</option>)}
+                {sdrFunis.map((f: any) => <option key={f.id} value={f.id} className="bg-[var(--color-surface-elevated)] text-white">{f.nome}</option>)}
               </select>
             </div>
           ) : null}
@@ -87,57 +87,57 @@ export function PipelineFilterBar({
           placeholder="Buscar negócios..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="bg-[#111827]/80 border border-white/5 rounded-xl pl-9 pr-3 text-xs text-white focus:outline-none focus:border-blue-500 w-full h-[38px]"
+          className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl pl-9 pr-3 text-xs text-white focus:outline-none focus:border-blue-500 w-full h-[38px]"
         />
       </div>
 
-      <div className="flex items-center gap-1.5 bg-[#111827]/80 px-3 rounded-xl border border-white/5 h-[38px]">
+      <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)]/80 px-3 rounded-xl border border-white/5 h-[38px]">
         <Building2 className="w-3 h-3 text-slate-500 shrink-0" />
         <select
           className="bg-transparent border-none text-white focus:outline-none text-xs font-bold cursor-pointer"
           value={companyFilter}
           onChange={(e) => setCompanyFilter(e.target.value)}
         >
-          {companiesList.map(c => <option key={c} value={c} className="bg-[#111827]">{c === "Todos" ? "Todas as empresas" : c}</option>)}
+          {companiesList.map(c => <option key={c} value={c} className="bg-[var(--color-surface-elevated)]">{c === "Todos" ? "Todas as empresas" : c}</option>)}
         </select>
       </div>
 
       {isMaster && (
-        <div className="flex items-center gap-1.5 bg-[#111827]/80 px-3 rounded-xl border border-white/5 h-[38px]">
+        <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)]/80 px-3 rounded-xl border border-white/5 h-[38px]">
           <Target className="w-3 h-3 text-blue-400 shrink-0" />
           <select
             className="bg-transparent border-none text-white focus:outline-none text-xs font-bold cursor-pointer"
             value={tenantFilter}
             onChange={(e) => setTenantFilter(e.target.value)}
           >
-            <option value="" className="bg-[#111827]">Todos os parceiros</option>
-            {(tenantsList as any[]).map(t => <option key={t.id} value={t.id} className="bg-[#111827]">{t.name}</option>)}
+            <option value="" className="bg-[var(--color-surface-elevated)]">Todos os parceiros</option>
+            {(tenantsList as any[]).map(t => <option key={t.id} value={t.id} className="bg-[var(--color-surface-elevated)]">{t.name}</option>)}
           </select>
         </div>
       )}
 
       {clientsList.length > 0 && (
-        <div className="flex items-center gap-1.5 bg-[#111827]/80 px-3 rounded-xl border border-white/5 h-[38px]">
+        <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)]/80 px-3 rounded-xl border border-white/5 h-[38px]">
           <Building2 className="w-3 h-3 text-indigo-400 shrink-0" />
           <select
             className="bg-transparent border-none text-white focus:outline-none text-xs font-bold cursor-pointer"
             value={clientFilter}
             onChange={(e) => setClientFilter(e.target.value)}
           >
-            <option value="Todos" className="bg-[#111827]">Todos os clientes</option>
-            {clientsList.map(c => <option key={c} value={c} className="bg-[#111827]">{c}</option>)}
+            <option value="Todos" className="bg-[var(--color-surface-elevated)]">Todos os clientes</option>
+            {clientsList.map(c => <option key={c} value={c} className="bg-[var(--color-surface-elevated)]">{c}</option>)}
           </select>
         </div>
       )}
 
-      <div className="flex items-center gap-1.5 bg-[#111827]/80 px-3 rounded-xl border border-white/5 h-[38px]">
+      <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)]/80 px-3 rounded-xl border border-white/5 h-[38px]">
         <Filter className="w-3 h-3 text-slate-500 shrink-0" />
         <select
           className="bg-transparent border-none text-white focus:outline-none text-xs font-bold cursor-pointer"
           value={sellerFilter}
           onChange={(e) => setSellerFilter(e.target.value)}
         >
-          {sellers.map(s => <option key={s} value={s} className="bg-[#111827]">{s === "Todos" ? "Todos os vendedores" : s}</option>)}
+          {sellers.map(s => <option key={s} value={s} className="bg-[var(--color-surface-elevated)]">{s === "Todos" ? "Todos os vendedores" : s}</option>)}
         </select>
       </div>
     </div>

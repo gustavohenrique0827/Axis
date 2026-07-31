@@ -23,21 +23,21 @@ export function ConfigIntegracoesSMTP() {
         <p className="text-sm text-slate-400">Configure seu próprio disparador de e-mails comercial corporativo (AWS SES, G-Suite, Sendgrid, etc).</p>
       </div>
 
-      <Card className="p-6 bg-[#111827]/80 border border-white/10 space-y-4">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border border-white/10 space-y-4">
         <h3 className="font-bold text-xs uppercase tracking-widest text-[#06B6D4]">Credenciais de Transmissão</h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-semibold">
           <div className="space-y-1">
             <label className="text-[10px] text-slate-400 uppercase tracking-wider block">Servidor Host</label>
-            <input type="text" value={smtpServer} onChange={e => setSmtpServer(e.target.value)} className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-white" />
+            <input type="text" value={smtpServer} onChange={e => setSmtpServer(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-white" />
           </div>
           <div className="space-y-1">
             <label className="text-[10px] text-slate-400 uppercase tracking-wider block">Porta de Conexão</label>
-            <input type="text" value={smtpPort} onChange={e => setSmtpPort(e.target.value)} className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-white font-mono" />
+            <input type="text" value={smtpPort} onChange={e => setSmtpPort(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-white font-mono" />
           </div>
           <div className="space-y-1">
             <label className="text-[10px] text-slate-400 uppercase tracking-wider block">Criptografia Protocolo</label>
-            <select className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-slate-300">
+            <select className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-slate-300">
               <option>StartTLS (Recomendado)</option>
               <option>SSL puro</option>
               <option>Nenhuma (Não seguro)</option>
@@ -48,11 +48,11 @@ export function ConfigIntegracoesSMTP() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
           <div className="space-y-1">
             <label className="text-[10px] text-slate-400 uppercase tracking-wider block font-black">Usuário Log (E-mail Autenticado)</label>
-            <input type="email" value={smtpUser} onChange={e => setSmtpUser(e.target.value)} className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-white" />
+            <input type="email" value={smtpUser} onChange={e => setSmtpUser(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-white" />
           </div>
           <div className="space-y-1">
             <label className="text-[10px] text-slate-400 uppercase tracking-wider block">Senha de Aplicativo (Secret Token)</label>
-            <input type="password" placeholder="••••••••••••••••••••" className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-white" />
+            <input type="password" placeholder="••••••••••••••••••••" className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-white" />
           </div>
         </div>
 

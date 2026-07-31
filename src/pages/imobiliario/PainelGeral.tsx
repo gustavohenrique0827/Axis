@@ -39,7 +39,7 @@ function KPICard({ icon: Icon, label, value, sub, color, trend, trendVal }: {
   trend?: "up" | "down"; trendVal?: string;
 }) {
   return (
-    <div className="bg-[#111827]/80 border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all">
+    <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all">
       <div className="flex items-start justify-between mb-3">
         <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
           <Icon className="w-5 h-5" />
@@ -61,7 +61,7 @@ function KPICard({ icon: Icon, label, value, sub, color, trend, trendVal }: {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#0F1929] border border-white/10 rounded-xl px-3 py-2 shadow-xl">
+    <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl px-3 py-2 shadow-xl">
       <p className="text-[10px] text-slate-500 mb-1">{label}</p>
       {payload.map((p: any, i: number) => (
         <p key={i} className="text-sm font-black text-white">
@@ -201,7 +201,7 @@ export default function ImobiliarioPainel() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* VGV por Mês */}
-          <div className="lg:col-span-2 bg-[#111827]/80 border border-white/5 rounded-2xl p-5">
+          <div className="lg:col-span-2 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h3 className="text-xs font-black text-white uppercase tracking-widest">VGV por Mês</h3>
@@ -224,7 +224,7 @@ export default function ImobiliarioPainel() {
           </div>
 
           {/* Portfólio por Tipo */}
-          <div className="bg-[#111827]/80 border border-white/5 rounded-2xl p-5">
+          <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5">
             <h3 className="text-xs font-black text-white uppercase tracking-widest mb-0.5">Portfólio por Tipo</h3>
             <p className="text-[10px] text-slate-500 mb-2">{imoveis.length} imóveis cadastrados</p>
             {portfolioTipo.length === 0 ? (
@@ -245,7 +245,7 @@ export default function ImobiliarioPainel() {
                         <Cell key={i} fill={entry.color} opacity={activePie === null || activePie === i ? 1 : 0.35} />
                       ))}
                     </Pie>
-                    <Tooltip contentStyle={{ background: "#0F1929", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fff" }} itemStyle={{ fontWeight: 700, fontSize: 12 }} />
+                    <Tooltip contentStyle={{ background: "var(--color-surface-elevated)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 12, color: "#fff" }} itemStyle={{ fontWeight: 700, fontSize: 12 }} />
                   </PieChart>
                 </ResponsiveContainer>
               </div>
@@ -268,7 +268,7 @@ export default function ImobiliarioPainel() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
           {/* Funil de Vendas */}
-          <div className="bg-[#111827]/80 border border-white/5 rounded-2xl p-5">
+          <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5">
             <h3 className="text-xs font-black text-white uppercase tracking-widest mb-1">Funil de Vendas</h3>
             <p className="text-[10px] text-slate-500 mb-5">Taxa de conversão por etapa</p>
             {leadsAtivosAll.length === 0 ? (
@@ -295,7 +295,7 @@ export default function ImobiliarioPainel() {
           </div>
 
           {/* Ranking Corretores */}
-          <div className="bg-[#111827]/80 border border-white/5 rounded-2xl p-5">
+          <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5">
             <h3 className="text-xs font-black text-white uppercase tracking-widest mb-1">Ranking Corretores</h3>
             <p className="text-[10px] text-slate-500 mb-5">Performance acumulada no mês</p>
             {corretores.length === 0 ? (
@@ -342,7 +342,7 @@ export default function ImobiliarioPainel() {
 
           {/* Próximas Visitas */}
           <div className="space-y-4">
-            <div className="bg-[#111827]/80 border border-white/5 rounded-2xl p-5">
+            <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5">
               <h3 className="text-xs font-black text-white uppercase tracking-widest mb-3">Próximas Visitas</h3>
               {visitas.length === 0 ? (
                 <div className="flex items-center justify-center h-20 text-slate-600 text-sm">Nenhuma visita agendada</div>
@@ -372,7 +372,7 @@ export default function ImobiliarioPainel() {
         </div>
 
         {/* Visitas por semana */}
-        <div className="bg-[#111827]/80 border border-white/5 rounded-2xl p-5">
+        <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <div>
               <h3 className="text-xs font-black text-white uppercase tracking-widest">Visitas por Dia da Semana</h3>
@@ -406,7 +406,7 @@ export default function ImobiliarioPainel() {
 
         {/* Imóveis em Destaque + por Bairro */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-[#111827]/80 border border-white/5 rounded-2xl p-5">
+          <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5">
             <h3 className="text-xs font-black text-white uppercase tracking-widest mb-4">Imóveis em Destaque</h3>
             {destaques.length === 0 ? (
               <div className="flex items-center justify-center h-24 text-slate-600 text-sm">Nenhum imóvel disponível</div>
@@ -435,7 +435,7 @@ export default function ImobiliarioPainel() {
             )}
           </div>
 
-          <div className="bg-[#111827]/80 border border-white/5 rounded-2xl p-5">
+          <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5">
             <h3 className="text-xs font-black text-white uppercase tracking-widest mb-4">Imóveis por Bairro</h3>
             {imoveisBairro.length === 0 ? (
               <div className="flex items-center justify-center h-24 text-slate-600 text-sm">Nenhum imóvel cadastrado</div>

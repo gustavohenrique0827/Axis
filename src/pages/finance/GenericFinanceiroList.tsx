@@ -84,14 +84,14 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
             >
                 <Plus className="w-4 h-4 mr-2" /> Novo Lançamento
             </Button>
-            <Button variant="outline" className="gap-2 border-white/10 bg-[#111827] text-slate-400 hover:text-white h-10 text-[10px] uppercase font-bold tracking-widest px-4 rounded-xl">
+            <Button variant="outline" className="gap-2 border-white/10 bg-[var(--color-surface-elevated)] text-slate-400 hover:text-white h-10 text-[10px] uppercase font-bold tracking-widest px-4 rounded-xl">
                 <Download className="w-4 h-4" /> Exportar
             </Button>
         </div>
       </div>
 
-      <Card className="bg-[#111827]/80 backdrop-blur-xl border border-white/10 overflow-hidden rounded-2xl shadow-2xl">
-        <div className="p-5 border-b border-white/10 bg-[#0B1120]/50 flex items-center justify-between">
+      <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden rounded-2xl shadow-2xl">
+        <div className="p-5 border-b border-white/10 bg-[var(--color-surface)]/50 flex items-center justify-between">
            <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fluxo de Caixa / Lançamentos</div>
            <div className="flex items-center gap-2 text-[10px] text-blue-400 font-bold uppercase tracking-widest">
              <Calendar className="w-4 h-4" /> Ciclo de Faturamento Atual
@@ -100,7 +100,7 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
         <div className="overflow-x-auto">
           {/* Desktop Table */}
           <table className="w-full text-sm text-left hidden md:table">
-            <thead className="text-[10px] uppercase font-black tracking-widest text-slate-500 bg-[#0B1120]/20 border-b border-white/10">
+            <thead className="text-[10px] uppercase font-black tracking-widest text-slate-500 bg-[var(--color-surface)]/20 border-b border-white/10">
               <tr>
                 <th className="px-6 py-5">Descrição</th>
                 <th className="px-6 py-5">Categoria</th>
@@ -151,7 +151,7 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
                 ))
               )}
             </tbody>
-            <tfoot className="bg-[#0B1120]/40 border-t border-white/10">
+            <tfoot className="bg-[var(--color-surface)]/40 border-t border-white/10">
               <tr>
                 <td colSpan={4} className="px-6 py-6 font-black text-slate-500 text-right uppercase tracking-widest text-[10px]">Total Acumulado:</td>
                 <td className={`px-6 py-6 font-mono font-black text-lg text-right ${type === 'Pagar' ? 'text-rose-500' : 'text-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]'}`}>
@@ -165,7 +165,7 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
           {/* Mobile Cards */}
           <div className="md:hidden p-4 space-y-3">
             {data.map((item) => (
-              <div key={item.id} className="bg-[#0B1120] border border-white/5 p-4 rounded-2xl flex flex-col gap-4 relative">
+              <div key={item.id} className="bg-[var(--color-surface)] border border-white/5 p-4 rounded-2xl flex flex-col gap-4 relative">
                 <button 
                   onClick={() => deleteFinanceEntry(item.id)}
                   className="absolute top-4 right-4 text-slate-700 p-1"
@@ -203,7 +203,7 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
       {/* Modern Creation Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+          <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
             <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
               <div>
                 <h3 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-2">
@@ -229,7 +229,7 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
                   placeholder="Ex: Aluguel, Servidor, Venda de Licença..."
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
-                  className="w-full bg-[#1e293b] text-white border border-white/5 rounded-xl h-12 px-4 shadow-inner text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/5 rounded-xl h-12 px-4 shadow-inner text-sm focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
 
@@ -240,7 +240,7 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
                   placeholder="Ex: Infraestrutura, Operacional, Marketing..."
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full bg-[#1e293b] text-white border border-white/5 rounded-xl h-12 px-4 shadow-inner text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/5 rounded-xl h-12 px-4 shadow-inner text-sm focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
 
@@ -254,7 +254,7 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
                     placeholder="0,00"
                     value={newValue}
                     onChange={(e) => setNewValue(e.target.value)}
-                    className="w-full bg-[#1e293b] text-white border border-white/5 rounded-xl h-12 px-4 shadow-inner text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/5 rounded-xl h-12 px-4 shadow-inner text-sm focus:outline-none focus:border-blue-500 transition-colors"
                   />
                 </div>
 
@@ -264,7 +264,7 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
                     type="date"
                     value={newDate}
                     onChange={(e) => setNewDate(e.target.value)}
-                    className="w-full bg-[#1e293b] text-white border border-white/5 rounded-xl h-12 px-4 shadow-inner text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/5 rounded-xl h-12 px-4 shadow-inner text-sm focus:outline-none focus:border-blue-500 transition-colors"
                   />
                 </div>
               </div>

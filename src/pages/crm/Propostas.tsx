@@ -53,7 +53,7 @@ export default function Propostas() {
           </Button>
           <Button
             onClick={() => setIsPropostaModalOpen(true)}
-            className="bg-[#2563EB] hover:bg-blue-605 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20"
+            className="bg-[#2563EB] hover:bg-blue-600 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20"
           >
             <Plus className="w-4 h-4 mr-2" /> Nova Proposta
           </Button>

@@ -37,7 +37,7 @@ export function MembrosSection({
           { label: "Engajamento Médio", value: "0%", icon: TrendingUp, color: "text-blue-500" },
           { label: "Meta Geral Batida", value: "0%", icon: ShieldCheck, color: "text-rose-500" },
         ].map((stat, i) => (
-          <Card key={i} className="p-6 bg-[#111827]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+          <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
             <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
             <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
             <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
@@ -45,7 +45,7 @@ export function MembrosSection({
         ))}
       </div>
 
-      <Card className="p-4 bg-[#111827]/50 border-white/5 flex flex-col md:flex-row gap-4 items-center">
+      <Card className="p-4 bg-[var(--color-surface-elevated)]/50 border-white/5 flex flex-col md:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
           <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
           <Input
@@ -70,9 +70,9 @@ export function MembrosSection({
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {filtered.map((colab) => (
-          <Card key={colab.id} className="group overflow-hidden bg-[#111827]/60 border-white/5 hover:border-indigo-500/30 transition-all p-0">
+          <Card key={colab.id} className="group overflow-hidden bg-[var(--color-surface-elevated)]/60 border-white/5 hover:border-indigo-500/30 transition-all p-0">
             <div className="h-24 bg-gradient-to-r from-indigo-600/20 to-blue-600/20 flex items-end justify-center p-0">
-              <div className="w-20 h-20 rounded-2xl bg-[#0B1120] border-4 border-[#111827] -mb-10 flex items-center justify-center text-indigo-500">
+              <div className="w-20 h-20 rounded-2xl bg-[var(--color-surface)] border-4 border-[var(--color-surface-elevated)] -mb-10 flex items-center justify-center text-indigo-500">
                 <Users className="w-8 h-8 opacity-40" />
               </div>
             </div>
@@ -130,7 +130,7 @@ export function MembrosSection({
                     <MoreVertical className="w-4 h-4" />
                   </Button>
                   {menuOpenId === colab.id && (
-                    <div className="absolute right-0 bottom-12 z-50 w-48 bg-[#0B1120] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
+                    <div className="absolute right-0 bottom-12 z-50 w-48 bg-[var(--color-surface)] border border-white/10 rounded-2xl shadow-2xl overflow-hidden">
                       <button onClick={() => onChangeStatus(colab, "Férias")} className="w-full flex items-center gap-3 px-4 py-3 text-[11px] font-bold text-slate-300 hover:bg-white/5 hover:text-blue-400 transition-colors text-left">
                         <Plane className="w-3.5 h-3.5" /> Marcar como Férias
                       </button>

@@ -29,9 +29,9 @@ export function PipelineListaView({
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
           <input type="text" placeholder="Buscar por nome, empresa ou e-mail..." value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="bg-[#111827]/50 border border-white/5 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#2563EB] w-full" />
+            className="bg-[var(--color-surface-elevated)]/50 border border-white/5 rounded-xl pl-9 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#2563EB] w-full" />
         </div>
-        <div className="flex items-center gap-2 bg-[#111827] border border-white/10 rounded-xl px-3 h-10">
+        <div className="flex items-center gap-2 bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl px-3 h-10">
           <span className="text-[9px] uppercase font-bold text-slate-500">Temp:</span>
           <select value={temperatureFilter} onChange={(e) => setTemperatureFilter(e.target.value)}
             className="bg-transparent border-none text-xs text-white focus:outline-none cursor-pointer font-bold">
@@ -41,24 +41,24 @@ export function PipelineListaView({
             <option value="frio">❄️ Frio</option>
           </select>
         </div>
-        <div className="flex items-center gap-2 bg-[#111827] border border-white/10 rounded-xl px-3 h-10">
+        <div className="flex items-center gap-2 bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl px-3 h-10">
           <Filter className="w-3.5 h-3.5 text-slate-500" />
           <select value={sellerFilter} onChange={(e) => setSellerFilter(e.target.value)}
             className="bg-transparent border-none text-xs text-white focus:outline-none cursor-pointer font-bold">
-            {sellers.map(s => <option key={s} value={s} className="bg-[#111827]">{s === "Todos" ? "Todos os vendedores" : s}</option>)}
+            {sellers.map(s => <option key={s} value={s} className="bg-[var(--color-surface-elevated)]">{s === "Todos" ? "Todos os vendedores" : s}</option>)}
           </select>
         </div>
         <button onClick={() => setSortOrder(o => o === "desc" ? "asc" : "desc")}
-          className="flex items-center gap-1.5 bg-[#111827] border border-white/10 rounded-xl px-3 h-10 text-[10px] font-bold text-slate-400 hover:text-white transition-colors cursor-pointer">
+          className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl px-3 h-10 text-[10px] font-bold text-slate-400 hover:text-white transition-colors cursor-pointer">
           Temp {sortOrder === "desc" ? "▼" : "▲"}
         </button>
       </div>
 
       {/* Desktop table */}
-      <Card className="bg-[#111827]/80 backdrop-blur-xl border border-white/10 overflow-hidden hidden sm:block">
+      <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden hidden sm:block">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-[#0B1120]/50 border-b border-white/10">
+            <thead className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-[var(--color-surface)]/50 border-b border-white/10">
               <tr>
                 <th className="px-6 py-4">Nome & Empresa</th>
                 <th className="px-6 py-4">Contato</th>
@@ -99,7 +99,7 @@ export function PipelineListaView({
                   <td className="px-6 py-4 font-mono text-xs text-emerald-400/80">{lead.value}</td>
                   <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                     <select value={lead.seller || ""} onChange={(e) => updateLead(lead.id, { seller: e.target.value })}
-                      className="bg-[#0B1120]/80 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-[#2563EB] cursor-pointer hover:bg-white/5">
+                      className="bg-[var(--color-surface)]/80 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-[#2563EB] cursor-pointer hover:bg-white/5">
                       <option value="">Sem Vendedor</option>
                       {sellers.filter((s: string) => s !== "Todos").map((s: string) => <option key={s} value={s}>{s}</option>)}
                     </select>
@@ -134,7 +134,7 @@ export function PipelineListaView({
       <div className="space-y-3 sm:hidden">
         {listaLeads.map((lead: any) => (
           <Card key={lead.id} onClick={() => setSelectedLead(lead)}
-            className="p-4 bg-[#111827]/80 border-white/5 active:border-white/20 transition-all flex flex-col gap-3 cursor-pointer">
+            className="p-4 bg-[var(--color-surface-elevated)]/80 border-white/5 active:border-white/20 transition-all flex flex-col gap-3 cursor-pointer">
             <div className="flex justify-between items-start">
               <div className="min-w-0">
                 <h4 className="font-bold text-white text-sm truncate">{lead.name}</h4>

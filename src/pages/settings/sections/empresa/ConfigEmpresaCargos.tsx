@@ -43,7 +43,7 @@ export function ConfigEmpresaCargos() {
       </div>
 
       {cargos.length === 0 ? (
-        <Card className="p-8 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex flex-col items-center justify-center text-center gap-3">
+        <Card className="p-8 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-col items-center justify-center text-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
             <Briefcase className="w-6 h-6 text-slate-500" />
           </div>
@@ -55,7 +55,7 @@ export function ConfigEmpresaCargos() {
           {cargos.map((cargo) => {
             const nivelClass = NIVEL_COLORS[cargo.nivel as string] ?? NIVEL_COLORS["Operacional"];
             return (
-              <Card key={cargo.id} className="px-5 py-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex items-center gap-4">
+              <Card key={cargo.id} className="px-5 py-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex items-center gap-4">
                 <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
                   <Briefcase className="w-4 h-4 text-slate-400" />
                 </div>

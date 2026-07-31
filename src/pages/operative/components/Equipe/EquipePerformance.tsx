@@ -32,7 +32,7 @@ export function EquipePerformance({ team, squads }: EquipePerformanceProps) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-8 bg-[#111827]/40 border-white/5 backdrop-blur-xl relative overflow-hidden group">
+        <Card className="p-8 bg-[var(--color-surface-elevated)]/40 border-white/5 backdrop-blur-xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
             <TrendingUp className="w-32 h-32 text-blue-500" />
           </div>
@@ -56,7 +56,7 @@ export function EquipePerformance({ team, squads }: EquipePerformanceProps) {
                 <YAxis stroke="#475569" fontSize={9} axisLine={false} tickLine={false} />
                 <Tooltip
                   cursor={{ fill: "#ffffff05" }}
-                  contentStyle={{ backgroundColor: "#020617", border: "1px solid #1e293b", borderRadius: "16px", boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.5)" }}
+                  contentStyle={{ backgroundColor: "var(--color-surface)", border: "1px solid #1e293b", borderRadius: "16px", boxShadow: "0 20px 25px -5px rgb(0 0 0 / 0.5)" }}
                   itemStyle={{ color: "#3b82f6", fontWeight: "bold", fontSize: "11px" }}
                   labelStyle={{ color: "#fff", fontSize: "12px", fontWeight: "900", marginBottom: "8px" }}
                 />
@@ -66,7 +66,7 @@ export function EquipePerformance({ team, squads }: EquipePerformanceProps) {
           </div>
         </Card>
 
-        <Card className="p-8 bg-[#111827]/40 border-white/5 backdrop-blur-xl group">
+        <Card className="p-8 bg-[var(--color-surface-elevated)]/40 border-white/5 backdrop-blur-xl group">
           <h3 className="text-md font-black text-white mb-8 flex items-center gap-3">
             <div className="p-2 rounded-xl bg-emerald-500/20 border border-emerald-500/20">
               <Target className="w-4 h-4 text-emerald-400" />

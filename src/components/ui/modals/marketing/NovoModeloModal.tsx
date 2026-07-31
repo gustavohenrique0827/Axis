@@ -22,7 +22,7 @@ type NovoModeloModalProps = {
 
 const labelClass = "text-[10px] font-bold text-slate-400 uppercase tracking-wider";
 const inputBaseClass =
-  "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all";
+  "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:bg-[var(--color-surface)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all";
 
 export function NovoModeloModal({
   isOpen,
@@ -109,7 +109,7 @@ export function NovoModeloModal({
       }
     >
       <div className="space-y-4">
-        <div className="bg-[#0B1120]/40 border border-white/10 rounded-xl p-4">
+        <div className="bg-[var(--color-surface)]/40 border border-white/10 rounded-xl p-4">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mt-0.5">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -185,7 +185,7 @@ export function NovoModeloModal({
             )}
           </div>
 
-          <div className="bg-[#0B1120] border border-white/10 rounded-xl p-4">
+          <div className="bg-[var(--color-surface)] border border-white/10 rounded-xl p-4">
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
               {tipo === "E-mail" ? (
                 <Mail className="w-3.5 h-3.5 text-blue-400" />
@@ -201,7 +201,7 @@ export function NovoModeloModal({
               <div className="text-xs text-slate-400">
                 Canal: {tipo}
               </div>
-              <div className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed bg-[#111827]/50 border border-white/5 rounded-lg p-3">
+              <div className="text-sm text-slate-200 whitespace-pre-wrap leading-relaxed bg-[var(--color-surface-elevated)]/50 border border-white/5 rounded-lg p-3">
                 {conteudoTrim || "(conteúdo vai aparecer aqui)"}
               </div>
             </div>

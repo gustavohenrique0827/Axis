@@ -102,13 +102,14 @@ import AmbientesDev from "./pages/dev/Ambientes";
 import ProjetoDetalhesDev from "./pages/dev/ProjetoDetalhesDev";
 
 import { AuthProvider } from "./contexts/AuthContext";
-import { DataProvider } from "./contexts/DataContext";
+import { DataProvider, useData } from "./contexts/DataContext";
 import { Toaster } from "sonner";
 import { InteractiveForm } from "./pages/common/InteractiveForm";
 
 function AppContent() {
   const location = useLocation();
   const isAppRoute = location.pathname.startsWith('/app') || location.pathname.startsWith('/login');
+  const { theme } = useData();
 
   useEffect(() => {
     if (isAppRoute) {
@@ -118,7 +119,7 @@ function AppContent() {
 
   return (
     <>
-      {isAppRoute && <Toaster theme="dark" position="bottom-right" />}
+      {isAppRoute && <Toaster theme={theme} position="bottom-right" />}
       <Routes>
         <Route path="/" element={<Navigate to="/app" replace />} />
         <Route path="/landing" element={<LandingPage />} />

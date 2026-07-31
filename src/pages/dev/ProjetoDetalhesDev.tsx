@@ -134,7 +134,7 @@ export default function ProjetoDetalhesDev() {
             return (
               <div
                 key={col.id}
-                className={`flex-shrink-0 w-72 flex flex-col rounded-2xl border ${dragOverCol === col.id ? "border-blue-500/40 bg-blue-600/[0.03]" : "border-white/5 bg-[#0B1120]/40"} transition-all`}
+                className={`flex-shrink-0 w-72 flex flex-col rounded-2xl border ${dragOverCol === col.id ? "border-blue-500/40 bg-blue-600/[0.03]" : "border-white/5 bg-[var(--color-surface)]/40"} transition-all`}
                 onDragOver={(e) => {
                   e.preventDefault();
                   setDragOverCol(col.id);
@@ -157,7 +157,7 @@ export default function ProjetoDetalhesDev() {
                       key={String(task.id)}
                       draggable
                       onDragStart={() => setDraggedId(task.id)}
-                      className={`p-4 bg-[#111827] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing hover:border-white/10 transition-all select-none group ${draggedId === task.id ? "opacity-40 scale-95" : ""}`}
+                      className={`p-4 bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing hover:border-white/10 transition-all select-none group ${draggedId === task.id ? "opacity-40 scale-95" : ""}`}
                     >
                       <div className="flex items-center justify-between mb-2.5">
                         <span className={`text-[10px] font-black uppercase tracking-wider ${TYPE_COLOR[task.type]}`}> {TYPE_ICON[task.type]} {task.type}</span>

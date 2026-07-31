@@ -29,7 +29,7 @@ const LABEL_SUGGESTIONS = ["backend", "frontend", "mobile", "auth", "performance
 const PROJECTS = ["Plataforma Axis CRM", "API Gateway v3", "App Mobile Alunos", "Dashboard Analytics BI", "Módulo Financeiro 2.0"];
 
 const lbl = "text-[10px] font-bold text-slate-400 uppercase tracking-wider";
-const inp = "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-red-500/50 focus:outline-none focus:ring-2 focus:ring-red-500/10 transition-all placeholder-slate-600";
+const inp = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-red-500/50 focus:outline-none focus:ring-2 focus:ring-red-500/10 transition-all placeholder-slate-600";
 
 export function NovaIssueDevModal({ isOpen, onClose, onSave }: Props) {
   const [title, setTitle] = useState("");

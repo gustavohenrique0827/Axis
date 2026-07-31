@@ -14,7 +14,7 @@ interface CompanyBlockProps {
 export function CompanyBlock({
   cnpjValue, handleCnpjChange, cnpjStatus, isCnpjDuplicate, companyValue, setCompanyValue,
 }: CompanyBlockProps) {
-  const inputCls = "w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all";
+  const inputCls = "w-full bg-[var(--color-surface)]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[var(--color-surface)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all";
 
   return (
     <div className="space-y-5">
@@ -22,7 +22,7 @@ export function CompanyBlock({
         <Building2 className="w-4 h-4 text-emerald-400" /> Dados Empresariais
       </h4>
 
-      <div className="p-5 bg-[#0B1120]/30 rounded-xl border border-white/5 space-y-4">
+      <div className="p-5 bg-[var(--color-surface)]/30 rounded-xl border border-white/5 space-y-4">
         <div className="space-y-2">
           <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 justify-between">
             <span className="flex items-center gap-1.5">

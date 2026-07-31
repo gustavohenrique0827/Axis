@@ -34,7 +34,7 @@ export default function SettingsGenericForm() {
         </div>
       </div>
 
-      <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
         <div className="space-y-6">
           <div className="space-y-2">
             <label className="text-[11px] font-bold tracking-widest text-slate-400 uppercase">
@@ -42,7 +42,7 @@ export default function SettingsGenericForm() {
             </label>
             <input 
               type="text" 
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors"
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors"
               placeholder="Configuração padrão auto-preenchida"
             />
           </div>
@@ -52,7 +52,7 @@ export default function SettingsGenericForm() {
               Habilitar Recurso
             </label>
             <div className="flex items-center gap-3">
-              <input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-[#0B1120] text-[#2563EB] focus:ring-0" />
+              <input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-[var(--color-surface)] text-[#2563EB] focus:ring-0" />
               <span className="text-sm text-slate-300">Ativar processamento automático para este módulo</span>
             </div>
           </div>
@@ -66,7 +66,7 @@ export default function SettingsGenericForm() {
       </Card>
       
       {/* Skeleton list block */}
-      <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
          <h4 className="text-sm font-bold text-white mb-4">Registros Adicionados</h4>
          <div className="space-y-3">
             {[].map((i: any) => (

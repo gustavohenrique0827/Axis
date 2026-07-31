@@ -33,9 +33,9 @@ export function SquadEditModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150" onClick={onClose} />
       <div
-        className="relative w-full max-w-md bg-[#0B1120] border border-white/10 rounded-3xl p-7 shadow-2xl"
+        className="relative w-full max-w-md bg-[var(--color-surface)] border border-white/10 rounded-3xl p-7 shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200"
         style={{ borderLeft: `4px solid ${editCor}` }}
       >
         <div className="flex items-center justify-between mb-6">
@@ -61,7 +61,7 @@ export function SquadEditModal({
             </div>
             <div className="space-y-1.5">
               <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Gestor</label>
-              <select value={editLeader} onChange={e => setEditLeader(e.target.value)} className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
+              <select value={editLeader} onChange={e => setEditLeader(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
                 <option value="">Sem gestor</option>
                 {colaboradores.map((c: any) => <option key={c.id} value={c.nome}>{c.nome}</option>)}
               </select>

@@ -176,7 +176,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
           />
         }
       >
-        <div className="flex flex-col h-full bg-[#0B1120]">
+        <div className="flex flex-col h-full bg-[var(--color-surface)]">
           <div className="flex flex-col h-full overflow-hidden">
           <LeadDetailsModalHero
             tc={tc}
@@ -200,7 +200,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
           />
 
           {/* ── Tab bar ── */}
-          <div className="flex border-b border-white/[0.06] overflow-x-auto scrollbar-none shrink-0 bg-[#0B1120] px-1 pt-1 gap-0.5">
+          <div className="flex border-b border-white/[0.06] overflow-x-auto scrollbar-none shrink-0 bg-[var(--color-surface)] px-1 pt-1 gap-0.5">
             {LeadDetailsModalTabs.map((tab) => {
               const isActive = currentTab === tab.id;
               return (
@@ -264,7 +264,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
 
                     {/* Stats compactas */}
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="flex items-center gap-2 bg-[#111827] border border-white/[0.06] rounded-xl px-3 py-2.5">
+                      <div className="flex items-center gap-2 bg-[var(--color-surface-elevated)] border border-white/[0.06] rounded-xl px-3 py-2.5">
                         <div className="w-6 h-6 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
                           <Activity className="w-3 h-3 text-blue-400" />
                         </div>
@@ -278,7 +278,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                         "flex items-center gap-2 rounded-xl px-3 py-2.5 border",
                         timeIdleNum > 7 ? "bg-rose-500/[0.08] border-rose-500/20"
                         : timeIdleNum > 3 ? "bg-amber-500/[0.08] border-amber-500/15"
-                        : "bg-[#111827] border-white/[0.06]"
+                        : "bg-[var(--color-surface-elevated)] border-white/[0.06]"
                       )}>
                         <div className={cn(
                           "w-6 h-6 rounded-lg flex items-center justify-center shrink-0",
@@ -304,7 +304,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                         "flex items-center gap-2 rounded-xl px-3 py-2.5 border",
                         probNum >= 70 ? "bg-emerald-500/[0.08] border-emerald-500/20"
                         : probNum >= 40 ? "bg-amber-500/[0.08] border-amber-500/15"
-                        : "bg-[#111827] border-white/[0.06]"
+                        : "bg-[var(--color-surface-elevated)] border-white/[0.06]"
                       )}>
                         <div className={cn(
                           "w-6 h-6 rounded-lg flex items-center justify-center shrink-0",
@@ -431,7 +431,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
       )}
 
       {showCopilot && (
-        <div className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[110] bg-[#070E1A] border-r border-white/10 overflow-hidden shadow-2xl rounded-l-2xl animate-in slide-in-from-right-10 duration-200 flex flex-col">
+        <div className="fixed top-0 bottom-0 right-[546px] w-[300px] z-[110] bg-[var(--color-surface)] border-r border-white/10 overflow-hidden shadow-2xl rounded-l-2xl animate-in slide-in-from-right-10 duration-200 flex flex-col">
           <LeadCopilot
             onClose={() => setShowCopilot(false)}
             leadContext={{

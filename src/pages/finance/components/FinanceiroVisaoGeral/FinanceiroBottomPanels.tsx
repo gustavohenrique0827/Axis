@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { Card } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
-import { TrendingUp, Clock, ArrowUpRight, ArrowDownRight, Sparkles } from "lucide-react";
+import { TrendingUp, Clock, ArrowUpRight, ArrowDownRight, Sparkles, ChevronDown } from "lucide-react";
 import { motion } from "motion/react";
 
 interface UpcomingEntry { label: string; date: string; value: string; type: "pagar" | "receber"; }
@@ -19,10 +20,11 @@ interface FinanceiroBottomPanelsProps {
 const fmt = (n: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(n);
 
 export function FinanceiroBottomPanels({ upcomingEntries, squads, financeEntries, receita, despesa }: FinanceiroBottomPanelsProps) {
+  const [showMetas, setShowMetas] = useState(false);
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-        <Card className="p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl">
+        <Card className="p-8 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl">
           <h3 className="font-black flex items-center gap-3 mb-8 uppercase text-[10px] tracking-[0.2em] text-slate-300">
             <Clock className="w-4 h-4 text-blue-500" /> Agenda de Lançamentos
           </h3>
@@ -48,7 +50,7 @@ export function FinanceiroBottomPanels({ upcomingEntries, squads, financeEntries
           <Button variant="ghost" className="w-full mt-8 text-[9px] font-black uppercase tracking-[0.3em] text-slate-600 hover:text-blue-400 hover:bg-blue-600/5 h-14 rounded-2xl transition-all border border-transparent hover:border-blue-500/20">Fluxo Completo</Button>
         </Card>
 
-        <Card className="lg:col-span-2 p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl relative overflow-hidden">
+        <Card className="lg:col-span-2 p-8 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden">
           <div className="flex items-center justify-between mb-10">
             <h3 className="font-black flex items-center gap-3 uppercase text-[10px] tracking-[0.2em] text-slate-300">
               <TrendingUp className="w-4 h-4 text-emerald-400" /> Inteligência Operacional
@@ -91,13 +93,21 @@ export function FinanceiroBottomPanels({ upcomingEntries, squads, financeEntries
         </Card>
       </div>
 
-      <div className="flex items-center justify-between mt-10 mb-4 px-1">
-        <h3 className="font-black text-sm text-white uppercase tracking-[0.15em] flex items-center gap-2">🎯 Campanha de Metas & Comissionamento</h3>
-        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full animate-pulse">Monitoramento ao Vivo</span>
-      </div>
+      <button
+        type="button"
+        onClick={() => setShowMetas((v) => !v)}
+        className="w-full flex items-center justify-between mt-10 px-5 py-3 bg-[var(--color-surface-elevated)]/40 hover:bg-[var(--color-surface-elevated)]/60 border border-white/5 rounded-2xl transition-colors text-left"
+      >
+        <span className="font-black text-sm text-white uppercase tracking-[0.15em] flex items-center gap-2">
+          🎯 Campanha de Metas & Comissionamento
+          {!showMetas && <span className="text-[10px] text-slate-500 font-medium normal-case tracking-normal ml-1">— {squads.length} squads, ver evolução e comissionamento</span>}
+        </span>
+        <ChevronDown className={`w-4 h-4 text-slate-500 shrink-0 transition-transform ${showMetas ? "rotate-180" : ""}`} />
+      </button>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <Card className="xl:col-span-2 p-6 border-white/5 bg-[#111827]/80 backdrop-blur-xl flex flex-col justify-between rounded-2xl">
+      {showMetas && (
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-4">
+        <Card className="xl:col-span-2 p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl flex flex-col justify-between rounded-2xl">
           <div>
             <div className="flex items-center justify-between mb-8">
               <div>
@@ -149,7 +159,7 @@ export function FinanceiroBottomPanels({ upcomingEntries, squads, financeEntries
           </div>
         </Card>
 
-        <Card className="p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl flex flex-col justify-between rounded-[32px]">
+        <Card className="p-8 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl flex flex-col justify-between rounded-[32px]">
           <div>
             <h4 className="text-sm font-black text-white uppercase tracking-tight mb-2">Resumo por Tipo</h4>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-8">Entradas vs Saídas do período</p>
@@ -180,6 +190,7 @@ export function FinanceiroBottomPanels({ upcomingEntries, squads, financeEntries
           </div>
         </Card>
       </div>
+      )}
     </>
   );
 }

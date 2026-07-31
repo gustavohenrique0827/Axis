@@ -94,7 +94,7 @@ export default function EstatisticasClinicas() {
              { label: "Total Pacientes", value: totalPacientes.toString(), trend: "+12%", icon: Users, color: "text-indigo-400" },
              { label: "Tempo Médio Espera", value: avgWaitTime, trend: "-2m", icon: Clock, color: "text-amber-400" },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 group">
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 group">
                 <div className="flex items-center justify-between mb-4">
                    <div className="p-3 rounded-2xl bg-white/5">
                       <stat.icon className={`w-5 h-5 ${stat.color}`} />
@@ -114,7 +114,7 @@ export default function EstatisticasClinicas() {
 
         <div className="grid lg:grid-cols-3 gap-6">
            {/* Growth Area Chart */}
-           <Card className="lg:col-span-2 p-8 bg-[#111827]/80 border-white/5">
+           <Card className="lg:col-span-2 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
               <div className="flex justify-between items-center mb-10">
                  <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-emerald-400" /> Crescimento da Base
@@ -153,7 +153,7 @@ export default function EstatisticasClinicas() {
                          <XAxis dataKey="month" stroke="#64748b30" fontSize={10} axisLine={false} tickLine={false} />
                          <YAxis stroke="#64748b30" fontSize={10} axisLine={false} tickLine={false} />
                          <Tooltip 
-                           contentStyle={{ backgroundColor: '#0B1120', border: '1px solid #ffffff05', borderRadius: '16px' }}
+                           contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid #ffffff05', borderRadius: '16px' }}
                            itemStyle={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 900 }}
                          />
                          <Area type="monotone" dataKey="recorrentes" stroke="#3b82f6" fillOpacity={1} fill="transparent" strokeWidth={3} />
@@ -165,7 +165,7 @@ export default function EstatisticasClinicas() {
            </Card>
 
            {/* Mix of Specialties */}
-           <Card className="p-8 bg-[#111827]/80 border-white/5">
+           <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
               <h3 className="text-sm font-black text-white uppercase tracking-widest mb-10">Agendamentos p/ Especialidade</h3>
               {specialtyData.length === 0 ? (
                 <div className="h-[280px] flex flex-col items-center justify-center gap-4 opacity-40">
@@ -191,7 +191,7 @@ export default function EstatisticasClinicas() {
                              ))}
                            </Pie>
                            <Tooltip 
-                             contentStyle={{ backgroundColor: '#0B1120', border: '1px solid #ffffff05', borderRadius: '16px' }}
+                             contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid #ffffff05', borderRadius: '16px' }}
                            />
                         </PieChart>
                      </ResponsiveContainer>

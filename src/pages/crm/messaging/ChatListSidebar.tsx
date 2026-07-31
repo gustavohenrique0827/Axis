@@ -41,7 +41,7 @@ export function ChatListSidebar({
         isMobile 
           ? `absolute inset-0 flex flex-col transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] z-10 ${activeChat ? '-translate-x-1/4 opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'}` 
           : 'w-[320px] lg:w-[380px] h-full flex flex-col shrink-0 border-r border-white/5 z-10'
-      } bg-[#0B1120]`}>
+      } bg-[var(--color-surface)]`}>
       
       {/* Header */}
       <div className="shrink-0 h-[72px] px-5 flex items-center justify-between border-b border-white/5">
@@ -53,7 +53,7 @@ export function ChatListSidebar({
       </div>
 
       {/* Tabs */}
-      <div className="shrink-0 flex overflow-x-auto scrollbar-none border-b border-white/5 px-3 py-3 gap-2 bg-[#0B1120]/50 backdrop-blur-md">
+      <div className="shrink-0 flex overflow-x-auto scrollbar-none border-b border-white/5 px-3 py-3 gap-2 bg-[var(--color-surface)]/50 backdrop-blur-md">
         {tabs.map((tab) => (
           <button
             key={tab}
@@ -70,7 +70,7 @@ export function ChatListSidebar({
       </div>
 
       {/* Quick Search */}
-      <div className="shrink-0 px-5 py-3 border-b border-white/5 bg-[#0B1120]/40">
+      <div className="shrink-0 px-5 py-3 border-b border-white/5 bg-[var(--color-surface)]/40">
         <div className="relative">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
           <input

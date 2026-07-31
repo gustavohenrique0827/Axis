@@ -53,7 +53,7 @@ export function MessagingSection({ leadName, companyName, seller }: MessagingSec
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      <Card className="p-4 border-white/10 bg-[#0B1120]/60 space-y-4">
+      <Card className="p-4 border-white/10 bg-[var(--color-surface)]/60 space-y-4">
         <div className="flex items-center justify-between border-b border-white/5 pb-2">
           <h4 className="text-[10px] font-black uppercase tracking-widest text-[#06B6D4]">Omnichannel Integrado</h4>
           <div className="flex gap-2">
@@ -62,7 +62,7 @@ export function MessagingSection({ leadName, companyName, seller }: MessagingSec
                 key={ch}
                 onClick={() => setChatChannel(ch as any)}
                 className={`text-[9.5px] font-black uppercase px-2.5 py-1 rounded-md transition-colors ${
-                  chatChannel === ch ? 'bg-cyan-500/15 text-[#06B6D4] font-bold border border-cyan-400/20' : 'bg-[#111827] text-slate-500'
+                  chatChannel === ch ? 'bg-cyan-500/15 text-[#06B6D4] font-bold border border-cyan-400/20' : 'bg-[var(--color-surface-elevated)] text-slate-500'
                 }`}
               >
                 {ch === 'whatsapp' ? 'WhatsApp' : ch === 'email' ? 'E-mail' : 'Instagram'}
@@ -70,7 +70,7 @@ export function MessagingSection({ leadName, companyName, seller }: MessagingSec
             ))}
           </div>
         </div>
-        <div className="h-64 overflow-y-auto bg-[#111827] border border-white/5 rounded-2xl p-4 space-y-3">
+        <div className="h-64 overflow-y-auto bg-[var(--color-surface-elevated)] border border-white/5 rounded-2xl p-4 space-y-3">
           {chatLog.filter(m => m.channel === chatChannel).map(msg => {
             const isMe = msg.sender === 'me';
             const isAi = msg.sender === 'ai';
@@ -79,7 +79,7 @@ export function MessagingSection({ leadName, companyName, seller }: MessagingSec
                 <div className={`p-3 rounded-2xl text-xs max-w-[80%] ${
                   isMe ? 'bg-blue-600 text-white rounded-tr-none' : 
                   isAi ? 'bg-cyan-950/40 border border-cyan-500/30 text-cyan-200 rounded-tl-none font-medium' :
-                  'bg-[#0B1120] border border-white/5 text-slate-350 rounded-tl-none'
+                  'bg-[var(--color-surface)] border border-white/5 text-slate-400 rounded-tl-none'
                 }`}>
                   <p className="leading-relaxed">{msg.text}</p>
                   <span className="text-[8px] opacity-50 block mt-1 text-right">{msg.time}</span>
@@ -95,7 +95,7 @@ export function MessagingSection({ leadName, companyName, seller }: MessagingSec
             value={quickMessageText}
             onChange={(e) => setQuickMessageText(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSendQuickMessage()}
-            className="flex-1 bg-[#111827] border border-white/5 rounded-xl px-3 py-2 text-xs text-white"
+            className="flex-1 bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-3 py-2 text-xs text-white"
           />
           <Button onClick={handleSendQuickMessage} className="bg-[#2563EB] text-white hover:bg-blue-600 px-4 font-bold shrink-0">
             <Send className="w-4 h-4" />
@@ -114,7 +114,7 @@ export function MessagingSection({ leadName, companyName, seller }: MessagingSec
             <Card 
               key={i} 
               onClick={() => applyMessageTemplate(tpl.text)}
-              className="p-3 bg-[#0B1120] border-white/5 hover:border-cyan-500/20 rounded-xl transition-all hover:scale-[1.01] cursor-pointer"
+              className="p-3 bg-[var(--color-surface)] border-white/5 hover:border-cyan-500/20 rounded-xl transition-all hover:scale-[1.01] cursor-pointer"
             >
               <h5 className="text-xs font-black text-[#06B6D4]">{tpl.title}</h5>
               <p className="text-[10.5px] text-slate-400 truncate mt-1 leading-normal">{tpl.text.replace("{client}", leadName)}</p>

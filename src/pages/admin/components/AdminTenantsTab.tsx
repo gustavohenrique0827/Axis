@@ -10,12 +10,12 @@ export function AdminTenantsTab() {
             disabled
             type="text"
             placeholder="Buscar tenant por ID, Nome ou Domínio..."
-            className="w-full bg-[#111827] border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none cursor-not-allowed"
+            className="w-full bg-[var(--color-surface-elevated)] border border-white/10 rounded-lg pl-10 pr-4 py-2 text-sm text-white focus:outline-none cursor-not-allowed"
           />
         </div>
       </div>
 
-      <div className="bg-[#111827]/80 rounded-xl border border-white/10 overflow-hidden min-h-[400px] flex items-center justify-center">
+      <div className="bg-[var(--color-surface-elevated)]/80 rounded-xl border border-white/10 overflow-hidden min-h-[400px] flex items-center justify-center">
         <div className="flex flex-col items-center gap-4 opacity-40">
           <Server className="w-16 h-16 text-slate-500" />
           <span className="text-sm font-black uppercase tracking-widest text-slate-500">Módulo Multi-Tenant Pendente</span>

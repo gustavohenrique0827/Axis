@@ -231,7 +231,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
   };
 
   const inputCls =
-    "w-full bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600";
+    "w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 transition-all placeholder:text-slate-600";
   const labelCls =
     "text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1.5 flex items-center gap-1.5";
 
@@ -364,7 +364,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
                     value={manualLink}
                     onChange={(e) => setManualLink(e.target.value)}
                     placeholder="https://meet.google.com/abc-defg-hij"
-                    className="w-full bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-600"
+                    className="w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-600"
                   />
                 </div>
               </div>
@@ -460,7 +460,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
                 <input
                   readOnly
                   value={createdMeeting.meetLink}
-                  className="flex-1 bg-[#070E1A] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-slate-300 font-mono min-w-0"
+                  className="flex-1 bg-[var(--color-surface)] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-slate-300 font-mono min-w-0"
                 />
                 <button
                   onClick={() => { navigator.clipboard.writeText(createdMeeting.meetLink); toast.success("Link copiado!"); }}

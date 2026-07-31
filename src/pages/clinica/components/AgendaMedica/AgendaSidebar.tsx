@@ -14,7 +14,7 @@ interface AgendaSidebarProps {
 export function AgendaSidebar({ doctors, selectedDrs, onToggle, onSelectAll, getStatusStyle }: AgendaSidebarProps) {
   return (
     <div className="space-y-6">
-      <Card className="p-8 bg-[#111827]/80 border-white/5 backdrop-blur-xl">
+      <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-xl">
         <div className="flex items-center justify-between mb-8">
           <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Painel de Médicos</h3>
           <button onClick={onSelectAll} className="text-[9px] font-black text-emerald-400 uppercase tracking-tighter">Marcar Todos</button>
@@ -71,7 +71,7 @@ export function AgendaSidebar({ doctors, selectedDrs, onToggle, onSelectAll, get
         </div>
       </Card>
 
-      <Card className="p-6 bg-[#111827]/80 border-white/5">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5">
         <h4 className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-4">Legenda de Status</h4>
         <div className="grid grid-cols-2 gap-3">
           {['Aguardando', 'Em Atendimento', 'Atrasado', 'Confirmado'].map(s => (

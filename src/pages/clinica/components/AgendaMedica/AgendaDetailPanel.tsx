@@ -31,7 +31,7 @@ export function AgendaDetailPanel({ selectedApt, onClose }: AgendaDetailPanelPro
           />
           <motion.div
             initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }}
-            className="relative h-full w-full max-w-md bg-[#0B1120] border-l border-white/10 shadow-2xl p-0 flex flex-col"
+            className="relative h-full w-full max-w-md bg-[var(--color-surface)] border-l border-white/10 shadow-2xl p-0 flex flex-col"
           >
             <div className="p-8 border-b border-white/5 bg-gradient-to-br from-emerald-600/5 to-transparent">
               <div className="flex items-center justify-between mb-8">

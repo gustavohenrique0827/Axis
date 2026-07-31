@@ -23,7 +23,7 @@ export type { DataContextType, LeadActivity, Notification, Appointment, GlobalWe
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<'dark' | 'light'>(
-    () => (localStorage.getItem('axis_theme') as 'dark' | 'light') || 'dark'
+    () => (localStorage.getItem('axis_theme') as 'dark' | 'light') || 'light'
   );
 
   const toggleTheme = () => {
@@ -35,10 +35,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    if (theme === 'light') {
-      document.documentElement.classList.add('light');
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
     } else {
-      document.documentElement.classList.remove('light');
+      document.documentElement.classList.remove('dark');
     }
   }, [theme]);
 

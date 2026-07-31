@@ -71,16 +71,16 @@ export function Sidebar({
         fixed inset-y-0 left-0 z-50 lg:z-30 lg:relative lg:h-full
         ${isSidebarCollapsed ? "lg:w-20" : "lg:w-72"}
         ${isMobileSidebarOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0"}
-        transition-all duration-300 ease-in-out border-r border-white/10 bg-[var(--color-dark-bg)] flex flex-col shrink-0
+        transition-all duration-300 ease-in-out border-r border-[var(--color-border-default)] bg-[var(--color-surface)] flex flex-col shrink-0
       `}
       >
-        <div className="sidebar-logo-header h-20 flex items-center justify-center px-2 py-2 border-b border-white/5 shrink-0 bg-[#0B1120]">
+        <div className="h-20 flex items-center justify-center px-3 py-3 shrink-0">
           <Link
             to="/app"
-            className={`logo-image-container flex items-center justify-center w-full h-full ${isSidebarCollapsed ? "mx-auto" : ""}`}
+            className={`logo-image-container sidebar-logo-header flex items-center justify-center w-full h-full rounded-2xl bg-[var(--color-surface)] shadow-sm ${isSidebarCollapsed ? "mx-auto" : ""}`}
           >
             {isSidebarCollapsed ? (
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center p-1 bg-[#0B1120]">
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center p-1">
                 <img
                   src={logoDarkIcon}
                   alt="Axis"
@@ -89,7 +89,7 @@ export function Sidebar({
                 />
               </div>
             ) : (
-              <div className="relative w-full h-full flex items-center justify-center rounded-xl overflow-hidden px-2 bg-[#0B1120]">
+              <div className="relative w-full h-full flex items-center justify-center overflow-hidden px-2">
                 <img
                   src={logoDarkFull}
                   alt="Axis"

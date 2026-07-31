@@ -36,7 +36,7 @@ export function ConfigEngajamentoModelos() {
 
       <div className="grid grid-cols-1 gap-4">
         {templates.map((modelo: any, i) => (
-          <Card key={i} className="p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <Card key={i} className="p-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
               <div className="p-2 bg-white/5 rounded-lg">
                 <MessageSquare className="w-5 h-5 text-slate-400" />
@@ -75,9 +75,9 @@ export function ConfigEngajamentoAutomacoes() {
         <Button onClick={() => window.location.href = '/app/automacoes'} className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 shadow-lg shadow-blue-500/20"><Plus className="w-4 h-4 mr-2" /> Nova Automação</Button>
       </div>
 
-      <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
         <p className="text-slate-400">O construtor central de automações agora possui uma tela dedicada em tela cheia.</p>
-        <Button onClick={() => window.location.href = '/app/automacoes'} className="mt-4 bg-[#0B1120] border border-white/10 text-white hover:bg-white/5">Abrir Motor de Automação <ExternalLink className="w-4 h-4 ml-2" /></Button>
+        <Button onClick={() => window.location.href = '/app/automacoes'} className="mt-4 bg-[var(--color-surface)] border border-white/10 text-white hover:bg-white/5">Abrir Motor de Automação <ExternalLink className="w-4 h-4 ml-2" /></Button>
       </Card>
     </div>
   );
@@ -121,10 +121,10 @@ export function ConfigBusinessDashboard() {
         <Button onClick={handleExport} className="bg-white/10 hover:bg-white/20 border border-white/10">Exportar Relatório</Button>
       </div>
 
-      <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
         <Reorder.Group axis="y" values={selectedKPIs} onReorder={setSelectedKPIs} className="space-y-4">
           {selectedKPIs.map((kpi) => (
-            <Reorder.Item key={kpi.name} value={kpi} className="flex items-center justify-between p-4 bg-[#0B1120] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing">
+            <Reorder.Item key={kpi.name} value={kpi} className="flex items-center justify-between p-4 bg-[var(--color-surface)] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing">
               <div className="flex items-center gap-3">
                 <span className="font-bold text-white">{kpi.name}</span>
               </div>
@@ -133,7 +133,7 @@ export function ConfigBusinessDashboard() {
                 <div className="flex items-center gap-2">
                   <input type="checkbox" checked={kpi.alertEnabled} onChange={(e) => updateKPI(kpi.name, 'alertEnabled', e.target.checked)} className="rounded border-white/10 bg-white/5" />
                   <span className="text-xs text-slate-400 flex items-center gap-1"><Bell className="w-3 h-3" /> Alerta (Meta: {kpi.target})</span>
-                  <input type="number" value={kpi.target} onChange={(e) => updateKPI(kpi.name, 'target', Number(e.target.value))} className="w-20 bg-[#111827] border border-white/10 rounded px-2 py-1 text-xs text-white" />
+                  <input type="number" value={kpi.target} onChange={(e) => updateKPI(kpi.name, 'target', Number(e.target.value))} className="w-20 bg-[var(--color-surface-elevated)] border border-white/10 rounded px-2 py-1 text-xs text-white" />
                 </div>
                 <input
                   type="checkbox"
@@ -145,7 +145,7 @@ export function ConfigBusinessDashboard() {
             </Reorder.Item>
           ))}
           {availableKPIs.filter(kpi => !selectedKPIs.find(s => s.name === kpi)).map(kpi => (
-            <div key={kpi} className="flex items-center justify-between p-4 bg-[#0B1120] border border-white/5 rounded-xl opacity-60">
+            <div key={kpi} className="flex items-center justify-between p-4 bg-[var(--color-surface)] border border-white/5 rounded-xl opacity-60">
               <span className="font-bold text-white">{kpi}</span>
               <input
                 type="checkbox"

@@ -105,7 +105,7 @@ export function FormDetail({ form, tenantId }: { form: FormDefinition; tenantId:
           { label: "Hoje",       value: stats.today,    color: "text-emerald-400", icon: <CheckCircle2 className="w-4 h-4" /> },
           { label: "Últimos 7d", value: stats.thisWeek, color: "text-orange-400",  icon: <TrendingUp   className="w-4 h-4" /> },
         ].map(s => (
-          <div key={s.label} className="bg-[#111827]/80 border border-white/5 rounded-2xl p-4 flex items-center gap-3">
+          <div key={s.label} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-4 flex items-center gap-3">
             <div className={`p-2 rounded-xl bg-white/5 border border-white/10 ${s.color}`}>{s.icon}</div>
             <div>
               <p className="text-xl font-black text-white">{loading ? "—" : s.value}</p>
@@ -139,7 +139,7 @@ export function FormDetail({ form, tenantId }: { form: FormDefinition; tenantId:
                   <RefreshCw className="w-3 h-3" /> Recarregar
                 </button>
               </div>
-              <div className="rounded-2xl overflow-hidden border border-white/8 bg-[#040914]">
+              <div className="rounded-2xl overflow-hidden border border-white/8 bg-[var(--color-surface)]">
                 <div className="flex items-center gap-2 px-4 py-3 bg-white/[0.03] border-b border-white/5">
                   <div className="flex gap-1.5">
                     <div className="w-3 h-3 rounded-full bg-rose-500/60" />
@@ -189,7 +189,7 @@ export function FormDetail({ form, tenantId }: { form: FormDefinition; tenantId:
                 </div>
               )}
 
-              <div className="bg-[#111827]/80 border border-white/5 rounded-2xl overflow-hidden">
+              <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl overflow-hidden">
                 <div className="flex items-center gap-3 p-5 border-b border-white/5">
                   <div className="p-2 rounded-xl bg-orange-500/10 border border-orange-500/20">
                     <Users className="w-3.5 h-3.5 text-orange-400" />
@@ -249,7 +249,7 @@ export function FormDetail({ form, tenantId }: { form: FormDefinition; tenantId:
 
           {tab === "leads" && (
             <div className="space-y-4">
-              <div className="bg-[#111827]/80 border border-white/5 rounded-2xl overflow-hidden">
+              <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl overflow-hidden">
                 <div className="flex items-center gap-3 p-5 border-b border-white/5">
                   <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
                     <FileText className="w-3.5 h-3.5 text-blue-400" />

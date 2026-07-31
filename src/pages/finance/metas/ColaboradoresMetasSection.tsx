@@ -55,7 +55,7 @@ export function ColaboradoresMetasSection({
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Listagem de Colaboradores com progresso individual e side-by-side de squad */}
-        <Card className="xl:col-span-2 p-6 border-white/5 bg-[#111827]/80 backdrop-blur-xl flex flex-col justify-between rounded-3xl">
+        <Card className="xl:col-span-2 p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl flex flex-col justify-between rounded-3xl">
           <div>
             <div className="flex justify-between items-center mb-6">
               <div>
@@ -159,7 +159,7 @@ export function ColaboradoresMetasSection({
         </Card>
 
         {/* Form de Configuração do Colaborador (Admin) */}
-        <Card className="p-5 border-white/5 bg-[#111827]/80 backdrop-blur-xl shrink-0 rounded-3xl">
+        <Card className="p-5 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl shrink-0 rounded-3xl">
           <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-1 flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-blue-400" />
             Metas de Colaborador (Form)
@@ -209,7 +209,7 @@ export function ColaboradoresMetasSection({
               <select 
                 value={selectedColabId}
                 onChange={(e) => setSelectedColabId(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
               >
                 <option value="new">+ Cadastrar Novo Colaborador</option>
                 {colaboradores.map(c => (
@@ -225,7 +225,7 @@ export function ColaboradoresMetasSection({
                 placeholder="Ex: Carlos Eduardo..."
                 value={colabName}
                 onChange={(e) => setColabName(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
               />
             </div>
 
@@ -234,7 +234,7 @@ export function ColaboradoresMetasSection({
               <select 
                 value={colabSquadId}
                 onChange={(e) => setColabSquadId(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium text-white focus:outline-none focus:border-blue-500 transition-colors"
               >
                 {squads.map(s => (
                   <option key={s.id} value={s.id}>{s.name}</option>
@@ -249,7 +249,7 @@ export function ColaboradoresMetasSection({
                   type="number"
                   value={colabMeta}
                   onChange={(e) => setColabMeta(Number(e.target.value))}
-                  className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium font-mono text-white focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium font-mono text-white focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
               <div className="space-y-1">
@@ -258,7 +258,7 @@ export function ColaboradoresMetasSection({
                   type="number"
                   value={colabRealizado}
                   onChange={(e) => setColabRealizado(Number(e.target.value))}
-                  className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium font-mono text-white focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-xs font-medium font-mono text-white focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
             </div>

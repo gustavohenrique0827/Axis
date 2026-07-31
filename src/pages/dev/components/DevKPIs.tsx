@@ -12,7 +12,7 @@ export function DevKPIs() {
   return (
     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
       {STATS.map((stat, i) => (
-        <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 group">
+        <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 group">
           <div className="flex items-center justify-between mb-4">
             <div className={`p-3 rounded-2xl ${stat.bg} group-hover:scale-110 transition-transform`}>
               <stat.icon className={`w-5 h-5 ${stat.color}`} />

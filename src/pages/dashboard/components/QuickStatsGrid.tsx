@@ -23,7 +23,7 @@ export function QuickStatsGrid({ stats }: QuickStatsGridProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: i * 0.1 }}
         >
-          <Card className="p-6 bg-gradient-to-br from-[#1E293B]/40 to-[#0F172A]/80 border-white/5 backdrop-blur-md relative overflow-hidden group">
+          <Card className="p-6 bg-gradient-to-br from-[var(--color-surface-elevated)]/40 to-[var(--color-surface)]/80 border-white/5 backdrop-blur-md relative overflow-hidden group">
             <div className="flex items-center justify-between relative z-10">
               <div className={`p-3 rounded-2xl ${stat.bg} shadow-inner`}>
                 <stat.icon className={`w-5 h-5 ${stat.color}`} />

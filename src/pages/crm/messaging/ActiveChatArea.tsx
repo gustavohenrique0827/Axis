@@ -91,7 +91,7 @@ export function ActiveChatArea({
   return (
     <div className={`${
         isMobile
-          ? `absolute inset-0 flex flex-col bg-[#0B1120] transition-transform duration-400 ease-[cubic-bezier(0.32,0.72,0,1)] z-20 shadow-[0_0_40px_rgba(0,0,0,0.8)] ${activeChat ? 'translate-x-[0%]' : 'translate-x-[100%]'}`
+          ? `absolute inset-0 flex flex-col bg-[var(--color-surface)] transition-transform duration-400 ease-[cubic-bezier(0.32,0.72,0,1)] z-20 shadow-[0_0_40px_rgba(0,0,0,0.8)] ${activeChat ? 'translate-x-[0%]' : 'translate-x-[100%]'}`
           : 'flex-1 h-full flex flex-col bg-[#0F172A]/50 z-0 relative'
       }`}>
       {/* Chat Header */}
@@ -202,7 +202,7 @@ export function ActiveChatArea({
             </span>
             <button 
               onClick={() => setShowAddActivityModal(true)}
-              className="px-2.5 py-1 bg-emerald-500/10 text-emerald-450 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase rounded-lg cursor-pointer transition-all animate-none"
+              className="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase rounded-lg cursor-pointer transition-all animate-none"
             >
               + Novo Evento CRM
             </button>
@@ -215,7 +215,7 @@ export function ActiveChatArea({
       {/* Chat Messages / Live Timeline Content */}
       <div 
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-[#0B1120] scrollbar-thin scrollbar-thumb-white/10"
+        className="flex-1 overflow-y-auto p-4 md:p-6 space-y-5 bg-[var(--color-surface)] scrollbar-thin scrollbar-thumb-white/10"
       >
         {viewMode === "chat" ? (
           /* Simple Chat History Flow */
@@ -242,7 +242,7 @@ export function ActiveChatArea({
                        <span className={`text-[10px] font-medium absolute bottom-1.5 right-3 flex items-center gap-1 ${isMe ? 'text-blue-200/80' : 'text-slate-500'}`}>
                          {msg.time}
                          {isMe && (
-                           <CheckCheck className="w-3.5 h-3.5 text-emerald-405 text-emerald-400" strokeWidth={2.5}/>
+                           <CheckCheck className="w-3.5 h-3.5 text-emerald-400" strokeWidth={2.5}/>
                          )}
                        </span>
                     </div>
@@ -295,7 +295,7 @@ export function ActiveChatArea({
                     const isMe = msg.sender === "me";
                     return (
                       <div key={`msg-${msg.id}-${idx}`} className="relative group">
-                        <span className={`absolute -left-[25px] md:-left-[33px] w-4 h-4 rounded-full border-2 ${isMe ? 'bg-blue-600 border-[#0B1120]' : 'bg-emerald-500 border-[#0B1120]'} flex items-center justify-center z-10 shadow`}>
+                        <span className={`absolute -left-[25px] md:-left-[33px] w-4 h-4 rounded-full border-2 ${isMe ? 'bg-blue-600 border-[var(--color-surface)]' : 'bg-emerald-500 border-[var(--color-surface)]'} flex items-center justify-center z-10 shadow`}>
                           <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
                         </span>
                         <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
@@ -328,7 +328,7 @@ export function ActiveChatArea({
                           {act.type === 'Reunião' && <Calendar className="w-2.5 h-2.5 text-pink-400" />}
                           {act.type === 'Outro' && <Info className="w-2.5 h-2.5 text-purple-400" />}
                         </span>
-                        <div className="bg-[#1E293B]/60 border border-white/10 rounded-2xl p-4 space-y-2 hover:border-amber-500/20 transition-all shadow-md">
+                        <div className="bg-[var(--color-surface-elevated)]/60 border border-white/10 rounded-2xl p-4 space-y-2 hover:border-amber-500/20 transition-all shadow-md">
                           <div className="flex items-center justify-between gap-2">
                             <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold text-[9px] uppercase tracking-wider">
                               🏛️ {act.type} (CRM)
@@ -338,7 +338,7 @@ export function ActiveChatArea({
                           <h4 className="text-white text-xs md:text-sm font-bold tracking-tight">
                             {act.title}
                           </h4>
-                          <p className="text-slate-350 text-xs md:text-xs leading-relaxed">
+                          <p className="text-slate-400 text-xs md:text-xs leading-relaxed">
                             {act.description}
                           </p>
                           <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-slate-400">
@@ -359,7 +359,7 @@ export function ActiveChatArea({
       {/* Chat Input */}
       <div className="p-3 sm:p-4 shrink-0 relative bg-[#0F172A]/80 border-t border-white/5 backdrop-blur-md z-10 w-full box-border">
         <div className="flex items-end gap-2 sm:gap-3 mx-auto w-full max-w-4xl">
-          <div className="flex-1 bg-[#1E293B] border border-white/5 rounded-2xl flex items-end min-h-[50px] shadow-inner transition-colors focus-within:border-blue-500/50 min-w-0">
+          <div className="flex-1 bg-[var(--color-surface-elevated)] border border-white/5 rounded-2xl flex items-end min-h-[50px] shadow-inner transition-colors focus-within:border-blue-500/50 min-w-0">
             <button className="p-3 sm:p-3.5 text-slate-400 hover:text-white shrink-0 cursor-pointer transition-colors">
                <SmileIcon className="w-5 h-5" />
             </button>

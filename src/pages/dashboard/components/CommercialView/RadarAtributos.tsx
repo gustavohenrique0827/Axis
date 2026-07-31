@@ -26,7 +26,7 @@ export function RadarAtributos({ salesRanking, funnelLeadsCount }: RadarAtributo
   ];
 
   return (
-    <Card className="p-8 bg-[#111827]/80 border-white/5 lg:col-span-1 rounded-3xl">
+    <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 lg:col-span-1 rounded-3xl">
       <h3 className="text-xs font-black text-slate-400 mb-10 uppercase tracking-[0.2em] flex items-center gap-2">
         <Eye className="w-4 h-4 text-purple-400" /> Radar de Atributos
       </h3>

@@ -67,13 +67,13 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B1120] text-[#F8FAFC] font-sans flex items-center justify-center relative overflow-hidden px-4 py-8">
+    <div className="min-h-screen bg-[var(--color-surface)] text-[var(--color-text-primary)] font-sans flex items-center justify-center relative overflow-hidden px-4 py-8">
       <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-[#2563EB]/10 blur-[120px] rounded-full pointer-events-none"></div>
       <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] bg-[#06B6D4]/10 blur-[120px] rounded-full pointer-events-none"></div>
 
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-[#111827]/80 border border-white/10 mx-auto mb-4">
+          <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-[var(--color-surface-elevated)]/80 border border-white/10 mx-auto mb-4">
             <Building className="w-8 h-8 text-[#2563EB]" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-2">Cadastro de Empresa Parceira</h1>
@@ -82,7 +82,7 @@ export default function Register() {
           </p>
         </div>
 
-        <Card className="p-8 bg-[#111827]/80 backdrop-blur-xl border border-white/10 shadow-2xl">
+        <Card className="p-8 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 shadow-2xl">
           <form onSubmit={handleRegister} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
               <label className="space-y-2 text-sm">
@@ -93,7 +93,7 @@ export default function Register() {
                     type="text"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                    className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
                     placeholder="Ex: Axis Parceira"
                   />
                 </div>
@@ -107,7 +107,7 @@ export default function Register() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                    className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
                     placeholder="contato@empresa.com"
                   />
                 </div>
@@ -123,7 +123,7 @@ export default function Register() {
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
-                    className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                    className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
                     placeholder="(XX) XXXXX-XXXX"
                   />
                 </div>
@@ -134,7 +134,7 @@ export default function Register() {
                 <select
                   value={niche}
                   onChange={(e) => setNiche(e.target.value as TenantNiche)}
-                  className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                  className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
                 >
                   {niches.map((item) => (
                     <option key={item} value={item}>{item}</option>
@@ -152,7 +152,7 @@ export default function Register() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                    className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
                     placeholder="••••••••"
                   />
                 </div>
@@ -166,7 +166,7 @@ export default function Register() {
                     type="password"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
+                    className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]"
                     placeholder="••••••••"
                   />
                 </div>

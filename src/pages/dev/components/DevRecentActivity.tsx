@@ -5,7 +5,7 @@ const recentActivity: { type: string; message: string; time: string; color: stri
 
 export function DevRecentActivity() {
   return (
-    <Card className="lg:col-span-2 bg-[#111827]/80 border-white/5 overflow-hidden">
+    <Card className="lg:col-span-2 bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
       <div className="p-6 border-b border-white/5 flex justify-between items-center">
         <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
           <GitBranch className="w-4 h-4 text-blue-400" /> Atividade Recente

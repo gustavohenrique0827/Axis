@@ -49,7 +49,7 @@ export default function MarketingFormularios() {
             <div className="grid gap-4">
               {FORMS.map(form => (
                 <button key={form.id} onClick={() => setSelected(form)}
-                  className="group text-left w-full flex items-center gap-5 p-5 bg-[#111827]/80 border border-white/5 rounded-2xl hover:border-white/15 hover:bg-white/[0.04] transition-all">
+                  className="group text-left w-full flex items-center gap-5 p-5 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl hover:border-white/15 hover:bg-white/[0.04] transition-all">
                   <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
                     <FileText className="w-5 h-5 text-orange-400" />
                   </div>

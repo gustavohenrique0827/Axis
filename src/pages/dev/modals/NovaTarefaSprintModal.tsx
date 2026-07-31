@@ -36,7 +36,7 @@ const PRIORITIES: { value: TarefaSprintPayload["priority"]; label: string; color
 const COLUMNS = ["Backlog", "A Fazer", "Em Progresso", "Em Review", "Concluído"];
 
 const label = "text-[10px] font-bold text-slate-400 uppercase tracking-wider";
-const input = "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder-slate-600";
+const input = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder-slate-600";
 
 export function NovaTarefaSprintModal({ isOpen, onClose, onSave, defaultColumn = "Backlog" }: Props) {
   const [title, setTitle] = useState("");

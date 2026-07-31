@@ -44,7 +44,7 @@ export default function FinanceiroMetas() {
 
   const actions = (
     <div className="flex flex-wrap items-center gap-2 print:hidden">
-      <div className="flex bg-[#0B1120] border border-white/10 rounded-xl p-1 shrink-0 glass-card">
+      <div className="flex bg-[var(--color-surface)] border border-white/10 rounded-xl p-1 shrink-0 glass-card">
         {(["monthly", "quarterly", "annual"] as const).map((p) => (
           <button
             key={p}
@@ -62,7 +62,7 @@ export default function FinanceiroMetas() {
       
       <Button 
         onClick={handleSimulateSale}
-        className="bg-emerald-600 hover:bg-emerald-550 text-white font-black text-[10px] uppercase tracking-widest gap-2 h-11 px-5 rounded-xl transition-all shadow-lg shadow-emerald-500/10"
+        className="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] uppercase tracking-widest gap-2 h-11 px-5 rounded-xl transition-all shadow-lg shadow-emerald-500/10"
       >
         <Play className="w-4 h-4 text-emerald-300 animate-pulse" /> Simular Venda
       </Button>
@@ -77,7 +77,7 @@ export default function FinanceiroMetas() {
 
       <Button 
         onClick={handleExportPDF}
-        className="bg-blue-600 hover:bg-blue-550 text-white font-black text-[10px] uppercase tracking-widest gap-2 h-11 px-4 rounded-xl transition-all shadow-lg shadow-blue-500/10"
+        className="bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-widest gap-2 h-11 px-4 rounded-xl transition-all shadow-lg shadow-blue-500/10"
       >
         <Download className="w-3.5 h-3.5 text-blue-300" /> Exportar Relatório de Metas
       </Button>

@@ -9,7 +9,7 @@ type EditarColabModalProps = {
 };
 
 const inputClass =
-  "w-full bg-[#111827] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none transition-all";
+  "w-full bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none transition-all";
 const labelClass = "text-[10px] font-black uppercase tracking-wider text-slate-400";
 
 export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalProps) {
@@ -47,11 +47,11 @@ export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalPro
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-[#0B1120] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl"
+        className="w-full max-w-lg bg-[var(--color-surface)] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}

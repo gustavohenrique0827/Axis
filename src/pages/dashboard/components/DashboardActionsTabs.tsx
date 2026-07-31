@@ -9,7 +9,7 @@ export function DashboardActionsTabs(props: {
   const { activeTab, onTabChange } = props;
 
   return (
-    <div className="flex bg-[#111827]/80 border border-white/5 rounded-2xl p-1 w-fit gap-1 shadow-2xl backdrop-blur-xl">
+    <div className="flex bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-1 w-fit gap-1 shadow-2xl backdrop-blur-xl">
       {[
         { id: "executivo" as const, label: "Estratégico", icon: Gauge },
         { id: "comercial" as const, label: "Comercial", icon: Zap },

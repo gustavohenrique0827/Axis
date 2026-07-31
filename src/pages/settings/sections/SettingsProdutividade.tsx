@@ -57,7 +57,7 @@ export function ConfigProdutividadeCategorias() {
             </div>
 
             {/* CAC Visualization Section */}
-            <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10 overflow-hidden relative group">
+            <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden relative group">
                 <div className="flex items-center justify-between mb-8">
                     <div>
                         <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
@@ -74,7 +74,7 @@ export function ConfigProdutividadeCategorias() {
                                 <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
                                 <YAxis stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#0F172A', border: '1px solid #ffffff10', borderRadius: '12px' }}
+                                    contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid #ffffff10', borderRadius: '12px' }}
                                     itemStyle={{ fontSize: '10px', color: '#fff' }}
                                     formatter={(value: any) => [`R$ ${value.toFixed(2)}`, 'CAC']}
                                 />
@@ -112,7 +112,7 @@ export function ConfigProdutividadeCategorias() {
 
             <div className="grid md:grid-cols-2 gap-4">
                 {categories.map((cat: any, i) => (
-                    <Card key={i} className="p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex justify-between items-center group">
+                    <Card key={i} className="p-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex justify-between items-center group">
                         <div className="flex items-center gap-3">
                             <div className={`w-3 h-3 rounded-full ${cat.cor}`}></div>
                             <span className="font-semibold text-slate-200">{cat.nome}</span>
@@ -164,22 +164,22 @@ export function ConfigFinanceiroCategorias() {
             </div>
 
             <div className="space-y-6">
-                <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
+                <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
                     <h3 className="font-bold text-lg mb-4 text-[#10B981] flex items-center gap-2"><DollarSign className="w-5 h-5" /> Receitas</h3>
                     <div className="space-y-2">
                         {categories.filter(c => c.tipo === "Receita").map((cat, i) => (
-                            <div key={i} className="p-3 bg-[#0B1120] border border-white/5 rounded-lg flex justify-between items-center">
+                            <div key={i} className="p-3 bg-[var(--color-surface)] border border-white/5 rounded-lg flex justify-between items-center">
                                 <span className="text-sm text-slate-300">{cat.nome}</span>
                             </div>
                         ))}
                     </div>
                 </Card>
 
-                <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
+                <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
                     <h3 className="font-bold text-lg mb-4 text-red-400 flex items-center gap-2"><DollarSign className="w-5 h-5" /> Despesas</h3>
                     <div className="space-y-2">
                         {categories.filter(c => c.tipo === "Despesa").map((cat, i) => (
-                            <div key={i} className="p-3 bg-[#0B1120] border border-white/5 rounded-lg flex justify-between items-center">
+                            <div key={i} className="p-3 bg-[var(--color-surface)] border border-white/5 rounded-lg flex justify-between items-center">
                                 <span className="text-sm text-slate-300">{cat.nome}</span>
                             </div>
                         ))}
@@ -217,7 +217,7 @@ export function ConfigFinanceiroSquads() {
                     const cac = sq.orcamentoMensal / squadLeadsCount;
 
                     return (
-                        <Card key={sq.id} className="bg-[#111827]/80 border border-white/10 p-5 flex flex-col md:flex-row justify-between items-center gap-4 hover:border-blue-500/30 transition-all">
+                        <Card key={sq.id} className="bg-[var(--color-surface-elevated)]/80 border border-white/10 p-5 flex flex-col md:flex-row justify-between items-center gap-4 hover:border-blue-500/30 transition-all">
                             <div className="flex items-center gap-4 w-full md:w-1/3">
                                 <div className="w-10 h-10 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500">
                                     <Target className="w-5 h-5" />
@@ -237,7 +237,7 @@ export function ConfigFinanceiroSquads() {
                                             type="number"
                                             defaultValue={sq.orcamentoMensal}
                                             onBlur={(e) => handleUpdateBudget(sq.id, e.target.value)}
-                                            className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2 pl-9 text-xs text-white focus:border-blue-500 focus:outline-none font-bold"
+                                            className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2 pl-9 text-xs text-white focus:border-blue-500 focus:outline-none font-bold"
                                         />
                                     </div>
                                 </div>

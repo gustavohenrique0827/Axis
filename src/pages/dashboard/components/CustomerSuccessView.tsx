@@ -60,7 +60,7 @@ export function CustomerSuccessView() {
           </Button>
        </Card>
 
-       <Card className="lg:col-span-2 p-10 bg-[#111827]/80 border-white/5 space-y-10 rounded-3xl">
+       <Card className="lg:col-span-2 p-10 bg-[var(--color-surface-elevated)]/80 border-white/5 space-y-10 rounded-3xl">
           <div className="flex flex-col md:flex-row justify-between items-start gap-4">
             <div>
                 <h3 className="text-lg font-black text-white uppercase tracking-tighter flex items-center gap-3">
@@ -101,7 +101,7 @@ export function CustomerSuccessView() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
                   <XAxis dataKey="name" stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
                   <Tooltip 
-                    contentStyle={{ backgroundColor: '#0B1120', border: '1px solid #ffffff05', borderRadius: '16px' }}
+                    contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid #ffffff05', borderRadius: '16px' }}
                     itemStyle={{ fontSize: '10px', fontWeight: 'bold' }}
                   />
                   <Area type="step" dataKey="health" stroke="#10b981" fillOpacity={1} fill="url(#colorHealth)" strokeWidth={4} />

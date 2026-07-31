@@ -95,7 +95,7 @@ export function SDRWebhookModal({ isOpen, onClose }: SDRWebhookModalProps) {
               type="url" 
               value={endpoint}
               onChange={(e) => { setEndpoint(e.target.value); setStatus("idle"); }}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#00c8ff] focus:outline-none focus:ring-1 focus:ring-[#00c8ff] font-mono text-xs" 
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#00c8ff] focus:outline-none focus:ring-1 focus:ring-[#00c8ff] font-mono text-xs" 
               placeholder="https://sua-integracao.com.br/webhook/..." 
             />
           </div>
@@ -109,7 +109,7 @@ export function SDRWebhookModal({ isOpen, onClose }: SDRWebhookModalProps) {
               type="password" 
               value={secretAuth}
               onChange={(e) => setSecretAuth(e.target.value)}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#00c8ff] focus:outline-none focus:ring-1 focus:ring-[#00c8ff] font-mono text-xs" 
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#00c8ff] focus:outline-none focus:ring-1 focus:ring-[#00c8ff] font-mono text-xs" 
               placeholder="Bearer Token (se necessário)" 
             />
           </div>

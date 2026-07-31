@@ -23,7 +23,7 @@ interface NovoCampoCRMModalProps {
 
 const labelClass = "text-[10px] font-bold text-slate-400 uppercase tracking-wider";
 const inputBaseClass =
-  "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all";
+  "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:bg-[var(--color-surface)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all";
 
 export function NovoCampoCRMModal({
   isOpen,
@@ -129,7 +129,7 @@ export function NovoCampoCRMModal({
       }
     >
       <div className="space-y-4">
-        <div className="bg-[#0B1120]/40 border border-white/10 rounded-xl p-4">
+        <div className="bg-[var(--color-surface)]/40 border border-white/10 rounded-xl p-4">
           <div className="flex items-start gap-3">
             <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mt-0.5">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
@@ -196,7 +196,7 @@ export function NovoCampoCRMModal({
             </div>
           </div>
 
-          <div className="flex items-center justify-between gap-3 bg-[#0B1120] border border-white/10 rounded-xl px-4 py-3">
+          <div className="flex items-center justify-between gap-3 bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-3">
             <div className="space-y-1">
               <div className="text-xs font-bold text-white">Obrigatório</div>
               <div className="text-[11px] text-slate-400">Bloqueia o envio se estiver vazio.</div>

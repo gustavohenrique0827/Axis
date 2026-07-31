@@ -23,7 +23,7 @@ const SLA_DATA = [
 export function IndicadoresCharts({ monthlyData, pieData }: IndicadoresChartsProps) {
   return (
     <div className="grid lg:grid-cols-4 gap-6">
-      <Card className="lg:col-span-2 p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl group">
+      <Card className="lg:col-span-2 p-8 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl group">
         <div className="flex items-center justify-between mb-8">
           <h3 className="font-bold text-xl text-white">Evolução de MRR vs Meta</h3>
           <div className="flex gap-4">
@@ -43,7 +43,7 @@ export function IndicadoresCharts({ monthlyData, pieData }: IndicadoresChartsPro
                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
                 <XAxis dataKey="name" stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} dy={5} />
                 <YAxis stroke="#ffffff20" fontSize={10} tickLine={false} axisLine={false} dx={-5} />
-                <Tooltip contentStyle={{ backgroundColor: "#0B1120", borderColor: "#ffffff10", borderRadius: "16px" }} cursor={{ fill: "#ffffff03" }} />
+                <Tooltip contentStyle={{ backgroundColor: "var(--color-surface)", borderColor: "#ffffff10", borderRadius: "16px" }} cursor={{ fill: "#ffffff03" }} />
                 <Bar dataKey="receita" fill="#2563EB" radius={[6, 6, 0, 0]} barSize={40} />
                 <Bar dataKey="meta" fill="#ffffff10" radius={[6, 6, 0, 0]} barSize={10} />
               </BarChart>
@@ -52,7 +52,7 @@ export function IndicadoresCharts({ monthlyData, pieData }: IndicadoresChartsPro
         )}
       </Card>
 
-      <Card className="p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl flex flex-col relative overflow-hidden">
+      <Card className="p-8 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl flex flex-col relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-5"><TrendingUp className="w-24 h-24 text-[#10B981]" /></div>
         <h3 className="font-bold text-xl text-white mb-8">Cumprimento de SLA</h3>
         <div className="flex-1 flex items-center justify-center relative">
@@ -61,7 +61,7 @@ export function IndicadoresCharts({ monthlyData, pieData }: IndicadoresChartsPro
               <Pie data={SLA_DATA} innerRadius={80} outerRadius={115} paddingAngle={8} dataKey="value" cornerRadius={6}>
                 {SLA_DATA.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
               </Pie>
-              <Tooltip contentStyle={{ backgroundColor: "#0B1120", border: "none", borderRadius: "12px" }} itemStyle={{ color: "#F8FAFC", fontWeight: "bold" }} formatter={(value: any) => `${value ?? 0}%`} />
+              <Tooltip contentStyle={{ backgroundColor: "var(--color-surface)", border: "none", borderRadius: "12px" }} itemStyle={{ color: "#F8FAFC", fontWeight: "bold" }} formatter={(value: any) => `${value ?? 0}%`} />
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -79,7 +79,7 @@ export function IndicadoresCharts({ monthlyData, pieData }: IndicadoresChartsPro
         </div>
       </Card>
 
-      <Card className="p-8 border-white/5 bg-[#111827]/80 backdrop-blur-xl flex flex-col relative overflow-hidden">
+      <Card className="p-8 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl flex flex-col relative overflow-hidden">
         <div className="absolute top-0 right-0 p-8 opacity-10"><TrendingUp className="w-24 h-24 text-[#06B6D4]" /></div>
         <h3 className="font-bold text-xl text-white mb-8">Conversão por Origem</h3>
         <div className="flex-1 flex items-center justify-center relative">
@@ -88,7 +88,7 @@ export function IndicadoresCharts({ monthlyData, pieData }: IndicadoresChartsPro
               <Pie data={pieData} innerRadius={80} outerRadius={115} paddingAngle={8} dataKey="value" cornerRadius={6}>
                 {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
               </Pie>
-              <Tooltip contentStyle={{ backgroundColor: "#0B1120", border: "none", borderRadius: "12px" }} itemStyle={{ color: "#F8FAFC", fontWeight: "bold" }} />
+              <Tooltip contentStyle={{ backgroundColor: "var(--color-surface)", border: "none", borderRadius: "12px" }} itemStyle={{ color: "#F8FAFC", fontWeight: "bold" }} />
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">

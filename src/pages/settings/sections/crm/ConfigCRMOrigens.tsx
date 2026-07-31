@@ -31,7 +31,7 @@ export function ConfigCRMOrigens() {
 
       <div className="grid md:grid-cols-3 gap-4">
         {origens.map((origem, i) => (
-          <Card key={i} className="p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex justify-between items-center gap-4 group">
+          <Card key={i} className="p-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex justify-between items-center gap-4 group">
             <span className="font-semibold text-slate-200">{origem}</span>
             <Target className="w-4 h-4 text-slate-500 group-hover:text-[#2563EB]" />
           </Card>

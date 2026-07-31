@@ -82,9 +82,9 @@ export function PipelineKanbanBoard({
               setDraggedOverStageId(null);
               setDraggedLeadId(null);
             }}
-            className={`shrink-0 flex flex-col bg-[#0B1120]/40 border rounded-3xl transition-all duration-300 h-full ${
+            className={`shrink-0 flex flex-col bg-[var(--color-surface)]/40 border rounded-3xl transition-all duration-300 h-full ${
               isMinimized ? "w-[56px] p-2" : "w-[280px] p-3"
-            } ${draggedOverStageId === stage.id ? "border-blue-500/50 bg-blue-500/10 scale-[1.02]" : "border-white/5 hover:border-white/20 hover:bg-[#111827]/60 hover:shadow-lg"}`}
+            } ${draggedOverStageId === stage.id ? "border-blue-500/50 bg-blue-500/10 scale-[1.02]" : "border-white/5 hover:border-white/20 hover:bg-[var(--color-surface-elevated)]/60 hover:shadow-lg"}`}
           >
             {isMinimized ? (
               <button

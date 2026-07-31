@@ -78,7 +78,7 @@ export function ConfigNotificacoesPreferencias() {
       </div>
 
       <div className="grid grid-cols-1 min-[450px]:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <Card className="p-3 sm:p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex flex-row items-center justify-between gap-3 sm:gap-4 min-w-0">
+        <Card className="p-3 sm:p-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-row items-center justify-between gap-3 sm:gap-4 min-w-0">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className={`p-1.5 sm:p-2 rounded-lg bg-[#2563EB]/10 border border-[#2563EB]/20 text-[#2563EB] shrink-0`}>
               <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -97,7 +97,7 @@ export function ConfigNotificacoesPreferencias() {
           </button>
         </Card>
 
-        <Card className="p-3 sm:p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex flex-row items-center justify-between gap-3 sm:gap-4 min-w-0">
+        <Card className="p-3 sm:p-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-row items-center justify-between gap-3 sm:gap-4 min-w-0">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className={`p-1.5 sm:p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400`}>
               <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -116,7 +116,7 @@ export function ConfigNotificacoesPreferencias() {
           </button>
         </Card>
 
-        <Card className="p-3 sm:p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex flex-row items-center justify-between gap-3 sm:gap-4 min-w-0">
+        <Card className="p-3 sm:p-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-row items-center justify-between gap-3 sm:gap-4 min-w-0">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className={`p-1.5 sm:p-2 rounded-lg bg-cyan-400/10 border border-cyan-400/20 text-cyan-400`}>
               <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -135,7 +135,7 @@ export function ConfigNotificacoesPreferencias() {
           </button>
         </Card>
 
-        <Card className="p-3 sm:p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/10 flex flex-row items-center justify-between gap-3 sm:gap-4 min-w-0">
+        <Card className="p-3 sm:p-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-row items-center justify-between gap-3 sm:gap-4 min-w-0">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <div className={`p-1.5 sm:p-2 rounded-lg bg-purple-500/10 border border-purple-500/20 text-purple-400`}>
               <Volume2 className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -155,7 +155,7 @@ export function ConfigNotificacoesPreferencias() {
         </Card>
       </div>
 
-      <Card className="bg-[#111827]/80 backdrop-blur-xl border border-white/10 overflow-hidden">
+      <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden">
         <div className="p-4 sm:p-5 border-b border-white/5 bg-white/[0.01] flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
           <h3 className="text-xs font-black text-[#06B6D4] uppercase tracking-widest font-mono">Disparadores por Categoria</h3>
           <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Ajuste individual por canal</span>

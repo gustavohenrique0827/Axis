@@ -57,7 +57,7 @@ export function Topbar({
   };
 
   return (
-    <header className="h-16 border-b border-white/5 bg-[#0B1120]/80 backdrop-blur-xl flex items-center justify-between px-6 z-40 shrink-0">
+    <header className="h-16 border-b border-white/5 bg-[var(--color-surface)]/80 backdrop-blur-xl flex items-center justify-between px-6 z-40 shrink-0">
       <div className="flex items-center gap-4 flex-1">
         <button
           onClick={() => {
@@ -106,7 +106,7 @@ export function Topbar({
             className={`text-slate-400 hover:text-white transition-all relative p-2.5 rounded-xl border border-transparent ${isNotificationsOpen
                 ? "bg-white/10 border-white/10 text-white shadow-lg"
                 : unreadNotifications > 0
-                  ? "bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10 text-rose-300"
+                  ? "bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10 text-rose-500"
                   : "hover:bg-white/5"
               }`}
             title="Notificações"
@@ -115,7 +115,7 @@ export function Topbar({
             {unreadNotifications > 0 && (
               <>
                 <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-rose-500 animate-ping opacity-75" />
-                <span className="absolute top-2 right-2 w-4 h-4 flex items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white shadow-[0_0_8px_#f43f5e] border-2 border-[#0B1120]">
+                <span className="absolute top-2 right-2 w-4 h-4 flex items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white shadow-[0_0_8px_#f43f5e] border-2 border-[var(--color-surface)]">
                   {unreadNotifications}
                 </span>
               </>
@@ -125,7 +125,7 @@ export function Topbar({
           {isNotificationsOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setIsNotificationsOpen(false)}></div>
-              <Card className="fixed left-4 right-4 sm:left-auto sm:right-4 md:absolute md:left-auto md:right-0 top-16 md:top-full md:mt-4 md:w-[410px] bg-[#0B1120]/95 backdrop-blur-xl border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.6)] z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
+              <Card className="fixed left-4 right-4 sm:left-auto sm:right-4 md:absolute md:left-auto md:right-0 top-16 md:top-full md:mt-4 md:w-[410px] bg-[var(--color-surface)]/95 backdrop-blur-xl border border-white/10 shadow-[0_25px_60px_rgba(0,0,0,0.6)] z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
                 <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
                   <div className="flex items-center gap-2">
                     <h4 className="text-sm font-black uppercase tracking-tight text-white">
@@ -140,7 +140,7 @@ export function Topbar({
                   </button>
                 </div>
 
-                <div className="bg-[#111827] border-b border-white/5 p-3 flex flex-col gap-2">
+                <div className="bg-[var(--color-surface-sunken)] border-b border-white/5 p-3 flex flex-col gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -228,7 +228,7 @@ export function Topbar({
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setIsUserMenuOpen(false)}></div>
                 <div className="absolute top-full right-0 pt-2 w-48 z-50">
-                  <div className="bg-[#0B1120] border border-white/10 rounded-xl shadow-2xl p-1 animate-in fade-in slide-in-from-top-2">
+                  <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl shadow-2xl p-1 animate-in fade-in slide-in-from-top-2">
                     <button onClick={() => { setIsUserMenuOpen(false); navigate("/app/configuracoes"); }} className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-slate-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer">
                       <Users className="w-4 h-4" /> Meu Perfil
                     </button>

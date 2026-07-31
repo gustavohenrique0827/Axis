@@ -62,29 +62,29 @@ export function NovoClienteModal({ isOpen, onClose, onAction }: NovoClienteModal
                             <select
                                 name={field.name}
                                 defaultValue={field.defaultValue}
-                                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
+                                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]"
                                 required={field.required}
                             >
                                 {field.options?.map(m => <option key={m} value={m}>{m}</option>)}
                             </select>
                         ) : field.type === "multi-select" ? (
-                            <div className="w-full max-h-40 overflow-y-auto bg-[#0B1120] border border-white/10 rounded-lg p-2 space-y-1">
+                            <div className="w-full max-h-40 overflow-y-auto bg-[var(--color-surface)] border border-white/10 rounded-lg p-2 space-y-1">
                                 {field.options?.map(m => {
                                     let b = false;
                                     if (Array.isArray(field.defaultValue)) b = field.defaultValue.includes(m);
                                     else if (typeof field.defaultValue === "string") b = field.defaultValue === m;
                                     return (
                                         <label key={m} className="flex items-center gap-2 p-1.5 hover:bg-white/5 rounded cursor-pointer">
-                                            <input type="checkbox" name={field.name} value={m} defaultChecked={b} className="w-4 h-4 rounded border-white/20 bg-[#1E293B] text-blue-500 focus:ring-blue-500/50" />
+                                            <input type="checkbox" name={field.name} value={m} defaultChecked={b} className="w-4 h-4 rounded border-white/20 bg-[var(--color-surface-elevated)] text-blue-500 focus:ring-blue-500/50" />
                                             <span className="text-sm text-slate-200">{m}</span>
                                         </label>
                                     );
                                 })}
                             </div>
                         ) : field.type === "textarea" ? (
-                            <textarea name={field.name} defaultValue={field.defaultValue} rows={3} className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" placeholder={field.placeholder} required={field.required} />
+                            <textarea name={field.name} defaultValue={field.defaultValue} rows={3} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" placeholder={field.placeholder} required={field.required} />
                         ) : (
-                            <input name={field.name} type={field.type} defaultValue={field.defaultValue} className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" placeholder={field.placeholder} required={field.required} />
+                            <input name={field.name} type={field.type} defaultValue={field.defaultValue} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none focus:ring-1 focus:ring-[#2563EB]" placeholder={field.placeholder} required={field.required} />
                         )}
                     </div>
                 ))}

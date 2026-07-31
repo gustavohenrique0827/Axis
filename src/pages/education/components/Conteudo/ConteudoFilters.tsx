@@ -18,7 +18,7 @@ export function ConteudoFilters({
   viewMode, onViewModeChange,
 }: ConteudoFiltersProps) {
   return (
-    <Card className="p-4 bg-[#111827]/80 border-white/5 backdrop-blur-xl flex flex-col md:flex-row gap-4">
+    <Card className="p-4 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-xl flex flex-col md:flex-row gap-4">
       <div className="flex-1 relative group">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
         <input

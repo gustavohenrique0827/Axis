@@ -20,7 +20,7 @@ export function WorkloadBento({ tasks, highPriorityCount }: WorkloadBentoProps) 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
        {/* Focus Mode Card */}
-       <Card className="lg:col-span-2 p-8 bg-[#111827]/80 backdrop-blur-xl border-white/5 relative overflow-hidden group bento-card rounded-3xl">
+       <Card className="lg:col-span-2 p-8 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border-white/5 relative overflow-hidden group bento-card rounded-3xl">
           <div className="absolute top-0 right-0 p-12 opacity-[0.03] pointer-events-none group-hover:scale-110 transition-transform">
              <Target className="w-48 h-48 text-blue-500" />
           </div>
@@ -102,7 +102,7 @@ export function WorkloadBento({ tasks, highPriorityCount }: WorkloadBentoProps) 
        </Card>
 
        {/* Quick Action Bento */}
-       <Card className="p-8 bg-[#111827]/80 backdrop-blur-xl border-white/5 relative overflow-hidden flex flex-col justify-between rounded-3xl">
+       <Card className="p-8 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border-white/5 relative overflow-hidden flex flex-col justify-between rounded-3xl">
           <div>
              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Performance Engine</h4>
              <div className="space-y-6 text-left">

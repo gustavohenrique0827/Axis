@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Card } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
 import { ResponsiveContainer, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Area, Line } from 'recharts';
-import { BarChart3, RefreshCw, Target, Trophy, Layers, Zap, Briefcase } from 'lucide-react';
+import { BarChart3, RefreshCw, Target, Trophy, Layers, Zap, Briefcase, ChevronDown } from 'lucide-react';
 
 interface Squad {
   nome: string;
@@ -52,6 +52,7 @@ export function StrategicalView({
 
   const hasSquads = squads.length > 0;
   const hasContracts = contracts.length > 0;
+  const [showDetails, setShowDetails] = useState(false);
 
   return (
     <motion.div
@@ -62,7 +63,7 @@ export function StrategicalView({
       className="space-y-6 text-left"
     >
       <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 p-8 bg-[#111827]/80 border-white/5 relative overflow-hidden rounded-3xl">
+        <Card className="lg:col-span-2 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden rounded-3xl">
           <div className="flex flex-col md:flex-row justify-between items-start mb-10 gap-4">
             <div>
               <h3 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
@@ -111,7 +112,7 @@ export function StrategicalView({
                 <XAxis dataKey="name" stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
                 <YAxis stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#0F172A', border: '1px solid #ffffff10', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}
+                  contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid #ffffff10', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}
                   itemStyle={{ fontSize: '11px', fontWeight: 'bold' }}
                 />
                 <Area type="monotone" dataKey="vendas" stroke="#3b82f6" fillOpacity={1} fill="url(#colorSales)" strokeWidth={4} strokeLinecap="round" />
@@ -123,7 +124,7 @@ export function StrategicalView({
         </Card>
 
         <div className="space-y-6">
-          <Card className="p-8 bg-[#111827]/80 border-white/5 relative overflow-hidden h-full flex flex-col rounded-3xl">
+          <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden h-full flex flex-col rounded-3xl">
             <div className="flex items-center justify-between mb-8">
               <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                 <Target className="w-4 h-4 text-emerald-400" /> Medidor de Meta
@@ -180,56 +181,77 @@ export function StrategicalView({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <Card className="p-6 bg-[#111827]/80 border-white/5 flex flex-col rounded-3xl">
-          <h3 className="text-[11px] font-black text-slate-400 mb-6 uppercase tracking-[0.25em] flex items-center gap-2">
-            <Layers className="w-4 h-4 text-blue-400" /> Insights Inteligentes
-          </h3>
-          <div className="space-y-6">
-            <div className="group cursor-help">
-              <p className="text-xs font-bold text-white mb-2 flex items-center gap-2 group-hover:text-blue-400 transition-colors">
-                <Zap className="w-3 h-3 text-amber-400" /> Velocidade de Vendas
-              </p>
-              <p className="text-[10px] text-slate-500 leading-relaxed">Seu ciclo médio caiu 14% este mês. Recomendamos duplicar investimento em AdWords.</p>
-            </div>
-            <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
-              <p className="text-[11px] font-black text-emerald-400 mb-1 uppercase tracking-widest">Oportunidade</p>
-              <p className="text-[10px] text-slate-400">Há 42 leads 'Mornos' com score &gt; 80 aguardando followup.</p>
-            </div>
-          </div>
-        </Card>
-
-        <Card className="lg:col-span-3 p-8 bg-[#111827]/80 border-white/5 rounded-3xl">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
-              <Briefcase className="w-4 h-4 text-purple-400" /> Snapshot Financeiro
-            </h3>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-slate-500 font-black uppercase">Retenção Líquida de Receita</span>
-              <span className="text-xs font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">106.4%</span>
-            </div>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {!hasContracts ? (
-              <div className="col-span-3 flex flex-col items-center justify-center py-10 gap-3 opacity-40">
-                <Briefcase className="w-8 h-8 text-slate-500" />
-                <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Cadastre contratos para ver o snapshot financeiro</p>
-              </div>
-            ) : (
-              [
-                { label: "MRR Ativo", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(activeMRR), desc: "Contratos ativos", color: "text-emerald-400" },
-                { label: "Contratos Ativos", value: contracts.filter(c => c.status === 'Ativo').length.toString(), desc: "Total de clientes", color: "text-blue-400" },
-                { label: "Ticket Médio", value: contracts.filter(c => c.status === 'Ativo').length > 0 ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(activeMRR / contracts.filter(c => c.status === 'Ativo').length) : 'R$ 0', desc: "Receita por cliente", color: "text-purple-400" },
-              ].map((item, i) => (
-                <div key={i} className="space-y-2 border-r border-white/5 last:border-0 pr-8 last:pr-0">
-                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{item.label}</p>
-                  <h4 className={`text-xl font-black ${item.color} font-mono tracking-tighter`}>{item.value}</h4>
-                  <p className="text-[9px] text-slate-600 font-medium">{item.desc}</p>
-                </div>
-              ))
+      <div className="space-y-4">
+        <button
+          type="button"
+          onClick={() => setShowDetails((v) => !v)}
+          className="w-full flex items-center justify-between px-5 py-3 bg-[var(--color-surface-elevated)]/40 hover:bg-[var(--color-surface-elevated)]/60 border border-white/5 rounded-2xl transition-colors text-left"
+        >
+          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+            <Layers className="w-3.5 h-3.5 text-blue-400" />
+            {showDetails ? "Ver menos" : "Ver mais detalhes"}
+            {!showDetails && (
+              <span className="text-slate-600 font-medium normal-case tracking-normal">
+                — insights inteligentes e snapshot financeiro
+              </span>
             )}
+          </span>
+          <ChevronDown className={`w-4 h-4 text-slate-500 shrink-0 transition-transform ${showDetails ? "rotate-180" : ""}`} />
+        </button>
+
+        {showDetails && (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 flex flex-col rounded-3xl">
+              <h3 className="text-[11px] font-black text-slate-400 mb-6 uppercase tracking-[0.25em] flex items-center gap-2">
+                <Layers className="w-4 h-4 text-blue-400" /> Insights Inteligentes
+              </h3>
+              <div className="space-y-6">
+                <div className="group cursor-help">
+                  <p className="text-xs font-bold text-white mb-2 flex items-center gap-2 group-hover:text-blue-400 transition-colors">
+                    <Zap className="w-3 h-3 text-amber-400" /> Velocidade de Vendas
+                  </p>
+                  <p className="text-[10px] text-slate-500 leading-relaxed">Seu ciclo médio caiu 14% este mês. Recomendamos duplicar investimento em AdWords.</p>
+                </div>
+                <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
+                  <p className="text-[11px] font-black text-emerald-400 mb-1 uppercase tracking-widest">Oportunidade</p>
+                  <p className="text-[10px] text-slate-400">Há 42 leads 'Mornos' com score &gt; 80 aguardando followup.</p>
+                </div>
+              </div>
+            </Card>
+
+            <Card className="lg:col-span-3 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 rounded-3xl">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
+                  <Briefcase className="w-4 h-4 text-purple-400" /> Snapshot Financeiro
+                </h3>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-slate-500 font-black uppercase">Retenção Líquida de Receita</span>
+                  <span className="text-xs font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">106.4%</span>
+                </div>
+              </div>
+              <div className="grid md:grid-cols-3 gap-8">
+                {!hasContracts ? (
+                  <div className="col-span-3 flex flex-col items-center justify-center py-10 gap-3 opacity-40">
+                    <Briefcase className="w-8 h-8 text-slate-500" />
+                    <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Cadastre contratos para ver o snapshot financeiro</p>
+                  </div>
+                ) : (
+                  [
+                    { label: "MRR Ativo", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(activeMRR), desc: "Contratos ativos", color: "text-emerald-400" },
+                    { label: "Contratos Ativos", value: contracts.filter(c => c.status === 'Ativo').length.toString(), desc: "Total de clientes", color: "text-blue-400" },
+                    { label: "Ticket Médio", value: contracts.filter(c => c.status === 'Ativo').length > 0 ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(activeMRR / contracts.filter(c => c.status === 'Ativo').length) : 'R$ 0', desc: "Receita por cliente", color: "text-purple-400" },
+                  ].map((item, i) => (
+                    <div key={i} className="space-y-2 border-r border-white/5 last:border-0 pr-8 last:pr-0">
+                      <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{item.label}</p>
+                      <h4 className={`text-xl font-black ${item.color} font-mono tracking-tighter`}>{item.value}</h4>
+                      <p className="text-[9px] text-slate-600 font-medium">{item.desc}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </Card>
           </div>
-        </Card>
+        )}
       </div>
     </motion.div>
   );

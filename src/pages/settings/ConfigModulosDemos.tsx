@@ -146,7 +146,7 @@ export default function ConfigModulosDemos() {
     <div className="space-y-8 max-w-6xl pb-20">
 
       {/* Header Panel */}
-      <div className="border border-white/5 bg-[#111827]/40 p-6 sm:p-8 rounded-3xl relative overflow-hidden backdrop-blur-xl">
+      <div className="border border-white/5 bg-[var(--color-surface-elevated)]/40 p-6 sm:p-8 rounded-3xl relative overflow-hidden backdrop-blur-xl">
         <div className="absolute top-[-200px] right-[-100px] w-[500px] h-[500px] bg-[#06B6D4]/13 blur-[120px] rounded-full pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1.5">
@@ -158,7 +158,7 @@ export default function ConfigModulosDemos() {
               O painel adapta as regras de permissão, visibilidade de funis e do menu dinâmico no ato.
             </p>
           </div>
-          <Card className="p-4 bg-[#0B1120]/90 border border-white/10 flex items-center gap-4 shrink-0">
+          <Card className="p-4 bg-[var(--color-surface)]/90 border border-white/10 flex items-center gap-4 shrink-0">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-white">
               <Database className="w-5 h-5 animate-pulse" />
             </div>
@@ -246,7 +246,7 @@ export default function ConfigModulosDemos() {
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="p-4 bg-[#0B1120] border border-blue-500/20 rounded-xl space-y-3">
+                      <div className="p-4 bg-[var(--color-surface)] border border-blue-500/20 rounded-xl space-y-3">
                         <div className="flex items-center gap-2 text-blue-400 text-xs font-black uppercase tracking-widest">
                           <Building2 className="w-4 h-4" /> Cadastrar Nova Empresa Parceira
                         </div>
@@ -297,7 +297,7 @@ export default function ConfigModulosDemos() {
                     <select
                       value={selectedTenant}
                       onChange={(e) => setSelectedTenant(e.target.value)}
-                      className="w-full appearance-none bg-[#0B1120] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] pr-10"
+                      className="w-full appearance-none bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] pr-10"
                     >
                       {tenantOptions.map((tenant) => (
                         <option key={tenant} value={tenant}>{tenant}</option>
@@ -330,7 +330,7 @@ export default function ConfigModulosDemos() {
                     <div
                       key={mod.id}
                       onClick={() => handleToggleModule(mod.id)}
-                      className={`p-4 bg-[#0B1120] border rounded-2xl flex items-center justify-between gap-4 cursor-pointer select-none transition-all duration-300 ${isEnabled
+                      className={`p-4 bg-[var(--color-surface)] border rounded-2xl flex items-center justify-between gap-4 cursor-pointer select-none transition-all duration-300 ${isEnabled
                           ? 'border-blue-500/40 bg-blue-600/[0.02] shadow-[0_0_15px_rgba(59,130,246,0.05)]'
                           : 'border-white/5 opacity-55 hover:opacity-85'
                         }`}
@@ -365,7 +365,7 @@ export default function ConfigModulosDemos() {
               <p className="text-xs text-slate-400">Varie os níveis de autorização para simular a visão de cada usuário.</p>
             </div>
 
-            <Card className="p-6 border-white/5 bg-[#111827]/80 backdrop-blur-xl rounded-2xl space-y-4">
+            <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl rounded-2xl space-y-4">
               <p className="text-xs text-slate-400 leading-relaxed">
                 Modificando a função do usuário atual do Axis, certas rotas de administrador ou configurações gerais podem se ocultar ou necessitar de re-autorização no Middleware.
               </p>

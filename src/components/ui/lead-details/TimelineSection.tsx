@@ -47,7 +47,7 @@ export function TimelineSection({
   return (
     <div className="space-y-6">
       {/* Advanced Form for Adding Interaction */}
-      <Card className="p-4 border-white/5 bg-[#0B1120]/60 space-y-4">
+      <Card className="p-4 border-white/5 bg-[var(--color-surface)]/60 space-y-4">
         <div className="flex items-center justify-between border-b border-white/5 pb-2">
           <h4 className="text-[10px] font-black uppercase tracking-widest text-[#06B6D4]">Registrar Nova Interação</h4>
         </div>
@@ -67,7 +67,7 @@ export function TimelineSection({
               className={`py-2 text-[10px] font-black uppercase tracking-wider rounded-lg border text-center transition-colors cursor-pointer ${
                 activityType === item.type 
                   ? `${item.color} border-[#06B6D4]/30 shadow-inner scale-[1.01]` 
-                  : 'bg-[#111827] border-white/5 text-slate-500 hover:text-white'
+                  : 'bg-[var(--color-surface-elevated)] border-white/5 text-slate-500 hover:text-white'
               }`}
             >
               {item.label}
@@ -82,20 +82,20 @@ export function TimelineSection({
             placeholder="Título curto (Ex: Follow-up inicial)"
             value={activityTitle}
             onChange={(e) => setActivityTitle(e.target.value)}
-            className="bg-[#111827] border border-white/5 rounded-xl px-3 py-2 text-xs text-white"
+            className="bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-3 py-2 text-xs text-white"
           />
           <div className="grid grid-cols-2 gap-2">
             <input
               type="date"
               value={activityDate}
               onChange={(e) => setActivityDate(e.target.value)}
-              className="bg-[#111827] border border-white/5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono text-slate-300"
+              className="bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono text-slate-300"
             />
             <input
               type="time"
               value={activityTime}
               onChange={(e) => setActivityTime(e.target.value)}
-              className="bg-[#111827] border border-white/5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono text-slate-300"
+              className="bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-2.5 py-1.5 text-[10px] font-mono text-slate-300"
             />
           </div>
         </div>
@@ -110,13 +110,13 @@ export function TimelineSection({
               setActivityDesc(e.target.value);
               if (e.target.value) setActivityError('');
             }}
-            className="w-full bg-[#111827] border border-white/5 rounded-xl p-3 text-xs text-white placeholder-slate-600"
+            className="w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl p-3 text-xs text-white placeholder-slate-600"
           />
           {activityError && <p className="text-[10.5px] text-rose-400 font-bold font-sans">⚠️ {activityError}</p>}
         </div>
 
         {/* File Simulator Uploader */}
-        <div className="relative border border-dashed border-white/10 hover:border-[#06B6D4]/30 rounded-xl bg-[#0B1120] p-4 text-center cursor-pointer transition-colors"
+        <div className="relative border border-dashed border-white/10 hover:border-[#06B6D4]/30 rounded-xl bg-[var(--color-surface)] p-4 text-center cursor-pointer transition-colors"
              onClick={() => {
                const demoDocs = [
                  { name: "Proposta_Plano_AxisEnterprise.pdf", size: "380 KB" },
@@ -174,7 +174,7 @@ export function TimelineSection({
               };
 
               return (
-                <div key={act.id} className="p-4 bg-[#0B1120] rounded-2xl border border-white/5 hover:border-white/10 transition-colors flex gap-4">
+                <div key={act.id} className="p-4 bg-[var(--color-surface)] rounded-2xl border border-white/5 hover:border-white/10 transition-colors flex gap-4">
                   <div className="w-9 h-9 bg-[#06B6D4]/10 border border-[#06B6D4]/20 rounded-xl flex items-center justify-center shrink-0">
                     {getIcon()}
                   </div>

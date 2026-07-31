@@ -20,10 +20,10 @@ export default function Indicadores() {
       description="Deep dive nos KPIs corporativos, projeção de faturamento e governança de dados estratégica."
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" className="border-white/10 bg-[#111827] text-slate-300 h-11 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px]">
+          <Button variant="outline" className="border-white/10 bg-[var(--color-surface-elevated)] text-slate-300 h-11 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px]">
             Exportar PDF
           </Button>
-          <select className="bg-[#111827] border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest outline-none focus:border-blue-500 text-white h-11">
+          <select className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest outline-none focus:border-blue-500 text-white h-11">
             <option>Anual (2026)</option>
             <option>Semestre 1</option>
             <option>Semestre 2</option>

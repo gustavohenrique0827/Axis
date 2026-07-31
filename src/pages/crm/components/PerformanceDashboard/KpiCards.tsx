@@ -11,7 +11,7 @@ export function KpiCards(props: {
         return (
           <Card
             key={i}
-            className={`p-4 bg-[#111827]/80 border backdrop-blur-xl hover:scale-[1.02] transition-all ${stat.border}`}
+            className={`p-4 bg-[var(--color-surface-elevated)]/80 border backdrop-blur-xl hover:scale-[1.02] transition-all ${stat.border}`}
           >
             <div className="flex items-center justify-between mb-2">
               <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold leading-tight">{stat.label}</p>

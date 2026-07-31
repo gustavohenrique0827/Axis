@@ -37,7 +37,7 @@ export default function Exames() {
              { label: "Em Análise", value: "12", icon: Clock, color: "text-amber-400" },
              { label: "Resultados Críticos", value: "05", icon: AlertCircle, color: "text-rose-400" },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 relative overflow-hidden">
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden">
                 <div className="flex items-center justify-between mb-4">
                    <div className="p-3 rounded-2xl bg-white/5">
                       <stat.icon className={`w-5 h-5 ${stat.color}`} />
@@ -51,7 +51,7 @@ export default function Exames() {
 
         <div className="grid lg:grid-cols-3 gap-6">
            {/* Exams Table */}
-           <Card className="lg:col-span-2 bg-[#111827]/80 border-white/5 overflow-hidden">
+           <Card className="lg:col-span-2 bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
               <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                  <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
                     <FileText className="w-4 h-4 text-emerald-400" /> Histórico de Pedidos
@@ -135,7 +135,7 @@ export default function Exames() {
                  </div>
               </Card>
 
-              <Card className="p-8 bg-[#111827]/80 border-white/5">
+              <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
                  <h3 className="text-xs font-black text-white uppercase tracking-widest mb-6">Integrações API</h3>
                  <div className="grid grid-cols-2 gap-4">
                     <button className="p-4 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center group hover:border-emerald-500/30 transition-all">

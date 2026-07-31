@@ -38,7 +38,7 @@ export default function LandingPage() {
   }, [mouseX, mouseY]);
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#020617] text-[#F8FAFC] font-sans selection:bg-blue-500/30 overflow-x-hidden relative">
+    <div ref={containerRef} className="min-h-screen bg-[var(--color-surface)] text-[var(--color-text-primary)] font-sans selection:bg-blue-500/30 overflow-x-hidden relative">
       <div className="noise-overlay" />
       
       {/* Cinematic Flying Mascot Component */}
@@ -150,7 +150,7 @@ export default function LandingPage() {
         </section>
 
         {/* Bento Vision - Interactive Grid */}
-        <section id="explorar" className="py-12 sm:py-24 lg:py-32 px-4 sm:px-6 bg-[#020617] relative border-t border-white/5">
+        <section id="explorar" className="py-12 sm:py-24 lg:py-32 px-4 sm:px-6 bg-[var(--color-surface)] relative border-t border-white/5">
            <div className="max-w-7xl mx-auto">
               <div className="flex flex-col lg:flex-row items-center justify-between mb-8 sm:mb-16 lg:mb-20 gap-8 lg:gap-16">
                  <div className="max-w-3xl">
@@ -231,7 +231,7 @@ export default function LandingPage() {
         <NeuralSection rotateX={rotateX} rotateY={rotateY} />
 
         {/* Scalability Grid - Massive Logos & Stats */}
-        <section id="rede" className="py-12 sm:py-24 lg:py-32 px-4 sm:px-6 relative border-y border-white/5 bg-[#020617]">
+        <section id="rede" className="py-12 sm:py-24 lg:py-32 px-4 sm:px-6 relative border-y border-white/5 bg-[var(--color-surface)]">
            <div className="max-w-7xl mx-auto">
               <div className="text-center mb-16 sm:mb-20 lg:mb-28">
                  <motion.h2 
@@ -268,7 +268,7 @@ export default function LandingPage() {
         </section>
 
         {/* Final Ascension CTA - Bombastic End */}
-        <section className="py-20 sm:py-32 lg:py-40 px-4 sm:px-6 relative overflow-hidden bg-[#020617]">
+        <section className="py-20 sm:py-32 lg:py-40 px-4 sm:px-6 relative overflow-hidden bg-[var(--color-surface)]">
            <motion.div 
              animate={{ 
                scale: [1, 1.2, 1],

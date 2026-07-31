@@ -37,7 +37,7 @@ export function PerformanceIADeepLearningInsights({
 
   return (
     <div className="grid lg:grid-cols-4 gap-6">
-      <Card className="p-6 bg-[#111827]/80 border-white/5 relative overflow-hidden group">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden group">
         <div className="flex items-center gap-3 mb-6">
           <Network className="w-5 h-5 text-indigo-400" />
           <h4 className="text-[11px] font-black text-white uppercase tracking-widest">

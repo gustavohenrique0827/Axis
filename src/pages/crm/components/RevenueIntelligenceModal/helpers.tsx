@@ -57,7 +57,7 @@ export function SectionCard({ title, icon: Icon, children, className = '' }: {
   title: string; icon: any; children: React.ReactNode; className?: string;
 }) {
   return (
-    <div className={`bg-[#0B1120] border border-white/5 rounded-2xl p-4 ${className}`}>
+    <div className={`bg-[var(--color-surface)] border border-white/5 rounded-2xl p-4 ${className}`}>
       <div className="flex items-center gap-2 mb-3">
         <Icon className="w-3.5 h-3.5 text-blue-400" />
         <h3 className="text-[10px] font-black text-white uppercase tracking-widest">{title}</h3>

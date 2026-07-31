@@ -61,7 +61,7 @@ export function DemoAccessPanel() {
   };
 
   return (
-    <Card className="p-8 bg-[#111827]/40 backdrop-blur-md border border-white/5 border-dashed">
+    <Card className="p-8 bg-[var(--color-surface-elevated)]/40 backdrop-blur-md border border-white/5 border-dashed">
       <div className="flex items-center gap-2 mb-6 text-slate-400 text-sm font-semibold uppercase tracking-widest">
         <Fingerprint className="w-4 h-4" /> Acesso Demonstração
       </div>
@@ -73,7 +73,7 @@ export function DemoAccessPanel() {
           <button
             key={acc.tenantName}
             onClick={() => loginAsDemo(acc.tenantName, acc.niche, acc.isMaster)}
-            className={`w-full flex items-center justify-between p-4 rounded-xl bg-[#0B1120] border ${acc.borderClass} ${acc.hoverClass} transition-all text-left group`}
+            className={`w-full flex items-center justify-between p-4 rounded-xl bg-[var(--color-surface)] border ${acc.borderClass} ${acc.hoverClass} transition-all text-left group`}
           >
             <div>
               <div className="font-bold text-white flex items-center gap-2">

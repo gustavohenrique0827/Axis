@@ -66,7 +66,7 @@ export function EquipeMembros({ filteredTeam, memberSearch, onMemberSearchChange
             <BarChart3 className="w-4 h-4 text-slate-600 absolute left-4 top-1/2 -translate-y-1/2 group-focus-within:text-blue-500 transition-colors" />
             <input
               placeholder="Filtrar por nome, cargo ou squad..."
-              className="bg-[#111827]/40 border border-white/5 pl-11 pr-6 py-3 rounded-2xl text-xs text-white outline-none focus:border-blue-500/50 w-80 transition-all shadow-2xl"
+              className="bg-[var(--color-surface-elevated)]/40 border border-white/5 pl-11 pr-6 py-3 rounded-2xl text-xs text-white outline-none focus:border-blue-500/50 w-80 transition-all shadow-2xl"
               value={memberSearch}
               onChange={(e) => onMemberSearchChange(e.target.value)}
             />

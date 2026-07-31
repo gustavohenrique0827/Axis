@@ -25,7 +25,7 @@ export function ConfigSistemaBackups() {
         <p className="text-sm text-slate-400">Garanta a integridade operacional de sua empresa programando instantâneos na Cloud AWS securizados.</p>
       </div>
 
-      <Card className="p-6 bg-[#111827]/80 border border-white/10 space-y-5">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border border-white/10 space-y-5">
         <h3 className="font-bold text-xs uppercase tracking-widest text-emerald-400 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <span>Schedule AWS S3 Storage</span>
           <span className="text-[10px] text-slate-500">Incremental Snapshot</span>
@@ -34,7 +34,7 @@ export function ConfigSistemaBackups() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-semibold">
           <div className="space-y-1">
             <label className="text-[10px] text-slate-400 uppercase tracking-wider block">Frequência Programada</label>
-            <select value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-slate-300">
+            <select value={scheduleTime} onChange={(e) => setScheduleTime(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-slate-300">
               <option>Diariamente às 02:00h</option>
               <option>Semanalmente (Aos domingos)</option>
               <option>Mensal (Primeiro dia do mês)</option>
@@ -43,7 +43,7 @@ export function ConfigSistemaBackups() {
 
           <div className="space-y-1">
             <label className="text-[10px] text-slate-400 uppercase tracking-wider block">Destinatário Storage Cloud</label>
-            <select className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-slate-300">
+            <select className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-slate-300">
               <option>AWS S3 Bucket (Criptografado AES-256)</option>
               <option>Google Cloud Storage (GCS)</option>
               <option>SFTP Server Interno</option>
@@ -51,7 +51,7 @@ export function ConfigSistemaBackups() {
           </div>
         </div>
 
-        <div className="bg-[#0B1120] border border-white/5 p-4 rounded-xl text-xs space-y-1">
+        <div className="bg-[var(--color-surface)] border border-white/5 p-4 rounded-xl text-xs space-y-1">
           <div className="text-slate-400 flex justify-between">
             <span>Último Snap gerado:</span>
             <strong className="text-white">{lastBackupDate}</strong>

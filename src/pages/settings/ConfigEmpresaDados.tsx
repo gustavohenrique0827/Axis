@@ -61,7 +61,7 @@ export default function ConfigEmpresaDados() {
         <p className="text-sm text-slate-400">Gerencie informações cadastrais da sua empresa.</p>
       </div>
 
-      <Card className="p-6 border-white/5 bg-[#111827]/80 backdrop-blur-xl space-y-6">
+      <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl space-y-6">
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -70,7 +70,7 @@ export default function ConfigEmpresaDados() {
                 type="text"
                 value={razaoSocial}
                 onChange={(e) => setRazaoSocial(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white"
+                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white"
                 placeholder="Razão Social"
               />
             </div>
@@ -80,7 +80,7 @@ export default function ConfigEmpresaDados() {
                 type="text"
                 value={nomeFantasia}
                 onChange={(e) => setNomeFantasia(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white"
+                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white"
                 placeholder="Nome Fantasia"
               />
             </div>
@@ -99,7 +99,7 @@ export default function ConfigEmpresaDados() {
                 value={cnpj}
                 onChange={handleCnpjChange}
                 maxLength={18}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white font-mono"
+                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white font-mono"
                 placeholder="00.000.000/0001-00"
               />
               <div className="min-h-[16px]">
@@ -127,7 +127,7 @@ export default function ConfigEmpresaDados() {
             </div>
             <div className="space-y-2">
               <label className="text-[11px] font-bold tracking-widest text-slate-400 uppercase">Inscrição Estadual</label>
-              <input type="text" className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white" placeholder="Opcional" />
+              <input type="text" className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white" placeholder="Opcional" />
             </div>
           </div>
 
@@ -137,7 +137,7 @@ export default function ConfigEmpresaDados() {
               type="text"
               value={endereco}
               onChange={(e) => setEndereco(e.target.value)}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white"
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white"
               placeholder="Endereço Completo"
             />
           </div>

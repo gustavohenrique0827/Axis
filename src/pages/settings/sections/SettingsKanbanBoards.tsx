@@ -48,7 +48,7 @@ function ColCard({
 
   return (
     <div
-      className="flex-shrink-0 w-[200px] rounded-2xl border border-white/10 bg-[#0B1120] flex flex-col relative"
+      className="flex-shrink-0 w-[200px] rounded-2xl border border-white/10 bg-[var(--color-surface)] flex flex-col relative"
       style={{ borderTop: `4px solid ${topColor}` }}
     >
       <div className="p-3 flex-1">
@@ -79,7 +79,7 @@ function ColCard({
               style={{ backgroundColor: dotColor }}
             />
             {showPicker && (
-              <div className="absolute top-5 left-0 z-[100] p-2 bg-[#1E293B] border border-white/10 rounded-xl shadow-2xl grid grid-cols-5 gap-1.5 w-[116px]">
+              <div className="absolute top-5 left-0 z-[100] p-2 bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl shadow-2xl grid grid-cols-5 gap-1.5 w-[116px]">
                 {CORES_LISTA.map(cor => (
                   <button
                     key={cor}
@@ -350,7 +350,7 @@ export function ConfigKanbanBoards() {
       </div>
 
       {/* Active Board Card */}
-      <Card className="bg-[#111827]/80 backdrop-blur-xl border border-white/10 p-6 space-y-5">
+      <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 p-6 space-y-5">
         <div className="flex items-center gap-3 pb-4 border-b border-white/5">
           <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
             {board.icon}

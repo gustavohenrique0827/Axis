@@ -17,7 +17,7 @@ import { toast } from "sonner";
 
 export function PerformanceScoreChart(props: { performanceData: any[] }) {
   return (
-    <Card className="lg:col-span-2 p-5 bg-[#111827]/80 border-white/5 backdrop-blur-xl">
+    <Card className="lg:col-span-2 p-5 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-xl">
       <div className="flex items-center justify-between mb-5">
         <h3 className="text-[10px] text-white uppercase tracking-widest font-black flex items-center gap-2">
           <TrendingUp className="w-3.5 h-3.5 text-blue-400" /> Score IA vs Conversão
@@ -58,7 +58,7 @@ export function PerformanceScoreChart(props: { performanceData: any[] }) {
             <YAxis stroke="#64748b" fontSize={10} fontWeight="bold" axisLine={false} tickLine={false} />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#0B1120",
+                backgroundColor: "var(--color-surface)",
                 border: "1px solid rgba(255,255,255,0.1)",
                 borderRadius: "12px",
               }}
@@ -77,7 +77,7 @@ export function PerformanceScoreChart(props: { performanceData: any[] }) {
 export function HotLeadsPanel(props: { leads: any[]; hotLeads: any[] }) {
   const { leads, hotLeads } = props;
   return (
-    <Card className="p-5 bg-[#111827]/80 border-white/5 backdrop-blur-xl flex flex-col">
+    <Card className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-xl flex flex-col">
       <h3 className="text-[10px] text-white uppercase tracking-widest font-black flex items-center gap-2 mb-4 shrink-0">
         <Flame className="w-3.5 h-3.5 text-rose-400" /> Leads Quentes
       </h3>
@@ -124,7 +124,7 @@ export function HotLeadsPanel(props: { leads: any[]; hotLeads: any[] }) {
 
 export function LeadsVolumeChart(props: { performanceData: any[] }) {
   return (
-    <Card className="p-5 bg-[#111827]/80 border-white/5 backdrop-blur-xl">
+    <Card className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-xl">
       <h3 className="text-[10px] text-white uppercase tracking-widest font-black flex items-center gap-2 mb-4">
         <Users className="w-3.5 h-3.5 text-purple-400" /> Volume de Leads Prospectados por Mês
       </h3>
@@ -140,7 +140,7 @@ export function LeadsVolumeChart(props: { performanceData: any[] }) {
             <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
             <XAxis dataKey="month" stroke="#64748b" fontSize={10} fontWeight="bold" axisLine={false} tickLine={false} />
             <YAxis stroke="#64748b" fontSize={10} fontWeight="bold" axisLine={false} tickLine={false} allowDecimals={false} />
-            <Tooltip contentStyle={{ backgroundColor: "#0B1120", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }} />
+            <Tooltip contentStyle={{ backgroundColor: "var(--color-surface)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }} />
             <Area type="monotone" dataKey="leads" stroke="#8b5cf6" fillOpacity={1} fill="url(#colorLeads)" strokeWidth={2.5} name="Leads" />
           </AreaChart>
         </ResponsiveContainer>

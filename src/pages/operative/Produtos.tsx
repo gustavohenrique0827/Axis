@@ -105,10 +105,10 @@ export default function Catalog() {
         />
 
         {filteredProducts.length === 0 ? (
-          <Card className="p-16 flex flex-col items-center justify-center text-center bg-[#111827]/40 border-white/5">
+          <Card className="p-16 flex flex-col items-center justify-center text-center bg-[var(--color-surface-elevated)]/40 border-[var(--color-border-subtle)]">
             <Package className="w-16 h-16 text-slate-700 mb-4 animate-pulse" />
-            <h3 className="text-white font-bold text-lg mb-1">Nenhum SKU encontrado</h3>
-            <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
+            <h3 className="text-[var(--color-text-primary)] font-bold text-lg mb-1">Nenhum SKU encontrado</h3>
+            <p className="text-xs text-[var(--color-text-muted)] max-w-sm leading-relaxed">
               Nenhum produto atende a estes parâmetros de filtro atuais. Modifique os termos de pesquisa ou adicione um novo produto ao catálogo.
             </p>
             <Button onClick={f.handleOpenAddModal} className="mt-6 font-bold text-xs bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl px-4 py-2">

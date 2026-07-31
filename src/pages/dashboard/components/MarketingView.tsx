@@ -85,7 +85,7 @@ export function MarketingView() {
       className="space-y-6 text-left"
     >
       <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 p-8 bg-[#111827]/80 border-white/5 relative overflow-hidden rounded-3xl">
+        <Card className="lg:col-span-2 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden rounded-3xl">
            <div className="flex items-center justify-between mb-10">
               <div>
                  <h3 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
@@ -105,7 +105,7 @@ export function MarketingView() {
                     <YAxis stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
                     <Tooltip 
                       cursor={{fill: '#ffffff05'}}
-                      contentStyle={{ backgroundColor: '#0B1120', border: '1px solid #ffffff05', borderRadius: '16px' }}
+                      contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid #ffffff05', borderRadius: '16px' }}
                       itemStyle={{ fontSize: '10px', fontWeight: 'bold' }}
                     />
                     <Bar dataKey="direct" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={20} />
@@ -131,7 +131,7 @@ export function MarketingView() {
         </Card>
 
         <div className="space-y-6">
-           <Card className="p-8 bg-[#111827]/80 border-white/5 rounded-3xl">
+           <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 rounded-3xl">
               <h4 className="text-sm font-black text-white uppercase tracking-widest mb-8 flex items-center gap-2">
                 <Share2 className="w-4 h-4 text-purple-400" /> Voz de Mercado
               </h4>
@@ -151,7 +151,7 @@ export function MarketingView() {
                          ))}
                        </Pie>
                        <Tooltip 
-                         contentStyle={{ backgroundColor: '#0B1120', border: '1px solid #ffffff05', borderRadius: '16px' }}
+                         contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid #ffffff05', borderRadius: '16px' }}
                          itemStyle={{ fontSize: '10px', fontWeight: 'bold' }}
                        />
                     </PieChart>
@@ -187,7 +187,7 @@ export function MarketingView() {
            { icon: Users, label: "Leads de Marketing", value: "0", trend: "0%", color: "text-purple-400", bg: "bg-purple-500/10" },
            { icon: DollarSign, label: "Total Investido", value: "R$ 0", trend: "0%", color: "text-amber-400", bg: "bg-amber-500/10" },
          ].map((metric, i) => (
-            <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 group hover:border-white/10 transition-all rounded-3xl">
+            <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 group hover:border-white/10 transition-all rounded-3xl">
                <div className="flex items-center gap-4 mb-4">
                   <div className={`p-2.5 rounded-xl ${metric.bg} ${metric.color}`}>
                      <metric.icon className="w-4 h-4" />

@@ -32,7 +32,7 @@ const DEFAULT: NovoClienteForm = {
 };
 
 const inputClass =
-  "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all placeholder:text-slate-600";
+  "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all placeholder:text-slate-600";
 const labelClass = "text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-1.5";
 
 const SETORES: Setor[] = ["Tecnologia", "Engenharia", "Saúde", "Varejo", "Indústria", "Educação", "Financeiro", "Outros"];
@@ -170,7 +170,7 @@ export function NovoClienteModal({ isOpen, onClose, onAction }: NovoClienteModal
     >
       <div className="space-y-5">
         {/* Info banner */}
-        <div className="bg-[#0B1120]/60 border border-white/10 rounded-xl p-4 flex gap-3 items-start">
+        <div className="bg-[var(--color-surface)]/60 border border-white/10 rounded-xl p-4 flex gap-3 items-start">
           <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0 mt-0.5">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
           </div>

@@ -72,7 +72,7 @@ export function ConfigIntegracoesWebhooks() {
         <p className="text-sm text-slate-400">Notifique sistemas terceiros (Make, Zapier, Web-services customizados) instantaneamente via JSON POST.</p>
       </div>
 
-      <Card className="p-6 bg-[#111827]/80 border border-[#2563EB]/30 rounded-2xl shadow-lg relative overflow-hidden">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border border-[#2563EB]/30 rounded-2xl shadow-lg relative overflow-hidden">
         <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
           <Zap className="w-24 h-24 text-blue-500" />
         </div>
@@ -90,7 +90,7 @@ export function ConfigIntegracoesWebhooks() {
                   value={newWebhookUrl}
                   onChange={(e) => setNewWebhookUrl(e.target.value)}
                   placeholder="https://sua-automacao.com/webhook/..."
-                  className={`w-full bg-[#0B1120] border ${!isUrlValid ? 'border-red-500/50 text-red-100 focus:border-red-500 focus:ring-red-500' : 'border-white/10 text-white focus:border-blue-500 focus:ring-blue-500'} rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 transition-all placeholder:text-slate-600`}
+                  className={`w-full bg-[var(--color-surface)] border ${!isUrlValid ? 'border-red-500/50 text-red-100 focus:border-red-500 focus:ring-red-500' : 'border-white/10 text-white focus:border-blue-500 focus:ring-blue-500'} rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 transition-all placeholder:text-slate-600`}
                 />
                 {!isUrlValid && (
                   <p className="text-red-400 text-[10px] mt-1.5 ml-1 font-medium flex items-center gap-1">
@@ -104,7 +104,7 @@ export function ConfigIntegracoesWebhooks() {
               <select 
                 value={newWebhookEvent}
                 onChange={(e) => setNewWebhookEvent(e.target.value)}
-                className="w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-all appearance-none"
+                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500 transition-all appearance-none"
               >
                 <option value="Novo Lead Criado">Novo Lead Criado</option>
                 <option value="Negócio Ganho">Negócio Ganho</option>
@@ -120,11 +120,11 @@ export function ConfigIntegracoesWebhooks() {
       </Card>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="p-5 bg-[#111827]/80 border border-white/10 space-y-4">
+        <Card className="p-5 bg-[var(--color-surface-elevated)]/80 border border-white/10 space-y-4">
           <h3 className="font-bold text-xs uppercase tracking-widest text-[#06B6D4]">Endpoints em Execução</h3>
           <div className="space-y-4">
             {globalWebhooks.map((w, idx) => (
-              <div key={w.id} className="bg-[#0B1120] p-3 rounded-xl border border-white/5 space-y-1.5 text-xs">
+              <div key={w.id} className="bg-[var(--color-surface)] p-3 rounded-xl border border-white/5 space-y-1.5 text-xs">
                 <div className="flex justify-between items-center column-gap">
                   <span className="text-[10px] text-amber-500 font-bold uppercase tracking-wider">{w.event}</span>
                   <div className="flex gap-2 items-center">
@@ -143,15 +143,15 @@ export function ConfigIntegracoesWebhooks() {
           </div>
         </Card>
 
-        <Card className="p-5 bg-[#111827]/80 border border-white/10 space-y-4">
+        <Card className="p-5 bg-[var(--color-surface-elevated)]/80 border border-white/10 space-y-4">
           <h3 className="font-bold text-xs uppercase tracking-widest text-slate-400">Logs de Envio (Debugging History)</h3>
           <div className="space-y-2 text-[11px] font-mono">
             {webhookLogs.map((log, idx) => (
               <div key={idx} className="p-2.5 bg-slate-900 border border-white/5 rounded-lg flex items-start gap-3">
-                <span className="px-1.5 py-0.2 bg-emerald-500/10 text-emerald-450 text-emerald-400 border border-emerald-500/20 rounded font-bold">{log.status}</span>
+                <span className="px-1.5 py-0.2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded font-bold">{log.status}</span>
                 <div className="flex-1 min-w-0">
                   <div className="text-[9px] text-slate-500">{log.time} • Endpoint {log.endpoint}</div>
-                  <div className="text-slate-350 truncate mt-0.5">{log.payload}</div>
+                  <div className="text-slate-400 truncate mt-0.5">{log.payload}</div>
                 </div>
               </div>
             ))}

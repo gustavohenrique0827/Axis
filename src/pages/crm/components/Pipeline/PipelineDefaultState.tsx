@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export function PipelineDefaultState() {
   return (
-    <Card className="p-6 bg-[#111827]/60 border border-amber-500/20 rounded-2xl flex items-center gap-4">
+    <Card className="p-6 bg-[var(--color-surface-elevated)]/60 border border-amber-500/20 rounded-2xl flex items-center gap-4">
       <Settings2 className="w-8 h-8 text-amber-400 shrink-0" />
       <div className="flex-1">
         <p className="text-sm font-bold text-white">Nenhum funil configurado</p>

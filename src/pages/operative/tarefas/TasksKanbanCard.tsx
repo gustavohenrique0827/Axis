@@ -50,7 +50,7 @@ export function TasksKanbanCard({
         setDraggedTaskId(null);
         setDraggedOverCol(null);
       }}
-      className={`p-4 bg-[#111827]/80 backdrop-blur-xl border border-white/5 hover:border-white/20 transition-all hover:scale-105 duration-200 group shadow-lg relative cursor-grab active:cursor-grabbing ${
+      className={`p-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 hover:border-white/20 transition-all hover:scale-105 duration-200 group shadow-lg relative cursor-grab active:cursor-grabbing ${
         draggedTaskId === task.id ? 'opacity-40 scale-95 border-blue-500/40' : ''
       }`}
     >
@@ -74,16 +74,16 @@ export function TasksKanbanCard({
         <span className="text-[10px] text-slate-400 font-medium truncate">{task.related}</span>
       </div>
 
-      <div className="flex items-center gap-1.5 mb-4 bg-[#0B1120] border border-white/5 px-2 py-1 rounded-lg">
+      <div className="flex items-center gap-1.5 mb-4 bg-[var(--color-surface)] border border-white/5 px-2 py-1 rounded-lg">
         <span className="text-[8px] font-black text-slate-500 uppercase shrink-0">Responsável:</span>
         <select
           value={task.seller || ""}
           onChange={(e) => updateTask(task.id, { seller: e.target.value })}
           className={`bg-transparent text-[10px] ${task.seller ? 'text-slate-300' : 'text-rose-400 font-black'} font-bold focus:outline-none focus:ring-1 focus:ring-[#2563EB] rounded px-1 cursor-pointer w-full`}
         >
-          <option value="" className="text-rose-400 font-bold bg-[#0B1120]">Nenhum (Atenção!)</option>
+          <option value="" className="text-rose-400 font-bold bg-[var(--color-surface)]">Nenhum (Atenção!)</option>
           {sellerOptions.map(name => (
-            <option key={name} value={name} className="text-white bg-[#0B1120]">{name}</option>
+            <option key={name} value={name} className="text-white bg-[var(--color-surface)]">{name}</option>
           ))}
         </select>
         {!task.seller && <AlertTriangle className="w-3 h-3 text-rose-400 shrink-0"/>}

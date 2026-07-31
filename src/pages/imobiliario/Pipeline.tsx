@@ -61,7 +61,7 @@ const TEMP_CFG: Record<Temperatura, {
 };
 
 const FIELD  = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
-const SELECT = "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
+const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
 const LABEL  = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
 
 
@@ -112,7 +112,7 @@ function LeadFormModal({ onClose, onSave, initial }: {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#0F1929] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
+      <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
             <h2 className="text-base font-black text-white">{isEdit ? "Editar Lead" : "Novo Lead"}</h2>
@@ -267,7 +267,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="w-full max-w-[546px] bg-[#0B1120] border-l border-white/10 flex flex-col overflow-hidden shadow-2xl">
+      <div className="w-full max-w-[546px] bg-[var(--color-surface)] border-l border-white/10 flex flex-col overflow-hidden shadow-2xl">
 
         {/* ── Hero ── */}
         <div className={`relative shrink-0 bg-gradient-to-b ${tc.hero} border-b border-white/[0.06] overflow-hidden`}>
@@ -372,7 +372,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
         </div>
 
         {/* ── Tabs ── */}
-        <div className="flex border-b border-white/[0.06] overflow-x-auto scrollbar-none shrink-0 bg-[#0B1120] px-1 pt-1 gap-0.5">
+        <div className="flex border-b border-white/[0.06] overflow-x-auto scrollbar-none shrink-0 bg-[var(--color-surface)] px-1 pt-1 gap-0.5">
           {DRAWER_TABS.map(t => {
             const isActive = tab === t.id;
             return (
@@ -399,7 +399,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
           {tab === "info" && (
             <div className="px-5 py-4 space-y-3">
               {/* Row principal */}
-              <div className="bg-[#111827] border border-white/[0.06] rounded-xl p-4 grid grid-cols-2 gap-4">
+              <div className="bg-[var(--color-surface-elevated)] border border-white/[0.06] rounded-xl p-4 grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Interesse</p>
                   <p className="text-sm font-black text-white">{lead.interesse}</p>
@@ -423,7 +423,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
               </div>
 
               {/* Quick actions */}
-              <div className="bg-[#111827] border border-white/[0.06] rounded-xl p-4">
+              <div className="bg-[var(--color-surface-elevated)] border border-white/[0.06] rounded-xl p-4">
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-3">Ações Rápidas</p>
                 <div className="grid grid-cols-3 gap-2">
                   {QUICK_ACTIONS.map(a => (
@@ -453,7 +453,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
               </div>
 
               {/* AI Copilot */}
-              <div className="bg-[#111827] border border-white/[0.06] rounded-xl p-4">
+              <div className="bg-[var(--color-surface-elevated)] border border-white/[0.06] rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg bg-violet-500/20 flex items-center justify-center">
@@ -490,7 +490,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
               </div>
 
               {/* Tags */}
-              <div className="bg-[#111827] border border-white/[0.06] rounded-xl p-4">
+              <div className="bg-[var(--color-surface-elevated)] border border-white/[0.06] rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Tag className="w-3.5 h-3.5 text-slate-500" />
                   <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Tags Corporativas</p>
@@ -520,7 +520,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
               </div>
 
               {/* Contact info */}
-              <div className="bg-[#111827] border border-white/[0.06] rounded-xl p-4 space-y-2">
+              <div className="bg-[var(--color-surface-elevated)] border border-white/[0.06] rounded-xl p-4 space-y-2">
                 <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-2">Contato</p>
                 {lead.telefone && (
                   <div className="flex items-center gap-3">
@@ -685,7 +685,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
         </div>
 
         {/* ── Footer ── */}
-        <div className="shrink-0 border-t border-white/[0.06] px-5 py-3 bg-[#0B1120]">
+        <div className="shrink-0 border-t border-white/[0.06] px-5 py-3 bg-[var(--color-surface)]">
           {confirmDelete ? (
             <div className="flex items-center gap-3">
               <p className="text-xs text-slate-400 flex-1">Confirmar exclusão permanente?</p>
@@ -733,7 +733,7 @@ function LeadCard({ lead, onSelect, isDragging, onDragStart, onDragEnd }: {
       onDragEnd={onDragEnd}
       onClick={() => onSelect(lead)}
       className={cn(
-        "bg-[#0F1929] border border-white/[0.07] rounded-xl p-4 hover:border-white/20 transition-all cursor-pointer shadow-lg select-none group",
+        "bg-[var(--color-surface-elevated)] border border-white/[0.07] rounded-xl p-4 hover:border-white/20 transition-all cursor-pointer shadow-lg select-none group",
         isDragging && "opacity-40 scale-95 rotate-1 border-blue-500/40"
       )}
     >
@@ -989,7 +989,7 @@ export default function PipelineImobiliario() {
           { label: "Perdidos",       value: `${perdidos}`,      color: "text-rose-400",    dot: "bg-rose-400" },
           { label: "Conversão",      value: leads.length > 0 ? `${((ganhos / leads.length) * 100).toFixed(0)}%` : "0%", color: "text-cyan-400", dot: "bg-cyan-400" },
         ].map(k => (
-          <div key={k.label} className="bg-[#111827]/80 border border-white/5 rounded-xl px-5 py-3.5 flex items-center gap-3 min-w-[140px]">
+          <div key={k.label} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl px-5 py-3.5 flex items-center gap-3 min-w-[140px]">
             <div className={cn("w-2 h-2 rounded-full shrink-0", k.dot)} />
             <div>
               <p className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">{k.label}</p>
@@ -1071,7 +1071,7 @@ export default function PipelineImobiliario() {
 
       {/* LIST */}
       {view === "lista" && (
-        <div className="bg-[#111827]/60 border border-white/5 rounded-2xl overflow-hidden">
+        <div className="bg-[var(--color-surface-elevated)]/60 border border-white/5 rounded-2xl overflow-hidden">
           <div className="flex items-center gap-4 px-5 py-3 border-b border-white/5 bg-white/[0.02]">
             <div className="w-8" />
             <p className="flex-1 text-[9px] font-black text-slate-500 uppercase tracking-widest">Lead</p>

@@ -67,7 +67,7 @@ export default function ProntuariosDashboard() {
              { label: "Exames Pendentes", value: "0", icon: FileText, color: "text-amber-400" },
              { label: "Pacientes Internados", value: "0", icon: Heart, color: "text-rose-400" },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 group">
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 group">
                 <div className="flex items-center gap-4">
                    <div className={`p-3 rounded-2xl bg-white/5 ${stat.color}`}>
                       <stat.icon className="w-5 h-5" />
@@ -83,7 +83,7 @@ export default function ProntuariosDashboard() {
 
         <div className="grid lg:grid-cols-3 gap-6">
            {/* Patient List */}
-           <Card className="lg:col-span-2 bg-[#111827]/80 border-white/5 overflow-hidden">
+           <Card className="lg:col-span-2 bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
               <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                  <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
                     <Users className="w-4 h-4 text-blue-400" /> Base de Pacientes
@@ -203,7 +203,7 @@ export default function ProntuariosDashboard() {
                  )}
               </Card>
 
-              <Card className="p-6 bg-[#111827]/80 border-white/5">
+              <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5">
                  <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-6">Anotações IA</h4>
                  <div className="p-4 bg-white/5 rounded-2xl border border-white/5 italic">
                     <p className="text-[11px] text-slate-300 leading-relaxed">

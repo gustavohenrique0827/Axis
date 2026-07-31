@@ -10,7 +10,7 @@ interface CargoModalProps {
   editing: any | null;
 }
 
-const inputClass = "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none transition-all";
+const inputClass = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none transition-all";
 
 export function CargoModal({ isOpen, onClose, onSave, editing }: CargoModalProps) {
   const [nome, setNome] = useState("");
@@ -27,8 +27,8 @@ export function CargoModal({ isOpen, onClose, onSave, editing }: CargoModalProps
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-md bg-[#0B1120] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150" onClick={onClose}>
+      <div className="w-full max-w-md bg-[var(--color-surface)] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3 px-8 pt-8 pb-4 border-b border-white/5">
           <div className="w-9 h-9 rounded-xl bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center">
             <Briefcase className="w-4 h-4 text-indigo-400" />

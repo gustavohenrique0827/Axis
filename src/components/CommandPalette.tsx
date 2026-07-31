@@ -44,14 +44,14 @@ export function CommandPalette() {
 
   return (
     <>
-      <button 
+      <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-500 hover:text-white hover:bg-white/10 transition-all text-xs font-medium"
+        className="flex items-center gap-2.5 w-full sm:w-[28rem] px-3.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-slate-500 hover:text-white hover:bg-white/10 transition-all text-sm font-medium"
       >
-        <Search className="w-3.5 h-3.5" />
+        <Search className="w-4 h-4 shrink-0" />
         <span className="hidden sm:inline">Buscar...</span>
-        <kbd className="hidden sm:flex items-center gap-1 px-1.5 py-0.5 rounded border border-white/10 bg-white/5 font-mono text-[10px]">
-          <Command className="w-2.5 h-2.5" /> K
+        <kbd className="hidden sm:flex items-center gap-1 ml-auto px-1.5 py-0.5 rounded border border-white/10 bg-white/5 font-mono text-xs">
+          <Command className="w-3 h-3" /> K
         </kbd>
       </button>
 
@@ -70,7 +70,7 @@ export function CommandPalette() {
               initial={{ opacity: 0, scale: 0.95, y: -20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: -20 }}
-              className="relative w-full max-w-2xl bg-[#0B1120] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-2xl bg-[var(--color-surface)] border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
             >
               <div className="flex items-center gap-3 px-4 py-4 border-b border-white/5">
                 <Search className="w-5 h-5 text-slate-500" />

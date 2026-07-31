@@ -13,7 +13,7 @@ interface PainelRankingProps {
 export function PainelRanking({ doctorRanking, totalAppointments, finalized }: PainelRankingProps) {
   return (
     <div className="grid lg:grid-cols-4 gap-6">
-      <Card className="lg:col-span-3 p-8 bg-[#111827]/80 border-white/5">
+      <Card className="lg:col-span-3 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
         <div className="flex items-center justify-between mb-8">
           <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
             <Activity className="w-4 h-4 text-emerald-400" /> Ranking de Performance Clínica

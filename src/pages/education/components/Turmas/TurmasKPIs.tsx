@@ -17,7 +17,7 @@ export function TurmasKPIs({ stats }: TurmasKPIsProps) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       {stats.map((stat, i) => (
-        <Card key={i} className="p-6 bg-[#111827]/50 border-white/5 backdrop-blur-md group hover:border-white/10 transition-all cursor-default">
+        <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border-white/5 backdrop-blur-md group hover:border-white/10 transition-all cursor-default">
           <div className="flex justify-between items-start mb-4">
             <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
               <stat.icon className="w-5 h-5" />

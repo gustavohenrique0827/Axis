@@ -60,7 +60,7 @@ export function ConteudoKanban({ columns, items, onDragEnd, onEdit }: ConteudoKa
                     <Draggable key={item.id} draggableId={item.id} index={idx}>
                       {(provided: any, snapshot: any) => (
                         <div ref={provided.innerRef} {...provided.draggableProps} className="mb-4">
-                          <Card className={`p-5 bg-[#111827] border-white/5 hover:border-white/10 transition-all ${snapshot.isDragging ? "rotate-2 scale-105 shadow-2xl z-50 border-blue-500/50" : ""}`}>
+                          <Card className={`p-5 bg-[var(--color-surface-elevated)] border-white/5 hover:border-white/10 transition-all ${snapshot.isDragging ? "rotate-2 scale-105 shadow-2xl z-50 border-blue-500/50" : ""}`}>
                             <div className="flex justify-between items-start mb-4">
                               <div {...provided.dragHandleProps} className="p-1 rounded hover:bg-white/5 transition-colors cursor-grab active:cursor-grabbing">
                                 <GripVertical className="w-4 h-4 text-slate-700" />

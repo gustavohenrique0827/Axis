@@ -48,7 +48,7 @@ export function NovaPropostaRapidaModal({ isOpen, onClose, onSubmit }: NovaPropo
     <AnimatePresence>
       {isOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-150"
           onClick={handleClose}
         >
           <motion.div
@@ -57,7 +57,7 @@ export function NovaPropostaRapidaModal({ isOpen, onClose, onSubmit }: NovaPropo
             exit={{ opacity: 0, scale: 0.95, y: 16 }}
             transition={{ type: "spring", stiffness: 400, damping: 30 }}
             onClick={(e) => e.stopPropagation()}
-            className="bg-[#111827] border border-white/10 rounded-3xl w-full max-w-lg shadow-2xl shadow-black/60 overflow-hidden"
+            className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-3xl w-full max-w-lg shadow-2xl shadow-black/60 overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200"
           >
             {/* Header */}
             <div className="relative p-6 border-b border-white/10 bg-gradient-to-br from-blue-600/10 via-transparent to-transparent">

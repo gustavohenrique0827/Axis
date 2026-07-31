@@ -26,7 +26,7 @@ export function ConfigIntegracoesSDR() {
       </div>
 
       {/* Reunião Agendada */}
-      <Card className="bg-[#111827]/80 border border-white/10 overflow-hidden shadow-xl">
+      <Card className="bg-[var(--color-surface-elevated)]/80 border border-white/10 overflow-hidden shadow-xl">
         <div className="p-5 border-b border-white/5 bg-purple-500/5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -50,12 +50,12 @@ export function ConfigIntegracoesSDR() {
               type="text"
               value={webhookUrl}
               onChange={e => setWebhookUrl(e.target.value)}
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-sm text-white font-mono focus:border-purple-500 focus:outline-none"
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-sm text-white font-mono focus:border-purple-500 focus:outline-none"
               placeholder="https://"
             />
           </div>
 
-          <div className="bg-[#0B1120]/50 p-4 rounded-lg border border-white/5 space-y-2">
+          <div className="bg-[var(--color-surface)]/50 p-4 rounded-lg border border-white/5 space-y-2">
             <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Payload de Exemplo (JSON)</span>
             <pre className="text-[10px] text-purple-300 font-mono overflow-auto opacity-80">{`{
   "event": "sdr.reuniao_agendada",
@@ -80,7 +80,7 @@ export function ConfigIntegracoesSDR() {
       </Card>
 
       {/* Lead Qualificado */}
-      <Card className="bg-[#111827]/80 border border-white/10 overflow-hidden shadow-xl mt-6">
+      <Card className="bg-[var(--color-surface-elevated)]/80 border border-white/10 overflow-hidden shadow-xl mt-6">
         <div className="p-5 border-b border-white/5 bg-emerald-500/5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -103,7 +103,7 @@ export function ConfigIntegracoesSDR() {
             <input
               type="text"
               placeholder="https://n8n.seumodelo.com/webhook/sdr-qualificado"
-              className="w-full bg-[#0B1120] border border-white/10 rounded-lg p-2.5 text-sm text-white font-mono focus:border-emerald-500 focus:outline-none"
+              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-sm text-white font-mono focus:border-emerald-500 focus:outline-none"
             />
           </div>
 
@@ -119,7 +119,7 @@ export function ConfigIntegracoesSDR() {
             </div>
           </div>
 
-          <div className="bg-[#0B1120]/50 p-4 rounded-lg border border-white/5 space-y-2 mt-2">
+          <div className="bg-[var(--color-surface)]/50 p-4 rounded-lg border border-white/5 space-y-2 mt-2">
             <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Payload de Exemplo (JSON)</span>
             <pre className="text-[10px] text-emerald-300 font-mono overflow-auto opacity-80">{`{
   "event": "sdr.lead_qualificado",

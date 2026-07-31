@@ -44,7 +44,7 @@ export function TasksKanbanMode({
   return (
     <div className="space-y-4">
       {/* Mobile Segments Header */}
-      <div className="flex md:hidden bg-[#0A1120] border border-white/10 rounded-2xl p-1 w-full shrink-0 relative">
+      <div className="flex md:hidden bg-[var(--color-surface)] border border-white/10 rounded-2xl p-1 w-full shrink-0 relative">
         {columns.map(col => {
           const isActive = mobileActiveCol === col.id;
           const count = filteredTasks.filter(t => t.status === col.id).length;
@@ -59,7 +59,7 @@ export function TasksKanbanMode({
               {isActive && (
                 <motion.div
                   layoutId="activeKanbanTabIndicator"
-                  className="absolute inset-0 bg-[#1e293b] border border-white/10 rounded-xl shadow-lg"
+                  className="absolute inset-0 bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl shadow-lg"
                   transition={{ type: "spring", stiffness: 350, damping: 28 }}
                 />
               )}
@@ -145,7 +145,7 @@ export function TasksKanbanMode({
                     </div>
                   ))
                 ) : (
-                  <div className="py-12 border border-dashed border-white/5 rounded-xl text-center bg-[#111827]/10">
+                  <div className="py-12 border border-dashed border-white/5 rounded-xl text-center bg-[var(--color-surface-elevated)]/10">
                     <span className="w-8 h-8 text-slate-700 mx-auto mb-2 block">✓</span>
                     <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest">Coluna Vazia</p>
                     <p className="text-[10px] text-slate-600 px-3 mt-0.5">Sem pendências nesta classificação.</p>

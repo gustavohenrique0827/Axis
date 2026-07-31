@@ -35,7 +35,7 @@ export function IndicadoresKPIs({ kpiCards, criticalKPIs, selectedKPI, onSelectK
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
-              className="bg-[#111827] border border-white/10 p-8 rounded-2xl max-w-lg w-full"
+              className="bg-[var(--color-surface-elevated)] border border-white/10 p-8 rounded-2xl max-w-lg w-full"
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className="text-xl font-bold text-white mb-4">{selectedKPI.label} - Histórico (30 dias)</h3>
@@ -58,7 +58,7 @@ export function IndicadoresKPIs({ kpiCards, criticalKPIs, selectedKPI, onSelectK
         {kpiCards.map((kpi) => (
           <div key={kpi.label} className="h-full">
             <Card
-              className={`p-6 bg-[#111827]/80 border-white/5 backdrop-blur-xl relative overflow-hidden group ${criticalKPIs.includes(kpi.label) ? "animate-pulse" : ""}`}
+              className={`p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-xl relative overflow-hidden group ${criticalKPIs.includes(kpi.label) ? "animate-pulse" : ""}`}
               onDoubleClick={() => onSelectKPI(kpi)}
             >
               <div className="flex justify-between items-start mb-4">

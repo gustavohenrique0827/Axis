@@ -147,7 +147,7 @@ export function SquadsTabContent({
           />
         </div>
 
-        <div className="flex-1 bg-[#0B1120]/60 border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-0">
+        <div className="flex-1 bg-[var(--color-surface)]/60 border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-0">
           <SquadDetailPanel
             selectedSquad={selectedSquad}
             detailTab={detailTab}

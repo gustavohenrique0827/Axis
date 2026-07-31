@@ -23,7 +23,7 @@ export function SalesRankingPodium({ salesRanking }: { salesRanking: SalesEntry[
   const hasSales = top3.length > 0;
 
   return (
-    <Card className="p-10 bg-gradient-to-br from-[#1E293B]/60 via-[#0F172A]/80 to-[#111827] border-white/5 relative overflow-hidden group rounded-3xl">
+    <Card className="p-10 bg-gradient-to-br from-[var(--color-surface-elevated)]/60 via-[var(--color-surface)]/80 to-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group rounded-3xl">
       <div className="flex items-center justify-between mb-12">
         <h3 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
           <Trophy className="w-5 h-5 text-amber-500" /> Hall da Fama

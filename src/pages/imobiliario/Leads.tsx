@@ -55,7 +55,7 @@ const MOCK: Lead[] = [
 ];
 
 const FIELD = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
-const SELECT = "w-full bg-[#0B1120] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
+const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
 const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
 
 // ─── FORM MODAL (create / edit) ────────────────────────────────────────────────
@@ -85,7 +85,7 @@ function LeadFormModal({
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#0F1929] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl">
+      <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
             <h2 className="text-base font-black text-white">{isEdit ? "Editar Lead" : "Novo Lead Imobiliário"}</h2>
@@ -197,7 +197,7 @@ function LeadDetailDrawer({
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="w-full max-w-md bg-[#0B1120] border-l border-white/10 flex flex-col overflow-hidden shadow-2xl">
+      <div className="w-full max-w-md bg-[var(--color-surface)] border-l border-white/10 flex flex-col overflow-hidden shadow-2xl">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div className="flex items-center gap-3">
@@ -223,15 +223,15 @@ function LeadDetailDrawer({
 
           {/* KPI strip */}
           <div className="px-6 py-4 border-b border-white/5 grid grid-cols-3 gap-3">
-            <div className="bg-[#111827] rounded-xl p-3 text-center">
+            <div className="bg-[var(--color-surface-elevated)] rounded-xl p-3 text-center">
               <p className="text-sm font-black text-white">{fmt(lead.orcamento)}</p>
               <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">Orçamento</p>
             </div>
-            <div className="bg-[#111827] rounded-xl p-3 text-center">
+            <div className="bg-[var(--color-surface-elevated)] rounded-xl p-3 text-center">
               <p className={`text-sm font-black ${lead.dias_etapa >= 7 ? "text-red-400" : "text-white"}`}>{lead.dias_etapa}d</p>
               <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">Na Etapa</p>
             </div>
-            <div className="bg-[#111827] rounded-xl p-3 text-center">
+            <div className="bg-[var(--color-surface-elevated)] rounded-xl p-3 text-center">
               <p className="text-sm font-black text-white">{etapaIndex + 1}/{ETAPAS.length}</p>
               <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">Progresso</p>
             </div>
@@ -466,7 +466,7 @@ export default function LeadsImobiliario() {
           { label: "Perdidos", value: perdidos, color: "text-red-400" },
           { label: "VGV Potencial", value: `R$ ${(vgvPotencial / 1e6).toFixed(1)}M`, color: "text-violet-400" },
         ].map(k => (
-          <div key={k.label} className="bg-[#111827]/80 border border-white/5 rounded-xl p-4 text-center">
+          <div key={k.label} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl p-4 text-center">
             <p className={`text-xl font-black ${k.color}`}>{k.value}</p>
             <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">{k.label}</p>
           </div>
@@ -477,14 +477,14 @@ export default function LeadsImobiliario() {
       <div className="flex flex-wrap gap-3 mb-6">
         <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar nome, bairro, corretor..." className="w-full bg-[#111827] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50" />
+          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar nome, bairro, corretor..." className="w-full bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50" />
         </div>
-        <div className="flex bg-[#111827] border border-white/10 rounded-xl p-1 gap-1 overflow-x-auto">
+        <div className="flex bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl p-1 gap-1 overflow-x-auto">
           {["Todas", ...ETAPAS].map(e => (
             <button key={e} onClick={() => setEtapaFilter(e)} className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all whitespace-nowrap ${etapaFilter === e ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "text-slate-500 hover:text-slate-300"}`}>{e}</button>
           ))}
         </div>
-        <div className="flex bg-[#111827] border border-white/10 rounded-xl p-1 gap-1">
+        <div className="flex bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl p-1 gap-1">
           {["Todas", "Alta", "Média", "Baixa"].map(p => (
             <button key={p} onClick={() => setPrioFilter(p)} className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${prioFilter === p ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "text-slate-500 hover:text-slate-300"}`}>{p}</button>
           ))}
@@ -501,7 +501,7 @@ export default function LeadsImobiliario() {
             <div
               key={l.id}
               onClick={() => setSelectedLead(l)}
-              className="flex items-center gap-4 p-4 bg-[#111827]/80 border border-white/5 rounded-xl hover:border-blue-500/20 hover:bg-[#111827] transition-all cursor-pointer group"
+              className="flex items-center gap-4 p-4 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl hover:border-blue-500/20 hover:bg-[var(--color-surface-elevated)] transition-all cursor-pointer group"
             >
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-black text-sm shrink-0">
                 {l.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}

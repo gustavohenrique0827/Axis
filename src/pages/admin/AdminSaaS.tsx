@@ -97,7 +97,7 @@ export default function AdminSaaS() {
             <Shield className="w-4 h-4 mr-2" />
             {settingUpMaster ? "Configurando..." : "Setup Master gthec"}
           </Button>
-          <Button variant="outline" className="border-white/10 bg-[#111827] text-white hover:bg-white/5 h-10 px-4" disabled>
+          <Button variant="outline" className="border-white/10 bg-[var(--color-surface-elevated)] text-white hover:bg-white/5 h-10 px-4" disabled>
             <Bell className="w-4 h-4 mr-2" /> Alertas
           </Button>
           <Button className="bg-[#06B6D4] hover:bg-[#0891B2] text-white shadow-lg shadow-cyan-500/20 h-10 px-4 font-bold" disabled>

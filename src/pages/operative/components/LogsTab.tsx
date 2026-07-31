@@ -30,7 +30,7 @@ export function LogsTab({
         <p className="text-sm text-slate-400 mt-1">Rastreabilidade completa de governança e movimentações de squad.</p>
       </div>
 
-      <Card className="bg-[#111827]/40 border-white/5 backdrop-blur-xl overflow-hidden rounded-3xl">
+      <Card className="bg-[var(--color-surface-elevated)]/40 border-white/5 backdrop-blur-xl overflow-hidden rounded-3xl">
         <div className="p-8 border-b border-white/5 flex items-center justify-between bg-white/[0.01]">
           <div>
             <h3 className="text-sm font-black text-white uppercase tracking-widest">Histórico Governamental</h3>

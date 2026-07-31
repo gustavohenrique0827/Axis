@@ -16,14 +16,14 @@ export function PerfilColabModal({ colab, onClose }: PerfilColabModalProps) {
     "bg-rose-500/10 text-rose-500";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm" onClick={onClose}>
-      <div className="w-full max-w-md bg-[#0B1120] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150" onClick={onClose}>
+      <div className="w-full max-w-md bg-[var(--color-surface)] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200" onClick={e => e.stopPropagation()}>
 
         <div className="h-28 bg-gradient-to-r from-indigo-600/30 to-blue-600/30 relative flex items-end justify-center">
           <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
             <X className="w-4 h-4" />
           </button>
-          <div className="w-20 h-20 rounded-2xl bg-[#0B1120] border-4 border-[#0B1120] -mb-10 flex items-center justify-center text-indigo-500">
+          <div className="w-20 h-20 rounded-2xl bg-[var(--color-surface)] border-4 border-[var(--color-surface)] -mb-10 flex items-center justify-center text-indigo-500">
             <Users className="w-8 h-8 opacity-40" />
           </div>
         </div>

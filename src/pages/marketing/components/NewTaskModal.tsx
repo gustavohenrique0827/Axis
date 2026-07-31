@@ -39,11 +39,11 @@ export function NewTaskModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
       <motion.div 
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden"
+        className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200"
       >
          <div className="p-6 border-b border-white/10 flex justify-between items-center text-white text-left">
             <h3 className="text-lg font-black uppercase tracking-tighter">Criar Nova Pauta</h3>
@@ -59,7 +59,7 @@ export function NewTaskModal({
                  value={newTitle}
                  onChange={(e) => setNewTitle(e.target.value)}
                  placeholder="Ex: Tutorial Dashboard Financeiro" 
-                 className="w-full bg-[#1E293B] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none" 
+                 className="w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none" 
                />
             </div>
             <div className="space-y-1.5">
@@ -69,7 +69,7 @@ export function NewTaskModal({
                  value={newValue}
                  onChange={(e) => setNewValue(e.target.value)}
                  placeholder="0,00 — deixe em branco se não houver custo"
-                 className="w-full bg-[#1E293B] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none"
+                 className="w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:border-blue-500 outline-none"
                />
             </div>
             <div className="grid grid-cols-2 gap-4">
@@ -78,7 +78,7 @@ export function NewTaskModal({
                   <select 
                     value={newPlatform}
                     onChange={(e) => setNewPlatform(e.target.value)}
-                    className="w-full bg-[#1E293B] border border-white/5 rounded-xl px-4 py-3 text-sm text-white outline-none"
+                    className="w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-4 py-3 text-sm text-white outline-none"
                   >
                      <option value="Instagram">Instagram</option>
                      <option value="TikTok">TikTok</option>
@@ -93,7 +93,7 @@ export function NewTaskModal({
                     type="date" 
                     value={newDate}
                     onChange={(e) => setNewDate(e.target.value)}
-                    className="w-full bg-[#1E293B] border border-white/5 rounded-xl px-4 py-3 text-sm text-[#94A3B8] outline-none" 
+                    className="w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-4 py-3 text-sm text-[#94A3B8] outline-none" 
                   />
                </div>
             </div>
@@ -115,7 +115,7 @@ export function NewTaskModal({
                            className={`py-2 px-3 rounded-xl border text-xs transition-all cursor-pointer ${
                               isSelected 
                                 ? activeColors 
-                                : 'bg-[#1E293B] border-white/5 text-slate-400 hover:text-white'
+                                : 'bg-[var(--color-surface-elevated)] border-white/5 text-slate-400 hover:text-white'
                            }`}
                         >
                            {p}
@@ -131,7 +131,7 @@ export function NewTaskModal({
                  value={newDesc}
                  onChange={(e) => setNewDesc(e.target.value)}
                  placeholder="Descreva brevemente o objetivo desse conteúdo..." 
-                 className="w-full bg-[#1E293B] border border-white/5 rounded-xl px-4 py-3 text-sm text-white outline-none resize-none"
+                 className="w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-4 py-3 text-sm text-white outline-none resize-none"
                ></textarea>
             </div>
          </div>

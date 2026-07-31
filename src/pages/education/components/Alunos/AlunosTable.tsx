@@ -34,7 +34,7 @@ export function AlunosTable({ students, onManage }: AlunosTableProps) {
         </thead>
         <tbody>
           {students.length > 0 ? students.map((aluno) => (
-            <tr key={aluno.id} className="group bg-[#111827]/80 hover:bg-white/[0.03] transition-all">
+            <tr key={aluno.id} className="group bg-[var(--color-surface-elevated)]/80 hover:bg-white/[0.03] transition-all">
               <td className="py-4 pl-6 rounded-l-2xl border-y border-l border-white/5">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-xs border border-blue-500/20">

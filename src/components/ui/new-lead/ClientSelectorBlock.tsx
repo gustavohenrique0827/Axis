@@ -45,7 +45,7 @@ export function ClientSelectorBlock({
                 ? `Buscar entre ${clienteBase.length} clientes...`
                 : "Nenhum cliente cadastrado ainda"
             }
-            className="w-full bg-[#0B1120]/60 border border-white/10 rounded-xl pl-9 pr-9 py-2.5 text-white text-xs focus:border-blue-500/40 focus:outline-none transition-all placeholder:text-slate-600"
+            className="w-full bg-[var(--color-surface)]/60 border border-white/10 rounded-xl pl-9 pr-9 py-2.5 text-white text-xs focus:border-blue-500/40 focus:outline-none transition-all placeholder:text-slate-600"
           />
           {selectedClientId
             ? <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-emerald-400" />
@@ -54,7 +54,7 @@ export function ClientSelectorBlock({
         </div>
 
         {showClientDropdown && filteredClients.length > 0 && (
-          <div className="absolute z-50 top-full mt-1 w-full bg-[#0d1626] border border-white/10 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
+          <div className="absolute z-50 top-full mt-1 w-full bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl shadow-2xl max-h-48 overflow-y-auto">
             {filteredClients.map((c: any) => (
               <button
                 key={c.id} type="button" onMouseDown={() => handleSelectClient(c)}

@@ -38,7 +38,7 @@ export default function Layout() {
   }, []);
 
   return (
-    <div className="h-screen overflow-hidden bg-[#0B1120] text-[#F8FAFC] font-sans flex transition-all">
+    <div className="h-screen overflow-hidden bg-[var(--color-surface)] text-[var(--color-text-primary)] font-sans flex transition-all">
       <Sidebar
         isSidebarCollapsed={isSidebarCollapsed}
         isMobileSidebarOpen={isMobileSidebarOpen}

@@ -86,7 +86,7 @@ export default function Certificados() {
 
       {isEmitModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-[#111827] border border-white/10 rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
+          <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
             <div className="p-8 border-b border-white/5 bg-gradient-to-br from-amber-500/10 to-transparent">
               <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">🎓 Nova Autenticação Axis</h3>
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Crie e valide uma nova credencial acadêmica irrevogável.</p>

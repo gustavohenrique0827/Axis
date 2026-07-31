@@ -42,7 +42,7 @@ export function RightControlDrawer({
       />
       
       {/* Drawer */}
-      <div className={`absolute top-0 right-0 bottom-0 w-[90%] sm:w-[380px] bg-[#0B1120] flex flex-col border-l border-white/10 shadow-2xl shadow-black z-50 transform transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${rightPanel !== 'none' ? 'translate-x-0' : 'translate-x-[100%]'}`}>
+      <div className={`absolute top-0 right-0 bottom-0 w-[90%] sm:w-[380px] bg-[var(--color-surface)] flex flex-col border-l border-white/10 shadow-2xl shadow-black z-50 transform transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] ${rightPanel !== 'none' ? 'translate-x-0' : 'translate-x-[100%]'}`}>
         
         {/* Panel Header */}
         <div className="shrink-0 h-[72px] px-5 flex items-center justify-between border-b border-white/5 bg-[#0F172A]/80 backdrop-blur-md">
@@ -102,7 +102,7 @@ export function RightControlDrawer({
                 <h4 className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-2">Tags / Estágio</h4>
                 <div className="flex flex-wrap gap-2">
                   {currentContact.tags?.map((tag, idx) => (
-                    <span key={idx} className="px-2.5 py-1 bg-[#1E293B] border border-white/10 rounded-md text-[11px] text-slate-300 font-medium uppercase tracking-wider">
+                    <span key={idx} className="px-2.5 py-1 bg-[var(--color-surface-elevated)] border border-white/10 rounded-md text-[11px] text-slate-300 font-medium uppercase tracking-wider">
                       {tag}
                     </span>
                   ))}
@@ -115,7 +115,7 @@ export function RightControlDrawer({
                 <h4 className="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-2">Histórico de Compras</h4>
                 <div className="space-y-2">
                   {currentContact.purchaseHistory && currentContact.purchaseHistory.length > 0 ? currentContact.purchaseHistory.map((ph, idx) => (
-                    <div key={idx} className="flex flex-col gap-0.5 bg-[#1E293B] p-2.5 rounded-xl border border-white/5">
+                    <div key={idx} className="flex flex-col gap-0.5 bg-[var(--color-surface-elevated)] p-2.5 rounded-xl border border-white/5">
                       <div className="flex items-start justify-between">
                         <p className="text-[13px] text-slate-200 font-medium leading-tight">{ph.item}</p>
                         <span className="text-[12px] text-emerald-400 font-bold shrink-0 ml-2">{ph.value}</span>
@@ -179,7 +179,7 @@ export function RightControlDrawer({
                     )}
                     <div className={`max-w-[85%] p-3.5 rounded-2xl text-[13px] sm:text-[14px] leading-snug shadow-sm text-left ${
                       aimsg.type === 'user' 
-                        ? 'bg-[#1E293B] text-white rounded-br-sm border border-white/5' 
+                        ? 'bg-[var(--color-surface-elevated)] text-white rounded-br-sm border border-white/5' 
                         : 'bg-blue-600/10 border border-blue-500/20 text-blue-50 rounded-bl-sm'
                     }`}>
                       {aimsg.text}
@@ -208,7 +208,7 @@ export function RightControlDrawer({
                 onChange={(e) => setAiPrompt(e.target.value)}
                 placeholder="Pergunte à Master AI..." 
                 rows={1}
-                className="flex-1 bg-[#1E293B] border border-white/5 rounded-xl px-3.5 py-3 text-[14px] text-slate-200 outline-none focus:border-blue-500/50 resize-none max-h-[100px] overflow-y-auto shadow-inner w-full min-w-0 placeholder-slate-500" 
+                className="flex-1 bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-3.5 py-3 text-[14px] text-slate-200 outline-none focus:border-blue-500/50 resize-none max-h-[100px] overflow-y-auto shadow-inner w-full min-w-0 placeholder-slate-500" 
                 onKeyDown={(e) => {
                   if(e.key === 'Enter' && !e.shiftKey) { 
                     e.preventDefault(); 
@@ -217,7 +217,7 @@ export function RightControlDrawer({
                 }}
               />
               <button 
-                className={`p-3 rounded-xl shadow-md transition-all shrink-0 ${aiPrompt.trim() && !aiTyping ? 'bg-blue-600 hover:bg-blue-500 text-white cursor-pointer active:scale-95' : 'bg-[#1E293B] text-slate-500 pointer-events-none'}`}
+                className={`p-3 rounded-xl shadow-md transition-all shrink-0 ${aiPrompt.trim() && !aiTyping ? 'bg-blue-600 hover:bg-blue-500 text-white cursor-pointer active:scale-95' : 'bg-[var(--color-surface-elevated)] text-slate-500 pointer-events-none'}`}
                 onClick={handleAiAsk}
               >
                 <Send className="w-4 h-4 sm:w-5 sm:h-5 translate-x-[1px] translate-y-[-1px]"/>

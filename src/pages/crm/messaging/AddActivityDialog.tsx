@@ -30,7 +30,7 @@ export function AddActivityDialog({
 
   return (
     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[#111827] border border-white/10 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl relative animate-in zoom-in-95 duration-200">
+      <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl relative animate-in zoom-in-95 duration-200">
         <button 
           onClick={() => setShowAddActivityModal(false)}
           className="absolute top-4 right-4 p-1.5 hover:bg-white/15 rounded-full text-slate-400 transition-colors"
@@ -60,7 +60,7 @@ export function AddActivityDialog({
                   className={`py-2 rounded-xl text-xs font-bold border transition-colors cursor-pointer ${
                     newActivityType === t
                       ? 'bg-[#2563EB]/15 border-[#2563EB] text-blue-400'
-                      : 'bg-[#0B1120] border-white/5 text-slate-400 hover:text-white hover:bg-white/5'
+                      : 'bg-[var(--color-surface)] border-white/5 text-slate-400 hover:text-white hover:bg-white/5'
                   }`}
                 >
                   {t === 'Reunião' && '📅 REU'}
@@ -79,7 +79,7 @@ export function AddActivityDialog({
               value={newActivityTitle}
               onChange={(e) => setNewActivityTitle(e.target.value)}
               placeholder="Ex: Alinhamento de SLA comercial"
-              className="w-full bg-[#0B1120] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
+              className="w-full bg-[var(--color-surface)] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
             />
           </div>
 
@@ -90,7 +90,7 @@ export function AddActivityDialog({
               onChange={(e) => setNewActivityDesc(e.target.value)}
               rows={4}
               placeholder="Escreva anotações detalhadas sobre as decisões tomadas ou a ligação efetuada..."
-              className="w-full bg-[#0B1120] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 resize-none"
+              className="w-full bg-[var(--color-surface)] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 resize-none"
             />
           </div>
         </div>

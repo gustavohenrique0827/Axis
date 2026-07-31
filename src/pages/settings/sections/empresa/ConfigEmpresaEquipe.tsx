@@ -14,9 +14,9 @@ export function ConfigEmpresaEquipe() {
           <Users className="w-4 h-4 mr-2" /> Convidar Membro
         </Button>
       </div>
-      <Card className="p-6 bg-[#111827]/80 backdrop-blur-xl border border-white/10">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
         <p className="text-slate-400">Gerenciamento de equipe movido para o menu principal. Acesse "Equipe" na barra lateral esquerda.</p>
-        <Button onClick={() => window.location.href = "/app/equipe"} className="mt-4 bg-[#0B1120] border border-white/10 text-white hover:bg-white/5">
+        <Button onClick={() => window.location.href = "/app/equipe"} className="mt-4 bg-[var(--color-surface)] border border-white/10 text-white hover:bg-white/5">
           Ir para Gestão de Equipe <ExternalLink className="w-4 h-4 ml-2" />
         </Button>
       </Card>

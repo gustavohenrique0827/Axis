@@ -41,7 +41,7 @@ export default function PainelGeralEducation() {
              { label: "Conteúdos Vistos", value: "—", trend: "", icon: BookOpen, color: "text-indigo-400" },
              { label: "NPS Acadêmico", value: "—", trend: "", icon: Star, color: "text-amber-400" },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[#111827]/80 border-white/5 group opacity-50">
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 group opacity-50">
                 <div className="flex items-center justify-between mb-4">
                    <div className="p-3 rounded-2xl bg-white/5 group-hover:scale-110 transition-transform">
                       <stat.icon className={`w-5 h-5 ${stat.color}`} />
@@ -60,7 +60,7 @@ export default function PainelGeralEducation() {
 
         <div className="grid lg:grid-cols-3 gap-6">
            {/* Engagement Area Chart */}
-           <Card className="lg:col-span-2 p-8 bg-[#111827]/80 border-white/5">
+           <Card className="lg:col-span-2 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
               <div className="flex justify-between items-center mb-10">
                  <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                     <Activity className="w-4 h-4 text-blue-400" /> Engajamento do Aluno
@@ -75,7 +75,7 @@ export default function PainelGeralEducation() {
            </Card>
 
            {/* Course Split */}
-           <Card className="p-8 bg-[#111827]/80 border-white/5">
+           <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
               <h3 className="text-xs font-black text-white uppercase tracking-widest mb-10">Matrículas por Área</h3>
               <div className="h-[280px] flex flex-col items-center justify-center gap-4 opacity-40">
                  <BookOpen className="w-10 h-10 text-slate-500" />
@@ -88,7 +88,7 @@ export default function PainelGeralEducation() {
 
         {/* Recently Active Classes Table */}
         <div className="grid lg:grid-cols-3 gap-6">
-           <Card className="lg:col-span-2 bg-[#111827]/80 border-white/5 overflow-hidden">
+           <Card className="lg:col-span-2 bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
               <div className="p-6 border-bottom border-white/5 flex justify-between items-center">
                  <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
                     <Calendar className="w-4 h-4 text-blue-400" /> Turmas em Destaque

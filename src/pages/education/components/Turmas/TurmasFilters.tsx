@@ -9,7 +9,7 @@ interface TurmasFiltersProps {
 
 export function TurmasFilters({ search, onSearchChange }: TurmasFiltersProps) {
   return (
-    <Card className="p-4 bg-[#111827]/80 border-white/5 flex flex-col md:flex-row gap-4 items-center">
+    <Card className="p-4 bg-[var(--color-surface-elevated)]/80 border-white/5 flex flex-col md:flex-row gap-4 items-center">
       <div className="relative flex-1 w-full group">
         <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
         <Input

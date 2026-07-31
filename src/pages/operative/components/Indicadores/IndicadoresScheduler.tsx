@@ -29,7 +29,7 @@ export function IndicadoresScheduler({
   newTime, onTimeChange, onCreateSchedule, onToggleSchedule, onDeleteSchedule, onSimulateRun,
 }: IndicadoresSchedulerProps) {
   return (
-    <Card className="p-8 border border-white/5 bg-[#111827]/80 backdrop-blur-xl rounded-2xl relative overflow-hidden">
+    <Card className="p-8 border border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl rounded-2xl relative overflow-hidden">
       <div className="absolute top-0 right-0 w-80 h-80 bg-blue-500/[0.03] blur-[120px] rounded-full pointer-events-none" />
 
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-white/5 mb-6">
@@ -54,14 +54,14 @@ export function IndicadoresScheduler({
           <div className="space-y-1.5">
             <label className="text-[11px] font-bold text-slate-400 uppercase block">E-mail do Gestor</label>
             <input type="text" placeholder="exemplo@axis.com.br" value={newEmail} onChange={(e) => onEmailChange(e.target.value)}
-              className="w-full bg-[#0B1120] text-sm text-white placeholder-slate-600 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-colors"
+              className="w-full bg-[var(--color-surface)] text-sm text-white placeholder-slate-600 border border-white/10 rounded-xl px-4 py-3 outline-none focus:border-blue-500 transition-colors"
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-slate-400 uppercase block">Frequência</label>
               <select value={newWeekday} onChange={(e) => onWeekdayChange(e.target.value)}
-                className="w-full bg-[#0B1120] text-xs text-white border border-white/10 rounded-xl px-3.5 py-3 outline-none font-bold"
+                className="w-full bg-[var(--color-surface)] text-xs text-white border border-white/10 rounded-xl px-3.5 py-3 outline-none font-bold"
               >
                 <option value="Segunda-feira">Toda Segunda (Recomendado)</option>
                 <option value="Terça-feira">Toda Terça</option>
@@ -73,7 +73,7 @@ export function IndicadoresScheduler({
             <div className="space-y-1.5">
               <label className="text-[11px] font-bold text-slate-400 uppercase block">Horário Disparo</label>
               <input type="time" value={newTime} onChange={(e) => onTimeChange(e.target.value)}
-                className="w-full bg-[#0B1120] text-xs font-bold text-white border border-white/10 rounded-xl px-4 py-3 outline-none font-mono text-center"
+                className="w-full bg-[var(--color-surface)] text-xs font-bold text-white border border-white/10 rounded-xl px-4 py-3 outline-none font-mono text-center"
               />
             </div>
           </div>
@@ -89,7 +89,7 @@ export function IndicadoresScheduler({
             </h3>
             <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
               {schedules.length > 0 ? schedules.map((item) => (
-                <div key={item.id} className={`flex items-center justify-between p-3.5 border rounded-xl transition-all ${item.active ? "bg-[#0B1120]/60 border-blue-500/10 hover:border-blue-500/20" : "bg-slate-900/20 border-white/5 opacity-50"}`}>
+                <div key={item.id} className={`flex items-center justify-between p-3.5 border rounded-xl transition-all ${item.active ? "bg-[var(--color-surface)]/60 border-blue-500/10 hover:border-blue-500/20" : "bg-slate-900/20 border-white/5 opacity-50"}`}>
                   <div className="flex items-center gap-3.5 truncate text-left">
                     <div className={`p-2 rounded-lg ${item.active ? "bg-blue-500/10 text-blue-400" : "bg-white/5 text-slate-400"}`}><Mail className="w-4 h-4" /></div>
                     <div className="truncate">
@@ -109,14 +109,14 @@ export function IndicadoresScheduler({
                   </div>
                 </div>
               )) : (
-                <div className="flex flex-col items-center justify-center p-8 text-center text-slate-400 space-y-2 bg-[#0B1120]/20 rounded-xl border border-dashed border-white/5">
+                <div className="flex flex-col items-center justify-center p-8 text-center text-slate-400 space-y-2 bg-[var(--color-surface)]/20 rounded-xl border border-dashed border-white/5">
                   <Mail className="w-8 h-8 text-slate-600" />
                   <span className="text-xs font-bold text-slate-300">Sem agendamentos activos</span>
                 </div>
               )}
             </div>
           </div>
-          <div className="bg-[#0B1120]/60 p-3.5 rounded-xl border border-white/5 flex items-start gap-2.5 mt-4 text-left">
+          <div className="bg-[var(--color-surface)]/60 p-3.5 rounded-xl border border-white/5 flex items-start gap-2.5 mt-4 text-left">
             <CheckCircle className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
             <p className="text-[10px] text-slate-400 leading-normal">
               <strong>Dispensadores automáticos:</strong> Os relatórios são disparados através de rotinas CRON agendadas. Você também pode baixar o arquivo CSV compilado imediatamente pressionando a opção <strong>"Simular Disparo"</strong> acima.

@@ -88,13 +88,13 @@ export function ConfigCRMSLA() {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Left editor: form controls */}
-        <Card className="lg:col-span-3 p-4 sm:p-6 bg-[#111827]/80 border border-white/10 flex flex-col justify-between rounded-2xl relative overflow-hidden">
+        <Card className="lg:col-span-3 p-4 sm:p-6 bg-[var(--color-surface-elevated)]/80 border border-white/10 flex flex-col justify-between rounded-2xl relative overflow-hidden">
           <div className="space-y-6">
             <div className="border-b border-white/5 pb-4 space-y-3">
               <h3 className="text-xs font-black text-blue-400 uppercase tracking-widest font-mono">Definir por Complexidade</h3>
               
               {/* Tabs for Priority Selection */}
-              <div className="flex flex-wrap gap-1.5 p-1 bg-[#0B1120] rounded-xl border border-white/5 w-full sm:w-fit">
+              <div className="flex flex-wrap gap-1.5 p-1 bg-[var(--color-surface)] rounded-xl border border-white/5 w-full sm:w-fit">
                 {(["Alta", "Média", "Baixa"] as const).map(p => (
                   <button
                     key={p}
@@ -113,7 +113,7 @@ export function ConfigCRMSLA() {
 
             {/* Config Form Elements for Selected Priority */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between bg-[#0B1120] p-3 rounded-xl border border-white/5 gap-3">
+              <div className="flex items-center justify-between bg-[var(--color-surface)] p-3 rounded-xl border border-white/5 gap-3">
                 <div className="space-y-0.5 max-w-[80%]">
                   <span className="text-xs text-white font-bold block">Meta de SLA Ativa</span>
                   <span className="text-[10px] text-slate-500 block leading-tight">Monitorar tempo limite para leads de prioridade {activePriority}.</span>
@@ -122,19 +122,19 @@ export function ConfigCRMSLA() {
                   type="checkbox" 
                   checked={currentRule.active}
                   onChange={(e) => updateCurrentRule({ active: e.target.checked })}
-                  className="w-4 h-4 text-blue-500 rounded border-white/10 bg-[#0B1120] focus:ring-0 cursor-pointer shrink-0"
+                  className="w-4 h-4 text-blue-500 rounded border-white/10 bg-[var(--color-surface)] focus:ring-0 cursor-pointer shrink-0"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div className="space-y-1.5 bg-[#0B1120]/40 p-3 sm:p-4 border border-white/5 rounded-xl">
+                <div className="space-y-1.5 bg-[var(--color-surface)]/40 p-3 sm:p-4 border border-white/5 rounded-xl">
                   <label className="text-[10px] text-slate-500 uppercase font-black block">Espera Máxima (SLA)</label>
                   <div className="flex items-center gap-2 flex-wrap">
                     <input 
                       type="number" 
                       value={currentRule.limitHours} 
                       onChange={(e) => updateCurrentRule({ limitHours: parseInt(e.target.value) || 0 })}
-                      className="bg-[#0B1120] border border-white/10 rounded-lg p-2 text-sm text-white w-20 sm:w-24 font-mono font-bold text-center" 
+                      className="bg-[var(--color-surface)] border border-white/10 rounded-lg p-2 text-sm text-white w-20 sm:w-24 font-mono font-bold text-center" 
                       min="1"
                     />
                     <span className="text-xs text-slate-400 font-semibold">horas</span>
@@ -142,14 +142,14 @@ export function ConfigCRMSLA() {
                   <span className="text-[10px] text-slate-500 block mt-1">Tempo parado sem atendimento para o lead esfriar.</span>
                 </div>
 
-                <div className="space-y-1.5 bg-[#0B1120]/40 p-3 sm:p-4 border border-white/5 rounded-xl">
+                <div className="space-y-1.5 bg-[var(--color-surface)]/40 p-3 sm:p-4 border border-white/5 rounded-xl">
                   <label className="text-[10px] text-slate-500 uppercase font-black block">Pré-alerta Visual</label>
                   <div className="flex items-center gap-2 flex-wrap">
                     <input 
                       type="number" 
                       value={currentRule.warningHours} 
                       onChange={(e) => updateCurrentRule({ warningHours: parseInt(e.target.value) || 0 })}
-                      className="bg-[#0B1120] border border-white/10 rounded-lg p-2 text-sm text-white w-20 sm:w-24 font-mono font-bold text-center" 
+                      className="bg-[var(--color-surface)] border border-white/10 rounded-lg p-2 text-sm text-white w-20 sm:w-24 font-mono font-bold text-center" 
                       min="1"
                     />
                     <span className="text-xs text-slate-400 font-semibold">horas antes</span>
@@ -159,7 +159,7 @@ export function ConfigCRMSLA() {
               </div>
 
               {/* Customizing Alerts UI */}
-              <div className="space-y-3 bg-[#0B1120]/20 p-3 sm:p-4 border border-white/5 rounded-xl">
+              <div className="space-y-3 bg-[var(--color-surface)]/20 p-3 sm:p-4 border border-white/5 rounded-xl">
                 <h4 className="text-xs font-black text-white flex items-center gap-1.5">
                   <Palette className="w-3.5 h-3.5 text-blue-400" /> Customização de Alerta Visual
                 </h4>
@@ -171,7 +171,7 @@ export function ConfigCRMSLA() {
                     <select 
                       value={currentRule.alertStyle}
                       onChange={(e) => updateCurrentRule({ alertStyle: e.target.value })}
-                      className="bg-[#0B1120] border border-white/10 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-full"
+                      className="bg-[var(--color-surface)] border border-white/10 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-full"
                     >
                       <option value="border-pulse-shake">Pulsar Vermelho (Alta)</option>
                       <option value="shadow-glow">Glow Dourado (Média)</option>
@@ -186,7 +186,7 @@ export function ConfigCRMSLA() {
                     <select 
                       value={currentRule.color}
                       onChange={(e) => updateCurrentRule({ color: e.target.value })}
-                      className="bg-[#0B1120] border border-white/10 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-full"
+                      className="bg-[var(--color-surface)] border border-white/10 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-full"
                     >
                       <option value="#EF4444">Tom Vermelho</option>
                       <option value="#F59E0B">Tom Âmbar</option>
@@ -202,7 +202,7 @@ export function ConfigCRMSLA() {
                     <select 
                       value={currentRule.icon}
                       onChange={(e) => updateCurrentRule({ icon: e.target.value })}
-                      className="bg-[#0B1120] border border-white/10 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-full"
+                      className="bg-[var(--color-surface)] border border-white/10 rounded-lg p-1.5 text-xs text-white focus:outline-none focus:border-blue-500 w-full"
                     >
                       <option value="Clock">Relógio (SLA)</option>
                       <option value="Flame">Fogo (Esfriando)</option>
@@ -217,7 +217,7 @@ export function ConfigCRMSLA() {
 
           <div className="mt-6 pt-4 border-t border-white/5 flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-slate-500">
             <span>Última sincronização local: Hoje</span>
-            <Button onClick={handleSaveSla} variant="outline" className="border-white/10 text-xs py-1 h-8 bg-[#0B1120] text-slate-200 w-full sm:w-auto">
+            <Button onClick={handleSaveSla} variant="outline" className="border-white/10 text-xs py-1 h-8 bg-[var(--color-surface)] text-slate-200 w-full sm:w-auto">
               Aplicar Regra
             </Button>
           </div>
@@ -225,7 +225,7 @@ export function ConfigCRMSLA() {
 
         {/* Right mockup card preview */}
         <div className="lg:col-span-2 flex flex-col gap-4">
-          <Card className="p-4 sm:p-6 bg-[#111827]/80 border border-white/10 flex flex-col justify-between rounded-2xl relative overflow-hidden h-full">
+          <Card className="p-4 sm:p-6 bg-[var(--color-surface-elevated)]/80 border border-white/10 flex flex-col justify-between rounded-2xl relative overflow-hidden h-full">
             <div className="space-y-2">
               <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest font-mono">Visualizador de Card</h3>
               <p className="text-xs text-slate-400 leading-relaxed">Pré-visualização de como este lead aparecerá no funil de negociações quando o SLA estourar:</p>
@@ -233,7 +233,7 @@ export function ConfigCRMSLA() {
 
             {/* Actual simulated card */}
             <div className="my-6">
-              <div className={`p-4 bg-[#111827]/90 border backdrop-blur-xl rounded-xl transition-all ${getPreviewAlertClass(currentRule.color, currentRule.alertStyle)}`}>
+              <div className={`p-4 bg-[var(--color-surface-elevated)]/90 border backdrop-blur-xl rounded-xl transition-all ${getPreviewAlertClass(currentRule.color, currentRule.alertStyle)}`}>
                 <div className="flex justify-between items-start mb-3 gap-2 flex-wrap">
                   <span className={`inline-flex items-center gap-1 text-[8.5px] font-black px-2 py-0.5 rounded-md border uppercase bg-rose-500/10 text-rose-400 border-rose-500/20`}>
                     {activePriority} Prioridade
@@ -252,7 +252,7 @@ export function ConfigCRMSLA() {
                 <div className="space-y-2 col-span-1 min-w-0">
                   <h4 className="font-bold text-white text-sm truncate">Empresa Exemplo LTDA</h4>
                   <div className="flex items-center gap-1.5 text-xs text-slate-400 flex-wrap">
-                     <span className="bg-[#0B1120] px-1.5 py-0.5 rounded text-[10px] font-bold border border-white/5 truncate max-w-[120px]">
+                     <span className="bg-[var(--color-surface)] px-1.5 py-0.5 rounded text-[10px] font-bold border border-white/5 truncate max-w-[120px]">
                        Nome do Vendedor
                      </span>
                      <span>•</span>
@@ -269,7 +269,7 @@ export function ConfigCRMSLA() {
               </div>
             </div>
 
-            <div className="bg-[#0B1120] p-3 border border-white/5 rounded-xl space-y-1 text-center">
+            <div className="bg-[var(--color-surface)] p-3 border border-white/5 rounded-xl space-y-1 text-center">
               <span className="text-[10px] text-slate-500 block uppercase font-bold tracking-wider">Efeito de Atenção Ativo</span>
               <span className="text-xs font-mono font-black text-amber-400 uppercase">
                 {currentRule.active ? currentRule.alertStyle : "Nenhum Alerta Ativo"}
@@ -282,7 +282,7 @@ export function ConfigCRMSLA() {
       {/* Senior and SDR SLAs (Retained and polished to keep other rules active) */}
       <h3 className="text-lg font-bold text-white mt-8 border-b border-white/5 pb-2">Regras de Exceção CRM</h3>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-        <Card className="p-4 sm:p-5 bg-[#111827]/60 border border-white/10 rounded-2xl">
+        <Card className="p-4 sm:p-5 bg-[var(--color-surface-elevated)]/60 border border-white/10 rounded-2xl">
           <h4 className="text-xs font-black text-blue-400 uppercase tracking-widest font-mono mb-3">Vendedor Sênior</h4>
           {seniorSlaRules.map((rule, idx) => (
             <div key={`senior-${idx}`} className="space-y-3">
@@ -293,18 +293,18 @@ export function ConfigCRMSLA() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-1">
                   <span className="text-[10px] text-slate-500">Meta de Resposta</span>
-                  <input type="number" readOnly value={rule.responseMins} className="bg-[#0B1120] border border-white/5 rounded p-1 text-xs text-white w-full text-center" />
+                  <input type="number" readOnly value={rule.responseMins} className="bg-[var(--color-surface)] border border-white/5 rounded p-1 text-xs text-white w-full text-center" />
                 </div>
                 <div className="space-y-1">
                   <span className="text-[10px] text-slate-500">Pre-alerta</span>
-                  <input type="number" readOnly value={rule.warningMins} className="bg-[#0B1120] border border-white/5 rounded p-1 text-xs text-white w-full text-center" />
+                  <input type="number" readOnly value={rule.warningMins} className="bg-[var(--color-surface)] border border-white/5 rounded p-1 text-xs text-white w-full text-center" />
                 </div>
               </div>
             </div>
           ))}
         </Card>
 
-        <Card className="p-4 sm:p-5 bg-[#111827]/60 border border-white/10 rounded-2xl">
+        <Card className="p-4 sm:p-5 bg-[var(--color-surface-elevated)]/60 border border-white/10 rounded-2xl">
           <h4 className="text-xs font-black text-purple-400 uppercase tracking-widest font-mono mb-3">Espera Máxima no Funil SDR</h4>
           {sdrSlaRules.map((rule, idx) => (
             <div key={`sdr-${idx}`} className="space-y-3">
@@ -315,11 +315,11 @@ export function ConfigCRMSLA() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div className="space-y-1">
                   <span className="text-[10px] text-slate-500">Espera Máxima</span>
-                  <input type="number" readOnly value={rule.maxWaitMins} className="bg-[#0B1120] border border-white/5 rounded p-1 text-xs text-white w-full text-center" />
+                  <input type="number" readOnly value={rule.maxWaitMins} className="bg-[var(--color-surface)] border border-white/5 rounded p-1 text-xs text-white w-full text-center" />
                 </div>
                 <div className="space-y-1">
                   <span className="text-[10px] text-slate-500">Pre-alerta</span>
-                  <input type="number" readOnly value={rule.warningMins} className="bg-[#0B1120] border border-white/5 rounded p-1 text-xs text-white w-full text-center" />
+                  <input type="number" readOnly value={rule.warningMins} className="bg-[var(--color-surface)] border border-white/5 rounded p-1 text-xs text-white w-full text-center" />
                 </div>
               </div>
             </div>

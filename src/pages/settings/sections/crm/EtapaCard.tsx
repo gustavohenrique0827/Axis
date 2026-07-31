@@ -26,7 +26,7 @@ export function EtapaCard({ stage, idx, corInfo, dragHandleProps, onRename, onDe
 
   return (
     <div
-      className="flex-shrink-0 w-[200px] rounded-2xl border border-white/10 bg-[#0B1120] flex flex-col relative"
+      className="flex-shrink-0 w-[200px] rounded-2xl border border-white/10 bg-[var(--color-surface)] flex flex-col relative"
       style={{ borderTop: `4px solid ${corInfo.top}` }}
     >
       <div className="p-3 flex-1">
@@ -52,7 +52,7 @@ export function EtapaCard({ stage, idx, corInfo, dragHandleProps, onRename, onDe
               style={{ backgroundColor: corInfo.dot }}
             />
             {showPicker && (
-              <div className="absolute top-5 left-0 z-[100] p-2 bg-[#1E293B] border border-white/10 rounded-xl shadow-2xl grid grid-cols-5 gap-1.5 w-[116px]">
+              <div className="absolute top-5 left-0 z-[100] p-2 bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl shadow-2xl grid grid-cols-5 gap-1.5 w-[116px]">
                 {CORES_LISTA.map(cor => (
                   <button
                     key={cor}

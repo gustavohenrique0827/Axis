@@ -105,10 +105,10 @@ export function JitsiEmbed({ roomName, displayName, email, onLeave, className }:
   }, [roomName]);
 
   return (
-    <div className={`relative w-full h-full bg-[#070E1A] ${className ?? ""}`}>
+    <div className={`relative w-full h-full bg-[var(--color-surface)] ${className ?? ""}`}>
       {/* Loading overlay */}
       {loading && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#070E1A]">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[var(--color-surface)]">
           <div className="w-14 h-14 rounded-2xl bg-blue-500/15 border border-blue-500/20 flex items-center justify-center">
             <Video className="w-7 h-7 text-blue-400" />
           </div>
@@ -118,7 +118,7 @@ export function JitsiEmbed({ roomName, displayName, email, onLeave, className }:
       )}
 
       {error && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[#070E1A] text-center px-6">
+        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-[var(--color-surface)] text-center px-6">
           <Video className="w-8 h-8 text-slate-600" />
           <p className="text-sm text-slate-400 font-bold">{error}</p>
         </div>

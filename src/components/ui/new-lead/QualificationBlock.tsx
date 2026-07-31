@@ -26,7 +26,7 @@ export function QualificationBlock({
   tags, setTags, aiLoading, suggestTags, isMaster, selectedTenant, setSelectedTenant,
   allTenantModules, products, selectedProductIds, setSelectedProductIds,
 }: QualificationBlockProps) {
-  const inputCls = "w-full bg-[#0B1120]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[#0B1120] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all";
+  const inputCls = "w-full bg-[var(--color-surface)]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[var(--color-surface)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all";
   const activeProducts = products.filter((p: any) => p.active !== false);
 
   return (
@@ -92,7 +92,7 @@ export function QualificationBlock({
                 <button key={p.id} type="button"
                   onClick={() => setSelectedProductIds(prev => isSelected ? prev.filter(id => id !== p.id) : [...prev, p.id])}
                   className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between gap-2 ${
-                    isSelected ? "bg-emerald-500/10 border-emerald-500/40 text-white" : "bg-[#0B1120]/40 border-white/5 text-slate-400 hover:text-white hover:border-white/15"
+                    isSelected ? "bg-emerald-500/10 border-emerald-500/40 text-white" : "bg-[var(--color-surface)]/40 border-white/5 text-slate-400 hover:text-white hover:border-white/15"
                   }`}
                 >
                   <div className="min-w-0">

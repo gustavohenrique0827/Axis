@@ -90,7 +90,7 @@ export default function FinanceiroConfiguracoes() {
           animate={{ opacity: 1, x: 0 }}
           className="lg:w-64 shrink-0"
         >
-          <div className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
+          <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
             <div className="p-4 border-b border-white/5">
               <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Seções</p>
             </div>
@@ -142,7 +142,7 @@ export default function FinanceiroConfiguracoes() {
           {/* ── PERFIS OTE ── */}
           {tab === 'perfis' && (
             <div className="space-y-4">
-              <div className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
+              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
                 <SectionHeader
                   title="Perfis cadastrados"
                   desc="Cada perfil define fixo, variável-alvo e acelerador por cargo + nível. O threshold é o % mínimo de atingimento para ganhar variável."
@@ -202,7 +202,7 @@ export default function FinanceiroConfiguracoes() {
                 </div>
               </div>
 
-              <div className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
+              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
                 <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
                   <Plus className="w-3.5 h-3.5 text-emerald-400" /> Novo Perfil
                 </h3>
@@ -247,7 +247,7 @@ export default function FinanceiroConfiguracoes() {
           {/* ── REGRAS DE COMISSÃO ── */}
           {tab === 'comissao' && (
             <div className="space-y-4">
-              <div className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
+              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
                 <SectionHeader
                   title="Faixas de Comissionamento"
                   desc="Define o % de comissão pago conforme o atingimento de meta. Faixas avaliadas em ordem crescente."
@@ -279,7 +279,7 @@ export default function FinanceiroConfiguracoes() {
                 </div>
               </div>
 
-              <div className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
+              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
                 <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
                   <Plus className="w-3.5 h-3.5 text-emerald-400" /> Nova Faixa
                 </h3>
@@ -312,7 +312,7 @@ export default function FinanceiroConfiguracoes() {
           {/* ── REGRAS DE PARCERIA ── */}
           {tab === 'parceria' && (
             <div className="space-y-4">
-              <div className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
+              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
                 <SectionHeader
                   title="Regras de Parceria"
                   desc="Co-vendas, indicações e splits entre SDR e Closer. Aplicados sobre o valor da comissão gerada."
@@ -345,7 +345,7 @@ export default function FinanceiroConfiguracoes() {
                 </div>
               </div>
 
-              <div className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
+              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
                 <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
                   <Plus className="w-3.5 h-3.5 text-emerald-400" /> Nova Regra
                 </h3>
@@ -374,7 +374,7 @@ export default function FinanceiroConfiguracoes() {
           {/* ── TAXAS E DEDUÇÕES ── */}
           {tab === 'taxas' && (
             <div className="space-y-4">
-              <div className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
+              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
                 <SectionHeader
                   title="Taxas e Deduções"
                   desc="INSS, IR e outros descontos aplicados sobre o total OTE ou componentes individuais."
@@ -407,7 +407,7 @@ export default function FinanceiroConfiguracoes() {
                 </div>
               </div>
 
-              <div className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
+              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
                 <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
                   <Plus className="w-3.5 h-3.5 text-emerald-400" /> Nova Taxa
                 </h3>
@@ -437,7 +437,7 @@ export default function FinanceiroConfiguracoes() {
 
           {/* ── METAS ── */}
           {tab === 'metas' && (
-            <div className="bg-[#111827]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-12 flex flex-col items-center justify-center text-center gap-5">
+            <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-12 flex flex-col items-center justify-center text-center gap-5">
               <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
                 <Target className="w-8 h-8 text-emerald-400" />
               </div>

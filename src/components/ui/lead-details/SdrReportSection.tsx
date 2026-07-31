@@ -83,7 +83,7 @@ export function SdrReportSection({
 
   return (
     <div className="space-y-6 animate-in fade-in duration-200">
-      <Card className="p-6 border-white/10 bg-[#0B1120]/80 space-y-6 relative overflow-hidden">
+      <Card className="p-6 border-white/10 bg-[var(--color-surface)]/80 space-y-6 relative overflow-hidden">
         {/* Glowing Accent */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl -mr-20 -mt-20 pointer-events-none"></div>
 

@@ -178,10 +178,10 @@ export default function ReunioesList() {
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Buscar lead, empresa ou closer..."
-                    className="w-full bg-[#111827] border border-white/[0.08] rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all"
+                    className="w-full bg-[var(--color-surface-elevated)] border border-white/[0.08] rounded-xl pl-9 pr-3 py-2 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 transition-all"
                   />
                 </div>
-                <div className="flex items-center gap-0.5 bg-[#111827] border border-white/[0.06] rounded-xl p-1">
+                <div className="flex items-center gap-0.5 bg-[var(--color-surface-elevated)] border border-white/[0.06] rounded-xl p-1">
                   {STATUS_TABS.map((t) => (
                     <button
                       key={t}
@@ -198,7 +198,7 @@ export default function ReunioesList() {
               </div>
 
               {filtered.length === 0 ? (
-                <Card className="py-24 bg-[#111827]/80 border-white/5">
+                <Card className="py-24 bg-[var(--color-surface-elevated)]/80 border-white/5">
                   <div className="flex flex-col items-center justify-center text-center gap-4">
                     <div className="w-16 h-16 rounded-2xl bg-white/[0.03] border border-white/[0.06] flex items-center justify-center">
                       <Video className="w-8 h-8 text-slate-600" />
@@ -210,7 +210,7 @@ export default function ReunioesList() {
               ) : (
                 <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-4">
                   {filtered.map((r) => (
-                    <Card key={r.id} className="p-5 bg-[#111827]/80 border-white/5 hover:border-white/[0.12] transition-all space-y-4">
+                    <Card key={r.id} className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/5 hover:border-white/[0.12] transition-all space-y-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-3 min-w-0">
                           <div className="w-9 h-9 rounded-xl bg-blue-500/15 flex items-center justify-center shrink-0 text-sm font-black text-blue-300 select-none">
@@ -282,7 +282,7 @@ export default function ReunioesList() {
           {/* ── CALENDÁRIO VIEW ── */}
           {view === "calendario" && (
             <div className="space-y-5">
-              <Card className="p-6 bg-[#111827]/80 border-white/5">
+              <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5">
                 <div className="flex items-center justify-between mb-6">
                   <button onClick={prevMonth} className="p-2 hover:bg-white/5 rounded-xl text-slate-400 hover:text-white transition-all">
                     <ChevronLeft className="w-4 h-4" />
@@ -351,13 +351,13 @@ export default function ReunioesList() {
                     {selectedDay} de {MONTH_NAMES[calMonth]} — {dayReunions.length} reuniã{dayReunions.length !== 1 ? "ões" : "o"}
                   </h4>
                   {dayReunions.length === 0 ? (
-                    <Card className="py-12 bg-[#111827]/80 border-white/5">
+                    <Card className="py-12 bg-[var(--color-surface-elevated)]/80 border-white/5">
                       <p className="text-slate-600 text-sm text-center">Nenhuma reunião neste dia.</p>
                     </Card>
                   ) : (
                     <div className="grid md:grid-cols-2 gap-4">
                       {dayReunions.map((r) => (
-                        <Card key={r.id} className="p-4 bg-[#111827]/80 border-white/5 hover:border-white/[0.12] transition-all space-y-3">
+                        <Card key={r.id} className="p-4 bg-[var(--color-surface-elevated)]/80 border-white/5 hover:border-white/[0.12] transition-all space-y-3">
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2.5 min-w-0">
                               <div className="w-8 h-8 rounded-xl bg-blue-500/15 flex items-center justify-center shrink-0 text-xs font-black text-blue-300 select-none">
@@ -396,7 +396,7 @@ export default function ReunioesList() {
         <div className="space-y-5">
 
           {/* KPIs */}
-          <Card className="p-6 bg-[#111827]/80 border-white/5">
+          <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5">
             <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-5">Resumo</h4>
             <div className="grid grid-cols-2 gap-3">
               {[
@@ -415,7 +415,7 @@ export default function ReunioesList() {
           </Card>
 
           {/* Next meeting */}
-          <Card className="p-6 bg-[#111827]/80 border-white/5">
+          <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5">
             <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-5">Próxima Reunião</h4>
             {nextReuniao ? (
               <div className="space-y-3">

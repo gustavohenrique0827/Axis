@@ -56,7 +56,7 @@ export function EquipeOverview({ team, squads, logs, onAdmitir, onGoLogs }: Equi
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <Card className="p-8 bg-[#111827]/30 border-white/5 col-span-2">
+        <Card className="p-8 bg-[var(--color-surface-elevated)]/30 border-white/5 col-span-2">
           <div className="flex items-center justify-between mb-8">
             <h3 className="text-lg font-black text-white tracking-tight">Densidade Populacional por Squad</h3>
             <div className="px-3 py-1 rounded-full bg-white/5 border border-white/5 text-[10px] font-bold text-slate-500">
@@ -85,12 +85,12 @@ export function EquipeOverview({ team, squads, logs, onAdmitir, onGoLogs }: Equi
           </div>
         </Card>
 
-        <Card className="p-8 bg-[#111827]/30 border-white/5">
+        <Card className="p-8 bg-[var(--color-surface-elevated)]/30 border-white/5">
           <h3 className="text-lg font-black text-white tracking-tight mb-8">Fluxo Institucional</h3>
           <div className="space-y-6">
             {logs.slice(0, 4).map((l, i) => (
               <div key={i} className="relative pl-6 pb-6 border-l border-white/5 last:pb-0">
-                <div className="absolute left-0 top-1.5 -translate-x-1/2 w-3 h-3 rounded-full bg-[#111827] border-2 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.3)]" />
+                <div className="absolute left-0 top-1.5 -translate-x-1/2 w-3 h-3 rounded-full bg-[var(--color-surface-elevated)] border-2 border-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.3)]" />
                 <div className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">
                   {new Date(l.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
                 </div>

@@ -35,7 +35,7 @@ export function ProdutoTabInfo({
   formType, setFormType, formIsBestSeller, setFormIsBestSeller,
   formDescription, setFormDescription, formTags, setFormTags, categories,
 }: ProdutoTabInfoProps) {
-  const inputCls = "w-full bg-[#111827] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#2563EB]/40 font-medium transition-all";
+  const inputCls = "w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#2563EB]/40 font-medium transition-all";
 
   return (
     <div className="space-y-4">
@@ -53,14 +53,14 @@ export function ProdutoTabInfo({
             onFocus={() => setShowClientDropdown(true)}
             onBlur={() => setTimeout(() => setShowClientDropdown(false), 150)}
             placeholder={filteredClients.length > 0 ? "Buscar cliente..." : "Nenhum cliente cadastrado"}
-            className="w-full bg-[#0B1120]/60 border border-white/10 rounded-xl pl-9 pr-9 py-2.5 text-white text-xs focus:border-blue-500/40 focus:outline-none transition-all placeholder:text-slate-600"
+            className="w-full bg-[var(--color-surface)]/60 border border-white/10 rounded-xl pl-9 pr-9 py-2.5 text-white text-xs focus:border-blue-500/40 focus:outline-none transition-all placeholder:text-slate-600"
           />
           {clientId
             ? <CheckCircle2 className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-emerald-400" />
             : <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
           }
           {showClientDropdown && filteredClients.length > 0 && (
-            <div className="absolute z-50 top-full mt-1 w-full bg-[#0d1626] border border-white/10 rounded-xl shadow-2xl max-h-40 overflow-y-auto">
+            <div className="absolute z-50 top-full mt-1 w-full bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl shadow-2xl max-h-40 overflow-y-auto">
               {filteredClients.map((c: any) => (
                 <button key={c.id} type="button" onMouseDown={() => handleSelectClient(c)}
                   className="w-full text-left px-3 py-2.5 hover:bg-white/5 transition-colors flex items-center gap-2 border-none bg-transparent cursor-pointer">
@@ -82,7 +82,7 @@ export function ProdutoTabInfo({
       </div>
 
       {/* Step Banner */}
-      <div className="bg-[#111827] border border-white/5 p-4 rounded-xl flex items-center gap-3">
+      <div className="bg-[var(--color-surface-elevated)] border border-white/5 p-4 rounded-xl flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center text-[#2563EB] shrink-0 font-black text-xs font-mono">1</div>
         <div>
           <h4 className="text-xs font-black text-white uppercase tracking-wider">Identificação Geral do Produto</h4>
@@ -133,7 +133,7 @@ export function ProdutoTabInfo({
         </div>
       </div>
 
-      <div className="p-4 bg-[#111827]/30 border border-white/5 rounded-xl flex items-center justify-between">
+      <div className="p-4 bg-[var(--color-surface-elevated)]/30 border border-white/5 rounded-xl flex items-center justify-between">
         <div className="space-y-0.5">
           <label htmlFor="checkboxBestSeller" className="text-xs font-bold text-white cursor-pointer select-none">
             Produto Destaque (BestSeller)

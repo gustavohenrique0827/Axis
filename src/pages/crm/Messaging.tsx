@@ -85,10 +85,10 @@ export default function Messaging() {
     : [];
 
   return (
-    <div className={`flex flex-col bg-[#0B1120] overflow-hidden ${isMobile ? "min-h-[100dvh] justify-center relative" : "h-full w-full"}`}>
+    <div className={`flex flex-col bg-[var(--color-surface)] overflow-hidden ${isMobile ? "min-h-[100dvh] justify-center relative" : "h-full w-full"}`}>
 
       {/* Mode Toggle */}
-      <div className="shrink-0 flex items-center gap-1 p-2 border-b border-white/5 bg-[#0B1120]">
+      <div className="shrink-0 flex items-center gap-1 p-2 border-b border-white/5 bg-[var(--color-surface)]">
         <button
           onClick={() => setMode("whatsapp")}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
@@ -121,7 +121,7 @@ export default function Messaging() {
             <InternalChatView />
           </div>
         ) : (
-          <div className={`${isMobile ? "h-[calc(100dvh-56px)] flex flex-col relative bg-[#0B1120] overflow-hidden" : "h-full rounded-b-2xl flex border border-white/10 bg-[#0F172A]/85 shadow-2xl backdrop-blur-xl overflow-hidden relative"}`}>
+          <div className={`${isMobile ? "h-[calc(100dvh-56px)] flex flex-col relative bg-[var(--color-surface)] overflow-hidden" : "h-full rounded-b-2xl flex border border-white/10 bg-[#0F172A]/85 shadow-2xl backdrop-blur-xl overflow-hidden relative"}`}>
 
             <ChatListSidebar
               isMobile={isMobile}

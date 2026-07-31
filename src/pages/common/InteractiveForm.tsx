@@ -165,7 +165,7 @@ export function InteractiveForm() {
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-[#0B1120]/80 backdrop-blur-xl p-10 rounded-3xl border border-white/10 max-w-lg w-full text-center shadow-2xl"
+          className="bg-[var(--color-surface)]/80 backdrop-blur-xl p-10 rounded-3xl border border-white/10 max-w-lg w-full text-center shadow-2xl"
         >
           <div className={`w-20 h-20 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-inner ${theme.text}`}>
             <ShieldCheck className="w-10 h-10" />
@@ -222,7 +222,7 @@ export function InteractiveForm() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-[#0B1120]/60 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden min-h-[400px] flex flex-col relative">
+        <div className="bg-[var(--color-surface)]/60 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden min-h-[400px] flex flex-col relative">
 
           {/* Navigation Top Bar */}
           <div className="absolute top-4 left-4 z-20">

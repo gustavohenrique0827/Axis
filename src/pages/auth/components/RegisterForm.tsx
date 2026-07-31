@@ -21,7 +21,7 @@ export function RegisterForm() {
   const { login } = useAuth();
   const from = location.state?.from?.pathname || "/app/dashboard";
 
-  const fieldClass = "w-full bg-[#0B1120] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]";
+  const fieldClass = "w-full bg-[var(--color-surface)] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]";
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +49,7 @@ export function RegisterForm() {
   };
 
   return (
-    <Card className="p-8 bg-[#111827]/80 backdrop-blur-xl border border-white/10 shadow-2xl">
+    <Card className="p-8 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 shadow-2xl">
       <form onSubmit={handleRegister} className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2 text-sm">
@@ -95,7 +95,7 @@ export function RegisterForm() {
 
         <label className="space-y-2 text-sm">
           <span className="text-slate-400 font-semibold">Segmento</span>
-          <select value={niche} onChange={(e) => setNiche(e.target.value as TenantNiche)} className="w-full bg-[#0B1120] border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]">
+          <select value={niche} onChange={(e) => setNiche(e.target.value as TenantNiche)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]">
             <option value="Parceira">Parceira</option>
             <option value="Solar">Solar</option>
             <option value="Imobiliária">Imobiliária</option>
