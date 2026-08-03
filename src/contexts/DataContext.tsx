@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { sendPushNotification } from "../lib/notifications";
 import { isSupabaseReachable, supabase } from '../lib/supabase';
+import { useAuth } from './AuthContext';
 import { Lead, Task, Contract, CustomField, LeadScoreTrigger, Squad } from '../types';
 import {
   defaultCustomLeadFields,
@@ -17,11 +18,15 @@ import {
   defaultLeadScoreTriggers
 } from './dataMocks';
 import { DataContext, DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, Reuniao, useData } from './DataContextTypes';
+import { apiFetch } from "../lib/apiClient";
 
 export { useData };
 export type { DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, Reuniao };
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
+  const { user, authLoading } = useAuth();
+  const tenantId = user?.tenantId;
+
   const [theme, setTheme] = useState<'dark' | 'light'>(
     () => (localStorage.getItem('axis_theme') as 'dark' | 'light') || 'light'
   );
@@ -74,13 +79,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [financeEntries, setFinanceEntries] = useState<FinanceEntry[]>([]);
 
   const syncSetting = async (key: string, value: any) => {
-    if (!supabase) return;
+    if (!supabase || !tenantId) return;
     try {
-      const { data } = await supabase.from('app_settings').select('id').eq('key', key).maybeSingle();
+      // Escopado por tenant explicitamente — sem isso, duas empresas usando a
+      // mesma "key" (ex.: "axis_sidebar_modules") acabariam lendo/sobrescrevendo
+      // a configuração uma da outra.
+      const { data } = await supabase.from('app_settings').select('id').eq('key', key).eq('tenant_id', tenantId).maybeSingle();
       if (data) {
         await supabase.from('app_settings').update({ value }).eq('id', data.id);
       } else {
-        await supabase.from('app_settings').insert({ key, value });
+        await supabase.from('app_settings').insert({ key, value, tenant_id: tenantId });
       }
     } catch (err) {
       console.error(`Supabase sync setting failed for ${key}:`, err);
@@ -295,8 +303,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     async function loadInitialData() {
-      if (supabase) {
-        console.log('[DataContext] 🔄 Carregando dados do Supabase...');
+      // Aguarda a sessão resolver e o tenant ser conhecido antes de buscar
+      // dados — evita disparar a carga como "anon" (RLS devolveria tudo
+      // vazio) numa corrida contra o login, já que este efeito não reroda
+      // sozinho depois (dependências abaixo cobrem isso quando o tenant muda).
+      if (supabase && !authLoading && tenantId) {
+        console.log('[DataContext] 🔄 Carregando dados do Supabase (tenant ' + tenantId + ')...');
         try {
             const [
               leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes,
@@ -304,28 +316,29 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               productsRes, proposalsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
               clienteBaseRes, reunioesRes
             ] = await Promise.all([
-              supabase.from('leads').select('*'),
-              supabase.from('tasks').select('*'),
-              supabase.from('contracts').select('*'),
-              supabase.from('lead_activities').select('*'),
-              supabase.from('finance_entries').select('*'),
-              supabase.from('appointments').select('*'),
-              supabase.from('squads').select('*'),
-              supabase.from('notifications').select('*'),
-              supabase.from('marketing_campaigns').select('*'),
-              supabase.from('marketing_content').select('*'),
-              supabase.from('marketing_landing_pages').select('*'),
+              supabase.from('leads').select('*').eq('tenant_id', tenantId),
+              supabase.from('tasks').select('*').eq('tenant_id', tenantId),
+              supabase.from('contracts').select('*').eq('tenant_id', tenantId),
+              supabase.from('lead_activities').select('*').eq('tenant_id', tenantId),
+              supabase.from('finance_entries').select('*').eq('tenant_id', tenantId),
+              supabase.from('appointments').select('*').eq('tenant_id', tenantId),
+              supabase.from('squads').select('*').eq('tenant_id', tenantId),
+              supabase.from('notifications').select('*').eq('tenant_id', tenantId),
+              supabase.from('marketing_campaigns').select('*').eq('tenant_id', tenantId),
+              supabase.from('marketing_content').select('*').eq('tenant_id', tenantId),
+              supabase.from('marketing_landing_pages').select('*').eq('tenant_id', tenantId),
+              // app_settings inclui linhas globais (tenant_id IS NULL) por design — filtro fica só a cargo da RLS aqui.
               supabase.from('app_settings').select('*'),
-              supabase.from('products').select('*'),
-              supabase.from('proposals').select('*'),
-              supabase.from('turmas').select('*'),
-              supabase.from('students').select('*'),
-              supabase.from('colaboradores').select('*'),
-              supabase.from('squad_metas').select('*'),
-              supabase.from('certificates').select('*'),
-              supabase.from('cargos').select('*'),
-              supabase.from('clientes').select('*'),
-              supabase.from('reunioes').select('*'),
+              supabase.from('products').select('*').eq('tenant_id', tenantId),
+              supabase.from('proposals').select('*').eq('tenant_id', tenantId),
+              supabase.from('turmas').select('*').eq('tenant_id', tenantId),
+              supabase.from('students').select('*').eq('tenant_id', tenantId),
+              supabase.from('colaboradores').select('*').eq('tenant_id', tenantId),
+              supabase.from('squad_metas').select('*').eq('tenant_id', tenantId),
+              supabase.from('certificates').select('*').eq('tenant_id', tenantId),
+              supabase.from('cargos').select('*').eq('tenant_id', tenantId),
+              supabase.from('clientes').select('*').eq('tenant_id', tenantId),
+              supabase.from('reunioes').select('*').eq('tenant_id', tenantId),
             ]);
 
             if (!leadsRes.error && leadsRes.data) setLeads(leadsRes.data as Lead[]);
@@ -378,7 +391,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
     }
     loadInitialData();
-  }, []);
+  }, [authLoading, tenantId]);
   const notifiedRemindersRef = React.useRef<Record<string, boolean>>({});
   useEffect(() => {
     const checkTeleconsultations = () => {
@@ -594,7 +607,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!targetLead) return;
 
     try {
-      const response = await fetch("/api/leads/calculate-score", {
+      const response = await apiFetch("/api/leads/calculate-score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lead: targetLead, activities: listActivities })
@@ -625,6 +638,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addLead = async (lead: Omit<Lead, 'id'>) => {
+    if (!tenantId) {
+      toast.error('Sessão não identificou um tenant — recarregue a página e tente novamente.');
+      return;
+    }
     const newId = crypto.randomUUID();
     const newLead = { ...lead, id: newId, scoreIA: 50 };
     setLeads(prev => [newLead, ...prev]);
@@ -659,7 +676,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           stageId: lead.stageId ?? '1',
           pipelineId: lead.pipelineId ?? 'comercial',
           scoreIA: 50,
-          tenant_id: lead.tenantId ?? null,
+          // Vem da sessão autenticada, nunca do caller — nunca null (ver guarda no início da função).
+          tenant_id: tenantId,
           tenantName: lead.tenantName ?? '',
           lead_interesse_cliente: lead.lead_interesse_cliente ?? '',
           customFields: lead.customFields ?? {},
@@ -902,7 +920,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const getSmartInsight = async (context: string, data: any): Promise<string> => {
     try {
-      const response = await fetch("/api/ai/generic-insight", {
+      const response = await apiFetch("/api/ai/generic-insight", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ context, data })

@@ -7,7 +7,7 @@ import { useRHColaboradores } from "./hooks/useRHColaboradores";
 import { SquadsTabContent } from "./components/Squads/SquadsTabContent";
 import { NovoMembroModal } from "../../components/ui/modals/hr/NovoMembroModal";
 import { EditarColabModal } from "../../components/ui/modals/hr/EditarColabModal";
-import { supabase, hashPassword } from "../../lib/supabase";
+import { supabase, createUserWithProfile } from "../../lib/supabase";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
 import { MembrosSection } from "./components/RHColaboradores/MembrosSection";
@@ -52,16 +52,16 @@ export default function RHColaboradores() {
     const { data: tenantRow, error: tenantErr } = await supabase.from("tenants").select("id").eq("name", user?.tenantName || "").maybeSingle();
     if (tenantErr) { console.error("[RH] Erro ao buscar tenant:", tenantErr.message); toast.error("Erro ao buscar dados do tenant."); return; }
     if (!tenantRow?.id) { console.error("[RH] Tenant não encontrado para:", user?.tenantName); toast.error("Tenant não encontrado. Verifique o login."); return; }
-    const { data: newUser, error: userErr } = await supabase.from("users").insert({
-      tenant_id: tenantRow.id, name: data.nome, email: data.email,
-      password_hash: hashPassword(data.senha || "123456"), role: data.cargo, is_master: false, active: true,
-    }).select("id").maybeSingle();
-    if (userErr) { console.error("[RH] Erro ao criar usuário:", userErr.message); toast.error(`Erro ao criar login: ${userErr.message}`); return; }
+    const created = await createUserWithProfile({
+      email: data.email, password: data.senha || "123456", name: data.nome,
+      tenantId: tenantRow.id, role: data.cargo, isMaster: false,
+    });
+    if (!created.success) { console.error("[RH] Erro ao criar usuário:", created.error); toast.error(`Erro ao criar login: ${created.error}`); return; }
     addColaborador({
       id: Date.now().toString(), nome: data.nome, email: data.email, phone: data.phone || "",
       cargo: data.cargo, departamento: data.departamento, squad: data.squad || "",
       status: "Ativo", dataAdmissao, desempenho: 0,
-      tenant_id: tenantRow.id, user_id: newUser?.id ?? null,
+      tenant_id: tenantRow.id, user_id: created.userId ?? null,
     });
     toast.success(`${data.nome} adicionado à equipe com sucesso!`);
   };

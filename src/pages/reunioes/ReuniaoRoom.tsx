@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { cn } from "../../lib/utils";
 import { Reuniao } from "../../contexts/DataContextTypes";
 import type { Lead } from "../../types";
+import { apiFetch } from "../../lib/apiClient";
 
 function formatDateTime(iso: string) {
   try {
@@ -111,7 +112,7 @@ export default function ReuniaoRoom() {
     setEnding(true);
     setGeneratingReport(true);
     try {
-      const res = await fetch("/api/ai/reuniao-relatorio", {
+      const res = await apiFetch("/api/ai/reuniao-relatorio", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

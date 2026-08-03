@@ -8,6 +8,7 @@ import { ClientSelectorBlock } from "../../new-lead/ClientSelectorBlock";
 import { BasicInfoBlock } from "../../new-lead/BasicInfoBlock";
 import { CompanyBlock } from "../../new-lead/CompanyBlock";
 import { QualificationBlock } from "../../new-lead/QualificationBlock";
+import { apiFetch } from "../../../../lib/apiClient";
 
 interface NewLeadModalProps {
   isOpen: boolean;
@@ -128,7 +129,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
     const form = document.getElementById("new-lead-form") as HTMLFormElement;
     const formData = new FormData(form);
     try {
-      const response = await fetch("/api/leads/suggest-tags", {
+      const response = await apiFetch("/api/leads/suggest-tags", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: formData.get("name"), company: companyValue, notes: formData.get("notes") }),
       });

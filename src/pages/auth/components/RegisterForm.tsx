@@ -38,7 +38,14 @@ export function RegisterForm() {
         toast.error(result.error || "Erro ao registrar empresa");
         return;
       }
-      login({ name: `Admin ${companyName}`, email, role: "Admin", tenantName: companyName, tenantNiche: niche, isMaster: false });
+      if (result.needsEmailConfirmation) {
+        toast.success("Empresa registrada! Confirme seu e-mail para poder entrar.");
+        navigate("/login", { replace: true });
+        return;
+      }
+      if (result.user) {
+        login(result.user);
+      }
       toast.success(`Bem-vindo, ${companyName}! Empresa registrada com sucesso.`);
       navigate(from, { replace: true });
     } catch (err) {

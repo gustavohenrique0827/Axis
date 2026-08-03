@@ -6,6 +6,7 @@ import { useData } from "../../../../contexts/DataContext";
 import { toast } from "sonner";
 import { Modal } from "../../../../components/ui/modal";
 import { NovaIntegracaoModal } from "../../../../components/ui/modals/settings/NovaIntegracaoModal";
+import { apiFetch } from "../../../../lib/apiClient";
 
 export function ConfigIntegracoesApps() {
   const [integrations, setIntegrations] = useState<any[]>([]);
@@ -29,7 +30,7 @@ export function ConfigIntegracoesApps() {
   }, []);
 
   const fetchInstances = () => {
-    fetch("/api/whatsapp/instances")
+    apiFetch("/api/whatsapp/instances")
       .then(res => res.json())
       .then(data => {
         setInstances(data);
@@ -43,7 +44,7 @@ export function ConfigIntegracoesApps() {
   };
 
   const fetchContacts = () => {
-    fetch("/api/whatsapp/contacts")
+    apiFetch("/api/whatsapp/contacts")
       .then(res => res.json())
       .then(data => {
         setContacts(data);
@@ -60,7 +61,7 @@ export function ConfigIntegracoesApps() {
       return;
     }
     setSavingWebhook(true);
-    fetch(`/api/whatsapp/instances/${selectedInstanceId}`, {
+    apiFetch(`/api/whatsapp/instances/${selectedInstanceId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ webhookUrl: url }),
@@ -86,7 +87,7 @@ export function ConfigIntegracoesApps() {
       return;
     }
     setSavingWebhook(true);
-    fetch(`/api/whatsapp/instances/${selectedInstanceId}`, {
+    apiFetch(`/api/whatsapp/instances/${selectedInstanceId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ webhookUrl }),
@@ -109,7 +110,7 @@ export function ConfigIntegracoesApps() {
       return;
     }
     setSimulating(true);
-    fetch("/api/whatsapp/simulate-incoming", {
+    apiFetch("/api/whatsapp/simulate-incoming", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contactId: selectedContactId, text: simulationText.trim() }),

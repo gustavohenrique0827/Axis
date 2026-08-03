@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Mic, MicOff, RefreshCw, Brain, Zap, AlertTriangle, CheckCircle2, HelpCircle, Clock } from "lucide-react";
+import { apiFetch } from "../../lib/apiClient";
 
 type CopilotState = "idle" | "listening" | "analyzing" | "done" | "error";
 
@@ -98,7 +99,7 @@ export function IACopilot({ leadName, companyName, leadContext, onTranscriptChan
     setState("analyzing");
     setErrorMsg("");
     try {
-      const res = await fetch("/api/ai/reuniao-copilot", {
+      const res = await apiFetch("/api/ai/reuniao-copilot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ transcript, leadContext: ctx }),

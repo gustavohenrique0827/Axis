@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useData } from "../../../contexts/DataContext";
 import { toast } from "sonner";
+import { apiFetch } from "../../../lib/apiClient";
 
 export type Channel = "WhatsApp" | "Instagram" | "Email";
 
@@ -190,7 +191,7 @@ export function useMessaging() {
   const prevUnreadCountRef = useRef<number>(0);
 
   const fetchContacts = () => {
-    fetch("/api/whatsapp/contacts")
+    apiFetch("/api/whatsapp/contacts")
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -214,7 +215,7 @@ export function useMessaging() {
 
   const handleManualRetry = () => {
     toast.info("Tentando reconectar...", { id: "retry-fetch" });
-    fetch("/api/whatsapp/contacts")
+    apiFetch("/api/whatsapp/contacts")
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
@@ -232,7 +233,7 @@ export function useMessaging() {
       });
 
     if (activeChat) {
-      fetch(`/api/whatsapp/messages/${activeChat}`)
+      apiFetch(`/api/whatsapp/messages/${activeChat}`)
         .then(res => {
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           return res.json();
@@ -258,7 +259,7 @@ export function useMessaging() {
   useEffect(() => {
     if (!activeChat) return;
     const fetchChatMessages = () => {
-      fetch(`/api/whatsapp/messages/${activeChat}`)
+      apiFetch(`/api/whatsapp/messages/${activeChat}`)
         .then(res => res.json())
         .then(data => {
           if (data) {
@@ -285,7 +286,7 @@ export function useMessaging() {
     }
 
     setSentiment("Analisando...");
-    fetch("/api/whatsapp/copilot/analyze", {
+    apiFetch("/api/whatsapp/copilot/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contactId: activeChat })
@@ -347,14 +348,14 @@ export function useMessaging() {
       [activeChat]: [...(prev[activeChat] || []), optMessage]
     }));
 
-    fetch("/api/whatsapp/messages/send", {
+    apiFetch("/api/whatsapp/messages/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contactId: activeChat, text: textToSend })
     })
     .then(res => res.json())
     .then(() => {
-      fetch(`/api/whatsapp/messages/${activeChat}`)
+      apiFetch(`/api/whatsapp/messages/${activeChat}`)
         .then(res => res.json())
         .then(data => {
           setMessages(prev => ({ ...prev, [activeChat]: data }));

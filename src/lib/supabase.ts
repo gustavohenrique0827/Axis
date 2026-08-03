@@ -97,16 +97,65 @@ export async function isSupabaseReachable(): Promise<boolean> {
 }
 
 /**
- * Hash password using basic implementation (consider bcrypt in production)
+ * Busca o perfil (tenant, role, etc.) de um usuário autenticado no Supabase Auth.
+ * Usado tanto no login quanto na restauração de sessão (onAuthStateChange).
  */
-export function hashPassword(password: string): string {
-  // Placeholder estável para fins de demonstração. 
-  // Em produção, utilize Supabase Auth ou uma biblioteca como bcryptjs.
-  return btoa(password);
+export async function fetchUserProfile(userId: string): Promise<{ success: boolean; error?: string; user?: any }> {
+  if (!supabase) return { success: false, error: 'Supabase não configurado.' };
+
+  const { data, error } = await supabase
+    .from("users")
+    .select(`
+      id,
+      name,
+      email,
+      role,
+      is_master,
+      active,
+      tenant_id,
+      partner_id,
+      tenants (
+        id,
+        name,
+        niche
+      )
+    `)
+    .eq("id", userId)
+    .eq("active", true)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[Supabase] Erro ao carregar perfil:', error.message);
+    return { success: false, error: "Erro ao carregar perfil do usuário." };
+  }
+
+  if (!data) {
+    return { success: false, error: "Perfil de usuário não encontrado ou inativo." };
+  }
+
+  const tenant = Array.isArray(data.tenants) ? data.tenants[0] : (data.tenants as any);
+  if (!tenant) {
+    return { success: false, error: "Usuário não possui uma empresa (tenant) vinculada." };
+  }
+
+  return {
+    success: true,
+    user: {
+      name: data.name,
+      email: data.email,
+      role: data.role,
+      tenantId: tenant.id,
+      tenantName: tenant.name,
+      tenantNiche: tenant.niche,
+      isMaster: data.is_master,
+      partnerId: data.partner_id ?? undefined,
+    },
+  };
 }
 
 /**
- * Authenticate a user with email and password from the database
+ * Authenticate a user via Supabase Auth (email/senha reais, não mais comparação
+ * client-side contra password_hash em Base64).
  */
 export async function signIn(
   email: string,
@@ -117,58 +166,76 @@ export async function signIn(
   }
 
   try {
-    const passwordHash = hashPassword(password);
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
-    const { data, error } = await supabase
-      .from("users")
-      .select(`
-        id,
-        name,
-        email,
-        role,
-        is_master,
-        active,
-        tenants (
-          id,
-          name,
-          niche
-        )
-      `)
-      .eq("email", email)
-      .eq("password_hash", passwordHash)
-      .eq("active", true)
-      .maybeSingle();
-
-    if (error) {
-      console.error('[Supabase] Erro técnico no login:', error.message);
-      return { success: false, error: "Erro de conexão com o servidor." };
+    if (authError || !authData.user) {
+      const msg = authError?.message === 'Invalid login credentials'
+        ? 'E-mail ou senha inválidos.'
+        : (authError?.message || 'Erro ao autenticar.');
+      return { success: false, error: msg };
     }
 
-    if (!data) {
-      return { success: false, error: "Usuário não encontrado." };
+    const profile = await fetchUserProfile(authData.user.id);
+    if (!profile.success) {
+      // Autenticou no Supabase Auth mas não tem perfil válido em public.users — desfaz a sessão.
+      await supabase.auth.signOut();
+      return profile;
     }
 
-    const tenant = Array.isArray(data.tenants) ? data.tenants[0] : (data.tenants as any);
-
-    if (!tenant) {
-      return { success: false, error: "Usuário não possui uma empresa (tenant) vinculada." };
-    }
-
-    return {
-      success: true,
-      user: {
-        name: data.name,
-        email: data.email,
-        role: data.role,
-        tenantId: tenant?.id,
-        tenantName: tenant?.name,
-        tenantNiche: tenant?.niche,
-        isMaster: data.is_master
-      }
-    };
+    return profile;
   } catch (err) {
     return { success: false, error: "Erro na conexão com o banco de dados." };
   }
+}
+
+/**
+ * Cria uma conta no Supabase Auth + o perfil correspondente em public.users.
+ *
+ * Usa um client Supabase secundário e isolado (sem persistir sessão) para o
+ * signUp: chamar auth.signUp() no client principal trocaria a sessão ativa do
+ * chamador para a conta recém-criada — um problema quando um admin já logado
+ * está criando a conta de outra pessoa (ex.: convidar um colaborador).
+ */
+export async function createUserWithProfile(params: {
+  email: string;
+  password: string;
+  name: string;
+  tenantId: string;
+  role: string;
+  isMaster?: boolean;
+}): Promise<{ success: boolean; error?: string; userId?: string; needsEmailConfirmation?: boolean }> {
+  if (!supabase || !supabaseUrl || !supabaseAnonKey) {
+    return { success: false, error: 'Supabase não configurado.' };
+  }
+
+  const isolatedClient = createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  });
+
+  const { data: authData, error: authError } = await isolatedClient.auth.signUp({
+    email: params.email,
+    password: params.password,
+  });
+
+  if (authError || !authData.user) {
+    return { success: false, error: authError?.message || 'Erro ao criar conta de acesso.' };
+  }
+
+  const { error: profileError } = await supabase.from('users').insert({
+    id: authData.user.id,
+    tenant_id: params.tenantId,
+    name: params.name,
+    email: params.email,
+    role: params.role,
+    is_master: params.isMaster ?? false,
+    active: true,
+  });
+
+  if (profileError) {
+    return { success: false, error: profileError.message };
+  }
+
+  return { success: true, userId: authData.user.id, needsEmailConfirmation: !authData.session };
 }
 
 /**
@@ -180,7 +247,7 @@ export async function registerPartner(
   password: string,
   _phone: string,
   niche: string
-): Promise<{ success: boolean; error?: string; userId?: string; tenantId?: string }> {
+): Promise<{ success: boolean; error?: string; userId?: string; tenantId?: string; needsEmailConfirmation?: boolean; user?: any }> {
   if (!supabase) {
     const errorMsg = 'Supabase não está configurado. Variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY faltam. Reinicie o servidor (npm run dev) após configurar .env';
     console.error('[Register] ' + errorMsg);
@@ -220,35 +287,45 @@ export async function registerPartner(
       return { success: false, error: errMsg };
     }
 
-    // 2. Create admin user for tenant
-    const passwordHash = hashPassword(password);
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .insert({
-        tenant_id: tenantData.id,
-        name: `Admin ${companyName}`,
-        email: email,
-        password_hash: passwordHash,
-        role: "Admin",
-        is_master: false,
-        active: true
-      })
-      .select()
-      .maybeSingle();
+    // 2. Create admin user (Supabase Auth + perfil) for tenant
+    const created = await createUserWithProfile({
+      email,
+      password,
+      name: `Admin ${companyName}`,
+      tenantId: tenantData.id,
+      role: "Admin",
+      isMaster: false,
+    });
 
-    if (userError || !userData) {
+    if (!created.success) {
       // Rollback tenant if user creation fails
       await supabase.from("tenants").delete().eq("id", tenantData.id);
-      const errMsg = `Erro ao criar usuário: ${userError?.message || "Unknown error"}`;
-      console.error('[Register] ' + errMsg, userError);
+      const errMsg = `Erro ao criar usuário: ${created.error || "Unknown error"}`;
+      console.error('[Register] ' + errMsg);
       return { success: false, error: errMsg };
     }
 
-    console.log('[Register] ✅ Parceiro registrado com sucesso', { tenantId: tenantData.id, userId: userData.id });
+    console.log('[Register] ✅ Parceiro registrado com sucesso', { tenantId: tenantData.id, userId: created.userId });
+
+    // 3. A conta foi criada via client isolado (para não roubar a sessão de quem
+    //    já estiver logado neste navegador) — agora autentica de verdade no
+    //    client principal, exceto se o projeto exigir confirmação de e-mail.
+    if (created.needsEmailConfirmation) {
+      return {
+        success: true,
+        userId: created.userId,
+        tenantId: tenantData.id,
+        needsEmailConfirmation: true,
+      };
+    }
+
+    const signInResult = await signIn(email, password);
     return {
       success: true,
-      userId: userData.id,
-      tenantId: tenantData.id
+      userId: created.userId,
+      tenantId: tenantData.id,
+      needsEmailConfirmation: false,
+      user: signInResult.user,
     };
   } catch (err) {
     const errMsg = err instanceof Error ? err.message : "Erro desconhecido no registro";
@@ -372,18 +449,17 @@ export async function setupMasterUser(): Promise<{ success: boolean; error?: str
       return { success: true, alreadyExists: true };
     }
 
-    // 3. Criar usuário master
-    const { error: userErr } = await supabase.from('users').insert({
-      tenant_id: tenant.id,
-      name: 'G-Tech Administrador',
+    // 3. Criar usuário master (Supabase Auth + perfil)
+    const created = await createUserWithProfile({
       email: MASTER_EMAIL,
-      password_hash: hashPassword(MASTER_PASSWORD),
+      password: MASTER_PASSWORD,
+      name: 'G-Tech Administrador',
+      tenantId: tenant.id,
       role: 'Super Admin',
-      is_master: true,
-      active: true
+      isMaster: true,
     });
 
-    if (userErr) return { success: false, error: `Erro ao criar usuário: ${userErr.message}` };
+    if (!created.success) return { success: false, error: `Erro ao criar usuário: ${created.error}` };
 
     console.log('[Setup] ✅ Usuário master gthec criado com sucesso');
     return { success: true };

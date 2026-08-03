@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { Server } from "lucide-react";
+import { Server, Handshake } from "lucide-react";
 
 import { navSections as defaultNavSections } from "./navData";
 
@@ -54,6 +54,22 @@ export function Sidebar({
                 { name: "Painel G-Tech", path: "/app/admin", icon: Server }
             ]
         })
+    }
+  }
+
+  // "Visão de Parceiros": usuários de organizações parceiras (G-Tech, Pluppex
+  // Holding, outras parceiras — user.partnerId vem de public.users.partner_id)
+  // veem os clientes atribuídos a elas + agregado da plataforma. Separado do
+  // "Painel G-Tech" acima, que é o admin completo do SaaS (só master/G-Tech).
+  if (user?.isMaster || !!user?.partnerId) {
+    const sistemaSection = navSections.find((s) => s.title === "Gestão do Sistema") || navSections.find((s) => s.title === "Sistema");
+    const partnersItem = { name: "Visão de Parceiros", path: "/app/parceiros", icon: Handshake };
+    if (sistemaSection) {
+      if (!sistemaSection.items.some((item: any) => item.name === "Visão de Parceiros")) {
+        sistemaSection.items.push(partnersItem);
+      }
+    } else {
+      navSections.push({ title: "Sistema", items: [partnersItem] });
     }
   }
 

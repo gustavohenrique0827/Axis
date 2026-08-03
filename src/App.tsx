@@ -14,7 +14,6 @@ import Exames from "./pages/clinica/Exames";
 import EstatisticasClinicas from "./pages/clinica/Estatisticas";
 import Pacientes from "./pages/clinica/Pacientes";
 import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
 import Layout from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Pipeline from "./pages/crm/Pipeline";
@@ -28,6 +27,7 @@ import Contracts from "./pages/crm/Contracts";
 import Messaging from "./pages/crm/Messaging";
 import Automations from "./pages/marketing/Automations";
 import AdminSaaS from "./pages/admin/AdminSaaS";
+import PartnersOverview from "./pages/partners/PartnersOverview";
 
 import FinanceiroLayout from "./pages/finance/FinanceiroLayout";
 import FinanceiroVisaoGeral from "./pages/finance/FinanceiroVisaoGeral";
@@ -124,7 +124,10 @@ function AppContent() {
         <Route path="/" element={<Navigate to="/app" replace />} />
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        {/* Auto-cadastro público desativado: Axis não é mais um SaaS de self-signup —
+            novos tenants passam a ser criados por quem já está autenticado (G-Tech/parceiros).
+            Rota removida em vez de deixá-la quebrar silenciosamente contra o RLS da Fase 1. */}
+        <Route path="/register" element={<Navigate to="/login" replace />} />
 
         <Route path="/app" element={
           <ProtectedRoute>
@@ -264,6 +267,7 @@ function AppContent() {
           </Route>
 
           <Route path="admin" element={<AdminSaaS />} />
+          <Route path="parceiros" element={<PartnersOverview />} />
         </Route>
 
         {/* Portfólio público do corretor — sem autenticação */}

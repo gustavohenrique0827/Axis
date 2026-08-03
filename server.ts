@@ -84,19 +84,34 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || "";
 const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
 
+// Client privilegiado (bypassa RLS) — uso restrito à rota /api/v1/leads, que é
+// chamada por integrações externas (não por um usuário logado no Axis) e por
+// isso não tem um JWT de sessão para respeitar a RLS normalmente. O tenant_id
+// usado nessas chamadas vem só do mapeamento de API key (apiKeyTenantMap),
+// nunca do corpo da requisição — é isso que mantém o isolamento aqui.
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const supabaseService = supabaseUrl && supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null;
+
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY || "dummy_key_to_prevent_crash_at_load_time",
   httpOptions: { headers: { "User-Agent": "aistudio-build" } },
 });
 
-const validApiKeys = new Set(
+// Formato: "chave1:tenantIdA,chave2:tenantIdB" — cada API key é vinculada a
+// exatamente um tenant. Uma chave nunca pode ler/gravar leads de outro tenant,
+// mesmo que o chamador informe um tenantId diferente no corpo da requisição.
+const apiKeyTenantMap = new Map(
   (process.env.AXIS_API_KEYS || "")
     .split(",")
-    .map((k) => k.trim())
+    .map((pair) => pair.trim())
     .filter(Boolean)
+    .map((pair) => {
+      const [key, tenantId] = pair.split(":").map((s) => s.trim());
+      return [key, tenantId] as [string, string];
+    })
+    .filter(([key, tenantId]) => key && tenantId)
 );
 
-const FORM_TENANT_ID = process.env.AXIS_FORM_TENANT_ID || "";
 const FORM_CLIENT_ID = process.env.AXIS_FORM_CLIENT_ID || "";
 
 // ── AI Helpers: Gemini → Groq fallback ────────────────────────────────────
@@ -182,13 +197,38 @@ app.use((req, res, next) => {
 });
 
 function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
-  if (validApiKeys.size === 0) {
-    return res.status(503).json({ error: "Nenhuma API Key configurada. Defina AXIS_API_KEYS no .env." });
+  if (apiKeyTenantMap.size === 0) {
+    return res.status(503).json({ error: "Nenhuma API Key configurada. Defina AXIS_API_KEYS no formato chave:tenantId no .env." });
   }
   const key = req.headers["x-api-key"] as string | undefined;
-  if (!key || !validApiKeys.has(key)) {
+  const tenantId = key ? apiKeyTenantMap.get(key) : undefined;
+  if (!key || !tenantId) {
     return res.status(401).json({ error: "API Key inválida ou ausente." });
   }
+  (req as any).tenantId = tenantId;
+  next();
+}
+
+/**
+ * Exige uma sessão real do Supabase Auth (JWT no header Authorization).
+ * Anexa req.user (usuário autenticado) e req.supabase (client escopado com o
+ * token do chamador, para que toda query subsequente respeite a RLS por
+ * tenant automaticamente, sem precisar filtrar tenant_id manualmente na rota).
+ */
+async function requireUser(req: express.Request, res: express.Response, next: express.NextFunction) {
+  if (!supabase) return res.status(503).json({ error: "Banco de dados não configurado no servidor." });
+
+  const authHeader = req.headers["authorization"] as string | undefined;
+  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+  if (!token) return res.status(401).json({ error: "Autenticação obrigatória." });
+
+  const { data, error } = await supabase.auth.getUser(token);
+  if (error || !data.user) return res.status(401).json({ error: "Sessão inválida ou expirada." });
+
+  (req as any).user = data.user;
+  (req as any).supabase = createClient(supabaseUrl, supabaseKey, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+  });
   next();
 }
 
@@ -202,7 +242,6 @@ app.post("/api/v1/leads", requireApiKey, async (req, res) => {
     pipelineId = "sdr", lead_interesse_cliente = "",
     customFields = {}, clientId = FORM_CLIENT_ID, clientName = "",
     productIds = [],
-    tenantId = FORM_TENANT_ID,
     tenantName = ""
   } = req.body;
 
@@ -215,17 +254,18 @@ app.post("/api/v1/leads", requireApiKey, async (req, res) => {
     ? parseFloat(value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0
     : (value ?? 0);
 
+  // tenant_id vem só da API key (nunca do corpo da requisição) — ver requireApiKey.
   const newLead = {
     id, name, company, email, phone, cnpj, title, seller, source,
     status, priority, value: rawValue, stageId, pipelineId,
     lead_interesse_cliente, customFields, clientId, clientName,
-    productIds, tenant_id: tenantId || null, tenantName, scoreIA: 50, date: now,
+    productIds, tenant_id: (req as any).tenantId, tenantName, scoreIA: 50, date: now,
     createdAt: new Date().toISOString()
   };
 
-  if (!supabase) return res.status(503).json({ error: "Banco de dados não configurado no servidor." });
+  if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
 
-  const { data, error } = await supabase.from("leads").insert(newLead).select().maybeSingle();
+  const { data, error } = await supabaseService.from("leads").insert(newLead).select().maybeSingle();
   if (error) {
     console.error("[API v1] Erro ao criar lead:", error.message);
     return res.status(500).json({ error: "Falha ao salvar lead no banco.", details: error.message });
@@ -234,15 +274,15 @@ app.post("/api/v1/leads", requireApiKey, async (req, res) => {
 });
 
 app.get("/api/v1/leads", requireApiKey, async (req, res) => {
-  if (!supabase) return res.status(503).json({ error: "Banco de dados não configurado no servidor." });
+  if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
 
-  const { tenantId, tenantName, seller, status, limit = "100", offset = "0" } = req.query as Record<string, string>;
+  const { seller, status, limit = "100", offset = "0" } = req.query as Record<string, string>;
 
-  let query = supabase.from("leads").select("*").order("createdAt", { ascending: false })
+  // tenant_id vem só da API key (nunca de query string) — ver requireApiKey.
+  let query = supabaseService.from("leads").select("*").eq("tenant_id", (req as any).tenantId)
+    .order("createdAt", { ascending: false })
     .limit(parseInt(limit)).range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
 
-  if (tenantId) query = query.eq("tenant_id", tenantId);
-  else if (tenantName) query = query.eq("tenantName", tenantName);
   if (seller) query = query.eq("seller", seller);
   if (status) query = query.eq("status", status);
 
@@ -253,7 +293,7 @@ app.get("/api/v1/leads", requireApiKey, async (req, res) => {
 
 // ── AI Routes ──────────────────────────────────────────────────────────────
 
-app.post("/api/leads/suggest-tags", async (req, res) => {
+app.post("/api/leads/suggest-tags", requireUser, async (req, res) => {
   const { name, company, notes } = req.body;
   if (!process.env.GEMINI_API_KEY) return res.json({ tags: ["Interesse", "Novo Lead", "PME"] });
   try {
@@ -276,7 +316,7 @@ app.post("/api/leads/suggest-tags", async (req, res) => {
   }
 });
 
-app.post("/api/cnpj/validate", async (req, res) => {
+app.post("/api/cnpj/validate", requireUser, async (req, res) => {
   const { cnpj } = req.body;
   if (!cnpj) return res.status(400).json({ error: "O CNPJ é obrigatório" });
 
@@ -342,7 +382,7 @@ app.post("/api/cnpj/validate", async (req, res) => {
   }
 });
 
-app.post("/api/leads/calculate-score", async (req, res) => {
+app.post("/api/leads/calculate-score", requireUser, async (req, res) => {
   const { lead, activities } = req.body;
   if (!lead) return res.status(400).json({ error: "Lead data is required for score calculation" });
 
@@ -420,7 +460,7 @@ app.post("/api/leads/calculate-score", async (req, res) => {
   });
 });
 
-app.post("/api/ai/performance-audit", async (req, res) => {
+app.post("/api/ai/performance-audit", requireUser, async (req, res) => {
   const { mrr, cac, ltv, leadsCount, dealsCount } = req.body;
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "Chave de IA não configurada." });
   try {
@@ -451,7 +491,7 @@ app.post("/api/ai/performance-audit", async (req, res) => {
   }
 });
 
-app.post("/api/ai/pipeline-audit", async (req, res) => {
+app.post("/api/ai/pipeline-audit", requireUser, async (req, res) => {
   const { stageName, leads } = req.body;
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
   try {
@@ -476,7 +516,7 @@ app.post("/api/ai/pipeline-audit", async (req, res) => {
   }
 });
 
-app.post("/api/ai/marketing-advisor", async (req, res) => {
+app.post("/api/ai/marketing-advisor", requireUser, async (req, res) => {
   const { leads, spent } = req.body;
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
   try {
@@ -507,7 +547,7 @@ app.post("/api/ai/marketing-advisor", async (req, res) => {
   }
 });
 
-app.post("/api/ai/settings-audit", async (req, res) => {
+app.post("/api/ai/settings-audit", requireUser, async (req, res) => {
   const { type, config } = req.body;
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
   try {
@@ -535,7 +575,7 @@ app.post("/api/ai/settings-audit", async (req, res) => {
   }
 });
 
-app.get("/api/settings/:category", async (req, res) => {
+app.get("/api/settings/:category", requireUser, async (req, res) => {
   const { category } = req.params;
   if (supabase) {
     const tableName = `crm_${category.replace("-", "_")}`;
@@ -551,7 +591,7 @@ app.get("/api/settings/:category", async (req, res) => {
   }
 });
 
-app.post("/api/settings/:category", async (req, res) => {
+app.post("/api/settings/:category", requireUser, async (req, res) => {
   const { category } = req.params;
   const item = req.body;
   const id = Math.random().toString(36).substring(2, 9);
@@ -579,7 +619,7 @@ app.post("/api/settings/:category", async (req, res) => {
   }
 });
 
-app.delete("/api/settings/:category/:id", async (req, res) => {
+app.delete("/api/settings/:category/:id", requireUser, async (req, res) => {
   const { category, id } = req.params;
   if (supabase) {
     const tableName = `crm_${category.replace("-", "_")}`;
@@ -594,7 +634,7 @@ app.delete("/api/settings/:category/:id", async (req, res) => {
   res.json({ success: true });
 });
 
-app.post("/api/ai/suggest-new-config", async (req, res) => {
+app.post("/api/ai/suggest-new-config", requireUser, async (req, res) => {
   const { type } = req.body;
   if (!process.env.GEMINI_API_KEY) return res.json({ suggestion: null });
   try {
@@ -615,7 +655,7 @@ app.post("/api/ai/suggest-new-config", async (req, res) => {
   }
 });
 
-app.post("/api/ai/generic-insight", async (req, res) => {
+app.post("/api/ai/generic-insight", requireUser, async (req, res) => {
   const { context, data } = req.body;
   if (!process.env.GEMINI_API_KEY) {
     return res.json({ insight: "A Master IA está em modo offline no momento. Conecte sua API Key para obter insights estratégicos." });
@@ -639,7 +679,7 @@ app.post("/api/ai/generic-insight", async (req, res) => {
 // ── Reunião Copilot & Post-Meeting Report ─────────────────────────────────
 
 // ── Copilot de Reunião (tempo real — BANT + transcrição) ──────────────────────
-app.post("/api/ai/reuniao-copilot", async (req: any, res: any) => {
+app.post("/api/ai/reuniao-copilot", requireUser, async (req: any, res: any) => {
   const { transcript, leadContext } = req.body ?? {};
   const hasAI = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
   if (!hasAI) return res.json({ analysis: null, error: "Nenhuma chave de IA configurada." });
@@ -667,7 +707,7 @@ Responda APENAS com este JSON:
 });
 
 // ── Correção ortográfica de notas ─────────────────────────────────────────────
-app.post("/api/ai/corrigir-nota", async (req: any, res: any) => {
+app.post("/api/ai/corrigir-nota", requireUser, async (req: any, res: any) => {
   const { texto } = req.body ?? {};
   if (!texto?.trim()) return res.json({ corrigido: texto ?? "" });
   const hasAI = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
@@ -683,7 +723,7 @@ app.post("/api/ai/corrigir-nota", async (req: any, res: any) => {
 });
 
 // ── Copilot de Lead (pré-reunião — análise estática do perfil) ────────────────
-app.post("/api/ai/lead-copilot", async (req: any, res: any) => {
+app.post("/api/ai/lead-copilot", requireUser, async (req: any, res: any) => {
   const { leadContext } = req.body ?? {};
   const hasAI = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
   if (!hasAI) return res.json({ analysis: null, error: "Nenhuma chave de IA configurada." });
@@ -724,7 +764,7 @@ Responda APENAS com este JSON:
   }
 });
 
-app.post("/api/ai/reuniao-relatorio", async (req: any, res: any) => {
+app.post("/api/ai/reuniao-relatorio", requireUser, async (req: any, res: any) => {
   const { transcript, notes, leadContext, pauta, reuniaoId } = req.body ?? {};
   const hasAI = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
   if (!hasAI) return res.json({ relatorio: "Relatório não disponível — configure uma chave de IA." });
@@ -751,13 +791,18 @@ Gere um relatório executivo em markdown com:
 ## Próximos Passos (com responsáveis e prazos)
 ## Recomendação de Fechamento (Alta/Média/Baixa probabilidade e por quê)`);
 
-    if (supabase && reuniaoId) {
-      await supabase.from("reunioes").update({
+    if (reuniaoId) {
+      // Usa o client escopado com o JWT do chamador (req.supabase, de
+      // requireUser) em vez do client anônimo do módulo — a RLS da Fase 1 só
+      // libera esse UPDATE para quem está autenticado e pertence ao tenant
+      // dono da reunião.
+      const { error: updateError } = await req.supabase.from("reunioes").update({
         relatorio_ia: relatorio,
         ...(transcript ? { transcricao: transcript } : {}),
         ...(notes ? { notas_closer: notes } : {}),
         status: "Concluída",
       }).eq("id", reuniaoId);
+      if (updateError) console.error("[Relatório Reunião] Erro ao salvar:", updateError.message);
     }
 
     res.json({ relatorio });
@@ -771,15 +816,13 @@ Gere um relatório executivo em markdown com:
 
 function bodyWithFallback(req: any) { return req.body || {}; }
 
-app.get("/api/whatsapp/instances", async (req, res) => {
-  if (supabase) {
-    const { data, error } = await supabase.from("whatsapp_instances").select("*").order("created_at", { ascending: false });
-    if (!error && data) return res.json(data);
-  }
+app.get("/api/whatsapp/instances", requireUser, async (req: any, res) => {
+  const { data, error } = await req.supabase.from("whatsapp_instances").select("*").order("created_at", { ascending: false });
+  if (!error && data && data.length > 0) return res.json(data);
   res.json(instances);
 });
 
-app.post("/api/whatsapp/instances", (req, res) => {
+app.post("/api/whatsapp/instances", requireUser, (req, res) => {
   const { name, phone = "-", webhookUrl = "" } = req.body;
   if (!name) return res.status(400).json({ error: "Nome da instância é obrigatório" });
   const newInst: WhatsAppInstance = {
@@ -793,7 +836,7 @@ app.post("/api/whatsapp/instances", (req, res) => {
   res.json(newInst);
 });
 
-app.post("/api/whatsapp/instances/:id/qrcode", (req, res) => {
+app.post("/api/whatsapp/instances/:id/qrcode", requireUser, (req, res) => {
   const { id } = req.params;
   const inst = instances.find((i) => i.id === id);
   if (!inst) return res.status(404).json({ error: "Instância não encontrada" });
@@ -802,7 +845,7 @@ app.post("/api/whatsapp/instances/:id/qrcode", (req, res) => {
   res.json({ status: "CONNECTING", qrcode: inst.qrcode });
 });
 
-app.post("/api/whatsapp/instances/:id/connect", (req, res) => {
+app.post("/api/whatsapp/instances/:id/connect", requireUser, (req, res) => {
   const { id } = req.params;
   const { phone } = bodyWithFallback(req);
   const inst = instances.find((i) => i.id === id);
@@ -813,13 +856,13 @@ app.post("/api/whatsapp/instances/:id/connect", (req, res) => {
   res.json({ status: "CONNECTED", instance: inst });
 });
 
-app.delete("/api/whatsapp/instances/:id", (req, res) => {
+app.delete("/api/whatsapp/instances/:id", requireUser, (req, res) => {
   const { id } = req.params;
   instances = instances.filter((i) => i.id !== id);
   res.json({ success: true, message: `Instância ${id} removida` });
 });
 
-app.put("/api/whatsapp/instances/:id", (req, res) => {
+app.put("/api/whatsapp/instances/:id", requireUser, (req, res) => {
   const { id } = req.params;
   const { webhookUrl, name, phone, status } = req.body;
   const inst = instances.find((i) => i.id === id);
@@ -831,9 +874,9 @@ app.put("/api/whatsapp/instances/:id", (req, res) => {
   res.json(inst);
 });
 
-app.get("/api/whatsapp/contacts", (req, res) => res.json(contacts));
+app.get("/api/whatsapp/contacts", requireUser, (req, res) => res.json(contacts));
 
-app.post("/api/whatsapp/contacts", (req, res) => {
+app.post("/api/whatsapp/contacts", requireUser, (req, res) => {
   const { name, phone, email, tags = ["lead"] } = req.body;
   if (!name || !phone) return res.status(400).json({ error: "Nome e Telefone são obrigatórios" });
   const cleanPhone = phone.startsWith("+") ? phone : `+55 ${phone}`;
@@ -853,7 +896,7 @@ app.post("/api/whatsapp/contacts", (req, res) => {
   res.json(newContact);
 });
 
-app.get("/api/whatsapp/messages/:contactId", async (req, res) => {
+app.get("/api/whatsapp/messages/:contactId", requireUser, async (req, res) => {
   const { contactId } = req.params;
   if (supabase) {
     const { data, error } = await supabase.from("chat_messages").select("*").eq("contact_id", contactId).order("timestamp", { ascending: true });
@@ -862,7 +905,7 @@ app.get("/api/whatsapp/messages/:contactId", async (req, res) => {
   res.json(messages[contactId] || []);
 });
 
-app.post("/api/whatsapp/messages/send", async (req, res) => {
+app.post("/api/whatsapp/messages/send", requireUser, async (req, res) => {
   const { contactId, text } = req.body;
   if (!contactId || !text) return res.status(400).json({ error: "ID do contato e texto são obrigatórios" });
   const timeString = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -881,7 +924,7 @@ app.post("/api/whatsapp/messages/send", async (req, res) => {
   res.json({ success: true, message: userMsg });
 });
 
-app.post("/api/whatsapp/simulate-incoming", async (req, res) => {
+app.post("/api/whatsapp/simulate-incoming", requireUser, async (req, res) => {
   const { contactId, text } = req.body;
   if (!contactId || !text) return res.status(400).json({ error: "contactId e texto são obrigatórios" });
   const contact = contacts.find((c) => c.id === contactId);
@@ -903,7 +946,7 @@ app.post("/api/whatsapp/simulate-incoming", async (req, res) => {
   res.json({ message: inMsg, contact });
 });
 
-app.post("/api/whatsapp/copilot/analyze", async (req, res) => {
+app.post("/api/whatsapp/copilot/analyze", requireUser, async (req, res) => {
   const { contactId } = req.body;
   if (!contactId) return res.status(400).json({ error: "contactId é obrigatório" });
   const chatHistory = messages[contactId] || [];

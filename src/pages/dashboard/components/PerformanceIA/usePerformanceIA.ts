@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { useData } from "../../../../contexts/DataContext";
+import { apiFetch } from "../../../../lib/apiClient";
 
 type AiRecommendation = any;
 
@@ -80,7 +81,7 @@ export function usePerformanceIA() {
     try {
       const dealsCount = leads.filter((l: any) => l.status === "Fechado").length;
 
-      const response = await fetch("/api/ai/performance-audit", {
+      const response = await apiFetch("/api/ai/performance-audit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Phone, Mic, MicOff, Plus, Trash2, MessageSquare } from "lucide-react";
 import { supabase } from "../../../lib/supabase";
 import { toast } from "sonner";
+import { apiFetch } from "../../../lib/apiClient";
 
 interface Note {
   id: string;
@@ -82,7 +83,7 @@ export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) 
 
     // IA corrige ortografia em background (silencioso)
     try {
-      const res = await fetch("/api/ai/corrigir-nota", {
+      const res = await apiFetch("/api/ai/corrigir-nota", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ texto: text }),

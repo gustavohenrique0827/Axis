@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
-import { fetchTenants, fetchTenantIdMap, updateTenantModulesInDB } from "../lib/supabase";
+import { supabase, fetchTenants, fetchTenantIdMap, fetchUserProfile, updateTenantModulesInDB } from "../lib/supabase";
 
 export type TenantNiche = "Master" | "Solar" | "Imobiliária" | "Clínica" | "Tecnologia" | "Parceira";
 
@@ -11,12 +11,16 @@ export interface UserSession {
   tenantName: string;
   tenantNiche: TenantNiche;
   isMaster: boolean;
+  /** Preenchido só para usuários de organizações parceiras (G-Tech, Pluppex Holding,
+   *  outras parceiras) — origem: public.users.partner_id / public.partners. */
+  partnerId?: string;
 }
 
 export type TenantModules = Record<string, boolean>;
 
 interface AuthContextType {
   user: UserSession | null;
+  authLoading: boolean;
   login: (user: UserSession) => void;
   logout: () => void;
   isModuleEnabled: (moduleName: keyof TenantModules) => boolean;
@@ -47,16 +51,52 @@ const DEFAULT_TENANT_MODULES: Record<string, TenantModules> = {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<UserSession | null>(() => {
-    // Recupera a sessão salva no localStorage ao iniciar
-    const savedSession = localStorage.getItem("axis_session");
-    return savedSession ? JSON.parse(savedSession) : null;
-  });
+  const [user, setUser] = useState<UserSession | null>(null);
+  // Começa "true" até a sessão do Supabase Auth (getSession) ser resolvida —
+  // evita redirecionar para /login por uma fração de segundo em cada refresh
+  // enquanto a sessão real (cookie/localStorage do próprio supabase-js) carrega.
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Start with only G-Tech Master, always load from Supabase
   const [allTenantModules, setAllTenantModules] = useState<Record<string, TenantModules>>(DEFAULT_TENANT_MODULES);
   // tenantIdMap: name → UUID (ex: "PLUPPEX DIGITAL MACHINES LTDA" → "27ef95ee-...")
   const [tenantIdMap, setTenantIdMap] = useState<Record<string, string>>({});
+
+  // Fonte de verdade da sessão: Supabase Auth (JWT real), não mais localStorage
+  // próprio. O localStorage usado internamente pelo supabase-js já persiste a
+  // sessão entre reloads — não duplicamos esse estado aqui.
+  useEffect(() => {
+    if (!supabase) {
+      setAuthLoading(false);
+      return;
+    }
+
+    let active = true;
+
+    const applySession = async (userId: string | undefined) => {
+      if (!userId) {
+        if (active) setUser(null);
+        return;
+      }
+      const profile = await fetchUserProfile(userId);
+      if (!active) return;
+      setUser(profile.success ? (profile.user as UserSession) : null);
+    };
+
+    supabase.auth.getSession().then(async ({ data }) => {
+      await applySession(data.session?.user?.id);
+      if (active) setAuthLoading(false);
+    });
+
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      applySession(session?.user?.id);
+    });
+
+    return () => {
+      active = false;
+      subscription.subscription.unsubscribe();
+    };
+  }, []);
 
   // Carrega os tenants e as configurações de módulos do banco
   useEffect(() => {
@@ -84,13 +124,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = (session: UserSession) => {
+    // A autenticação real (supabase.auth.signInWithPassword/signUp) já aconteceu
+    // em signIn()/registerPartner() antes de chamar login() — aqui só refletimos
+    // o perfil resolvido no estado local; onAuthStateChange mantém a sessão
+    // sincronizada em refreshes futuros.
     setUser(session);
-    localStorage.setItem("axis_session", JSON.stringify(session));
   };
 
   const logout = () => {
     setUser(null);
-    localStorage.removeItem("axis_session");
+    supabase?.auth.signOut();
   };
 
   const getTenantModules = (tenant: string): TenantModules => {
@@ -105,8 +148,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isModuleEnabled = (moduleName: keyof TenantModules): boolean => {
     if (!user) return false;
-    // G-Tech master user always has access to all modules
-    if (user.isMaster || user.tenantName.includes("G-Tech")) return true;
+    // is_master vem do perfil resolvido em public.users (via fetchUserProfile),
+    // não mais de um match de string no nome do tenant — não é mais spoofável
+    // editando localStorage.
+    if (user.isMaster) return true;
 
     const modules = getTenantModules(user.tenantName);
     return !!modules[moduleName];
@@ -132,7 +177,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isModuleEnabled, updateTenantModules, getTenantModules, allTenantModules, tenantIdMap }}>
+    <AuthContext.Provider value={{ user, authLoading, login, logout, isModuleEnabled, updateTenantModules, getTenantModules, allTenantModules, tenantIdMap }}>
       {children}
     </AuthContext.Provider>
   );

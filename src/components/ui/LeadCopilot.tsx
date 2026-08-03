@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
+import { apiFetch } from "../../lib/apiClient";
 
 interface LeadCopilotContext {
   name?: string;
@@ -69,7 +70,7 @@ export function LeadCopilot({ leadContext, onClose }: LeadCopilotProps) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/ai/lead-copilot", {
+      const res = await apiFetch("/api/ai/lead-copilot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ leadContext }),
