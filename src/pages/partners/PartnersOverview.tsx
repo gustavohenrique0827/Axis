@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Building2, Users, DollarSign, FileText, Handshake, Inbox } from "lucide-react";
+import { Building2, Users2, Receipt, Wallet, Handshake, Inbox } from "lucide-react";
 import { PageContainer } from "../../components/PageContainer";
 import { Card } from "../../components/ui/card";
 import { useAuth } from "../../contexts/AuthContext";
@@ -75,99 +75,71 @@ export default function PartnersOverview() {
 
   if (!hasAccess) {
     return (
-      <PageContainer
-        title="Visão de Parceiros"
-        description="Acesso restrito a organizações parceiras da plataforma Axis."
-      >
-        <Card className="p-10 flex flex-col items-center justify-center gap-4 opacity-60">
-          <Handshake className="w-12 h-12 text-slate-500" />
-          <span className="text-xs font-black uppercase tracking-widest text-slate-500">Acesso restrito</span>
+      <PageContainer title="Parceiros" description="Acesso restrito a organizações parceiras da plataforma Axis.">
+        <Card className="p-10 flex flex-col items-center justify-center gap-3 text-center">
+          <Handshake className="w-8 h-8 text-slate-500" />
+          <span className="text-sm text-slate-400">Você não tem acesso a esta página.</span>
         </Card>
       </PageContainer>
     );
   }
 
+  const metricItems = [
+    { label: "Tenants na plataforma", value: metrics?.total_tenants ?? 0, icon: Building2 },
+    { label: "Leads gerados", value: metrics?.total_leads ?? 0, icon: Users2 },
+    { label: "Clientes cadastrados", value: metrics?.total_clientes ?? 0, icon: Building2 },
+    { label: "Propostas emitidas", value: metrics?.total_propostas ?? 0, icon: Receipt },
+    { label: "Receita total (a receber)", value: currency(metrics?.total_receita ?? 0), icon: Wallet },
+  ];
+
   return (
     <PageContainer
-      title="Visão de Parceiros"
-      description="Clientes atribuídos à sua organização (acesso operacional completo) e números agregados de toda a plataforma Axis."
+      title="Parceiros"
+      description="Clientes atribuídos à sua organização e números gerais da plataforma Axis."
     >
       <div className="space-y-6">
         <div>
-          <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-3">
-            Plataforma Axis — agregado de todos os tenants
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Card className="p-5 border-[#06B6D4]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Building2 className="w-12 h-12 text-[#06B6D4]" />
-              </div>
-              <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">Tenants na Plataforma</span>
-              <h3 className="text-3xl font-extrabold text-white">{loading ? "…" : metrics?.total_tenants ?? 0}</h3>
-            </Card>
-
-            <Card className="p-5 border-emerald-500/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Users className="w-12 h-12 text-emerald-400" />
-              </div>
-              <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">Leads Gerados</span>
-              <h3 className="text-3xl font-extrabold text-emerald-400">{loading ? "…" : metrics?.total_leads ?? 0}</h3>
-            </Card>
-
-            <Card className="p-5 border-blue-500/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Building2 className="w-12 h-12 text-blue-400" />
-              </div>
-              <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">Clientes Cadastrados</span>
-              <h3 className="text-3xl font-extrabold text-blue-400">{loading ? "…" : metrics?.total_clientes ?? 0}</h3>
-            </Card>
-
-            <Card className="p-5 border-purple-500/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                <FileText className="w-12 h-12 text-purple-400" />
-              </div>
-              <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">Propostas Emitidas</span>
-              <h3 className="text-3xl font-extrabold text-purple-400">{loading ? "…" : metrics?.total_propostas ?? 0}</h3>
-            </Card>
-
-            <Card className="p-5 border-[#2563EB]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                <DollarSign className="w-12 h-12 text-[#2563EB]" />
-              </div>
-              <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">Receita Total (a receber)</span>
-              <h3 className="text-3xl font-extrabold text-[#2563EB]">{loading ? "…" : currency(metrics?.total_receita ?? 0)}</h3>
-            </Card>
+          <h3 className="text-sm text-slate-400 mb-3">Visão geral da plataforma</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {metricItems.map(({ label, value, icon: Icon }) => (
+              <Card key={label} className="p-4">
+                <div className="flex items-center gap-2 text-slate-400 mb-2">
+                  <Icon className="w-4 h-4" />
+                  <span className="text-xs">{label}</span>
+                </div>
+                <p className="text-2xl font-semibold text-white">{loading ? "—" : value}</p>
+              </Card>
+            ))}
           </div>
         </div>
 
-        <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden">
-          <div className="p-4 border-b border-white/10 flex items-center justify-between bg-[var(--color-surface)]/50">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Handshake className="w-4 h-4 text-[#06B6D4]" /> Clientes atribuídos à sua organização
+        <Card className="overflow-hidden">
+          <div className="p-4 border-b border-white-text/10">
+            <h3 className="text-sm font-medium text-white flex items-center gap-2">
+              <Handshake className="w-4 h-4 text-slate-400" />
+              Clientes atribuídos à sua organização
             </h3>
           </div>
+
           {tenants.length === 0 ? (
-            <div className="p-10 flex flex-col items-center justify-center gap-4 opacity-40">
-              <Inbox className="w-12 h-12 text-slate-500" />
-              <span className="text-xs font-black uppercase tracking-widest text-slate-500">
-                {loading ? "Carregando..." : "Nenhum tenant atribuído ainda"}
+            <div className="p-10 flex flex-col items-center justify-center gap-3 text-center">
+              <Inbox className="w-8 h-8 text-slate-500" />
+              <span className="text-sm text-slate-500">
+                {loading ? "Carregando…" : "Nenhum cliente atribuído ainda."}
               </span>
             </div>
           ) : (
-            <div className="divide-y divide-white/5">
+            <div className="divide-y divide-white-text/5">
               {tenants.map((t) => (
                 <div key={t.id} className="p-4 flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-white font-medium">{t.name}</p>
-                    <p className="text-[10px] text-slate-500 uppercase tracking-widest">{t.niche}</p>
+                    <p className="text-sm text-white">{t.name}</p>
+                    <p className="text-xs text-slate-500">{t.niche}</p>
                   </div>
-                  <span
-                    className={`text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full ${
-                      t.status === "Active" ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-500/10 text-slate-400"
-                    }`}
-                  >
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <span className={`w-1.5 h-1.5 rounded-full ${t.status === "Active" ? "bg-emerald-500" : "bg-slate-500"}`} />
                     {t.status ?? "—"}
-                  </span>
+                  </div>
                 </div>
               ))}
             </div>
