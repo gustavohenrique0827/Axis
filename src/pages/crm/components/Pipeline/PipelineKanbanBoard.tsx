@@ -84,7 +84,7 @@ export function PipelineKanbanBoard({
             }}
             className={`shrink-0 flex flex-col bg-[var(--color-surface)]/40 border rounded-3xl transition-all duration-300 h-full ${
               isMinimized ? "w-[56px] p-2" : "w-[280px] p-3"
-            } ${draggedOverStageId === stage.id ? "border-blue-500/50 bg-blue-500/10 scale-[1.02]" : "border-white/5 hover:border-white/20 hover:bg-[var(--color-surface-elevated)]/60 hover:shadow-lg"}`}
+            } ${draggedOverStageId === stage.id ? "border-white/30 bg-white/5 scale-[1.02]" : "border-white/5 hover:border-white/20 hover:bg-[var(--color-surface-elevated)]/60"}`}
           >
             {isMinimized ? (
               <button
@@ -94,12 +94,12 @@ export function PipelineKanbanBoard({
               >
                 <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: stage.color }} />
                 <span
-                  className="text-[9px] font-black text-slate-400 uppercase tracking-widest"
+                  className="text-[9px] text-slate-400"
                   style={{ writingMode: "vertical-rl", textOrientation: "mixed", transform: "rotate(180deg)" }}
                 >
                   {stage.name}
                 </span>
-                <span className="text-[10px] font-black text-slate-500 bg-white/5 px-1.5 py-0.5 rounded-full">{stageLeads.length}</span>
+                <span className="text-[10px] text-slate-500 bg-white/5 px-1.5 py-0.5 rounded-full">{stageLeads.length}</span>
                 <ChevronRight className="w-3 h-3 text-slate-600 mt-auto" />
               </button>
             ) : (
@@ -107,15 +107,15 @@ export function PipelineKanbanBoard({
                 <div className="flex items-center justify-between gap-2 mb-3 shrink-0">
                   <button onClick={() => toggleColumn(stage.id)} className="flex items-center gap-2 cursor-pointer group min-w-0">
                     <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: stage.color }} />
-                    <h3 className="text-[11px] font-black text-white uppercase tracking-widest group-hover:text-slate-300 transition-colors truncate">{stage.name}</h3>
+                    <h3 className="text-xs text-slate-300 group-hover:text-white transition-colors truncate">{stage.name}</h3>
                   </button>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-[9px] font-mono font-bold text-slate-600">
+                    <span className="text-[9px] font-mono text-slate-600">
                       {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(
                         stageLeads.reduce((sum, item: any) => sum + getLeadValue(item), 0)
                       )}
                     </span>
-                    <span className="text-[10px] font-black text-white bg-white/10 px-2 py-0.5 rounded-full shrink-0">{stageLeads.length}</span>
+                    <span className="text-[10px] text-white bg-white/10 px-2 py-0.5 rounded-full shrink-0">{stageLeads.length}</span>
                   </div>
                 </div>
                 <div className="flex-1 overflow-y-auto space-y-2 min-h-0 pb-3 scrollbar-none">
@@ -133,7 +133,7 @@ export function PipelineKanbanBoard({
                   ))}
                   <button
                     onClick={() => setIsModalOpen(true)}
-                    className="w-full py-2.5 border border-dashed border-white/10 rounded-2xl text-slate-600 hover:text-slate-400 hover:border-white/20 hover:bg-white/5 transition-all flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-widest cursor-pointer bg-transparent"
+                    className="w-full py-2.5 border border-dashed border-white/10 rounded-2xl text-slate-600 hover:text-slate-400 hover:border-white/20 hover:bg-white/5 transition-all flex items-center justify-center gap-1.5 text-xs cursor-pointer bg-transparent"
                   >
                     <Plus className="w-3 h-3" /> Novo Lead
                   </button>

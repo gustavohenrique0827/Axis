@@ -19,7 +19,7 @@ export function ConfigRodizioLeads() {
     <div className="max-w-4xl space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Shuffle className="w-6 h-6 text-blue-400" /> Rodízio de Leads
+          <Shuffle className="w-5 h-5 text-slate-400" /> Rodízio de Leads
         </h1>
         <p className="text-sm text-slate-400 mt-1">Configure a distribuição automática de leads entre SDRs e Closers.</p>
       </div>
@@ -27,7 +27,7 @@ export function ConfigRodizioLeads() {
       <div className="flex gap-1 p-1 bg-white/[0.03] border border-white/5 rounded-xl w-fit">
         {TABS.map(t => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${tab === t.key ? "bg-white/10 text-white shadow" : "text-slate-500 hover:text-slate-300"}`}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs transition-colors ${tab === t.key ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300"}`}
           >
             {t.icon} {t.label}
           </button>

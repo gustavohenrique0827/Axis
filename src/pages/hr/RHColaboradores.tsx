@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
-import { UserPlus, PlusCircle } from "lucide-react";
+import { UserPlus, PlusCircle, Users, Target } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { useData } from "../../contexts/DataContext";
 import { useRHColaboradores } from "./hooks/useRHColaboradores";
@@ -85,11 +85,11 @@ export default function RHColaboradores() {
       actions={
         <div className="flex items-center gap-2">
           {activeTab === "squads" ? (
-            <Button onClick={() => setIsNewSquadOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20">
+            <Button onClick={() => setIsNewSquadOpen(true)} size="lg">
               <PlusCircle className="w-4 h-4 mr-2" /> Criar Squad
             </Button>
           ) : (
-            <Button onClick={() => setIsMembroModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-600/20">
+            <Button onClick={() => setIsMembroModalOpen(true)} size="lg">
               <UserPlus className="w-4 h-4 mr-2" /> Novo Registro
             </Button>
           )}
@@ -99,12 +99,13 @@ export default function RHColaboradores() {
       <div className="space-y-8">
         <div className="flex items-center gap-1.5 border-b border-white/5 pb-1">
           {[
-            { key: "membros", label: `👥 Membros da Equipe (${filtered.length})` },
-            { key: "squads", label: "🎯 Squads da Empresa" },
-          ].map(({ key, label }) => (
+            { key: "membros", label: `Membros da Equipe (${filtered.length})`, icon: Users },
+            { key: "squads", label: "Squads da Empresa", icon: Target },
+          ].map(({ key, label, icon: Icon }) => (
             <button key={key} onClick={() => setActiveTab(key as any)}
-              className={`px-5 py-3 text-[11px] font-black uppercase tracking-widest transition-all relative ${activeTab === key ? "text-blue-500 border-b-2 border-blue-500" : "text-slate-400 hover:text-white"}`}
+              className={`flex items-center gap-2 px-5 py-3 text-sm transition-all relative ${activeTab === key ? "text-white border-b-2 border-blue-500" : "text-slate-400 hover:text-white"}`}
             >
+              <Icon className="w-4 h-4" />
               {label}
             </button>
           ))}

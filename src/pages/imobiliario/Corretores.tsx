@@ -32,27 +32,20 @@ const ESPECIALIDADES = ["Residencial", "Comercial", "Alto Padrão", "Lançamento
 
 const FIELD = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
 const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
-const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
+const LABEL = "text-[10px] font-semibold text-slate-500 mb-1.5 block";
 
 function StarRating({ value }: { value: number }) {
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map(s => (
-        <Star key={s} className={`w-3 h-3 ${s <= Math.round(value) ? "text-amber-400 fill-current" : "text-slate-700"}`} />
+        <Star key={s} className={`w-3 h-3 ${s <= Math.round(value) ? "text-white fill-current" : "text-slate-700"}`} />
       ))}
-      <span className="text-[11px] font-black text-amber-400 ml-1">{value}</span>
+      <span className="text-[11px] font-semibold text-slate-300 ml-1">{value}</span>
     </div>
   );
 }
 
-const especialidadeColor: Record<string, string> = {
-  "Alto Padrão": "bg-violet-500/10 text-violet-400 border-violet-500/20",
-  "Residencial": "bg-blue-500/10 text-blue-400 border-blue-500/20",
-  "Comercial": "bg-amber-500/10 text-amber-400 border-amber-500/20",
-  "Lançamentos": "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
-  "Rural": "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
-  "Industrial": "bg-orange-500/10 text-orange-400 border-orange-500/20",
-};
+const ESPECIALIDADE_BADGE = "bg-white/5 text-slate-300 border-white/10";
 
 // ─── FORM MODAL ───────────────────────────────────────────────────────────────
 function CorretorFormModal({ onClose, onSave, initial }: {
@@ -78,7 +71,7 @@ function CorretorFormModal({ onClose, onSave, initial }: {
       <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
-            <h2 className="text-base font-black text-white">{isEdit ? "Editar Corretor" : "Novo Corretor"}</h2>
+            <h2 className="text-base font-semibold text-white">{isEdit ? "Editar Corretor" : "Novo Corretor"}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize os dados do corretor" : "Cadastre um novo membro da equipe"}</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
@@ -166,7 +159,7 @@ function CorretorDetailDrawer({ c, idx, onClose, onEdit, onDelete }: {
           </div>
           <div className="flex items-center gap-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-black text-xl">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-semibold text-xl">
                 {c.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
               </div>
               {idx === 0 && (
@@ -176,11 +169,11 @@ function CorretorDetailDrawer({ c, idx, onClose, onEdit, onDelete }: {
               )}
             </div>
             <div>
-              <h2 className="font-black text-white text-base">{c.nome}</h2>
+              <h2 className="font-semibold text-white text-base">{c.nome}</h2>
               <p className="text-[10px] text-slate-500">{c.creci}</p>
               <div className="flex items-center gap-2 mt-1">
-                <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${espColor}`}>{c.especialidade}</span>
-                <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${c.status === "Ativo" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{c.status}</span>
+                <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border ${espColor}`}>{c.especialidade}</span>
+                <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border ${c.status === "Ativo" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{c.status}</span>
               </div>
             </div>
           </div>
@@ -195,15 +188,15 @@ function CorretorDetailDrawer({ c, idx, onClose, onEdit, onDelete }: {
             <p className={LABEL}>Performance</p>
             <div className="grid grid-cols-3 gap-2 mt-2">
               <div className="bg-white/5 rounded-xl p-3 text-center">
-                <p className="text-xl font-black text-white">{c.imovisAtivos}</p>
+                <p className="text-xl font-semibold text-white">{c.imovisAtivos}</p>
                 <p className="text-[9px] text-slate-500 mt-0.5">Imóveis Ativos</p>
               </div>
               <div className="bg-white/5 rounded-xl p-3 text-center">
-                <p className="text-xl font-black text-emerald-400">{c.vendasMes}</p>
+                <p className="text-xl font-semibold text-emerald-400">{c.vendasMes}</p>
                 <p className="text-[9px] text-slate-500 mt-0.5">Vendas/Mês</p>
               </div>
               <div className="bg-white/5 rounded-xl p-3 text-center">
-                <p className="text-xl font-black text-violet-400">{c.totalVendas}</p>
+                <p className="text-xl font-semibold text-violet-400">{c.totalVendas}</p>
                 <p className="text-[9px] text-slate-500 mt-0.5">Total Vendas</p>
               </div>
             </div>
@@ -213,11 +206,11 @@ function CorretorDetailDrawer({ c, idx, onClose, onEdit, onDelete }: {
           <div className="px-6 py-4 border-b border-white/5">
             <div className="flex items-center justify-between mb-2">
               <p className={LABEL}>Meta do Mês</p>
-              <span className="text-xs font-black text-white">R$ {c.vgvMes}M VGV</span>
+              <span className="text-xs font-semibold text-white">R$ {c.vgvMes}M VGV</span>
             </div>
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[10px] text-slate-500">{c.vendasMes} de {c.meta} vendas</span>
-              <span className={`text-[10px] font-black ${metaPct >= 100 ? "text-emerald-400" : metaPct >= 60 ? "text-amber-400" : "text-slate-400"}`}>{metaPct.toFixed(0)}%</span>
+              <span className={`text-[10px] font-semibold ${metaPct >= 100 ? "text-emerald-400" : metaPct >= 60 ? "text-amber-400" : "text-slate-400"}`}>{metaPct.toFixed(0)}%</span>
             </div>
             <div className="h-2 bg-white/5 rounded-full overflow-hidden">
               <div className={`h-full rounded-full ${metaPct >= 100 ? "bg-emerald-500" : metaPct >= 60 ? "bg-amber-500" : "bg-blue-500"}`} style={{ width: `${metaPct}%` }} />
@@ -258,13 +251,13 @@ function CorretorDetailDrawer({ c, idx, onClose, onEdit, onDelete }: {
             <div className="flex gap-2 mt-2">
               <button
                 onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/corretor/${c.slug}`); toast.success("Link copiado!"); }}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 text-[11px] font-black transition-all border border-blue-500/20"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 text-[11px] font-semibold transition-all border border-blue-500/20"
               >
                 <Copy className="w-3.5 h-3.5" /> Copiar Link
               </button>
               <button
                 onClick={() => window.open(`/corretor/${c.slug}`, "_blank")}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-[11px] font-black transition-all border border-white/10"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-[11px] font-semibold transition-all border border-white/10"
               >
                 <ExternalLink className="w-3.5 h-3.5" /> Visualizar
               </button>
@@ -397,8 +390,8 @@ export default function Corretores() {
               <s.icon className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{s.label}</p>
-              <p className="text-lg font-black text-white">{s.value}</p>
+              <p className="text-[10px] text-slate-500 font-bold">{s.label}</p>
+              <p className="text-lg font-semibold text-white">{s.value}</p>
             </div>
           </div>
         ))}
@@ -412,7 +405,7 @@ export default function Corretores() {
         </div>
         <div className="flex bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl p-1 gap-1">
           {(["vendas", "avaliacao", "vgv"] as const).map(s => (
-            <button key={s} onClick={() => setSortBy(s)} className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${sortBy === s ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "text-slate-500 hover:text-slate-300"}`}>
+            <button key={s} onClick={() => setSortBy(s)} className={`px-3 py-1.5 text-[10px] font-semibold rounded-lg transition-all ${sortBy === s ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "text-slate-500 hover:text-slate-300"}`}>
               {s === "vendas" ? "Vendas" : s === "avaliacao" ? "Avaliação" : "VGV"}
             </button>
           ))}
@@ -434,7 +427,7 @@ export default function Corretores() {
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-black text-lg">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-semibold text-lg">
                       {c.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
                     </div>
                     {idx === 0 && (
@@ -444,31 +437,31 @@ export default function Corretores() {
                     )}
                   </div>
                   <div>
-                    <h3 className="font-black text-white text-sm">{c.nome}</h3>
+                    <h3 className="font-semibold text-white text-sm">{c.nome}</h3>
                     <p className="text-[10px] text-slate-500">{c.creci}</p>
-                    <span className={`inline-block text-[9px] font-black px-2 py-0.5 rounded-full border mt-1 ${c.status === "Ativo" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{c.status}</span>
+                    <span className={`inline-block text-[9px] font-semibold px-2 py-0.5 rounded-full border mt-1 ${c.status === "Ativo" ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>{c.status}</span>
                   </div>
                 </div>
                 <StarRating value={c.avaliacao} />
               </div>
 
               <div className="mb-3">
-                <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${espColor}`}>{c.especialidade}</span>
+                <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full border ${espColor}`}>{c.especialidade}</span>
               </div>
 
               <p className="text-xs text-slate-500 mb-4 line-clamp-2 leading-relaxed">{c.bio}</p>
 
               <div className="grid grid-cols-3 gap-2 mb-4">
                 <div className="bg-white/[0.03] rounded-xl p-2.5 text-center">
-                  <p className="text-base font-black text-white">{c.imovisAtivos}</p>
+                  <p className="text-base font-semibold text-white">{c.imovisAtivos}</p>
                   <p className="text-[9px] text-slate-500 mt-0.5">Ativos</p>
                 </div>
                 <div className="bg-white/[0.03] rounded-xl p-2.5 text-center">
-                  <p className="text-base font-black text-emerald-400">{c.vendasMes}</p>
+                  <p className="text-base font-semibold text-emerald-400">{c.vendasMes}</p>
                   <p className="text-[9px] text-slate-500 mt-0.5">Vendas</p>
                 </div>
                 <div className="bg-white/[0.03] rounded-xl p-2.5 text-center">
-                  <p className="text-base font-black text-violet-400">{c.totalVendas}</p>
+                  <p className="text-base font-semibold text-violet-400">{c.totalVendas}</p>
                   <p className="text-[9px] text-slate-500 mt-0.5">Total</p>
                 </div>
               </div>
@@ -477,7 +470,7 @@ export default function Corretores() {
               <div className="mb-4">
                 <div className="flex items-center justify-between mb-1.5">
                   <span className="text-[10px] text-slate-500">Meta: {c.meta} vendas</span>
-                  <span className={`text-[10px] font-black ${metaPct >= 100 ? "text-emerald-400" : metaPct >= 60 ? "text-amber-400" : "text-slate-400"}`}>{metaPct.toFixed(0)}%</span>
+                  <span className={`text-[10px] font-semibold ${metaPct >= 100 ? "text-emerald-400" : metaPct >= 60 ? "text-amber-400" : "text-slate-400"}`}>{metaPct.toFixed(0)}%</span>
                 </div>
                 <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                   <div className={`h-full rounded-full ${metaPct >= 100 ? "bg-emerald-500" : metaPct >= 60 ? "bg-amber-500" : "bg-blue-500"}`} style={{ width: `${metaPct}%` }} />
@@ -487,10 +480,10 @@ export default function Corretores() {
               {/* Portfólio */}
               <div className="border-t border-white/5 pt-3" onClick={e => e.stopPropagation()}>
                 <div className="flex gap-2">
-                  <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/corretor/${c.slug}`); toast.success("Link copiado!"); }} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 text-[11px] font-black transition-all border border-blue-500/20">
+                  <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/corretor/${c.slug}`); toast.success("Link copiado!"); }} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-blue-600/10 hover:bg-blue-600/20 text-blue-400 text-[11px] font-semibold transition-all border border-blue-500/20">
                     <Copy className="w-3 h-3" /> Portfólio
                   </button>
-                  <button onClick={() => setEditCorretor(c)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-[11px] font-black transition-all border border-white/10">
+                  <button onClick={() => setEditCorretor(c)} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-slate-300 text-[11px] font-semibold transition-all border border-white/10">
                     <Edit2 className="w-3 h-3" /> Editar
                   </button>
                   <button onClick={() => handleDelete(c.id)} className="px-3 py-2 rounded-xl bg-white/5 hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-all border border-white/10">

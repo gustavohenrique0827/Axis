@@ -62,13 +62,13 @@ export default function FinanceiroVisaoGeral() {
       description="Monitoramento avançado de fluxo, MRR, inadimplência e projeção de caixa em tempo real."
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" className="hidden sm:flex print:hidden h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] bg-white/5 border-white/10 text-white">
+          <Button variant="outline" className="hidden sm:flex print:hidden">
             Q2 - 2026 <ArrowDownRight className="w-3 h-3 ml-2 opacity-50" />
           </Button>
-          <Button onClick={() => window.print()} className="print:hidden h-11 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px] bg-white/5 border-white/10 text-white hover:bg-white/10">
+          <Button variant="outline" onClick={() => window.print()} className="print:hidden">
             <Printer className="w-4 h-4 mr-2" />
           </Button>
-          <Button className="print:hidden h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] bg-[#2563EB] hover:bg-blue-600 text-white shadow-xl shadow-blue-500/20">
+          <Button className="print:hidden">
             <Download className="w-4 h-4 mr-2" /> Exportar
           </Button>
         </div>

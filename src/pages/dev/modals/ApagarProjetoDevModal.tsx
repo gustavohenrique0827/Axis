@@ -36,8 +36,8 @@ export function ApagarProjetoDevModal({ isOpen, onClose, onConfirm, projectName 
             <Trash2 className="w-4 h-4 text-red-400" />
           </div>
           <div>
-            <div className="text-base font-black text-white">Apagar Projeto</div>
-            <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">Dev & Tecnologia</div>
+            <div className="text-base font-semibold text-white">Apagar Projeto</div>
+            <div className="text-xs text-slate-400 mt-0.5">Dev & Tecnologia</div>
           </div>
         </div>
       }
@@ -46,7 +46,7 @@ export function ApagarProjetoDevModal({ isOpen, onClose, onConfirm, projectName 
           <Button type="button" variant="ghost" onClick={onClose} className="text-slate-400 hover:text-white" disabled={loading}>
             Cancelar
           </Button>
-          <Button type="button" onClick={handleConfirm} className="bg-red-600 hover:bg-red-700 text-white font-bold px-6" disabled={!canConfirm}>
+          <Button type="button" onClick={handleConfirm} className="bg-red-600 hover:bg-red-700 text-white px-6" disabled={!canConfirm}>
             {loading ? 'Apagando...' : 'Apagar Definitivamente'}
           </Button>
         </>
@@ -54,10 +54,10 @@ export function ApagarProjetoDevModal({ isOpen, onClose, onConfirm, projectName 
     >
       <div className="space-y-4">
         <div className="text-sm text-slate-300">
-          Tem certeza que deseja apagar o projeto <span className="font-black text-white">{projectName ?? ''}</span>?<br />
+          Tem certeza que deseja apagar o projeto <span className="font-medium text-white">{projectName ?? ''}</span>?<br />
           Isso também removerá as tasks vinculadas.
         </div>
-        <div className="text-[10px] text-slate-500">
+        <div className="text-xs text-slate-500">
           Recomendação: use essa ação com cuidado. Não há desfazer.
         </div>
       </div>

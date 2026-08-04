@@ -50,7 +50,7 @@ export default function Leads() {
       actions={
         <Button
           onClick={() => setIsModalOpen(true)}
-          className="h-11 bg-[#2563EB] hover:bg-blue-600 text-white font-bold text-[10px] uppercase tracking-widest gap-2 px-6 rounded-xl shadow-lg shadow-blue-500/20"
+          className="h-11 gap-2 px-6"
         >
           + Novo Lead
         </Button>

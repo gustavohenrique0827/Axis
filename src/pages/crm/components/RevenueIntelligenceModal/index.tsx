@@ -104,12 +104,12 @@ export function RevenueIntelligenceModal({ lead, stageName, pipelineName, onClos
       <div className="w-full max-w-4xl max-h-[92vh] flex flex-col bg-[var(--color-surface)] border border-white/10 rounded-3xl shadow-2xl overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200">
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/5 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center">
-              <Brain className="w-4 h-4 text-blue-400" />
+            <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
+              <Brain className="w-4 h-4 text-slate-400" />
             </div>
             <div>
-              <h2 className="text-sm font-black text-white uppercase tracking-wider">Revenue Intelligence</h2>
-              <p className="text-[10px] text-slate-500">{lead.name} · {lead.company}</p>
+              <h2 className="text-sm font-medium text-white">Revenue Intelligence</h2>
+              <p className="text-xs text-slate-500">{lead.name} · {lead.company}</p>
             </div>
           </div>
           <button onClick={onClose} className="p-2 text-slate-500 hover:text-white hover:bg-white/5 rounded-xl border-none bg-transparent cursor-pointer transition-colors">

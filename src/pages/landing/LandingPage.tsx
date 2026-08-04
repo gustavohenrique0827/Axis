@@ -44,29 +44,9 @@ export default function LandingPage() {
       {/* Cinematic Flying Mascot Component */}
       <FlyingMascot />
       
-      {/* Background System - Interactive Parallax */}
+      {/* Background System */}
       <div className="fixed inset-0 z-0 pointer-events-none">
-        <motion.div 
-          style={{ 
-            x: useTransform(smoothMouseX, (v) => v * -0.05),
-            y: useTransform(smoothMouseY, (v) => v * -0.05)
-          }}
-          className="absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent)] opacity-[0.05]" 
-        />
-        <motion.div 
-          style={{ 
-            x: useTransform(smoothMouseX, (v) => v * 0.1),
-            y: useTransform(smoothMouseY, (v) => v * 0.1)
-          }}
-          className="absolute top-[-10%] left-[-10%] w-[800px] h-[800px] bg-blue-600/10 blur-[160px] rounded-full" 
-        />
-        <motion.div 
-          style={{ 
-            x: useTransform(smoothMouseX, (v) => v * -0.15),
-            y: useTransform(smoothMouseY, (v) => v * -0.15)
-          }}
-          className="absolute bottom-[-10%] right-[-10%] w-[900px] h-[900px] bg-indigo-600/10 blur-[180px] rounded-full" 
-        />
+        <div className="absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,black,transparent)] opacity-[0.05]" />
       </div>
 
       {/* Futuristic Navbar */}
@@ -91,8 +71,8 @@ export default function LandingPage() {
             ))}
             
             <div className="relative group cursor-pointer inline-flex items-center">
-               <span className="hover:text-amber-400 transition-all hover:scale-110 flex items-center gap-1 text-amber-500 shrink-0">
-                  DEMOS_CAPTAÇÃO <ChevronRight className="w-3 h-3 rotate-90" />
+               <span className="hover:text-blue-400 transition-all flex items-center gap-1 text-slate-500 shrink-0">
+                  Demos <ChevronRight className="w-3 h-3 rotate-90" />
                </span>
                <div className="absolute top-full left-0 mt-4 bg-[#0F172A]/90 backdrop-blur-xl border border-white/10 rounded-2xl p-3 w-64 shadow-2xl opacity-0 translate-y-4 pointer-events-none group-hover:opacity-100 group-hover:translate-y-0 group-hover:pointer-events-auto transition-all duration-300 z-[200]">
                   <Link to="/f/apple" className="flex items-center gap-3 px-4 py-3 text-sm text-slate-300 hover:bg-white/5 hover:text-white rounded-xl transition-colors font-medium">🍏 Revendas Apple</Link>
@@ -201,7 +181,7 @@ export default function LandingPage() {
                </motion.div>
 
                <div className="col-span-1 sm:col-span-1 md:col-span-4 glass-card rounded-2xl sm:rounded-[3.5rem] p-6 sm:p-10 lg:p-12 flex flex-col justify-center items-center text-center h-[200px] sm:h-[350px] lg:h-[400px]">
-                  <ShieldCheck className="w-10 h-10 sm:w-16 sm:h-16 text-indigo-500 mb-4 sm:mb-10" />
+                  <ShieldCheck className="w-10 h-10 sm:w-16 sm:h-16 text-slate-400 mb-4 sm:mb-10" />
                   <h5 className="font-display font-black text-base sm:text-xl uppercase italic mb-1 sm:mb-4">Criptografia_Pure</h5>
                   <p className="text-slate-500 text-[8px] sm:text-sm font-bold uppercase tracking-widest">Segurança de Grado Militar</p>
                </div>
@@ -213,13 +193,13 @@ export default function LandingPage() {
                </div>
 
                <div className="col-span-1 sm:col-span-1 md:col-span-4 glass-card rounded-2xl sm:rounded-[3.5rem] p-6 sm:p-10 lg:p-12 flex flex-col justify-center items-center text-center h-[200px] sm:h-[350px] lg:h-[400px]">
-                  <Activity className="w-10 h-10 sm:w-16 sm:h-16 text-emerald-500 mb-4 sm:mb-10" />
+                  <Activity className="w-10 h-10 sm:w-16 sm:h-16 text-slate-400 mb-4 sm:mb-10" />
                   <h5 className="font-display font-black text-base sm:text-xl uppercase italic mb-1 sm:mb-4">Fluxo_Dinâmico</h5>
                   <p className="text-slate-500 text-[8px] sm:text-sm font-bold uppercase tracking-widest">Financeiro em Tempo Real</p>
                </div>
 
                  <div className="col-span-1 md:col-span-4 glass-card rounded-3xl sm:rounded-[3.5rem] p-6 sm:p-10 lg:p-12 flex flex-col justify-center items-center text-center h-[250px] sm:h-[350px] lg:h-[400px]">
-                    <Cpu className="w-10 h-10 sm:w-16 sm:h-16 text-cyan-500 mb-4 sm:mb-10" />
+                    <Cpu className="w-10 h-10 sm:w-16 sm:h-16 text-slate-400 mb-4 sm:mb-10" />
                     <h5 className="font-display font-black text-lg sm:text-xl uppercase italic mb-2 sm:mb-4">Open_Kernel</h5>
                     <p className="text-slate-500 text-[10px] sm:text-sm font-bold uppercase tracking-widest">Full API Scalability</p>
                  </div>
@@ -269,15 +249,6 @@ export default function LandingPage() {
 
         {/* Final Ascension CTA - Bombastic End */}
         <section className="py-20 sm:py-32 lg:py-40 px-4 sm:px-6 relative overflow-hidden bg-[var(--color-surface)]">
-           <motion.div 
-             animate={{ 
-               scale: [1, 1.2, 1],
-               opacity: [0.05, 0.1, 0.05]
-             }}
-             transition={{ repeat: Infinity, duration: 10 }}
-             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1500px] h-[1500px] bg-blue-600 rounded-full blur-[300px] z-0" 
-           />
-           
            <div className="max-w-6xl mx-auto text-center relative z-10 space-y-16">
               <motion.h2 
                 initial={{ opacity: 0, scale: 0.5 }}
@@ -294,7 +265,7 @@ export default function LandingPage() {
                   whileHover={{ scale: 1.1, rotateX: 5 }}
                   whileTap={{ scale: 0.9 }}
                 >
-                  <Button className="h-16 sm:h-24 lg:h-32 px-8 sm:px-16 lg:px-24 bg-white text-black hover:bg-slate-100 rounded-full font-black uppercase tracking-[0.2em] sm:tracking-[0.5em] text-sm sm:text-lg lg:text-xl shadow-[0_0_100px_rgba(255,255,255,0.4)] transition-all">
+                  <Button className="h-16 sm:h-24 lg:h-32 px-8 sm:px-16 lg:px-24 bg-white text-black hover:bg-slate-100 rounded-full uppercase tracking-[0.2em] sm:tracking-[0.5em] text-sm sm:text-lg lg:text-xl transition-all">
                      ASSUMIR_O_EIXO
                   </Button>
                 </motion.div>

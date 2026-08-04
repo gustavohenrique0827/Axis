@@ -18,10 +18,10 @@ const LANG_COLORS: Record<string, string> = {
   Dart: '#22D3EE',
 };
 
-const STATUS_STYLE: Record<string, string> = {
-  ativo: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/25',
-  'em desenvolvimento': 'bg-blue-500/15 text-blue-400 border-blue-500/25',
-  arquivado: 'bg-slate-500/15 text-slate-400 border-slate-500/25',
+const STATUS_DOT: Record<string, string> = {
+  ativo: 'bg-emerald-500',
+  'em desenvolvimento': 'bg-slate-400',
+  arquivado: 'bg-slate-600',
 };
 
 export default function Repositorios() {
@@ -60,13 +60,13 @@ export default function Repositorios() {
         <div className="flex items-center gap-3">
           {githubConn ? (
             <div className="flex items-center gap-2">
-              <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl h-10 px-4">
-                <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">
+              <div className="flex items-center gap-2 border border-white/5 rounded-xl h-10 px-4">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                <span className="text-xs text-slate-300">
                   @{githubConn.username}
                 </span>
                 {ghRepos > 0 && (
-                  <span className="text-[9px] text-emerald-500/70 font-bold">· {ghRepos} repos</span>
+                  <span className="text-xs text-slate-500">· {ghRepos} repos</span>
                 )}
               </div>
               <button
@@ -81,12 +81,12 @@ export default function Repositorios() {
             <Button
               variant="outline"
               onClick={() => setIsGitHubModalOpen(true)}
-              className="h-10 rounded-xl border-white/5 text-[10px] font-black uppercase tracking-widest gap-2"
+              className="gap-2"
             >
               <GitFork className="w-4 h-4" /> Conectar GitHub
             </Button>
           )}
-          <Button onClick={() => setIsModalOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 px-5 text-[10px] font-black uppercase tracking-widest gap-2">
+          <Button onClick={() => setIsModalOpen(true)} className="gap-2">
             <Plus className="w-4 h-4" /> Novo Repo
           </Button>
         </div>
@@ -97,19 +97,17 @@ export default function Repositorios() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Repositórios", value: repos.length, icon: Code2, color: "text-blue-400", bg: "bg-blue-500/10" },
-            { label: "Ativos", value: activeRepos, icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-            { label: "Stars Total", value: totalStars, icon: Star, color: "text-amber-400", bg: "bg-amber-500/10" },
-            { label: "PRs em Aberto", value: totalPRs, icon: GitBranch, color: "text-indigo-400", bg: "bg-indigo-500/10" },
+            { label: "Repositórios", value: repos.length, icon: Code2 },
+            { label: "Ativos", value: activeRepos, icon: CheckCircle2 },
+            { label: "Stars Total", value: totalStars, icon: Star },
+            { label: "PRs em Aberto", value: totalPRs, icon: GitBranch },
           ].map((s, i) => (
-            <Card key={i} className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/5 flex items-center gap-4">
-              <div className={`p-2.5 rounded-xl ${s.bg}`}>
-                <s.icon className={`w-4 h-4 ${s.color}`} />
+            <Card key={i} className="p-4">
+              <div className="flex items-center gap-2 text-slate-400 mb-2">
+                <s.icon className="w-4 h-4" />
+                <span className="text-xs">{s.label}</span>
               </div>
-              <div>
-                <p className="text-xl font-black text-white">{s.value}</p>
-                <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest mt-0.5">{s.label}</p>
-              </div>
+              <p className="text-2xl font-semibold text-white">{s.value}</p>
             </Card>
           ))}
         </div>
@@ -131,7 +129,7 @@ export default function Repositorios() {
               <button
                 key={v}
                 onClick={() => setFilterVisibility(v)}
-                className={`px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all border flex items-center gap-1.5 ${filterVisibility === v ? 'bg-blue-600 text-white border-blue-500' : 'bg-white/[0.02] text-slate-400 border-white/5 hover:bg-white/[0.05]'}`}
+                className={`px-4 py-2.5 rounded-xl text-xs transition-all border flex items-center gap-1.5 ${filterVisibility === v ? 'bg-blue-600 text-white border-blue-500' : 'bg-white/[0.02] text-slate-400 border-white/5 hover:bg-white/[0.05]'}`}
               >
                 {v === 'private' && <Lock className="w-3 h-3" />}
                 {v === 'public' && <Globe className="w-3 h-3" />}
@@ -142,37 +140,38 @@ export default function Repositorios() {
         </div>
 
         {/* Lista */}
-        <Card className="bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
+        <Card className="overflow-hidden">
           <div className="divide-y divide-white/5">
             {filtered.length === 0 && (
               <div className="flex flex-col items-center justify-center py-16 text-slate-500">
                 <Code2 className="w-8 h-8 mb-3 opacity-30" />
-                <p className="text-sm font-bold">Nenhum repositório encontrado</p>
+                <p className="text-sm">Nenhum repositório encontrado</p>
               </div>
             )}
             {filtered.map(repo => (
-              <div key={String(repo.id)} className="flex items-start gap-4 p-5 hover:bg-white/[0.02] transition-colors group cursor-pointer">
+              <div key={String(repo.id)} className="flex items-start gap-4 p-5 hover:bg-white/[0.02] transition-colors cursor-pointer">
                 <div className="p-2.5 rounded-xl bg-white/5 shrink-0">
                   {repo.status === 'arquivado'
                     ? <Archive className="w-4 h-4 text-slate-500" />
-                    : <Code2 className="w-4 h-4 text-blue-400" />
+                    : <Code2 className="w-4 h-4 text-slate-400" />
                   }
                 </div>
 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h4 className="text-sm font-black text-white group-hover:text-blue-300 transition-colors">
+                    <h4 className="text-sm font-medium text-white">
                       {repo.name}
                     </h4>
-                    <div className={`flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded border ${repo.visibility === 'private' ? 'bg-slate-500/10 text-slate-400 border-slate-500/20' : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'}`}>
+                    <div className="flex items-center gap-1 text-xs text-slate-400">
                       {repo.visibility === 'private' ? <Lock className="w-2.5 h-2.5" /> : <Globe className="w-2.5 h-2.5" />}
                       {repo.visibility}
                     </div>
-                    <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-lg border ${STATUS_STYLE[repo.status] || ''}`}>
+                    <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                      <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[repo.status] || 'bg-slate-500'}`} />
                       {repo.status}
-                    </span>
+                    </div>
                     {repo.fromGitHub && (
-                      <span className="flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded border bg-white/5 text-slate-400 border-white/8">
+                      <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-white/5 text-slate-400">
                         <GitFork className="w-2.5 h-2.5" /> GitHub
                       </span>
                     )}
@@ -180,7 +179,7 @@ export default function Repositorios() {
 
                   <p className="text-xs text-slate-400 mb-3 line-clamp-1">{repo.description}</p>
 
-                  <div className="flex items-center gap-4 text-[10px] text-slate-500 font-bold flex-wrap">
+                  <div className="flex items-center gap-4 text-xs text-slate-500 flex-wrap">
                     <div className="flex items-center gap-1.5">
                       <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: LANG_COLORS[repo.language] || '#64748B' }} />
                       {repo.language}
@@ -195,7 +194,7 @@ export default function Repositorios() {
                       <GitBranch className="w-3 h-3" /> {repo.branches} branches
                     </div>
                     {repo.openPRs > 0 && (
-                      <div className="flex items-center gap-1 text-indigo-400">
+                      <div className="flex items-center gap-1">
                         <GitBranch className="w-3 h-3" /> {repo.openPRs} PRs abertos
                       </div>
                     )}
@@ -209,25 +208,25 @@ export default function Repositorios() {
                   {repo.contributors.length > 0 && (
                     <div className="flex -space-x-1.5">
                       {repo.contributors.slice(0, 3).map((c, i) => (
-                        <div key={i} className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[8px] font-black text-white border border-white/10">
+                        <div key={i} className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[9px] text-white border border-white/10">
                           {c.split('.')[0]}
                         </div>
                       ))}
                     </div>
                   )}
-                  <span className="text-[10px] text-slate-500 hidden md:block">{repo.size}</span>
+                  <span className="text-xs text-slate-500 hidden md:block">{repo.size}</span>
                   {repo.githubUrl ? (
                     <a
                       href={repo.githubUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={e => e.stopPropagation()}
-                      className="text-slate-600 hover:text-blue-400 transition-colors"
+                      className="text-slate-600 hover:text-white transition-colors"
                     >
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   ) : (
-                    <button className="text-slate-600 hover:text-blue-400 transition-colors">
+                    <button className="text-slate-600 hover:text-white transition-colors">
                       <ExternalLink className="w-4 h-4" />
                     </button>
                   )}

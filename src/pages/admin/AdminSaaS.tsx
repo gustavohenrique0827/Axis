@@ -24,7 +24,7 @@ export const CustomTooltip = ({ active, payload, label }: any) => {
     return (
       <div className="bg-[#0f172a] border border-white/10 p-3 rounded-lg shadow-xl">
         <p className="text-white font-medium mb-1">{label}</p>
-        <p className="text-[#06B6D4] font-bold text-sm">R$ {(payload[0].value / 1000).toFixed(0)}k</p>
+        <p className="text-slate-300 text-sm">R$ {(payload[0].value / 1000).toFixed(0)}k</p>
       </div>
     );
   }
@@ -93,14 +93,14 @@ export default function AdminSaaS() {
       description="Controle centralizado de instâncias, faturamento e saúde global da plataforma."
       actions={
         <div className="flex gap-2">
-          <Button onClick={handleSetupMaster} disabled={settingUpMaster} variant="outline" className="border-blue-500/30 bg-blue-600/10 text-blue-400 hover:bg-blue-600/20 h-10 px-4">
+          <Button onClick={handleSetupMaster} disabled={settingUpMaster} variant="outline">
             <Shield className="w-4 h-4 mr-2" />
             {settingUpMaster ? "Configurando..." : "Setup Master gthec"}
           </Button>
-          <Button variant="outline" className="border-white/10 bg-[var(--color-surface-elevated)] text-white hover:bg-white/5 h-10 px-4" disabled>
+          <Button variant="outline" disabled>
             <Bell className="w-4 h-4 mr-2" /> Alertas
           </Button>
-          <Button className="bg-[#06B6D4] hover:bg-[#0891B2] text-white shadow-lg shadow-cyan-500/20 h-10 px-4 font-bold" disabled>
+          <Button disabled>
             <Plus className="w-4 h-4 mr-2" /> Novo Tenant
           </Button>
         </div>
@@ -115,7 +115,7 @@ export default function AdminSaaS() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
-                activeTab === tab.id ? "bg-[#06B6D4]/10 text-[#06B6D4]" : "text-slate-400 hover:text-white hover:bg-white/5"
+                activeTab === tab.id ? "bg-white/10 text-white" : "text-slate-400 hover:text-white hover:bg-white/5"
               }`}
             >
               <Icon className="w-4 h-4" />

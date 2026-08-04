@@ -40,8 +40,8 @@ export function NeuralSection({ rotateX, rotateY }: NeuralSectionProps) {
                          <item.icon className="w-5 h-5 sm:w-8 sm:h-8" />
                       </div>
                       <div>
-                         <h4 className="text-lg sm:text-xl font-display font-black uppercase tracking-widest text-white mb-1.5 sm:mb-3 italic">{item.t}</h4>
-                         <p className="text-slate-500 font-bold uppercase tracking-widest text-[9px] sm:text-xs">{item.d}</p>
+                         <h4 className="text-lg sm:text-xl font-semibold text-white mb-1.5 sm:mb-3">{item.t}</h4>
+                         <p className="text-slate-500 text-[9px] sm:text-xs">{item.d}</p>
                       </div>
                    </motion.div>
                 ))}
@@ -49,9 +49,6 @@ export function NeuralSection({ rotateX, rotateY }: NeuralSectionProps) {
           </div>
 
           <div className="flex-1 w-full relative perspective-1000">
-            <div className="absolute -top-20 -left-20 w-40 h-40 bg-blue-500/20 blur-3xl rounded-full animate-pulse z-0" />
-            <div className="absolute -bottom-20 -right-20 w-60 h-60 bg-indigo-500/20 blur-3xl rounded-full animate-pulse z-0" />
-            
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -99,11 +96,11 @@ export function NeuralSection({ rotateX, rotateY }: NeuralSectionProps) {
 
             <motion.div
                style={{ rotateX, rotateY }}
-               className="relative glass-card rounded-3xl sm:rounded-[4rem] p-1.5 border-white/5 shadow-[0_0_150px_rgba(37,99,235,0.2)] overflow-hidden"
+               className="relative glass-card rounded-3xl sm:rounded-[4rem] p-1.5 border-white/10 overflow-hidden"
              >
                 <div className="bg-[var(--color-surface)]/90 p-6 sm:p-10 lg:p-16 rounded-[1.4rem] sm:rounded-[3.8rem] space-y-6 sm:space-y-10 lg:space-y-12">
                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] sm:text-[12px] font-black text-slate-700 tracking-[0.3em] sm:tracking-[0.5em]">OPERATIONAL_VISOR</span>
+                      <span className="text-[10px] sm:text-[12px] text-slate-500 tracking-widest">OPERATIONAL_VISOR</span>
                       <div className="flex gap-2">
                          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-blue-600 animate-ping" />
                          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-blue-600/30" />
@@ -113,8 +110,8 @@ export function NeuralSection({ rotateX, rotateY }: NeuralSectionProps) {
                    <div className="space-y-6 sm:space-y-10">
                       <div className="p-4 sm:p-8 rounded-2xl sm:rounded-3xl bg-white/5 border border-white/5 space-y-3 sm:space-y-4">
                          <div className="flex justify-between items-center mb-2 sm:mb-4">
-                             <div className="text-[8px] sm:text-[10px] font-black text-slate-500 uppercase tracking-widest text-glow">NEURAL_CONFIDENCE</div>
-                             <div className="text-2xl sm:text-4xl font-display font-bold text-blue-500">99.8%</div>
+                             <div className="text-[8px] sm:text-[10px] text-slate-500 tracking-widest">NEURAL_CONFIDENCE</div>
+                             <div className="text-2xl sm:text-4xl font-semibold text-white">99.8%</div>
                          </div>
                          <div className="h-2.5 w-full bg-white/5 rounded-full overflow-hidden">
                             <motion.div 
@@ -129,11 +126,11 @@ export function NeuralSection({ rotateX, rotateY }: NeuralSectionProps) {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                          {[
                             { l: "Uptime", v: "42d:12h:08s", c: "text-emerald-500" },
-                            { l: "Sync", v: "Verified", c: "text-blue-500" }
+                            { l: "Sync", v: "Verified", c: "text-slate-300" }
                          ].map((st, i) => (
                            <div key={i} className="p-4 sm:p-6 rounded-xl sm:rounded-2xl bg-white/5 border border-white/5">
-                              <div className="text-[8px] sm:text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1.5">{st.l}</div>
-                              <div className={`text-xs sm:text-sm font-black italic ${st.c}`}>{st.v}</div>
+                              <div className="text-[8px] sm:text-[9px] text-slate-500 tracking-widest mb-1.5">{st.l}</div>
+                              <div className={`text-xs sm:text-sm font-medium ${st.c}`}>{st.v}</div>
                            </div>
                          ))}
                       </div>

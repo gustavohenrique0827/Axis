@@ -49,7 +49,7 @@ function StatusBadge({ status }: { status: string }) {
     "Locado": "bg-violet-500/20 text-violet-400 border border-violet-500/30",
     "Reservado": "bg-amber-500/20 text-amber-400 border border-amber-500/30",
   };
-  return <span className={`text-[10px] font-black px-2.5 py-1 rounded-full ${colors[status] || "bg-slate-500/20 text-slate-400"}`}>{status}</span>;
+  return <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full ${colors[status] || "bg-slate-500/20 text-slate-400"}`}>{status}</span>;
 }
 
 function formatValor(operacao: string, valor: number) {
@@ -67,7 +67,7 @@ export default function PortfolioCorretor() {
       <div className="min-h-screen bg-[var(--color-surface)] flex items-center justify-center">
         <div className="text-center">
           <Building2 className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-          <h1 className="text-2xl font-black text-white mb-2">Corretor não encontrado</h1>
+          <h1 className="text-2xl font-semibold text-white mb-2">Corretor não encontrado</h1>
           <p className="text-slate-500">O link que você acessou pode estar desatualizado.</p>
         </div>
       </div>
@@ -91,7 +91,7 @@ export default function PortfolioCorretor() {
           <div className="flex items-center justify-between mb-10">
             <div className="flex items-center gap-2">
               <Building2 className="w-5 h-5 text-blue-400" />
-              <span className="text-sm font-black text-slate-400">{corretor.empresa}</span>
+              <span className="text-sm font-semibold text-slate-400">{corretor.empresa}</span>
             </div>
             <a href="/" className="flex items-center gap-1.5 text-[11px] text-slate-600 hover:text-slate-400 transition-colors">
               <ChevronLeft className="w-3.5 h-3.5" /> Voltar ao site
@@ -100,18 +100,18 @@ export default function PortfolioCorretor() {
 
           {/* Perfil do corretor */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 mb-8">
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-black text-3xl shadow-2xl shadow-blue-900/30 shrink-0">
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-semibold text-3xl shadow-2xl shadow-blue-900/30 shrink-0">
               {corretor.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
             </div>
             <div>
-              <h1 className="text-3xl font-black text-white mb-1">{corretor.nome}</h1>
+              <h1 className="text-3xl font-semibold text-white mb-1">{corretor.nome}</h1>
               <p className="text-sm text-blue-400 font-bold mb-2">{corretor.especialidade} · {corretor.creci}</p>
               <div className="flex items-center gap-4 text-sm text-slate-400">
                 <div className="flex items-center gap-1 text-amber-400">
                   {[1,2,3,4,5].map(i => (
                     <Star key={i} className={`w-4 h-4 ${i <= Math.floor(corretor.avaliacao) ? "fill-current" : "opacity-30"}`} />
                   ))}
-                  <span className="font-black ml-1">{corretor.avaliacao}</span>
+                  <span className="font-semibold ml-1">{corretor.avaliacao}</span>
                 </div>
                 <span className="text-slate-600">·</span>
                 <span>{corretor.totalVendas} negócios realizados</span>
@@ -127,7 +127,7 @@ export default function PortfolioCorretor() {
               href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2.5 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl transition-all shadow-lg shadow-emerald-900/30 text-sm"
+              className="flex items-center gap-2.5 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all shadow-lg shadow-emerald-900/30 text-sm"
             >
               <MessageCircle className="w-4 h-4" /> Falar no WhatsApp
             </a>
@@ -152,23 +152,23 @@ export default function PortfolioCorretor() {
         {/* Stats rápidas */}
         <div className="grid grid-cols-3 gap-4 mb-10">
           <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black text-blue-400">{corretor.imoveis.length}</p>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Imóveis no Portfólio</p>
+            <p className="text-2xl font-semibold text-blue-400">{corretor.imoveis.length}</p>
+            <p className="text-[10px] text-slate-500 mt-1">Imóveis no Portfólio</p>
           </div>
           <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black text-emerald-400">{disponíveis.length}</p>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Disponíveis Agora</p>
+            <p className="text-2xl font-semibold text-emerald-400">{disponíveis.length}</p>
+            <p className="text-[10px] text-slate-500 mt-1">Disponíveis Agora</p>
           </div>
           <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black text-amber-400">{corretor.avaliacao}</p>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Avaliação Média</p>
+            <p className="text-2xl font-semibold text-amber-400">{corretor.avaliacao}</p>
+            <p className="text-[10px] text-slate-500 mt-1">Avaliação Média</p>
           </div>
         </div>
 
         {/* Imóveis disponíveis */}
         {disponíveis.length > 0 && (
           <div className="mb-10">
-            <h2 className="text-base font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
+            <h2 className="text-base font-semibold text-white mb-4 flex items-center gap-2">
               <span className="w-1.5 h-4 bg-emerald-500 rounded-full" /> Disponíveis
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -182,7 +182,7 @@ export default function PortfolioCorretor() {
         {/* Outros imóveis */}
         {outros.length > 0 && (
           <div>
-            <h2 className="text-base font-black text-slate-500 uppercase tracking-widest mb-4 flex items-center gap-2">
+            <h2 className="text-base font-semibold text-slate-500 mb-4 flex items-center gap-2">
               <span className="w-1.5 h-4 bg-slate-600 rounded-full" /> Histórico de Imóveis
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -225,11 +225,11 @@ function ImovelCard({ imovel: im, corretor, dimmed = false }: { imovel: any; cor
           <StatusBadge status={im.status} />
         </div>
         <div className="absolute top-3 right-3">
-          <span className="text-[10px] font-black px-2 py-1 rounded-full bg-black/40 text-white">{im.tipo}</span>
+          <span className="text-[10px] font-semibold px-2 py-1 rounded-full bg-black/40 text-white">{im.tipo}</span>
         </div>
       </div>
       <div className="p-4">
-        <h3 className="font-black text-white text-sm mb-1">{im.titulo}</h3>
+        <h3 className="font-semibold text-white text-sm mb-1">{im.titulo}</h3>
         <p className="text-[11px] text-slate-500 flex items-center gap-1 mb-3">
           <MapPin className="w-3 h-3" />{im.bairro}, {im.cidade}
         </p>
@@ -243,14 +243,14 @@ function ImovelCard({ imovel: im, corretor, dimmed = false }: { imovel: any; cor
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] text-slate-500">{im.operacao === "Locação" ? "Aluguel" : "Valor"}</p>
-            <p className="text-xl font-black text-white">{formatValor(im.operacao, im.valor)}</p>
+            <p className="text-xl font-semibold text-white">{formatValor(im.operacao, im.valor)}</p>
           </div>
           {im.status === "Disponível" && (
             <a
               href={whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-black rounded-xl transition-all text-[11px]"
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all text-[11px]"
             >
               <MessageCircle className="w-3.5 h-3.5" /> Tenho Interesse
             </a>

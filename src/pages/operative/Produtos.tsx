@@ -67,14 +67,15 @@ export default function Catalog() {
       actions={
         <div className="flex gap-2">
           <Button
+            variant="outline"
             onClick={exportToExcelSimulator}
-            className="gap-2 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 rounded-xl px-4 h-11 text-[10px] uppercase font-black transition-all"
+            className="gap-2 border-white/10 text-slate-300 rounded-xl px-4 h-11 text-xs"
           >
             <FileSpreadsheet className="w-4 h-4" /> Exportar Planilha
           </Button>
           <Button
             onClick={f.handleOpenAddModal}
-            className="gap-2 bg-[#2563EB] hover:bg-blue-600 text-white rounded-xl px-5 h-11 font-black uppercase text-[10px] shadow-xl shadow-blue-500/20"
+            className="gap-2 rounded-xl px-5 h-11 text-xs"
           >
             <Plus className="w-4 h-4" /> Cadastrar Produto
           </Button>

@@ -24,9 +24,9 @@ export function PipelineTopActions({
           <button
             key={v}
             onClick={() => setView(v)}
-            className={`flex items-center gap-2 px-4 h-full text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border-none ${
+            className={`flex items-center gap-2 px-4 h-full text-xs transition-all cursor-pointer border-none ${
               view === v
-                ? "bg-[#2563EB] text-white"
+                ? "bg-white/10 text-white"
                 : "text-slate-400 hover:text-white"
             }`}
           >
@@ -37,8 +37,9 @@ export function PipelineTopActions({
 
       {view === "kanban" && (
         <Button
+          variant="subtle"
           onClick={() => setShowAnalytics(!showAnalytics)}
-          className="bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 font-bold text-[10px] uppercase tracking-widest gap-2 h-11 px-4 rounded-xl transition-all cursor-pointer bg-transparent border-none"
+          className="gap-2 h-11 px-4"
         >
           {showAnalytics ? "Ocultar" : "Performance"}
         </Button>
@@ -46,7 +47,7 @@ export function PipelineTopActions({
 
       <Button
         onClick={onNewLead}
-        className="bg-[#2563EB] hover:bg-blue-600 text-white font-bold text-[10px] uppercase tracking-widest gap-2 h-11 px-6 rounded-xl transition-all shadow-lg shadow-blue-500/20 cursor-pointer border-none"
+        className="gap-2 h-11 px-6"
       >
         <Plus className="w-4 h-4" /> Novo Lead
       </Button>

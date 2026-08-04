@@ -52,10 +52,10 @@ export default function ClinicasDashboard() {
   const activeToday = appointments.filter(a => a.date === today).slice(0, 4);
 
   const stats: Stat[] = [
-    { label: "Agendamentos (Total)", value: totalAppointments.toString(), trend: null, icon: Calendar, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-    { label: "Confirmados / Ativos", value: confirmed.toString(), trend: null, icon: TrendingUp, color: "text-blue-400", bg: "bg-blue-500/10" },
-    { label: "Finalizados", value: finalized.toString(), trend: null, icon: Users, color: "text-purple-400", bg: "bg-purple-500/10" },
-    { label: "Atrasados / Em Fila", value: late.toString(), trend: null, icon: Star, color: "text-amber-400", bg: "bg-amber-500/10" },
+    { label: "Agendamentos (Total)", value: totalAppointments.toString(), trend: null, icon: Calendar, color: "text-slate-400", bg: "bg-white/5" },
+    { label: "Confirmados / Ativos", value: confirmed.toString(), trend: null, icon: TrendingUp, color: "text-slate-400", bg: "bg-white/5" },
+    { label: "Finalizados", value: finalized.toString(), trend: null, icon: Users, color: "text-slate-400", bg: "bg-white/5" },
+    { label: "Atrasados / Em Fila", value: late.toString(), trend: null, icon: Star, color: "text-slate-400", bg: "bg-white/5" },
   ];
 
   return (
@@ -64,12 +64,12 @@ export default function ClinicasDashboard() {
       description="Monitoramento clínico, eficiência operacional e jornada do paciente em tempo real."
       actions={
         <div className="flex items-center gap-4">
-          <Button onClick={() => setIsBookingOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 h-10 text-[10px] font-black uppercase tracking-widest gap-2 shadow-lg shadow-emerald-900/20">
+          <Button onClick={() => setIsBookingOpen(true)} className="gap-2">
             <Plus className="w-4 h-4" /> Novo Agendamento
           </Button>
-          <div className="flex bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-1 gap-1">
+          <div className="flex bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl p-1 gap-1">
             {(['geral', 'unidades', 'operacional'] as const).map(t => (
-              <button key={t} onClick={() => setView(t)} className={`px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-xl transition-all ${view === t ? 'bg-emerald-600/20 text-emerald-400 border border-emerald-500/30' : 'text-slate-500 hover:text-slate-300'}`}>
+              <button key={t} onClick={() => setView(t)} className={`px-4 py-2 text-xs rounded-lg transition-colors capitalize ${view === t ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
                 {t}
               </button>
             ))}
@@ -84,11 +84,11 @@ export default function ClinicasDashboard() {
         <button
           type="button"
           onClick={() => setShowDetails((v) => !v)}
-          className="w-full flex items-center justify-between px-5 py-3 bg-[var(--color-surface-elevated)]/40 hover:bg-[var(--color-surface-elevated)]/60 border border-white/5 rounded-2xl transition-colors text-left"
+          className="w-full flex items-center justify-between px-5 py-3 bg-[var(--color-surface-elevated)] hover:bg-white/5 border border-white/5 rounded-xl transition-colors text-left"
         >
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+          <span className="text-sm text-slate-400 flex items-center gap-2">
             {showDetails ? "Ver menos" : "Ver mais detalhes"}
-            {!showDetails && <span className="text-slate-600 font-medium normal-case tracking-normal">— ranking de médicos e jornada do paciente</span>}
+            {!showDetails && <span className="text-slate-600">— ranking de médicos e jornada do paciente</span>}
           </span>
           <ChevronDown className={`w-4 h-4 text-slate-500 shrink-0 transition-transform ${showDetails ? "rotate-180" : ""}`} />
         </button>

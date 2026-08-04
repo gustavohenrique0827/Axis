@@ -34,12 +34,6 @@ const TEMP: Record<string, { flame: string; accent: string }> = {
 const SCORE_BAR  = (s: number) => s > 80 ? 'bg-emerald-500' : s > 50 ? 'bg-amber-500' : 'bg-rose-500';
 const SCORE_TEXT = (s: number) => s > 80 ? 'text-emerald-400' : s > 50 ? 'text-amber-400' : 'text-rose-400';
 
-const PRIORITY_BADGE: Record<string, string> = {
-  Alta:  'bg-rose-500/10 text-rose-400 border-rose-500/20',
-  Média: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-  Baixa: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-};
-
 // Source badge mapping
 const SOURCE_ICON: Record<string, typeof Globe> = {
   site:       Globe,
@@ -136,7 +130,7 @@ export function LeadCard({
         {/* Row 1 — avatar + flame + priority + menu */}
         <div className="flex items-center justify-between gap-1">
           <div className="flex items-center gap-1.5 min-w-0">
-            <div className="w-6 h-6 rounded-full bg-blue-500/20 border border-blue-500/25 flex items-center justify-center text-[8px] font-black text-blue-300 shrink-0">
+            <div className="w-6 h-6 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-[8px] font-medium text-slate-300 shrink-0">
               {initials(item.seller || item.name)}
             </div>
 
@@ -167,10 +161,10 @@ export function LeadCard({
             {/* Priority badge */}
             {item.priority && (
               <span className={cn(
-                "text-[8px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wide",
-                PRIORITY_BADGE[item.priority] ?? 'bg-slate-700/40 border-white/10 text-slate-400'
+                "text-[9px]",
+                item.priority === 'Alta' ? 'text-rose-400' : item.priority === 'Média' ? 'text-amber-400' : 'text-slate-400'
               )}>
-                ▲ {item.priority === 'Alta' ? 'ALTO' : item.priority === 'Média' ? 'MÉDIO' : 'BAIXO'}
+                {item.priority === 'Alta' ? 'Alto' : item.priority === 'Média' ? 'Médio' : 'Baixo'}
               </span>
             )}
           </div>
@@ -193,7 +187,7 @@ export function LeadCard({
                     { icon: History,  label: 'Ver Histórico',     action: () => { setOpenDropdownId(null); setSelectedLead(item); } },
                   ].map(({ icon: Icon, label, action }) => (
                     <button key={label} onClick={action}
-                      className="flex items-center gap-2 w-full p-2 hover:bg-white/5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-colors border-none bg-transparent cursor-pointer text-left">
+                      className="flex items-center gap-2 w-full p-2 hover:bg-white/5 rounded-lg text-xs text-slate-300 hover:text-white transition-colors border-none bg-transparent cursor-pointer text-left">
                       <Icon className="w-3.5 h-3.5 shrink-0" /> {label}
                     </button>
                   ))}
@@ -202,15 +196,15 @@ export function LeadCard({
                     <>
                       <div className="h-px bg-white/5 my-1" />
                       <button onClick={(e) => handleTransferToComercial(e, item)}
-                        className="flex items-center gap-2 w-full p-2 hover:bg-blue-500/10 rounded-lg text-xs font-semibold text-blue-400 transition-colors border-none bg-transparent cursor-pointer text-left">
+                        className="flex items-center gap-2 w-full p-2 hover:bg-white/5 rounded-lg text-xs text-slate-300 hover:text-white transition-colors border-none bg-transparent cursor-pointer text-left">
                         <ArrowRight className="w-3.5 h-3.5 shrink-0" /> Transf. Inteligente
                       </button>
                       <button onClick={(e) => handleExportIAResume(e, item)}
-                        className="flex items-center gap-2 w-full p-2 hover:bg-emerald-500/10 rounded-lg text-xs font-semibold text-emerald-400 transition-colors border-none bg-transparent cursor-pointer text-left">
+                        className="flex items-center gap-2 w-full p-2 hover:bg-white/5 rounded-lg text-xs text-slate-300 hover:text-white transition-colors border-none bg-transparent cursor-pointer text-left">
                         <FileDown className="w-3.5 h-3.5 shrink-0" /> Exportar Resumo IA
                       </button>
                       <button onClick={(e) => { e.stopPropagation(); setOpenDropdownId(null); setWebhookModalLead(item); }}
-                        className="flex items-center gap-2 w-full p-2 hover:bg-purple-500/10 rounded-lg text-xs font-semibold text-purple-400 transition-colors border-none bg-transparent cursor-pointer text-left">
+                        className="flex items-center gap-2 w-full p-2 hover:bg-white/5 rounded-lg text-xs text-slate-300 hover:text-white transition-colors border-none bg-transparent cursor-pointer text-left">
                         <Activity className="w-3.5 h-3.5 shrink-0" /> Configurar Webhook
                       </button>
                     </>
@@ -223,7 +217,7 @@ export function LeadCard({
 
         {/* Lead name */}
         <div>
-          <h4 className="text-[12px] font-black text-white leading-tight line-clamp-2 group-hover:text-blue-300 transition-colors uppercase tracking-wide">
+          <h4 className="text-[12px] font-medium text-white leading-tight line-clamp-2">
             {item.name || item.company || '—'}
           </h4>
           {item.company && item.name && (
@@ -234,13 +228,12 @@ export function LeadCard({
         {/* Pills row: stage + source */}
         <div className="flex items-center gap-1.5 flex-wrap">
           {stageName && (
-            <span className="inline-flex items-center gap-1 bg-blue-500/10 border border-blue-500/20 text-blue-300 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
-              <Zap className="w-2.5 h-2.5" />
+            <span className="inline-flex items-center gap-1 bg-white/5 border border-white/10 text-slate-300 text-[9px] px-2 py-0.5 rounded-full">
               {stageName}
             </span>
           )}
           {source && SourceIcon && (
-            <span className="inline-flex items-center gap-1 bg-slate-700/40 border border-white/[0.08] text-slate-400 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1 bg-white/5 border border-white/[0.08] text-slate-400 text-[9px] px-2 py-0.5 rounded-full">
               <SourceIcon className="w-2.5 h-2.5" />
               {source}
             </span>
@@ -256,7 +249,7 @@ export function LeadCard({
               style={{ width: `${score}%` }}
             />
           </div>
-          <span className={`text-[9px] font-black tabular-nums ${SCORE_TEXT(score)}`}>{score}%</span>
+          <span className={`text-[9px] tabular-nums ${SCORE_TEXT(score)}`}>{score}%</span>
         </div>
 
         {/* Tags + squad + product */}
@@ -264,32 +257,25 @@ export function LeadCard({
           <div className="flex flex-wrap gap-1">
             {/* Client badge */}
             {clientName && (
-              <span className="inline-flex items-center gap-1 text-[8px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 uppercase tracking-wide">
-                ◈ {clientName}
+              <span className="inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-300">
+                {clientName}
               </span>
             )}
             {/* Squad badge */}
             {leadSquad && (
-              <span
-                className="text-[8px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wide"
-                style={{
-                  backgroundColor: `${leadSquad.cor ?? '#6366f1'}18`,
-                  borderColor: `${leadSquad.cor ?? '#6366f1'}40`,
-                  color: leadSquad.cor ?? '#818cf8',
-                }}
-              >
-                ◆ {leadSquad.nome}
+              <span className="text-[9px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-300">
+                {leadSquad.nome}
               </span>
             )}
             {/* Custom tags */}
             {tags.slice(0, 2).map((tag: string) => (
-              <span key={tag} className="text-[8px] font-bold px-2 py-0.5 rounded-full bg-slate-800/80 border border-white/[0.06] text-slate-400 uppercase tracking-wide">
+              <span key={tag} className="text-[9px] px-2 py-0.5 rounded-full bg-white/5 border border-white/[0.06] text-slate-400">
                 {tag}
               </span>
             ))}
             {/* Product badge */}
             {primaryProduct && (
-              <span className="inline-flex items-center gap-1 text-[8px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 uppercase tracking-wide">
+              <span className="inline-flex items-center gap-1 text-[9px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-slate-300">
                 <Package className="w-2 h-2 shrink-0" />
                 {primaryProduct.name}
               </span>
@@ -300,20 +286,16 @@ export function LeadCard({
         {/* Footer — value + creation date + idle */}
         <div className="flex items-center justify-between pt-1.5 border-t border-white/[0.06] gap-1.5">
           <div className="flex flex-col gap-0.5 min-w-0">
-            <span className="font-mono text-[11px] font-black text-emerald-400 leading-none">{displayValue}</span>
+            <span className="font-mono text-[11px] font-medium text-white leading-none">{displayValue}</span>
             {createdLabel && (
-              <span className="text-[8px] text-slate-600 font-semibold">{createdLabel}</span>
+              <span className="text-[8px] text-slate-600">{createdLabel}</span>
             )}
           </div>
           <span className={cn(
-            "text-[8px] font-bold px-2 py-0.5 rounded-full border flex items-center gap-1 shrink-0",
-            timeIdleNum > 7
-              ? 'bg-rose-500/15 text-rose-400 border-rose-500/20 animate-pulse'
-              : timeIdleNum > 3
-              ? 'bg-amber-500/15 text-amber-400 border-amber-500/20'
-              : 'bg-slate-800/60 text-slate-500 border-white/[0.05]'
+            "text-[9px] shrink-0",
+            timeIdleNum > 7 ? 'text-rose-400' : timeIdleNum > 3 ? 'text-amber-400' : 'text-slate-500'
           )}>
-            ⏳ {timeIdleNum}d
+            {timeIdleNum}d
           </span>
         </div>
 

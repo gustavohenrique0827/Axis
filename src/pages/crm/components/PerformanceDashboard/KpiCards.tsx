@@ -1,7 +1,7 @@
 import { Card } from "../../../../components/ui/card";
 
 export function KpiCards(props: {
-  stats: Array<{ label: string; value: string | number; icon: React.ComponentType<any>; color: string; bg: string; border: string }>;
+  stats: Array<{ label: string; value: string | number; icon: React.ComponentType<any> }>;
 }) {
   const { stats } = props;
   return (
@@ -9,21 +9,15 @@ export function KpiCards(props: {
       {stats.map((stat, i) => {
         const Icon = stat.icon;
         return (
-          <Card
-            key={i}
-            className={`p-4 bg-[var(--color-surface-elevated)]/80 border backdrop-blur-xl hover:scale-[1.02] transition-all ${stat.border}`}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold leading-tight">{stat.label}</p>
-              <div className={`p-2 rounded-xl ${stat.bg} ${stat.color} shrink-0`}>
-                <Icon className="w-3.5 h-3.5" />
-              </div>
+          <Card key={i} className="p-4">
+            <div className="flex items-center gap-2 text-slate-400 mb-2">
+              <Icon className="w-4 h-4" />
+              <span className="text-xs">{stat.label}</span>
             </div>
-            <h3 className="text-2xl font-black text-white">{stat.value}</h3>
+            <h3 className="text-2xl font-semibold text-white">{stat.value}</h3>
           </Card>
         );
       })}
     </div>
   );
 }
-

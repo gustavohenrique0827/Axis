@@ -15,9 +15,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-[var(--color-surface)] text-[var(--color-text-primary)] font-sans flex items-center justify-center relative overflow-hidden">
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-[#2563EB]/10 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] bg-[#06B6D4]/10 blur-[120px] rounded-full pointer-events-none" />
-
       <div className="w-full max-w-4xl p-6 relative z-10 flex flex-col md:flex-row gap-8 items-start">
 
         {/* Left Side */}
@@ -32,7 +29,7 @@ export default function Login() {
                 referrerPolicy="no-referrer"
               />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Bem-vindo ao Axis CRM</h1>
+            <h1 className="text-2xl font-semibold mb-2">Bem-vindo ao Axis CRM</h1>
             <p className="text-slate-400 text-sm">Acesse a plataforma ou cadastre sua empresa parceira.</p>
           </div>
 

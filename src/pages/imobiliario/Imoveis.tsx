@@ -35,7 +35,7 @@ const OPERACOES = ["Todos", "Venda", "Locação"];
 
 const FIELD = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
 const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
-const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
+const LABEL = "text-[10px] font-semibold text-slate-500 mb-1.5 block";
 
 const statusColor = (s: string) => {
   if (s === "Disponível") return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
@@ -92,7 +92,7 @@ function ImovelFormModal({ onClose, onSave, initial }: {
       <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
-            <h2 className="text-base font-black text-white">{isEdit ? "Editar Imóvel" : "Novo Imóvel"}</h2>
+            <h2 className="text-base font-semibold text-white">{isEdit ? "Editar Imóvel" : "Novo Imóvel"}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações do imóvel" : "Cadastre um novo imóvel ao portfólio"}</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
@@ -199,11 +199,11 @@ function ImovelDetailDrawer({ im, onClose, onEdit, onDelete }: {
           </div>
           <div className="p-5">
             <div className="flex gap-2 mb-2">
-              <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${statusColor(im.status)}`}>{im.status}</span>
-              <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-black/30 text-slate-300">{im.tipo}</span>
-              {im.operacao === "Locação" && <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-violet-500/30 text-violet-300">Locação</span>}
+              <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full border ${statusColor(im.status)}`}>{im.status}</span>
+              <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-black/30 text-slate-300">{im.tipo}</span>
+              {im.operacao === "Locação" && <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-violet-500/30 text-violet-300">Locação</span>}
             </div>
-            <h2 className="font-black text-white text-sm leading-tight">{im.titulo}</h2>
+            <h2 className="font-semibold text-white text-sm leading-tight">{im.titulo}</h2>
             <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />{im.bairro}, {im.cidade}</p>
           </div>
         </div>
@@ -212,7 +212,7 @@ function ImovelDetailDrawer({ im, onClose, onEdit, onDelete }: {
           {/* Valor e visitas */}
           <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
             <div>
-              <p className="text-2xl font-black text-white">{fmtValor(im)}</p>
+              <p className="text-2xl font-semibold text-white">{fmtValor(im)}</p>
               <p className="text-[10px] text-slate-500">{im.operacao}</p>
             </div>
             <div className="text-right">
@@ -269,7 +269,7 @@ function ImovelDetailDrawer({ im, onClose, onEdit, onDelete }: {
           <div className="px-6 py-4 border-b border-white/5">
             <p className={LABEL}>Corretor Responsável</p>
             <div className="flex items-center gap-3 mt-2 p-3 bg-white/5 rounded-xl">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-black text-xs shrink-0">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-semibold text-xs shrink-0">
                 {im.corretor.split(" ").map(n => n[0]).join("").slice(0,2)}
               </div>
               <div>
@@ -426,8 +426,8 @@ export default function Imoveis() {
               <s.icon className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{s.label}</p>
-              <p className="text-lg font-black text-white">{s.value}</p>
+              <p className="text-[10px] text-slate-500 font-bold">{s.label}</p>
+              <p className="text-lg font-semibold text-white">{s.value}</p>
             </div>
           </div>
         ))}
@@ -472,11 +472,11 @@ export default function Imoveis() {
               <div className={`h-40 bg-gradient-to-br ${tipoGradient(im.tipo)} flex items-center justify-center relative`}>
                 <Building2 className="w-12 h-12 text-white/10" />
                 <div className="absolute top-3 left-3">
-                  <span className={`text-[9px] font-black px-2.5 py-1 rounded-full border ${statusColor(im.status)}`}>{im.status}</span>
+                  <span className={`text-[9px] font-semibold px-2.5 py-1 rounded-full border ${statusColor(im.status)}`}>{im.status}</span>
                 </div>
                 <div className="absolute top-3 right-3 flex gap-1.5">
-                  <span className="text-[9px] font-black px-2 py-1 rounded-full bg-black/40 text-slate-300">{im.tipo}</span>
-                  {im.operacao === "Locação" && <span className="text-[9px] font-black px-2 py-1 rounded-full bg-violet-500/20 text-violet-300">Aluguel</span>}
+                  <span className="text-[9px] font-semibold px-2 py-1 rounded-full bg-black/40 text-slate-300">{im.tipo}</span>
+                  {im.operacao === "Locação" && <span className="text-[9px] font-semibold px-2 py-1 rounded-full bg-violet-500/20 text-violet-300">Aluguel</span>}
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[var(--color-surface-elevated)] to-transparent" />
                 <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-4 text-slate-500 text-[10px]" onClick={e => e.stopPropagation()}>
@@ -492,7 +492,7 @@ export default function Imoveis() {
                 </div>
               </div>
               <div className="p-4">
-                <p className="font-black text-white text-sm leading-snug">{im.titulo}</p>
+                <p className="font-semibold text-white text-sm leading-snug">{im.titulo}</p>
                 <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-1"><MapPin className="w-3 h-3" />{im.bairro}, {im.cidade}</p>
                 <div className="flex items-center gap-3 text-[10px] text-slate-500 mt-2">
                   {im.quartos > 0 && <span className="flex items-center gap-1"><Bed className="w-3 h-3" />{im.quartos}</span>}
@@ -501,7 +501,7 @@ export default function Imoveis() {
                   <span className="flex items-center gap-1"><Home className="w-3 h-3" />{im.area}m²</span>
                 </div>
                 <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
-                  <p className="font-black text-white text-sm">{fmtValor(im)}</p>
+                  <p className="font-semibold text-white text-sm">{fmtValor(im)}</p>
                   <span className="text-[9px] text-slate-500 flex items-center gap-1"><Eye className="w-3 h-3" />{im.visitas} visitas</span>
                 </div>
               </div>
@@ -523,7 +523,7 @@ export default function Imoveis() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-bold text-white text-sm">{im.titulo}</p>
-                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${statusColor(im.status)}`}>{im.status}</span>
+                  <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border ${statusColor(im.status)}`}>{im.status}</span>
                 </div>
                 <div className="flex items-center gap-3 text-[10px] text-slate-500 mt-1">
                   <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{im.bairro}</span>
@@ -533,7 +533,7 @@ export default function Imoveis() {
                 </div>
               </div>
               <div className="text-right shrink-0 mr-2">
-                <p className="font-black text-white text-sm">{fmtValor(im)}</p>
+                <p className="font-semibold text-white text-sm">{fmtValor(im)}</p>
                 <p className="text-[9px] text-slate-500 flex items-center gap-1 justify-end"><Eye className="w-3 h-3" />{im.visitas} visitas</p>
               </div>
               <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>

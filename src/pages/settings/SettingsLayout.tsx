@@ -114,8 +114,8 @@ export default function SettingsLayout() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <h2 className="text-lg font-black text-white tracking-tighter">Configurações</h2>
-            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mt-0.5">Gerenciamento Geral</p>
+            <h2 className="text-lg font-semibold text-white">Configurações</h2>
+            <p className="text-xs text-slate-500 mt-0.5">Gerenciamento Geral</p>
           </motion.div>
           <Button 
             variant="ghost"
@@ -144,7 +144,7 @@ export default function SettingsLayout() {
       <div className="lg:hidden w-full bg-[var(--color-dark-bg)] border-b border-white/5 pt-3 shrink-0 z-20 sticky top-0">
         <div className="px-4 pb-3 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-black text-white tracking-tighter">Configurações</h2>
+            <h2 className="text-lg font-semibold text-white">Configurações</h2>
           </div>
           <button 
             className="p-1.5 bg-white/5 rounded-lg text-slate-400 hover:text-white"
@@ -186,7 +186,7 @@ export default function SettingsLayout() {
 function MenuSection({ title, icon, items, currentPath, onItemClick }: { title: string, icon: React.ReactNode, items: any[], currentPath: string, onItemClick?: () => void }) {
   return (
     <div className="px-2 w-full md:w-auto mb-6 last:mb-0">
-      <div className="px-4 mb-2 flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
+      <div className="px-4 mb-2 flex items-center gap-2 text-xs text-slate-500">
         {icon} <span>{title}</span>
       </div>
       <div className="space-y-0.5 flex flex-col">

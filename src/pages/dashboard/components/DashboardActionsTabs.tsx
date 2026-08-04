@@ -9,7 +9,7 @@ export function DashboardActionsTabs(props: {
   const { activeTab, onTabChange } = props;
 
   return (
-    <div className="flex bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-1 w-fit gap-1 shadow-2xl backdrop-blur-xl">
+    <div className="flex bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-1 w-fit gap-1">
       {[
         { id: "executivo" as const, label: "Estratégico", icon: Gauge },
         { id: "comercial" as const, label: "Comercial", icon: Zap },
@@ -19,9 +19,9 @@ export function DashboardActionsTabs(props: {
         <button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 cursor-pointer border-none bg-transparent ${
+          className={`px-4 py-2 text-xs rounded-xl transition-colors flex items-center gap-2 cursor-pointer border-none bg-transparent ${
             activeTab === tab.id
-              ? "bg-blue-600/20 text-blue-400 border border-blue-500/30"
+              ? "bg-white/10 text-white"
               : "text-slate-500 hover:text-white"
           }`}
         >
@@ -31,4 +31,3 @@ export function DashboardActionsTabs(props: {
     </div>
   );
 }
-

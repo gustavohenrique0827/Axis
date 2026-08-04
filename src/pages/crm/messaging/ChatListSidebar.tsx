@@ -58,9 +58,9 @@ export function ChatListSidebar({
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`whitespace-nowrap px-4 py-1.5 text-[13px] font-medium rounded-full transition-all cursor-pointer ${
-              activeTab === tab 
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' 
+            className={`whitespace-nowrap px-4 py-1.5 text-[13px] rounded-full transition-all cursor-pointer ${
+              activeTab === tab
+                ? 'bg-white/10 text-white'
                 : 'bg-white/5 hover:bg-white/10 text-slate-300'
             }`}
           >
@@ -124,21 +124,17 @@ export function ChatListSidebar({
                     key={contact.id}
                     onClick={() => handleChatSelect(contact.id)}
                     className={`w-full flex items-center gap-4 py-4 transition-all border-b border-white/5 text-left cursor-pointer group border-l-4 ${
-                      isActive 
-                        ? 'selecao-ativa border-l-blue-500 bg-blue-500/10 pl-[16px] pr-5 shadow-[inset_4px_0_15px_rgba(59,130,246,0.15),0_0_15px_rgba(59,130,246,0.1)] ring-1 ring-blue-500/20 text-white' 
+                      isActive
+                        ? 'border-l-white/40 bg-white/5 pl-[16px] pr-5 text-white'
                         : 'border-transparent pl-[16px] pr-5 hover:bg-white/5'
                     }`}
                   >
                     {/* Avatar */}
                     <div className="relative shrink-0">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-inner ${
-                        contact.channel === 'WhatsApp' ? 'bg-gradient-to-br from-emerald-500 to-emerald-700' :
-                        contact.channel === 'Instagram' ? 'bg-gradient-to-br from-pink-500 to-purple-700' :
-                        'bg-gradient-to-br from-blue-500 to-indigo-700'
-                      }`}>
+                      <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-medium text-white bg-white/10 border border-white/10">
                         {contact.avatar}
                       </div>
-                      <div className="absolute -bottom-1 -right-1 bg-[#0F172A] rounded-full p-[3px] shadow-sm ring-2 ring-[#0B1120]">
+                      <div className="absolute -bottom-1 -right-1 bg-[#0F172A] rounded-full p-[3px] ring-2 ring-[#0B1120]">
                         {getChannelIcon(contact.channel, "w-[14px] h-[14px]")}
                       </div>
                     </div>
@@ -146,19 +142,19 @@ export function ChatListSidebar({
                     {/* Content */}
                     <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
                       <div className="flex justify-between items-center">
-                        <h3 className={`font-semibold text-[15px] truncate ${contact.unread > 0 ? "text-white" : "text-slate-200"}`}>
+                        <h3 className={`font-medium text-[15px] truncate ${contact.unread > 0 ? "text-white" : "text-slate-200"}`}>
                           {contact.name}
                         </h3>
-                        <span className={`text-[11px] font-medium ${contact.unread > 0 ? 'text-blue-400' : 'text-slate-500'}`}>
+                        <span className={`text-[11px] ${contact.unread > 0 ? 'text-slate-300' : 'text-slate-500'}`}>
                           {contact.time}
                         </span>
                       </div>
                       <div className="flex items-center justify-between gap-3">
-                        <p className={`text-[13px] truncate flex-1 leading-snug ${contact.unread > 0 ? "text-slate-300 font-medium" : "text-slate-500"}`}>
+                        <p className={`text-[13px] truncate flex-1 leading-snug ${contact.unread > 0 ? "text-slate-300" : "text-slate-500"}`}>
                           {contact.lastMessage}
                         </p>
                         {contact.unread > 0 && (
-                          <span className="bg-blue-600 text-white text-[11px] font-bold h-[22px] min-w-[22px] rounded-full flex items-center justify-center px-1.5 shrink-0 shadow-sm animate-pulse">
+                          <span className="bg-white/10 text-white text-[11px] h-[22px] min-w-[22px] rounded-full flex items-center justify-center px-1.5 shrink-0">
                             {contact.unread}
                           </span>
                         )}
@@ -170,11 +166,11 @@ export function ChatListSidebar({
               
               {filteredContacts.length === 0 && (
                 <div className="p-10 flex flex-col items-center justify-center gap-4 text-center animate-in fade-in duration-300">
-                  <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 shadow-lg">
+                  <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400">
                     <Search className="w-8 h-8 text-slate-400" strokeWidth={1.5} />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-white">Nenhum resultado encontrado</h4>
+                    <h4 className="text-sm font-medium text-white">Nenhum resultado encontrado</h4>
                     <p className="text-xs text-slate-400 max-w-[220px]">
                       Não encontramos nenhuma conversa que corresponda ao termo buscando ou aos filtros aplicados.
                     </p>

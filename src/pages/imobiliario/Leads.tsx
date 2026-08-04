@@ -56,7 +56,7 @@ const MOCK: Lead[] = [
 
 const FIELD = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
 const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
-const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
+const LABEL = "text-[10px] font-semibold text-slate-500 mb-1.5 block";
 
 // ─── FORM MODAL (create / edit) ────────────────────────────────────────────────
 function LeadFormModal({
@@ -88,7 +88,7 @@ function LeadFormModal({
       <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
-            <h2 className="text-base font-black text-white">{isEdit ? "Editar Lead" : "Novo Lead Imobiliário"}</h2>
+            <h2 className="text-base font-semibold text-white">{isEdit ? "Editar Lead" : "Novo Lead Imobiliário"}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações do lead" : "Cadastre um novo interesse"}</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
@@ -201,11 +201,11 @@ function LeadDetailDrawer({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-black text-sm shrink-0">
+            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-semibold text-sm shrink-0">
               {lead.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
             </div>
             <div>
-              <h2 className="font-black text-white text-sm">{lead.nome}</h2>
+              <h2 className="font-semibold text-white text-sm">{lead.nome}</h2>
               <p className="text-[10px] text-slate-500">Lead #{lead.id} · {lead.created_at ? new Date(lead.created_at).toLocaleDateString("pt-BR") : "—"}</p>
             </div>
           </div>
@@ -215,25 +215,25 @@ function LeadDetailDrawer({
         <div className="flex-1 overflow-y-auto">
           {/* Badges */}
           <div className="p-6 border-b border-white/5 flex flex-wrap gap-2">
-            <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${ETAPA_COLORS[lead.etapa]}`}>{lead.etapa}</span>
-            <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border ${PRIORIDADE_COLORS[lead.prioridade]}`}>{lead.prioridade} Prioridade</span>
-            <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-white/5 text-slate-400 border border-white/10">{lead.interesse}</span>
-            <span className="text-[10px] font-black px-2.5 py-1 rounded-full bg-white/5 text-slate-400 border border-white/10">{lead.origem}</span>
+            <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full border ${ETAPA_COLORS[lead.etapa]}`}>{lead.etapa}</span>
+            <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full border ${PRIORIDADE_COLORS[lead.prioridade]}`}>{lead.prioridade} Prioridade</span>
+            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/5 text-slate-400 border border-white/10">{lead.interesse}</span>
+            <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-white/5 text-slate-400 border border-white/10">{lead.origem}</span>
           </div>
 
           {/* KPI strip */}
           <div className="px-6 py-4 border-b border-white/5 grid grid-cols-3 gap-3">
             <div className="bg-[var(--color-surface-elevated)] rounded-xl p-3 text-center">
-              <p className="text-sm font-black text-white">{fmt(lead.orcamento)}</p>
-              <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">Orçamento</p>
+              <p className="text-sm font-semibold text-white">{fmt(lead.orcamento)}</p>
+              <p className="text-[9px] text-slate-500 mt-0.5">Orçamento</p>
             </div>
             <div className="bg-[var(--color-surface-elevated)] rounded-xl p-3 text-center">
-              <p className={`text-sm font-black ${lead.dias_etapa >= 7 ? "text-red-400" : "text-white"}`}>{lead.dias_etapa}d</p>
-              <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">Na Etapa</p>
+              <p className={`text-sm font-semibold ${lead.dias_etapa >= 7 ? "text-red-400" : "text-white"}`}>{lead.dias_etapa}d</p>
+              <p className="text-[9px] text-slate-500 mt-0.5">Na Etapa</p>
             </div>
             <div className="bg-[var(--color-surface-elevated)] rounded-xl p-3 text-center">
-              <p className="text-sm font-black text-white">{etapaIndex + 1}/{ETAPAS.length}</p>
-              <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">Progresso</p>
+              <p className="text-sm font-semibold text-white">{etapaIndex + 1}/{ETAPAS.length}</p>
+              <p className="text-[9px] text-slate-500 mt-0.5">Progresso</p>
             </div>
           </div>
 
@@ -293,19 +293,19 @@ function LeadDetailDrawer({
             <p className={LABEL}>Interesse Imobiliário</p>
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-white/5 rounded-xl p-3">
-                <p className="text-[9px] text-slate-500 uppercase tracking-widest">Tipo</p>
+                <p className="text-[9px] text-slate-500">Tipo</p>
                 <p className="text-sm font-bold text-white mt-1">{lead.tipo}</p>
               </div>
               <div className="bg-white/5 rounded-xl p-3">
-                <p className="text-[9px] text-slate-500 uppercase tracking-widest">Bairro</p>
+                <p className="text-[9px] text-slate-500">Bairro</p>
                 <p className="text-sm font-bold text-white mt-1">{lead.bairro || "—"}</p>
               </div>
               <div className="bg-white/5 rounded-xl p-3">
-                <p className="text-[9px] text-slate-500 uppercase tracking-widest">Corretor</p>
+                <p className="text-[9px] text-slate-500">Corretor</p>
                 <p className="text-sm font-bold text-white mt-1">{lead.corretor || "—"}</p>
               </div>
               <div className="bg-white/5 rounded-xl p-3">
-                <p className="text-[9px] text-slate-500 uppercase tracking-widest">Operação</p>
+                <p className="text-[9px] text-slate-500">Operação</p>
                 <p className="text-sm font-bold text-white mt-1">{lead.interesse}</p>
               </div>
             </div>
@@ -328,7 +328,7 @@ function LeadDetailDrawer({
                 <button
                   key={e}
                   onClick={() => onChangeEtapa(e)}
-                  className={`px-3 py-2 rounded-xl text-[10px] font-black border transition-all ${
+                  className={`px-3 py-2 rounded-xl text-[10px] font-semibold border transition-all ${
                     lead.etapa === e
                       ? ETAPA_COLORS[e] + " ring-1 ring-current"
                       : "bg-white/5 text-slate-500 border-white/10 hover:text-white hover:bg-white/10"
@@ -467,8 +467,8 @@ export default function LeadsImobiliario() {
           { label: "VGV Potencial", value: `R$ ${(vgvPotencial / 1e6).toFixed(1)}M`, color: "text-violet-400" },
         ].map(k => (
           <div key={k.label} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl p-4 text-center">
-            <p className={`text-xl font-black ${k.color}`}>{k.value}</p>
-            <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">{k.label}</p>
+            <p className={`text-xl font-semibold ${k.color}`}>{k.value}</p>
+            <p className="text-[9px] text-slate-500 mt-0.5">{k.label}</p>
           </div>
         ))}
       </div>
@@ -481,12 +481,12 @@ export default function LeadsImobiliario() {
         </div>
         <div className="flex bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl p-1 gap-1 overflow-x-auto">
           {["Todas", ...ETAPAS].map(e => (
-            <button key={e} onClick={() => setEtapaFilter(e)} className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all whitespace-nowrap ${etapaFilter === e ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "text-slate-500 hover:text-slate-300"}`}>{e}</button>
+            <button key={e} onClick={() => setEtapaFilter(e)} className={`px-3 py-1.5 text-[10px] font-semibold rounded-lg transition-all whitespace-nowrap ${etapaFilter === e ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "text-slate-500 hover:text-slate-300"}`}>{e}</button>
           ))}
         </div>
         <div className="flex bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl p-1 gap-1">
           {["Todas", "Alta", "Média", "Baixa"].map(p => (
-            <button key={p} onClick={() => setPrioFilter(p)} className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${prioFilter === p ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "text-slate-500 hover:text-slate-300"}`}>{p}</button>
+            <button key={p} onClick={() => setPrioFilter(p)} className={`px-3 py-1.5 text-[10px] font-semibold rounded-lg transition-all ${prioFilter === p ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "text-slate-500 hover:text-slate-300"}`}>{p}</button>
           ))}
         </div>
       </div>
@@ -503,16 +503,16 @@ export default function LeadsImobiliario() {
               onClick={() => setSelectedLead(l)}
               className="flex items-center gap-4 p-4 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl hover:border-blue-500/20 hover:bg-[var(--color-surface-elevated)] transition-all cursor-pointer group"
             >
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-black text-sm shrink-0">
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-semibold text-sm shrink-0">
                 {l.nome.split(" ").map(n => n[0]).join("").slice(0, 2)}
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="font-bold text-white text-sm">{l.nome}</p>
-                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${ETAPA_COLORS[l.etapa]}`}>{l.etapa}</span>
-                  <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${PRIORIDADE_COLORS[l.prioridade]}`}>{l.prioridade}</span>
+                  <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border ${ETAPA_COLORS[l.etapa]}`}>{l.etapa}</span>
+                  <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border ${PRIORIDADE_COLORS[l.prioridade]}`}>{l.prioridade}</span>
                   {l.dias_etapa >= 7 && (
-                    <span className="flex items-center gap-1 text-[9px] font-black text-red-400"><AlertCircle className="w-3 h-3" />{l.dias_etapa}d parado</span>
+                    <span className="flex items-center gap-1 text-[9px] font-semibold text-red-400"><AlertCircle className="w-3 h-3" />{l.dias_etapa}d parado</span>
                   )}
                 </div>
                 <div className="flex items-center gap-3 text-[10px] text-slate-500 mt-1 flex-wrap">
@@ -524,7 +524,7 @@ export default function LeadsImobiliario() {
                 </div>
               </div>
               <div className="text-right shrink-0 mr-2">
-                <p className="font-black text-white text-sm">
+                <p className="font-semibold text-white text-sm">
                   {l.interesse === "Locação" ? `R$ ${l.orcamento.toLocaleString("pt-BR")}/mês` : l.orcamento >= 1e6 ? `R$ ${(l.orcamento / 1e6).toFixed(1)}M` : `R$ ${(l.orcamento / 1000).toFixed(0)}k`}
                 </p>
                 <p className="text-[9px] text-slate-500">{l.interesse}</p>

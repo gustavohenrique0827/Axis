@@ -15,56 +15,43 @@ interface AdminOverviewTabProps {
 }
 
 export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: AdminOverviewTabProps) {
+  const metricItems = [
+    { label: "Total de Empresas", value: "0", icon: Building2 },
+    {
+      label: "MRR Global (SaaS)",
+      value: new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(globalMrr),
+      icon: DollarSign,
+    },
+    { label: "Usuários Ativos (MAU)", value: "0", icon: Users },
+    { label: "Storage System", value: "0 GB", icon: HardDrive },
+  ];
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Global SaaS Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-5 border-[#06B6D4]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group opacity-50">
-          <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Building2 className="w-12 h-12 text-[#06B6D4]" />
-          </div>
-          <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">Total de Empresas</span>
-          <h3 className="text-3xl font-extrabold text-white">0</h3>
-        </Card>
-
-        <Card className="p-5 border-[#2563EB]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-            <DollarSign className="w-12 h-12 text-[#2563EB]" />
-          </div>
-          <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">MRR Global (SaaS)</span>
-          <h3 className="text-3xl font-extrabold text-[#2563EB]">
-            {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(globalMrr)}
-          </h3>
-        </Card>
-
-        <Card className="p-5 border-emerald-500/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group opacity-50">
-          <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-            <Users className="w-12 h-12 text-emerald-400" />
-          </div>
-          <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">Usuários Ativos (MAU)</span>
-          <h3 className="text-3xl font-extrabold text-emerald-400">0</h3>
-        </Card>
-
-        <Card className="p-5 border-purple-500/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group opacity-50">
-          <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-            <HardDrive className="w-12 h-12 text-purple-400" />
-          </div>
-          <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">Storage System</span>
-          <h3 className="text-3xl font-extrabold text-purple-400">0 GB</h3>
-        </Card>
+        {metricItems.map(({ label, value, icon: Icon }) => (
+          <Card key={label} className="p-4">
+            <div className="flex items-center gap-2 text-slate-400 mb-2">
+              <Icon className="w-4 h-4" />
+              <span className="text-xs">{label}</span>
+            </div>
+            <p className="text-2xl font-semibold text-white">{value}</p>
+          </Card>
+        ))}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 p-5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-col">
+        <Card className="lg:col-span-2 p-5 flex flex-col">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="font-semibold text-lg flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-[#06B6D4]" /> Evolução de MRR Global
+            <h3 className="text-sm text-slate-400 flex items-center gap-2">
+              <BarChart3 className="w-4 h-4" /> Evolução de MRR Global
             </h3>
           </div>
           {revenueData.length === 0 ? (
-            <div className="flex-1 flex flex-col items-center justify-center opacity-40 gap-4 min-h-[250px]">
-              <Inbox className="w-12 h-12 text-slate-500" />
-              <span className="text-xs uppercase font-black tracking-widest text-slate-500">Sem histórico financeiro</span>
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 min-h-[250px] text-center">
+              <Inbox className="w-8 h-8 text-slate-500" />
+              <span className="text-sm text-slate-500">Sem histórico financeiro</span>
             </div>
           ) : (
             <div className="flex-1 min-h-[250px] w-full">
@@ -72,15 +59,15 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
                 <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorMrr" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#06B6D4" stopOpacity={0} />
+                      <stop offset="5%" stopColor="#64748B" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#64748B" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#64748B", fontSize: 12 }} dy={10} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748B", fontSize: 12 }} tickFormatter={(v) => `R$${v / 1000}k`} />
                   <CartesianGrid vertical={false} stroke="#1e293b" />
                   <RechartsTooltip content={<CustomTooltip />} />
-                  <Area type="monotone" dataKey="mrr" stroke="#06B6D4" strokeWidth={3} fillOpacity={1} fill="url(#colorMrr)" />
+                  <Area type="monotone" dataKey="mrr" stroke="#94A3B8" strokeWidth={2} fillOpacity={1} fill="url(#colorMrr)" />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -88,33 +75,33 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
         </Card>
 
         <div className="space-y-6">
-          <Card className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/10 flex flex-col" style={{ height: "calc(50% - 12px)" }}>
-            <h4 className="font-bold text-white mb-2 text-sm flex items-center gap-2">
-              <PieChartIcon className="w-4 h-4 text-blue-400" /> Distribuição de Planos
+          <Card className="p-5 flex flex-col" style={{ height: "calc(50% - 12px)" }}>
+            <h4 className="text-sm text-slate-400 mb-2 flex items-center gap-2">
+              <PieChartIcon className="w-4 h-4" /> Distribuição de Planos
             </h4>
-            <div className="flex-1 flex flex-col items-center justify-center opacity-40 gap-4 min-h-[140px]">
-              <PieChartIcon className="w-10 h-10 text-slate-500" />
-              <span className="text-[10px] uppercase font-black tracking-widest text-slate-500">Nenhum plano ativo</span>
+            <div className="flex-1 flex flex-col items-center justify-center gap-3 min-h-[140px] text-center">
+              <PieChartIcon className="w-8 h-8 text-slate-500" />
+              <span className="text-sm text-slate-500">Nenhum plano ativo</span>
             </div>
           </Card>
 
-          <Card className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/10 overflow-hidden relative" style={{ height: "calc(50% - 12px)" }}>
-            <h4 className="font-bold text-white mb-4 text-sm flex items-center gap-2">
-              <Activity className="w-4 h-4 text-emerald-400" /> Instâncias Core
+          <Card className="p-5 overflow-hidden relative" style={{ height: "calc(50% - 12px)" }}>
+            <h4 className="text-sm text-slate-400 mb-4 flex items-center gap-2">
+              <Activity className="w-4 h-4" /> Instâncias Core
             </h4>
-            <div className="space-y-3 relative z-10 opacity-50">
+            <div className="space-y-3 relative z-10">
               {[
                 { label: "API Gateway", load: "0%", status: "Idle" },
                 { label: "PostgreSQL Master", load: "0%", status: "Idle" },
               ].map((item, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-white font-medium">{item.label}</p>
-                    <p className="text-[10px] text-slate-500">Load: {item.load}</p>
+                    <p className="text-xs text-white">{item.label}</p>
+                    <p className="text-xs text-slate-500">Load: {item.load}</p>
                   </div>
-                  <div className="flex flex-col items-end gap-1">
+                  <div className="flex items-center gap-2 text-xs text-slate-400">
                     <div className="w-1.5 h-1.5 rounded-full bg-slate-500" />
-                    <span className="text-[9px] text-slate-400 font-bold uppercase">{item.status}</span>
+                    {item.status}
                   </div>
                 </div>
               ))}
@@ -123,15 +110,15 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
         </div>
       </div>
 
-      <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden">
-        <div className="p-4 border-b border-white/10 flex items-center justify-between bg-[var(--color-surface)]/50">
-          <h3 className="font-semibold flex items-center gap-2">
-            <Server className="w-4 h-4 text-[#06B6D4]" /> Tenants Recentes
+      <Card className="overflow-hidden">
+        <div className="p-4 border-b border-white/10">
+          <h3 className="text-sm font-medium text-white flex items-center gap-2">
+            <Server className="w-4 h-4 text-slate-400" /> Tenants Recentes
           </h3>
         </div>
-        <div className="p-10 flex flex-col items-center justify-center gap-4 opacity-40">
-          <Building2 className="w-12 h-12 text-slate-500" />
-          <span className="text-xs font-black uppercase tracking-widest text-slate-500">Base de Tenants em construção</span>
+        <div className="p-10 flex flex-col items-center justify-center gap-3 text-center">
+          <Building2 className="w-8 h-8 text-slate-500" />
+          <span className="text-sm text-slate-500">Base de Tenants em construção</span>
         </div>
       </Card>
     </div>

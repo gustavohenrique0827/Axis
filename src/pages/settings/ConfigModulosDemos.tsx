@@ -146,26 +146,23 @@ export default function ConfigModulosDemos() {
     <div className="space-y-8 max-w-6xl pb-20">
 
       {/* Header Panel */}
-      <div className="border border-white/5 bg-[var(--color-surface-elevated)]/40 p-6 sm:p-8 rounded-3xl relative overflow-hidden backdrop-blur-xl">
-        <div className="absolute top-[-200px] right-[-100px] w-[500px] h-[500px] bg-[#06B6D4]/13 blur-[120px] rounded-full pointer-events-none" />
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="border border-white/5 bg-[var(--color-surface-elevated)]/40 p-6 sm:p-8 rounded-3xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1.5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-blue-600/10 border border-blue-500/20 rounded-full text-[10px] text-blue-400 font-extrabold uppercase tracking-wide">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] text-slate-400">
               <Cpu className="w-3.5 h-3.5" /> Arquitetura Multitenant Modular
             </div>
-            <h1 className="text-3xl font-black italic text-white tracking-tighter">Modicality Control Center</h1>
+            <h1 className="text-2xl font-semibold text-white">Modicality Control Center</h1>
             <p className="text-slate-400 text-sm max-w-2xl leading-relaxed">
               O painel adapta as regras de permissão, visibilidade de funis e do menu dinâmico no ato.
             </p>
           </div>
-          <Card className="p-4 bg-[var(--color-surface)]/90 border border-white/10 flex items-center gap-4 shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 flex items-center justify-center text-white">
-              <Database className="w-5 h-5 animate-pulse" />
-            </div>
+          <Card className="p-4 flex items-center gap-4 shrink-0">
+            <Database className="w-4 h-4 text-slate-400" />
             <div>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Tenant Ativo</p>
-              <h4 className="text-sm font-black text-white max-w-[200px] truncate">{user?.tenantName || "G-Tech Master"}</h4>
-              <p className="text-[9px] text-[#06B6D4] font-black uppercase tracking-widest mt-0.5">Nicho: {user?.tenantNiche || "Master"}</p>
+              <p className="text-xs text-slate-400">Tenant Ativo</p>
+              <h4 className="text-sm font-medium text-white max-w-[200px] truncate">{user?.tenantName || "G-Tech Master"}</h4>
+              <p className="text-xs text-slate-500 mt-0.5">Nicho: {user?.tenantNiche || "Master"}</p>
             </div>
           </Card>
         </div>
@@ -179,46 +176,46 @@ export default function ConfigModulosDemos() {
           <div className="lg:col-span-2 space-y-4">
             <div className="space-y-6">
               <div className="space-y-1">
-                <h3 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-cyan-400" /> Sidebar Modular Sob Medida
+                <h3 className="text-sm text-slate-400 flex items-center gap-2">
+                  <Layers className="w-4 h-4 text-slate-400" /> Sidebar Modular Sob Medida
                 </h3>
                 <p className="text-xs text-slate-400">Ative ou desative seções inteiras da sua barra lateral para simplificar a interface e moldar o CRM para a sua operação.</p>
               </div>
 
               {/* Quick Presets */}
-              <div className="p-4 bg-slate-900/50 border border-white/5 rounded-2xl space-y-3">
-                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">🎯 Presets Estratégicos de Operação</span>
+              <div className="p-4 bg-[var(--color-surface-elevated)]/50 border border-white/5 rounded-2xl space-y-3">
+                <span className="text-xs text-slate-400">Presets Estratégicos de Operação</span>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   <button
                     onClick={() => applyPreset("ALL_ACTIVE")}
-                    className="px-3 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                    className="px-3 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-xs transition-colors"
                   >
-                    🌐 Geral Full
+                    Geral Full
                   </button>
                   <button
                     onClick={() => applyPreset("EDUCACAO")}
-                    className="px-3 py-2 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/25 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                    className="px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-xl text-xs transition-colors"
                   >
-                    🎓 Escola/Edu
+                    Escola/Edu
                   </button>
                   <button
                     onClick={() => applyPreset("SDR_CLOSER")}
-                    className="px-3 py-2 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-400 border border-cyan-500/25 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                    className="px-3 py-2 bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10 rounded-xl text-xs transition-colors"
                   >
-                    ⚡ SDR & Closers
+                    SDR & Closers
                   </button>
                 </div>
               </div>
 
               {/* Tenant selector */}
-              <div className="p-4 bg-slate-900/50 border border-white/5 rounded-2xl space-y-3">
+              <div className="p-4 bg-[var(--color-surface-elevated)]/50 border border-white/5 rounded-2xl space-y-3">
                 <div className="flex items-center justify-between gap-4">
                   <div>
-                    <p className="text-[10px] font-black uppercase tracking-widest text-blue-400">Tenant Selecionado</p>
-                    <h4 className="text-sm font-bold text-white mt-1">{selectedTenant}</h4>
+                    <p className="text-xs text-slate-400">Tenant Selecionado</p>
+                    <h4 className="text-sm font-medium text-white mt-1">{selectedTenant}</h4>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] uppercase tracking-widest text-slate-400 bg-white/5 px-3 py-2 rounded-full">Master</span>
+                    <span className="text-[10px] text-slate-400 bg-white/5 px-3 py-2 rounded-full">Master</span>
                     <button
                       onClick={handleReloadTenants}
                       disabled={reloading}
@@ -230,7 +227,7 @@ export default function ConfigModulosDemos() {
                     <button
                       onClick={() => setShowAddTenant(v => !v)}
                       title="Cadastrar nova empresa parceira"
-                      className="p-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/25 rounded-xl text-blue-400 hover:text-blue-300 transition-all"
+                      className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-slate-400 hover:text-white transition-all"
                     >
                       {showAddTenant ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
                     </button>
@@ -246,13 +243,13 @@ export default function ConfigModulosDemos() {
                       exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
-                      <div className="p-4 bg-[var(--color-surface)] border border-blue-500/20 rounded-xl space-y-3">
-                        <div className="flex items-center gap-2 text-blue-400 text-xs font-black uppercase tracking-widest">
-                          <Building2 className="w-4 h-4" /> Cadastrar Nova Empresa Parceira
+                      <div className="p-4 bg-[var(--color-surface)] border border-white/10 rounded-xl space-y-3">
+                        <div className="flex items-center gap-2 text-slate-300 text-xs">
+                          <Building2 className="w-4 h-4 text-slate-400" /> Cadastrar Nova Empresa Parceira
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div className="space-y-1">
-                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Nome da Empresa</label>
+                            <label className="text-xs text-slate-400">Nome da Empresa</label>
                             <input
                               value={newTenantName}
                               onChange={e => setNewTenantName(e.target.value)}
@@ -261,7 +258,7 @@ export default function ConfigModulosDemos() {
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Nicho</label>
+                            <label className="text-xs text-slate-400">Nicho</label>
                             <div className="relative">
                               <select
                                 value={newTenantNiche}
@@ -277,7 +274,7 @@ export default function ConfigModulosDemos() {
                         <button
                           onClick={handleAddTenant}
                           disabled={savingTenant}
-                          className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+                          className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs rounded-xl transition-colors"
                         >
                           {savingTenant ? "Cadastrando..." : "Cadastrar Empresa"}
                         </button>
@@ -286,9 +283,9 @@ export default function ConfigModulosDemos() {
                   )}
                 </AnimatePresence>
 
-                <label className="block text-[12px] uppercase tracking-widest text-slate-400">Selecione a empresa parceira</label>
+                <label className="block text-xs text-slate-400">Selecione a empresa parceira</label>
                 {tenantOptions.length <= 1 ? (
-                  <div className="p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-xl text-xs text-yellow-400/80 flex items-center gap-2">
+                  <div className="p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl text-xs text-amber-400/80 flex items-center gap-2">
                     <span>⚠️</span>
                     <span>Nenhum parceiro cadastrado ainda. Clique em <strong>+</strong> para adicionar ou <strong>↺</strong> para recarregar.</span>
                   </div>
@@ -330,18 +327,18 @@ export default function ConfigModulosDemos() {
                     <div
                       key={mod.id}
                       onClick={() => handleToggleModule(mod.id)}
-                      className={`p-4 bg-[var(--color-surface)] border rounded-2xl flex items-center justify-between gap-4 cursor-pointer select-none transition-all duration-300 ${isEnabled
-                          ? 'border-blue-500/40 bg-blue-600/[0.02] shadow-[0_0_15px_rgba(59,130,246,0.05)]'
+                      className={`p-4 bg-[var(--color-surface)] border rounded-2xl flex items-center justify-between gap-4 cursor-pointer select-none transition-colors ${isEnabled
+                          ? 'border-white/10'
                           : 'border-white/5 opacity-55 hover:opacity-85'
                         }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className={`p-2 rounded-xl shrink-0 ${isEnabled ? 'bg-blue-600/10 text-blue-400' : 'bg-white/5 text-slate-500'}`}>
-                          <mod.icon className="w-4.5 h-4.5" />
+                        <div className={`p-2 rounded-xl shrink-0 ${isEnabled ? 'bg-white/10 text-slate-300' : 'bg-white/5 text-slate-500'}`}>
+                          <mod.icon className="w-4 h-4" />
                         </div>
                         <div className="min-w-0">
-                          <span className="text-[11px] font-black text-white uppercase tracking-wider block">{mod.title}</span>
-                          <span className="text-[9px] text-slate-500 font-bold uppercase tracking-tight block truncate mt-0.5">{mod.desc}</span>
+                          <span className="text-xs font-medium text-white block">{mod.title}</span>
+                          <span className="text-[10px] text-slate-500 block truncate mt-0.5">{mod.desc}</span>
                         </div>
                       </div>
                       <div>
@@ -359,13 +356,13 @@ export default function ConfigModulosDemos() {
           {/* Simulador de Usuário & Permissões */}
           <div className="space-y-4">
             <div>
-              <h2 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-indigo-400" /> Cargos & Permissões
+              <h2 className="text-sm text-slate-400 flex items-center gap-2">
+                <UserCheck className="w-4 h-4 text-slate-400" /> Cargos & Permissões
               </h2>
-              <p className="text-xs text-slate-400">Varie os níveis de autorização para simular a visão de cada usuário.</p>
+              <p className="text-xs text-slate-400 mt-1">Varie os níveis de autorização para simular a visão de cada usuário.</p>
             </div>
 
-            <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl rounded-2xl space-y-4">
+            <Card className="p-6 space-y-4">
               <p className="text-xs text-slate-400 leading-relaxed">
                 Modificando a função do usuário atual do Axis, certas rotas de administrador ou configurações gerais podem se ocultar ou necessitar de re-autorização no Middleware.
               </p>
@@ -382,21 +379,18 @@ export default function ConfigModulosDemos() {
                     <button
                       key={role.title}
                       onClick={() => handleSwitchRole(role.title)}
-                      className={`w-full text-left p-3.5 rounded-xl border text-xs leading-relaxed transition-all flex items-start gap-3 relative overflow-hidden group ${isSelected
-                          ? "bg-blue-600/10 border-blue-500/40 text-white font-bold"
+                      className={`w-full text-left p-3.5 rounded-xl border text-xs leading-relaxed transition-colors flex items-start gap-3 ${isSelected
+                          ? "bg-white/10 border-white/20 text-white"
                           : "bg-white/[0.01] border-white/5 text-slate-400 hover:bg-white/[0.03]"
                         }`}
                     >
-                      {isSelected && (
-                        <div className="absolute top-0 bottom-0 left-0 w-1 bg-blue-500" />
-                      )}
                       <div className="mt-0.5 shrink-0">
                         <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-colors ${isSelected ? "border-blue-500 text-blue-500" : "border-slate-700"}`}>
                           {isSelected && <span className="w-2 h-2 rounded-full bg-blue-500" />}
                         </div>
                       </div>
                       <div>
-                        <h5 className="font-extrabold text-xs text-slate-200">{role.title}</h5>
+                        <h5 className="font-medium text-xs text-slate-200">{role.title}</h5>
                         <span className="text-[10px] text-slate-500 block leading-normal mt-1">{role.desc}</span>
                       </div>
                     </button>
@@ -404,7 +398,7 @@ export default function ConfigModulosDemos() {
                 })}
               </div>
 
-              <div className="p-3 bg-blue-500/5 rounded-xl border border-blue-500/10 text-[10px] text-blue-400/90 leading-relaxed">
+              <div className="p-3 bg-white/5 rounded-xl border border-white/10 text-[10px] text-slate-400 leading-relaxed">
                 <strong>Regra de Infraestrutura:</strong> Quando logado como Master, o menu lateral libera painéis de servidores globais no SaaS. Alternando sua empresa por demo acima, o banco de dados reseta instantaneamente.
               </div>
             </Card>

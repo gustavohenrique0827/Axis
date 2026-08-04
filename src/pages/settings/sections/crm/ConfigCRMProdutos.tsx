@@ -17,21 +17,21 @@ export function ConfigCRMProdutos() {
         </div>
       </div>
 
-      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
-        <h3 className="font-bold text-lg mb-2">Acesso ao Catálogo</h3>
+      <Card className="p-6">
+        <h3 className="font-medium text-lg mb-2">Acesso ao Catálogo</h3>
         <p className="text-slate-400 mb-4 text-sm">O catálogo principal foi movido para o menu lateral. Acesse "Produtos" na barra de navegação esquerda.</p>
         <Button onClick={() => window.location.href = '/app/produtos'} className="bg-[var(--color-surface)] border border-white/10 text-white hover:bg-white/5">
           Ir para Produtos <ExternalLink className="w-4 h-4 ml-2" />
         </Button>
       </Card>
 
-      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
+      <Card className="p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h3 className="font-bold text-lg">Campos Personalizados</h3>
+            <h3 className="font-medium text-lg">Campos Personalizados</h3>
             <p className="text-sm text-slate-400">Adicione mais detalhes aos produtos (SKU, dimensões, atributos específicos).</p>
           </div>
-          <Button onClick={() => setIsModalOpen(true)} className="bg-white/10 hover:bg-white/20 text-white font-bold h-9 bg-transparent border border-white/10 shadow-none">
+          <Button onClick={() => setIsModalOpen(true)} variant="outline" className="border-white/10 h-9">
             <Plus className="w-4 h-4 mr-2" /> Novo Campo
           </Button>
         </div>
@@ -40,7 +40,7 @@ export function ConfigCRMProdutos() {
           {customFields.map((field) => (
             <div key={field.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-[var(--color-surface)] border border-white/5 rounded-xl group hover:border-white/10 transition-colors">
               <div className="flex flex-col">
-                <span className="font-bold text-white">{field.name}</span>
+                <span className="font-medium text-white">{field.name}</span>
                 <span className="text-xs text-slate-500 font-mono mt-0.5">Tipo: {field.type}</span>
               </div>
               <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">Editar Campo</Button>
