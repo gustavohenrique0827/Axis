@@ -106,36 +106,36 @@ export default function PartnersOverview() {
               <h3 className="text-3xl font-extrabold text-white">{loading ? "…" : metrics?.total_tenants ?? 0}</h3>
             </Card>
 
-            <Card className="p-5 border-emerald-500/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
+            <Card className="p-5 border-[#06B6D4]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Users className="w-12 h-12 text-emerald-400" />
+                <Users className="w-12 h-12 text-[#06B6D4]" />
               </div>
               <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">Leads Gerados</span>
-              <h3 className="text-3xl font-extrabold text-emerald-400">{loading ? "…" : metrics?.total_leads ?? 0}</h3>
+              <h3 className="text-3xl font-extrabold text-white">{loading ? "…" : metrics?.total_leads ?? 0}</h3>
             </Card>
 
-            <Card className="p-5 border-blue-500/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
+            <Card className="p-5 border-[#06B6D4]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Building2 className="w-12 h-12 text-blue-400" />
+                <Building2 className="w-12 h-12 text-[#06B6D4]" />
               </div>
               <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">Clientes Cadastrados</span>
-              <h3 className="text-3xl font-extrabold text-blue-400">{loading ? "…" : metrics?.total_clientes ?? 0}</h3>
+              <h3 className="text-3xl font-extrabold text-white">{loading ? "…" : metrics?.total_clientes ?? 0}</h3>
             </Card>
 
-            <Card className="p-5 border-purple-500/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
+            <Card className="p-5 border-[#06B6D4]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                <FileText className="w-12 h-12 text-purple-400" />
+                <FileText className="w-12 h-12 text-[#06B6D4]" />
               </div>
               <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">Propostas Emitidas</span>
-              <h3 className="text-3xl font-extrabold text-purple-400">{loading ? "…" : metrics?.total_propostas ?? 0}</h3>
+              <h3 className="text-3xl font-extrabold text-white">{loading ? "…" : metrics?.total_propostas ?? 0}</h3>
             </Card>
 
-            <Card className="p-5 border-[#2563EB]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
+            <Card className="p-5 border-[#06B6D4]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
-                <DollarSign className="w-12 h-12 text-[#2563EB]" />
+                <DollarSign className="w-12 h-12 text-[#06B6D4]" />
               </div>
               <span className="text-slate-400 text-[10px] font-bold uppercase tracking-widest block mb-2">Receita Total (a receber)</span>
-              <h3 className="text-3xl font-extrabold text-[#2563EB]">{loading ? "…" : currency(metrics?.total_receita ?? 0)}</h3>
+              <h3 className="text-3xl font-extrabold text-white">{loading ? "…" : currency(metrics?.total_receita ?? 0)}</h3>
             </Card>
           </div>
         </div>
