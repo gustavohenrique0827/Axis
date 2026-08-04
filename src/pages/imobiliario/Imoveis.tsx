@@ -6,6 +6,7 @@ import {
   Copy, X, Home, DollarSign, Grid3x3, List, TrendingUp, Package,
   ChevronRight, User, ExternalLink, SquarePen,
 } from "lucide-react";
+import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 
@@ -416,20 +417,16 @@ export default function Imoveis() {
       {/* Stats bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          { icon: Package, label: "Disponíveis", value: disponiveis.toString(), color: "text-[#06B6D4] bg-[#06B6D4]/10" },
-          { icon: TrendingUp, label: "Vendidos", value: vendidos.toString(), color: "text-[#06B6D4] bg-[#06B6D4]/10" },
-          { icon: DollarSign, label: "VGV Portfólio", value: `R$ ${(vgvTotal / 1e6).toFixed(1)}M`, color: "text-[#06B6D4] bg-[#06B6D4]/10" },
-          { icon: Eye, label: "Total Visitas", value: totalVisitas.toString(), color: "text-[#06B6D4] bg-[#06B6D4]/10" },
+          { icon: Package, label: "Disponíveis", value: disponiveis.toString(), color: "text-indigo-500" },
+          { icon: TrendingUp, label: "Vendidos", value: vendidos.toString(), color: "text-emerald-500" },
+          { icon: DollarSign, label: "VGV Portfólio", value: `R$ ${(vgvTotal / 1e6).toFixed(1)}M`, color: "text-amber-500" },
+          { icon: Eye, label: "Total Visitas", value: totalVisitas.toString(), color: "text-blue-500" },
         ].map((s, i) => (
-          <div key={i} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl p-4 flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.color}`}>
-              <s.icon className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{s.label}</p>
-              <p className="text-lg font-black text-white">{s.value}</p>
-            </div>
-          </div>
+          <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+            <s.icon className={`w-5 h-5 ${s.color} mb-4`} />
+            <div className="text-2xl font-display font-black text-white mb-1 italic">{s.value}</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{s.label}</div>
+          </Card>
         ))}
       </div>
 

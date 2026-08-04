@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
+import { Card } from "../../components/ui/card";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area, CartesianGrid,
@@ -39,11 +40,9 @@ function KPICard({ icon: Icon, label, value, sub, color, trend, trendVal }: {
   trend?: "up" | "down"; trendVal?: string;
 }) {
   return (
-    <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5 hover:border-white/10 transition-all">
-      <div className="flex items-start justify-between mb-3">
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color}`}>
-          <Icon className="w-5 h-5" />
-        </div>
+    <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+      <div className="flex items-start justify-between mb-4">
+        <Icon className={`w-5 h-5 ${color}`} />
         {trendVal && (
           <div className={`flex items-center gap-1 text-[10px] font-black px-2 py-1 rounded-lg ${trend === "up" ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"}`}>
             <ArrowUpRight className="w-3 h-3" />
@@ -51,10 +50,10 @@ function KPICard({ icon: Icon, label, value, sub, color, trend, trendVal }: {
           </div>
         )}
       </div>
-      <p className="text-2xl font-black text-white">{value}</p>
-      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">{label}</p>
+      <div className="text-2xl font-display font-black text-white mb-1 italic">{value}</div>
+      <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</div>
       {sub && <p className="text-[10px] text-slate-600 mt-0.5">{sub}</p>}
-    </div>
+    </Card>
   );
 }
 
@@ -189,12 +188,12 @@ export default function ImobiliarioPainel() {
 
         {/* KPIs */}
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
-          <KPICard icon={Building2} label="Disponíveis" value={String(disponiveis)} sub="no portfólio ativo" color="bg-[#06B6D4]/10 text-[#06B6D4]" />
-          <KPICard icon={TrendingUp} label="Vendidos Mês" value={String(vendidosMes)} sub="negócios fechados" color="bg-[#06B6D4]/10 text-[#06B6D4]" />
-          <KPICard icon={DollarSign} label="VGV Mês" value={fmtVgv(vgvMes)} sub="volume geral de vendas" color="bg-[#06B6D4]/10 text-[#06B6D4]" />
-          <KPICard icon={Columns3} label="Leads Ativos" value={String(leadsAtivos)} sub="no funil de vendas" color="bg-[#06B6D4]/10 text-[#06B6D4]" />
-          <KPICard icon={Eye} label="Próximas Visitas" value={String(visitas.length)} sub="agendadas" color="bg-[#06B6D4]/10 text-[#06B6D4]" />
-          <KPICard icon={Target} label="Conversão" value={`${conversao}%`} sub="leads → fechamento" color="bg-[#06B6D4]/10 text-[#06B6D4]" />
+          <KPICard icon={Building2} label="Disponíveis" value={String(disponiveis)} sub="no portfólio ativo" color="text-indigo-500" />
+          <KPICard icon={TrendingUp} label="Vendidos Mês" value={String(vendidosMes)} sub="negócios fechados" color="text-emerald-500" />
+          <KPICard icon={DollarSign} label="VGV Mês" value={fmtVgv(vgvMes)} sub="volume geral de vendas" color="text-blue-500" />
+          <KPICard icon={Columns3} label="Leads Ativos" value={String(leadsAtivos)} sub="no funil de vendas" color="text-cyan-500" />
+          <KPICard icon={Eye} label="Próximas Visitas" value={String(visitas.length)} sub="agendadas" color="text-amber-500" />
+          <KPICard icon={Target} label="Conversão" value={`${conversao}%`} sub="leads → fechamento" color="text-purple-500" />
         </div>
 
         {/* Charts Row 1 */}

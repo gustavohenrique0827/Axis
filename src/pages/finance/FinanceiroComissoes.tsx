@@ -158,36 +158,28 @@ export default function FinanceiroComissoes() {
       value: String(totals.count),
       sub: `${activeTab}s ativos`,
       icon: Users,
-      color: 'text-[#06B6D4]',
-      bg: 'bg-[#06B6D4]/10',
-      border: 'border-[#06B6D4]/20',
+      color: 'text-indigo-500',
     },
     {
       label: 'Total Fixo',
       value: fmt(totals.fixo),
       sub: 'salário base',
       icon: DollarSign,
-      color: 'text-[#06B6D4]',
-      bg: 'bg-[#06B6D4]/10',
-      border: 'border-[#06B6D4]/20',
+      color: 'text-emerald-500',
     },
     {
       label: 'Total Variável',
       value: fmt(totals.variavel),
       sub: 'comissão apurada',
       icon: TrendingUp,
-      color: 'text-[#06B6D4]',
-      bg: 'bg-[#06B6D4]/10',
-      border: 'border-[#06B6D4]/20',
+      color: 'text-blue-500',
     },
     {
       label: 'Total OTE',
       value: fmt(totals.ote),
       sub: `média ${totals.avgAting.toFixed(1)}% atingimento`,
       icon: Zap,
-      color: 'text-[#06B6D4]',
-      bg: 'bg-[#06B6D4]/10',
-      border: 'border-[#06B6D4]/20',
+      color: 'text-amber-500',
     },
   ];
 
@@ -254,14 +246,10 @@ export default function FinanceiroComissoes() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07 }}
           >
-            <Card className="p-5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border-white/5 relative overflow-hidden group">
-              <div className="flex items-start justify-between mb-3">
-                <div className={`p-2 rounded-xl ${kpi.bg} border ${kpi.border}`}>
-                  <kpi.icon className={`w-4 h-4 ${kpi.color}`} />
-                </div>
-              </div>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.18em] mb-1">{kpi.label}</p>
-              <h3 className="text-xl font-black text-white italic tracking-tighter leading-none">{kpi.value}</h3>
+            <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+              <kpi.icon className={`w-5 h-5 ${kpi.color} mb-4`} />
+              <div className="text-2xl font-display font-black text-white mb-1 italic">{kpi.value}</div>
+              <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{kpi.label}</div>
               <p className="text-[10px] text-slate-600 mt-1 font-medium">{kpi.sub}</p>
             </Card>
           </motion.div>

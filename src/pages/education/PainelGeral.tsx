@@ -36,24 +36,22 @@ export default function PainelGeralEducation() {
         {/* KPI Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Matrículas Ativas", value: "—", trend: "", icon: Users, color: "text-[#06B6D4]" },
-             { label: "Taxa de Conclusão", value: "—", trend: "", icon: CheckCircle2, color: "text-[#06B6D4]" },
-             { label: "Conteúdos Vistos", value: "—", trend: "", icon: BookOpen, color: "text-[#06B6D4]" },
-             { label: "NPS Acadêmico", value: "—", trend: "", icon: Star, color: "text-[#06B6D4]" },
+             { label: "Matrículas Ativas", value: "—", trend: "", icon: Users, color: "text-indigo-500" },
+             { label: "Taxa de Conclusão", value: "—", trend: "", icon: CheckCircle2, color: "text-emerald-500" },
+             { label: "Conteúdos Vistos", value: "—", trend: "", icon: BookOpen, color: "text-blue-500" },
+             { label: "NPS Acadêmico", value: "—", trend: "", icon: Star, color: "text-amber-500" },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 group opacity-50">
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all opacity-50">
                 <div className="flex items-center justify-between mb-4">
-                   <div className="p-3 rounded-2xl bg-white/5 group-hover:scale-110 transition-transform">
-                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                   </div>
+                   <stat.icon className={`w-5 h-5 ${stat.color}`} />
                    {stat.trend && (
                      <div className="flex items-center gap-1 text-[10px] font-black text-emerald-400">
                         <ArrowUpRight className="w-3 h-3" /> {stat.trend}
                      </div>
                    )}
                 </div>
-                <h3 className="text-2xl font-black text-white font-mono tracking-tighter">{stat.value}</h3>
-                <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest mt-2">{stat.label}</p>
+                <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
+                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
              </Card>
            ))}
         </div>

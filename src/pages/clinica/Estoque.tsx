@@ -32,21 +32,15 @@ export default function EstoqueClinico() {
         {/* Inventory Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Itens Cadastrados", value: "482", icon: Box, color: "text-[#06B6D4]" },
-             { label: "Alertas de Reposição", value: "12", icon: ShieldAlert, color: "text-[#06B6D4]" },
-             { label: "Valor em Estoque", value: "R$ 42.150", icon: BarChart3, color: "text-[#06B6D4]" },
-             { label: "Pedidos Pendentes", value: "05", icon: Truck, color: "text-[#06B6D4]" },
+             { label: "Itens Cadastrados", value: "482", icon: Box, color: "text-indigo-500" },
+             { label: "Alertas de Reposição", value: "12", icon: ShieldAlert, color: "text-amber-500" },
+             { label: "Valor em Estoque", value: "R$ 42.150", icon: BarChart3, color: "text-emerald-500" },
+             { label: "Pedidos Pendentes", value: "05", icon: Truck, color: "text-blue-500" },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 relative group">
-                <div className="flex items-center gap-4 mb-3">
-                   <div className="p-3 rounded-2xl bg-white/5">
-                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                   </div>
-                   <div>
-                      <h3 className="text-2xl font-black text-white font-mono">{stat.value}</h3>
-                      <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest">{stat.label}</p>
-                   </div>
-                </div>
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+                <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
+                <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
+                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
              </Card>
            ))}
         </div>

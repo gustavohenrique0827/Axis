@@ -109,19 +109,15 @@ export default function Pacientes() {
         {/* Top Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: 'Total de Pacientes', value: totalPatients.toString(), icon: Users, color: 'text-[#06B6D4]', bg: 'bg-[#06B6D4]/10' },
-             { label: 'Novos neste Mês', value: `+${newThisMonth}`, icon: UserPlus, color: 'text-[#06B6D4]', bg: 'bg-[#06B6D4]/10' },
-             { label: 'Taxa de Retenção', value: `${retention}%`, icon: ShieldCheck, color: 'text-[#06B6D4]', bg: 'bg-[#06B6D4]/10' },
-             { label: 'Consultas Hoje', value: consultsToday.toString(), icon: Clock, color: 'text-[#06B6D4]', bg: 'bg-[#06B6D4]/10' },
+             { label: 'Total de Pacientes', value: totalPatients.toString(), icon: Users, color: 'text-indigo-500' },
+             { label: 'Novos neste Mês', value: `+${newThisMonth}`, icon: UserPlus, color: 'text-emerald-500' },
+             { label: 'Taxa de Retenção', value: `${retention}%`, icon: ShieldCheck, color: 'text-blue-500' },
+             { label: 'Consultas Hoje', value: consultsToday.toString(), icon: Clock, color: 'text-amber-500' },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-[#06B6D4]/20 flex items-center gap-6">
-                <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
-                   <stat.icon className="w-5 h-5" />
-                </div>
-                <div>
-                   <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</p>
-                   <h3 className="text-2xl font-black text-white font-mono tracking-tighter">{stat.value}</h3>
-                </div>
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+                <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
+                <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
+                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
              </Card>
            ))}
         </div>

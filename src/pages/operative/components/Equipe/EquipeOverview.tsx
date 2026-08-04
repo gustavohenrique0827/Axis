@@ -1,6 +1,6 @@
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
-import { Plus, LayoutDashboard, TrendingUp, BarChart3 } from "lucide-react";
+import { Plus, LayoutDashboard, TrendingUp, BarChart3, Users, Layers, ShieldCheck } from "lucide-react";
 import { motion } from "motion/react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { TeamMember, Squad } from "../../hooks/useEquipe";
@@ -17,10 +17,10 @@ interface EquipeOverviewProps {
 
 export function EquipeOverview({ team, squads, logs, onAdmitir, onGoLogs }: EquipeOverviewProps) {
   const stats = [
-    { label: "Membros Ativos", val: team.length, color: "text-blue-500" },
-    { label: "Squads Operantes", val: squads.length, color: "text-cyan-500" },
-    { label: "Líderes Alocados", val: squads.filter(s => s.leader).length, color: "text-emerald-500" },
-    { label: "Taxa de Eficiência", val: "0%", color: "text-amber-500" },
+    { label: "Membros Ativos", val: team.length, color: "text-blue-500", icon: Users },
+    { label: "Squads Operantes", val: squads.length, color: "text-cyan-500", icon: Layers },
+    { label: "Líderes Alocados", val: squads.filter(s => s.leader).length, color: "text-emerald-500", icon: ShieldCheck },
+    { label: "Taxa de Eficiência", val: "0%", color: "text-amber-500", icon: TrendingUp },
   ];
 
   return (
@@ -47,10 +47,10 @@ export function EquipeOverview({ team, squads, logs, onAdmitir, onGoLogs }: Equi
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {stats.map((stat, i) => (
-          <Card key={i} className="p-6 bg-white/[0.02] border-white/5 backdrop-blur-3xl hover:bg-white/[0.04] transition-all group overflow-hidden relative">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-blue-600/5 blur-3xl -mr-12 -mt-12 group-hover:bg-blue-600/10 transition-colors" />
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">{stat.label}</span>
-            <div className={`text-3xl font-black mt-2 ${stat.color} tracking-tighter`}>{stat.val}</div>
+          <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+            <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
+            <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.val}</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
           </Card>
         ))}
       </div>

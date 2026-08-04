@@ -139,12 +139,10 @@ export function MetasOverview({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Total revenue meta */}
-        <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
+        <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2.5 rounded-xl bg-[#06B6D4]/10 border border-[#06B6D4]/15 text-[#06B6D4]">
-              <Target className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-black font-mono text-[#06B6D4] bg-[#06B6D4]/5 px-2 py-0.5 rounded border border-[#06B6D4]/10 uppercase tracking-widest">
+            <Target className="w-5 h-5 text-indigo-500" />
+            <span className="text-[10px] font-black font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase tracking-widest">
               Geral {period === "monthly" ? "Mês" : period === "quarterly" ? "Trimestre" : "Ano"}
             </span>
           </div>
@@ -175,12 +173,10 @@ export function MetasOverview({
         </Card>
 
         {/* Provisioned commission and OTE payout based on calculations */}
-        <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
+        <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2.5 rounded-xl bg-[#06B6D4]/10 border border-[#06B6D4]/15 text-[#06B6D4]">
-              <DollarSign className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-black font-mono text-[#06B6D4] bg-[#06B6D4]/5 px-2 py-0.5 rounded border border-[#06B6D4]/10 uppercase tracking-widest">
+            <DollarSign className="w-5 h-5 text-emerald-500" />
+            <span className="text-[10px] font-black font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase tracking-widest">
               Provisionado
             </span>
           </div>
@@ -295,12 +291,10 @@ export function MetasOverview({
         </Card>
 
         {/* Active alert indicator status card */}
-        <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
+        <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2.5 rounded-xl bg-[#06B6D4]/10 border border-[#06B6D4]/15 text-[#06B6D4]">
-              <Award className="w-5 h-5" />
-            </div>
-            <span className="text-[10px] font-black font-mono text-[#06B6D4] bg-[#06B6D4]/5 px-2 py-0.5 rounded border border-[#06B6D4]/10 uppercase tracking-widest">
+            <Award className="w-5 h-5 text-blue-500" />
+            <span className="text-[10px] font-black font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase tracking-widest">
               Consistência
             </span>
           </div>

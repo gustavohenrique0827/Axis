@@ -12,45 +12,37 @@ export default function MarketingSocial() {
       subtitle="Acompanhe o engajamento e as estatísticas das suas redes sociais."
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-         <Card className="p-6 bg-[var(--color-surface-elevated)] border-[#06B6D4]/20 relative overflow-hidden">
+         <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
             <div className="flex justify-between items-center mb-4">
-              <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center">
-                 <Instagram className="w-5 h-5 text-[#06B6D4]" />
-              </div>
+              <Instagram className="w-5 h-5 text-rose-500" />
               <span className="text-xs font-bold text-emerald-400">0%</span>
             </div>
-            <p className="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1">Seguidores</p>
-            <h3 className="text-2xl font-black text-white">0</h3>
+            <div className="text-2xl font-display font-black text-white mb-1 italic">0</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Seguidores</div>
          </Card>
-         <Card className="p-6 bg-[var(--color-surface-elevated)] border-[#06B6D4]/20 relative overflow-hidden">
+         <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
             <div className="flex justify-between items-center mb-4">
-              <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center">
-                 <Linkedin className="w-5 h-5 text-[#06B6D4]" />
-              </div>
+              <Linkedin className="w-5 h-5 text-blue-500" />
               <span className="text-xs font-bold text-emerald-400">0%</span>
             </div>
-            <p className="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1">Conexões</p>
-            <h3 className="text-2xl font-black text-white">0</h3>
+            <div className="text-2xl font-display font-black text-white mb-1 italic">0</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Conexões</div>
          </Card>
-         <Card className="p-6 bg-[var(--color-surface-elevated)] border-[#06B6D4]/20 relative overflow-hidden">
+         <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
             <div className="flex justify-between items-center mb-4">
-              <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center">
-                 <Twitter className="w-5 h-5 text-[#06B6D4]" />
-              </div>
+              <Twitter className="w-5 h-5 text-cyan-500" />
               <span className="text-xs font-bold text-rose-400">0%</span>
             </div>
-            <p className="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1">Seguidores</p>
-            <h3 className="text-2xl font-black text-white">0</h3>
+            <div className="text-2xl font-display font-black text-white mb-1 italic">0</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Seguidores</div>
          </Card>
-         <Card className="p-6 bg-[var(--color-surface-elevated)] border-[#06B6D4]/20 relative overflow-hidden">
+         <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
             <div className="flex justify-between items-center mb-4">
-              <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center">
-                 <Facebook className="w-5 h-5 text-[#06B6D4]" />
-              </div>
+              <Facebook className="w-5 h-5 text-indigo-500" />
               <span className="text-xs font-bold text-emerald-400">0%</span>
             </div>
-            <p className="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1">Curtidas na Página</p>
-            <h3 className="text-2xl font-black text-white">0</h3>
+            <div className="text-2xl font-display font-black text-white mb-1 italic">0</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Curtidas na Página</div>
          </Card>
       </div>
 

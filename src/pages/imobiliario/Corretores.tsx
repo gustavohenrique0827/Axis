@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
+import { Card } from "../../components/ui/card";
 import {
   Plus, Search, Star, Building2, TrendingUp, Copy, ExternalLink, X,
   Phone, Mail, Edit2, Trash2, Link, Target, Award, Users, ChevronRight,
@@ -387,20 +388,16 @@ export default function Corretores() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          { icon: Users, label: "Ativos", value: totalAtivos.toString(), color: "text-[#06B6D4] bg-[#06B6D4]/10" },
-          { icon: TrendingUp, label: "Vendas Mês", value: totalVendas.toString(), color: "text-[#06B6D4] bg-[#06B6D4]/10" },
-          { icon: Target, label: "VGV Mês", value: `R$ ${totalVGV.toFixed(1)}M`, color: "text-[#06B6D4] bg-[#06B6D4]/10" },
-          { icon: Star, label: "Média Avaliação", value: mediaAvaliacao, color: "text-[#06B6D4] bg-[#06B6D4]/10" },
+          { icon: Users, label: "Ativos", value: totalAtivos.toString(), color: "text-indigo-500" },
+          { icon: TrendingUp, label: "Vendas Mês", value: totalVendas.toString(), color: "text-emerald-500" },
+          { icon: Target, label: "VGV Mês", value: `R$ ${totalVGV.toFixed(1)}M`, color: "text-blue-500" },
+          { icon: Star, label: "Média Avaliação", value: mediaAvaliacao, color: "text-amber-500" },
         ].map((s, i) => (
-          <div key={i} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl p-4 flex items-center gap-3">
-            <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.color}`}>
-              <s.icon className="w-4 h-4" />
-            </div>
-            <div>
-              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{s.label}</p>
-              <p className="text-lg font-black text-white">{s.value}</p>
-            </div>
-          </div>
+          <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+            <s.icon className={`w-5 h-5 ${s.color} mb-4`} />
+            <div className="text-2xl font-display font-black text-white mb-1 italic">{s.value}</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{s.label}</div>
+          </Card>
         ))}
       </div>
 

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { Users2, Users, UserPlus, Trophy, Shield, Zap } from "lucide-react";
 import { Button } from "../../../components/ui/button";
+import { Card } from "../../../components/ui/card";
 import { TeamMember, Squad } from "../hooks/useEquipe";
 
 const SQUAD_THEMES = [
@@ -219,25 +220,22 @@ export function SquadsTab({ squads, team, moveMember }: SquadsTabProps) {
       {squads.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { icon: Users2, label: "Total Squads", value: squads.length, color: "text-blue-400", bg: "bg-blue-500/10" },
-            { icon: Users, label: "Total Membros", value: team.length, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-            { icon: Shield, label: "Líderes Ativos", value: squads.filter(s => s.leader).length, color: "text-violet-400", bg: "bg-violet-500/10" },
-            { icon: Zap, label: "Média / Squad", value: squads.length > 0 ? (team.length / squads.length).toFixed(1) : "0", color: "text-amber-400", bg: "bg-amber-500/10" },
+            { icon: Users2, label: "Total Squads", value: squads.length, color: "text-indigo-500" },
+            { icon: Users, label: "Total Membros", value: team.length, color: "text-emerald-500" },
+            { icon: Shield, label: "Líderes Ativos", value: squads.filter(s => s.leader).length, color: "text-blue-500" },
+            { icon: Zap, label: "Média / Squad", value: squads.length > 0 ? (team.length / squads.length).toFixed(1) : "0", color: "text-amber-500" },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}
-              className="p-5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl"
             >
-              <div className="flex items-center gap-3 mb-3">
-                <div className={`p-2 rounded-xl ${stat.bg}`}>
-                  <stat.icon className={`w-4 h-4 ${stat.color}`} />
-                </div>
-                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</span>
-              </div>
-              <span className={`text-2xl font-black ${stat.color} tracking-tighter`}>{stat.value}</span>
+              <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+                <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
+                <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
+                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
+              </Card>
             </motion.div>
           ))}
         </div>

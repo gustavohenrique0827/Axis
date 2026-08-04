@@ -92,16 +92,14 @@ export default function FaturamentoClinico() {
         {/* Financial KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Faturamento Bruto", value: fmt(totalBilled), trend: "+12%", icon: Landmark, color: "text-[#06B6D4]" },
-             { label: "Receita Líquida", value: fmt(totalReceived), trend: "+8.5%", icon: Wallet, color: "text-[#06B6D4]" },
-             { label: "Taxa de Glosa (Atrasos)", value: glosaRate, trend: "-0.5%", icon: AlertCircle, color: "text-[#06B6D4]" },
-             { label: "Ticket Médio Estimado", value: fmt(avgTicket), trend: "+3%", icon: CreditCard, color: "text-[#06B6D4]" },
+             { label: "Faturamento Bruto", value: fmt(totalBilled), trend: "+12%", icon: Landmark, color: "text-indigo-500" },
+             { label: "Receita Líquida", value: fmt(totalReceived), trend: "+8.5%", icon: Wallet, color: "text-emerald-500" },
+             { label: "Taxa de Glosa (Atrasos)", value: glosaRate, trend: "-0.5%", icon: AlertCircle, color: "text-rose-500" },
+             { label: "Ticket Médio Estimado", value: fmt(avgTicket), trend: "+3%", icon: CreditCard, color: "text-blue-500" },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 relative group">
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
                 <div className="flex items-center justify-between mb-4">
-                   <div className="p-3 rounded-2xl bg-white/5">
-                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                   </div>
+                   <stat.icon className={`w-5 h-5 ${stat.color}`} />
                    {receivables.length > 0 && (
                      <div className="flex items-center gap-1">
                         {stat.trend.startsWith('+') ? <ArrowUpRight className="w-3 h-3 text-emerald-400" /> : <ArrowDownRight className="w-3 h-3 text-rose-400" />}
@@ -109,8 +107,8 @@ export default function FaturamentoClinico() {
                      </div>
                    )}
                 </div>
-                <h3 className="text-2xl font-black text-white font-mono italic">{stat.value}</h3>
-                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest mt-2">{stat.label}</p>
+                <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
+                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
              </Card>
            ))}
         </div>

@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { Building2, Phone, Mail, Star, MapPin, Bed, Bath, Car, Home, MessageCircle, ChevronLeft, ExternalLink } from "lucide-react";
+import { Card } from "../../components/ui/card";
 
 // Mock data — no futuro substituir por fetch ao Supabase via slug
 const CORRETORES_DB: Record<string, {
@@ -151,18 +152,21 @@ export default function PortfolioCorretor() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 pb-16">
         {/* Stats rápidas */}
         <div className="grid grid-cols-3 gap-4 mb-10">
-          <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black text-white">{corretor.imoveis.length}</p>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Imóveis no Portfólio</p>
-          </div>
-          <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black text-white">{disponíveis.length}</p>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Disponíveis Agora</p>
-          </div>
-          <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black text-white">{corretor.avaliacao}</p>
-            <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Avaliação Média</p>
-          </div>
+          <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+            <Building2 className="w-5 h-5 text-indigo-500 mb-4" />
+            <div className="text-2xl font-display font-black text-white mb-1 italic">{corretor.imoveis.length}</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Imóveis no Portfólio</div>
+          </Card>
+          <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+            <Home className="w-5 h-5 text-emerald-500 mb-4" />
+            <div className="text-2xl font-display font-black text-white mb-1 italic">{disponíveis.length}</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Disponíveis Agora</div>
+          </Card>
+          <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+            <Star className="w-5 h-5 text-amber-500 mb-4" />
+            <div className="text-2xl font-display font-black text-white mb-1 italic">{corretor.avaliacao}</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Avaliação Média</div>
+          </Card>
         </div>
 
         {/* Imóveis disponíveis */}

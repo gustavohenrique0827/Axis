@@ -66,17 +66,15 @@ export default function Issues() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Abertos", value: open, icon: Circle },
-            { label: "Em Andamento", value: inProgress, icon: AlertCircle },
-            { label: "Críticos", value: critical, icon: Flame },
-            { label: "Fechados", value: closed, icon: CheckCircle2 },
+            { label: "Abertos", value: open, icon: Circle, color: "text-blue-500" },
+            { label: "Em Andamento", value: inProgress, icon: AlertCircle, color: "text-amber-500" },
+            { label: "Críticos", value: critical, icon: Flame, color: "text-rose-500" },
+            { label: "Fechados", value: closed, icon: CheckCircle2, color: "text-emerald-500" },
           ].map((s, i) => (
-            <Card key={i} className="p-4">
-              <div className="flex items-center gap-2 text-slate-400 mb-2">
-                <s.icon className="w-4 h-4" />
-                <span className="text-xs">{s.label}</span>
-              </div>
-              <p className="text-2xl font-semibold text-white">{s.value}</p>
+            <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+              <s.icon className={`w-5 h-5 ${s.color} mb-4`} />
+              <div className="text-2xl font-display font-black text-white mb-1 italic">{s.value}</div>
+              <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{s.label}</div>
             </Card>
           ))}
         </div>

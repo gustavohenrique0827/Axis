@@ -97,19 +97,15 @@ export default function Repositorios() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Repositórios", value: repos.length, icon: Code2, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-            { label: "Ativos", value: activeRepos, icon: CheckCircle2, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-            { label: "Stars Total", value: totalStars, icon: Star, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-            { label: "PRs em Aberto", value: totalPRs, icon: GitBranch, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+            { label: "Repositórios", value: repos.length, icon: Code2, color: "text-indigo-500" },
+            { label: "Ativos", value: activeRepos, icon: CheckCircle2, color: "text-emerald-500" },
+            { label: "Stars Total", value: totalStars, icon: Star, color: "text-amber-500" },
+            { label: "PRs em Aberto", value: totalPRs, icon: GitBranch, color: "text-blue-500" },
           ].map((s, i) => (
-            <Card key={i} className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/5 flex items-center gap-4">
-              <div className={`p-2.5 rounded-xl ${s.bg}`}>
-                <s.icon className={`w-4 h-4 ${s.color}`} />
-              </div>
-              <div>
-                <p className="text-xl font-black text-white">{s.value}</p>
-                <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest mt-0.5">{s.label}</p>
-              </div>
+            <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+              <s.icon className={`w-5 h-5 ${s.color} mb-4`} />
+              <div className="text-2xl font-display font-black text-white mb-1 italic">{s.value}</div>
+              <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{s.label}</div>
             </Card>
           ))}
         </div>

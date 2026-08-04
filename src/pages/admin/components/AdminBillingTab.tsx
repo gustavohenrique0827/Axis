@@ -1,5 +1,5 @@
 import { Card } from "../../../components/ui/card";
-import { DollarSign } from "lucide-react";
+import { DollarSign, TrendingDown, Wallet } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip as RechartsTooltip, ResponsiveContainer,
@@ -12,18 +12,19 @@ interface AdminBillingTabProps {
 
 export function AdminBillingTab({ revenueData, CustomTooltip }: AdminBillingTabProps) {
   const metricItems = [
-    { label: "ARPU (Ticket Médio)", value: "R$ 0,00" },
-    { label: "Churn Rate", value: "0%" },
-    { label: "LTV Estimado", value: "R$ 0,00" },
+    { label: "ARPU (Ticket Médio)", value: "R$ 0,00", icon: DollarSign, color: "text-emerald-500" },
+    { label: "Churn Rate", value: "0%", icon: TrendingDown, color: "text-rose-500" },
+    { label: "LTV Estimado", value: "R$ 0,00", icon: Wallet, color: "text-indigo-500" },
   ];
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {metricItems.map(({ label, value }) => (
-          <Card key={label} className="p-4">
-            <p className="text-xs text-slate-400 mb-2">{label}</p>
-            <h3 className="text-2xl font-semibold text-white">{value}</h3>
+        {metricItems.map(({ label, value, icon: Icon, color }) => (
+          <Card key={label} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+            <Icon className={`w-5 h-5 ${color} mb-4`} />
+            <div className="text-2xl font-display font-black text-white mb-1 italic">{value}</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</div>
           </Card>
         ))}
       </div>

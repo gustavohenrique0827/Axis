@@ -16,27 +16,26 @@ interface AdminOverviewTabProps {
 
 export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: AdminOverviewTabProps) {
   const metricItems = [
-    { label: "Total de Empresas", value: "0", icon: Building2 },
+    { label: "Total de Empresas", value: "0", icon: Building2, color: "text-indigo-500" },
     {
       label: "MRR Global (SaaS)",
       value: new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(globalMrr),
       icon: DollarSign,
+      color: "text-emerald-500",
     },
-    { label: "Usuários Ativos (MAU)", value: "0", icon: Users },
-    { label: "Storage System", value: "0 GB", icon: HardDrive },
+    { label: "Usuários Ativos (MAU)", value: "0", icon: Users, color: "text-blue-500" },
+    { label: "Storage System", value: "0 GB", icon: HardDrive, color: "text-amber-500" },
   ];
 
   return (
     <div className="space-y-6">
       {/* Global SaaS Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {metricItems.map(({ label, value, icon: Icon }) => (
-          <Card key={label} className="p-4">
-            <div className="flex items-center gap-2 text-slate-400 mb-2">
-              <Icon className="w-4 h-4" />
-              <span className="text-xs">{label}</span>
-            </div>
-            <p className="text-2xl font-semibold text-white">{value}</p>
+        {metricItems.map(({ label, value, icon: Icon, color }) => (
+          <Card key={label} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+            <Icon className={`w-5 h-5 ${color} mb-4`} />
+            <div className="text-2xl font-display font-black text-white mb-1 italic">{value}</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</div>
           </Card>
         ))}
       </div>

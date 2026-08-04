@@ -149,20 +149,15 @@ export default function MarketingCampanhas() {
       {/* Real KPI cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
-          { label: "Total Investido", value: fmt(totalSpent), icon: DollarSign, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10", border: "border-[#06B6D4]/20" },
-          { label: "Receita Gerada", value: fmt(totalRevenue), icon: ArrowUpRight, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10", border: "border-[#06B6D4]/20" },
-          { label: "CPA Médio", value: cpa > 0 ? fmt(cpa) : '—', icon: Target, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10", border: "border-[#06B6D4]/20" },
-          { label: "Leads Gerados", value: totalLeads.toString(), icon: Users, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10", border: "border-[#06B6D4]/20" },
+          { label: "Total Investido", value: fmt(totalSpent), icon: DollarSign, color: "text-rose-500" },
+          { label: "Receita Gerada", value: fmt(totalRevenue), icon: ArrowUpRight, color: "text-emerald-500" },
+          { label: "CPA Médio", value: cpa > 0 ? fmt(cpa) : '—', icon: Target, color: "text-amber-500" },
+          { label: "Leads Gerados", value: totalLeads.toString(), icon: Users, color: "text-indigo-500" },
         ].map((kpi, i) => (
-          <Card key={i} className={`p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group`}>
-            <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] rounded-bl-full pointer-events-none" />
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-10 h-10 rounded-xl ${kpi.bg} flex items-center justify-center border ${kpi.border}`}>
-                 <kpi.icon className={`w-5 h-5 ${kpi.color}`} />
-              </div>
-            </div>
-            <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">{kpi.label}</h4>
-            <p className="text-3xl font-black text-white">{kpi.value}</p>
+          <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+            <kpi.icon className={`w-5 h-5 ${kpi.color} mb-4`} />
+            <div className="text-2xl font-display font-black text-white mb-1 italic">{kpi.value}</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{kpi.label}</div>
           </Card>
         ))}
       </div>

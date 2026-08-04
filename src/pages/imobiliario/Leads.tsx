@@ -3,10 +3,11 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   Plus, Search, Phone, Mail, Building2, X, MessageSquare,
-  TrendingUp, Edit2, Trash2, ChevronRight, MapPin, User,
+  TrendingUp, Edit2, Trash2, ChevronRight, MapPin, User, Users,
   Calendar, Tag, DollarSign, Clock, Star, CheckCircle2,
   AlertCircle, Info, ExternalLink,
 } from "lucide-react";
+import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 
@@ -460,16 +461,17 @@ export default function LeadsImobiliario() {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {[
-          { label: "Total de Leads", value: total, color: "text-white" },
-          { label: "Ativos", value: ativos, color: "text-white" },
-          { label: "Fechados", value: fechados, color: "text-white" },
-          { label: "Perdidos", value: perdidos, color: "text-white" },
-          { label: "VGV Potencial", value: `R$ ${(vgvPotencial / 1e6).toFixed(1)}M`, color: "text-white" },
+          { label: "Total de Leads", value: total, icon: Users, color: "text-indigo-500" },
+          { label: "Ativos", value: ativos, icon: TrendingUp, color: "text-blue-500" },
+          { label: "Fechados", value: fechados, icon: CheckCircle2, color: "text-emerald-500" },
+          { label: "Perdidos", value: perdidos, icon: AlertCircle, color: "text-rose-500" },
+          { label: "VGV Potencial", value: `R$ ${(vgvPotencial / 1e6).toFixed(1)}M`, icon: DollarSign, color: "text-amber-500" },
         ].map(k => (
-          <div key={k.label} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl p-4 text-center">
-            <p className={`text-xl font-black ${k.color}`}>{k.value}</p>
-            <p className="text-[9px] text-slate-500 uppercase tracking-widest mt-0.5">{k.label}</p>
-          </div>
+          <Card key={k.label} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+            <k.icon className={`w-5 h-5 ${k.color} mb-4`} />
+            <div className="text-2xl font-display font-black text-white mb-1 italic">{k.value}</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{k.label}</div>
+          </Card>
         ))}
       </div>
 

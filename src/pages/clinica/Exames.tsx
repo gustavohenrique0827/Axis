@@ -32,19 +32,15 @@ export default function Exames() {
         {/* Status Hub */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Pedidos Hoje", value: "42", icon: FlaskConical, color: "text-[#06B6D4]" },
-             { label: "Resultados Prontos", value: "18", icon: CheckCircle2, color: "text-[#06B6D4]" },
-             { label: "Em Análise", value: "12", icon: Clock, color: "text-[#06B6D4]" },
-             { label: "Resultados Críticos", value: "05", icon: AlertCircle, color: "text-[#06B6D4]" },
+             { label: "Pedidos Hoje", value: "42", icon: FlaskConical, color: "text-indigo-500" },
+             { label: "Resultados Prontos", value: "18", icon: CheckCircle2, color: "text-emerald-500" },
+             { label: "Em Análise", value: "12", icon: Clock, color: "text-blue-500" },
+             { label: "Resultados Críticos", value: "05", icon: AlertCircle, color: "text-rose-500" },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden">
-                <div className="flex items-center justify-between mb-4">
-                   <div className="p-3 rounded-2xl bg-white/5">
-                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                   </div>
-                </div>
-                <h3 className="text-2xl font-black text-white font-mono">{stat.value}</h3>
-                <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest mt-2">{stat.label}</p>
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+                <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
+                <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
+                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
              </Card>
            ))}
         </div>

@@ -95,12 +95,12 @@ export default function MarketingAutomacoes() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Leads em Fluxo", value: "0", icon: Users, color: "text-[#06B6D4]" },
-          { label: "Emails Enviados", value: "0", icon: Mail, color: "text-[#06B6D4]" },
-          { label: "Conversões Assist.", value: "0", icon: MousePointer2, color: "text-[#06B6D4]" },
-          { label: "Eficiência Média", value: "0%", icon: BarChart3, color: "text-[#06B6D4]" },
+          { label: "Leads em Fluxo", value: "0", icon: Users, color: "text-indigo-500" },
+          { label: "Emails Enviados", value: "0", icon: Mail, color: "text-blue-500" },
+          { label: "Conversões Assist.", value: "0", icon: MousePointer2, color: "text-emerald-500" },
+          { label: "Eficiência Média", value: "0%", icon: BarChart3, color: "text-amber-500" },
         ].map((stat, i) => (
-          <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border-white/5 backdrop-blur-md">
+          <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
             <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
             <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
             <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>

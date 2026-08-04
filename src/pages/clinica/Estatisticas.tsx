@@ -89,16 +89,14 @@ export default function EstatisticasClinicas() {
         {/* Metric Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Taxa de Ocupação", value: occupancy, trend: "+5%", icon: Activity, color: "text-[#06B6D4]" },
-             { label: "NPS Paciente", value: appointments.length > 0 ? "9.4" : "—", trend: "+0.2", icon: Star, color: "text-[#06B6D4]" },
-             { label: "Total Pacientes", value: totalPacientes.toString(), trend: "+12%", icon: Users, color: "text-[#06B6D4]" },
-             { label: "Tempo Médio Espera", value: avgWaitTime, trend: "-2m", icon: Clock, color: "text-[#06B6D4]" },
+             { label: "Taxa de Ocupação", value: occupancy, trend: "+5%", icon: Activity, color: "text-indigo-500" },
+             { label: "NPS Paciente", value: appointments.length > 0 ? "9.4" : "—", trend: "+0.2", icon: Star, color: "text-amber-500" },
+             { label: "Total Pacientes", value: totalPacientes.toString(), trend: "+12%", icon: Users, color: "text-emerald-500" },
+             { label: "Tempo Médio Espera", value: avgWaitTime, trend: "-2m", icon: Clock, color: "text-blue-500" },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 group">
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
                 <div className="flex items-center justify-between mb-4">
-                   <div className="p-3 rounded-2xl bg-white/5">
-                      <stat.icon className={`w-5 h-5 ${stat.color}`} />
-                   </div>
+                   <stat.icon className={`w-5 h-5 ${stat.color}`} />
                    {appointments.length > 0 && (
                      <div className={`flex items-center gap-1 text-[10px] font-black ${stat.trend.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}`}>
                         {stat.trend.startsWith('+') ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
@@ -106,8 +104,8 @@ export default function EstatisticasClinicas() {
                      </div>
                    )}
                 </div>
-                <h3 className="text-2xl font-black text-white font-mono">{stat.value}</h3>
-                <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest mt-2">{stat.label}</p>
+                <h3 className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</h3>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</p>
              </Card>
            ))}
         </div>

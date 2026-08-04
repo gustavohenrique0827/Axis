@@ -91,49 +91,28 @@ export default function MarketingAnalytics() {
       subtitle="Analise CAC, LTV, ROI e performance geral dos seus canais."
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#06B6D4]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center border border-[#06B6D4]/20">
-               <DollarSign className="w-5 h-5 text-[#06B6D4]" />
-            </div>
-            {totalRevenue > 0 && <span className="text-[10px] uppercase tracking-wider font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Gerado</span>}
-          </div>
-          <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Receita Mkt</h4>
-          <p className="text-3xl font-black text-white">{fmt(totalRevenue)}</p>
-        </Card>
-        
-        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#06B6D4]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center border border-[#06B6D4]/20">
-               <TrendingUp className="w-5 h-5 text-[#06B6D4]" />
-            </div>
-          </div>
-          <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Custo Aquisição (CAC)</h4>
-          <p className="text-3xl font-black text-white">{fmt(cac)}</p>
+        <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+          <DollarSign className="w-5 h-5 text-emerald-500 mb-4" />
+          <div className="text-2xl font-display font-black text-white mb-1 italic">{fmt(totalRevenue)}</div>
+          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Total Receita Mkt</div>
         </Card>
 
-        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#06B6D4]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center border border-[#06B6D4]/20">
-               <Target className="w-5 h-5 text-[#06B6D4]" />
-            </div>
-          </div>
-          <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Valor Médio Deal</h4>
-          <p className="text-3xl font-black text-white">{fmt(avgDeal)}</p>
+        <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+          <TrendingUp className="w-5 h-5 text-rose-500 mb-4" />
+          <div className="text-2xl font-display font-black text-white mb-1 italic">{fmt(cac)}</div>
+          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Custo Aquisição (CAC)</div>
         </Card>
 
-        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#06B6D4]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
-          <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center border border-[#06B6D4]/20">
-               <Activity className="w-5 h-5 text-[#06B6D4]" />
-            </div>
-          </div>
-          <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Retorno (ROI)</h4>
-          <p className="text-3xl font-black text-white">{roi.toFixed(1)}<span className="text-sm text-slate-500">x</span></p>
+        <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+          <Target className="w-5 h-5 text-indigo-500 mb-4" />
+          <div className="text-2xl font-display font-black text-white mb-1 italic">{fmt(avgDeal)}</div>
+          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Valor Médio Deal</div>
+        </Card>
+
+        <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+          <Activity className="w-5 h-5 text-blue-500 mb-4" />
+          <div className="text-2xl font-display font-black text-white mb-1 italic">{roi.toFixed(1)}<span className="text-sm text-slate-500">x</span></div>
+          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Retorno (ROI)</div>
         </Card>
       </div>
 

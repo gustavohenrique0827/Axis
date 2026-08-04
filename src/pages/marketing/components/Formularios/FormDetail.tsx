@@ -101,16 +101,14 @@ export function FormDetail({ form, tenantId }: { form: FormDefinition; tenantId:
     <div className="space-y-5">
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Total",      value: stats.total,    color: "text-[#06B6D4]",    icon: <FileText     className="w-4 h-4" /> },
-          { label: "Hoje",       value: stats.today,    color: "text-[#06B6D4]", icon: <CheckCircle2 className="w-4 h-4" /> },
-          { label: "Últimos 7d", value: stats.thisWeek, color: "text-[#06B6D4]",  icon: <TrendingUp   className="w-4 h-4" /> },
+          { label: "Total",      value: stats.total,    color: "text-indigo-500",  icon: <FileText     className="w-5 h-5" /> },
+          { label: "Hoje",       value: stats.today,    color: "text-emerald-500", icon: <CheckCircle2 className="w-5 h-5" /> },
+          { label: "Últimos 7d", value: stats.thisWeek, color: "text-blue-500",    icon: <TrendingUp   className="w-5 h-5" /> },
         ].map(s => (
-          <div key={s.label} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-4 flex items-center gap-3">
-            <div className={`p-2 rounded-xl bg-white/5 border border-white/10 ${s.color}`}>{s.icon}</div>
-            <div>
-              <p className="text-xl font-black text-white">{loading ? "—" : s.value}</p>
-              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{s.label}</p>
-            </div>
+          <div key={s.label} className="bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all rounded-2xl p-6">
+            <div className={`mb-4 ${s.color}`}>{s.icon}</div>
+            <div className="text-2xl font-display font-black text-white mb-1 italic">{loading ? "—" : s.value}</div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{s.label}</div>
           </div>
         ))}
       </div>
