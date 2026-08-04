@@ -21,12 +21,15 @@ export function PipelineKPIs({ total, hot, closed, winRate, formattedTotalValue 
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-2 shrink-0">
       {items.map(({ label, value, icon: Icon, wide }) => (
-        <Card key={label} className={`p-3 ${wide ? "col-span-2 md:col-span-1" : ""}`}>
-          <div className="flex items-center gap-2 text-slate-400 mb-1">
-            <Icon className="w-3.5 h-3.5" />
-            <span className="text-xs">{label}</span>
+        <Card
+          key={label}
+          className={`p-3 border border-[#06B6D4]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl hover:scale-[1.02] transition-all ${wide ? "col-span-2 md:col-span-1" : ""}`}
+        >
+          <div className="flex justify-between items-center mb-1">
+            <span className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">{label}</span>
+            <Icon className="w-3 h-3 text-[#06B6D4]" />
           </div>
-          <h3 className="text-xl font-semibold text-white">{value}</h3>
+          <h3 className="text-xl font-extrabold text-white">{value}</h3>
         </Card>
       ))}
     </div>
