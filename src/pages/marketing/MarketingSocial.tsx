@@ -12,40 +12,40 @@ export default function MarketingSocial() {
       subtitle="Acompanhe o engajamento e as estatísticas das suas redes sociais."
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-         <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden">
+         <Card className="p-6 bg-[var(--color-surface-elevated)] border-[#06B6D4]/20 relative overflow-hidden">
             <div className="flex justify-between items-center mb-4">
-              <div className="w-10 h-10 rounded-xl bg-pink-500/10 flex items-center justify-center">
-                 <Instagram className="w-5 h-5 text-pink-500" />
+              <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center">
+                 <Instagram className="w-5 h-5 text-[#06B6D4]" />
               </div>
               <span className="text-xs font-bold text-emerald-400">0%</span>
             </div>
             <p className="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1">Seguidores</p>
             <h3 className="text-2xl font-black text-white">0</h3>
          </Card>
-         <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden">
+         <Card className="p-6 bg-[var(--color-surface-elevated)] border-[#06B6D4]/20 relative overflow-hidden">
             <div className="flex justify-between items-center mb-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center">
-                 <Linkedin className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center">
+                 <Linkedin className="w-5 h-5 text-[#06B6D4]" />
               </div>
               <span className="text-xs font-bold text-emerald-400">0%</span>
             </div>
             <p className="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1">Conexões</p>
             <h3 className="text-2xl font-black text-white">0</h3>
          </Card>
-         <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden">
+         <Card className="p-6 bg-[var(--color-surface-elevated)] border-[#06B6D4]/20 relative overflow-hidden">
             <div className="flex justify-between items-center mb-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-400/10 flex items-center justify-center">
-                 <Twitter className="w-5 h-5 text-blue-400" />
+              <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center">
+                 <Twitter className="w-5 h-5 text-[#06B6D4]" />
               </div>
               <span className="text-xs font-bold text-rose-400">0%</span>
             </div>
             <p className="text-slate-400 text-[10px] uppercase font-black tracking-widest mb-1">Seguidores</p>
             <h3 className="text-2xl font-black text-white">0</h3>
          </Card>
-         <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden">
+         <Card className="p-6 bg-[var(--color-surface-elevated)] border-[#06B6D4]/20 relative overflow-hidden">
             <div className="flex justify-between items-center mb-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-800/10 flex items-center justify-center">
-                 <Facebook className="w-5 h-5 text-blue-500" />
+              <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center">
+                 <Facebook className="w-5 h-5 text-[#06B6D4]" />
               </div>
               <span className="text-xs font-bold text-emerald-400">0%</span>
             </div>

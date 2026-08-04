@@ -109,12 +109,12 @@ export default function Pacientes() {
         {/* Top Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: 'Total de Pacientes', value: totalPatients.toString(), icon: Users, color: 'text-blue-400', bg: 'bg-blue-500/10' },
-             { label: 'Novos neste Mês', value: `+${newThisMonth}`, icon: UserPlus, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
-             { label: 'Taxa de Retenção', value: `${retention}%`, icon: ShieldCheck, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-             { label: 'Consultas Hoje', value: consultsToday.toString(), icon: Clock, color: 'text-amber-400', bg: 'bg-amber-500/10' },
+             { label: 'Total de Pacientes', value: totalPatients.toString(), icon: Users, color: 'text-[#06B6D4]', bg: 'bg-[#06B6D4]/10' },
+             { label: 'Novos neste Mês', value: `+${newThisMonth}`, icon: UserPlus, color: 'text-[#06B6D4]', bg: 'bg-[#06B6D4]/10' },
+             { label: 'Taxa de Retenção', value: `${retention}%`, icon: ShieldCheck, color: 'text-[#06B6D4]', bg: 'bg-[#06B6D4]/10' },
+             { label: 'Consultas Hoje', value: consultsToday.toString(), icon: Clock, color: 'text-[#06B6D4]', bg: 'bg-[#06B6D4]/10' },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 flex items-center gap-6">
+             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-[#06B6D4]/20 flex items-center gap-6">
                 <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
                    <stat.icon className="w-5 h-5" />
                 </div>

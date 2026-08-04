@@ -87,29 +87,29 @@ export function MetasOverview({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Mensagens sent rate */}
           <div className="p-4 bg-[var(--color-surface)]/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
-            <div className="p-3 bg-purple-500/10 text-purple-400 rounded-xl">
-              <Flame className="w-5 h-5 text-purple-400" />
+            <div className="p-3 bg-[#06B6D4]/10 text-[#06B6D4] rounded-xl">
+              <Flame className="w-5 h-5 text-[#06B6D4]" />
             </div>
             <div>
               <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Volume de Mensagens (WhatsApp)</span>
               <span className="text-lg font-mono font-black text-white block mt-0.5">
                 {msgVolume.toLocaleString("pt-BR")} msgs
               </span>
-              <span className="text-[9.5px] text-purple-400 font-bold block">Taxa de Resposta: 94.2%</span>
+              <span className="text-[9.5px] text-[#06B6D4] font-bold block">Taxa de Resposta: 94.2%</span>
             </div>
           </div>
 
           {/* Ligações dials */}
           <div className="p-4 bg-[var(--color-surface)]/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
-            <div className="p-3 bg-blue-500/10 text-blue-400 rounded-xl">
-              <Users className="w-5 h-5 text-blue-400" />
+            <div className="p-3 bg-[#06B6D4]/10 text-[#06B6D4] rounded-xl">
+              <Users className="w-5 h-5 text-[#06B6D4]" />
             </div>
             <div>
               <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Total de Ligações Registradas</span>
               <span className="text-lg font-mono font-black text-white block mt-0.5">
                 {callVolume.toLocaleString("pt-BR")} dials
               </span>
-              <span className="text-[9.5px] text-blue-400 font-bold block">Conexão Eficiente: 82%</span>
+              <span className="text-[9.5px] text-[#06B6D4] font-bold block">Conexão Eficiente: 82%</span>
             </div>
           </div>
 
