@@ -5,6 +5,7 @@ import { LeadDetailsModal } from "../../components/ui/LeadDetailsModal";
 import { useData } from "../../contexts/DataContext";
 import { PageContainer } from "../../components/PageContainer";
 import { LeadsKpis } from "./components/Leads/LeadsKPIs";
+import { LeadsFiltersBar } from "./components/Leads/LeadsFiltersBar";
 import { LeadsTable } from "./components/Leads/LeadsTable";
 
 const TEMP_ORDER: Record<string, number> = { quente: 3, morno: 2, frio: 1 };
@@ -58,15 +59,18 @@ export default function Leads() {
     >
       <LeadsKpis stats={stats} />
 
+      <LeadsFiltersBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        temperatureFilter={temperatureFilter}
+        setTemperatureFilter={setTemperatureFilter}
+        sortOrder={sortOrder}
+        setSortOrder={setSortOrder}
+      />
+
       <LeadsTable
         leads={filteredLeads}
         sellers={sellers}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        temperatureFilter={temperatureFilter}
-        onTemperatureChange={setTemperatureFilter}
-        sortOrder={sortOrder}
-        onSortToggle={() => setSortOrder(o => o === "desc" ? "asc" : "desc")}
         onUpdateLead={updateLead}
         onSelectLead={setSelectedLead}
       />
