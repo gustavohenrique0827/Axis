@@ -110,8 +110,8 @@ export function CustomerSuccessView() {
             </ResponsiveContainer>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-             <div className="p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-[#06B6D4]/20 transition-all group">
-                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3 group-hover:text-[#06B6D4] transition-colors">Retenção Líquida</span>
+             <div className="p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-emerald-500/20 transition-all group">
+                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3 group-hover:text-emerald-400 transition-colors">Retenção Líquida</span>
                 <div className="flex items-end gap-3">
                   <span className="text-3xl font-black text-white font-mono tracking-tighter">104%</span>
                   <div className="flex items-center gap-0.5 text-emerald-400 font-black mb-1.5">
@@ -120,18 +120,18 @@ export function CustomerSuccessView() {
                   </div>
                 </div>
              </div>
-             <div className="p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-[#06B6D4]/20 transition-all group">
-                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3 group-hover:text-[#06B6D4] transition-colors">Score de Saúde Médio</span>
-                <div className="flex items-end gap-3">
-                  <span className="text-3xl font-black text-white font-mono tracking-tighter">88.5</span>
-                  <Sparkles className="w-5 h-5 mb-2.5 opacity-50 text-[#06B6D4]" />
+             <div className="p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-emerald-500/20 transition-all group">
+                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3 group-hover:text-emerald-400 transition-colors">Score de Saúde Médio</span>
+                <div className="flex items-end gap-3 text-emerald-400">
+                  <span className="text-3xl font-black font-mono tracking-tighter">88.5</span>
+                  <Sparkles className="w-5 h-5 mb-2.5 opacity-50" />
                 </div>
              </div>
-             <div className="p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-[#06B6D4]/20 transition-all group">
-                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3 group-hover:text-[#06B6D4] transition-colors">Engajamento Digital</span>
-                <div className="flex items-end gap-3">
-                  <span className="text-3xl font-black text-white font-mono tracking-tighter">76%</span>
-                  <Activity className="w-5 h-5 mb-2.5 opacity-50 text-[#06B6D4]" />
+             <div className="p-6 bg-white/5 rounded-3xl border border-white/5 hover:border-purple-500/20 transition-all group">
+                <span className="text-[10px] text-slate-500 font-black uppercase tracking-widest block mb-3 group-hover:text-purple-400 transition-colors">Engajamento Digital</span>
+                <div className="flex items-end gap-3 text-purple-400">
+                  <span className="text-3xl font-black font-mono tracking-tighter">76%</span>
+                  <Activity className="w-5 h-5 mb-2.5 opacity-50" />
                 </div>
              </div>
           </div>
