@@ -14,10 +14,10 @@ export default function PainelDev() {
       description="Visão geral da operação de desenvolvimento — sprints, deploys, issues e saúde dos ambientes."
       actions={
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="h-10 rounded-xl border-white/5 text-[10px] font-black uppercase tracking-widest gap-2">
+          <Button variant="outline" className="h-10 rounded-xl border-white/5 text-xs gap-2">
             <Terminal className="w-4 h-4" /> Sprint Atual
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 px-6 text-[10px] font-black uppercase tracking-widest gap-2">
+          <Button className="rounded-xl h-10 px-6 text-xs gap-2">
             <Rocket className="w-4 h-4" /> Novo Deploy
           </Button>
         </div>

@@ -167,10 +167,10 @@ export function InteractiveForm() {
           animate={{ opacity: 1, scale: 1 }}
           className="bg-[var(--color-surface)]/80 backdrop-blur-xl p-10 rounded-3xl border border-white/10 max-w-lg w-full text-center shadow-2xl"
         >
-          <div className={`w-20 h-20 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 shadow-inner ${theme.text}`}>
+          <div className={`w-20 h-20 mx-auto rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-6 ${theme.text}`}>
             <ShieldCheck className="w-10 h-10" />
           </div>
-          <h2 className="text-3xl font-black text-white mb-4">Inscrição Recebida!</h2>
+          <h2 className="text-2xl font-semibold text-white mb-4">Inscrição Recebida!</h2>
           <p className="text-slate-300 mb-8 leading-relaxed">
             Obrigado pelo seu tempo. Nossa equipe já recebeu seus dados e os analisará para um atendimento totalmente personalizado. Retornaremos em breve.
           </p>
@@ -180,7 +180,7 @@ export function InteractiveForm() {
               setCurrentStep(0);
               setAnswers({});
             }}
-            className={`w-full py-4 rounded-xl font-bold transition-all ${theme.bg} ${theme.buttonText || 'text-white'} hover:opacity-90 shadow-lg`}
+            className={`w-full py-4 rounded-xl transition-colors ${theme.bg} ${theme.buttonText || 'text-white'} hover:opacity-90`}
           >
             Voltar ao Início
           </button>
@@ -191,8 +191,6 @@ export function InteractiveForm() {
 
   return (
     <div className={`min-h-screen bg-gradient-to-br ${formConfig.bgGradient} flex items-center justify-center p-4 sm:p-8 font-sans relative overflow-hidden`}>
-      <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10 mix-blend-overlay pointer-events-none"></div>
-
       {/* Decorative Mascot for MIA-6 Form */}
       {niche === 'mia-6' && (
         <div className="absolute top-1/2 right-[-200px] -translate-y-1/2 opacity-30 lg:opacity-100 lg:right-10 pointer-events-none xl:right-32">
@@ -205,12 +203,12 @@ export function InteractiveForm() {
         {/* Header / Progress */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/5 shadow-lg ${theme.text}`}>
+            <div className={`w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/5 ${theme.text}`}>
               <Icon className="w-5 h-5" />
             </div>
             <div>
-              <h1 className="text-white font-bold text-sm tracking-widest uppercase opacity-90">{formConfig.name}</h1>
-              <p className="text-white/50 text-xs font-mono">Passo {currentStep + 1} de {totalSteps}</p>
+              <h1 className="text-white text-sm opacity-90">{formConfig.name}</h1>
+              <p className="text-white/50 text-xs">Passo {currentStep + 1} de {totalSteps}</p>
             </div>
           </div>
 
@@ -222,7 +220,7 @@ export function InteractiveForm() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-[var(--color-surface)]/60 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden min-h-[400px] flex flex-col relative">
+        <div className="bg-[var(--color-surface)]/60 backdrop-blur-2xl rounded-3xl border border-white/10 overflow-hidden min-h-[400px] flex flex-col relative">
 
           {/* Navigation Top Bar */}
           <div className="absolute top-4 left-4 z-20">
@@ -242,7 +240,7 @@ export function InteractiveForm() {
               transition={{ duration: 0.3, ease: "easeInOut" }}
               className="p-8 sm:p-12 flex-1 flex flex-col justify-center"
             >
-              <h2 className="text-2xl sm:text-4xl font-black text-white mb-8 leading-tight">
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white mb-8 leading-tight">
                 {currentQuestion.title}
               </h2>
 
@@ -300,7 +298,7 @@ export function InteractiveForm() {
                     <button
                       type="submit"
                       disabled={!inputValue.trim()}
-                      className={`px-8 py-4 rounded-xl font-bold flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${theme.bg} ${theme.buttonText || 'text-white'} shadow-lg`}
+                      className={`px-8 py-4 rounded-xl flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${theme.bg} ${theme.buttonText || 'text-white'}`}
                     >
                       Continuar <ArrowRight className="w-5 h-5" />
                     </button>

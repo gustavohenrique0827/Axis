@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { Plus } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { NewLeadModal } from "../../components/ui/modals/crm/NewLeadModal";
 import { LeadDetailsModal } from "../../components/ui/LeadDetailsModal";
@@ -49,11 +50,8 @@ export default function Leads() {
       title="Gestão de Leads Axis"
       description="Centralize, qualifique e converta oportunidades em clientes de forma inteligente."
       actions={
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className="h-11 bg-[#2563EB] hover:bg-blue-600 text-white font-bold text-[10px] uppercase tracking-widest gap-2 px-6 rounded-xl shadow-lg shadow-blue-500/20"
-        >
-          + Novo Lead
+        <Button onClick={() => setIsModalOpen(true)} className="gap-2">
+          <Plus className="w-4 h-4" /> Novo Lead
         </Button>
       }
     >

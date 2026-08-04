@@ -11,29 +11,29 @@ interface AdminBillingTabProps {
 }
 
 export function AdminBillingTab({ revenueData, CustomTooltip }: AdminBillingTabProps) {
+  const metricItems = [
+    { label: "ARPU (Ticket Médio)", value: "R$ 0,00" },
+    { label: "Churn Rate", value: "0%" },
+    { label: "LTV Estimado", value: "R$ 0,00" },
+  ];
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 opacity-50">
-        <Card className="p-6 bg-gradient-to-br from-[var(--color-surface)] to-[var(--color-surface-elevated)] border-white/10">
-          <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2">ARPU (Ticket Médio)</p>
-          <h3 className="text-2xl font-bold text-white">R$ 0,00</h3>
-        </Card>
-        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/10">
-          <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2">Churn Rate</p>
-          <h3 className="text-2xl font-bold text-white">0%</h3>
-        </Card>
-        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/10">
-          <p className="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-2">LTV Estimado</p>
-          <h3 className="text-2xl font-bold text-blue-400">R$ 0,00</h3>
-        </Card>
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {metricItems.map(({ label, value }) => (
+          <Card key={label} className="p-4">
+            <p className="text-xs text-slate-400 mb-2">{label}</p>
+            <h3 className="text-2xl font-semibold text-white">{value}</h3>
+          </Card>
+        ))}
       </div>
 
-      <Card className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/10">
-        <h3 className="font-semibold text-lg mb-6">Receita vs Churn</h3>
+      <Card className="p-5">
+        <h3 className="text-sm text-slate-400 mb-6">Receita vs Churn</h3>
         {revenueData.length === 0 ? (
-          <div className="h-[300px] w-full flex flex-col items-center justify-center gap-4 opacity-40">
-            <DollarSign className="w-12 h-12 text-slate-500" />
-            <span className="text-xs font-black uppercase tracking-widest text-slate-500">Sem dados para projeção</span>
+          <div className="h-[300px] w-full flex flex-col items-center justify-center gap-3">
+            <DollarSign className="w-8 h-8 text-slate-500" />
+            <span className="text-sm text-slate-500">Sem dados para projeção</span>
           </div>
         ) : (
           <div className="h-[300px] w-full">

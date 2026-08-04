@@ -68,9 +68,6 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-[var(--color-surface)] text-[var(--color-text-primary)] font-sans flex items-center justify-center relative overflow-hidden px-4 py-8">
-      <div className="absolute top-[-20%] left-[-10%] w-[500px] h-[500px] bg-[#2563EB]/10 blur-[120px] rounded-full pointer-events-none"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[400px] h-[400px] bg-[#06B6D4]/10 blur-[120px] rounded-full pointer-events-none"></div>
-
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-[var(--color-surface-elevated)]/80 border border-white/10 mx-auto mb-4">
@@ -82,7 +79,7 @@ export default function Register() {
           </p>
         </div>
 
-        <Card className="p-8 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 shadow-2xl">
+        <Card className="p-8">
           <form onSubmit={handleRegister} className="space-y-6">
             <div className="grid gap-4 md:grid-cols-2">
               <label className="space-y-2 text-sm">

@@ -41,6 +41,8 @@ export default function ConfigModulosDemos() {
   const [showAddTenant, setShowAddTenant] = useState(false);
   const [newTenantName, setNewTenantName] = useState("");
   const [newTenantNiche, setNewTenantNiche] = useState("Parceira");
+  const [newTenantEmail, setNewTenantEmail] = useState("");
+  const [newTenantPassword, setNewTenantPassword] = useState("");
   const [savingTenant, setSavingTenant] = useState(false);
   const [reloading, setReloading] = useState(false);
 
@@ -128,12 +130,22 @@ export default function ConfigModulosDemos() {
       toast.error("Informe o nome da empresa.");
       return;
     }
+    if (!newTenantEmail.trim()) {
+      toast.error("Informe o e-mail do administrador da empresa.");
+      return;
+    }
+    if (newTenantPassword.length < 6) {
+      toast.error("A senha do administrador precisa ter pelo menos 6 caracteres.");
+      return;
+    }
     setSavingTenant(true);
-    const result = await createTenantAdmin(newTenantName.trim(), newTenantNiche);
+    const result = await createTenantAdmin(newTenantName.trim(), newTenantNiche, newTenantEmail.trim(), newTenantPassword);
     if (result.success) {
-      toast.success(`Empresa "${newTenantName}" cadastrada com sucesso!`);
+      toast.success(`Empresa "${newTenantName}" cadastrada — acesso criado para ${newTenantEmail}.`);
       setNewTenantName("");
       setNewTenantNiche("Parceira");
+      setNewTenantEmail("");
+      setNewTenantPassword("");
       setShowAddTenant(false);
       await handleReloadTenants();
     } else {
@@ -274,6 +286,34 @@ export default function ConfigModulosDemos() {
                             </div>
                           </div>
                         </div>
+
+                        <div className="pt-1 space-y-1">
+                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Acesso do administrador da empresa</p>
+                          <p className="text-[10px] text-slate-600">Esse e-mail e senha serão usados para o primeiro login do cliente.</p>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">E-mail</label>
+                            <input
+                              type="email"
+                              value={newTenantEmail}
+                              onChange={e => setNewTenantEmail(e.target.value)}
+                              placeholder="admin@empresa.com"
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Senha</label>
+                            <input
+                              type="password"
+                              value={newTenantPassword}
+                              onChange={e => setNewTenantPassword(e.target.value)}
+                              placeholder="Mínimo 6 caracteres"
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
+                            />
+                          </div>
+                        </div>
+
                         <button
                           onClick={handleAddTenant}
                           disabled={savingTenant}

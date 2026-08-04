@@ -7,16 +7,16 @@ import { NovaIssueDevModal, type NovaIssuePayload } from "./modals/NovaIssueDevM
 import { useDevIssues, type Severity, type IssueStatus } from "./hooks/useDevIssues";
 
 const SEVERITY_STYLE: Record<Severity, string> = {
-  crítico: 'bg-red-500/15 text-red-400 border-red-500/30',
-  alto: 'bg-orange-500/15 text-orange-400 border-orange-500/30',
-  médio: 'bg-amber-500/15 text-amber-400 border-amber-500/30',
-  baixo: 'bg-slate-500/15 text-slate-400 border-slate-500/30',
+  crítico: 'text-red-400',
+  alto: 'text-amber-400',
+  médio: 'text-amber-400',
+  baixo: 'text-slate-400',
 };
 
 const STATUS_STYLE: Record<IssueStatus, string> = {
   aberto: 'text-red-400',
   'em andamento': 'text-amber-400',
-  'em review': 'text-indigo-400',
+  'em review': 'text-slate-300',
   fechado: 'text-emerald-400',
 };
 
@@ -56,7 +56,7 @@ export default function Issues() {
       description="Rastreamento centralizado de bugs, erros e issues de todos os projetos."
       breadcrumb={[{ label: "Dev & Tecnologia", path: "/app/dev/painel" }, { label: "Issues" }]}
       actions={
-        <Button onClick={() => setIsModalOpen(true)} className="bg-red-600 hover:bg-red-700 text-white rounded-xl h-10 px-6 text-[10px] font-black uppercase tracking-widest gap-2">
+        <Button onClick={() => setIsModalOpen(true)} className="rounded-xl h-10 px-6 text-xs gap-2">
           <Plus className="w-4 h-4" /> Reportar Issue
         </Button>
       }
@@ -66,19 +66,17 @@ export default function Issues() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Abertos", value: open, color: "text-red-400", bg: "bg-red-500/10", icon: Circle },
-            { label: "Em Andamento", value: inProgress, color: "text-amber-400", bg: "bg-amber-500/10", icon: AlertCircle },
-            { label: "Críticos", value: critical, color: "text-orange-400", bg: "bg-orange-500/10", icon: Flame },
-            { label: "Fechados", value: closed, color: "text-emerald-400", bg: "bg-emerald-500/10", icon: CheckCircle2 },
+            { label: "Abertos", value: open, icon: Circle },
+            { label: "Em Andamento", value: inProgress, icon: AlertCircle },
+            { label: "Críticos", value: critical, icon: Flame },
+            { label: "Fechados", value: closed, icon: CheckCircle2 },
           ].map((s, i) => (
-            <Card key={i} className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/5 flex items-center gap-4">
-              <div className={`p-2.5 rounded-xl ${s.bg}`}>
-                <s.icon className={`w-4 h-4 ${s.color}`} />
+            <Card key={i} className="p-4">
+              <div className="flex items-center gap-2 text-slate-400 mb-2">
+                <s.icon className="w-4 h-4" />
+                <span className="text-xs">{s.label}</span>
               </div>
-              <div>
-                <p className="text-xl font-black text-white">{s.value}</p>
-                <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest mt-0.5">{s.label}</p>
-              </div>
+              <p className="text-2xl font-semibold text-white">{s.value}</p>
             </Card>
           ))}
         </div>
@@ -120,7 +118,7 @@ export default function Issues() {
         </div>
 
         {/* Lista de Issues */}
-        <Card className="bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
+        <Card className="overflow-hidden">
           <div className="divide-y divide-white/5">
             {filtered.map(issue => {
               const StatusIcon = STATUS_ICON[issue.status];
@@ -130,30 +128,31 @@ export default function Issues() {
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="text-[10px] font-black text-slate-500">#{issue.issueNumber}</span>
-                      <h4 className="text-sm font-bold text-white group-hover:text-blue-300 transition-colors">{issue.title}</h4>
+                      <span className="text-xs text-slate-500">#{issue.issueNumber}</span>
+                      <h4 className="text-sm font-medium text-white">{issue.title}</h4>
                     </div>
                     <p className="text-xs text-slate-500 leading-relaxed mb-2 line-clamp-1">{issue.description}</p>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-[9px] text-slate-500 font-bold">{issue.project}</span>
+                      <span className="text-xs text-slate-500">{issue.project}</span>
                       <span className="text-slate-700">·</span>
                       {issue.labels.map(l => (
-                        <span key={l} className="text-[9px] font-bold text-slate-500 bg-white/[0.03] px-1.5 py-0.5 rounded">#{l}</span>
+                        <span key={l} className="text-xs text-slate-500 bg-white/[0.03] px-1.5 py-0.5 rounded">#{l}</span>
                       ))}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0">
-                    <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg border ${SEVERITY_STYLE[issue.severity]}`}>
+                    <span className={`text-xs flex items-center gap-1.5 ${SEVERITY_STYLE[issue.severity]}`}>
+                      <span className="w-1.5 h-1.5 rounded-full bg-current" />
                       {issue.severity}
                     </span>
-                    <div className="flex items-center gap-1 text-[10px] text-slate-500">
+                    <div className="flex items-center gap-1 text-xs text-slate-500">
                       <MessageSquare className="w-3 h-3" /> {issue.comments}
                     </div>
-                    <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[9px] font-black text-white border border-white/10">
+                    <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs text-white border border-white/10">
                       {issue.assignee === '-' ? '?' : issue.assignee.split('.')[0]}
                     </div>
-                    <span className="text-[10px] text-slate-600 hidden md:block">{issue.createdAt}</span>
+                    <span className="text-xs text-slate-600 hidden md:block">{issue.createdAt}</span>
                   </div>
                 </div>
               );
