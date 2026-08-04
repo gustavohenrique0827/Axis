@@ -1,8 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { PageContainer } from "../../components/PageContainer";
-import { Button } from "../../components/ui/button";
-import { Card } from "../../components/ui/card";
-import { Plus, BarChart3, PieChart, Settings2, LayoutList, Columns3 } from "lucide-react";
 
 import { PipelineTopActions } from "./components/Pipeline/PipelineTopActions";
 
@@ -20,7 +17,6 @@ import { PipelineKPIs } from "./components/Pipeline/PipelineKPIs";
 import { PipelineListaView } from "./components/Pipeline/PipelineListaView";
 import { PipelineFilterBar } from "./components/Pipeline/PipelineFilterBar";
 import { PipelineKanbanBoard } from "./components/Pipeline/PipelineKanbanBoard";
-import { PipelineViewShell } from "./components/Pipeline/PipelineViewShell";
 import { PipelineDefaultState } from "./components/Pipeline/PipelineDefaultState";
 import { PipelineEmptySelection } from "./components/Pipeline/PipelineEmptySelection";
 

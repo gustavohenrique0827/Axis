@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Users, Brain, DollarSign, Target, Award, Flame, CheckCircle2, TrendingUp, AreaChart, FileText } from "lucide-react";
+import { Users, Brain, DollarSign, Award } from "lucide-react";
 
 import { PageContainer } from "../../components/PageContainer";
 import { useData } from "../../contexts/DataContext";
@@ -7,10 +7,6 @@ import { useData } from "../../contexts/DataContext";
 import { MiaHero } from "./components/PerformanceDashboard/MiaHero";
 import { KpiCards } from "./components/PerformanceDashboard/KpiCards";
 import { PerformanceScoreChart, HotLeadsPanel, LeadsVolumeChart } from "./components/PerformanceDashboard/PerformanceCharts";
-import { Card } from "@/src/components/ui/card";
-import { Button } from "@/src/components/ui/button";
-import { ResponsiveContainer, ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, Line, Area } from "recharts";
-import { toast } from "sonner";
 
 export default function Dashboard() {
   const { leads, robotStatus } = useData();

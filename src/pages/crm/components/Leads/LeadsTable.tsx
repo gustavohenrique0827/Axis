@@ -1,22 +1,20 @@
-import { Card } from "../../../../components/ui/card";
-
 import { LeadsTableDesktop } from "./LeadsTableDesktop";
 import { LeadsCardsMobile } from "./LeadsCardsMobile";
 
-export function LeadsTable(props: {
+interface LeadsTableProps {
   leads: any[];
   sellers: string[];
-  searchQuery: string;
-  onSearchChange: (v: string) => void;
-  temperatureFilter: string;
-  onTemperatureChange: (v: string) => void;
-  sortOrder: "desc" | "asc";
-  onSortToggle: () => void;
+  searchQuery?: string;
+  onSearchChange?: (v: string) => void;
+  temperatureFilter?: string;
+  onTemperatureChange?: (v: string) => void;
+  sortOrder?: "desc" | "asc";
+  onSortToggle?: () => void;
   onUpdateLead: (leadId: string, payload: any) => void;
   onSelectLead: (lead: any) => void;
-}) {
-  const { leads, sellers, onUpdateLead, onSelectLead } = props;
+}
 
+export function LeadsTable({ leads, sellers, onUpdateLead, onSelectLead }: LeadsTableProps) {
   return (
     <>
       <LeadsTableDesktop
