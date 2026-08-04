@@ -32,10 +32,10 @@ export default function Exames() {
         {/* Status Hub */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Pedidos Hoje", value: "42", icon: FlaskConical, color: "text-blue-400" },
-             { label: "Resultados Prontos", value: "18", icon: CheckCircle2, color: "text-emerald-400" },
-             { label: "Em Análise", value: "12", icon: Clock, color: "text-amber-400" },
-             { label: "Resultados Críticos", value: "05", icon: AlertCircle, color: "text-rose-400" },
+             { label: "Pedidos Hoje", value: "42", icon: FlaskConical, color: "text-[#06B6D4]" },
+             { label: "Resultados Prontos", value: "18", icon: CheckCircle2, color: "text-[#06B6D4]" },
+             { label: "Em Análise", value: "12", icon: Clock, color: "text-[#06B6D4]" },
+             { label: "Resultados Críticos", value: "05", icon: AlertCircle, color: "text-[#06B6D4]" },
            ].map((stat, i) => (
              <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden">
                 <div className="flex items-center justify-between mb-4">

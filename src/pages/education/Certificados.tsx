@@ -54,10 +54,10 @@ export default function Certificados() {
   );
 
   const kpiStats = [
-    { label: "Diplomas Emitidos", value: certs.length, icon: Award, color: "text-amber-400", bg: "bg-amber-500/10" },
-    { label: "Validações Hoje", value: "--", icon: ShieldCheck, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-    { label: "Processamento", value: certs.filter(c => c.status === "Processando").length, icon: RefreshCw, color: "text-blue-400", bg: "bg-blue-500/10" },
-    { label: "Média Acadêmica", value: "--", icon: Star, color: "text-indigo-400", bg: "bg-indigo-500/10" },
+    { label: "Diplomas Emitidos", value: certs.length, icon: Award, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Validações Hoje", value: "--", icon: ShieldCheck, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Processamento", value: certs.filter(c => c.status === "Processando").length, icon: RefreshCw, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Média Acadêmica", value: "--", icon: Star, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
   ];
 
   return (

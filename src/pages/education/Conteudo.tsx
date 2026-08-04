@@ -87,10 +87,10 @@ export default function Conteudo() {
   const totalAcessos = content.reduce((acc, c) => acc + (c.accessCount || 0), 0);
   const totalAcessosFmt = totalAcessos >= 1000 ? `${(totalAcessos / 1000).toFixed(1)}k` : String(totalAcessos);
   const kpiStats = [
-    { label: "Ativos Totais", value: String(content.length), icon: Layers, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Total Acessos", value: content.length === 0 ? "—" : totalAcessosFmt, icon: Globe, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Publicados", value: String(content.filter(c => c.status === "Publicado").length), icon: Star, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { label: "Em Rascunho", value: String(content.filter(c => c.status === "Rascunho").length), icon: Download, color: "text-indigo-500", bg: "bg-indigo-500/10" },
+    { label: "Ativos Totais", value: String(content.length), icon: Layers, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Total Acessos", value: content.length === 0 ? "—" : totalAcessosFmt, icon: Globe, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Publicados", value: String(content.filter(c => c.status === "Publicado").length), icon: Star, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Em Rascunho", value: String(content.filter(c => c.status === "Rascunho").length), icon: Download, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
   ];
 
   return (

@@ -97,10 +97,10 @@ export default function Repositorios() {
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { label: "Repositórios", value: repos.length, icon: Code2, color: "text-blue-400", bg: "bg-blue-500/10" },
-            { label: "Ativos", value: activeRepos, icon: CheckCircle2, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-            { label: "Stars Total", value: totalStars, icon: Star, color: "text-amber-400", bg: "bg-amber-500/10" },
-            { label: "PRs em Aberto", value: totalPRs, icon: GitBranch, color: "text-indigo-400", bg: "bg-indigo-500/10" },
+            { label: "Repositórios", value: repos.length, icon: Code2, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+            { label: "Ativos", value: activeRepos, icon: CheckCircle2, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+            { label: "Stars Total", value: totalStars, icon: Star, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+            { label: "PRs em Aberto", value: totalPRs, icon: GitBranch, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
           ].map((s, i) => (
             <Card key={i} className="p-5 bg-[var(--color-surface-elevated)]/80 border-white/5 flex items-center gap-4">
               <div className={`p-2.5 rounded-xl ${s.bg}`}>

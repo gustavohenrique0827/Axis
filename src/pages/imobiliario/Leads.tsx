@@ -461,10 +461,10 @@ export default function LeadsImobiliario() {
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
         {[
           { label: "Total de Leads", value: total, color: "text-white" },
-          { label: "Ativos", value: ativos, color: "text-blue-400" },
-          { label: "Fechados", value: fechados, color: "text-emerald-400" },
-          { label: "Perdidos", value: perdidos, color: "text-red-400" },
-          { label: "VGV Potencial", value: `R$ ${(vgvPotencial / 1e6).toFixed(1)}M`, color: "text-violet-400" },
+          { label: "Ativos", value: ativos, color: "text-white" },
+          { label: "Fechados", value: fechados, color: "text-white" },
+          { label: "Perdidos", value: perdidos, color: "text-white" },
+          { label: "VGV Potencial", value: `R$ ${(vgvPotencial / 1e6).toFixed(1)}M`, color: "text-white" },
         ].map(k => (
           <div key={k.label} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl p-4 text-center">
             <p className={`text-xl font-black ${k.color}`}>{k.value}</p>

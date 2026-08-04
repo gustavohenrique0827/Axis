@@ -13,10 +13,10 @@ const fmt = (n: number) => new Intl.NumberFormat("pt-BR", { style: "currency", c
 
 export function FinanceiroKPIs({ receita, despesa, mrr, inadimplencia }: FinanceiroKPIsProps) {
   const kpis = [
-    { label: "Receita (Real)",      value: fmt(receita),               trend: "--", positive: true,  icon: TrendingUp,  color: "text-blue-400",   bg: "bg-blue-500/10"   },
-    { label: "Custo Operacional",   value: fmt(despesa),               trend: "--", positive: true,  icon: Wallet,      color: "text-rose-400",   bg: "bg-rose-500/10"   },
-    { label: "MRR Global",          value: fmt(mrr),                   trend: "--", positive: true,  icon: Globe,       color: "text-emerald-400",bg: "bg-emerald-500/10"},
-    { label: "Índice de Churn",     value: `${inadimplencia.toFixed(1)}%`, trend: "--", positive: false, icon: AlertCircle, color: "text-yellow-500", bg: "bg-yellow-500/10" },
+    { label: "Receita (Real)",      value: fmt(receita),               trend: "--", positive: true,  icon: TrendingUp,  color: "text-[#06B6D4]",   bg: "bg-[#06B6D4]/10"   },
+    { label: "Custo Operacional",   value: fmt(despesa),               trend: "--", positive: true,  icon: Wallet,      color: "text-[#06B6D4]",   bg: "bg-[#06B6D4]/10"   },
+    { label: "MRR Global",          value: fmt(mrr),                   trend: "--", positive: true,  icon: Globe,       color: "text-[#06B6D4]",bg: "bg-[#06B6D4]/10"},
+    { label: "Índice de Churn",     value: `${inadimplencia.toFixed(1)}%`, trend: "--", positive: false, icon: AlertCircle, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
   ];
 
   return (

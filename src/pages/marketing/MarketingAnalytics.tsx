@@ -92,10 +92,10 @@ export default function MarketingAnalytics() {
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#06B6D4]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
           <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
-               <DollarSign className="w-5 h-5 text-blue-400" />
+            <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center border border-[#06B6D4]/20">
+               <DollarSign className="w-5 h-5 text-[#06B6D4]" />
             </div>
             {totalRevenue > 0 && <span className="text-[10px] uppercase tracking-wider font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Gerado</span>}
           </div>
@@ -104,10 +104,10 @@ export default function MarketingAnalytics() {
         </Card>
         
         <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#06B6D4]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
           <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
-               <TrendingUp className="w-5 h-5 text-purple-400" />
+            <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center border border-[#06B6D4]/20">
+               <TrendingUp className="w-5 h-5 text-[#06B6D4]" />
             </div>
           </div>
           <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Custo Aquisição (CAC)</h4>
@@ -115,10 +115,10 @@ export default function MarketingAnalytics() {
         </Card>
 
         <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#06B6D4]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
           <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-               <Target className="w-5 h-5 text-emerald-400" />
+            <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center border border-[#06B6D4]/20">
+               <Target className="w-5 h-5 text-[#06B6D4]" />
             </div>
           </div>
           <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Valor Médio Deal</h4>
@@ -126,10 +126,10 @@ export default function MarketingAnalytics() {
         </Card>
 
         <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+          <div className="absolute top-0 right-0 w-32 h-32 bg-[#06B6D4]/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
           <div className="flex items-center justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
-               <Activity className="w-5 h-5 text-cyan-400" />
+            <div className="w-10 h-10 rounded-xl bg-[#06B6D4]/10 flex items-center justify-center border border-[#06B6D4]/20">
+               <Activity className="w-5 h-5 text-[#06B6D4]" />
             </div>
           </div>
           <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Retorno (ROI)</h4>

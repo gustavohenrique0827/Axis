@@ -32,10 +32,10 @@ export default function EducationTurmaDetalhes({ turma, onBack }: EducationTurma
   );
 
   const kpiStats = [
-    { label: "Presença Média", value: students.length ? "88%" : "—", icon: CheckSquare, color: "text-emerald-500" },
-    { label: "Progresso Médio", value: students.length ? "42%" : "—", icon: TrendingUp, color: "text-blue-500" },
-    { label: "Alunos em Risco", value: students.filter(s => s.status === "at_risk").length.toString(), icon: X, color: "text-rose-500" },
-    { label: "Aulas Realizadas", value: "0/40", icon: Calendar, color: "text-amber-500" },
+    { label: "Presença Média", value: students.length ? "88%" : "—", icon: CheckSquare, color: "text-[#06B6D4]" },
+    { label: "Progresso Médio", value: students.length ? "42%" : "—", icon: TrendingUp, color: "text-[#06B6D4]" },
+    { label: "Alunos em Risco", value: students.filter(s => s.status === "at_risk").length.toString(), icon: X, color: "text-[#06B6D4]" },
+    { label: "Aulas Realizadas", value: "0/40", icon: Calendar, color: "text-[#06B6D4]" },
   ];
 
   return (

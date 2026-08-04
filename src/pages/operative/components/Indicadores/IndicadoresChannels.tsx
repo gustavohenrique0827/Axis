@@ -2,9 +2,9 @@ import { Card } from "../../../../components/ui/card";
 import { ArrowUpRight } from "lucide-react";
 
 const CHANNELS = [
-  { title: "Indicações", value: "0", sub: "0%", color: "text-emerald-400" },
-  { title: "Instagram", value: "0", sub: "0%", color: "text-purple-400" },
-  { title: "LinkedIn", value: "0", sub: "0%", color: "text-blue-400" },
+  { title: "Indicações", value: "0", sub: "0%", color: "text-[#06B6D4]" },
+  { title: "Instagram", value: "0", sub: "0%", color: "text-[#06B6D4]" },
+  { title: "LinkedIn", value: "0", sub: "0%", color: "text-[#06B6D4]" },
   { title: "Google Ads", value: "0", sub: "0%", color: "text-[#06B6D4]" },
 ];
 

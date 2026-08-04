@@ -62,10 +62,10 @@ export default function ProntuariosDashboard() {
         {/* Quick Access Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Prontuários Ativos", value: totalPatients.toString(), icon: Activity, color: "text-blue-400" },
-             { label: "Prescrições Emitidas", value: (totalPatients * 2).toString(), icon: Pill, color: "text-emerald-400" },
-             { label: "Exames Pendentes", value: "0", icon: FileText, color: "text-amber-400" },
-             { label: "Pacientes Internados", value: "0", icon: Heart, color: "text-rose-400" },
+             { label: "Prontuários Ativos", value: totalPatients.toString(), icon: Activity, color: "text-[#06B6D4]" },
+             { label: "Prescrições Emitidas", value: (totalPatients * 2).toString(), icon: Pill, color: "text-[#06B6D4]" },
+             { label: "Exames Pendentes", value: "0", icon: FileText, color: "text-[#06B6D4]" },
+             { label: "Pacientes Internados", value: "0", icon: Heart, color: "text-[#06B6D4]" },
            ].map((stat, i) => (
              <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 group">
                 <div className="flex items-center gap-4">

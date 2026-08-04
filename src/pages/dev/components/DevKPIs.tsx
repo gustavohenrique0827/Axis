@@ -2,10 +2,10 @@ import { Card } from "../../../components/ui/card";
 import { ArrowUpRight, Zap, Bug, Rocket, Server } from "lucide-react";
 
 const STATS = [
-  { label: "Pontos no Sprint", value: "--", trend: "--", icon: Zap, color: "text-blue-400", bg: "bg-blue-600/10" },
-  { label: "Issues em Aberto", value: "--", trend: "--", icon: Bug, color: "text-amber-400", bg: "bg-amber-500/10" },
-  { label: "Deploys Hoje", value: "--", trend: "--", icon: Rocket, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-  { label: "Uptime Produção", value: "--", trend: "--", icon: Server, color: "text-cyan-400", bg: "bg-cyan-500/10" },
+  { label: "Pontos no Sprint", value: "--", trend: "--", icon: Zap, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+  { label: "Issues em Aberto", value: "--", trend: "--", icon: Bug, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+  { label: "Deploys Hoje", value: "--", trend: "--", icon: Rocket, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+  { label: "Uptime Produção", value: "--", trend: "--", icon: Server, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
 ];
 
 export function DevKPIs() {

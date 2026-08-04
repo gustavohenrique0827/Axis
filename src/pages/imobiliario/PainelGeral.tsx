@@ -189,12 +189,12 @@ export default function ImobiliarioPainel() {
 
         {/* KPIs */}
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
-          <KPICard icon={Building2} label="Disponíveis" value={String(disponiveis)} sub="no portfólio ativo" color="bg-blue-500/10 text-blue-400" />
-          <KPICard icon={TrendingUp} label="Vendidos Mês" value={String(vendidosMes)} sub="negócios fechados" color="bg-emerald-500/10 text-emerald-400" />
-          <KPICard icon={DollarSign} label="VGV Mês" value={fmtVgv(vgvMes)} sub="volume geral de vendas" color="bg-violet-500/10 text-violet-400" />
-          <KPICard icon={Columns3} label="Leads Ativos" value={String(leadsAtivos)} sub="no funil de vendas" color="bg-cyan-500/10 text-cyan-400" />
-          <KPICard icon={Eye} label="Próximas Visitas" value={String(visitas.length)} sub="agendadas" color="bg-amber-500/10 text-amber-400" />
-          <KPICard icon={Target} label="Conversão" value={`${conversao}%`} sub="leads → fechamento" color="bg-pink-500/10 text-pink-400" />
+          <KPICard icon={Building2} label="Disponíveis" value={String(disponiveis)} sub="no portfólio ativo" color="bg-[#06B6D4]/10 text-[#06B6D4]" />
+          <KPICard icon={TrendingUp} label="Vendidos Mês" value={String(vendidosMes)} sub="negócios fechados" color="bg-[#06B6D4]/10 text-[#06B6D4]" />
+          <KPICard icon={DollarSign} label="VGV Mês" value={fmtVgv(vgvMes)} sub="volume geral de vendas" color="bg-[#06B6D4]/10 text-[#06B6D4]" />
+          <KPICard icon={Columns3} label="Leads Ativos" value={String(leadsAtivos)} sub="no funil de vendas" color="bg-[#06B6D4]/10 text-[#06B6D4]" />
+          <KPICard icon={Eye} label="Próximas Visitas" value={String(visitas.length)} sub="agendadas" color="bg-[#06B6D4]/10 text-[#06B6D4]" />
+          <KPICard icon={Target} label="Conversão" value={`${conversao}%`} sub="leads → fechamento" color="bg-[#06B6D4]/10 text-[#06B6D4]" />
         </div>
 
         {/* Charts Row 1 */}

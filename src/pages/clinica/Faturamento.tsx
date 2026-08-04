@@ -92,10 +92,10 @@ export default function FaturamentoClinico() {
         {/* Financial KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Faturamento Bruto", value: fmt(totalBilled), trend: "+12%", icon: Landmark, color: "text-emerald-400" },
-             { label: "Receita Líquida", value: fmt(totalReceived), trend: "+8.5%", icon: Wallet, color: "text-blue-400" },
-             { label: "Taxa de Glosa (Atrasos)", value: glosaRate, trend: "-0.5%", icon: AlertCircle, color: "text-rose-400" },
-             { label: "Ticket Médio Estimado", value: fmt(avgTicket), trend: "+3%", icon: CreditCard, color: "text-amber-400" },
+             { label: "Faturamento Bruto", value: fmt(totalBilled), trend: "+12%", icon: Landmark, color: "text-[#06B6D4]" },
+             { label: "Receita Líquida", value: fmt(totalReceived), trend: "+8.5%", icon: Wallet, color: "text-[#06B6D4]" },
+             { label: "Taxa de Glosa (Atrasos)", value: glosaRate, trend: "-0.5%", icon: AlertCircle, color: "text-[#06B6D4]" },
+             { label: "Ticket Médio Estimado", value: fmt(avgTicket), trend: "+3%", icon: CreditCard, color: "text-[#06B6D4]" },
            ].map((stat, i) => (
              <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 relative group">
                 <div className="flex items-center justify-between mb-4">

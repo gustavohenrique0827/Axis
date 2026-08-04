@@ -141,10 +141,10 @@ export function MetasOverview({
         {/* Total revenue meta */}
         <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2.5 rounded-xl bg-blue-500/10 border border-blue-500/15 text-blue-400">
+            <div className="p-2.5 rounded-xl bg-[#06B6D4]/10 border border-[#06B6D4]/15 text-[#06B6D4]">
               <Target className="w-5 h-5" />
             </div>
-            <span className="text-[10px] font-black font-mono text-blue-400 bg-blue-500/5 px-2 py-0.5 rounded border border-blue-500/10 uppercase tracking-widest">
+            <span className="text-[10px] font-black font-mono text-[#06B6D4] bg-[#06B6D4]/5 px-2 py-0.5 rounded border border-[#06B6D4]/10 uppercase tracking-widest">
               Geral {period === "monthly" ? "Mês" : period === "quarterly" ? "Trimestre" : "Ano"}
             </span>
           </div>
@@ -177,10 +177,10 @@ export function MetasOverview({
         {/* Provisioned commission and OTE payout based on calculations */}
         <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/15 text-emerald-400">
+            <div className="p-2.5 rounded-xl bg-[#06B6D4]/10 border border-[#06B6D4]/15 text-[#06B6D4]">
               <DollarSign className="w-5 h-5" />
             </div>
-            <span className="text-[10px] font-black font-mono text-emerald-400 bg-emerald-500/5 px-2 py-0.5 rounded border border-emerald-500/10 uppercase tracking-widest">
+            <span className="text-[10px] font-black font-mono text-[#06B6D4] bg-[#06B6D4]/5 px-2 py-0.5 rounded border border-[#06B6D4]/10 uppercase tracking-widest">
               Provisionado
             </span>
           </div>
@@ -297,10 +297,10 @@ export function MetasOverview({
         {/* Active alert indicator status card */}
         <Card className="p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">
           <div className="flex justify-between items-start mb-4">
-            <div className="p-2.5 rounded-xl bg-purple-500/10 border border-purple-500/15 text-purple-400">
+            <div className="p-2.5 rounded-xl bg-[#06B6D4]/10 border border-[#06B6D4]/15 text-[#06B6D4]">
               <Award className="w-5 h-5" />
             </div>
-            <span className="text-[10px] font-black font-mono text-purple-400 bg-purple-500/5 px-2 py-0.5 rounded border border-purple-500/10 uppercase tracking-widest">
+            <span className="text-[10px] font-black font-mono text-[#06B6D4] bg-[#06B6D4]/5 px-2 py-0.5 rounded border border-[#06B6D4]/10 uppercase tracking-widest">
               Consistência
             </span>
           </div>

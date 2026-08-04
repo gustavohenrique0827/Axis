@@ -18,12 +18,16 @@ export function ContractsKPIs({ totalMRR, ativos, inadimplentes }: ContractsKPIs
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       {items.map(({ label, value, icon: Icon }) => (
-        <Card key={label} className="p-5">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
-            <Icon className="w-4 h-4" />
-            <span className="text-xs">{label}</span>
+        <Card key={label} className="p-5 bg-gradient-to-br from-[var(--color-surface-elevated)] to-[var(--color-surface-elevated)]/80 border-[#06B6D4]/20 backdrop-blur-xl">
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-2 bg-[#06B6D4]/10 text-[#06B6D4] rounded-lg">
+              <Icon className="w-5 h-5" />
+            </div>
           </div>
-          <h3 className="text-2xl font-semibold text-white">{value}</h3>
+          <div>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-widest mb-1">{label}</p>
+            <h3 className="text-2xl font-bold text-white">{value}</h3>
+          </div>
         </Card>
       ))}
     </div>

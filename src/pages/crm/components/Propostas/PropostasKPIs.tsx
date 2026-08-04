@@ -41,12 +41,14 @@ export function PropostasKPIs({ propostas }: { propostas: Proposta[] }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {stats.map((stat) => (
-        <Card key={stat.label} className="p-4">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
-            <stat.icon className="w-4 h-4" />
-            <span className="text-xs">{stat.label}</span>
+        <Card key={stat.label} className="p-5 bg-[var(--color-surface-elevated)]/80 border-[#06B6D4]/20 backdrop-blur-md flex items-center justify-between">
+          <div>
+            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{stat.label}</div>
+            <div className="text-2xl font-black text-white italic">{stat.value}</div>
           </div>
-          <h3 className="text-2xl font-semibold text-white">{stat.value}</h3>
+          <div className="p-3 rounded-2xl bg-[#06B6D4]/10 text-[#06B6D4]">
+            <stat.icon className="w-5 h-5" />
+          </div>
         </Card>
       ))}
     </div>

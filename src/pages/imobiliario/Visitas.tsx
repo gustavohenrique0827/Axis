@@ -426,10 +426,10 @@ export default function Visitas() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          { icon: AlertCircle, label: "Agendadas", value: agendadas.toString(), color: "text-amber-400 bg-amber-500/10" },
-          { icon: Clock, label: "Confirmadas", value: confirmadas.toString(), color: "text-blue-400 bg-blue-500/10" },
-          { icon: CheckCircle2, label: "Realizadas", value: realizadas.toString(), color: "text-emerald-400 bg-emerald-500/10" },
-          { icon: TrendingUp, label: "Taxa Realização", value: realizadas + canceladas > 0 ? `${Math.round((realizadas / (realizadas + canceladas)) * 100)}%` : "—", color: "text-violet-400 bg-violet-500/10" },
+          { icon: AlertCircle, label: "Agendadas", value: agendadas.toString(), color: "text-[#06B6D4] bg-[#06B6D4]/10" },
+          { icon: Clock, label: "Confirmadas", value: confirmadas.toString(), color: "text-[#06B6D4] bg-[#06B6D4]/10" },
+          { icon: CheckCircle2, label: "Realizadas", value: realizadas.toString(), color: "text-[#06B6D4] bg-[#06B6D4]/10" },
+          { icon: TrendingUp, label: "Taxa Realização", value: realizadas + canceladas > 0 ? `${Math.round((realizadas / (realizadas + canceladas)) * 100)}%` : "—", color: "text-[#06B6D4] bg-[#06B6D4]/10" },
         ].map((s, i) => (
           <div key={i} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl p-4 flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.color}`}>

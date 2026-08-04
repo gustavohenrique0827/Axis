@@ -152,15 +152,15 @@ export default function PortfolioCorretor() {
         {/* Stats rápidas */}
         <div className="grid grid-cols-3 gap-4 mb-10">
           <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black text-blue-400">{corretor.imoveis.length}</p>
+            <p className="text-2xl font-black text-white">{corretor.imoveis.length}</p>
             <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Imóveis no Portfólio</p>
           </div>
           <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black text-emerald-400">{disponíveis.length}</p>
+            <p className="text-2xl font-black text-white">{disponíveis.length}</p>
             <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Disponíveis Agora</p>
           </div>
           <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 text-center">
-            <p className="text-2xl font-black text-amber-400">{corretor.avaliacao}</p>
+            <p className="text-2xl font-black text-white">{corretor.avaliacao}</p>
             <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-1">Avaliação Média</p>
           </div>
         </div>

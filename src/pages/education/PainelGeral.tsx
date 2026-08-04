@@ -36,10 +36,10 @@ export default function PainelGeralEducation() {
         {/* KPI Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Matrículas Ativas", value: "—", trend: "", icon: Users, color: "text-blue-400" },
-             { label: "Taxa de Conclusão", value: "—", trend: "", icon: CheckCircle2, color: "text-emerald-400" },
-             { label: "Conteúdos Vistos", value: "—", trend: "", icon: BookOpen, color: "text-indigo-400" },
-             { label: "NPS Acadêmico", value: "—", trend: "", icon: Star, color: "text-amber-400" },
+             { label: "Matrículas Ativas", value: "—", trend: "", icon: Users, color: "text-[#06B6D4]" },
+             { label: "Taxa de Conclusão", value: "—", trend: "", icon: CheckCircle2, color: "text-[#06B6D4]" },
+             { label: "Conteúdos Vistos", value: "—", trend: "", icon: BookOpen, color: "text-[#06B6D4]" },
+             { label: "NPS Acadêmico", value: "—", trend: "", icon: Star, color: "text-[#06B6D4]" },
            ].map((stat, i) => (
              <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 group opacity-50">
                 <div className="flex items-center justify-between mb-4">

@@ -38,10 +38,10 @@ export default function Alunos() {
   );
 
   const kpiStats = [
-    { label: "Total Estudantes", value: "—", icon: Users, color: "text-blue-400", bg: "bg-blue-500/10" },
-    { label: "Matrículas Hoje", value: "—", icon: BookOpen, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-    { label: "Taxa Engajamento", value: "—", icon: Target, color: "text-purple-400", bg: "bg-purple-500/10" },
-    { label: "NPS Acadêmico", value: "—", icon: Star, color: "text-amber-400", bg: "bg-amber-500/10" },
+    { label: "Total Estudantes", value: "—", icon: Users, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Matrículas Hoje", value: "—", icon: BookOpen, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Taxa Engajamento", value: "—", icon: Target, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "NPS Acadêmico", value: "—", icon: Star, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
   ];
 
   return (

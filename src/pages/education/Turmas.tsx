@@ -58,10 +58,10 @@ export default function Turmas() {
     : `${Math.round((students.filter((s: any) => s.status === "Ativo" || s.ativo === true || !s.status).length / students.length) * 100)}%`;
 
   const kpiStats = [
-    { label: "Turmas Ativas", value: String(turmasAtivas), icon: GraduationCap, color: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Alunos Matriculados", value: students.length.toLocaleString("pt-BR"), icon: Users, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Vagas Disponíveis", value: String(vagasDisponiveis), icon: BookOpen, color: "text-amber-500", bg: "bg-amber-500/10" },
-    { label: "Taxa de Retenção", value: taxaRetencao, icon: CheckCircle2, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { label: "Turmas Ativas", value: String(turmasAtivas), icon: GraduationCap, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Alunos Matriculados", value: students.length.toLocaleString("pt-BR"), icon: Users, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Vagas Disponíveis", value: String(vagasDisponiveis), icon: BookOpen, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Taxa de Retenção", value: taxaRetencao, icon: CheckCircle2, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
   ];
 
   const filteredTurmas = turmas.filter(t =>

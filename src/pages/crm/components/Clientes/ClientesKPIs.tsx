@@ -19,12 +19,12 @@ export function ClientesKPIs({ total, ativos, implantacao, inativos }: ClientesK
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
       {items.map(({ label, value, icon: Icon }) => (
-        <Card key={label} className="p-4">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
-            <Icon className="w-4 h-4" />
-            <span className="text-xs">{label}</span>
+        <Card key={label} className="p-4 bg-[var(--color-surface-elevated)]/80 border border-[#06B6D4]/20 backdrop-blur-xl hover:scale-[1.02] transition-all">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">{label}</p>
+            <div className="p-2 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4]"><Icon className="w-3.5 h-3.5" /></div>
           </div>
-          <h3 className="text-2xl font-semibold text-white">{value}</h3>
+          <h3 className="text-2xl font-black text-white">{value}</h3>
         </Card>
       ))}
     </div>

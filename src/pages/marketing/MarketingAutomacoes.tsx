@@ -95,10 +95,10 @@ export default function MarketingAutomacoes() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Leads em Fluxo", value: "0", icon: Users, color: "text-purple-500" },
-          { label: "Emails Enviados", value: "0", icon: Mail, color: "text-blue-500" },
-          { label: "Conversões Assist.", value: "0", icon: MousePointer2, color: "text-emerald-500" },
-          { label: "Eficiência Média", value: "0%", icon: BarChart3, color: "text-amber-500" },
+          { label: "Leads em Fluxo", value: "0", icon: Users, color: "text-[#06B6D4]" },
+          { label: "Emails Enviados", value: "0", icon: Mail, color: "text-[#06B6D4]" },
+          { label: "Conversões Assist.", value: "0", icon: MousePointer2, color: "text-[#06B6D4]" },
+          { label: "Eficiência Média", value: "0%", icon: BarChart3, color: "text-[#06B6D4]" },
         ].map((stat, i) => (
           <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border-white/5 backdrop-blur-md">
             <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />

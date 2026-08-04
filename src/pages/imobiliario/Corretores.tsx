@@ -199,11 +199,11 @@ function CorretorDetailDrawer({ c, idx, onClose, onEdit, onDelete }: {
                 <p className="text-[9px] text-slate-500 mt-0.5">Imóveis Ativos</p>
               </div>
               <div className="bg-white/5 rounded-xl p-3 text-center">
-                <p className="text-xl font-black text-emerald-400">{c.vendasMes}</p>
+                <p className="text-xl font-black text-white">{c.vendasMes}</p>
                 <p className="text-[9px] text-slate-500 mt-0.5">Vendas/Mês</p>
               </div>
               <div className="bg-white/5 rounded-xl p-3 text-center">
-                <p className="text-xl font-black text-violet-400">{c.totalVendas}</p>
+                <p className="text-xl font-black text-white">{c.totalVendas}</p>
                 <p className="text-[9px] text-slate-500 mt-0.5">Total Vendas</p>
               </div>
             </div>
@@ -387,10 +387,10 @@ export default function Corretores() {
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         {[
-          { icon: Users, label: "Ativos", value: totalAtivos.toString(), color: "text-blue-400 bg-blue-500/10" },
-          { icon: TrendingUp, label: "Vendas Mês", value: totalVendas.toString(), color: "text-emerald-400 bg-emerald-500/10" },
-          { icon: Target, label: "VGV Mês", value: `R$ ${totalVGV.toFixed(1)}M`, color: "text-violet-400 bg-violet-500/10" },
-          { icon: Star, label: "Média Avaliação", value: mediaAvaliacao, color: "text-amber-400 bg-amber-500/10" },
+          { icon: Users, label: "Ativos", value: totalAtivos.toString(), color: "text-[#06B6D4] bg-[#06B6D4]/10" },
+          { icon: TrendingUp, label: "Vendas Mês", value: totalVendas.toString(), color: "text-[#06B6D4] bg-[#06B6D4]/10" },
+          { icon: Target, label: "VGV Mês", value: `R$ ${totalVGV.toFixed(1)}M`, color: "text-[#06B6D4] bg-[#06B6D4]/10" },
+          { icon: Star, label: "Média Avaliação", value: mediaAvaliacao, color: "text-[#06B6D4] bg-[#06B6D4]/10" },
         ].map((s, i) => (
           <div key={i} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl p-4 flex items-center gap-3">
             <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${s.color}`}>
@@ -464,11 +464,11 @@ export default function Corretores() {
                   <p className="text-[9px] text-slate-500 mt-0.5">Ativos</p>
                 </div>
                 <div className="bg-white/[0.03] rounded-xl p-2.5 text-center">
-                  <p className="text-base font-black text-emerald-400">{c.vendasMes}</p>
+                  <p className="text-base font-black text-white">{c.vendasMes}</p>
                   <p className="text-[9px] text-slate-500 mt-0.5">Vendas</p>
                 </div>
                 <div className="bg-white/[0.03] rounded-xl p-2.5 text-center">
-                  <p className="text-base font-black text-violet-400">{c.totalVendas}</p>
+                  <p className="text-base font-black text-white">{c.totalVendas}</p>
                   <p className="text-[9px] text-slate-500 mt-0.5">Total</p>
                 </div>
               </div>

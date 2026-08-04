@@ -149,10 +149,10 @@ export default function MarketingCampanhas() {
       {/* Real KPI cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
-          { label: "Total Investido", value: fmt(totalSpent), icon: DollarSign, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-          { label: "Receita Gerada", value: fmt(totalRevenue), icon: ArrowUpRight, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-          { label: "CPA Médio", value: cpa > 0 ? fmt(cpa) : '—', icon: Target, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
-          { label: "Leads Gerados", value: totalLeads.toString(), icon: Users, color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20" },
+          { label: "Total Investido", value: fmt(totalSpent), icon: DollarSign, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10", border: "border-[#06B6D4]/20" },
+          { label: "Receita Gerada", value: fmt(totalRevenue), icon: ArrowUpRight, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10", border: "border-[#06B6D4]/20" },
+          { label: "CPA Médio", value: cpa > 0 ? fmt(cpa) : '—', icon: Target, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10", border: "border-[#06B6D4]/20" },
+          { label: "Leads Gerados", value: totalLeads.toString(), icon: Users, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10", border: "border-[#06B6D4]/20" },
         ].map((kpi, i) => (
           <Card key={i} className={`p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group`}>
             <div className="absolute top-0 right-0 w-32 h-32 opacity-[0.03] rounded-bl-full pointer-events-none" />
@@ -162,7 +162,7 @@ export default function MarketingCampanhas() {
               </div>
             </div>
             <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">{kpi.label}</h4>
-            <p className={`text-3xl font-black ${kpi.color}`}>{kpi.value}</p>
+            <p className="text-3xl font-black text-white">{kpi.value}</p>
           </Card>
         ))}
       </div>

@@ -32,10 +32,10 @@ export default function EstoqueClinico() {
         {/* Inventory Overview */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Itens Cadastrados", value: "482", icon: Box, color: "text-blue-400" },
-             { label: "Alertas de Reposição", value: "12", icon: ShieldAlert, color: "text-rose-400" },
-             { label: "Valor em Estoque", value: "R$ 42.150", icon: BarChart3, color: "text-emerald-400" },
-             { label: "Pedidos Pendentes", value: "05", icon: Truck, color: "text-amber-400" },
+             { label: "Itens Cadastrados", value: "482", icon: Box, color: "text-[#06B6D4]" },
+             { label: "Alertas de Reposição", value: "12", icon: ShieldAlert, color: "text-[#06B6D4]" },
+             { label: "Valor em Estoque", value: "R$ 42.150", icon: BarChart3, color: "text-[#06B6D4]" },
+             { label: "Pedidos Pendentes", value: "05", icon: Truck, color: "text-[#06B6D4]" },
            ].map((stat, i) => (
              <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 relative group">
                 <div className="flex items-center gap-4 mb-3">

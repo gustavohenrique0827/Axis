@@ -182,10 +182,10 @@ export function MarketingView() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
          {[
-           { icon: MousePointer2, label: "CTR Médio", value: "0%", trend: "0%", color: "text-blue-400", bg: "bg-blue-500/10" },
-           { icon: Layers, label: "Conv. Landing Pages", value: "0%", trend: "0%", color: "text-emerald-400", bg: "bg-emerald-500/10" },
-           { icon: Users, label: "Leads de Marketing", value: "0", trend: "0%", color: "text-purple-400", bg: "bg-purple-500/10" },
-           { icon: DollarSign, label: "Total Investido", value: "R$ 0", trend: "0%", color: "text-amber-400", bg: "bg-amber-500/10" },
+           { icon: MousePointer2, label: "CTR Médio", value: "0%", trend: "0%", color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+           { icon: Layers, label: "Conv. Landing Pages", value: "0%", trend: "0%", color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+           { icon: Users, label: "Leads de Marketing", value: "0", trend: "0%", color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+           { icon: DollarSign, label: "Total Investido", value: "R$ 0", trend: "0%", color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
          ].map((metric, i) => (
             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 group hover:border-white/10 transition-all rounded-3xl">
                <div className="flex items-center gap-4 mb-4">

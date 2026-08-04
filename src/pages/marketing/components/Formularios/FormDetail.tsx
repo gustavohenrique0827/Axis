@@ -101,9 +101,9 @@ export function FormDetail({ form, tenantId }: { form: FormDefinition; tenantId:
     <div className="space-y-5">
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Total",      value: stats.total,    color: "text-blue-400",    icon: <FileText     className="w-4 h-4" /> },
-          { label: "Hoje",       value: stats.today,    color: "text-emerald-400", icon: <CheckCircle2 className="w-4 h-4" /> },
-          { label: "Últimos 7d", value: stats.thisWeek, color: "text-orange-400",  icon: <TrendingUp   className="w-4 h-4" /> },
+          { label: "Total",      value: stats.total,    color: "text-[#06B6D4]",    icon: <FileText     className="w-4 h-4" /> },
+          { label: "Hoje",       value: stats.today,    color: "text-[#06B6D4]", icon: <CheckCircle2 className="w-4 h-4" /> },
+          { label: "Últimos 7d", value: stats.thisWeek, color: "text-[#06B6D4]",  icon: <TrendingUp   className="w-4 h-4" /> },
         ].map(s => (
           <div key={s.label} className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-4 flex items-center gap-3">
             <div className={`p-2 rounded-xl bg-white/5 border border-white/10 ${s.color}`}>{s.icon}</div>
