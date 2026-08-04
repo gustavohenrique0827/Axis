@@ -10,14 +10,14 @@ export function PerformanceIAEngineCards(props: {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <Card className="p-8 bg-gradient-to-br from-[#06B6D4]/20 to-[#06B6D4]/10 border-[#06B6D4]/20 relative overflow-hidden group">
+      <Card className="p-8 bg-gradient-to-br from-blue-600/20 to-indigo-600/10 border-blue-500/20 relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-8 opacity-20 group-hover:scale-110 transition-transform">
-          <Cpu className="w-16 h-16 text-[#06B6D4]" />
+          <Cpu className="w-16 h-16 text-blue-400" />
         </div>
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-2 h-2 rounded-full bg-[#06B6D4] animate-pulse" />
-            <span className="text-[10px] font-black text-[#06B6D4] uppercase tracking-[0.2em]">
+            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">
               Motor Neural v4.2
             </span>
           </div>
@@ -31,7 +31,7 @@ export function PerformanceIAEngineCards(props: {
       <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 flex flex-col justify-between">
         <div className="flex items-center justify-between">
           <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Score de Saúde IA</h4>
-          <ShieldCheck className="w-4 h-4 text-[#06B6D4]" />
+          <ShieldCheck className="w-4 h-4 text-emerald-500" />
         </div>
         <div className="py-6 flex items-end gap-3 text-white">
           <span className="text-5xl font-black font-mono tracking-tighter">
@@ -43,15 +43,15 @@ export function PerformanceIAEngineCards(props: {
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: simulationData.length > 0 ? "94%" : "0%" }}
-            className="h-full bg-[#06B6D4]"
+            className="h-full bg-emerald-500"
           />
         </div>
       </Card>
 
-      <Card className="p-8 bg-[#06B6D4]/10 border-[#06B6D4]/20 flex flex-col justify-between">
+      <Card className="p-8 bg-amber-500/10 border-amber-500/20 flex flex-col justify-between">
         <div className="flex items-center justify-between">
-          <h4 className="text-[10px] font-black text-[#06B6D4] uppercase tracking-widest">Anomalias Detectadas</h4>
-          <AlertTriangle className="w-4 h-4 text-[#06B6D4]" />
+          <h4 className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Anomalias Detectadas</h4>
+          <AlertTriangle className="w-4 h-4 text-amber-500" />
         </div>
         <div className="py-6 flex items-end gap-3 text-white">
           <span className="text-5xl font-black font-mono tracking-tighter">

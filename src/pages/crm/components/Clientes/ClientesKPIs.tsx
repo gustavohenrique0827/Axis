@@ -10,21 +10,19 @@ interface ClientesKPIsProps {
 
 export function ClientesKPIs({ total, ativos, implantacao, inativos }: ClientesKPIsProps) {
   const items = [
-    { label: "Total", value: total, icon: Users },
-    { label: "Ativos", value: ativos, icon: CheckCircle2 },
-    { label: "Em Implantação", value: implantacao, icon: Clock },
-    { label: "Inativos", value: inativos, icon: AlertCircle },
+    { label: "Total", value: total, icon: Users, color: "text-indigo-500" },
+    { label: "Ativos", value: ativos, icon: CheckCircle2, color: "text-emerald-500" },
+    { label: "Em Implantação", value: implantacao, icon: Clock, color: "text-blue-500" },
+    { label: "Inativos", value: inativos, icon: AlertCircle, color: "text-rose-500" },
   ];
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-      {items.map(({ label, value, icon: Icon }) => (
-        <Card key={label} className="p-4 bg-[var(--color-surface-elevated)]/80 border border-[#06B6D4]/20 backdrop-blur-xl hover:scale-[1.02] transition-all">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[9px] text-slate-500 uppercase tracking-widest font-bold">{label}</p>
-            <div className="p-2 rounded-xl bg-[#06B6D4]/10 text-[#06B6D4]"><Icon className="w-3.5 h-3.5" /></div>
-          </div>
-          <h3 className="text-2xl font-black text-white">{value}</h3>
+      {items.map(({ label, value, icon: Icon, color }) => (
+        <Card key={label} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+          <Icon className={`w-5 h-5 ${color} mb-4`} />
+          <div className="text-2xl font-display font-black text-white mb-1 italic">{value}</div>
+          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</div>
         </Card>
       ))}
     </div>

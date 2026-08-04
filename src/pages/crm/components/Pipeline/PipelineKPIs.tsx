@@ -11,25 +11,23 @@ interface PipelineKPIsProps {
 
 export function PipelineKPIs({ total, hot, closed, winRate, formattedTotalValue }: PipelineKPIsProps) {
   const items = [
-    { label: "Total", value: total, icon: Users },
-    { label: "Alta Prior.", value: hot, icon: Flame },
-    { label: "Ganhos", value: closed, icon: CheckCircle2 },
-    { label: "Win Rate", value: `${winRate}%`, icon: Target },
-    { label: "Valor Total", value: formattedTotalValue, icon: BarChart3, wide: true },
+    { label: "Total", value: total, icon: Users, color: "text-indigo-500" },
+    { label: "Alta Prior.", value: hot, icon: Flame, color: "text-amber-500" },
+    { label: "Ganhos", value: closed, icon: CheckCircle2, color: "text-emerald-500" },
+    { label: "Win Rate", value: `${winRate}%`, icon: Target, color: "text-blue-500" },
+    { label: "Valor Total", value: formattedTotalValue, icon: BarChart3, color: "text-cyan-500", wide: true },
   ];
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-2 shrink-0">
-      {items.map(({ label, value, icon: Icon, wide }) => (
+      {items.map(({ label, value, icon: Icon, color, wide }) => (
         <Card
           key={label}
-          className={`p-3 border border-[#06B6D4]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl hover:scale-[1.02] transition-all ${wide ? "col-span-2 md:col-span-1" : ""}`}
+          className={`p-4 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all ${wide ? "col-span-2 md:col-span-1" : ""}`}
         >
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">{label}</span>
-            <Icon className="w-3 h-3 text-[#06B6D4]" />
-          </div>
-          <h3 className="text-xl font-extrabold text-white">{value}</h3>
+          <Icon className={`w-4 h-4 ${color} mb-2`} />
+          <div className="text-xl font-display font-black text-white mb-1 italic">{value}</div>
+          <div className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{label}</div>
         </Card>
       ))}
     </div>
