@@ -73,25 +73,25 @@ export default function Tarefas() {
           <div className="flex items-center bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl p-1">
             <button
               onClick={() => setViewMode('kanban')}
-              className={`p-1.5 px-3 rounded-lg text-xs transition-all flex items-center gap-1.5 border-none cursor-pointer ${viewMode === 'kanban' ? 'bg-[#2563EB] text-white' : 'text-slate-400 hover:text-white bg-transparent'}`}
+              className={`p-1.5 px-3 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-1.5 border-none cursor-pointer ${viewMode === 'kanban' ? 'bg-[#2563EB] text-white' : 'text-slate-400 hover:text-white bg-transparent'}`}
             >
               <LayoutGrid className="w-3.5 h-3.5" /> Quadro
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-1.5 px-3 rounded-lg text-xs transition-all flex items-center gap-1.5 border-none cursor-pointer ${viewMode === 'list' ? 'bg-[#2563EB] text-white' : 'text-slate-400 hover:text-white bg-transparent'}`}
+              className={`p-1.5 px-3 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-1.5 border-none cursor-pointer ${viewMode === 'list' ? 'bg-[#2563EB] text-white' : 'text-slate-400 hover:text-white bg-transparent'}`}
             >
               <ListIcon className="w-3.5 h-3.5" /> Lista
             </button>
           </div>
-          <Button onClick={handleSyncGoogleTasks} disabled={isSyncing} variant="outline" className="gap-2 flex items-center justify-center text-xs h-11 px-4 rounded-xl">
+          <Button onClick={handleSyncGoogleTasks} disabled={isSyncing} className="gap-2 bg-white flex items-center justify-center text-slate-800 shadow-xl border border-slate-200 hover:bg-slate-50 transition-all font-black uppercase tracking-wider text-[10px] h-11 px-4 rounded-xl">
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
             {isSyncing ? 'Sincronizando...' : (needsAuth ? 'Conectar Google Tasks' : 'Sincronizar Google Tasks')}
           </Button>
-          <Button onClick={() => setIsPautaModalOpen(true)} variant="outline" className="gap-2 h-11 px-6 rounded-xl text-xs">
+          <Button onClick={() => setIsPautaModalOpen(true)} className="gap-2 bg-purple-600 hover:bg-purple-700 h-11 px-6 rounded-xl text-[10px] uppercase font-black shadow-xl shadow-purple-600/20">
             <Plus className="w-4 h-4" /> Nova Pauta
           </Button>
-          <Button onClick={openNewTaskModal} className="gap-2 h-11 px-6 rounded-xl text-xs">
+          <Button onClick={openNewTaskModal} className="gap-2 bg-[#2563EB] hover:bg-blue-600 h-11 px-6 rounded-xl text-[10px] uppercase font-black shadow-xl shadow-blue-500/20">
             <Plus className="w-4 h-4" /> Cadastrar Tarefa
           </Button>
         </div>

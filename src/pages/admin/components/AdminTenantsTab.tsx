@@ -16,9 +16,9 @@ export function AdminTenantsTab() {
       </div>
 
       <div className="bg-[var(--color-surface-elevated)]/80 rounded-xl border border-white/10 overflow-hidden min-h-[400px] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <Server className="w-8 h-8 text-slate-500" />
-          <span className="text-sm text-slate-500">Módulo Multi-Tenant Pendente</span>
+        <div className="flex flex-col items-center gap-4 opacity-40">
+          <Server className="w-16 h-16 text-slate-500" />
+          <span className="text-sm font-black uppercase tracking-widest text-slate-500">Módulo Multi-Tenant Pendente</span>
         </div>
       </div>
     </div>

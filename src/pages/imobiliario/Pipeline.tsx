@@ -40,25 +40,29 @@ interface Lead {
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const ETAPAS: Etapa[] = ["Prospecção", "Qualificação", "Apresentação", "Negociação", "Fechamento"];
 
-const ETAPA_CFG: Record<Etapa, { color: string; dot: string }> = {
-  "Prospecção":  { color: "text-blue-300",    dot: "bg-blue-400" },
-  "Qualificação":{ color: "text-amber-300",   dot: "bg-amber-400" },
-  "Apresentação":{ color: "text-violet-300",  dot: "bg-violet-400" },
-  "Negociação":  { color: "text-cyan-300",    dot: "bg-cyan-400" },
-  "Fechamento":  { color: "text-emerald-300", dot: "bg-emerald-400" },
+const ETAPA_CFG: Record<Etapa, {
+  color: string; bg: string; border: string; dot: string;
+  headerBg: string; stripe: string; hero: string;
+}> = {
+  "Prospecção":  { color: "text-blue-300",    bg: "bg-blue-500/10",    border: "border-blue-500/20",    dot: "bg-blue-400",    headerBg: "bg-blue-500/5",    stripe: "from-blue-500 to-blue-400",    hero: "from-blue-500/10 to-transparent" },
+  "Qualificação":{ color: "text-amber-300",   bg: "bg-amber-500/10",   border: "border-amber-500/20",   dot: "bg-amber-400",   headerBg: "bg-amber-500/5",   stripe: "from-amber-500 to-amber-400",   hero: "from-amber-500/10 to-transparent" },
+  "Apresentação":{ color: "text-violet-300",  bg: "bg-violet-500/10",  border: "border-violet-500/20",  dot: "bg-violet-400",  headerBg: "bg-violet-500/5",  stripe: "from-violet-500 to-violet-400",  hero: "from-violet-500/10 to-transparent" },
+  "Negociação":  { color: "text-cyan-300",    bg: "bg-cyan-500/10",    border: "border-cyan-500/20",    dot: "bg-cyan-400",    headerBg: "bg-cyan-500/5",    stripe: "from-cyan-500 to-cyan-400",    hero: "from-cyan-500/10 to-transparent" },
+  "Fechamento":  { color: "text-emerald-300", bg: "bg-emerald-500/10", border: "border-emerald-500/20", dot: "bg-emerald-400", headerBg: "bg-emerald-500/5", stripe: "from-emerald-500 to-emerald-400", hero: "from-emerald-500/10 to-transparent" },
 };
 
 const TEMP_CFG: Record<Temperatura, {
-  label: string; icon: React.ElementType; text: string; avatarBg: string;
+  label: string; icon: React.ElementType; stripe: string; hero: string;
+  avatar: string; badge: string;
 }> = {
-  Quente: { label: "Quente", icon: Flame,     text: "text-orange-300", avatarBg: "bg-orange-500/15 text-orange-300" },
-  Morno:  { label: "Morno",  icon: Droplets,  text: "text-amber-300",  avatarBg: "bg-amber-500/15 text-amber-300" },
-  Frio:   { label: "Frio",   icon: Snowflake, text: "text-blue-300",   avatarBg: "bg-blue-500/15 text-blue-300" },
+  Quente: { label: "Quente", icon: Flame,     stripe: "from-orange-500 to-red-500",    hero: "from-orange-500/10 to-transparent", avatar: "bg-gradient-to-br from-orange-500 to-red-600 text-white", badge: "bg-orange-500/10 border-orange-500/30 text-orange-300" },
+  Morno:  { label: "Morno",  icon: Droplets,  stripe: "from-amber-500 to-yellow-400",  hero: "from-amber-500/10 to-transparent",  avatar: "bg-gradient-to-br from-amber-500 to-yellow-500 text-white", badge: "bg-amber-500/10 border-amber-500/30 text-amber-300" },
+  Frio:   { label: "Frio",   icon: Snowflake, stripe: "from-blue-500 to-cyan-400",     hero: "from-blue-500/10 to-transparent",   avatar: "bg-gradient-to-br from-blue-600 to-cyan-500 text-white",  badge: "bg-blue-500/10 border-blue-500/30 text-blue-300" },
 };
 
 const FIELD  = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
 const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
-const LABEL  = "text-xs text-slate-400 mb-1.5 block";
+const LABEL  = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
 
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -68,9 +72,9 @@ function getTemperatura(diasEtapa: number): Temperatura {
   return "Frio";
 }
 function getSLA(diasEtapa: number) {
-  if (diasEtapa <= 5) return { label: "Em Dia",  dot: "bg-emerald-400", text: "text-emerald-400" };
-  if (diasEtapa <= 10) return { label: "Atenção", dot: "bg-amber-400",  text: "text-amber-400" };
-  return { label: "Crítico", dot: "bg-rose-400", text: "text-rose-400" };
+  if (diasEtapa <= 5) return { label: "Em Dia",  cls: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400" };
+  if (diasEtapa <= 10) return { label: "Atenção", cls: "bg-amber-500/10 border-amber-500/20 text-amber-400" };
+  return { label: "Crítico", cls: "bg-rose-500/10 border-rose-500/20 text-rose-400" };
 }
 function getInitials(nome: string) {
   return nome.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
@@ -111,7 +115,7 @@ function LeadFormModal({ onClose, onSave, initial }: {
       <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
-            <h2 className="text-base font-semibold text-white">{isEdit ? "Editar Lead" : "Novo Lead"}</h2>
+            <h2 className="text-base font-black text-white">{isEdit ? "Editar Lead" : "Novo Lead"}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações" : "Adicione ao funil imobiliário"}</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
@@ -194,11 +198,11 @@ function LeadFormModal({ onClose, onSave, initial }: {
 
 // ─── LEAD DETAIL DRAWER ───────────────────────────────────────────────────────
 const DRAWER_TABS = [
-  { id: "info",    short: "Info",     icon: Building2 },
-  { id: "notas",   short: "Notas",    icon: FileText },
-  { id: "tarefas", short: "Tarefas",  icon: CheckCircle2 },
-  { id: "hist",    short: "Histórico",icon: Clock },
-  { id: "ia",      short: "IA",       icon: Brain },
+  { id: "info",    short: "INFO",    icon: Building2 },
+  { id: "notas",   short: "NOTAS",   icon: FileText },
+  { id: "tarefas", short: "TAREFAS", icon: CheckCircle2 },
+  { id: "hist",    short: "HIST.",   icon: Clock },
+  { id: "ia",      short: "IA",      icon: Brain },
 ];
 
 const SCORE_AI: Record<Etapa, number> = {
@@ -266,19 +270,24 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
       <div className="w-full max-w-[546px] bg-[var(--color-surface)] border-l border-white/10 flex flex-col overflow-hidden shadow-2xl">
 
         {/* ── Hero ── */}
-        <div className="relative shrink-0 bg-[var(--color-surface)] border-b border-white/[0.06]">
+        <div className={`relative shrink-0 bg-gradient-to-b ${tc.hero} border-b border-white/[0.06] overflow-hidden`}>
+          <div className={`h-[3px] bg-gradient-to-r ${tc.stripe}`} />
+
+          {/* Glow */}
+          <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-[0.07] bg-white pointer-events-none" />
+
           {/* Top action bar */}
           <div className="relative flex items-center justify-between px-5 pt-4 pb-3">
             <div className="flex items-center gap-1.5">
               <button
                 onClick={onGanho}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-medium transition-all active:scale-95"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-wider transition-all active:scale-95"
               >
                 <Trophy className="w-3 h-3" /> Ganho
               </button>
               <button
                 onClick={onPerdido}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-xs font-medium transition-all active:scale-95"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-black uppercase tracking-wider transition-all active:scale-95"
               >
                 <ThumbsDown className="w-3 h-3" /> Perdido
               </button>
@@ -304,29 +313,28 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
 
           {/* Identity */}
           <div className="relative flex items-center gap-4 px-5 pb-4">
-            <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-semibold shrink-0 select-none", tc.avatarBg)}>
+            <div className={cn("w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black shrink-0 shadow-lg ring-2 ring-offset-2 ring-offset-[#0B1120] select-none", tc.avatar)}>
               {getInitials(lead.cliente)}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-base font-semibold text-white truncate leading-tight">{lead.cliente}</h2>
-                <span className={cn("inline-flex items-center gap-1 text-xs shrink-0", tc.text)}>
-                  <TempIcon className="w-3 h-3" /> {tc.label}
+                <h2 className="text-base font-black text-white truncate leading-tight">{lead.cliente}</h2>
+                <span className={cn("inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider shrink-0", tc.badge)}>
+                  <TempIcon className="w-2.5 h-2.5" /> {tc.label}
                 </span>
               </div>
-              <div className="flex items-center gap-2 mt-1.5 flex-wrap text-xs">
-                <span className="text-sm font-semibold text-white font-mono">{fmtBRLFull(lead.orcamento)}</span>
+              <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                <span className="text-sm font-black text-emerald-400 font-mono">{fmtBRLFull(lead.orcamento)}</span>
                 <div className="w-px h-3 bg-white/10 shrink-0" />
                 <span className={cn(
-                  "flex items-center gap-1",
-                  lead.prioridade === "Alta" ? "text-rose-400"
-                  : lead.prioridade === "Média" ? "text-amber-400"
-                  : "text-slate-500"
+                  "text-[10px] font-bold px-2 py-0.5 rounded-full border",
+                  lead.prioridade === "Alta" ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                  : lead.prioridade === "Média" ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
+                  : "bg-slate-700/40 border-white/10 text-slate-500"
                 )}>
-                  {lead.prioridade}
+                  ▲ {lead.prioridade}
                 </span>
-                <span className="flex items-center gap-1.5 text-slate-400">
-                  <span className={cn("w-1.5 h-1.5 rounded-full", sla.dot)} />
+                <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full border", sla.cls)}>
                   SLA · {sla.label}
                 </span>
               </div>
@@ -345,13 +353,13 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
                     <button
                       onClick={() => onMoveStage(stg)}
                       className={cn(
-                        "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium whitespace-nowrap shrink-0 transition-all cursor-pointer border",
-                        isActive ? "bg-blue-500/15 text-blue-300 border-blue-500/35"
+                        "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer border",
+                        isActive ? "bg-blue-500/15 text-blue-300 border-blue-500/35 shadow-sm"
                         : isPast  ? "text-emerald-500/70 border-transparent hover:border-white/10 hover:bg-white/5"
                         : "text-slate-600 border-transparent hover:text-slate-300 hover:border-white/10 hover:bg-white/5"
                       )}
                     >
-                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />}
+                      {isActive && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shrink-0" />}
                       {isPast   && <span className="w-3.5 h-3.5 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0"><Check className="w-2 h-2 text-emerald-400" /></span>}
                       {stg}
                     </button>
@@ -372,13 +380,13 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
                 key={t.id}
                 onClick={() => setTab(t.id)}
                 className={cn(
-                  "relative flex flex-col items-center justify-center gap-0.5 pt-2 pb-2.5 px-3.5 text-[10px] font-medium whitespace-nowrap transition-all shrink-0 cursor-pointer min-w-[64px] rounded-t-lg",
-                  isActive ? "text-blue-400 bg-white/[0.04]" : "text-slate-600 hover:text-slate-300 hover:bg-white/[0.03]"
+                  "relative flex flex-col items-center justify-center gap-0.5 pt-2 pb-2.5 px-3.5 text-[8px] font-black tracking-widest whitespace-nowrap transition-all shrink-0 cursor-pointer min-w-[64px] rounded-t-lg",
+                  isActive ? "text-[#06B6D4] bg-cyan-500/[0.07]" : "text-slate-600 hover:text-slate-300 hover:bg-white/[0.03]"
                 )}
               >
-                <t.icon className="w-3.5 h-3.5" />
+                <t.icon className={cn("w-3.5 h-3.5 transition-all", isActive ? "scale-110 text-[#06B6D4]" : "text-slate-600")} />
                 <span>{t.short}</span>
-                {isActive && <div className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-blue-400" />}
+                {isActive && <div className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-[#06B6D4]" />}
               </button>
             );
           })}
@@ -393,20 +401,20 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
               {/* Row principal */}
               <div className="bg-[var(--color-surface-elevated)] border border-white/[0.06] rounded-xl p-4 grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-xs text-slate-500 mb-1">Interesse</p>
-                  <p className="text-sm font-semibold text-white">{lead.interesse}</p>
+                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Interesse</p>
+                  <p className="text-sm font-black text-white">{lead.interesse}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 mb-1">Orçamento</p>
-                  <p className="text-sm font-semibold text-white">{fmtBRLFull(lead.orcamento)}</p>
+                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Orçamento</p>
+                  <p className="text-sm font-black text-emerald-400">{fmtBRLFull(lead.orcamento)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 mb-1">Responsável</p>
-                  <p className="text-sm font-semibold text-white">{lead.corretor || "—"}</p>
+                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Responsável</p>
+                  <p className="text-sm font-black text-blue-400">{lead.corretor || "—"}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 mb-1">Prioridade</p>
-                  <p className={cn("text-sm font-semibold",
+                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Prioridade</p>
+                  <p className={cn("text-sm font-black",
                     lead.prioridade === "Alta" ? "text-rose-400"
                     : lead.prioridade === "Média" ? "text-amber-400"
                     : "text-slate-400"
@@ -416,7 +424,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
 
               {/* Quick actions */}
               <div className="bg-[var(--color-surface-elevated)] border border-white/[0.06] rounded-xl p-4">
-                <p className="text-xs text-slate-500 mb-3">Ações Rápidas</p>
+                <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-3">Ações Rápidas</p>
                 <div className="grid grid-cols-3 gap-2">
                   {QUICK_ACTIONS.map(a => (
                     a.href ? (
@@ -425,7 +433,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
                         href={a.href}
                         target={a.href.startsWith("http") ? "_blank" : undefined}
                         rel="noopener noreferrer"
-                        className="flex flex-col items-center gap-1.5 py-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-slate-300 text-xs font-medium transition-all"
+                        className={cn("flex flex-col items-center gap-1.5 py-3 rounded-xl border text-[10px] font-black transition-all", a.color)}
                       >
                         <a.icon className="w-4 h-4" />
                         {a.label}
@@ -433,7 +441,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
                     ) : (
                       <button
                         key={a.label}
-                        className="flex flex-col items-center gap-1.5 py-3 rounded-xl border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] text-slate-300 text-xs font-medium transition-all"
+                        className={cn("flex flex-col items-center gap-1.5 py-3 rounded-xl border text-[10px] font-black transition-all", a.color)}
                         onClick={() => toast.info(`${a.label} — em breve`)}
                       >
                         <a.icon className="w-4 h-4" />
@@ -448,15 +456,17 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
               <div className="bg-[var(--color-surface-elevated)] border border-white/[0.06] rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center gap-2">
-                    <Brain className="w-4 h-4 text-violet-400" />
-                    <p className="text-xs text-slate-400">Recomendação Axis Copilot</p>
+                    <div className="w-6 h-6 rounded-lg bg-violet-500/20 flex items-center justify-center">
+                      <Brain className="w-3.5 h-3.5 text-violet-400" />
+                    </div>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Recomendação Axis Copilot</p>
                   </div>
-                  <span className="text-xs text-violet-400">IA</span>
+                  <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400">IA</span>
                 </div>
                 <div className="mb-3">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs text-slate-500">Score</span>
-                    <span className="text-sm font-semibold text-white">{score}</span>
+                    <span className="text-[9px] text-slate-500">Score</span>
+                    <span className="text-sm font-black text-white">{score}</span>
                   </div>
                   <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
                     <div
@@ -469,9 +479,9 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
                 </div>
                 <p className="text-xs text-slate-400 leading-relaxed mb-3">{AI_MSG[lead.etapa]}</p>
                 <div className="flex items-center justify-between bg-white/[0.03] border border-white/[0.06] rounded-lg px-3 py-2">
-                  <span className="text-xs text-slate-500">Sugestão de ação:</span>
+                  <span className="text-[10px] text-slate-600">Sugestão de ação:</span>
                   <button
-                    className="text-xs font-medium text-blue-400 hover:text-blue-300 transition-colors"
+                    className="text-[10px] font-black text-cyan-400 hover:text-cyan-300 transition-colors"
                     onClick={() => toast.info("Abrindo sugestão...")}
                   >
                     Aplicar Proposta →
@@ -483,14 +493,14 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
               <div className="bg-[var(--color-surface-elevated)] border border-white/[0.06] rounded-xl p-4">
                 <div className="flex items-center gap-2 mb-3">
                   <Tag className="w-3.5 h-3.5 text-slate-500" />
-                  <p className="text-xs text-slate-500">Tags Corporativas</p>
+                  <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider">Tags Corporativas</p>
                 </div>
                 {tags.length === 0 ? (
-                  <p className="text-xs text-slate-600 italic mb-3">Nenhuma tag adicionada ainda</p>
+                  <p className="text-[10px] text-slate-600 italic mb-3">Nenhuma tag adicionada ainda</p>
                 ) : (
                   <div className="flex flex-wrap gap-1.5 mb-3">
                     {tags.map(t => (
-                      <span key={t} className="flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-slate-300">
+                      <span key={t} className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-white/[0.06] border border-white/10 text-slate-300">
                         {t}
                         <button onClick={() => removeTag(t)} className="text-slate-600 hover:text-red-400 ml-0.5"><X className="w-2.5 h-2.5" /></button>
                       </span>
@@ -505,13 +515,13 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
                     placeholder="Nova tag... (Enter para adicionar)"
                     className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40"
                   />
-                  <button onClick={addTag} className="px-3 py-1.5 rounded-lg bg-blue-600/80 hover:bg-blue-600 text-white text-xs font-medium transition-all">+</button>
+                  <button onClick={addTag} className="px-3 py-1.5 rounded-lg bg-blue-600/80 hover:bg-blue-600 text-white text-xs font-black transition-all">+</button>
                 </div>
               </div>
 
               {/* Contact info */}
               <div className="bg-[var(--color-surface-elevated)] border border-white/[0.06] rounded-xl p-4 space-y-2">
-                <p className="text-xs text-slate-500 mb-2">Contato</p>
+                <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-2">Contato</p>
                 {lead.telefone && (
                   <div className="flex items-center gap-3">
                     <Phone className="w-3.5 h-3.5 text-slate-600 shrink-0" />

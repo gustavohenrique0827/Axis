@@ -12,6 +12,19 @@ const SmileIcon = ({ className }: { className?: string }) => (
   </svg>
 );
 
+const CHANNEL_COLORS = [
+  "from-blue-500 to-blue-700",
+  "from-violet-500 to-violet-700",
+  "from-emerald-500 to-emerald-700",
+  "from-amber-500 to-amber-700",
+  "from-pink-500 to-pink-700",
+  "from-cyan-500 to-cyan-700",
+];
+
+function channelColor(name: string) {
+  return CHANNEL_COLORS[name.charCodeAt(0) % CHANNEL_COLORS.length];
+}
+
 function channelTypeIcon(type: string) {
   if (type === "geral") return <Hash className="w-3.5 h-3.5" />;
   if (type === "squad") return <Users className="w-3.5 h-3.5" />;
@@ -47,9 +60,9 @@ function chDisplayName(ch: InternalChannel): string {
 }
 
 function chBadgeIcon(type: string) {
-  if (type === "geral") return <Hash className="w-[14px] h-[14px] text-slate-400" />;
-  if (type === "squad") return <Users className="w-[14px] h-[14px] text-slate-400" />;
-  return <MessageSquare className="w-[14px] h-[14px] text-slate-400" />;
+  if (type === "geral") return <Hash className="w-[14px] h-[14px] text-blue-400" />;
+  if (type === "squad") return <Users className="w-[14px] h-[14px] text-violet-400" />;
+  return <MessageSquare className="w-[14px] h-[14px] text-emerald-400" />;
 }
 
 function fmtTime(iso?: string) {
@@ -93,9 +106,9 @@ function InternalSidebar({ channels, activeChannelId, onSelectChannel, onNewDM }
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`whitespace-nowrap px-4 py-1.5 text-[13px] rounded-full transition-all cursor-pointer ${
+            className={`whitespace-nowrap px-4 py-1.5 text-[13px] font-medium rounded-full transition-all cursor-pointer ${
               activeTab === tab
-                ? "bg-white/10 text-white"
+                ? "bg-blue-600 text-white shadow-md shadow-blue-900/20"
                 : "bg-white/5 hover:bg-white/10 text-slate-300"
             }`}
           >
@@ -149,13 +162,13 @@ function InternalSidebar({ channels, activeChannelId, onSelectChannel, onNewDM }
               onClick={() => onSelectChannel(ch.id)}
               className={`w-full flex items-center gap-4 py-4 transition-all border-b border-white/5 text-left cursor-pointer group border-l-4 ${
                 isActive
-                  ? "border-l-white/40 bg-white/5 pl-[16px] pr-5 text-white"
+                  ? "border-l-blue-500 bg-blue-500/10 pl-[16px] pr-5 shadow-[inset_4px_0_15px_rgba(59,130,246,0.15),0_0_15px_rgba(59,130,246,0.1)] ring-1 ring-blue-500/20 text-white"
                   : "border-transparent pl-[16px] pr-5 hover:bg-white/5"
               }`}
             >
               {/* Avatar com badge de tipo */}
               <div className="relative shrink-0">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-medium text-white bg-white/10 border border-white/10">
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-inner bg-gradient-to-br ${channelColor(ch.name)}`}>
                   {chAvatar(ch)}
                 </div>
                 <div className="absolute -bottom-1 -right-1 bg-[#0F172A] rounded-full p-[3px] shadow-sm ring-2 ring-[#0B1120]">
@@ -216,10 +229,10 @@ function InternalChatArea({ channel, messages, inputText, setInputText, sendMess
     return (
       <div className="flex-1 flex items-center justify-center relative bg-[#0F172A]/30">
         <div className="flex flex-col items-center justify-center max-w-[420px] text-center px-6">
-          <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mb-8">
-            <MessageSquare className="w-10 h-10 text-slate-400" strokeWidth={2} />
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-900/30 mb-8 -rotate-12 ring-4 ring-white/5">
+            <MessageSquare className="w-10 h-10 text-white rotate-12" strokeWidth={2} />
           </div>
-          <h2 className="text-white text-2xl font-semibold mb-4">Chat Interno</h2>
+          <h2 className="text-white text-3xl font-bold tracking-tight mb-4">Chat Interno</h2>
           <p className="text-slate-400 text-[15px] leading-relaxed mb-8">
             Comunique-se com sua equipe em canais, squads ou mensagens diretas.
           </p>
@@ -240,11 +253,11 @@ function InternalChatArea({ channel, messages, inputText, setInputText, sendMess
               <ArrowLeft className="w-6 h-6" />
             </button>
           )}
-          <div className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium text-white bg-white/10 border border-white/10">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-white bg-gradient-to-br ${channelColor(channel.name)}`}>
             {isDirect ? channel.name.split(" & ")[1]?.slice(0, 2).toUpperCase() : channelTypeIcon(channel.type)}
           </div>
           <div className="flex flex-col min-w-0">
-            <h2 className="text-white font-medium text-[15px] md:text-[16px] truncate">
+            <h2 className="text-white font-semibold text-[15px] md:text-[16px] truncate tracking-tight">
               {isDirect
                 ? channel.name.replace(/.*& /, "")
                 : `${channel.type === "geral" ? "#" : channel.type === "squad" ? "⚡ " : ""}${channel.name}`}
@@ -272,17 +285,17 @@ function InternalChatArea({ channel, messages, inputText, setInputText, sendMess
       >
         {messages.length === 0 ? (
           <div className="flex items-center justify-center h-full opacity-50 flex-col gap-4">
-            <div className="bg-white/5 p-6 rounded-full border border-white/10">
-              <MessageSquare className="w-10 h-10 text-slate-400" />
+            <div className="bg-white/5 p-6 rounded-full shadow-lg ring-1 ring-white/10">
+              <MessageSquare className="w-10 h-10 text-blue-400" />
             </div>
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-slate-400 font-medium">
               Seja o primeiro a escrever em {channel.type !== "direct" ? `#${channel.name}` : channel.name.replace(/.*& /, "")}
             </p>
           </div>
         ) : (
           <>
             <div className="flex justify-center mb-6">
-              <span className="text-xs text-slate-400 bg-white/5 px-3 py-1 rounded-full">
+              <span className="text-[11px] font-medium text-slate-400 bg-white/5 px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm">
                 Hoje
               </span>
             </div>
@@ -299,7 +312,7 @@ function InternalChatArea({ channel, messages, inputText, setInputText, sendMess
                 <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"} ${grouped ? "mt-0.5" : "mt-3"}`}>
                   {/* Avatar — only first of group */}
                   {!isMe && !grouped && (
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-medium text-white shrink-0 mr-2 mt-1 bg-white/10 border border-white/10">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white shrink-0 mr-2 mt-1 bg-gradient-to-br ${channelColor(msg.sender_name)}`}>
                       {msg.sender_name.slice(0, 2).toUpperCase()}
                     </div>
                   )}
@@ -455,11 +468,11 @@ export function InternalChatView() {
                     onClick={() => { openDirectMessage(u); setShowDMSearch(false); setDmSearch(""); }}
                     className="w-full flex items-center gap-3 px-4 py-3 hover:bg-white/5 transition-colors text-left"
                   >
-                    <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-medium text-white bg-white/10 border border-white/10">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white bg-gradient-to-br ${channelColor(u.name)}`}>
                       {u.name.slice(0, 2).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">{u.name}</p>
+                      <p className="text-sm font-semibold text-white">{u.name}</p>
                       <p className="text-[11px] text-slate-500">{u.role || u.email}</p>
                     </div>
                   </button>

@@ -21,15 +21,18 @@ export function FlyingMascot() {
       <div className="w-full h-full pointer-events-auto">
         <MascotMIA6 className="w-full h-full" />
       </div>
-      <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[var(--color-surface-elevated)]/80 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-         <span className="text-[10px] font-mono tracking-widest text-slate-300">MIA-6_NEURAL_FLYBY</span>
+      <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#00c8ff]/20 backdrop-blur-md px-3 py-1 rounded-full border border-[#00c8ff]/30">
+         <span className="text-[10px] font-mono font-black text-[#00c8ff] tracking-widest animate-[neonPulse_2s_infinite]">MIA-6_NEURAL_FLYBY</span>
       </div>
-      {/* Particle Trail via multiple child divs optimized for GPU */}
+      {/* Neon Particle Trail via multiple child divs optimized for GPU */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-full pointer-events-none -z-10">
         {[1, 2, 3, 4, 5, 6, 7].map((i) => (
           <motion.div
             key={i}
-            className="absolute left-1/2 bottom-10 w-3 h-3 rounded-full bg-blue-500 top-auto will-change-transform"
+            className="absolute left-1/2 bottom-10 w-3 h-3 rounded-full bg-[#00c8ff] top-auto will-change-transform"
+            style={{
+              filter: "drop-shadow(0 0 10px #00c8ff)",
+            }}
             animate={{
               y: [0, 40 * i, 120 + 30 * i],
               x: [0, (i % 2 === 0 ? 15 : -15) * (i / 2), (i % 2 === 0 ? 30 : -30) * i],

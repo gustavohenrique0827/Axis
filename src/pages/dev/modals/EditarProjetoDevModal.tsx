@@ -50,9 +50,9 @@ const STACKS = [
 
 const STATUSES = ['Em Planejamento', 'Em Desenvolvimento', 'Em Produção', 'Pausado', 'Concluído'];
 
-const label = 'text-xs text-slate-400';
+const label = 'text-[10px] font-bold text-slate-400 uppercase tracking-wider';
 const input =
-  'w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-white/30 focus:outline-none focus:ring-2 focus:ring-white/10 transition-all placeholder-slate-600';
+  'w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder-slate-600';
 
 export function EditarProjetoDevModal({ isOpen, onClose, onSave, initialData }: Props) {
   const [name, setName] = useState('');
@@ -99,12 +99,12 @@ export function EditarProjetoDevModal({ isOpen, onClose, onSave, initialData }: 
       maxWidth="max-w-2xl"
       title={
         <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mt-0.5">
-            <FolderCode className="w-4 h-4 text-slate-300" />
+          <div className="w-9 h-9 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center mt-0.5">
+            <FolderCode className="w-4 h-4 text-blue-400" />
           </div>
           <div className="leading-tight">
-            <div className="text-base font-semibold text-white">Editar Projeto</div>
-            <div className="text-xs text-slate-400 mt-0.5">Dev & Tecnologia</div>
+            <div className="text-base font-black text-white">Editar Projeto</div>
+            <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">Dev & Tecnologia</div>
           </div>
         </div>
       }
@@ -113,7 +113,7 @@ export function EditarProjetoDevModal({ isOpen, onClose, onSave, initialData }: 
           <Button type="button" variant="ghost" onClick={onClose} className="text-slate-400 hover:text-white" disabled={loading}>
             Cancelar
           </Button>
-          <Button type="submit" form="editar-projeto-dev-form" className="px-6" disabled={!canSubmit}>
+          <Button type="submit" form="editar-projeto-dev-form" className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6" disabled={!canSubmit}>
             {loading ? 'Salvando...' : 'Salvar Alterações'}
           </Button>
         </>

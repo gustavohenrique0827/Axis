@@ -12,54 +12,42 @@ export function StatusDot({ status }: { status: string }) {
 export function ScoreBar({ value, max = 100, color = 'blue' }: { value: number; max?: number; color?: string }) {
   const pct = Math.min(100, Math.round((value / max) * 100));
   const colorMap: Record<string, string> = {
-    blue: 'bg-slate-400', emerald: 'bg-emerald-500',
-    amber: 'bg-amber-500', rose: 'bg-rose-500', indigo: 'bg-slate-400',
+    blue: 'bg-blue-500', emerald: 'bg-emerald-500',
+    amber: 'bg-amber-500', rose: 'bg-rose-500', indigo: 'bg-indigo-500',
   };
   return (
     <div className="flex items-center gap-2">
       <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
-        <div className={`h-full ${colorMap[color] ?? 'bg-slate-400'} transition-all`} style={{ width: `${pct}%` }} />
+        <div className={`h-full ${colorMap[color] ?? 'bg-blue-500'} transition-all`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[10px] text-slate-300 w-8 text-right">{value}</span>
+      <span className="text-[10px] font-black text-slate-300 w-8 text-right">{value}</span>
     </div>
   );
 }
 
 export function RiskBadge({ level }: { level: 'low' | 'medium' | 'high' }) {
-  const dot = {
-    low: 'bg-emerald-500',
-    medium: 'bg-amber-500',
-    high: 'bg-rose-500',
-  };
-  const text = {
-    low: 'text-emerald-400',
-    medium: 'text-amber-400',
-    high: 'text-rose-400',
+  const map = {
+    low: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+    medium: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+    high: 'bg-rose-500/10 text-rose-400 border-rose-500/20 animate-pulse',
   };
   const labels = { low: 'Baixo', medium: 'Médio', high: 'Alto' };
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs ${text[level]}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${dot[level]}`} />
+    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded border ${map[level]}`}>
       {labels[level]}
     </span>
   );
 }
 
 export function IntensityBadge({ level }: { level: 'low' | 'medium' | 'high' }) {
-  const dot = {
-    low: 'bg-slate-500',
-    medium: 'bg-amber-500',
-    high: 'bg-emerald-500',
-  };
-  const text = {
-    low: 'text-slate-400',
-    medium: 'text-amber-400',
-    high: 'text-emerald-400',
+  const map = {
+    low: 'text-slate-400 bg-white/5 border-white/5',
+    medium: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+    high: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
   };
   const labels = { low: 'Fraco', medium: 'Médio', high: 'Forte' };
   return (
-    <span className={`inline-flex items-center gap-1.5 text-xs ${text[level]}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${dot[level]}`} />
+    <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded border ${map[level]}`}>
       {labels[level]}
     </span>
   );
@@ -71,8 +59,8 @@ export function SectionCard({ title, icon: Icon, children, className = '' }: {
   return (
     <div className={`bg-[var(--color-surface)] border border-white/5 rounded-2xl p-4 ${className}`}>
       <div className="flex items-center gap-2 mb-3">
-        <Icon className="w-4 h-4 text-slate-400" />
-        <h3 className="text-sm text-slate-400">{title}</h3>
+        <Icon className="w-3.5 h-3.5 text-blue-400" />
+        <h3 className="text-[10px] font-black text-white uppercase tracking-widest">{title}</h3>
       </div>
       {children}
     </div>

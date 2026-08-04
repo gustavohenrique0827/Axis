@@ -125,7 +125,7 @@ function ColCard({
       </div>
 
       <div className="border-t border-white/5 px-3 py-2.5 flex items-center justify-between">
-        <span className="text-[10px] text-slate-500">Minimizado</span>
+        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Minimizado</span>
         <button
           onClick={() => onUpdate({ iniciarMinimizado: !col.iniciarMinimizado })}
           className={`relative w-8 h-4 rounded-full transition-colors ${col.iniciarMinimizado ? "bg-blue-500" : "bg-white/10"}`}
@@ -134,7 +134,7 @@ function ColCard({
         </button>
       </div>
       <div className="px-3 pb-2.5">
-        <span className="text-[10px] text-slate-600">Coluna {idx + 1}</span>
+        <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Coluna {idx + 1}</span>
       </div>
     </div>
   );
@@ -240,13 +240,13 @@ function BoardEditor({ boardKey, canAddRemove }: { boardKey: BoardKey; canAddRem
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           {canAddRemove && (
-            <Button onClick={handleAdd} className="bg-white/10 hover:bg-white/15 border border-white/10 text-white text-xs h-9 px-4 gap-2 rounded-xl shadow-none">
+            <Button onClick={handleAdd} className="bg-white/10 hover:bg-white/15 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest h-9 px-4 gap-2 rounded-xl shadow-none">
               <Plus className="w-3.5 h-3.5" /> Adicionar Coluna
             </Button>
           )}
           <button
             onClick={handleReset}
-            className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+            className="text-[10px] font-bold text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest"
           >
             Redefinir padrão
           </button>
@@ -254,7 +254,7 @@ function BoardEditor({ boardKey, canAddRemove }: { boardKey: BoardKey; canAddRem
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-[#2563EB] hover:bg-blue-600 px-6 h-9 gap-2 text-xs"
+          className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 h-9 gap-2 text-[10px] uppercase tracking-widest shadow-lg shadow-blue-500/20"
         >
           <Save className="w-3.5 h-3.5" />
           {saving ? "Salvando..." : "Salvar Alterações"}
@@ -300,7 +300,7 @@ function BoardEditor({ boardKey, canAddRemove }: { boardKey: BoardKey; canAddRem
                     className="flex-shrink-0 w-[200px] rounded-2xl border border-dashed border-white/10 bg-transparent flex flex-col items-center justify-center min-h-[220px] gap-2 text-slate-600 hover:text-slate-400 hover:border-white/20 transition-all"
                   >
                     <Plus className="w-6 h-6" />
-                    <span className="text-[10px]">Adicionar Coluna</span>
+                    <span className="text-[9px] font-black uppercase tracking-widest">Adicionar Coluna</span>
                   </button>
                 )}
               </div>
@@ -310,7 +310,7 @@ function BoardEditor({ boardKey, canAddRemove }: { boardKey: BoardKey; canAddRem
       </div>
 
       {!canAddRemove && (
-        <p className="text-xs text-slate-500">
+        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
           * As colunas deste quadro são fixas. Você pode renomear, reordenar e alterar cores, mas não adicionar ou remover colunas.
         </p>
       )}
@@ -337,9 +337,9 @@ export function ConfigKanbanBoards() {
           <button
             key={b.key}
             onClick={() => setActiveBoard(b.key)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-xs transition-colors ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
               activeBoard === b.key
-                ? "bg-white/10 border-white/20 text-white"
+                ? "bg-blue-600/10 border-blue-500/40 text-blue-400"
                 : "bg-white/[0.02] border-white/10 text-slate-400 hover:text-white hover:border-white/20"
             }`}
           >
@@ -350,14 +350,14 @@ export function ConfigKanbanBoards() {
       </div>
 
       {/* Active Board Card */}
-      <Card className="p-6 space-y-5">
+      <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 p-6 space-y-5">
         <div className="flex items-center gap-3 pb-4 border-b border-white/5">
-          <div className="text-slate-400">
+          <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
             {board.icon}
           </div>
           <div>
-            <div className="font-medium text-white text-sm">{board.label}</div>
-            <div className="text-xs text-slate-500 mt-0.5">{board.description}</div>
+            <div className="font-black text-white text-sm uppercase tracking-tight">{board.label}</div>
+            <div className="text-[10px] text-slate-500 mt-0.5">{board.description}</div>
           </div>
         </div>
 

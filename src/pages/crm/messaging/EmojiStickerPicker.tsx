@@ -120,13 +120,13 @@ export function EmojiStickerPicker({ onEmojiSelect, onStickerSend, onClose }: Pr
       <div className="flex items-center border-b border-white/5 px-3 pt-2 gap-1">
         <button
           onClick={() => setTab("emoji")}
-          className={`px-4 py-1.5 text-[12px] rounded-t-xl transition-all ${tab === "emoji" ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300"}`}
+          className={`px-4 py-1.5 text-[12px] font-bold rounded-t-xl transition-all ${tab === "emoji" ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300"}`}
         >
           😀 Emojis
         </button>
         <button
           onClick={() => setTab("sticker")}
-          className={`px-4 py-1.5 text-[12px] rounded-t-xl transition-all ${tab === "sticker" ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300"}`}
+          className={`px-4 py-1.5 text-[12px] font-bold rounded-t-xl transition-all ${tab === "sticker" ? "bg-white/10 text-white" : "text-slate-500 hover:text-slate-300"}`}
         >
           🎭 Figurinhas
         </button>
@@ -181,7 +181,7 @@ export function EmojiStickerPicker({ onEmojiSelect, onStickerSend, onClose }: Pr
                 className="flex flex-col items-center gap-1 p-3 bg-white/[0.03] hover:bg-white/10 border border-white/5 hover:border-white/20 rounded-xl transition-all hover:scale-105 active:scale-95"
               >
                 <span className="text-4xl leading-none">{s.emoji}</span>
-                <span className="text-[9px] text-slate-500">{s.label}</span>
+                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wide">{s.label}</span>
               </button>
             ))}
           </div>

@@ -34,10 +34,10 @@ export default function SettingsGenericForm() {
         </div>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
         <div className="space-y-6">
           <div className="space-y-2">
-            <label className="text-xs text-slate-400">
+            <label className="text-[11px] font-bold tracking-widest text-slate-400 uppercase">
               Parâmetro 1
             </label>
             <input 
@@ -48,7 +48,7 @@ export default function SettingsGenericForm() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-400">
+            <label className="text-[11px] font-bold tracking-widest text-slate-400 uppercase">
               Habilitar Recurso
             </label>
             <div className="flex items-center gap-3">
@@ -59,23 +59,23 @@ export default function SettingsGenericForm() {
         </div>
 
         <div className="mt-8 pt-6 border-t border-white/10 flex justify-end">
-          <Button onClick={() => toast.success('Alterações salvas com sucesso!')} className="px-6 py-2 bg-[#2563EB] hover:bg-blue-600 rounded-lg gap-2">
+          <Button onClick={() => toast.success('Alterações salvas com sucesso!')} className="px-6 py-2 bg-[#2563EB] hover:bg-blue-600 rounded-lg font-bold shadow-lg shadow-blue-500/20 gap-2">
             <Save className="w-4 h-4" /> Salvar Alterações
           </Button>
         </div>
       </Card>
       
       {/* Skeleton list block */}
-      <Card className="p-6">
-         <h4 className="text-sm text-slate-400 mb-4">Registros Adicionados</h4>
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
+         <h4 className="text-sm font-bold text-white mb-4">Registros Adicionados</h4>
          <div className="space-y-3">
             {[].map((i: any) => (
               <div key={i} className="p-4 rounded-xl border border-white/5 bg-white/5 flex items-center justify-between">
                  <div>
-                   <div className="font-medium text-sm text-white">Item de Configuração {i}</div>
+                   <div className="font-semibold text-sm text-white">Item de Configuração {i}</div>
                    <div className="text-xs text-slate-400 mt-1">Atualizado há 2 dias</div>
                  </div>
-                 <button className="text-xs text-slate-500 hover:text-white">Editar</button>
+                 <button className="text-xs font-bold text-slate-500 hover:text-[#2563EB]">Editar</button>
               </div>
             ))}
          </div>

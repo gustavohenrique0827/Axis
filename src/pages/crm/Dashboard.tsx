@@ -44,10 +44,10 @@ export default function Dashboard() {
     const wonLeads = all.filter(l => l.status === "Fechado").length;
     const winRate = totalLeads > 0 ? (wonLeads / totalLeads) * 100 : 0;
     return [
-      { label: "Leads Totais",      value: totalLeads,                    icon: Users },
-      { label: "Score IA Médio",    value: avgScore.toFixed(1),           icon: Brain },
-      { label: "Pipeline Total",    value: `R$ ${(totalValue/1000).toFixed(1)}k`, icon: DollarSign },
-      { label: "Taxa de Conversão", value: `${winRate.toFixed(1)}%`,      icon: Award },
+      { label: "Leads Totais",      value: totalLeads,                    icon: Users,   color: "text-blue-400",   bg: "bg-blue-400/10",   border: "border-blue-500/20"   },
+      { label: "Score IA Médio",    value: avgScore.toFixed(1),           icon: Brain,   color: "text-purple-400", bg: "bg-purple-400/10", border: "border-purple-500/20" },
+      { label: "Pipeline Total",    value: `R$ ${(totalValue/1000).toFixed(1)}k`, icon: DollarSign, color: "text-emerald-400", bg: "bg-emerald-400/10", border: "border-emerald-500/20" },
+      { label: "Taxa de Conversão", value: `${winRate.toFixed(1)}%`,      icon: Award,   color: "text-amber-400",  bg: "bg-amber-400/10",  border: "border-amber-500/20"  },
     ];
   }, [leads]);
 

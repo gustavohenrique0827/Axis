@@ -64,7 +64,7 @@ export default function Clientes() {
       title="Base de Clientes Axis"
       description="Gerencie a carteira de clientes ativos e em implantação de forma inteligente."
       actions={
-        <Button onClick={() => setIsModalOpen(true)} className="gap-2">
+        <Button onClick={() => setIsModalOpen(true)} className="gap-2 h-10 px-5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all">
           <Plus className="w-4 h-4" /> Novo Cliente
         </Button>
       }

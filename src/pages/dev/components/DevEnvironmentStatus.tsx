@@ -10,21 +10,21 @@ const ENVIRONMENTS = [
 
 export function DevEnvironmentStatus() {
   return (
-    <Card className="p-4">
-      <h3 className="text-sm text-slate-400 mb-4 flex items-center gap-2">
+    <Card className="p-8 bg-gradient-to-br from-emerald-600/10 to-transparent border-emerald-500/20">
+      <h3 className="text-xs font-black text-emerald-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
         <Database className="w-4 h-4" /> Status dos Ambientes
       </h3>
-      <div className="space-y-2">
+      <div className="space-y-4">
         {ENVIRONMENTS.map((env, i) => (
-          <div key={i} className="flex items-center justify-between p-3 bg-white/[0.02] rounded-lg border border-white/5">
+          <div key={i} className="flex items-center justify-between p-3 bg-white/[0.03] rounded-xl border border-white/5">
             <div className="flex items-center gap-3">
-              <span className={`w-1.5 h-1.5 rounded-full ${env.color}`} />
+              <div className={`w-2 h-2 rounded-full ${env.color} animate-pulse`} />
               <div>
-                <p className="text-xs text-white">{env.name}</p>
-                <p className="text-xs text-slate-500 mt-0.5">{env.version}</p>
+                <p className="text-xs font-black text-white">{env.name}</p>
+                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">{env.version}</p>
               </div>
             </div>
-            <span className={`text-xs ${env.status === "Operacional" ? "text-emerald-400" : "text-amber-400"}`}>
+            <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-lg ${env.status === "Operacional" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"}`}>
               {env.status}
             </span>
           </div>

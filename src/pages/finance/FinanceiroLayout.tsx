@@ -59,7 +59,7 @@ export default function FinanceiroLayout() {
           <motion.h2 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="text-xs text-slate-500"
+            className="text-[11px] font-bold text-slate-500 uppercase tracking-widest"
           >
             Financeiro
           </motion.h2>
@@ -99,7 +99,7 @@ export default function FinanceiroLayout() {
       <div className="lg:hidden w-full bg-[var(--color-dark-bg)] border-b border-white/5 pt-3 shrink-0 z-20 sticky top-0">
         <div className="px-4 pb-3 flex items-center justify-between">
           <div>
-            <h2 className="text-lg font-semibold text-white">Financeiro</h2>
+            <h2 className="text-lg font-black text-white tracking-tighter">Financeiro</h2>
           </div>
           <button 
             className="p-1.5 bg-white/5 rounded-lg text-slate-400 hover:text-white"
@@ -118,7 +118,7 @@ export default function FinanceiroLayout() {
               className="absolute top-full left-0 right-0 bg-[var(--color-dark-bg)] border-b border-white/10 shadow-2xl max-h-[75vh] overflow-y-auto p-4 z-40"
             >
               <div className="px-2 w-full md:w-auto mb-6">
-                <div className="px-4 mb-2 flex items-center gap-2 text-xs text-slate-500">
+                <div className="px-4 mb-2 flex items-center gap-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">
                   <Wallet className="w-4 h-4" /> <span>Navegação Geral</span>
                 </div>
                 <div className="space-y-0.5 flex flex-col">

@@ -39,7 +39,7 @@ const STATUS_ICON: Record<string, any> = {
 
 const FIELD = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
 const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
-const LABEL = "text-[10px] font-semibold text-slate-500 mb-1.5 block";
+const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
 
 // ─── FORM MODAL ───────────────────────────────────────────────────────────────
 function VisitaFormModal({ onClose, onSave, initial }: {
@@ -66,7 +66,7 @@ function VisitaFormModal({ onClose, onSave, initial }: {
       <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
-            <h2 className="text-base font-semibold text-white">{isEdit ? "Editar Visita" : "Agendar Visita"}</h2>
+            <h2 className="text-base font-black text-white">{isEdit ? "Editar Visita" : "Agendar Visita"}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações da visita" : "Cadastre uma nova visita"}</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
@@ -152,7 +152,7 @@ function VisitaDetailDrawer({ v, onClose, onEdit, onDelete, onUpdateStatus }: {
         {/* Header */}
         <div className="p-6 border-b border-white/5">
           <div className="flex items-center justify-between mb-4">
-            <span className={`text-[10px] font-semibold px-2.5 py-1 rounded-full border flex items-center gap-1 ${STATUS_COLORS[v.status]}`}>
+            <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border flex items-center gap-1 ${STATUS_COLORS[v.status]}`}>
               <StatusIcon className="w-2.5 h-2.5" />{v.status}
             </span>
             <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
@@ -162,7 +162,7 @@ function VisitaDetailDrawer({ v, onClose, onEdit, onDelete, onUpdateStatus }: {
               <Building2 className="w-6 h-6 text-blue-400/60" />
             </div>
             <div>
-              <h2 className="font-semibold text-white text-sm leading-tight">{v.imovel}</h2>
+              <h2 className="font-black text-white text-sm leading-tight">{v.imovel}</h2>
               <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />{v.bairro}</p>
             </div>
           </div>
@@ -172,12 +172,12 @@ function VisitaDetailDrawer({ v, onClose, onEdit, onDelete, onUpdateStatus }: {
           {/* Data e hora */}
           <div className="px-6 py-4 border-b border-white/5 grid grid-cols-2 gap-3">
             <div className="bg-white/5 rounded-xl p-4">
-              <p className="text-[9px] text-slate-500 mb-1">Data</p>
+              <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Data</p>
               <p className="text-sm font-bold text-white capitalize">{dataFmt}</p>
             </div>
             <div className="bg-white/5 rounded-xl p-4">
-              <p className="text-[9px] text-slate-500 mb-1">Horário</p>
-              <p className="text-xl font-semibold text-white">{v.hora}</p>
+              <p className="text-[9px] text-slate-500 uppercase tracking-widest mb-1">Horário</p>
+              <p className="text-xl font-black text-white">{v.hora}</p>
             </div>
           </div>
 
@@ -186,7 +186,7 @@ function VisitaDetailDrawer({ v, onClose, onEdit, onDelete, onUpdateStatus }: {
             <p className={LABEL}>Envolvidos</p>
             <div className="space-y-2 mt-2">
               <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-semibold text-xs shrink-0">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-white font-black text-xs shrink-0">
                   {v.cliente.split(" ").map(n => n[0]).join("").slice(0, 2)}
                 </div>
                 <div className="flex-1">
@@ -200,7 +200,7 @@ function VisitaDetailDrawer({ v, onClose, onEdit, onDelete, onUpdateStatus }: {
                 )}
               </div>
               <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-semibold text-xs shrink-0">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-black text-xs shrink-0">
                   {v.corretor.split(" ").map(n => n[0]).join("").slice(0, 2)}
                 </div>
                 <div>
@@ -237,7 +237,7 @@ function VisitaDetailDrawer({ v, onClose, onEdit, onDelete, onUpdateStatus }: {
                   <button
                     key={s}
                     onClick={() => onUpdateStatus(s)}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-[10px] font-semibold border transition-all ${
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-[10px] font-black border transition-all ${
                       v.status === s
                         ? STATUS_COLORS[s] + " ring-1 ring-current"
                         : "bg-white/5 text-slate-500 border-white/10 hover:text-white hover:bg-white/10"
@@ -356,7 +356,7 @@ export default function Visitas() {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
             <p className="font-bold text-white text-sm truncate">{v.imovel}</p>
-            <span className={`text-[9px] font-semibold px-2 py-0.5 rounded-full border flex items-center gap-1 ${STATUS_COLORS[v.status]}`}>
+            <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border flex items-center gap-1 ${STATUS_COLORS[v.status]}`}>
               <StatusIcon className="w-2 h-2" />{v.status}
             </span>
           </div>
@@ -436,8 +436,8 @@ export default function Visitas() {
               <s.icon className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-[10px] text-slate-500 font-bold">{s.label}</p>
-              <p className="text-lg font-semibold text-white">{s.value}</p>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{s.label}</p>
+              <p className="text-lg font-black text-white">{s.value}</p>
             </div>
           </div>
         ))}
@@ -451,7 +451,7 @@ export default function Visitas() {
         </div>
         <div className="flex bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl p-1 gap-1">
           {["Todas", "Agendada", "Confirmada", "Realizada", "Cancelada"].map(s => (
-            <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-1.5 text-[10px] font-semibold rounded-lg transition-all ${statusFilter === s ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "text-slate-500 hover:text-slate-300"}`}>{s}</button>
+            <button key={s} onClick={() => setStatusFilter(s)} className={`px-3 py-1.5 text-[10px] font-black rounded-lg transition-all ${statusFilter === s ? "bg-blue-600/20 text-blue-400 border border-blue-500/30" : "text-slate-500 hover:text-slate-300"}`}>{s}</button>
           ))}
         </div>
       </div>
@@ -460,7 +460,7 @@ export default function Visitas() {
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1.5 h-4 bg-blue-500 rounded-full" />
-            <h3 className="text-[10px] font-semibold text-slate-400">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
               Próximas Visitas <span className="text-blue-400">({proximas.length})</span>
             </h3>
           </div>
@@ -474,7 +474,7 @@ export default function Visitas() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <div className="w-1.5 h-4 bg-slate-600 rounded-full" />
-            <h3 className="text-[10px] font-semibold text-slate-400">
+            <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
               Histórico <span className="text-slate-500">({historico.length})</span>
             </h3>
           </div>

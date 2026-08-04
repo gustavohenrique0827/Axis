@@ -91,9 +91,9 @@ export default function Messaging() {
       <div className="shrink-0 flex items-center gap-1 p-2 border-b border-white/5 bg-[var(--color-surface)]">
         <button
           onClick={() => setMode("whatsapp")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
             mode === "whatsapp"
-              ? "bg-white/10 text-white border border-white/10"
+              ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/25"
               : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
           }`}
         >
@@ -102,9 +102,9 @@ export default function Messaging() {
         </button>
         <button
           onClick={() => setMode("interno")}
-          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs transition-all ${
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
             mode === "interno"
-              ? "bg-white/10 text-white border border-white/10"
+              ? "bg-blue-500/15 text-blue-400 border border-blue-500/25"
               : "text-slate-500 hover:text-slate-300 hover:bg-white/5"
           }`}
         >

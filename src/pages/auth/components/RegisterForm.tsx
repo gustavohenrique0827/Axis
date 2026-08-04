@@ -56,7 +56,7 @@ export function RegisterForm() {
   };
 
   return (
-    <Card className="p-8">
+    <Card className="p-8 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 shadow-2xl">
       <form onSubmit={handleRegister} className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2 text-sm">
@@ -113,7 +113,7 @@ export function RegisterForm() {
 
         {error && <div className="text-sm text-rose-400">{error}</div>}
 
-        <Button type="submit" className="w-full py-6 bg-[#2563EB] hover:bg-blue-600 rounded-lg text-md group">
+        <Button type="submit" className="w-full py-6 bg-[#2563EB] hover:bg-blue-600 rounded-lg text-md font-bold shadow-lg shadow-blue-500/20 group">
           {loading ? "Registrando..." : "Registrar empresa"} <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
       </form>

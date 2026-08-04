@@ -71,14 +71,14 @@ export function ActiveChatArea({
     return !isMobile ? (
       <div className="flex-1 flex items-center justify-center relative bg-[#0F172A]/30 rounded-3xl">
         <div className="flex flex-col items-center justify-center max-w-[420px] text-center relative z-10 px-6">
-          <div className="w-24 h-24 bg-white/5 border border-white/10 rounded-3xl flex items-center justify-center mb-8">
-            <MessageCircle className="w-10 h-10 text-slate-400" strokeWidth={2} />
+          <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-3xl flex items-center justify-center shadow-2xl shadow-blue-900/30 mb-8 transform -rotate-12 ring-4 ring-white/5">
+            <MessageCircle className="w-10 h-10 text-white transform rotate-12" strokeWidth={2} />
           </div>
-          <h2 className="text-white text-2xl font-semibold mb-4">Central de Mensagens</h2>
-          <p className="text-slate-400 text-[15px] leading-relaxed mb-8">
+          <h2 className="text-white text-3xl font-bold tracking-tight mb-4">Central de Mensagens</h2>
+          <p className="text-slate-400 text-[15px] leading-relaxed mb-8 font-medium">
             Omnichannel inteligente. Gerencie WhatsApp, Instagram e E-mail em um só lugar.
           </p>
-          <div className="bg-white/5 border border-white/5 rounded-full px-5 py-2 flex items-center gap-2 text-slate-300 text-xs">
+          <div className="bg-white/5 border border-white/5 rounded-full px-5 py-2 flex items-center gap-2 text-slate-300 text-[12px] font-bold uppercase tracking-wider shadow-sm backdrop-blur-sm">
             <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Criptografado
           </div>
         </div>
@@ -106,25 +106,23 @@ export function ActiveChatArea({
             </button>
           )}
           <div className="relative shrink-0 flex items-center gap-2.5 md:gap-3 group">
-             <div className="w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-sm md:text-base font-medium text-white bg-white/10 border border-white/10">
+             <div className={`w-10 h-10 md:w-11 md:h-11 rounded-full flex items-center justify-center text-sm md:text-base font-bold text-white shadow-inner transition-transform group-hover:scale-105 ${
+                currentContact.channel === 'WhatsApp' ? 'bg-gradient-to-br from-emerald-500 to-emerald-700' :
+                currentContact.channel === 'Instagram' ? 'bg-gradient-to-br from-pink-500 to-purple-700' :
+                'bg-gradient-to-br from-blue-500 to-indigo-700'
+              }`}>
                 {currentContact.avatar}
               </div>
               <div className="flex flex-col justify-center min-w-0">
-                <h2 className="text-white font-medium text-[15px] md:text-[16px] truncate leading-tight flex items-center">
+                <h2 className="text-white font-semibold text-[15px] md:text-[16px] truncate tracking-tight group-hover:text-blue-400 transition-colors leading-tight flex items-center">
                   {currentContact.name}
                   {sentiment && (
-                    <span className={`ml-2 inline-flex items-center gap-1 text-xs shrink-0 ${
-                      sentiment === "Positivo" ? "text-emerald-400" :
-                      sentiment === "Negativo" ? "text-rose-400" :
-                      sentiment === "Analisando..." ? "text-slate-400" :
-                      "text-amber-400"
+                    <span className={`ml-2 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border shrink-0 ${
+                      sentiment === "Positivo" ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.15)]" :
+                      sentiment === "Negativo" ? "bg-rose-500/15 border-rose-500/30 text-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.15)]" :
+                      sentiment === "Analisando..." ? "bg-blue-500/15 border-blue-500/30 text-blue-400 animate-pulse" :
+                      "bg-amber-500/15 border-amber-500/30 text-amber-400"
                     }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${
-                        sentiment === "Positivo" ? "bg-emerald-400" :
-                        sentiment === "Negativo" ? "bg-rose-400" :
-                        sentiment === "Analisando..." ? "bg-slate-400" :
-                        "bg-amber-400"
-                      }`} />
                       {sentiment}
                     </span>
                   )}
@@ -137,12 +135,12 @@ export function ActiveChatArea({
                         e.stopPropagation();
                         handleManualRetry();
                       }}
-                      className="text-rose-400 text-[10px] bg-rose-500/10 border border-rose-500/20 px-2 py-0.5 rounded cursor-pointer flex items-center gap-1 hover:bg-rose-500/20 transition-all"
+                      className="text-rose-400 font-bold uppercase text-[10px] bg-rose-500/10 border border-rose-500/25 px-2 py-0.5 rounded cursor-pointer flex items-center gap-1 hover:bg-rose-500/20 active:scale-95 transition-all shadow-[0_0_12px_rgba(244,63,94,0.15)]"
                     >
-                      <span className="w-1.5 h-1.5 bg-rose-500 rounded-full"></span> Offline - Reconectar ↻
+                      <span className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse"></span> Offline - Reconectar ↻
                     </button>
                   ) : currentContact.online ? (
-                    <><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full mr-0.5"></span> Online</>
+                    <><span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse mr-0.5"></span> Online</>
                   ) : (
                    'visto por último hoje'
                   )}
@@ -152,12 +150,12 @@ export function ActiveChatArea({
         </div>
         
         <div className="flex items-center gap-1 text-slate-400 shrink-0">
-          <button
+          <button 
             onClick={() => setRightPanel(p => p === "ai" ? "none" : "ai")}
             title="Assistente de IA"
-            className={`p-2 rounded-full cursor-pointer transition-all ${rightPanel === "ai" ? 'bg-white/10 text-white' : 'hover:bg-white/10 hover:text-white'}`}
+            className={`p-2 rounded-full cursor-pointer transition-all ${rightPanel === "ai" ? 'bg-blue-600/20 text-blue-400 ring-1 ring-blue-500/50' : 'hover:bg-white/10 hover:text-white'}`}
           >
-            <Sparkles className="w-5 h-5" />
+            <Sparkles className={`w-5 h-5 ${rightPanel === "ai" ? 'animate-pulse' : ''}`} />
           </button>
           <div className="w-[1px] h-6 bg-white/10 mx-2"></div>
           <button className="p-2 hover:bg-white/10 hover:text-white rounded-full cursor-pointer transition-colors hidden sm:flex"><Search className="w-5 h-5" /></button>
@@ -175,25 +173,25 @@ export function ActiveChatArea({
       {/* View Mode Switcher and Binding Status header */}
       <div className="shrink-0 bg-[#0F172A]/40 border-b border-white/5 py-2 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
         <div className="flex bg-black/40 rounded-xl p-1 border border-white/5 w-fit">
-          <button
+          <button 
             onClick={() => setViewMode("chat")}
-            className={`px-3 py-1.5 rounded-lg text-[11px] transition-all cursor-pointer ${
-              viewMode === "chat"
-                ? "bg-white/10 text-white"
+            className={`px-3 py-1.5 rounded-lg text-[11px] font-bold tracking-tight transition-all cursor-pointer ${
+              viewMode === "chat" 
+                ? "bg-blue-600 text-white shadow-md shadow-blue-500/10" 
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            Apenas Chat
+            💬 Apenas Chat
           </button>
-          <button
+          <button 
             onClick={() => setViewMode("unified")}
-            className={`px-3 py-1.5 rounded-lg text-[11px] transition-all cursor-pointer ${
-              viewMode === "unified"
-                ? "bg-white/10 text-white"
+            className={`px-3 py-1.5 rounded-lg text-[11px] font-bold tracking-tight transition-all cursor-pointer ${
+              viewMode === "unified" 
+                ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-indigo-500/10" 
                 : "text-slate-400 hover:text-white"
             }`}
           >
-            Visão Unificada
+            ⚡ Visão Unificada
           </button>
         </div>
 
@@ -202,9 +200,9 @@ export function ActiveChatArea({
             <span className="text-[11px] text-slate-400">
               Vínculo CRM ativo: <strong className="text-white font-medium">{matchingLead.name}</strong>
             </span>
-            <button
+            <button 
               onClick={() => setShowAddActivityModal(true)}
-              className="px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-[10px] rounded-lg cursor-pointer transition-all"
+              className="px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase rounded-lg cursor-pointer transition-all animate-none"
             >
               + Novo Evento CRM
             </button>
@@ -224,7 +222,7 @@ export function ActiveChatArea({
           currentMessages.length > 0 ? (
             <>
               <div className="flex justify-center mb-6">
-                <span className="text-xs text-slate-400 bg-white/5 px-3 py-1 rounded-full">
+                <span className="text-[11px] font-medium text-slate-400 bg-white/5 px-3 py-1 rounded-full uppercase tracking-wider backdrop-blur-sm">
                   Hoje
                 </span>
               </div>
@@ -254,10 +252,10 @@ export function ActiveChatArea({
             </>
           ) : (
             <div className="flex items-center justify-center h-full opacity-50 flex-col gap-4">
-              <div className="bg-white/5 p-6 rounded-full border border-white/10">
-                <MessageCircle className="w-10 h-10 text-slate-400" />
+              <div className="bg-white/5 p-6 rounded-full shadow-lg ring-1 ring-white/10">
+                <MessageCircle className="w-10 h-10 text-emerald-400" />
               </div>
-              <p className="text-sm text-slate-400">Inicie a conversa no WhatsApp</p>
+              <p className="text-sm text-slate-400 font-medium font-sans">Inicie a conversa no WhatsApp</p>
             </div>
           )
         ) : (
@@ -297,22 +295,22 @@ export function ActiveChatArea({
                     const isMe = msg.sender === "me";
                     return (
                       <div key={`msg-${msg.id}-${idx}`} className="relative group">
-                        <span className="absolute -left-[25px] md:-left-[33px] w-4 h-4 rounded-full border-2 bg-slate-600 border-[var(--color-surface)] flex items-center justify-center z-10">
+                        <span className={`absolute -left-[25px] md:-left-[33px] w-4 h-4 rounded-full border-2 ${isMe ? 'bg-blue-600 border-[var(--color-surface)]' : 'bg-emerald-500 border-[var(--color-surface)]'} flex items-center justify-center z-10 shadow`}>
                           <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
                         </span>
                         <div className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
-                          <div className={`max-w-[85%] sm:max-w-[70%] px-4 py-2.5 relative ${
-                              isMe
-                                ? 'bg-blue-600/90 text-white rounded-2xl rounded-tr-sm'
+                          <div className={`max-w-[85%] sm:max-w-[70%] px-4 py-2.5 relative shadow-md ${
+                              isMe 
+                                ? 'bg-blue-600/90 text-white rounded-2xl rounded-tr-sm' 
                                 : 'bg-white/5 text-slate-100 rounded-2xl rounded-tl-sm border border-white/5'
                             }`}>
-                            <div className="text-[9px] text-slate-400 mb-1">
+                            <div className="text-[9px] uppercase tracking-wider text-slate-400 mb-1 font-bold">
                               {isMe ? "Canal SAÍDA" : "Cliente WhatsApp ENTRADA"}
                             </div>
                             <p className="text-[14px] leading-relaxed break-words whitespace-pre-wrap pb-2">
                               {msg.text}
                             </p>
-                            <div className="text-[10px] text-slate-400 mt-1.5 text-right flex items-center justify-end gap-1">
+                            <div className="text-[10px] text-slate-400 mt-1.5 text-right flex items-center justify-end gap-1 font-medium">
                               <span>{msg.time}</span>
                               {isMe && <CheckCheck className="w-3 h-3 text-emerald-400" />}
                             </div>
@@ -324,20 +322,20 @@ export function ActiveChatArea({
                     const act = item.data;
                     return (
                       <div key={`act-${act.id}-${idx}`} className="relative pl-1.5">
-                        <span className="absolute -left-[27px] md:-left-[35px] w-5 h-5 rounded-full bg-slate-900 border-2 border-white/10 flex items-center justify-center z-10">
-                          {act.type === 'Ligação' && <Phone className="w-2.5 h-2.5 text-slate-400" />}
-                          {act.type === 'E-mail' && <Mail className="w-2.5 h-2.5 text-slate-400" />}
-                          {act.type === 'Reunião' && <Calendar className="w-2.5 h-2.5 text-slate-400" />}
-                          {act.type === 'Outro' && <Info className="w-2.5 h-2.5 text-slate-400" />}
+                        <span className="absolute -left-[27px] md:-left-[35px] w-5 h-5 rounded-full bg-slate-900 border-2 border-amber-500/40 flex items-center justify-center z-10 shadow-lg">
+                          {act.type === 'Ligação' && <Phone className="w-2.5 h-2.5 text-amber-400" />}
+                          {act.type === 'E-mail' && <Mail className="w-2.5 h-2.5 text-blue-400" />}
+                          {act.type === 'Reunião' && <Calendar className="w-2.5 h-2.5 text-pink-400" />}
+                          {act.type === 'Outro' && <Info className="w-2.5 h-2.5 text-purple-400" />}
                         </span>
-                        <div className="bg-[var(--color-surface-elevated)]/60 border border-white/10 rounded-2xl p-4 space-y-2 transition-all">
+                        <div className="bg-[var(--color-surface-elevated)]/60 border border-white/10 rounded-2xl p-4 space-y-2 hover:border-amber-500/20 transition-all shadow-md">
                           <div className="flex items-center justify-between gap-2">
-                            <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-300 text-[10px]">
-                              {act.type} (CRM)
+                            <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold text-[9px] uppercase tracking-wider">
+                              🏛️ {act.type} (CRM)
                             </span>
-                            <span className="text-[10px] text-slate-500">{act.date}</span>
+                            <span className="text-[10px] text-slate-500 font-medium">{act.date}</span>
                           </div>
-                          <h4 className="text-white text-xs md:text-sm font-medium">
+                          <h4 className="text-white text-xs md:text-sm font-bold tracking-tight">
                             {act.title}
                           </h4>
                           <p className="text-slate-400 text-xs md:text-xs leading-relaxed">

@@ -18,35 +18,40 @@ export function LeadsCardsMobile(props: {
         >
           <div className="flex justify-between items-start">
             <div className="min-w-0">
-              <h4 className="font-medium text-white text-sm truncate">{lead.name}</h4>
+              <h4 className="font-bold text-white text-sm truncate">{lead.name}</h4>
               <p className="text-xs text-slate-400 truncate">{lead.company}</p>
             </div>
-            <span className={`text-[10px] shrink-0 ml-2 ${
-              lead.priority === "Alta" ? "text-rose-400" :
-              lead.priority === "Média" ? "text-amber-400" :
-              "text-slate-400"
-            }`}>
+            <span
+              className={`px-2 py-0.5 text-[8px] font-bold rounded border uppercase shrink-0 ml-2 ${
+                lead.priority === "Alta"
+                  ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                  : lead.priority === "Média"
+                  ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                  : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+              }`}
+            >
               {lead.priority}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs border-y border-white/5 py-2 px-1">
             <div>
-              <span className="text-[10px] text-slate-500 block mb-0.5">Valor</span>
-              <span className="font-mono text-slate-300 text-xs">{lead.value}</span>
+              <span className="text-[8px] text-slate-500 uppercase font-bold block mb-0.5">Valor</span>
+              <span className="font-mono text-emerald-400 text-xs">{lead.value}</span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-500 block mb-0.5">Status</span>
-              <span className={`inline-flex items-center gap-1.5 text-xs ${
-                lead.status === "Fechado" ? "text-emerald-400" :
-                lead.status === "Perdido" ? "text-rose-400" :
-                "text-slate-300"
-              }`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${
-                  lead.status === "Fechado" ? "bg-emerald-400" :
-                  lead.status === "Perdido" ? "bg-rose-400" :
-                  "bg-slate-400"
-                }`} />
+              <span className="text-[8px] text-slate-500 uppercase font-bold block mb-0.5">Status</span>
+              <span
+                className={`w-fit px-2 py-0.5 text-[8px] font-black rounded-full border block ${
+                  lead.status === "Novo"
+                    ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                    : lead.status === "Fechado"
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                    : lead.status === "Em Negociação"
+                    ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                    : "bg-slate-500/10 text-slate-400 border-slate-500/20"
+                }`}
+              >
                 {lead.status}
               </span>
             </div>
@@ -61,11 +66,11 @@ export function LeadsCardsMobile(props: {
             className="bg-[var(--color-surface)] border border-white/5 px-2 py-1.5 rounded-lg flex items-center justify-between gap-2"
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="text-[10px] text-slate-500 shrink-0">Responsável:</span>
+            <span className="text-[8px] text-slate-500 uppercase font-black shrink-0">Responsável:</span>
             <select
               value={lead.seller || ""}
               onChange={(e) => updateLead(lead.id, { seller: e.target.value })}
-              className="bg-transparent text-[10px] text-slate-300 focus:outline-none rounded px-1 cursor-pointer min-w-0"
+              className="bg-transparent text-[10px] text-slate-300 font-bold focus:outline-none rounded px-1 cursor-pointer min-w-0"
             >
               <option value="">Sem Vendedor</option>
               {sellers.map((s) => (

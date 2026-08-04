@@ -10,10 +10,10 @@ export function LeadsTableDesktop(props: {
   const { filteredLeads, setSelectedLead, updateLead, sellers } = props;
 
   return (
-    <Card className="bg-[var(--color-surface-elevated)]/80 border border-white/10 overflow-hidden hidden sm:block">
+    <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden hidden sm:block">
       <div className="overflow-x-auto">
         <table className="w-full text-sm text-left">
-          <thead className="text-xs text-slate-500 bg-[var(--color-surface)]/50 border-b border-white/10">
+          <thead className="text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-[var(--color-surface)]/50 border-b border-white/10">
             <tr>
               <th className="px-6 py-4">Nome & Empresa</th>
               <th className="px-6 py-4">Contato</th>
@@ -32,7 +32,7 @@ export function LeadsTableDesktop(props: {
                 className="hover:bg-white/[0.02] transition-colors cursor-pointer group"
               >
                 <td className="px-6 py-4">
-                  <div className="font-medium text-white">{lead.name}</div>
+                  <div className="font-semibold text-white group-hover:text-[#06B6D4] transition-colors">{lead.name}</div>
                   <div className="text-slate-400 text-xs">{lead.company}</div>
                 </td>
                 <td className="px-6 py-4">
@@ -45,32 +45,40 @@ export function LeadsTableDesktop(props: {
                 </td>
                 <td className="px-6 py-4">
                   <div className="flex flex-col gap-1.5">
-                    <span className={`inline-flex items-center gap-1.5 w-fit text-xs ${
-                      lead.status === "Fechado" ? "text-emerald-400" :
-                      lead.status === "Perdido" ? "text-rose-400" :
-                      "text-slate-300"
-                    }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${
-                        lead.status === "Fechado" ? "bg-emerald-400" :
-                        lead.status === "Perdido" ? "bg-rose-400" :
-                        "bg-slate-400"
-                      }`} />
+                    <span
+                      className={`w-fit px-2.5 py-0.5 text-[9px] font-bold rounded-full border ${
+                        lead.status === "Novo"
+                          ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                          : lead.status === "Qualificado"
+                          ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/20"
+                          : lead.status === "Em Negociação"
+                          ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                          : lead.status === "Fechado"
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                          : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                      }`}
+                    >
                       {lead.status}
                     </span>
-                    <span className={`w-fit text-[10px] ${
-                      lead.priority === "Alta" ? "text-rose-400" :
-                      lead.priority === "Média" ? "text-amber-400" : "text-slate-400"
-                    }`}>
+                    <span
+                      className={`w-fit px-2 py-0.5 text-[8px] font-bold rounded border uppercase ${
+                        lead.priority === "Alta"
+                          ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                          : lead.priority === "Média"
+                          ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                          : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                      }`}
+                    >
                       {lead.priority}
                     </span>
                   </div>
                 </td>
-                <td className="px-6 py-4 font-mono text-xs text-slate-300">{lead.value}</td>
+                <td className="px-6 py-4 font-mono text-xs text-emerald-400/80">{lead.value}</td>
                 <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                   <select
                     value={lead.seller || ""}
                     onChange={(e) => updateLead(lead.id, { seller: e.target.value })}
-                    className="bg-[var(--color-surface)]/80 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-white/20 cursor-pointer hover:bg-white/5"
+                    className="bg-[var(--color-surface)]/80 border border-white/10 rounded-lg px-2.5 py-1 text-xs text-white focus:outline-none focus:border-blue-500 cursor-pointer hover:bg-white/5"
                   >
                     <option value="">Sem Vendedor</option>
                     {sellers.map((s) => (
@@ -86,8 +94,16 @@ export function LeadsTableDesktop(props: {
                   </div>
                   <div className="text-[10px] mt-0.5 italic text-slate-600">{lead.title}</div>
                   {lead.timeIdle !== undefined && lead.timeIdle > 0 && (
-                    <div className={`mt-1.5 text-[10px] ${lead.timeIdle > 7 ? "text-rose-400" : "text-slate-500"}`}>
-                      {lead.timeIdle}d sem contato
+                    <div className="mt-1.5">
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[9px] font-bold inline-block ${
+                          lead.timeIdle > 7
+                            ? "bg-rose-500/20 text-rose-400 border border-rose-500/30 animate-pulse"
+                            : "bg-slate-800 text-slate-500"
+                        }`}
+                      >
+                        ⏳ {lead.timeIdle}d sem contato
+                      </span>
                     </div>
                   )}
                 </td>

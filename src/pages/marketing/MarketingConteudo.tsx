@@ -50,19 +50,19 @@ export default function MarketingConteudo() {
     >
       <div className="flex justify-between items-center mb-6">
         <div className="flex gap-4 items-center overflow-x-auto pb-2 scrollbar-none">
-          <Button
+          <Button 
             onClick={() => setIsNewTaskModalOpen(true)}
-            className="gap-2"
+            className="bg-[#2563EB] hover:bg-blue-600 shadow-lg text-xs font-bold gap-2"
           >
              <Plus className="w-4 h-4" /> Nova Pauta
           </Button>
-          <Button variant="outline" className="gap-2">
+          <Button variant="outline" className="border-white/10 text-xs font-bold gap-2 bg-transparent">
              <Calendar className="w-4 h-4" /> Calendário
           </Button>
         </div>
-        <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-full">
-           <Zap className="w-3 h-3 text-slate-400" />
-           <span className="text-xs text-slate-400">IA Pauta Pro Ativa</span>
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-full">
+           <Zap className="w-3 h-3 text-blue-400" />
+           <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest">IA Pauta Pro Ativa</span>
         </div>
       </div>
 

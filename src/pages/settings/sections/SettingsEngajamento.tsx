@@ -31,20 +31,20 @@ export function ConfigEngajamentoModelos() {
           <h1 className="text-2xl font-bold tracking-tight">Modelos de Mensagem</h1>
           <p className="text-sm text-slate-400">Gerencie os templates de comunicação automatizada da sua empresa.</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)} className="bg-[#2563EB] hover:bg-blue-600 px-6"><Plus className="w-4 h-4 mr-2" /> Novo Modelo</Button>
+        <Button onClick={() => setIsModalOpen(true)} className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 shadow-lg shadow-blue-500/20"><Plus className="w-4 h-4 mr-2" /> Novo Modelo</Button>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
         {templates.map((modelo: any, i) => (
-          <Card key={i} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <Card key={i} className="p-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-4">
               <div className="p-2 bg-white/5 rounded-lg">
-                <MessageSquare className="w-4 h-4 text-slate-400" />
+                <MessageSquare className="w-5 h-5 text-slate-400" />
               </div>
               <div>
-                <h4 className="font-medium text-white">{modelo.nome}</h4>
+                <h4 className="font-bold text-white">{modelo.nome}</h4>
                 <div className="text-xs text-slate-400 mt-1 flex gap-2 items-center">
-                  <span className="bg-white/5 px-2 py-0.5 rounded">{modelo.tipo}</span>
+                  <span className="bg-white/5 px-2 py-0.5 rounded uppercase tracking-wider">{modelo.tipo}</span>
                   <span>&bull;</span>
                   <span>Usado: {modelo.uso}</span>
                 </div>
@@ -72,10 +72,10 @@ export function ConfigEngajamentoAutomacoes() {
           <h1 className="text-2xl font-bold tracking-tight">Regras de Automação</h1>
           <p className="text-sm text-slate-400">Gatilhos do sistema baseados em eventos do pipeline.</p>
         </div>
-        <Button onClick={() => window.location.href = '/app/automacoes'} className="bg-[#2563EB] hover:bg-blue-600 px-6"><Plus className="w-4 h-4 mr-2" /> Nova Automação</Button>
+        <Button onClick={() => window.location.href = '/app/automacoes'} className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 shadow-lg shadow-blue-500/20"><Plus className="w-4 h-4 mr-2" /> Nova Automação</Button>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
         <p className="text-slate-400">O construtor central de automações agora possui uma tela dedicada em tela cheia.</p>
         <Button onClick={() => window.location.href = '/app/automacoes'} className="mt-4 bg-[var(--color-surface)] border border-white/10 text-white hover:bg-white/5">Abrir Motor de Automação <ExternalLink className="w-4 h-4 ml-2" /></Button>
       </Card>
@@ -121,12 +121,12 @@ export function ConfigBusinessDashboard() {
         <Button onClick={handleExport} className="bg-white/10 hover:bg-white/20 border border-white/10">Exportar Relatório</Button>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
         <Reorder.Group axis="y" values={selectedKPIs} onReorder={setSelectedKPIs} className="space-y-4">
           {selectedKPIs.map((kpi) => (
             <Reorder.Item key={kpi.name} value={kpi} className="flex items-center justify-between p-4 bg-[var(--color-surface)] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing">
               <div className="flex items-center gap-3">
-                <span className="font-medium text-white">{kpi.name}</span>
+                <span className="font-bold text-white">{kpi.name}</span>
               </div>
 
               <div className="flex items-center gap-4">
@@ -146,7 +146,7 @@ export function ConfigBusinessDashboard() {
           ))}
           {availableKPIs.filter(kpi => !selectedKPIs.find(s => s.name === kpi)).map(kpi => (
             <div key={kpi} className="flex items-center justify-between p-4 bg-[var(--color-surface)] border border-white/5 rounded-xl opacity-60">
-              <span className="font-medium text-white">{kpi}</span>
+              <span className="font-bold text-white">{kpi}</span>
               <input
                 type="checkbox"
                 checked={false}
@@ -156,7 +156,7 @@ export function ConfigBusinessDashboard() {
             </div>
           ))}
         </Reorder.Group>
-        <Button onClick={() => toast.success("Configuração de Dashboard salva com sucesso!")} className="mt-6 bg-[#2563EB] hover:bg-blue-600 px-6">Salvar Dashboards</Button>
+        <Button onClick={() => toast.success("Configuração de Dashboard salva com sucesso!")} className="mt-6 bg-[#2563EB] hover:bg-blue-600 font-bold px-6">Salvar Dashboards</Button>
       </Card>
     </div>
   )

@@ -37,22 +37,22 @@ export function PerformanceIADeepLearningInsights({
 
   return (
     <div className="grid lg:grid-cols-4 gap-6">
-      <Card className="p-6">
-        <div className="flex items-center gap-2 mb-4 text-slate-400">
-          <Network className="w-4 h-4" />
-          <h4 className="text-sm">
+      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden group">
+        <div className="flex items-center gap-3 mb-6">
+          <Network className="w-5 h-5 text-indigo-400" />
+          <h4 className="text-[11px] font-black text-white uppercase tracking-widest">
             Correlação de Churn
           </h4>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-4">
           {insights.map((c, i) => (
             <div key={i}>
               <div className="flex justify-between mb-1.5 px-0.5">
-                <span className="text-xs text-slate-500">
+                <span className="text-[9px] font-bold text-slate-500 uppercase">
                   {c.label}
                 </span>
-                <span className="text-xs text-white">
+                <span className="text-[9px] font-black text-white">
                   {c.val}%
                 </span>
               </div>
@@ -62,7 +62,7 @@ export function PerformanceIADeepLearningInsights({
                   initial={{ width: 0 }}
                   animate={{ width: `${c.val}%` }}
                   className={`h-full rounded-full ${
-                    c.status === "Crítico" ? "bg-rose-500" : "bg-slate-400"
+                    c.status === "Crítico" ? "bg-rose-500" : "bg-indigo-500"
                   }`}
                 />
               </div>
@@ -73,3 +73,4 @@ export function PerformanceIADeepLearningInsights({
     </div>
   );
 }
+

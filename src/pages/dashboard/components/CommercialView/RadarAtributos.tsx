@@ -26,23 +26,23 @@ export function RadarAtributos({ salesRanking, funnelLeadsCount }: RadarAtributo
   ];
 
   return (
-    <Card className="p-6 lg:col-span-1">
-      <h3 className="text-sm text-slate-400 mb-6 flex items-center gap-2">
-        <Eye className="w-4 h-4" /> Radar de Atributos
+    <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 lg:col-span-1 rounded-3xl">
+      <h3 className="text-xs font-black text-slate-400 mb-10 uppercase tracking-[0.2em] flex items-center gap-2">
+        <Eye className="w-4 h-4 text-purple-400" /> Radar de Atributos
       </h3>
       <div className="h-[280px]">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
             <PolarGrid stroke="#64748b20" />
-            <PolarAngleAxis dataKey="subject" stroke="#64748b" fontSize={9} />
-            <Radar name="Top Closers" dataKey="A" stroke="#94a3b8" fill="#94a3b8" fillOpacity={0.4} />
+            <PolarAngleAxis dataKey="subject" stroke="#64748b" fontSize={9} fontStyle="bold" />
+            <Radar name="Top Closers" dataKey="A" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.5} />
           </RadarChart>
         </ResponsiveContainer>
       </div>
-      <div className="mt-4 flex flex-wrap justify-center gap-6">
+      <div className="mt-6 flex flex-wrap justify-center gap-6">
         <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
-          <span className="text-xs text-slate-400">Seu Time</span>
+          <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
+          <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Seu Time</span>
         </div>
       </div>
     </Card>

@@ -91,48 +91,61 @@ export default function MarketingAnalytics() {
       subtitle="Analise CAC, LTV, ROI e performance geral dos seus canais."
     >
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
-            <DollarSign className="w-4 h-4" />
-            <span className="text-xs">Total Receita Mkt</span>
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20">
+               <DollarSign className="w-5 h-5 text-blue-400" />
+            </div>
+            {totalRevenue > 0 && <span className="text-[10px] uppercase tracking-wider font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Gerado</span>}
           </div>
-          <p className="text-2xl font-semibold text-white">{fmt(totalRevenue)}</p>
+          <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Receita Mkt</h4>
+          <p className="text-3xl font-black text-white">{fmt(totalRevenue)}</p>
+        </Card>
+        
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center border border-purple-500/20">
+               <TrendingUp className="w-5 h-5 text-purple-400" />
+            </div>
+          </div>
+          <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Custo Aquisição (CAC)</h4>
+          <p className="text-3xl font-black text-white">{fmt(cac)}</p>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
-            <TrendingUp className="w-4 h-4" />
-            <span className="text-xs">Custo Aquisição (CAC)</span>
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+               <Target className="w-5 h-5 text-emerald-400" />
+            </div>
           </div>
-          <p className="text-2xl font-semibold text-white">{fmt(cac)}</p>
+          <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Valor Médio Deal</h4>
+          <p className="text-3xl font-black text-white">{fmt(avgDeal)}</p>
         </Card>
 
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
-            <Target className="w-4 h-4" />
-            <span className="text-xs">Valor Médio Deal</span>
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-cyan-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+          <div className="flex items-center justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
+               <Activity className="w-5 h-5 text-cyan-400" />
+            </div>
           </div>
-          <p className="text-2xl font-semibold text-white">{fmt(avgDeal)}</p>
-        </Card>
-
-        <Card className="p-4">
-          <div className="flex items-center gap-2 text-slate-400 mb-2">
-            <Activity className="w-4 h-4" />
-            <span className="text-xs">Retorno (ROI)</span>
-          </div>
-          <p className="text-2xl font-semibold text-white">{roi.toFixed(1)}<span className="text-sm text-slate-500">x</span></p>
+          <h4 className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Retorno (ROI)</h4>
+          <p className="text-3xl font-black text-white">{roi.toFixed(1)}<span className="text-sm text-slate-500">x</span></p>
         </Card>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="p-6 lg:col-span-2">
-          <h3 className="text-sm text-slate-400 mb-6 flex items-center gap-2">
-            <BarChart2 className="w-4 h-4 text-slate-400" /> Receita Marketing vs Investimento (CAC)
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5 lg:col-span-2">
+          <h3 className="text-sm font-black text-white uppercase tracking-wider mb-6 flex items-center gap-2">
+            <BarChart2 className="w-4 h-4 text-blue-500" /> Receita Marketing vs Investimento (CAC)
           </h3>
           {performanceData.length === 0 ? (
-            <div className="h-72 flex flex-col items-center justify-center gap-4">
+            <div className="h-72 flex flex-col items-center justify-center gap-4 opacity-40">
               <Inbox className="w-10 h-10 text-slate-500" />
-              <p className="text-xs text-slate-500 text-center">
+              <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">
                 Sem dados de performance mensal.<br/>Cadastre leads e gastos em campanhas.
               </p>
             </div>
@@ -165,14 +178,14 @@ export default function MarketingAnalytics() {
           )}
         </Card>
 
-        <Card className="p-6">
-          <h3 className="text-sm text-slate-400 mb-6 flex items-center gap-2">
-            <Users className="w-4 h-4 text-slate-400" /> Receita p/ Canais (Ganho)
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5">
+          <h3 className="text-sm font-black text-white uppercase tracking-wider mb-6 flex items-center gap-2">
+            <Users className="w-4 h-4 text-blue-500" /> Receita p/ Canais (Ganho)
           </h3>
           {sourceData.length === 0 ? (
-            <div className="h-72 flex flex-col items-center justify-center gap-4">
+            <div className="h-72 flex flex-col items-center justify-center gap-4 opacity-40">
               <PieChart className="w-10 h-10 text-slate-500" />
-              <p className="text-xs text-slate-500 text-center">
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">
                 Nenhuma receita atrelada a origens de mkt.
               </p>
             </div>
@@ -205,9 +218,9 @@ export default function MarketingAnalytics() {
                   <div key={source.name} className="flex flex-col gap-0.5">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: source.color }}></div>
-                      <span className="text-xs text-slate-400 truncate">{source.name}</span>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter truncate">{source.name}</span>
                     </div>
-                    <span className="text-xs font-semibold text-white ml-4">
+                    <span className="text-xs font-black text-white ml-4">
                       {fmt(source.revenue)}
                     </span>
                   </div>

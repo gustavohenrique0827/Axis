@@ -44,14 +44,14 @@ export default function FinanceiroMetas() {
 
   const actions = (
     <div className="flex flex-wrap items-center gap-2 print:hidden">
-      <div className="flex bg-[var(--color-surface)] border border-white/10 rounded-xl p-1 shrink-0">
+      <div className="flex bg-[var(--color-surface)] border border-white/10 rounded-xl p-1 shrink-0 glass-card">
         {(["monthly", "quarterly", "annual"] as const).map((p) => (
           <button
             key={p}
             onClick={() => setPeriod(p)}
-            className={`px-3 py-1.5 text-xs rounded-lg transition-colors cursor-pointer ${
-              period === p
-                ? "bg-blue-600 text-white"
+            className={`px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider rounded-lg transition-all cursor-pointer ${
+              period === p 
+                ? "bg-[#2563EB] text-white shadow-lg shadow-blue-500/10" 
                 : "text-slate-400 hover:text-white"
             }`}
           >
@@ -59,20 +59,27 @@ export default function FinanceiroMetas() {
           </button>
         ))}
       </div>
-
-      <Button onClick={handleSimulateSale} variant="outline">
-        <Play className="w-4 h-4" /> Simular Venda
+      
+      <Button 
+        onClick={handleSimulateSale}
+        className="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] uppercase tracking-widest gap-2 h-11 px-5 rounded-xl transition-all shadow-lg shadow-emerald-500/10"
+      >
+        <Play className="w-4 h-4 text-emerald-300 animate-pulse" /> Simular Venda
       </Button>
 
-      <Button
+      <Button 
         variant="outline"
         onClick={handleResetSimulator}
+        className="border-white/10 text-slate-300 hover:text-white bg-white/5 h-11 px-4 rounded-xl text-[10px] uppercase font-bold tracking-wider"
       >
         <RotateCcw className="w-3.5 h-3.5" />
       </Button>
 
-      <Button onClick={handleExportPDF}>
-        <Download className="w-3.5 h-3.5" /> Exportar Relatório de Metas
+      <Button 
+        onClick={handleExportPDF}
+        className="bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-widest gap-2 h-11 px-4 rounded-xl transition-all shadow-lg shadow-blue-500/10"
+      >
+        <Download className="w-3.5 h-3.5 text-blue-300" /> Exportar Relatório de Metas
       </Button>
     </div>
   );

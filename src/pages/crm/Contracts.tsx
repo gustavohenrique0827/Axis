@@ -95,7 +95,7 @@ export default function Contracts() {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-400">Cliente</label>
-            <select {...register("cliente")} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-white/20 focus:outline-none">
+            <select {...register("cliente")} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none">
               <option value="">Selecione o Cliente</option>
               <option value="TechCorp Brasil">TechCorp Brasil</option>
               <option value="Construtora RS">Construtora RS</option>
@@ -106,7 +106,7 @@ export default function Contracts() {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-400">Plano Acordado</label>
-            <select {...register("plano")} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-white/20 focus:outline-none">
+            <select {...register("plano")} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none">
               <option value="">Selecione o Plano</option>
               <option value="Starter">Starter</option>
               <option value="Pro">Pro</option>
@@ -117,12 +117,12 @@ export default function Contracts() {
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-400">Valor (MRR)</label>
-            <input type="text" {...register("valor")} placeholder="Ex: 1500,00" className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-white/20 focus:outline-none" />
+            <input type="text" {...register("valor")} placeholder="Ex: 1500,00" className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none" />
             {errors.valor && <p className="text-rose-400 text-xs">{errors.valor.message}</p>}
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-400">Data de Assinatura</label>
-            <input type="date" {...register("data")} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-slate-300 focus:border-white/20 focus:outline-none [color-scheme:dark]" />
+            <input type="date" {...register("data")} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-slate-300 focus:border-[#2563EB] focus:outline-none [color-scheme:dark]" />
             {errors.data && <p className="text-rose-400 text-xs">{errors.data.message}</p>}
           </div>
         </form>

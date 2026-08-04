@@ -11,17 +11,19 @@ interface FinanceiroCashflowChartProps {
 export function FinanceiroCashflowChart({ chartData, stabilityScore }: FinanceiroCashflowChartProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
-      <Card className="lg:col-span-8 p-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+      <Card className="lg:col-span-8 p-8 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-10 gap-4">
           <div>
-            <h3 className="text-sm font-medium text-white">Fluxo de Caixa</h3>
-            <p className="text-xs text-slate-500 mt-1">Comparativo de fluxo de caixa vs projeção</p>
+            <h3 className="font-black text-lg text-white uppercase italic tracking-tighter flex items-center gap-3">
+              <div className="w-2 h-8 bg-blue-500 rounded-full" /> Motor de Performance Financeira
+            </h3>
+            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Comparativo de fluxo de caixa vs projeção inteligente</p>
           </div>
-          <div className="flex flex-wrap gap-4">
-            {[{ label: "Receita", color: "bg-blue-500" }, { label: "Projeção", color: "bg-blue-500/40" }, { label: "Despesa", color: "bg-rose-500" }].map(l => (
-              <div key={l.label} className="flex items-center gap-1.5">
+          <div className="flex flex-wrap gap-4 bg-white/5 p-2 rounded-2xl border border-white/5">
+            {[{ label: "Receita", color: "bg-[#2563EB]" }, { label: "Projeção", color: "bg-[#2563EB]/40" }, { label: "Despesa", color: "bg-rose-500" }].map(l => (
+              <div key={l.label} className="flex items-center gap-2 px-2">
                 <div className={`w-2 h-2 rounded-full ${l.color}`} />
-                <span className="text-xs text-slate-400">{l.label}</span>
+                <span className="text-[9px] text-slate-400 uppercase font-black tracking-widest">{l.label}</span>
               </div>
             ))}
           </div>
@@ -31,52 +33,52 @@ export function FinanceiroCashflowChart({ chartData, stabilityScore }: Financeir
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRec" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#2563EB" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff0d" vertical={false} />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} dy={10} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(val) => `R$ ${val / 1000}k`} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#475569", fontSize: 10, fontWeight: 900 }} dy={15} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: "#475569", fontSize: 10, fontWeight: 900 }} tickFormatter={(val) => `R$ ${val / 1000}k`} />
               <Tooltip
-                contentStyle={{ backgroundColor: "var(--color-surface)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", padding: "12px" }}
-                itemStyle={{ fontSize: "12px" }}
-                labelStyle={{ fontSize: "12px", marginBottom: "8px", color: "#94a3b8" }}
+                contentStyle={{ backgroundColor: "var(--color-surface)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "24px", padding: "20px", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.5)" }}
+                itemStyle={{ fontSize: "11px", fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.05em" }}
+                labelStyle={{ fontSize: "12px", fontWeight: 900, marginBottom: "12px", color: "#60a5fa", textTransform: "uppercase" }}
               />
-              <Area type="monotone" dataKey="projection" stroke="#3b82f6" strokeWidth={1} fill="transparent" strokeDasharray="6 4" opacity={0.4} />
-              <Area type="monotone" dataKey="receita" stroke="#3b82f6" strokeWidth={2} fillOpacity={1} fill="url(#colorRec)" />
-              <Area type="monotone" dataKey="despesa" stroke="#f43f5e" strokeWidth={1.5} fill="transparent" strokeDasharray="4 4" />
+              <Area type="monotone" dataKey="projection" stroke="#2563EB" strokeWidth={1} fill="transparent" strokeDasharray="10 5" opacity={0.3} />
+              <Area type="monotone" dataKey="receita" stroke="#2563EB" strokeWidth={4} fillOpacity={1} fill="url(#colorRec)" />
+              <Area type="monotone" dataKey="despesa" stroke="#f43f5e" strokeWidth={2} fill="transparent" strokeDasharray="4 4" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
       </Card>
 
-      <Card className="lg:col-span-4 p-6 flex flex-col items-center justify-center text-center">
-        <h4 className="text-xs text-slate-400 mb-6">Score de Estabilidade</h4>
-        <div className="relative w-full aspect-square max-w-[200px] flex items-center justify-center">
+      <Card className="lg:col-span-4 p-8 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl flex flex-col items-center justify-center text-center">
+        <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-8">Score de Estabilidade</h4>
+        <div className="relative w-full aspect-square max-w-[240px] flex items-center justify-center">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie data={[{ name: "Stability", value: stabilityScore }, { name: "Remaining", value: 100 - stabilityScore }]}
                 cx="50%" cy="50%" innerRadius="80%" outerRadius="100%" startAngle={220} endAngle={-40} paddingAngle={0} dataKey="value" stroke="none">
-                <Cell fill="#3b82f6" />
-                <Cell fill="rgba(255,255,255,0.06)" />
+                <Cell fill="#2563EB" />
+                <Cell fill="rgba(255,255,255,0.05)" />
               </Pie>
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-3xl font-semibold text-white">{stabilityScore}</span>
-            <span className="text-xs text-slate-400 mt-1">Saúde Global</span>
+            <span className="text-5xl font-black text-white italic tracking-tighter">{stabilityScore}</span>
+            <span className="text-[10px] font-black text-blue-400 uppercase tracking-widest mt-2">Saúde Global</span>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 w-full mt-8">
-          <Card className="p-3">
-            <p className="text-xs text-slate-400 mb-1">Liquidez</p>
-            <span className="text-white font-mono text-sm">--</span>
-          </Card>
-          <Card className="p-3">
-            <p className="text-xs text-slate-400 mb-1">Burn Rate</p>
-            <span className="text-rose-400 font-mono text-sm">--</span>
-          </Card>
+        <div className="grid grid-cols-2 gap-4 w-full mt-10">
+          <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+            <p className="text-[9px] font-black text-slate-500 uppercase mb-1">Liquidez</p>
+            <span className="text-white font-black font-mono">--</span>
+          </div>
+          <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+            <p className="text-[9px] font-black text-slate-500 uppercase mb-1">Burn Rate</p>
+            <span className="text-rose-400 font-black font-mono">--</span>
+          </div>
         </div>
       </Card>
     </div>

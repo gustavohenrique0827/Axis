@@ -32,16 +32,20 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
       {/* Top stats */}
       <div className="grid grid-cols-3 gap-3">
         <div className="bg-[var(--color-surface)] border border-white/5 rounded-2xl p-4 text-center">
-          <p className="text-xs text-slate-400 mb-1">Prob. Fechamento</p>
-          <p className={`text-2xl font-semibold ${probColor}`}>{result.closingProbability}%</p>
+          <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Prob. Fechamento</p>
+          <p className={`text-3xl font-black ${probColor}`}>{result.closingProbability}%</p>
         </div>
         <div className="bg-[var(--color-surface)] border border-white/5 rounded-2xl p-4 text-center">
-          <p className="text-xs text-slate-400 mb-1">Temperatura</p>
-          <p className="text-xl font-semibold text-white capitalize">{result.temperature}</p>
+          <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Temperatura</p>
+          <p className={`text-xl font-black uppercase ${
+            result.temperature === 'quente' ? 'text-rose-400'
+            : result.temperature === 'morno' ? 'text-amber-400'
+            : 'text-blue-400'
+          }`}>{result.temperature}</p>
         </div>
         <div className="bg-[var(--color-surface)] border border-white/5 rounded-2xl p-4 text-center">
-          <p className="text-xs text-slate-400 mb-1">Score BANT</p>
-          <p className="text-2xl font-semibold text-white">{result.bantScore}<span className="text-sm text-slate-500">/8</span></p>
+          <p className="text-[9px] font-black text-slate-500 uppercase tracking-wider mb-1">Score BANT</p>
+          <p className="text-3xl font-black text-white">{result.bantScore}<span className="text-sm text-slate-500">/8</span></p>
         </div>
       </div>
 
@@ -49,8 +53,8 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
       {result.urgentAlerts.length > 0 && (
         <div className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-4 space-y-1.5">
           <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="w-4 h-4 text-rose-400" />
-            <span className="text-sm text-rose-400">Alertas Urgentes</span>
+            <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+            <span className="text-[10px] font-black text-rose-400 uppercase tracking-widest">Alertas Urgentes</span>
           </div>
           {result.urgentAlerts.map((a, i) => (
             <p key={i} className="text-xs text-rose-300 flex items-start gap-2">
@@ -67,7 +71,7 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
           <div className="mt-3 space-y-1">
             {result.managerInsights.map((ins, i) => (
               <p key={i} className="text-[10px] text-slate-400 flex items-start gap-2">
-                <span className="text-slate-500 shrink-0">•</span>{ins}
+                <span className="text-blue-400 shrink-0">•</span>{ins}
               </p>
             ))}
           </div>
@@ -88,16 +92,16 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
               <div key={key} className="bg-white/[0.02] rounded-xl p-3 space-y-2">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Icon className="w-3.5 h-3.5 text-slate-500" />
-                    <span className="text-xs text-white">{label}</span>
+                    <Icon className="w-3 h-3 text-slate-500" />
+                    <span className="text-[10px] font-black text-white uppercase tracking-wider">{label}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-500">{item.score}/2</span>
+                    <span className="text-[9px] text-slate-500 font-bold">{item.score}/2</span>
                     <StatusDot status={item.status} />
                   </div>
                 </div>
                 {item.evidence && item.evidence !== 'Não mencionado' ? (
-                  <p className="text-[10px] text-slate-400 italic border-l-2 border-white/10 pl-2">"{item.evidence}"</p>
+                  <p className="text-[10px] text-slate-400 italic border-l-2 border-blue-500/30 pl-2">"{item.evidence}"</p>
                 ) : (
                   <p className="text-[10px] text-slate-600">Não mencionado na transcrição</p>
                 )}
@@ -112,8 +116,8 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
         <SectionCard title="Qualidade da Ligação" icon={Phone}>
           <div className="space-y-2 mb-3">
             <div className="flex items-center justify-between mb-1">
-              <span className="text-xs text-slate-400">Nota Geral</span>
-              <span className={`text-base font-semibold ${result.callAnalysis.score >= 70 ? 'text-emerald-400' : result.callAnalysis.score >= 40 ? 'text-amber-400' : 'text-rose-400'}`}>
+              <span className="text-[9px] text-slate-500 uppercase font-black tracking-wider">Nota Geral</span>
+              <span className={`text-lg font-black ${result.callAnalysis.score >= 70 ? 'text-emerald-400' : result.callAnalysis.score >= 40 ? 'text-amber-400' : 'text-rose-400'}`}>
                 {result.callAnalysis.score}/100
               </span>
             </div>
@@ -126,14 +130,14 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
               { label: 'Fechamento', val: result.callAnalysis.closing },
             ].map(({ label, val }) => (
               <div key={label}>
-                <span className="text-[10px] text-slate-500">{label}</span>
+                <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">{label}</span>
                 <ScoreBar value={val} color={val >= 70 ? 'emerald' : val >= 40 ? 'amber' : 'rose'} />
               </div>
             ))}
           </div>
           {result.callAnalysis.strengths.length > 0 && (
             <div className="space-y-1 mt-3">
-              <p className="text-xs text-slate-400">Pontos Fortes</p>
+              <p className="text-[9px] font-black text-emerald-400 uppercase tracking-wider">Pontos Fortes</p>
               {result.callAnalysis.strengths.map((s, i) => (
                 <p key={i} className="text-[10px] text-slate-400 flex gap-1.5">
                   <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0 mt-0.5" />{s}
@@ -143,7 +147,7 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
           )}
           {result.callAnalysis.weaknesses.length > 0 && (
             <div className="space-y-1 mt-3">
-              <p className="text-xs text-slate-400">Pontos de Melhoria</p>
+              <p className="text-[9px] font-black text-rose-400 uppercase tracking-wider">Pontos de Melhoria</p>
               {result.callAnalysis.weaknesses.map((w, i) => (
                 <p key={i} className="text-[10px] text-slate-400 flex gap-1.5">
                   <TrendingDown className="w-3 h-3 text-rose-500 shrink-0 mt-0.5" />{w}
@@ -155,8 +159,8 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
 
         <SectionCard title="Aderência ao Playbook" icon={ClipboardList}>
           <div className="flex items-center justify-between mb-3">
-            <span className="text-xs text-slate-400">Aderência</span>
-            <span className={`text-xl font-semibold ${result.playbookAnalysis.adherencePercent >= 70 ? 'text-emerald-400' : result.playbookAnalysis.adherencePercent >= 40 ? 'text-amber-400' : 'text-rose-400'}`}>
+            <span className="text-[9px] text-slate-500 uppercase font-black tracking-wider">Aderência</span>
+            <span className={`text-2xl font-black ${result.playbookAnalysis.adherencePercent >= 70 ? 'text-emerald-400' : result.playbookAnalysis.adherencePercent >= 40 ? 'text-amber-400' : 'text-rose-400'}`}>
               {result.playbookAnalysis.adherencePercent}%
             </span>
           </div>
@@ -167,7 +171,7 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
                   ? <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   : <XCircle className="w-3.5 h-3.5 text-slate-600 shrink-0" />
                 }
-                <span className={`text-[10px] ${step.done ? 'text-slate-300' : 'text-slate-600'}`}>{step.label}</span>
+                <span className={`text-[10px] font-medium ${step.done ? 'text-slate-300' : 'text-slate-600'}`}>{step.label}</span>
               </div>
             ))}
           </div>
@@ -186,14 +190,14 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
             <div className="grid grid-cols-2 gap-3 mt-3">
               {result.commercialValidation.mentionedPrice && (
                 <div className="bg-white/5 rounded-xl p-2">
-                  <p className="text-[10px] text-slate-500">Falado na ligação</p>
-                  <p className="text-xs text-white">{result.commercialValidation.mentionedPrice}</p>
+                  <p className="text-[9px] text-slate-500 uppercase font-black">Falado na ligação</p>
+                  <p className="text-xs text-white font-bold">{result.commercialValidation.mentionedPrice}</p>
                 </div>
               )}
               {result.commercialValidation.officialPrice && (
                 <div className="bg-white/5 rounded-xl p-2">
-                  <p className="text-[10px] text-slate-500">Valor Oficial CRM</p>
-                  <p className="text-xs text-emerald-400">{result.commercialValidation.officialPrice}</p>
+                  <p className="text-[9px] text-slate-500 uppercase font-black">Valor Oficial CRM</p>
+                  <p className="text-xs text-emerald-400 font-bold">{result.commercialValidation.officialPrice}</p>
                 </div>
               )}
             </div>
@@ -209,10 +213,10 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
               {result.objections.map((obj, i) => (
                 <div key={i} className="bg-white/[0.02] rounded-xl p-2.5 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-slate-400">{obj.category}</span>
+                    <span className="text-[9px] font-black text-rose-400 uppercase">{obj.category}</span>
                     {obj.handled
-                      ? <span className="text-[10px] text-emerald-400">✓ Tratada</span>
-                      : <span className="text-[10px] text-rose-400">⚠ Não tratada</span>
+                      ? <span className="text-[9px] text-emerald-400 font-bold">✓ Tratada</span>
+                      : <span className="text-[9px] text-rose-400 font-bold">⚠ Não tratada</span>
                     }
                   </div>
                   <p className="text-[10px] text-slate-300">"{obj.text}"</p>
@@ -243,8 +247,8 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
           </div>
           <p className="text-xs text-slate-400">{result.lossRisk.reason}</p>
         </SectionCard>
-        <SectionCard title="Próxima Melhor Ação" icon={Zap}>
-          <p className="text-sm text-white">{result.nextBestAction}</p>
+        <SectionCard title="Próxima Melhor Ação" icon={Zap} className="border-blue-500/10 bg-blue-500/5">
+          <p className="text-sm font-bold text-white">{result.nextBestAction}</p>
         </SectionCard>
       </div>
 
@@ -253,15 +257,13 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
         <SectionCard title="Tarefa Detectada" icon={ClipboardList}>
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1">
-              <p className="text-xs text-white">{result.task.title}</p>
+              <p className="text-xs font-bold text-white">{result.task.title}</p>
               <p className="text-[10px] text-slate-400">{result.task.date} {result.task.time}</p>
               <p className="text-[10px] text-slate-500">{result.task.description}</p>
             </div>
             <Button
               onClick={onCreateTask}
-              variant="success"
-              size="sm"
-              className="shrink-0"
+              className="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-8 px-4 text-[10px] font-black uppercase tracking-wider"
             >
               Criar Tarefa
             </Button>
@@ -274,21 +276,19 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
         <div className="space-y-3">
           <button
             onClick={() => setShowWhatsapp(v => !v)}
-            className="flex items-center gap-1.5 text-xs text-slate-400 hover:text-white bg-transparent border-none cursor-pointer p-0 transition-colors"
+            className="flex items-center gap-1.5 text-[10px] font-black text-slate-400 hover:text-white bg-transparent border-none cursor-pointer p-0 transition-colors"
           >
             {showWhatsapp ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
             {showWhatsapp ? 'Ocultar mensagem' : 'Ver mensagem sugerida'}
           </button>
           {showWhatsapp && (
-            <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3">
+            <div className="bg-[#075e54]/10 border border-[#25d366]/20 rounded-xl p-3">
               <p className="text-xs text-slate-200 leading-relaxed whitespace-pre-wrap font-mono">
                 {result.whatsappFollowUp}
               </p>
               <Button
                 onClick={handleCopyWhatsapp}
-                variant="subtle"
-                size="sm"
-                className="mt-3 gap-1.5"
+                className="mt-3 bg-[#25d366] hover:bg-[#1da851] text-white rounded-xl h-8 px-4 text-[10px] font-black uppercase tracking-wider gap-1.5"
               >
                 <Send className="w-3 h-3" /> Copiar Mensagem
               </Button>
@@ -299,7 +299,7 @@ export function ResultsView({ result, onCreateTask, onReset }: ResultsViewProps)
 
       <button
         onClick={onReset}
-        className="w-full py-2 text-xs text-slate-500 hover:text-slate-300 border border-dashed border-white/5 hover:border-white/10 rounded-xl transition-all bg-transparent cursor-pointer"
+        className="w-full py-2 text-[10px] text-slate-600 hover:text-slate-400 font-bold uppercase tracking-wider border border-dashed border-white/5 hover:border-white/10 rounded-xl transition-all bg-transparent cursor-pointer"
       >
         ← Nova Análise
       </button>

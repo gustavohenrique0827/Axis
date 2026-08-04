@@ -72,11 +72,11 @@ export function ConfigCRMGatilhosIA() {
       </div>
 
       {/* Rules list */}
-      <Card className="overflow-hidden">
-        <div className="p-5 border-b border-white/5 flex justify-between items-center">
-          <h3 className="text-sm text-slate-400">Gatilhos Ativos no SDR</h3>
-          <span className="text-[10px] text-slate-400 flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /> Master AI Engine Operacional
+      <Card className="bg-[var(--color-surface-elevated)]/80 border border-white/10 overflow-hidden shadow-xl">
+        <div className="p-5 border-b border-white/5 bg-white/[0.01] flex justify-between items-center">
+          <h3 className="text-xs font-black text-[#2563EB] uppercase tracking-widest font-mono">Gatilhos Ativos no SDR</h3>
+          <span className="text-[10px] bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/15 px-2.5 py-0.5 rounded-full font-bold">
+            Master AI Engine Operacional
           </span>
         </div>
 
@@ -89,17 +89,17 @@ export function ConfigCRMGatilhosIA() {
             leadScoreTriggers.map((trigger) => (
               <div key={trigger.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
-                  <h4 className="text-sm font-medium text-white">Regra de Gatilho</h4>
+                  <h4 className="text-sm font-bold text-white">Regra de Gatilho</h4>
                   <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                    Se <span className="font-mono text-slate-300 bg-white/5 px-1 rounded border border-white/10">Lead Score</span> for <strong>{trigger.condition === 'greater' ? 'Maior ou Igual a' : 'Menor ou Igual a'}</strong> <strong className="text-white font-mono">{trigger.scoreThreshold}</strong>,
-                    mover de forma autônoma para a coluna <strong className="text-slate-300">{sdrStagesMap[trigger.targetStageId] || trigger.targetStageId}</strong>.
+                    Se <span className="font-mono text-yellow-400 bg-yellow-400/5 px-1 rounded border border-yellow-400/10">Lead Score</span> for <strong>{trigger.condition === 'greater' ? 'Maior ou Igual a' : 'Menor ou Igual a'}</strong> <strong className="text-white font-mono">{trigger.scoreThreshold}</strong>, 
+                    mover de forma autônoma para a coluna <strong className="text-blue-400">{sdrStagesMap[trigger.targetStageId] || trigger.targetStageId}</strong>.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3 self-end md:self-auto">
-                  <button
+                  <button 
                     onClick={() => handleDelete(trigger.id)}
-                    className="p-1 px-2.5 text-xs text-slate-400 hover:text-rose-400 transition-colors cursor-pointer"
+                    className="p-1 px-2.5 text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold rounded-lg transition-colors cursor-pointer"
                   >
                     Remover
                   </button>
@@ -111,12 +111,12 @@ export function ConfigCRMGatilhosIA() {
       </Card>
 
       {/* Add trigger form */}
-      <Card className="p-5 space-y-4">
-        <h3 className="text-sm text-slate-400">Criar Novo Gatilho do Lead Score</h3>
-
+      <Card className="bg-[var(--color-surface-elevated)]/80 border border-white/10 p-5 shadow-xl space-y-4">
+        <h3 className="text-xs font-black text-white uppercase tracking-widest font-mono">Criar Novo Gatilho do Lead Score</h3>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-xs text-slate-400 block">Nome do Gatilho</label>
+            <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Nome do Gatilho</label>
             <input 
               type="text" 
               placeholder="Ex: Leads Altamente Qualificados para Comercial" 
@@ -127,7 +127,7 @@ export function ConfigCRMGatilhosIA() {
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs text-slate-400 block">Condição de Disparo (Condição Lógica)</label>
+            <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Condição de Disparo (Condição Lógica)</label>
             <select 
               value={newTrigger.condition}
               onChange={(e) => setNewTrigger({ ...newTrigger, condition: e.target.value as any })}
@@ -141,7 +141,7 @@ export function ConfigCRMGatilhosIA() {
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <label className="text-xs text-slate-400 block">Score Alvo (0-100)</label>
+            <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Score Alvo (0-100)</label>
             <input 
               type="number" 
               min="0"
@@ -152,7 +152,7 @@ export function ConfigCRMGatilhosIA() {
             />
           </div>
           <div className="space-y-1">
-            <label className="text-xs text-slate-400 block">Mover Automático para Coluna SDR</label>
+            <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Mover Automático para Coluna SDR</label>
             <select 
               value={newTrigger.targetStageId}
               onChange={(e) => setNewTrigger({ ...newTrigger, targetStageId: e.target.value })}
@@ -173,7 +173,7 @@ export function ConfigCRMGatilhosIA() {
       </Card>
 
       <div className="flex justify-end gap-3 pt-2">
-        <Button onClick={handleSaveTriggers} className="bg-[#2563EB] hover:bg-blue-600 px-6 text-xs">
+        <Button onClick={handleSaveTriggers} className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 text-xs uppercase shadow-xl shadow-blue-500/10">
           Sincronizar Gatilhos IA
         </Button>
       </div>
