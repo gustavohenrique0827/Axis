@@ -56,19 +56,21 @@ export default function Equipe() {
         <AnimatePresence mode="wait">
           {activeTab === "visao-geral" && (
             <EquipeOverview
+              key="visao-geral"
               team={team} squads={squads} logs={logs}
               onAdmitir={() => setIsModalOpen(true)}
               onGoLogs={() => setActiveTab("logs")}
             />
           )}
           {activeTab === "performance" && (
-            <EquipePerformance team={team} squads={squads} />
+            <EquipePerformance key="performance" team={team} squads={squads} />
           )}
           {activeTab === "squads" && (
-            <SquadsTab squads={squads} team={team} expandedSquads={expandedSquads} toggleSquad={toggleSquad} moveMember={moveMember} />
+            <SquadsTab key="squads" squads={squads} team={team} expandedSquads={expandedSquads} toggleSquad={toggleSquad} moveMember={moveMember} />
           )}
           {activeTab === "membros" && (
             <EquipeMembros
+              key="membros"
               filteredTeam={filteredTeam}
               memberSearch={memberSearch}
               onMemberSearchChange={setMemberSearch}
@@ -77,7 +79,7 @@ export default function Equipe() {
             />
           )}
           {activeTab === "logs" && (
-            <LogsTab paginatedLogs={paginatedLogs} filteredLogs={filteredLogs} filter={filter} setFilter={setFilter} currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
+            <LogsTab key="logs" paginatedLogs={paginatedLogs} filteredLogs={filteredLogs} filter={filter} setFilter={setFilter} currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
           )}
         </AnimatePresence>
       </main>

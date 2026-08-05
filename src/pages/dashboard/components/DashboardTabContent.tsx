@@ -31,6 +31,7 @@ export function DashboardTabContent(props: {
     <AnimatePresence mode="wait">
       {activeTab === "executivo" && (
         <StrategicalView
+          key="executivo"
           comparisonPeriod={comparisonPeriod}
           setComparisonPeriod={setComparisonPeriod}
           performanceData={performanceData}
@@ -41,15 +42,16 @@ export function DashboardTabContent(props: {
 
       {activeTab === "comercial" && (
         <CommercialView
+          key="comercial"
           salesRanking={salesRanking}
           funnelData={funnelData}
           recentActivities={recentActivities}
         />
       )}
 
-      {activeTab === "marketing" && <MarketingView />}
+      {activeTab === "marketing" && <MarketingView key="marketing" />}
 
-      {activeTab === "sucesso" && <CustomerSuccessView />}
+      {activeTab === "sucesso" && <CustomerSuccessView key="sucesso" />}
     </AnimatePresence>
   );
 }
