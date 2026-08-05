@@ -486,6 +486,7 @@ export default function ConfigModulosDemos() {
                   {showEditTenant && (
                     <div className="overflow-hidden">
                       <div className="p-4 bg-[var(--color-surface)] border border-blue-500/20 rounded-xl space-y-3">
+                        <div className="flex items-center gap-2 text-blue-400 text-xs font-black uppercase tracking-widest">
                           <Pencil className="w-4 h-4" /> Editar "{selectedTenant}"
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -551,6 +552,7 @@ export default function ConfigModulosDemos() {
                           {savingEdit ? "Salvando..." : "Salvar Alterações"}
                         </button>
                       </div>
+                    </div>
                   )}
 
           {/* Module flags */}

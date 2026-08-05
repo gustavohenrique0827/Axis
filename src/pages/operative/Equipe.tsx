@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { NovoMembroModal } from "../../components/ui/modals/hr/NovoMembroModal";
 import { EditarMembroModal } from "../../components/ui/modals/hr/EditarMembroModal";
-import { AnimatePresence } from "motion/react";
 import { useEquipe, TeamMember } from "./hooks/useEquipe";
 import { SquadsTab } from "./components/SquadsTab";
 import { LogsTab } from "./components/LogsTab";
@@ -53,35 +52,31 @@ export default function Equipe() {
       />
 
       <main className="flex-1 min-w-0 p-10 pb-24 overflow-y-auto custom-scrollbar">
-        <AnimatePresence mode="wait">
-          {activeTab === "visao-geral" && (
-            <EquipeOverview
-              key="visao-geral"
-              team={team} squads={squads} logs={logs}
-              onAdmitir={() => setIsModalOpen(true)}
-              onGoLogs={() => setActiveTab("logs")}
-            />
-          )}
-          {activeTab === "performance" && (
-            <EquipePerformance key="performance" team={team} squads={squads} />
-          )}
-          {activeTab === "squads" && (
-            <SquadsTab key="squads" squads={squads} team={team} expandedSquads={expandedSquads} toggleSquad={toggleSquad} moveMember={moveMember} />
-          )}
-          {activeTab === "membros" && (
-            <EquipeMembros
-              key="membros"
-              filteredTeam={filteredTeam}
-              memberSearch={memberSearch}
-              onMemberSearchChange={setMemberSearch}
-              onAdmitir={() => setIsModalOpen(true)}
-              onEditMember={setEditingMember}
-            />
-          )}
-          {activeTab === "logs" && (
-            <LogsTab key="logs" paginatedLogs={paginatedLogs} filteredLogs={filteredLogs} filter={filter} setFilter={setFilter} currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
-          )}
-        </AnimatePresence>
+        {activeTab === "visao-geral" && (
+          <EquipeOverview
+            team={team} squads={squads} logs={logs}
+            onAdmitir={() => setIsModalOpen(true)}
+            onGoLogs={() => setActiveTab("logs")}
+          />
+        )}
+        {activeTab === "performance" && (
+          <EquipePerformance team={team} squads={squads} />
+        )}
+        {activeTab === "squads" && (
+          <SquadsTab squads={squads} team={team} expandedSquads={expandedSquads} toggleSquad={toggleSquad} moveMember={moveMember} />
+        )}
+        {activeTab === "membros" && (
+          <EquipeMembros
+            filteredTeam={filteredTeam}
+            memberSearch={memberSearch}
+            onMemberSearchChange={setMemberSearch}
+            onAdmitir={() => setIsModalOpen(true)}
+            onEditMember={setEditingMember}
+          />
+        )}
+        {activeTab === "logs" && (
+          <LogsTab paginatedLogs={paginatedLogs} filteredLogs={filteredLogs} filter={filter} setFilter={setFilter} currentPage={currentPage} setCurrentPage={setCurrentPage} totalPages={totalPages} />
+        )}
       </main>
 
       <NovoMembroModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSaveMember} initialValue={null} />
