@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { motion } from "motion/react";
 import { createTenantAdmin, fetchTenants, fetchTenantsDetailed, updateTenantInfo, deactivateTenant, fetchTenantAdminUser, updateTenantUserCredentials } from "../../lib/supabase";
 
 const NICHES = ["Parceira", "Solar", "Imobiliária", "Clínica", "Tecnologia", "Educação", "Agronegócio", "Varejo"];
@@ -386,11 +385,7 @@ export default function ConfigModulosDemos() {
 
           {/* Add tenant inline form */}
             {showAddTenant && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                className="overflow-hidden"
-              >
+              <div className="overflow-hidden">
                 <div className="p-4 bg-[var(--color-surface)] border border-blue-500/20 rounded-xl space-y-3">
                   <div className="flex items-center gap-2 text-blue-400 text-xs font-black uppercase tracking-widest">
                     <Building2 className="w-4 h-4" /> Cadastrar Nova Empresa Parceira
@@ -455,16 +450,12 @@ export default function ConfigModulosDemos() {
                     {savingTenant ? "Cadastrando..." : "Cadastrar Empresa"}
                   </button>
                 </div>
-              </motion.div>
+              </div>
             )}
 
           {/* Delete confirmation */}
                   {confirmingDelete && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="overflow-hidden"
-                    >
+                    <div className="overflow-hidden">
                       <div className="p-4 bg-rose-500/5 border border-rose-500/25 rounded-xl space-y-3">
                         <div className="flex items-center gap-2 text-rose-400 text-xs font-black uppercase tracking-widest">
                           <AlertTriangle className="w-4 h-4" /> Excluir "{selectedTenant}"?
@@ -488,18 +479,13 @@ export default function ConfigModulosDemos() {
                           </button>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   )}
 
                 {/* Edit tenant inline form */}
                   {showEditTenant && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      className="overflow-hidden"
-                    >
+                    <div className="overflow-hidden">
                       <div className="p-4 bg-[var(--color-surface)] border border-blue-500/20 rounded-xl space-y-3">
-                        <div className="flex items-center gap-2 text-blue-400 text-xs font-black uppercase tracking-widest">
                           <Pencil className="w-4 h-4" /> Editar "{selectedTenant}"
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -565,15 +551,7 @@ export default function ConfigModulosDemos() {
                           {savingEdit ? "Salvando..." : "Salvar Alterações"}
                         </button>
                       </div>
-                    </motion.div>
                   )}
-
-        </div>
-      )}
-
-      {/* MÓDULOS DO TENANT SELECIONADO */}
-      {(user?.isMaster || user?.tenantName?.includes("G-Tech")) && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
           {/* Module flags */}
           <div className="lg:col-span-2 space-y-4">
