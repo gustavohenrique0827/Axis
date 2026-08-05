@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { createTenantAdmin, fetchTenants, fetchTenantsDetailed, updateTenantInfo, deactivateTenant, fetchTenantAdminUser, updateTenantUserCredentials } from "../../lib/supabase";
 
 const NICHES = ["Parceira", "Solar", "Imobiliária", "Clínica", "Tecnologia", "Educação", "Agronegócio", "Varejo"];
@@ -385,12 +385,10 @@ export default function ConfigModulosDemos() {
           )}
 
           {/* Add tenant inline form */}
-          <AnimatePresence>
             {showAddTenant && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
                 <div className="p-4 bg-[var(--color-surface)] border border-blue-500/20 rounded-xl space-y-3">
@@ -459,15 +457,12 @@ export default function ConfigModulosDemos() {
                 </div>
               </motion.div>
             )}
-          </AnimatePresence>
 
           {/* Delete confirmation */}
-                <AnimatePresence>
                   {confirmingDelete && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
                       <div className="p-4 bg-rose-500/5 border border-rose-500/25 rounded-xl space-y-3">
@@ -495,15 +490,12 @@ export default function ConfigModulosDemos() {
                       </div>
                     </motion.div>
                   )}
-                </AnimatePresence>
 
                 {/* Edit tenant inline form */}
-                <AnimatePresence>
                   {showEditTenant && (
                     <motion.div
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
                       className="overflow-hidden"
                     >
                       <div className="p-4 bg-[var(--color-surface)] border border-blue-500/20 rounded-xl space-y-3">
@@ -575,7 +567,6 @@ export default function ConfigModulosDemos() {
                       </div>
                     </motion.div>
                   )}
-                </AnimatePresence>
 
         </div>
       )}
