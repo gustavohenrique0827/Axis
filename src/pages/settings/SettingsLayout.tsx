@@ -173,10 +173,13 @@ function MenuSection({ title, icon, items, currentPath, onItemClick }: { title: 
         {items.map((item) => {
           const isActive = currentPath === item.path || currentPath.startsWith(item.path + '/');
           return (
-            <Link key={item.title} to={item.path} onClick={onItemClick}>
-              <button className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${isActive ? 'bg-blue-600/10 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}>
-                <span className="truncate w-full text-left">{item.title}</span>
-              </button>
+            <Link
+              key={item.title}
+              to={item.path}
+              onClick={onItemClick}
+              className={`w-full flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${isActive ? 'bg-blue-600/10 text-white' : 'text-slate-400 hover:text-white hover:bg-white/5'}`}
+            >
+              <span className="truncate w-full text-left">{item.title}</span>
             </Link>
           )
         })}
