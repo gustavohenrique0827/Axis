@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, memo } from 'react';
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import {
@@ -12,6 +12,60 @@ import { createTenantAdmin, fetchTenants, fetchTenantsDetailed, updateTenantInfo
 import { ErrorBoundary } from "../../components/ErrorBoundary";
 
 const NICHES = ["Parceira", "Solar", "Imobiliária", "Clínica", "Tecnologia", "Educação", "Agronegócio", "Varejo"];
+
+// Extensões de gerenciador de senhas injetam nós nesses campos assim que
+// eles aparecem no DOM. Se o componente pai re-renderiza por qualquer outro
+// motivo (ex: clicar em "Cadastrar", que muda o estado do botão), o React
+// tenta reconciliar essa área e encontra um DOM diferente do que esperava,
+// disparando um NotFoundError de insertBefore. Isolar os campos aqui com
+// React.memo faz o React pular a reconciliação deles quando só o resto do
+// formulário muda — a causa real do "clico em Cadastrar e trava".
+const CredentialFields = memo(function CredentialFields({
+  email, onEmailChange, password, onPasswordChange, passwordLabel, passwordPlaceholder, disabled,
+}: {
+  email: string;
+  onEmailChange: (v: string) => void;
+  password: string;
+  onPasswordChange: (v: string) => void;
+  passwordLabel: string;
+  passwordPlaceholder: string;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="space-y-1">
+        <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">E-mail</label>
+        <input
+          type="email"
+          value={email}
+          onChange={e => onEmailChange(e.target.value)}
+          disabled={disabled}
+          placeholder="admin@empresa.com"
+          autoComplete="off"
+          data-lpignore="true"
+          data-1p-ignore
+          data-bwignore
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 disabled:opacity-40"
+        />
+      </div>
+      <div className="space-y-1">
+        <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">{passwordLabel}</label>
+        <input
+          type="password"
+          value={password}
+          onChange={e => onPasswordChange(e.target.value)}
+          disabled={disabled}
+          placeholder={passwordPlaceholder}
+          autoComplete="new-password"
+          data-lpignore="true"
+          data-1p-ignore
+          data-bwignore
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 disabled:opacity-40"
+        />
+      </div>
+    </div>
+  );
+});
 
 export default function ConfigModulosDemos() {
   const { login, user, allTenantModules, updateTenantModules, getTenantModules } = useAuth();
@@ -424,36 +478,14 @@ export default function ConfigModulosDemos() {
                     <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Acesso do administrador da empresa</p>
                     <p className="text-[10px] text-slate-600">Esse e-mail e senha serão usados para o primeiro login do cliente.</p>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">E-mail</label>
-                      <input
-                        type="email"
-                        value={newTenantEmail}
-                        onChange={e => setNewTenantEmail(e.target.value)}
-                        placeholder="admin@empresa.com"
-                        autoComplete="off"
-                        data-lpignore="true"
-                        data-1p-ignore
-                        data-bwignore
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Senha</label>
-                      <input
-                        type="password"
-                        value={newTenantPassword}
-                        onChange={e => setNewTenantPassword(e.target.value)}
-                        placeholder="Mínimo 6 caracteres"
-                        autoComplete="new-password"
-                        data-lpignore="true"
-                        data-1p-ignore
-                        data-bwignore
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
-                      />
-                    </div>
-                  </div>
+                  <CredentialFields
+                    email={newTenantEmail}
+                    onEmailChange={setNewTenantEmail}
+                    password={newTenantPassword}
+                    onPasswordChange={setNewTenantPassword}
+                    passwordLabel="Senha"
+                    passwordPlaceholder="Mínimo 6 caracteres"
+                  />
 
                   <button
                     onClick={handleAddTenant}
@@ -534,38 +566,15 @@ export default function ConfigModulosDemos() {
                             {loadingAdminUser ? "Carregando administrador..." : editAdminUserId ? "Altere o e-mail e/ou defina uma nova senha. Deixe a senha em branco para mantê-la." : "Nenhum administrador encontrado para editar credenciais."}
                           </p>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          <div className="space-y-1">
-                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">E-mail</label>
-                            <input
-                              type="email"
-                              value={editAdminEmail}
-                              onChange={e => setEditAdminEmail(e.target.value)}
-                              disabled={!editAdminUserId || loadingAdminUser}
-                              placeholder="admin@empresa.com"
-                              autoComplete="off"
-                              data-lpignore="true"
-                              data-1p-ignore
-                              data-bwignore
-                              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 disabled:opacity-40"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Nova Senha</label>
-                            <input
-                              type="password"
-                              value={editAdminPassword}
-                              onChange={e => setEditAdminPassword(e.target.value)}
-                              disabled={!editAdminUserId || loadingAdminUser}
-                              placeholder="Deixe em branco para manter"
-                              autoComplete="new-password"
-                              data-lpignore="true"
-                              data-1p-ignore
-                              data-bwignore
-                              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 disabled:opacity-40"
-                            />
-                          </div>
-                        </div>
+                        <CredentialFields
+                          email={editAdminEmail}
+                          onEmailChange={setEditAdminEmail}
+                          password={editAdminPassword}
+                          onPasswordChange={setEditAdminPassword}
+                          passwordLabel="Nova Senha"
+                          passwordPlaceholder="Deixe em branco para manter"
+                          disabled={!editAdminUserId || loadingAdminUser}
+                        />
 
                         <button
                           onClick={handleSaveEditTenant}
