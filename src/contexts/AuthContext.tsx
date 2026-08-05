@@ -32,6 +32,21 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Sessões demo (Acesso Demonstração) não passam pelo Supabase Auth — não há
+// JWT/cookie real para o supabase-js persistir sozinho entre reloads. Guardamos
+// aqui como fallback local para essas sessões (e como rede de segurança caso o
+// client do Supabase não esteja configurado no ambiente).
+const AXIS_SESSION_KEY = "axis_user_session";
+
+function readSavedSession(): UserSession | null {
+  try {
+    const raw = localStorage.getItem(AXIS_SESSION_KEY);
+    return raw ? (JSON.parse(raw) as UserSession) : null;
+  } catch {
+    return null;
+  }
+}
+
 // Módulos padrão dos tenants demo — carregados localmente como fallback quando Supabase não está acessível
 const DEFAULT_TENANT_MODULES: Record<string, TenantModules> = {
   "G-Tech Master": {
@@ -67,6 +82,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // sessão entre reloads — não duplicamos esse estado aqui.
   useEffect(() => {
     if (!supabase) {
+      setUser(readSavedSession());
       setAuthLoading(false);
       return;
     }
@@ -75,7 +91,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const applySession = async (userId: string | undefined) => {
       if (!userId) {
-        if (active) setUser(null);
+        // Sem sessão real do Supabase Auth — pode ser uma sessão demo, que só
+        // existe no localStorage local (ver login()/AXIS_SESSION_KEY).
+        if (active) setUser(readSavedSession());
         return;
       }
       const profile = await fetchUserProfile(userId);
@@ -127,11 +145,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // A autenticação real (supabase.auth.signInWithPassword/signUp) já aconteceu
     // em signIn()/registerPartner() antes de chamar login() — aqui só refletimos
     // o perfil resolvido no estado local; onAuthStateChange mantém a sessão
-    // sincronizada em refreshes futuros.
+    // sincronizada em refreshes futuros. Também guardamos localmente para que
+    // sessões demo (sem JWT real do Supabase) sobrevivam a um reload da página.
+    localStorage.setItem(AXIS_SESSION_KEY, JSON.stringify(session));
     setUser(session);
   };
 
   const logout = () => {
+    localStorage.removeItem(AXIS_SESSION_KEY);
     setUser(null);
     supabase?.auth.signOut();
   };

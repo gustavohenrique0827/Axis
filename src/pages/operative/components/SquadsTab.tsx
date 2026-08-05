@@ -128,7 +128,7 @@ export function SquadsTab({ squads, team, moveMember }: SquadsTabProps) {
         </div>
 
         {/* Member Panel */}
-        <AnimatePresence mode="wait">
+        <AnimatePresence>
           {selectedSquad && selected && (
             <motion.div
               key={selectedSquad}

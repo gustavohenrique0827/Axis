@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
 import { LoginForm } from "./components/LoginForm";
-import { RegisterForm } from "./components/RegisterForm";
 import { DemoAccessPanel } from "./components/DemoAccessPanel";
 
 export default function Login() {
-  const [mode, setMode] = useState<"login" | "register">("login");
   const [logoDarkFull, setLogoDarkFull] = useState(() => localStorage.getItem("axis_brand_logo_dark_full") || "/logo-full.png");
 
   useEffect(() => {
@@ -30,27 +28,10 @@ export default function Login() {
               />
             </div>
             <h1 className="text-3xl font-bold tracking-tight mb-2 text-[var(--color-text-primary)]">Bem-vindo ao Axis CRM</h1>
-            <p className="text-[var(--color-text-muted)] text-sm">Acesse a plataforma ou cadastre sua empresa parceira.</p>
+            <p className="text-[var(--color-text-muted)] text-sm">Acesse a plataforma com sua conta corporativa.</p>
           </div>
 
-          <div className="mb-6 flex items-center justify-center gap-2">
-            <button
-              type="button"
-              onClick={() => setMode("login")}
-              className={`px-4 py-2 rounded-full font-medium transition-colors ${mode === "login" ? "bg-[#2563EB] text-white" : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] hover:bg-[var(--color-border-default)]"}`}
-            >
-              Entrar
-            </button>
-            <button
-              type="button"
-              onClick={() => setMode("register")}
-              className={`px-4 py-2 rounded-full font-medium transition-colors ${mode === "register" ? "bg-[#2563EB] text-white" : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] hover:bg-[var(--color-border-default)]"}`}
-            >
-              Registrar
-            </button>
-          </div>
-
-          {mode === "login" ? <LoginForm /> : <RegisterForm />}
+          <LoginForm />
         </div>
 
         {/* Right Side */}
