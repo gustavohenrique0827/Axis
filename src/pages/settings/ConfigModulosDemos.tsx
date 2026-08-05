@@ -131,14 +131,14 @@ export default function ConfigModulosDemos() {
     }
   };
 
-  const handleReloadTenants = async () => {
+  const handleReloadTenants = async (silent = false) => {
     setReloading(true);
     const dbTenants = await fetchTenants();
     if (Object.keys(dbTenants).length > 0) {
       const merged: Record<string, any> = { "G-Tech Master": allTenantModules["G-Tech Master"] || {}, ...dbTenants };
       setTenantOptions(Object.keys(merged));
-      toast.success(`${Object.keys(dbTenants).length} empresa(s) carregada(s) do banco.`);
-    } else {
+      if (!silent) toast.success(`${Object.keys(dbTenants).length} empresa(s) carregada(s) do banco.`);
+    } else if (!silent) {
       toast.error("Nenhuma empresa parceira encontrada no banco.");
     }
     await loadTenantDetails();
@@ -214,7 +214,7 @@ export default function ConfigModulosDemos() {
     setShowEditTenant(false);
     setEditAdminPassword("");
     setSelectedTenant(editTenantName.trim());
-    await handleReloadTenants();
+    await handleReloadTenants(true);
     setSavingEdit(false);
   };
 
@@ -231,7 +231,7 @@ export default function ConfigModulosDemos() {
       setConfirmingDelete(false);
       setShowEditTenant(false);
       setSelectedTenant("G-Tech Master");
-      await handleReloadTenants();
+      await handleReloadTenants(true);
     } else {
       toast.error(`Erro: ${result.error}`);
     }
@@ -260,7 +260,7 @@ export default function ConfigModulosDemos() {
       setNewTenantEmail("");
       setNewTenantPassword("");
       setShowAddTenant(false);
-      await handleReloadTenants();
+      await handleReloadTenants(true);
     } else {
       toast.error(`Erro: ${result.error}`);
     }
@@ -308,7 +308,7 @@ export default function ConfigModulosDemos() {
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button
-                onClick={handleReloadTenants}
+                onClick={() => handleReloadTenants()}
                 disabled={reloading}
                 title="Recarregar parceiros do banco"
                 className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-slate-400 hover:text-white transition-all"
