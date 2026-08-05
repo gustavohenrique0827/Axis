@@ -9,6 +9,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { createTenantAdmin, fetchTenants, fetchTenantsDetailed, updateTenantInfo, deactivateTenant, fetchTenantAdminUser, updateTenantUserCredentials } from "../../lib/supabase";
+import { ErrorBoundary } from "../../components/ErrorBoundary";
 
 const NICHES = ["Parceira", "Solar", "Imobiliária", "Clínica", "Tecnologia", "Educação", "Agronegócio", "Varejo"];
 
@@ -383,8 +384,12 @@ export default function ConfigModulosDemos() {
             </div>
           )}
 
-          {/* Add tenant inline form */}
+          {/* Add tenant inline form — boundary local: se uma extensão do
+              navegador (gerenciador de senhas) corromper o DOM dos campos de
+              e-mail/senha, só este formulário se recupera, sem fechar/resetar
+              a página inteira (o que fazia o formulário "sumir" sozinho). */}
             {showAddTenant && (
+              <ErrorBoundary compact>
               <div className="overflow-hidden">
                 <div className="p-4 bg-[var(--color-surface)] border border-blue-500/20 rounded-xl space-y-3">
                   <div className="flex items-center gap-2 text-blue-400 text-xs font-black uppercase tracking-widest">
@@ -459,6 +464,7 @@ export default function ConfigModulosDemos() {
                   </button>
                 </div>
               </div>
+              </ErrorBoundary>
             )}
 
           {/* Delete confirmation */}
@@ -490,8 +496,9 @@ export default function ConfigModulosDemos() {
                     </div>
                   )}
 
-                {/* Edit tenant inline form */}
+                {/* Edit tenant inline form — mesmo boundary local de recuperação */}
                   {showEditTenant && (
+                    <ErrorBoundary compact>
                     <div className="overflow-hidden">
                       <div className="p-4 bg-[var(--color-surface)] border border-blue-500/20 rounded-xl space-y-3">
                         <div className="flex items-center gap-2 text-blue-400 text-xs font-black uppercase tracking-widest">
@@ -569,6 +576,7 @@ export default function ConfigModulosDemos() {
                         </button>
                       </div>
                     </div>
+                    </ErrorBoundary>
                   )}
 
           {/* Module flags */}

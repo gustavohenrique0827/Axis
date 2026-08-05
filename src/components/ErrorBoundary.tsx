@@ -4,6 +4,8 @@ import { AlertTriangle, RefreshCw } from "lucide-react";
 interface ErrorBoundaryProps {
   children: ReactNode;
   resetKey?: string;
+  /** Para boundaries locais (um formulário, um card) em vez da página inteira. */
+  compact?: boolean;
 }
 
 interface ErrorBoundaryState {
@@ -63,6 +65,22 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   render() {
     if (this.state.error) {
+      if (this.props.compact) {
+        return (
+          <div className="flex flex-col items-center justify-center gap-3 text-center p-6 border border-rose-500/20 bg-rose-500/5 rounded-2xl">
+            <AlertTriangle className="w-5 h-5 text-rose-500" />
+            <p className="text-xs text-[var(--color-text-muted)] max-w-sm">
+              Não foi possível carregar esta parte da tela.
+            </p>
+            <button
+              onClick={() => this.setState({ error: null })}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Tentar novamente
+            </button>
+          </div>
+        );
+      }
       return (
         <div className="min-h-[60vh] flex flex-col items-center justify-center gap-4 text-center p-8">
           <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
