@@ -127,11 +127,13 @@ export function SquadsTab({ squads, team, moveMember }: SquadsTabProps) {
           )}
         </div>
 
-        {/* Member Panel */}
+        {/* Member Panel — key fixo: trocar de squad só troca o conteúdo, sem
+            desmontar/remontar o motion.div (evita a dança de exit/enter do
+            Framer Motion, que nesse ponto causava o crash de insertBefore) */}
         <AnimatePresence>
           {selectedSquad && selected && (
             <motion.div
-              key={selectedSquad}
+              key="member-panel"
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 16 }}

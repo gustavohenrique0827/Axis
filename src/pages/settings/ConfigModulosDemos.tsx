@@ -4,12 +4,12 @@ import { toast } from "sonner";
 import {
   Cpu, Activity, Layers, Database, UserCheck,
   Target, Award, DollarSign, Package, MessageSquare, Users, Columns3, Clock, Code2,
-  Plus, X, Building2, RefreshCw, ChevronDown, Megaphone
+  Plus, X, Building2, RefreshCw, ChevronDown, Megaphone, Pencil, Trash2, AlertTriangle
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { motion, AnimatePresence } from "motion/react";
-import { createTenantAdmin, fetchTenants } from "../../lib/supabase";
+import { createTenantAdmin, fetchTenants, fetchTenantsDetailed, updateTenantInfo, deactivateTenant } from "../../lib/supabase";
 
 const NICHES = ["Parceira", "Solar", "Imobiliária", "Clínica", "Tecnologia", "Educação", "Agronegócio", "Varejo"];
 
@@ -46,6 +46,21 @@ export default function ConfigModulosDemos() {
   const [savingTenant, setSavingTenant] = useState(false);
   const [reloading, setReloading] = useState(false);
 
+  // Edit/Delete partner state — id + nicho não vêm de fetchTenants (só nome),
+  // por isso a lista detalhada separada.
+  const [tenantDetails, setTenantDetails] = useState<{ id: string; name: string; niche: string }[]>([]);
+  const [showEditTenant, setShowEditTenant] = useState(false);
+  const [editTenantName, setEditTenantName] = useState("");
+  const [editTenantNiche, setEditTenantNiche] = useState("Parceira");
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deletingTenant, setDeletingTenant] = useState(false);
+
+  const loadTenantDetails = async () => {
+    const details = await fetchTenantsDetailed();
+    setTenantDetails(details);
+  };
+
   // Busca direta ao montar — não depende do timing do AuthContext
   useEffect(() => {
     const loadDirect = async () => {
@@ -59,6 +74,7 @@ export default function ConfigModulosDemos() {
       }
     };
     loadDirect();
+    loadTenantDetails();
   }, []);
 
   // Sincroniza quando AuthContext atualiza também
@@ -122,7 +138,59 @@ export default function ConfigModulosDemos() {
     } else {
       toast.error("Nenhuma empresa parceira encontrada no banco.");
     }
+    await loadTenantDetails();
     setReloading(false);
+  };
+
+  const openEditTenant = () => {
+    const current = tenantDetails.find(t => t.name === selectedTenant);
+    setEditTenantName(current?.name || selectedTenant);
+    setEditTenantNiche(current?.niche || "Parceira");
+    setConfirmingDelete(false);
+    setShowEditTenant(v => !v);
+  };
+
+  const handleSaveEditTenant = async () => {
+    const current = tenantDetails.find(t => t.name === selectedTenant);
+    if (!current) {
+      toast.error("Empresa não encontrada no banco de dados.");
+      return;
+    }
+    if (!editTenantName.trim()) {
+      toast.error("Informe o nome da empresa.");
+      return;
+    }
+    setSavingEdit(true);
+    const result = await updateTenantInfo(current.id, { name: editTenantName.trim(), niche: editTenantNiche });
+    if (result.success) {
+      toast.success(`Empresa atualizada para "${editTenantName.trim()}".`);
+      setShowEditTenant(false);
+      setSelectedTenant(editTenantName.trim());
+      await handleReloadTenants();
+    } else {
+      toast.error(`Erro: ${result.error}`);
+    }
+    setSavingEdit(false);
+  };
+
+  const handleDeleteTenant = async () => {
+    const current = tenantDetails.find(t => t.name === selectedTenant);
+    if (!current) {
+      toast.error("Empresa não encontrada no banco de dados.");
+      return;
+    }
+    setDeletingTenant(true);
+    const result = await deactivateTenant(current.id);
+    if (result.success) {
+      toast.success(`Empresa "${current.name}" removida da lista de parceiros ativos.`);
+      setConfirmingDelete(false);
+      setShowEditTenant(false);
+      setSelectedTenant("G-Tech Master");
+      await handleReloadTenants();
+    } else {
+      toast.error(`Erro: ${result.error}`);
+    }
+    setDeletingTenant(false);
   };
 
   const handleAddTenant = async () => {
@@ -239,8 +307,26 @@ export default function ConfigModulosDemos() {
                     >
                       <RefreshCw className={`w-3.5 h-3.5 ${reloading ? 'animate-spin' : ''}`} />
                     </button>
+                    {selectedTenant !== "G-Tech Master" && (
+                      <>
+                        <button
+                          onClick={openEditTenant}
+                          title="Editar empresa parceira"
+                          className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-slate-400 hover:text-white transition-all"
+                        >
+                          {showEditTenant ? <X className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
+                        </button>
+                        <button
+                          onClick={() => { setConfirmingDelete(v => !v); setShowEditTenant(false); }}
+                          title="Excluir empresa parceira"
+                          className="p-2 bg-rose-600/10 hover:bg-rose-600/20 border border-rose-500/25 rounded-xl text-rose-400 hover:text-rose-300 transition-all"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    )}
                     <button
-                      onClick={() => setShowAddTenant(v => !v)}
+                      onClick={() => { setShowAddTenant(v => !v); setShowEditTenant(false); setConfirmingDelete(false); }}
                       title="Cadastrar nova empresa parceira"
                       className="p-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/25 rounded-xl text-blue-400 hover:text-blue-300 transition-all"
                     >
@@ -248,6 +334,90 @@ export default function ConfigModulosDemos() {
                     </button>
                   </div>
                 </div>
+
+                {/* Delete confirmation */}
+                <AnimatePresence>
+                  {confirmingDelete && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-4 bg-rose-500/5 border border-rose-500/25 rounded-xl space-y-3">
+                        <div className="flex items-center gap-2 text-rose-400 text-xs font-black uppercase tracking-widest">
+                          <AlertTriangle className="w-4 h-4" /> Excluir "{selectedTenant}"?
+                        </div>
+                        <p className="text-xs text-slate-400 leading-relaxed">
+                          A empresa deixa de aparecer na lista de parceiros ativos e seus usuários perdem acesso. O histórico (leads, contratos etc.) é preservado, não é apagado.
+                        </p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => setConfirmingDelete(false)}
+                            className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+                          >
+                            Cancelar
+                          </button>
+                          <button
+                            onClick={handleDeleteTenant}
+                            disabled={deletingTenant}
+                            className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+                          >
+                            {deletingTenant ? "Excluindo..." : "Confirmar exclusão"}
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Edit tenant inline form */}
+                <AnimatePresence>
+                  {showEditTenant && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-4 bg-[var(--color-surface)] border border-blue-500/20 rounded-xl space-y-3">
+                        <div className="flex items-center gap-2 text-blue-400 text-xs font-black uppercase tracking-widest">
+                          <Pencil className="w-4 h-4" /> Editar "{selectedTenant}"
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Nome da Empresa</label>
+                            <input
+                              value={editTenantName}
+                              onChange={e => setEditTenantName(e.target.value)}
+                              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Nicho</label>
+                            <div className="relative">
+                              <select
+                                value={editTenantNiche}
+                                onChange={e => setEditTenantNiche(e.target.value)}
+                                className="w-full appearance-none bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50 pr-8"
+                              >
+                                {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
+                              </select>
+                              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={handleSaveEditTenant}
+                          disabled={savingEdit}
+                          className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+                        >
+                          {savingEdit ? "Salvando..." : "Salvar Alterações"}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Add tenant inline form */}
                 <AnimatePresence>

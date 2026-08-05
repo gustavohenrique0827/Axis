@@ -533,6 +533,60 @@ export async function createTenantAdmin(
 }
 
 /**
+ * Lista tenants ativos com id/nome/nicho — usado pela tela de gestão de
+ * empresas parceiras (editar/excluir), que precisa do id (não só do nome
+ * usado por fetchTenants) e do nicho para pré-preencher o formulário de edição.
+ */
+export async function fetchTenantsDetailed(): Promise<{ id: string; name: string; niche: string }[]> {
+  if (!supabase) return [];
+  try {
+    const { data, error } = await supabase
+      .from('tenants')
+      .select('id, name, niche')
+      .eq('status', 'Active')
+      .order('name', { ascending: true });
+    if (error || !data) return [];
+    return data as { id: string; name: string; niche: string }[];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Atualiza nome/nicho de um tenant existente.
+ */
+export async function updateTenantInfo(
+  tenantId: string,
+  updates: { name?: string; niche?: string }
+): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: 'Supabase não configurado' };
+  try {
+    const { error } = await supabase.from('tenants').update(updates).eq('id', tenantId);
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Erro desconhecido' };
+  }
+}
+
+/**
+ * "Exclui" um tenant parceiro. Em vez de um DELETE físico (que órfãos leads,
+ * usuários e demais registros ligados por tenant_id), marcamos como Inactive —
+ * mesmo campo `status` que fetchTenants já usa para filtrar a lista ativa, então
+ * o tenant desaparece da tela imediatamente sem destruir o histórico dele.
+ */
+export async function deactivateTenant(tenantId: string): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: 'Supabase não configurado' };
+  try {
+    const { error } = await supabase.from('tenants').update({ status: 'Inactive' }).eq('id', tenantId);
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Erro desconhecido' };
+  }
+}
+
+/**
  * Atualiza os módulos ativos de um tenant no banco de dados
  */
 export async function updateTenantModulesInDB(tenantName: string, modules: any) {
