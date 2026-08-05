@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import { Users2, Users, UserPlus, Trophy, Shield, Zap } from "lucide-react";
 import { Button } from "../../../components/ui/button";
 import { Card } from "../../../components/ui/card";
@@ -130,13 +130,10 @@ export function SquadsTab({ squads, team, moveMember }: SquadsTabProps) {
         {/* Member Panel — key fixo: trocar de squad só troca o conteúdo, sem
             desmontar/remontar o motion.div (evita a dança de exit/enter do
             Framer Motion, que nesse ponto causava o crash de insertBefore) */}
-        <AnimatePresence>
           {selectedSquad && selected && (
             <motion.div
-              key="member-panel"
               initial={{ opacity: 0, x: 16 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 16 }}
               transition={{ duration: 0.25 }}
               className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-3xl overflow-hidden flex flex-col"
             >
@@ -155,7 +152,7 @@ export function SquadsTab({ squads, team, moveMember }: SquadsTabProps) {
               <div className="flex-1 p-3 space-y-1.5 max-h-[320px] overflow-y-auto custom-scrollbar">
                 {members.map((m, i) => (
                   <motion.div
-                    key={m.name}
+                    key={m.id ?? `${m.name}-${i}`}
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: i * 0.04 }}
@@ -215,7 +212,6 @@ export function SquadsTab({ squads, team, moveMember }: SquadsTabProps) {
               </div>
             </motion.div>
           )}
-        </AnimatePresence>
       </div>
 
       {/* Stats row */}

@@ -86,7 +86,7 @@ export function EquipeSidebar({
                     onChange={(e) => onNewSquadDataChange({ ...newSquadData, leader: e.target.value })}
                   >
                     <option value="">Líder...</option>
-                    {team.map((m) => <option key={m.name} value={m.name}>{m.name}</option>)}
+                    {team.map((m) => <option key={m.id ?? m.name} value={m.name}>{m.name}</option>)}
                   </select>
                   <Button
                     size="sm"

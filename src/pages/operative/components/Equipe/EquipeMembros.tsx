@@ -78,8 +78,8 @@ export function EquipeMembros({ filteredTeam, memberSearch, onMemberSearchChange
       </div>
 
       <div className="grid grid-cols-1 gap-3">
-        {filteredTeam.map((member, i) => (
-          <TeamMemberCard key={i} member={member} onEdit={onEditMember} />
+        {filteredTeam.map((member) => (
+          <TeamMemberCard key={member.id ?? `${member.email}-${member.name}`} member={member} onEdit={onEditMember} />
         ))}
         {filteredTeam.length === 0 && (
           <div className="py-24 text-center">
