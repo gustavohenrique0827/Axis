@@ -5,7 +5,6 @@ import {
   Building, Users, Columns3, Briefcase, Zap, Globe, Bell, Menu, X, 
   PanelLeftClose, PanelLeftOpen 
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
 import { Button } from "../../components/ui/button";
 
 export default function SettingsLayout() {
@@ -81,14 +80,8 @@ export default function SettingsLayout() {
   return (
     <div className="flex flex-col lg:flex-row h-full -m-4 md:-m-8 relative overflow-hidden">
       {/* Floating Trigger when Hidden */}
-      <AnimatePresence>
         {isHidden && (
-          <motion.div
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -10 }}
-            className="absolute left-0 top-12 z-[60] hidden lg:block"
-          >
+          <div className="absolute left-0 top-12 z-[60] hidden lg:block">
             <Button
               onClick={() => setIsHidden(false)}
               className="h-10 w-6 bg-[var(--color-surface)] hover:bg-white/5 text-slate-500 hover:text-white border-y border-r border-white/10 rounded-l-none rounded-r-lg shadow-xl shadow-black/20 flex items-center justify-center p-0 group"
@@ -96,27 +89,19 @@ export default function SettingsLayout() {
             >
               <PanelLeftOpen className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
             </Button>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
 
-      <motion.div 
-        animate={{ 
-          width: isHidden ? 0 : 256,
-          opacity: isHidden ? 0 : 1,
-        }}
-        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      <div 
+        style={{ width: isHidden ? 0 : 256, opacity: isHidden ? 0 : 1 }}
         className="hidden lg:flex shrink-0 bg-[var(--color-dark-bg)] border-r border-white/5 flex-col z-20 sticky top-0 h-full overflow-hidden"
       >
         
         <div className="px-6 py-6 flex items-center justify-between">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
+          <div>
             <h2 className="text-lg font-black text-white tracking-tighter">Configurações</h2>
             <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider mt-0.5">Gerenciamento Geral</p>
-          </motion.div>
+          </div>
           <Button 
             variant="ghost"
             size="icon"
@@ -138,7 +123,7 @@ export default function SettingsLayout() {
           <MenuSection title="Integrações" icon={<Users className="w-4 h-4" />} items={secIntegracoes} currentPath={location.pathname} />
           <MenuSection title="Sistema" icon={<Zap className="w-4 h-4" />} items={secSistema} currentPath={location.pathname} />
         </div>
-      </motion.div>
+      </div>
 
       {/* Mobile Top Nav */}
       <div className="lg:hidden w-full bg-[var(--color-dark-bg)] border-b border-white/5 pt-3 shrink-0 z-20 sticky top-0">
@@ -154,12 +139,8 @@ export default function SettingsLayout() {
           </button>
         </div>
 
-        <AnimatePresence>
           {mobileMenuOpen && (
-            <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
+            <div 
               className="absolute top-full left-0 right-0 bg-[var(--color-dark-bg)] border-b border-white/10 shadow-2xl max-h-[75vh] overflow-y-auto p-4 z-40"
             >
               <MenuSection title="Preferências" icon={<Bell className="w-4 h-4" />} items={secPreferencias} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
@@ -170,9 +151,8 @@ export default function SettingsLayout() {
               {(activeModules.marketing || activeModules.engajamento) && <MenuSection title="Engaj." icon={<Zap className="w-4 h-4" />} items={secEngajamento} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />}
               <MenuSection title="Integrações" icon={<Users className="w-4 h-4" />} items={secIntegracoes} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
               <MenuSection title="Sistema" icon={<Zap className="w-4 h-4" />} items={secSistema} currentPath={location.pathname} onItemClick={() => setMobileMenuOpen(false)} />
-            </motion.div>
+            </div>
           )}
-        </AnimatePresence>
       </div>
       
       {/* Configurações Main Content */}
