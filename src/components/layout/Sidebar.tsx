@@ -93,7 +93,7 @@ export function Sidebar({
         <div className="h-20 flex items-center justify-center px-3 py-3 shrink-0">
           <Link
             to="/app"
-            className={`logo-image-container sidebar-logo-header flex items-center justify-center w-full h-full rounded-2xl bg-[var(--color-surface)] shadow-sm ${isSidebarCollapsed ? "mx-auto" : ""}`}
+            className={`logo-image-container sidebar-logo-header flex items-center justify-center w-full h-full rounded-2xl bg-[#0B1120] shadow-sm ${isSidebarCollapsed ? "mx-auto" : ""}`}
           >
             {isSidebarCollapsed ? (
               <div className="w-8 h-8 rounded-lg flex items-center justify-center p-1">
@@ -109,7 +109,7 @@ export function Sidebar({
                 <img
                   src={logoDarkFull}
                   alt="Axis"
-                  className="logo-container"
+                  className="logo-container mix-blend-screen"
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -127,7 +127,7 @@ export function Sidebar({
             .map((section, idx) => (
               <div key={idx} className="space-y-1.5">
                 {!isSidebarCollapsed ? (
-                  <div className="px-3 text-[10px] font-black text-slate-600 uppercase tracking-[0.2em] mb-2">
+                  <div className="px-3 text-[10px] font-black text-[var(--color-text-faint)] uppercase tracking-[0.2em] mb-2">
                     {section.title}
                   </div>
                 ) : (
@@ -141,9 +141,9 @@ export function Sidebar({
 
                   const btnContent = (
                     <button
-                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5" : "gap-3 px-3 py-2.5"} text-sm font-bold rounded-xl transition-all ${isActive ? "bg-blue-600/10 text-blue-500 border border-blue-600/20 shadow-[0_0_20px_rgba(37,99,235,0.05)]" : "text-slate-500 hover:text-white hover:bg-white/[0.03]"}`}
+                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5" : "gap-3 px-3 py-2.5"} text-sm font-bold rounded-xl transition-all ${isActive ? "bg-blue-600/10 text-blue-500 border border-blue-600/20 shadow-[0_0_20px_rgba(37,99,235,0.05)]" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]"}`}
                     >
-                      <item.icon className={`w-4 h-4 shrink-0 ${isActive ? "text-blue-500" : "text-slate-600"}`} />{" "}
+                      <item.icon className={`w-4 h-4 shrink-0 ${isActive ? "text-blue-500" : "text-[var(--color-text-faint)]"}`} />{" "}
                       {!isSidebarCollapsed && item.name}
                     </button>
                   );
@@ -180,14 +180,14 @@ export function Sidebar({
         </div>
 
         {!isSidebarCollapsed && (
-          <div className="p-4 border-t border-white/5 bg-white/[0.01]">
+          <div className="p-4 border-t border-[var(--color-border-default)] bg-[var(--color-surface-sunken)]/40">
             <div className="flex items-center gap-2 mb-2">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
-              <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+              <span className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">
                 Global Status 99.8%
               </span>
             </div>
-            <div className="text-[10px] text-slate-600 font-medium italic line-clamp-1 border-l border-blue-500/20 pl-2">
+            <div className="text-[10px] text-[var(--color-text-faint)] font-medium italic line-clamp-1 border-l border-blue-500/20 pl-2">
               Próximo backup global em 4h 12m
             </div>
           </div>

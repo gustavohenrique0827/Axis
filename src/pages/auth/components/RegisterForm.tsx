@@ -21,7 +21,7 @@ export function RegisterForm() {
   const { login } = useAuth();
   const from = location.state?.from?.pathname || "/app/dashboard";
 
-  const fieldClass = "w-full bg-[var(--color-surface)] border border-white/10 rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]";
+  const fieldClass = "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]";
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,53 +56,53 @@ export function RegisterForm() {
   };
 
   return (
-    <Card className="p-8">
+    <Card className="p-8 bg-[var(--color-surface-elevated)] border-[var(--color-border-default)] text-[var(--color-text-primary)] shadow-sm">
       <form onSubmit={handleRegister} className="space-y-6">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2 text-sm">
-            <span className="text-slate-400 font-semibold">Nome da Empresa</span>
+            <span className="text-[var(--color-text-muted)] font-semibold">Nome da Empresa</span>
             <div className="relative">
-              <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-faint)]" />
               <input type="text" value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={fieldClass} placeholder="Ex: Axis Parceira" />
             </div>
           </label>
           <label className="space-y-2 text-sm">
-            <span className="text-slate-400 font-semibold">Telefone</span>
+            <span className="text-[var(--color-text-muted)] font-semibold">Telefone</span>
             <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-faint)]" />
               <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={fieldClass} placeholder="(XX) XXXXX-XXXX" />
             </div>
           </label>
         </div>
 
         <label className="space-y-2 text-sm">
-          <span className="text-slate-400 font-semibold">E-mail Corporativo</span>
+          <span className="text-[var(--color-text-muted)] font-semibold">E-mail Corporativo</span>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-faint)]" />
             <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className={fieldClass} placeholder="contato@empresa.com" />
           </div>
         </label>
 
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2 text-sm">
-            <span className="text-slate-400 font-semibold">Senha</span>
+            <span className="text-[var(--color-text-muted)] font-semibold">Senha</span>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-faint)]" />
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className={fieldClass} placeholder="••••••••" />
             </div>
           </label>
           <label className="space-y-2 text-sm">
-            <span className="text-slate-400 font-semibold">Confirmar senha</span>
+            <span className="text-[var(--color-text-muted)] font-semibold">Confirmar senha</span>
             <div className="relative">
-              <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+              <UserCheck className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-faint)]" />
               <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className={fieldClass} placeholder="••••••••" />
             </div>
           </label>
         </div>
 
         <label className="space-y-2 text-sm">
-          <span className="text-slate-400 font-semibold">Segmento</span>
-          <select value={niche} onChange={(e) => setNiche(e.target.value as TenantNiche)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]">
+          <span className="text-[var(--color-text-muted)] font-semibold">Segmento</span>
+          <select value={niche} onChange={(e) => setNiche(e.target.value as TenantNiche)} className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] rounded-lg px-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB]">
             <option value="Parceira">Parceira</option>
             <option value="Solar">Solar</option>
             <option value="Imobiliária">Imobiliária</option>
@@ -111,9 +111,9 @@ export function RegisterForm() {
           </select>
         </label>
 
-        {error && <div className="text-sm text-rose-400">{error}</div>}
+        {error && <div className="text-sm text-rose-600 bg-rose-500/10 border border-rose-500/20 rounded-lg px-4 py-3">{error}</div>}
 
-        <Button type="submit" className="w-full py-6 bg-[#2563EB] hover:bg-blue-600 rounded-lg text-md font-semibold group">
+        <Button type="submit" className="w-full py-6 bg-[#2563EB] hover:bg-blue-600 text-white rounded-lg text-md font-semibold group">
           {loading ? "Registrando..." : "Registrar empresa"} <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
         </Button>
       </form>

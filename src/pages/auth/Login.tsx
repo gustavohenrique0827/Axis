@@ -20,7 +20,7 @@ export default function Login() {
         {/* Left Side */}
         <div className="flex-1 w-full max-w-xl">
           <div className="text-center mb-8">
-            <div className="relative inline-block bg-[var(--color-surface)] rounded-2xl overflow-hidden p-3 border border-white/5 mb-6">
+            <div className="relative inline-block bg-[#0B1120] rounded-2xl overflow-hidden p-4 shadow-lg shadow-blue-500/10 mb-6">
               <img
                 src={logoDarkFull}
                 alt="Axis CRM Logo"
@@ -29,22 +29,22 @@ export default function Login() {
                 referrerPolicy="no-referrer"
               />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Bem-vindo ao Axis CRM</h1>
-            <p className="text-slate-400 text-sm">Acesse a plataforma ou cadastre sua empresa parceira.</p>
+            <h1 className="text-3xl font-bold tracking-tight mb-2 text-[var(--color-text-primary)]">Bem-vindo ao Axis CRM</h1>
+            <p className="text-[var(--color-text-muted)] text-sm">Acesse a plataforma ou cadastre sua empresa parceira.</p>
           </div>
 
           <div className="mb-6 flex items-center justify-center gap-2">
             <button
               type="button"
               onClick={() => setMode("login")}
-              className={`px-4 py-2 rounded-full ${mode === "login" ? "bg-[#2563EB] text-white" : "bg-white/5 text-slate-300 hover:bg-white/10"}`}
+              className={`px-4 py-2 rounded-full font-medium transition-colors ${mode === "login" ? "bg-[#2563EB] text-white" : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] hover:bg-[var(--color-border-default)]"}`}
             >
               Entrar
             </button>
             <button
               type="button"
               onClick={() => setMode("register")}
-              className={`px-4 py-2 rounded-full ${mode === "register" ? "bg-[#2563EB] text-white" : "bg-white/5 text-slate-300 hover:bg-white/10"}`}
+              className={`px-4 py-2 rounded-full font-medium transition-colors ${mode === "register" ? "bg-[#2563EB] text-white" : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] hover:bg-[var(--color-border-default)]"}`}
             >
               Registrar
             </button>
