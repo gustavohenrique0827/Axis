@@ -32,6 +32,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   state: ErrorBoundaryState = { error: null };
   private autoRetryCount = 0;
   private lastRetryAt = 0;
+  private retryTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { error };
@@ -48,12 +49,22 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         this.autoRetryCount += 1;
         this.lastRetryAt = now;
         console.warn("[Axis] DOM alterado por extensão do navegador — remontando automaticamente:", error.message);
-        this.setState({ error: null });
+        // Resetar em uma nova macrotask (não sincronamente aqui dentro do
+        // componentDidCatch) é essencial: se o retry acontece na mesma pilha
+        // síncrona, o navegador nunca chega a terminar de desmontar o nó
+        // corrompido antes da próxima tentativa, e o mesmo erro se repete
+        // instantaneamente em loop até estourar o teto. Adiar dá um "respiro"
+        // real para o DOM se estabilizar entre tentativas.
+        this.retryTimeoutId = setTimeout(() => this.setState({ error: null }), 60);
         return;
       }
     }
 
     console.error("[Axis] Erro de renderização capturado:", error, info.componentStack);
+  }
+
+  componentWillUnmount() {
+    if (this.retryTimeoutId) clearTimeout(this.retryTimeoutId);
   }
 
   componentDidUpdate(prevProps: ErrorBoundaryProps) {
