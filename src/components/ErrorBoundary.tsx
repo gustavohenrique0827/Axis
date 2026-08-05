@@ -18,9 +18,18 @@ interface ErrorBoundaryState {
 // simplesmente tentar de novo automaticamente.
 const BENIGN_DOM_RACE = /insertBefore|removeChild/;
 
+// Algumas extensões (o gerenciador de senhas nativo do Chrome, entre
+// outras) reinjetam nós repetidamente, então um teto baixo de tentativas
+// esgota rápido. O contador "esfria" sozinho: se a última tentativa foi há
+// mais de alguns segundos, tratamos como um novo início — só uma sequência
+// rápida e contínua (sinal de um loop real, não a extensão) chega ao teto.
+const MAX_AUTO_RETRIES = 8;
+const RETRY_DECAY_MS = 4000;
+
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { error: null };
   private autoRetryCount = 0;
+  private lastRetryAt = 0;
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return { error };
@@ -29,11 +38,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   componentDidCatch(error: Error, info: ErrorInfo) {
     const isBenignDomRace = error.name === "NotFoundError" && BENIGN_DOM_RACE.test(error.message);
 
-    if (isBenignDomRace && this.autoRetryCount < 2) {
-      this.autoRetryCount += 1;
-      console.warn("[Axis] DOM alterado por extensão do navegador — remontando automaticamente:", error.message);
-      this.setState({ error: null });
-      return;
+    if (isBenignDomRace) {
+      const now = Date.now();
+      if (now - this.lastRetryAt > RETRY_DECAY_MS) this.autoRetryCount = 0;
+
+      if (this.autoRetryCount < MAX_AUTO_RETRIES) {
+        this.autoRetryCount += 1;
+        this.lastRetryAt = now;
+        console.warn("[Axis] DOM alterado por extensão do navegador — remontando automaticamente:", error.message);
+        this.setState({ error: null });
+        return;
+      }
     }
 
     console.error("[Axis] Erro de renderização capturado:", error, info.componentStack);
