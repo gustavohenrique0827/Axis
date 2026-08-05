@@ -427,6 +427,10 @@ export default function ConfigModulosDemos() {
                         value={newTenantEmail}
                         onChange={e => setNewTenantEmail(e.target.value)}
                         placeholder="admin@empresa.com"
+                        autoComplete="off"
+                        data-lpignore="true"
+                        data-1p-ignore
+                        data-bwignore
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
                       />
                     </div>
@@ -437,6 +441,10 @@ export default function ConfigModulosDemos() {
                         value={newTenantPassword}
                         onChange={e => setNewTenantPassword(e.target.value)}
                         placeholder="Mínimo 6 caracteres"
+                        autoComplete="new-password"
+                        data-lpignore="true"
+                        data-1p-ignore
+                        data-bwignore
                         className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
                       />
                     </div>
@@ -528,6 +536,10 @@ export default function ConfigModulosDemos() {
                               onChange={e => setEditAdminEmail(e.target.value)}
                               disabled={!editAdminUserId || loadingAdminUser}
                               placeholder="admin@empresa.com"
+                              autoComplete="off"
+                              data-lpignore="true"
+                              data-1p-ignore
+                              data-bwignore
                               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 disabled:opacity-40"
                             />
                           </div>
@@ -539,6 +551,10 @@ export default function ConfigModulosDemos() {
                               onChange={e => setEditAdminPassword(e.target.value)}
                               disabled={!editAdminUserId || loadingAdminUser}
                               placeholder="Deixe em branco para manter"
+                              autoComplete="new-password"
+                              data-lpignore="true"
+                              data-1p-ignore
+                              data-bwignore
                               className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 disabled:opacity-40"
                             />
                           </div>
