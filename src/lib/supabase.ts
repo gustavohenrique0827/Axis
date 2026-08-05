@@ -570,6 +570,55 @@ export async function updateTenantInfo(
 }
 
 /**
+ * Busca o usuário administrador de um tenant (para a tela de edição poder
+ * pré-carregar o e-mail atual antes de permitir trocar e-mail/senha).
+ */
+export async function fetchTenantAdminUser(
+  tenantId: string
+): Promise<{ success: boolean; user?: { id: string; email: string; name: string }; error?: string }> {
+  if (!supabase) return { success: false, error: 'Supabase não configurado' };
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return { success: false, error: 'Sessão inválida.' };
+    const res = await fetch(`/api/admin/tenant-admin-user/${tenantId}`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    });
+    const data = await res.json();
+    if (!res.ok) return { success: false, error: data.error || 'Erro ao buscar administrador.' };
+    return { success: true, user: data.user };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Erro desconhecido' };
+  }
+}
+
+/**
+ * Troca e-mail e/ou senha de login do administrador de um tenant. Passa pelo
+ * backend (rota /api/admin/tenant-user/:id/credentials) porque alterar
+ * credenciais de OUTRO usuário no Supabase Auth exige a Admin API, que só
+ * funciona com a service role key — nunca exposta no client.
+ */
+export async function updateTenantUserCredentials(
+  userId: string,
+  updates: { email?: string; password?: string }
+): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: 'Supabase não configurado' };
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) return { success: false, error: 'Sessão inválida.' };
+    const res = await fetch(`/api/admin/tenant-user/${userId}/credentials`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify(updates),
+    });
+    const data = await res.json();
+    if (!res.ok) return { success: false, error: data.error || 'Erro ao atualizar credenciais.' };
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Erro desconhecido' };
+  }
+}
+
+/**
  * "Exclui" um tenant parceiro. Em vez de um DELETE físico (que órfãos leads,
  * usuários e demais registros ligados por tenant_id), marcamos como Inactive —
  * mesmo campo `status` que fetchTenants já usa para filtrar a lista ativa, então
