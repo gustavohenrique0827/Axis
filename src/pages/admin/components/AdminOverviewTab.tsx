@@ -32,25 +32,25 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
       {/* Global SaaS Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {metricItems.map(({ label, value, icon: Icon, color }) => (
-          <Card key={label} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+          <Card key={label} className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] hover:border-blue-500/30 hover:shadow-md transition-all">
             <Icon className={`w-5 h-5 ${color} mb-4`} />
-            <div className="text-2xl font-display font-black text-white mb-1 italic">{value}</div>
-            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</div>
+            <div className="text-2xl font-display font-black text-[var(--color-text-primary)] mb-1 italic">{value}</div>
+            <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{label}</div>
           </Card>
         ))}
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 p-5 flex flex-col">
+        <Card className="lg:col-span-2 p-5 flex flex-col bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-sm text-slate-400 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-[var(--color-text-primary)] flex items-center gap-2">
               <BarChart3 className="w-4 h-4" /> Evolução de MRR Global
             </h3>
           </div>
           {revenueData.length === 0 ? (
             <div className="flex-1 flex flex-col items-center justify-center gap-3 min-h-[250px]">
-              <Inbox className="w-8 h-8 text-slate-500" />
-              <span className="text-sm text-slate-500">Sem histórico financeiro</span>
+              <Inbox className="w-8 h-8 text-[var(--color-text-faint)]" />
+              <span className="text-sm text-[var(--color-text-muted)]">Sem histórico financeiro</span>
             </div>
           ) : (
             <div className="flex-1 min-h-[250px] w-full">
@@ -62,9 +62,9 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
                       <stop offset="95%" stopColor="#06B6D4" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#64748B", fontSize: 12 }} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748B", fontSize: 12 }} tickFormatter={(v) => `R$${v / 1000}k`} />
-                  <CartesianGrid vertical={false} stroke="#1e293b" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} tickFormatter={(v) => `R$${v / 1000}k`} />
+                  <CartesianGrid vertical={false} stroke="var(--color-border-default)" />
                   <RechartsTooltip content={<CustomTooltip />} />
                   <Area type="monotone" dataKey="mrr" stroke="#06B6D4" strokeWidth={2} fillOpacity={1} fill="url(#colorMrr)" />
                 </AreaChart>
@@ -74,18 +74,18 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
         </Card>
 
         <div className="space-y-6">
-          <Card className="p-5 flex flex-col" style={{ height: "calc(50% - 12px)" }}>
-            <h4 className="text-sm text-slate-400 mb-2 flex items-center gap-2">
+          <Card className="p-5 flex flex-col bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]" style={{ height: "calc(50% - 12px)" }}>
+            <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-2 flex items-center gap-2">
               <PieChartIcon className="w-4 h-4" /> Distribuição de Planos
             </h4>
             <div className="flex-1 flex flex-col items-center justify-center gap-3 min-h-[140px]">
-              <PieChartIcon className="w-8 h-8 text-slate-500" />
-              <span className="text-sm text-slate-500">Nenhum plano ativo</span>
+              <PieChartIcon className="w-8 h-8 text-[var(--color-text-faint)]" />
+              <span className="text-sm text-[var(--color-text-muted)]">Nenhum plano ativo</span>
             </div>
           </Card>
 
-          <Card className="p-5" style={{ height: "calc(50% - 12px)" }}>
-            <h4 className="text-sm text-slate-400 mb-4 flex items-center gap-2">
+          <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]" style={{ height: "calc(50% - 12px)" }}>
+            <h4 className="text-sm font-semibold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
               <Activity className="w-4 h-4" /> Instâncias Core
             </h4>
             <div className="space-y-3">
@@ -95,11 +95,11 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
               ].map((item, i) => (
                 <div key={i} className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-white">{item.label}</p>
-                    <p className="text-xs text-slate-500">Load: {item.load}</p>
+                    <p className="text-sm text-[var(--color-text-primary)]">{item.label}</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">Load: {item.load}</p>
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                  <div className="flex items-center gap-2 text-xs text-[var(--color-text-muted)]">
+                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
                     {item.status}
                   </div>
                 </div>
@@ -109,15 +109,15 @@ export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: Admi
         </div>
       </div>
 
-      <Card className="overflow-hidden">
-        <div className="p-4 border-b border-white/10">
-          <h3 className="text-sm font-medium text-white flex items-center gap-2">
-            <Server className="w-4 h-4 text-slate-400" /> Tenants Recentes
+      <Card className="overflow-hidden bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
+        <div className="p-4 border-b border-[var(--color-border-default)]">
+          <h3 className="text-sm font-medium text-[var(--color-text-primary)] flex items-center gap-2">
+            <Server className="w-4 h-4 text-[var(--color-text-muted)]" /> Tenants Recentes
           </h3>
         </div>
         <div className="p-10 flex flex-col items-center justify-center gap-3 text-center">
-          <Building2 className="w-8 h-8 text-slate-500" />
-          <span className="text-sm text-slate-500">Base de Tenants em construção</span>
+          <Building2 className="w-8 h-8 text-[var(--color-text-faint)]" />
+          <span className="text-sm text-[var(--color-text-muted)]">Base de Tenants em construção</span>
         </div>
       </Card>
     </div>

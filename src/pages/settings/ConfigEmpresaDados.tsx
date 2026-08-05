@@ -57,30 +57,30 @@ export default function ConfigEmpresaDados() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dados da Empresa</h1>
-        <p className="text-sm text-slate-400">Gerencie informações cadastrais da sua empresa.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">Dados da Empresa</h1>
+        <p className="text-sm text-[var(--color-text-muted)]">Gerencie informações cadastrais da sua empresa.</p>
       </div>
 
-      <Card className="p-6 space-y-6">
+      <Card className="p-6 space-y-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-slate-400">Razão Social</label>
+              <label className="text-xs font-semibold text-[var(--color-text-muted)]">Razão Social</label>
               <input
                 type="text"
                 value={razaoSocial}
                 onChange={(e) => setRazaoSocial(e.target.value)}
-                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white"
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-[var(--color-text-primary)]"
                 placeholder="Razão Social"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-slate-400">Nome Fantasia</label>
+              <label className="text-xs font-semibold text-[var(--color-text-muted)]">Nome Fantasia</label>
               <input
                 type="text"
                 value={nomeFantasia}
                 onChange={(e) => setNomeFantasia(e.target.value)}
-                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white"
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-[var(--color-text-primary)]"
                 placeholder="Nome Fantasia"
               />
             </div>
@@ -88,9 +88,9 @@ export default function ConfigEmpresaDados() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-xs text-slate-400 flex items-center justify-between">
+              <label className="text-xs font-semibold text-[var(--color-text-muted)] flex items-center justify-between">
                 CNPJ
-                <span className="text-xs text-slate-500">
+                <span className="text-xs text-[var(--color-text-faint)]">
                   Receita Federal Sync
                 </span>
               </label>
@@ -99,51 +99,51 @@ export default function ConfigEmpresaDados() {
                 value={cnpj}
                 onChange={handleCnpjChange}
                 maxLength={18}
-                className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white font-mono"
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-[var(--color-text-primary)] font-mono"
                 placeholder="00.000.000/0001-00"
               />
               <div className="min-h-[16px]">
                 {cnpjStatus.status === "checking" && (
-                  <p className="text-xs text-slate-400 flex items-center gap-1">
+                  <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-slate-400 animate-pulse" /> Buscando dados...
                   </p>
                 )}
                 {cnpjStatus.status === "active" && (
-                  <p className="text-xs text-emerald-400 flex items-center gap-1">
+                  <p className="text-xs text-emerald-600 flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> CNPJ Ativo — dados preenchidos
                   </p>
                 )}
                 {cnpjStatus.status === "inactive" && (
-                  <p className="text-xs text-amber-400 flex items-center gap-1">
+                  <p className="text-xs text-amber-600 flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" /> {cnpjStatus.message}
                   </p>
                 )}
                 {cnpjStatus.status === "invalid" && (
-                  <p className="text-xs text-rose-400 flex items-center gap-1">
+                  <p className="text-xs text-rose-600 flex items-center gap-1">
                     <AlertTriangle className="w-3 h-3" /> {cnpjStatus.message}
                   </p>
                 )}
               </div>
             </div>
             <div className="space-y-2">
-              <label className="text-xs text-slate-400">Inscrição Estadual</label>
-              <input type="text" className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white" placeholder="Opcional" />
+              <label className="text-xs font-semibold text-[var(--color-text-muted)]">Inscrição Estadual</label>
+              <input type="text" className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-[var(--color-text-primary)]" placeholder="Opcional" />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-xs text-slate-400">Endereço Completo</label>
+            <label className="text-xs font-semibold text-[var(--color-text-muted)]">Endereço Completo</label>
             <input
               type="text"
               value={endereco}
               onChange={(e) => setEndereco(e.target.value)}
-              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-white"
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-[var(--color-text-primary)]"
               placeholder="Endereço Completo"
             />
           </div>
         </div>
 
-        <div className="pt-4 border-t border-white/5 flex justify-end">
+        <div className="pt-4 border-t border-[var(--color-border-default)] flex justify-end">
           <button onClick={handleSave} className="px-5 py-2.5 bg-[#2563EB] hover:bg-blue-600 rounded-lg text-sm font-medium text-white">
             Salvar Alterações
           </button>

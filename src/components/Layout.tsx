@@ -4,6 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { Sidebar } from "./layout/Sidebar";
 import { Topbar } from "./layout/Topbar";
 import { MobileNav } from "./layout/MobileNav";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { useData } from "../contexts/DataContextTypes";
 
 export default function Layout() {
@@ -60,7 +61,9 @@ export default function Layout() {
         />
 
         <div className={`flex-1 min-h-0 relative ${location.pathname.includes("/messaging") || location.pathname.includes("/mensageria") ? "overflow-hidden p-1 pb-20 sm:p-2 sm:pb-2.5" : "overflow-y-auto p-4 md:p-8 pb-24 sm:pb-8"}`}>
-          <Outlet />
+          <ErrorBoundary resetKey={location.pathname}>
+            <Outlet />
+          </ErrorBoundary>
         </div>
       </main>
 

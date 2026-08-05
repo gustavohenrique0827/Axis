@@ -67,9 +67,9 @@ export default function ClinicasDashboard() {
           <Button onClick={() => setIsBookingOpen(true)} className="gap-2">
             <Plus className="w-4 h-4" /> Novo Agendamento
           </Button>
-          <div className="flex bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-1 gap-1">
+          <div className="flex bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl p-1 gap-1">
             {(['geral', 'unidades', 'operacional'] as const).map(t => (
-              <button key={t} onClick={() => setView(t)} className={`px-4 py-2 text-xs rounded-xl transition-all ${view === t ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'}`}>
+              <button key={t} onClick={() => setView(t)} className={`px-4 py-2 text-xs rounded-xl capitalize transition-all ${view === t ? 'bg-blue-600 text-white' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]'}`}>
                 {t}
               </button>
             ))}
@@ -84,13 +84,13 @@ export default function ClinicasDashboard() {
         <button
           type="button"
           onClick={() => setShowDetails((v) => !v)}
-          className="w-full flex items-center justify-between px-5 py-3 bg-[var(--color-surface-elevated)]/40 hover:bg-[var(--color-surface-elevated)]/60 border border-white/5 rounded-2xl transition-colors text-left"
+          className="w-full flex items-center justify-between px-5 py-3 bg-[var(--color-surface-elevated)] hover:bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-2xl transition-colors text-left"
         >
-          <span className="text-xs text-slate-400 flex items-center gap-2">
+          <span className="text-xs text-[var(--color-text-muted)] flex items-center gap-2">
             {showDetails ? "Ver menos" : "Ver mais detalhes"}
-            {!showDetails && <span className="text-slate-600">— ranking de médicos e jornada do paciente</span>}
+            {!showDetails && <span className="text-[var(--color-text-faint)]">— ranking de médicos e jornada do paciente</span>}
           </span>
-          <ChevronDown className={`w-4 h-4 text-slate-500 shrink-0 transition-transform ${showDetails ? "rotate-180" : ""}`} />
+          <ChevronDown className={`w-4 h-4 text-[var(--color-text-muted)] shrink-0 transition-transform ${showDetails ? "rotate-180" : ""}`} />
         </button>
 
         {showDetails && (

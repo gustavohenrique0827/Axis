@@ -107,15 +107,15 @@ export default function AdminSaaS() {
       }
     >
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-white/5 mb-8 pb-2 overflow-x-auto scrollbar-none">
+      <div className="flex gap-2 border-b border-[var(--color-border-default)] mb-8 pb-2 overflow-x-auto scrollbar-none">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm transition-colors whitespace-nowrap ${
-                activeTab === tab.id ? "bg-white/5 text-white" : "text-slate-400 hover:text-white hover:bg-white/5"
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                activeTab === tab.id ? "bg-blue-600/10 text-blue-600 border border-blue-600/20" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]"
               }`}
             >
               <Icon className="w-4 h-4" />

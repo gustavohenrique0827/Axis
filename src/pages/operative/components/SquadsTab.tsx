@@ -89,7 +89,7 @@ export function SquadsTab({ squads, team, moveMember }: SquadsTabProps) {
 
                     {/* Large decorative letter */}
                     <div className="absolute -bottom-4 -right-4 text-[140px] font-black text-white/5 leading-none select-none pointer-events-none">
-                      {squad.name[0]}
+                      {squad.name?.[0]}
                     </div>
 
                     {/* Trophy icon decoration */}
