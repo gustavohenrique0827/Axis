@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { Modal } from "../../../../components/ui/modal";
 import { NovaIntegracaoModal } from "../../../../components/ui/modals/settings/NovaIntegracaoModal";
 import { apiFetch } from "../../../../lib/apiClient";
-import { HubspotIntegrationSection } from "./HubspotIntegrationSection";
 
 export function ConfigIntegracoesApps() {
   const [integrations, setIntegrations] = useState<any[]>([]);
@@ -201,8 +200,6 @@ export function ConfigIntegracoesApps() {
           </Card>
         ))}
       </div>
-
-      <HubspotIntegrationSection />
 
       {/* WhatsApp / Evolution API section */}
       <div className="space-y-6">

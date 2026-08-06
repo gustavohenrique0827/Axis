@@ -637,17 +637,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Best-effort, nunca bloqueia a UI nem lança: o servidor faz no-op
-  // silencioso ({skipped:true}) pra tenants sem HubSpot conectado, então essa
-  // chamada pode disparar sempre, sem checar estado de conexão aqui.
-  const triggerHubspotSync = (leadId: string) => {
-    apiFetch("/api/integrations/hubspot/sync-lead", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ leadId }),
-    }).catch(err => console.error("HubSpot sync failed:", err));
-  };
-
   const addLead = async (lead: Omit<Lead, 'id'>) => {
     if (!tenantId) {
       toast.error('Sessão não identificou um tenant — recarregue a página e tente novamente.');
@@ -707,12 +696,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
     }
     setTimeout(() => { triggerScoreRecalculation(newLead.id); }, 400);
-    setTimeout(() => { triggerHubspotSync(newLead.id); }, 600);
   };
 
   const updateLead = async (id: string, updates: Partial<Lead>) => {
     let hasStatusOrStageChange = false;
-    let hasSyncableFieldChange = false;
     setLeads(prev => {
       const target = prev.find(l => l.id === id);
       if (target && (
@@ -720,16 +707,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         (updates.stageId !== undefined && updates.stageId !== target.stageId)
       )) {
         hasStatusOrStageChange = true;
-      }
-      if (target && (
-        (updates.name !== undefined && updates.name !== target.name) ||
-        (updates.company !== undefined && updates.company !== target.company) ||
-        (updates.email !== undefined && updates.email !== target.email) ||
-        (updates.phone !== undefined && updates.phone !== target.phone) ||
-        (updates.value !== undefined && updates.value !== target.value) ||
-        hasStatusOrStageChange
-      )) {
-        hasSyncableFieldChange = true;
       }
 
       return prev.map(l => {
@@ -779,9 +756,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (hasStatusOrStageChange) {
       setTimeout(() => { triggerScoreRecalculation(id); }, 400);
     }
-    if (hasSyncableFieldChange) {
-      setTimeout(() => { triggerHubspotSync(id); }, 600);
-    }
   };
 
   const deleteLead = async (id: string) => {
@@ -823,7 +797,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
     }
     setTimeout(() => { triggerScoreRecalculation(leadId); }, 400);
-    setTimeout(() => { triggerHubspotSync(leadId); }, 600);
   };
 
   const addTask = async (task: Omit<Task, 'id'>) => {
