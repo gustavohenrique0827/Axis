@@ -29,10 +29,6 @@ export interface GlobalWebhook {
   endpoint: string;
   event: string;
   active: boolean;
-  /** HMAC-SHA256 secret usado pra assinar o payload (header X-Axis-Signature),
-   * pra qualquer sistema receptor (inclusive um CRM próprio) verificar que o
-   * disparo veio mesmo do Axis. */
-  secretKey?: string;
 }
 
 export interface FinanceEntry {
@@ -125,7 +121,7 @@ export interface DataContextType {
   leadScoreTriggers: LeadScoreTrigger[];
   setLeadScoreTriggers: (triggers: LeadScoreTrigger[]) => void;
   globalWebhooks: GlobalWebhook[];
-  addGlobalWebhook: (webhook: Omit<GlobalWebhook, 'id' | 'secretKey'>) => void;
+  addGlobalWebhook: (webhook: Omit<GlobalWebhook, 'id'>) => void;
   updateGlobalWebhook: (id: string, updates: Partial<GlobalWebhook>) => void;
   deleteGlobalWebhook: (id: string) => void;
   toggleGlobalWebhook: (id: string) => void;

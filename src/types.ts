@@ -153,7 +153,6 @@ export interface GlobalWebhook {
   endpoint: string;
   event: string;
   active: boolean;
-  secretKey?: string;
 }
 
 export interface Notification {

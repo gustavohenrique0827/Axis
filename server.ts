@@ -250,62 +250,28 @@ app.post("/api/v1/leads", requireApiKey, async (req, res) => {
     pipelineId = "sdr", lead_interesse_cliente = "",
     customFields = {}, clientId = FORM_CLIENT_ID, clientName = "",
     productIds = [],
-    tenantName = "",
-    // external_id: permite que qualquer sistema externo (CRM próprio, Zapier,
-    // etc.) empurre dados de forma idempotente — reenviar o mesmo external_id
-    // atualiza o lead existente em vez de criar um duplicado a cada chamada.
-    external_id, externalId,
+    tenantName = ""
   } = req.body;
 
   if (!name) return res.status(400).json({ error: "O campo 'name' é obrigatório." });
   if (!email && !phone) return res.status(400).json({ error: "Informe ao menos 'email' ou 'phone'." });
 
+  const id = randomUUID();
   const now = new Date().toISOString().split("T")[0];
   const rawValue = typeof value === "string"
     ? parseFloat(value.replace(/[^\d.,]/g, "").replace(",", ".")) || 0
     : (value ?? 0);
-  const tenantId = (req as any).tenantId;
-  const extId = (external_id ?? externalId) ? String(external_id ?? externalId) : null;
-
-  if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
-
-  const fields = {
-    name, company, email, phone, cnpj, title, seller, source,
-    status, priority, value: rawValue, stageId, pipelineId,
-    lead_interesse_cliente, customFields, clientId, clientName,
-    productIds, tenantName,
-    ...(extId ? { external_id: extId, external_source: source || "external_api" } : {}),
-  };
-
-  if (extId) {
-    const { data: existing } = await supabaseService
-      .from("leads")
-      .select("id")
-      .eq("tenant_id", tenantId)
-      .eq("external_id", extId)
-      .maybeSingle();
-
-    if (existing) {
-      const { data, error } = await supabaseService
-        .from("leads")
-        .update({ ...fields, external_synced_at: new Date().toISOString() })
-        .eq("id", existing.id)
-        .select()
-        .maybeSingle();
-      if (error) {
-        console.error("[API v1] Erro ao atualizar lead (upsert por external_id):", error.message);
-        return res.status(500).json({ error: "Falha ao atualizar lead no banco.", details: error.message });
-      }
-      return res.status(200).json({ success: true, updated: true, lead: data });
-    }
-  }
 
   // tenant_id vem só da API key (nunca do corpo da requisição) — ver requireApiKey.
   const newLead = {
-    id: randomUUID(), ...fields, tenant_id: tenantId, scoreIA: 50, date: now,
-    createdAt: new Date().toISOString(),
-    ...(extId ? { external_synced_at: new Date().toISOString() } : {}),
+    id, name, company, email, phone, cnpj, title, seller, source,
+    status, priority, value: rawValue, stageId, pipelineId,
+    lead_interesse_cliente, customFields, clientId, clientName,
+    productIds, tenant_id: (req as any).tenantId, tenantName, scoreIA: 50, date: now,
+    createdAt: new Date().toISOString()
   };
+
+  if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
 
   const { data, error } = await supabaseService.from("leads").insert(newLead).select().maybeSingle();
   if (error) {
@@ -331,127 +297,6 @@ app.get("/api/v1/leads", requireApiKey, async (req, res) => {
   const { data, error } = await query;
   if (error) return res.status(500).json({ error: "Falha ao buscar leads.", details: error.message });
   return res.json({ success: true, count: data?.length ?? 0, leads: data ?? [] });
-});
-
-// ── Webhooks Genéricos (Saída) ───────────────────────────────────────────
-//
-// Dispara para QUALQUER sistema que aceite um POST HTTPS — inclui CRMs
-// próprios/customizados, não só apps conhecidos. Config fica em app_settings
-// (key='globalWebhooks', já usado por ConfigIntegracoesWebhooks.tsx e pela
-// tela de Módulos/Integrações) — sem tabela nova, RLS do app_settings já
-// isola por tenant. Os ids de webhook aqui são gerados no client
-// (w<random>), não são UUIDs reais da tabela public.webhooks — por isso
-// webhook_logs.webhook_id fica sempre null (a FK exige um UUID real dessa
-// tabela); o log ainda guarda tenant/evento/payload/resposta, só não linka
-// de volta pra configuração específica.
-
-interface StoredWebhook {
-  id: string;
-  endpoint: string;
-  event: string;
-  active: boolean;
-  secretKey?: string;
-}
-
-async function loadTenantWebhooks(reqSupabase: any, tenantId: string): Promise<StoredWebhook[]> {
-  const { data } = await reqSupabase.from("app_settings").select("value").eq("key", "globalWebhooks").eq("tenant_id", tenantId).maybeSingle();
-  return Array.isArray(data?.value) ? data.value : [];
-}
-
-async function dispatchWebhook(webhook: StoredWebhook, event: string, payload: Record<string, any>, tenantId: string) {
-  const body = { event, timestamp: new Date().toISOString(), data: payload };
-  const bodyStr = JSON.stringify(body);
-  const headers: Record<string, string> = { "Content-Type": "application/json" };
-  if (webhook.secretKey) {
-    // Permite que o sistema receptor (inclusive um CRM próprio) verifique
-    // que o payload realmente veio do Axis, comparando este header com um
-    // HMAC-SHA256 calculado com a mesma chave configurada na UI.
-    headers["X-Axis-Signature"] = createHmac("sha256", webhook.secretKey).update(bodyStr).digest("hex");
-  }
-
-  let statusCode = 0;
-  let responseText = "";
-  try {
-    const hookRes = await axios.post(webhook.endpoint, body, { headers, timeout: 15000, validateStatus: () => true });
-    statusCode = hookRes.status;
-    responseText = typeof hookRes.data === "string" ? hookRes.data.slice(0, 1000) : JSON.stringify(hookRes.data ?? "").slice(0, 1000);
-  } catch (err: any) {
-    responseText = String(err?.message || err).slice(0, 1000);
-  }
-
-  if (supabaseService) {
-    try {
-      await supabaseService.from("webhook_logs").insert({
-        webhook_id: null,
-        tenant_id: tenantId,
-        status_code: statusCode,
-        payload: bodyStr,
-        response: responseText,
-      });
-    } catch (logErr) {
-      console.error("[Axis] Falha ao gravar webhook_logs:", logErr);
-    }
-  }
-  return { statusCode, responseText };
-}
-
-app.post("/api/webhooks/fire", requireUser, async (req: any, res) => {
-  const { event, leadId } = req.body ?? {};
-  if (!event) return res.status(400).json({ error: "event é obrigatório." });
-
-  const tenantId = await getTenantId(req);
-  if (!tenantId) return res.status(400).json({ error: "Não foi possível identificar a empresa do usuário." });
-
-  // Best-effort: chamada em toda escrita de lead (ver DataContext.tsx),
-  // nunca deve travar o caller nem lançar por falta de webhook configurado.
-  res.json({ success: true });
-
-  try {
-    const webhooks = await loadTenantWebhooks(req.supabase, tenantId);
-    const matching = webhooks.filter(w => w.active && w.event === event);
-    if (matching.length === 0) return;
-
-    let leadPayload: Record<string, any> = { id: leadId };
-    if (leadId) {
-      const { data: lead } = await req.supabase.from("leads").select("*").eq("id", leadId).maybeSingle();
-      if (lead) leadPayload = lead;
-    }
-
-    await Promise.all(matching.map(w => dispatchWebhook(w, event, leadPayload, tenantId)));
-  } catch (err) {
-    console.error("[Axis] Webhook fire failed:", err);
-  }
-});
-
-app.post("/api/webhooks/test", requireUser, async (req: any, res) => {
-  const { webhookId } = req.body ?? {};
-  if (!webhookId) return res.status(400).json({ error: "webhookId é obrigatório." });
-
-  const tenantId = await getTenantId(req);
-  if (!tenantId) return res.status(400).json({ error: "Não foi possível identificar a empresa do usuário." });
-
-  const webhooks = await loadTenantWebhooks(req.supabase, tenantId);
-  const webhook = webhooks.find(w => w.id === webhookId);
-  if (!webhook) return res.status(404).json({ error: "Webhook não encontrado." });
-
-  const result = await dispatchWebhook(webhook, "test_ping", { message: "Disparo de teste do Axis CRM", timestamp: new Date().toISOString() }, tenantId);
-  res.json({ success: true, ...result });
-});
-
-app.get("/api/webhooks/logs", requireUser, async (req: any, res) => {
-  if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
-  const tenantId = await getTenantId(req);
-  if (!tenantId) return res.status(400).json({ error: "Não foi possível identificar a empresa do usuário." });
-
-  const { data, error } = await supabaseService
-    .from("webhook_logs")
-    .select("id, status_code, payload, response, created_at")
-    .eq("tenant_id", tenantId)
-    .order("created_at", { ascending: false })
-    .limit(20);
-
-  if (error) return res.status(500).json({ error: error.message });
-  res.json({ logs: data ?? [] });
 });
 
 // ── AI Routes ──────────────────────────────────────────────────────────────

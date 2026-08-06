@@ -111,9 +111,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const [globalWebhooks, setGlobalWebhooks] = useState<GlobalWebhook[]>(defaultGlobalWebhooks);
 
-  const addGlobalWebhook = (webhook: Omit<GlobalWebhook, 'id' | 'secretKey'>) => {
-    const secretKey = crypto.randomUUID().replace(/-/g, '');
-    const newVal = [{ ...webhook, id: `w${Math.random().toString(36).substring(2, 9)}`, secretKey }, ...globalWebhooks];
+  const addGlobalWebhook = (webhook: Omit<GlobalWebhook, 'id'>) => {
+    const newVal = [{ ...webhook, id: `w${Math.random().toString(36).substring(2, 9)}` }, ...globalWebhooks];
     setGlobalWebhooks(newVal);
     syncSetting('globalWebhooks', newVal);
   };
@@ -649,17 +648,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }).catch(err => console.error("HubSpot sync failed:", err));
   };
 
-  // Dispara os webhooks genéricos do tenant pra este evento (qualquer
-  // sistema, inclusive um CRM próprio) — servidor faz no-op se não houver
-  // nenhum webhook ativo cadastrado pra esse evento, então pode disparar sempre.
-  const triggerWebhookFire = (event: string, leadId: string) => {
-    apiFetch("/api/webhooks/fire", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ event, leadId }),
-    }).catch(err => console.error("Webhook fire failed:", err));
-  };
-
   const addLead = async (lead: Omit<Lead, 'id'>) => {
     if (!tenantId) {
       toast.error('Sessão não identificou um tenant — recarregue a página e tente novamente.');
@@ -720,13 +708,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
     setTimeout(() => { triggerScoreRecalculation(newLead.id); }, 400);
     setTimeout(() => { triggerHubspotSync(newLead.id); }, 600);
-    setTimeout(() => { triggerWebhookFire('Novo Lead Criado', newLead.id); }, 600);
   };
 
   const updateLead = async (id: string, updates: Partial<Lead>) => {
     let hasStatusOrStageChange = false;
     let hasSyncableFieldChange = false;
-    let webhookEvent: string | null = null;
     setLeads(prev => {
       const target = prev.find(l => l.id === id);
       if (target && (
@@ -734,10 +720,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         (updates.stageId !== undefined && updates.stageId !== target.stageId)
       )) {
         hasStatusOrStageChange = true;
-      }
-      if (target && updates.status !== undefined && updates.status !== target.status) {
-        if (updates.status === 'Fechado') webhookEvent = 'Negócio Ganho';
-        else if (updates.status === 'Perdido') webhookEvent = 'Negócio Perdido';
       }
       if (target && (
         (updates.name !== undefined && updates.name !== target.name) ||
@@ -799,9 +781,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
     if (hasSyncableFieldChange) {
       setTimeout(() => { triggerHubspotSync(id); }, 600);
-    }
-    if (webhookEvent) {
-      setTimeout(() => { triggerWebhookFire(webhookEvent as string, id); }, 600);
     }
   };
 
