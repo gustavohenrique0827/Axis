@@ -3,6 +3,31 @@ import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 
+// Extensões de navegador (gerenciadores de senha, tradutores) mutam o DOM
+// fora do controle do React — envolvem/movem <input>s para outro elemento
+// pai. Quando o React tenta remover/reordenar esses nós depois, o pai que
+// ele espera não é mais o pai real, e insertBefore/removeChild lançam
+// NotFoundError, derrubando a árvore inteira. Isso reduz essas duas
+// operações a um no-op seguro quando o nó já não pertence mais ao pai
+// esperado, em vez de deixar o React quebrar a renderização inteira.
+if (typeof Node === 'function' && Node.prototype) {
+  const originalRemoveChild = Node.prototype.removeChild;
+  Node.prototype.removeChild = function <T extends Node>(child: T): T {
+    if (child.parentNode !== this) {
+      return child;
+    }
+    return originalRemoveChild.call(this, child) as T;
+  };
+
+  const originalInsertBefore = Node.prototype.insertBefore;
+  Node.prototype.insertBefore = function <T extends Node>(newNode: T, referenceNode: Node | null): T {
+    if (referenceNode && referenceNode.parentNode !== this) {
+      return newNode;
+    }
+    return originalInsertBefore.call(this, newNode, referenceNode) as T;
+  };
+}
+
 // Ignora erros inofensivos do WebSocket do Vite no ambiente de dev
 window.addEventListener('unhandledrejection', (event) => {
   const message = event.reason?.message || '';
