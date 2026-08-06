@@ -17,6 +17,5 @@
     "allowImportingTsExtensions": true,
     "noEmit": true
   },
-  "include": ["src/**/*", "api/**/*", "src/vite-env.d.ts"],
-  "exclude": ["node_modules", "supabase/functions", "E-EMPREENDA+"]
+  "exclude": ["node_modules", "supabase/functions"]
 }
