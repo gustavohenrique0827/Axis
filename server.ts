@@ -82,7 +82,23 @@ let templates = [
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL || "";
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY || "";
-const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabaseKey) : null;
+
+// createClient lança de forma síncrona se a URL vier malformada (espaço extra,
+// protocolo faltando etc.) — sem o try/catch, isso derruba o módulo inteiro no
+// carregamento e TODA rota da API vira FUNCTION_INVOCATION_FAILED no Vercel, não
+// só as que usam Supabase. Preferimos degradar para null (rotas já checam
+// `if (!supabase)`) a derrubar o servidor inteiro por uma env var ruim.
+function safeCreateClient(url: string, key: string) {
+  if (!url || !key) return null;
+  try {
+    return createClient(url, key);
+  } catch (err: any) {
+    console.error("[Supabase] Falha ao criar client:", err?.message);
+    return null;
+  }
+}
+
+const supabase = safeCreateClient(supabaseUrl, supabaseKey);
 
 // Client privilegiado (bypassa RLS) — uso restrito à rota /api/v1/leads, que é
 // chamada por integrações externas (não por um usuário logado no Axis) e por
@@ -90,12 +106,18 @@ const supabase = supabaseUrl && supabaseKey ? createClient(supabaseUrl, supabase
 // usado nessas chamadas vem só do mapeamento de API key (apiKeyTenantMap),
 // nunca do corpo da requisição — é isso que mantém o isolamento aqui.
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-const supabaseService = supabaseUrl && supabaseServiceKey ? createClient(supabaseUrl, supabaseServiceKey) : null;
+const supabaseService = safeCreateClient(supabaseUrl, supabaseServiceKey);
 
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || "dummy_key_to_prevent_crash_at_load_time",
-  httpOptions: { headers: { "User-Agent": "aistudio-build" } },
-});
+let ai: GoogleGenAI;
+try {
+  ai = new GoogleGenAI({
+    apiKey: process.env.GEMINI_API_KEY || "dummy_key_to_prevent_crash_at_load_time",
+    httpOptions: { headers: { "User-Agent": "aistudio-build" } },
+  });
+} catch (err: any) {
+  console.error("[GoogleGenAI] Falha ao inicializar:", err?.message);
+  ai = new GoogleGenAI({ apiKey: "dummy_key_to_prevent_crash_at_load_time" });
+}
 
 // Formato: "chave1:tenantIdA,chave2:tenantIdB" — cada API key é vinculada a
 // exatamente um tenant. Uma chave nunca pode ler/gravar leads de outro tenant,
@@ -216,20 +238,25 @@ function requireApiKey(req: express.Request, res: express.Response, next: expres
  * tenant automaticamente, sem precisar filtrar tenant_id manualmente na rota).
  */
 async function requireUser(req: express.Request, res: express.Response, next: express.NextFunction) {
-  if (!supabase) return res.status(503).json({ error: "Banco de dados não configurado no servidor." });
+  try {
+    if (!supabase) return res.status(503).json({ error: "Banco de dados não configurado no servidor." });
 
-  const authHeader = req.headers["authorization"] as string | undefined;
-  const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
-  if (!token) return res.status(401).json({ error: "Autenticação obrigatória." });
+    const authHeader = req.headers["authorization"] as string | undefined;
+    const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : undefined;
+    if (!token) return res.status(401).json({ error: "Autenticação obrigatória." });
 
-  const { data, error } = await supabase.auth.getUser(token);
-  if (error || !data.user) return res.status(401).json({ error: "Sessão inválida ou expirada." });
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data.user) return res.status(401).json({ error: "Sessão inválida ou expirada." });
 
-  (req as any).user = data.user;
-  (req as any).supabase = createClient(supabaseUrl, supabaseKey, {
-    global: { headers: { Authorization: `Bearer ${token}` } },
-  });
-  next();
+    (req as any).user = data.user;
+    (req as any).supabase = createClient(supabaseUrl, supabaseKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    next();
+  } catch (err: any) {
+    console.error("[requireUser]", err?.message);
+    res.status(500).json({ error: "Erro ao validar autenticação." });
+  }
 }
 
 // ── API PÚBLICA ────────────────────────────────────────────────────────────
