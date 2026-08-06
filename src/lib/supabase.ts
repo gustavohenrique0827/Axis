@@ -570,6 +570,20 @@ export async function updateTenantInfo(
 }
 
 /**
+ * supabase.auth.getSession() faz uma chamada de rede para renovar o token
+ * quando ele está perto de expirar — se essa chamada travar, tudo que
+ * depende dela trava junto sem nunca lançar um erro visível. Corta esse
+ * risco com um timeout, em vez de confiar que a chamada sempre resolve.
+ */
+async function getSessionWithTimeout(timeoutMs = 8000) {
+  const result = await Promise.race([
+    supabase!.auth.getSession(),
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error('Tempo esgotado ao verificar sessão.')), timeoutMs)),
+  ]);
+  return result.data.session;
+}
+
+/**
  * Busca o usuário administrador de um tenant (para a tela de edição poder
  * pré-carregar o e-mail atual antes de permitir trocar e-mail/senha).
  */
@@ -578,7 +592,7 @@ export async function fetchTenantAdminUser(
 ): Promise<{ success: boolean; user?: { id: string; email: string; name: string }; error?: string }> {
   if (!supabase) return { success: false, error: 'Supabase não configurado' };
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const session = await getSessionWithTimeout();
     if (!session?.access_token) return { success: false, error: 'Sessão inválida.' };
     const res = await fetch(`/api/admin/tenant-admin-user/${tenantId}`, {
       headers: { Authorization: `Bearer ${session.access_token}` },
@@ -604,12 +618,13 @@ export async function updateTenantUserCredentials(
 ): Promise<{ success: boolean; error?: string }> {
   if (!supabase) return { success: false, error: 'Supabase não configurado' };
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const session = await getSessionWithTimeout();
     if (!session?.access_token) return { success: false, error: 'Sessão inválida.' };
     const res = await fetch(`/api/admin/tenant-user/${userId}/credentials`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
       body: JSON.stringify(updates),
+      signal: AbortSignal.timeout(15000),
     });
     const data = await res.json();
     if (!res.ok) return { success: false, error: data.error || 'Erro ao atualizar credenciais.' };
