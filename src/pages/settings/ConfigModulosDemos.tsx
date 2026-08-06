@@ -214,14 +214,19 @@ export default function ConfigModulosDemos() {
 
     if (willShow && current) {
       setLoadingAdminUser(true);
-      const result = await fetchTenantAdminUser(current.id);
-      if (result.success && result.user) {
-        setEditAdminUserId(result.user.id);
-        setEditAdminEmail(result.user.email);
-      } else {
-        toast.error(result.error || "Não foi possível carregar o administrador desta empresa.");
+      try {
+        const result = await fetchTenantAdminUser(current.id);
+        if (result.success && result.user) {
+          setEditAdminUserId(result.user.id);
+          setEditAdminEmail(result.user.email);
+        } else {
+          toast.error(result.error || "Não foi possível carregar o administrador desta empresa.");
+        }
+      } catch (err: any) {
+        toast.error(err?.message || "Erro ao carregar o administrador desta empresa.");
+      } finally {
+        setLoadingAdminUser(false);
       }
-      setLoadingAdminUser(false);
     }
   };
 

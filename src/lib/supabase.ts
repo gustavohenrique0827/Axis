@@ -582,6 +582,7 @@ export async function fetchTenantAdminUser(
     if (!session?.access_token) return { success: false, error: 'Sessão inválida.' };
     const res = await fetch(`/api/admin/tenant-admin-user/${tenantId}`, {
       headers: { Authorization: `Bearer ${session.access_token}` },
+      signal: AbortSignal.timeout(15000),
     });
     const data = await res.json();
     if (!res.ok) return { success: false, error: data.error || 'Erro ao buscar administrador.' };
