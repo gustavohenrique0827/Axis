@@ -822,59 +822,74 @@ Gere um relatório executivo em markdown com:
  * SUPABASE_SERVICE_ROLE_KEY — uma chave que nunca pode ir para o browser.
  */
 async function requireMaster(req: any, res: express.Response, next: express.NextFunction) {
-  const { data: caller, error } = await req.supabase.from("users").select("is_master").eq("id", req.user.id).maybeSingle();
-  if (error || !caller?.is_master) {
-    return res.status(403).json({ error: "Apenas administradores master podem executar esta ação." });
+  try {
+    const { data: caller, error } = await req.supabase.from("users").select("is_master").eq("id", req.user.id).maybeSingle();
+    if (error || !caller?.is_master) {
+      return res.status(403).json({ error: "Apenas administradores master podem executar esta ação." });
+    }
+    next();
+  } catch (err: any) {
+    console.error("[requireMaster]", err?.message);
+    res.status(500).json({ error: "Erro ao verificar permissões de administrador." });
   }
-  next();
 }
 
 app.get("/api/admin/tenant-admin-user/:tenantId", requireUser, requireMaster, async (req: any, res) => {
-  if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
+  try {
+    if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
 
-  const { tenantId } = req.params;
-  const { data: adminUser, error } = await supabaseService
-    .from("users")
-    .select("id, email, name")
-    .eq("tenant_id", tenantId)
-    .eq("is_master", false)
-    .order("created_at", { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    const { tenantId } = req.params;
+    const { data: adminUser, error } = await supabaseService
+      .from("users")
+      .select("id, email, name")
+      .eq("tenant_id", tenantId)
+      .eq("is_master", false)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
 
-  if (error || !adminUser) {
-    return res.status(404).json({ error: "Nenhum usuário administrador encontrado para esta empresa." });
+    if (error || !adminUser) {
+      return res.status(404).json({ error: "Nenhum usuário administrador encontrado para esta empresa." });
+    }
+    res.json({ success: true, user: adminUser });
+  } catch (err: any) {
+    console.error("[tenant-admin-user]", err?.message);
+    res.status(500).json({ error: "Erro ao buscar administrador da empresa." });
   }
-  res.json({ success: true, user: adminUser });
 });
 
 app.post("/api/admin/tenant-user/:userId/credentials", requireUser, requireMaster, async (req: any, res) => {
-  if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
+  try {
+    if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
 
-  const { userId } = req.params;
-  const { email, password } = req.body ?? {};
+    const { userId } = req.params;
+    const { email, password } = req.body ?? {};
 
-  if (!email && !password) {
-    return res.status(400).json({ error: "Informe um novo e-mail e/ou senha para atualizar." });
+    if (!email && !password) {
+      return res.status(400).json({ error: "Informe um novo e-mail e/ou senha para atualizar." });
+    }
+    if (password && password.length < 6) {
+      return res.status(400).json({ error: "A senha precisa ter pelo menos 6 caracteres." });
+    }
+
+    const authUpdates: { email?: string; password?: string } = {};
+    if (email) authUpdates.email = email;
+    if (password) authUpdates.password = password;
+
+    const { error: authError } = await supabaseService.auth.admin.updateUserById(userId, authUpdates);
+    if (authError) {
+      return res.status(500).json({ error: `Falha ao atualizar credenciais: ${authError.message}` });
+    }
+
+    if (email) {
+      await supabaseService.from("users").update({ email }).eq("id", userId);
+    }
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[tenant-user-credentials]", err?.message);
+    res.status(500).json({ error: "Erro ao atualizar credenciais do administrador." });
   }
-  if (password && password.length < 6) {
-    return res.status(400).json({ error: "A senha precisa ter pelo menos 6 caracteres." });
-  }
-
-  const authUpdates: { email?: string; password?: string } = {};
-  if (email) authUpdates.email = email;
-  if (password) authUpdates.password = password;
-
-  const { error: authError } = await supabaseService.auth.admin.updateUserById(userId, authUpdates);
-  if (authError) {
-    return res.status(500).json({ error: `Falha ao atualizar credenciais: ${authError.message}` });
-  }
-
-  if (email) {
-    await supabaseService.from("users").update({ email }).eq("id", userId);
-  }
-
-  res.json({ success: true });
 });
 
 // ── WhatsApp / Evolution API Simulator ────────────────────────────────────
