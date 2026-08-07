@@ -357,7 +357,7 @@ export default function ConfigModulosDemos() {
       </div>
 
       {/* EMPRESAS PARCEIRAS — gestão centralizada (listar, adicionar, editar, excluir) */}
-      {(user?.isMaster || user?.tenantName?.includes("G-Tech")) && (
+      {user?.isMaster && (
         <div className="border border-white/5 bg-[var(--color-surface-elevated)]/40 rounded-3xl p-6 sm:p-8 space-y-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
