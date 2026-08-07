@@ -469,12 +469,14 @@ export async function setupMasterUser(): Promise<{ success: boolean; error?: str
 }
 
 /**
- * Cria um novo tenant parceiro diretamente pelo painel admin, junto com o
- * usuário administrador inicial desse tenant (e-mail/senha reais no Supabase
- * Auth). Diferente de `registerPartner`, NÃO troca a sessão atual para o
- * usuário recém-criado — quem está usando este painel (ex.: G-Tech master)
- * continua logado como está, já que `createUserWithProfile` usa um client
- * Supabase isolado para o signUp.
+ * Cria um novo tenant parceiro junto com o usuário administrador inicial
+ * desse tenant (e-mail/senha reais no Supabase Auth). Passa pelo backend
+ * (rota /api/admin/tenant) porque quem define e-mail/senha aqui é o Master,
+ * não a própria empresa se auto-cadastrando — a conta precisa nascer já
+ * confirmada via Admin API, o que exige a service role key (nunca exposta
+ * no client). Isso também evita depender do e-mail de confirmação do
+ * Supabase, que saía apontando para a Site URL configurada lá, não para o
+ * domínio do Axis.
  */
 export async function createTenantAdmin(
   tenantName: string,
@@ -483,49 +485,17 @@ export async function createTenantAdmin(
   adminPassword: string
 ): Promise<{ success: boolean; error?: string }> {
   if (!supabase) return { success: false, error: 'Supabase não configurado' };
-
   try {
-    const { data: existingUser } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', adminEmail)
-      .maybeSingle();
-
-    if (existingUser) {
-      return { success: false, error: 'Este e-mail já está cadastrado no sistema.' };
-    }
-
-    const { data: tenantData, error: tenantError } = await supabase
-      .from('tenants')
-      .insert({
-        name: tenantName,
-        niche: niche || 'Parceira',
-        plan: 'Standard',
-        status: 'Active',
-        timezone: 'America/Sao_Paulo',
-        modules: { crm: true, sdr: false, advDashboard: false, financeiro: true, marketing: false, educacao: false, clinica: false, produtividade: true, rh: false, bi: false, engajamento: false }
-      })
-      .select()
-      .maybeSingle();
-
-    if (tenantError || !tenantData) {
-      return { success: false, error: tenantError?.message || 'Erro ao criar empresa' };
-    }
-
-    const created = await createUserWithProfile({
-      email: adminEmail,
-      password: adminPassword,
-      name: `Admin ${tenantName}`,
-      tenantId: tenantData.id,
-      role: 'Admin',
-      isMaster: false,
+    const session = await getSessionWithTimeout();
+    if (!session?.access_token) return { success: false, error: 'Sessão inválida.' };
+    const res = await fetch('/api/admin/tenant', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+      body: JSON.stringify({ tenantName, niche, adminEmail, adminPassword }),
+      signal: AbortSignal.timeout(15000),
     });
-
-    if (!created.success) {
-      await supabase.from('tenants').delete().eq('id', tenantData.id);
-      return { success: false, error: created.error || 'Erro ao criar usuário administrador' };
-    }
-
+    const data = await res.json();
+    if (!res.ok) return { success: false, error: data.error || 'Erro ao cadastrar empresa.' };
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err?.message || 'Erro desconhecido' };

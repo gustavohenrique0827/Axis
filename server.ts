@@ -919,6 +919,74 @@ app.post("/api/admin/tenant-user/:userId/credentials", requireUser, requireMaste
   }
 });
 
+/**
+ * Cria uma empresa parceira + o usuário administrador inicial dela, num
+ * fluxo administrativo (é o Master quem define e-mail/senha, não a própria
+ * empresa se auto-cadastrando). Por isso usamos a Admin API com
+ * email_confirm: true — a conta já nasce confirmada, sem depender de e-mail
+ * de confirmação (que além de desnecessário aqui, saía com o link apontando
+ * para a Site URL configurada no Supabase, não para o domínio do Axis).
+ */
+app.post("/api/admin/tenant", requireUser, requireMaster, async (req: any, res) => {
+  if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
+
+  const { tenantName, niche, adminEmail, adminPassword } = req.body ?? {};
+  if (!tenantName?.trim()) return res.status(400).json({ error: "Informe o nome da empresa." });
+  if (!adminEmail?.trim()) return res.status(400).json({ error: "Informe o e-mail do administrador da empresa." });
+  if (!adminPassword || adminPassword.length < 6) return res.status(400).json({ error: "A senha do administrador precisa ter pelo menos 6 caracteres." });
+
+  try {
+    const { data: existingUser } = await supabaseService.from("users").select("id").eq("email", adminEmail.trim()).maybeSingle();
+    if (existingUser) return res.status(409).json({ error: "Este e-mail já está cadastrado no sistema." });
+
+    const { data: tenantData, error: tenantError } = await supabaseService
+      .from("tenants")
+      .insert({
+        name: tenantName.trim(),
+        niche: niche || "Parceira",
+        plan: "Standard",
+        status: "Active",
+        timezone: "America/Sao_Paulo",
+        modules: { crm: true, sdr: false, advDashboard: false, financeiro: true, marketing: false, educacao: false, clinica: false, produtividade: true, rh: false, bi: false, engajamento: false },
+      })
+      .select()
+      .maybeSingle();
+    if (tenantError || !tenantData) {
+      return res.status(500).json({ error: tenantError?.message || "Erro ao criar empresa." });
+    }
+
+    const { data: authData, error: authError } = await supabaseService.auth.admin.createUser({
+      email: adminEmail.trim(),
+      password: adminPassword,
+      email_confirm: true,
+    });
+    if (authError || !authData.user) {
+      await supabaseService.from("tenants").delete().eq("id", tenantData.id);
+      return res.status(500).json({ error: authError?.message || "Erro ao criar conta de acesso do administrador." });
+    }
+
+    const { error: profileError } = await supabaseService.from("users").insert({
+      id: authData.user.id,
+      tenant_id: tenantData.id,
+      name: `Admin ${tenantName.trim()}`,
+      email: adminEmail.trim(),
+      role: "Admin",
+      is_master: false,
+      active: true,
+    });
+    if (profileError) {
+      await supabaseService.from("tenants").delete().eq("id", tenantData.id);
+      await supabaseService.auth.admin.deleteUser(authData.user.id);
+      return res.status(500).json({ error: profileError.message });
+    }
+
+    res.json({ success: true });
+  } catch (err: any) {
+    console.error("[tenant-create]", err?.message);
+    res.status(500).json({ error: "Erro ao cadastrar empresa." });
+  }
+});
+
 // ── WhatsApp / Evolution API Simulator ────────────────────────────────────
 
 function bodyWithFallback(req: any) { return req.body || {}; }
