@@ -1,19 +1,26 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { IACopilot } from "../../components/ui/IACopilot";
 import { JitsiEmbed, isJitsiLink, jitsiRoomName } from "../../components/ui/JitsiEmbed";
 import { Button } from "../../components/ui/button";
+import { AuroraCore } from "../../components/ui/auroraCore/AuroraCore";
+import type { AuroraCoreMode } from "../../components/ui/auroraCore/auroraCoreStates";
+import { useAuroraVoice } from "../../hooks/useAuroraVoice";
 import {
   Brain, ArrowLeft, Video, Clock, User, Copy, ExternalLink,
   FileText, Zap, X, CheckCircle2, Calendar, Flame, Snowflake,
-  Thermometer, Target, TrendingUp, Loader2, ChevronDown, ChevronUp,
+  Thermometer, Target, TrendingUp, Loader2, ChevronDown, ChevronUp, Save,
+  Download,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
 import { Reuniao } from "../../contexts/DataContextTypes";
 import type { Lead } from "../../types";
 import { apiFetch } from "../../lib/apiClient";
+import { supabase } from "../../lib/supabase";
+import { handleDownloadDevProjectPdf, type DevProjectPdfData } from "../dev/utils/devProjectPdf";
 
 function formatDateTime(iso: string) {
   try {
@@ -47,7 +54,8 @@ const TEMP_CONFIG: Record<string, { label: string; icon: typeof Flame; color: st
 export default function ReuniaoRoom() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { reunioes, leads, updateReuniao } = useData();
+  const { reunioes, leads, updateReuniao, addLeadActivity } = useData();
+  const { user } = useAuth();
 
   const [notes, setNotes] = useState("");
   const [transcript, setTranscript] = useState("");
@@ -59,6 +67,17 @@ export default function ReuniaoRoom() {
   const [reportExpanded, setReportExpanded] = useState(false);
   const [sdrExpanded, setSdrExpanded] = useState(true);
   const noteSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Análise da Aurora (a assistente real, com memória e ferramentas — distinta do Copilot BANT
+  // genérico do painel 3, que continua existindo do jeito que está).
+  const [auroraLoading, setAuroraLoading] = useState(false);
+  const [auroraOutput, setAuroraOutput] = useState("");
+  const [auroraError, setAuroraError] = useState<string | null>(null);
+  const [auroraSpeaking, setAuroraSpeaking] = useState(false);
+  const [auroraSaved, setAuroraSaved] = useState(false);
+  const [devProjectForPdf, setDevProjectForPdf] = useState<DevProjectPdfData | null>(null);
+  const auroraVoice = useAuroraVoice(() => {});
+  const auroraCoreMode: AuroraCoreMode = auroraError ? "error" : auroraLoading ? "thinking" : auroraSpeaking ? "speaking" : "idle";
 
   const timer = useLiveTimer(startedAt);
   const reuniao = (reunioes as Reuniao[]).find((r) => r.id === id);
@@ -147,6 +166,64 @@ export default function ReuniaoRoom() {
   const copyMeetLink = () => {
     navigator.clipboard.writeText(reuniao.meetLink ?? "");
     toast.success("Link copiado!");
+  };
+
+  const analyzeWithAurora = async () => {
+    if (!transcript.trim() || auroraLoading) return;
+    auroraVoice.primeAudio();
+    setAuroraLoading(true);
+    setAuroraError(null);
+    setAuroraSaved(false);
+    setDevProjectForPdf(null);
+
+    // Marca o instante do pedido — depois, se a Aurora criar um projeto de dev, achamos ele
+    // filtrando por created_at > startedAt (ela não devolve o id estruturado, só narra em texto).
+    const startedAt = new Date().toISOString();
+
+    const contextoLead = leadContext.name
+      ? `Cliente/Lead: ${leadContext.name}${leadContext.company ? ` (${leadContext.company})` : ""}${lead?.id ? ` | lead_id: ${lead.id}` : ""}\n`
+      : "";
+    // Autorização explícita do Gustavo pra esta ação específica (clicar neste botão É a
+    // confirmação) — por isso, diferente de uma conversa normal, aqui ela pode de fato criar/
+    // atualizar o lead e as tarefas, não só sugerir em texto.
+    const message = `Aurora, esta é uma reunião que acabei de ter — analise e já registre o que for relevante no Axis.\n\n${contextoLead}${reuniao.pauta ? `Pauta: ${reuniao.pauta}\n` : ""}\nTranscrição da reunião:\n"""\n${transcript}\n"""\n\nMe dê um resumo objetivo, os problemas ou erros que você identificou, e as soluções que recomenda. Além disso, você está autorizada a agir diretamente a partir desta reunião — sem precisar de outra confirmação minha nesta conversa: se o lead ainda não existe, cadastre-o; se existir, atualize status/próxima ação; e crie as tarefas e atividades que fizerem sentido a partir do que foi discutido. Se você identificar que falta uma funcionalidade/ferramenta pra atender isso, registre um projeto real no módulo Dev do Axis (com uma estimativa de valor quando o escopo permitir) e as tarefas de sprint que fizerem sentido. Me diga no final exatamente o que você registrou de verdade.`;
+
+    try {
+      const res = await apiFetch("/api/ai/aurora-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message }),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error ?? "Aurora está indisponível agora.");
+      setAuroraOutput(data.output ?? "");
+      if (data.audioBase64) {
+        auroraVoice.playAudioBase64(data.audioBase64, () => setAuroraSpeaking(true), () => setAuroraSpeaking(false));
+      }
+
+      if (supabase) {
+        const { data: novosProjetos } = await supabase
+          .from("dev_projects")
+          .select("*")
+          .gt("created_at", startedAt)
+          .order("created_at", { ascending: false })
+          .limit(1);
+        if (novosProjetos && novosProjetos[0]) {
+          setDevProjectForPdf(novosProjetos[0] as DevProjectPdfData);
+        }
+      }
+    } catch (err: any) {
+      setAuroraError(err.message ?? "Falha ao falar com a Aurora.");
+    } finally {
+      setAuroraLoading(false);
+    }
+  };
+
+  const saveAuroraAsActivity = () => {
+    if (!lead?.id || !auroraOutput) return;
+    addLeadActivity(lead.id, "Reunião", "Análise da Aurora", auroraOutput, user?.name || reuniao.closerName || "Aurora");
+    setAuroraSaved(true);
+    toast.success("Análise salva como atividade no lead.");
   };
 
   return (
@@ -302,6 +379,62 @@ export default function ReuniaoRoom() {
               placeholder="Anotações em tempo real — objeções, pontos de interesse, decisões, próximos passos..."
               className="w-full bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 text-sm text-white focus:outline-none focus:border-blue-500/40 transition-all resize-none placeholder:text-slate-700 min-h-[160px]"
             />
+          </div>
+
+          {/* Análise da Aurora — a assistente real, distinta do Copilot BANT genérico do painel 3 */}
+          <div className="p-4 border-t border-white/[0.06] space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                <AuroraCore mode={auroraCoreMode} size={20} /> Análise da Aurora
+              </h4>
+              <button
+                onClick={analyzeWithAurora}
+                disabled={auroraLoading || !transcript.trim()}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600/15 hover:bg-violet-600/25 border border-violet-500/25 rounded-lg text-[10px] font-black text-violet-400 uppercase tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                {auroraLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : <Brain className="w-3 h-3" />}
+                {auroraLoading ? "Analisando..." : "Aurora, analise esta reunião"}
+              </button>
+            </div>
+
+            {!transcript.trim() && !auroraOutput && (
+              <p className="text-[10px] text-slate-600">Precisa de transcrição (ative o microfone no Copilot ao lado) antes de pedir a análise da Aurora.</p>
+            )}
+
+            {auroraError && (
+              <div className="p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+                <p className="text-[10px] text-rose-400 leading-relaxed">{auroraError}</p>
+              </div>
+            )}
+
+            {auroraOutput && (
+              <div className="space-y-2">
+                <div className="px-4 py-3 bg-violet-500/[0.05] border border-violet-500/10 rounded-xl">
+                  <pre className="text-[11px] text-slate-300 whitespace-pre-wrap font-sans leading-relaxed">{auroraOutput}</pre>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {lead?.id && (
+                    <button
+                      onClick={saveAuroraAsActivity}
+                      disabled={auroraSaved}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-[10px] font-bold text-slate-300 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {auroraSaved ? <CheckCircle2 className="w-3 h-3 text-emerald-400" /> : <Save className="w-3 h-3" />}
+                      {auroraSaved ? "Salva no lead" : "Salvar como atividade no lead"}
+                    </button>
+                  )}
+                  {devProjectForPdf && (
+                    <button
+                      onClick={() => handleDownloadDevProjectPdf(devProjectForPdf)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600/15 hover:bg-emerald-600/25 border border-emerald-500/25 rounded-lg text-[10px] font-bold text-emerald-400 transition-all"
+                    >
+                      <Download className="w-3 h-3" />
+                      Baixar PDF: {devProjectForPdf.name}
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Post-meeting report */}

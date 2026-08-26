@@ -4,7 +4,7 @@ import { Target, Activity, Zap, Users } from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
 
 export function useIndicadores() {
-  const { leads, financeEntries, contracts } = useData();
+  const { leads, financeEntries, contracts, financialGoals } = useData();
   
   const [schedules, setSchedules] = useState<{ id: string; email: string; weekday: string; time: string; active: boolean }[]>(() => {
     const cached = localStorage.getItem("axis_scheduled_exports");
@@ -78,38 +78,59 @@ export function useIndicadores() {
       return isNaN(num) ? 0 : num;
     };
 
-    const mrr = contracts.reduce((acc, c) => acc + (c.mrr ? toNumberMRR(c.mrr) : 0), 0) || (ticketMedio / 12);
+    // mrr_value é a coluna real no Supabase; `mrr` é mantido no type por compatibilidade com telas antigas.
+    const mrr = contracts.reduce((acc, c: any) => acc + toNumberMRR(c.mrr_value ?? c.mrr ?? 0), 0) || (ticketMedio / 12);
     const ltv = mrr * 12; // LTV simples de 1 ano
     const fmt = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
 
     return [
        { label: "Ticket Médio", value: closedLeads.length > 0 ? fmt(ticketMedio) : "—", trend: "+5.2%", icon: Target, color: "text-[#06B6D4]" },
-       { label: "Ciclo de Vendas", value: closedLeads.length > 0 ? "18 dias" : "—", trend: "-2 dias", icon: Activity, color: "text-[#06B6D4]" },
+       // Ciclo de Vendas e Retention Rate ainda não são medidos de verdade em nenhum lugar do Axis —
+       // mostrar "—" em vez de um número de exemplo até existir uma fonte real (ex.: datas de estágio do funil).
+       { label: "Ciclo de Vendas", value: "—", trend: "—", icon: Activity, color: "text-[#06B6D4]" },
        { label: "LTV Projetado", value: ltv > 0 ? fmt(ltv) : "—", trend: "+12.4%", icon: Zap, color: "text-[#06B6D4]" },
-       { label: "Retention Rate", value: contracts.length > 0 ? "98.4%" : "—", trend: "+0.2%", icon: Users, color: "text-[#06B6D4]" },
+       { label: "Retention Rate", value: "—", trend: "—", icon: Users, color: "text-[#06B6D4]" },
     ];
   }, [leads, contracts]);
 
-  // Evolução MRR vs Meta (Apenas baseado nas entradas financeiras para simular crescimento real)
+  // Evolução MRR vs Meta — receita real (finance_entries pagos) contra a meta real
+  // cadastrada em financial_goals para o mês (soma de monthly_goal entre squads); 0 quando
+  // nenhuma meta foi cadastrada para aquele mês, em vez de um valor de exemplo.
   const monthlyData = useMemo(() => {
-    const months: Record<string, { receita: number, meta: number }> = {};
+    const months: Record<string, { receita: number, meta: number, monthKey: string }> = {};
     const receivables = financeEntries.filter(f => f.type === 'Receber' && f.status === 'Pago');
-    
+
     receivables.forEach(f => {
       try {
         const d = new Date(f.date || '');
-        if(isNaN(d.getTime())) return;
+        if (isNaN(d.getTime())) return;
+        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         const month = d.toLocaleDateString('pt-BR', { month: 'short' });
-        
+
         if (!months[month]) {
-          months[month] = { receita: 0, meta: 5000 }; // Meta fixa simulada por mês
+          months[month] = { receita: 0, meta: 0, monthKey };
         }
         months[month].receita += f.value;
       } catch {}
     });
 
-    return Object.entries(months).map(([name, data]) => ({ name, ...data }));
-  }, [financeEntries]);
+    (financialGoals || []).forEach((g: any) => {
+      try {
+        const d = new Date(g.valid_month || '');
+        if (isNaN(d.getTime())) return;
+        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const month = d.toLocaleDateString('pt-BR', { month: 'short' });
+        if (!months[month]) {
+          months[month] = { receita: 0, meta: 0, monthKey };
+        }
+        if (months[month].monthKey === monthKey) {
+          months[month].meta += Number(g.monthly_goal) || 0;
+        }
+      } catch {}
+    });
+
+    return Object.entries(months).map(([name, data]) => ({ name, receita: data.receita, meta: data.meta }));
+  }, [financeEntries, financialGoals]);
 
   // Distribuição de Leads por Origem
   const pieData = useMemo(() => {

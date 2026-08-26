@@ -1,3 +1,8 @@
+// Carrega .env/.env.local pro process.env — nada fazia isso antes (dotenv era dependência mas
+// nunca era importado), então qualquer variável só-arquivo (ex: AURORA_WEBHOOK_URL) sempre esteve
+// vazia em dev local. Em produção (Vercel) isso é um no-op inofensivo, já que as variáveis já
+// chegam injetadas de verdade no processo.
+import "dotenv/config";
 import express from "express";
 import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
@@ -730,6 +735,34 @@ Responda APENAS com este JSON:
   } catch (err: any) {
     console.error("[Copilot Reunião]", err?.message);
     return res.status(500).json({ error: "Erro ao analisar transcrição: " + (err?.message ?? "desconhecido") });
+  }
+});
+
+// ── Aurora (chat com o G-TECH AI OS, embutido no Axis) ─────────────────────
+// Proxy autenticado para o webhook do Chat Trigger da Aurora no n8n (workflow AURORA CORE).
+// A URL do webhook nunca chega ao navegador — só este backend a conhece (AURORA_WEBHOOK_URL).
+app.post("/api/ai/aurora-chat", requireUser, async (req: any, res: any) => {
+  const { message } = req.body ?? {};
+  if (!message?.trim()) return res.status(400).json({ error: "Mensagem vazia." });
+
+  const webhookUrl = process.env.AURORA_WEBHOOK_URL;
+  if (!webhookUrl) return res.status(503).json({ error: "Aurora não está configurada neste ambiente." });
+
+  // Fixo e compartilhado com o jarvis-os (mesmo memory node no n8n) — Gustavo tem contexto
+  // contínuo entre os dois apps em vez de duas conversas isoladas. Seguro porque a própria
+  // Aurora só atende um usuário real hoje (ver system prompt do workflow AURORA CORE).
+  const sessionId = "aurora-gustavo-principal";
+
+  try {
+    const { data } = await axios.post(
+      webhookUrl,
+      { action: "sendMessage", sessionId, chatInput: message },
+      { timeout: 60000 }
+    );
+    return res.json({ output: data?.output ?? "", audioBase64: data?.audioBase64 ?? null });
+  } catch (err: any) {
+    console.error("[Aurora Chat]", err?.response?.data ?? err?.message);
+    return res.status(502).json({ error: "Aurora está indisponível agora." });
   }
 });
 

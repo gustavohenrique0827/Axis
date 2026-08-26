@@ -5,12 +5,13 @@ import { Sidebar } from "./layout/Sidebar";
 import { Topbar } from "./layout/Topbar";
 import { MobileNav } from "./layout/MobileNav";
 import { ErrorBoundary } from "./ErrorBoundary";
+import { AuroraWidget } from "./ui/AuroraWidget";
 import { useData } from "../contexts/DataContextTypes";
 
 export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isModuleEnabled } = useAuth();
   useData();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
@@ -71,6 +72,12 @@ export default function Layout() {
         isMobileMoreOpen={isMobileMoreOpen}
         setIsMobileMoreOpen={setIsMobileMoreOpen}
       />
+
+      {/* Aurora só aparece para usuários master (G-TECH) — ela tem ferramentas de escrita
+          reais escopadas ao tenant da G-TECH e não faz sentido/não é seguro para outros
+          tenants do Axis (Target AgroTech, Pluppex, etc.) verem esse chat. Além disso, agora
+          é um módulo de verdade (Configurações → Módulos) — dá pra desligar sem mexer em código. */}
+      {user?.isMaster && isModuleEnabled("aurora") && <AuroraWidget />}
     </div>
   );
 }

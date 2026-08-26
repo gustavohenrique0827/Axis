@@ -236,6 +236,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [students, setStudents] = useState<any[]>([]);
   const [colaboradores, setColaboradores] = useState<any[]>([]);
   const [squadMetas, setSquadMetas] = useState<any[]>([]);
+  const [financialGoals, setFinancialGoals] = useState<any[]>([]);
   const [cargos, setCargos] = useState<any[]>([]);
   const [clienteBase, setClienteBase] = useState<any[]>([]);
 
@@ -288,6 +289,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, () => fetchTableData('students', setStudents))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'colaboradores' }, () => fetchTableData('colaboradores', setColaboradores))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'squad_metas' }, () => fetchTableData('squad_metas', setSquadMetas))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'financial_goals' }, () => fetchTableData('financial_goals', setFinancialGoals))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'cargos' }, () => fetchTableData('cargos', setCargos))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'certificates' }, () => fetchTableData('certificates', setCertificates))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'reunioes' }, () => fetchTableData('reunioes', setReunioes as any))
@@ -314,7 +316,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes,
               notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
               productsRes, proposalsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
-              clienteBaseRes, reunioesRes
+              clienteBaseRes, reunioesRes, financialGoalsRes
             ] = await Promise.all([
               supabase.from('leads').select('*').eq('tenant_id', tenantId),
               supabase.from('tasks').select('*').eq('tenant_id', tenantId),
@@ -339,6 +341,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('cargos').select('*').eq('tenant_id', tenantId),
               supabase.from('clientes').select('*').eq('tenant_id', tenantId),
               supabase.from('reunioes').select('*').eq('tenant_id', tenantId),
+              supabase.from('financial_goals').select('*').eq('tenant_id', tenantId),
             ]);
 
             if (!leadsRes.error && leadsRes.data) setLeads(leadsRes.data as Lead[]);
@@ -369,6 +372,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (colabRes.error) console.error('[Supabase] colaboradores load error:', colabRes.error.message);
             else if (colabRes.data) setColaboradores(colabRes.data);
             if (!squadMetasRes.error && squadMetasRes.data) setSquadMetas(squadMetasRes.data);
+            if (!financialGoalsRes.error && financialGoalsRes.data) setFinancialGoals(financialGoalsRes.data);
             if (!certRes.error && certRes.data) setCertificates(certRes.data);
             if (!cargosRes.error && cargosRes.data) setCargos(cargosRes.data);
             if (!clienteBaseRes.error && clienteBaseRes.data) setClienteBase(clienteBaseRes.data);
@@ -1143,6 +1147,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addSquadMeta: squadMetaCrud.add,
       updateSquadMeta: squadMetaCrud.update,
       deleteSquadMeta: squadMetaCrud.del,
+      financialGoals,
       cargos,
       setCargos,
       addCargo: cargoCrud.add,

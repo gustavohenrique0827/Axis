@@ -183,6 +183,7 @@ export interface DataContextType {
   addSquadMeta: (v: any) => void;
   updateSquadMeta: (id: string, updates: any) => void;
   deleteSquadMeta: (id: string) => void;
+  financialGoals: any[];
   cargos: any[];
   setCargos: (v: any[]) => void;
   addCargo: (c: any) => void;

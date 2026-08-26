@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 import { DropResult } from "@hello-pangea/dnd";
@@ -13,8 +13,52 @@ function getMarketingColumns() {
   }));
 }
 
+// marketing_content no Supabase so tem id/tenant_id/title/description/platform/status/publish_date
+// (sem colId/desc/date/priority/value) - estas duas funcoes fazem a ponte com o formato local do board.
+function mapRowToTask(row: any) {
+  let date = "Sem data";
+  let publishDateISO = "";
+  if (row.publish_date) {
+    const d = new Date(row.publish_date);
+    if (!isNaN(d.getTime())) {
+      const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+      date = `${d.getDate()} ${months[d.getMonth()]}`;
+      publishDateISO = d.toISOString().slice(0, 10);
+    }
+  }
+  return {
+    id: row.id,
+    colId: row.status || "ideia",
+    title: row.title || "",
+    desc: row.description || "",
+    platform: row.platform || "Instagram",
+    date,
+    publishDateISO,
+    priority: "Média",
+    value: 0,
+  };
+}
+
+function taskToRow(task: any) {
+  const row: any = {
+    id: task.id,
+    title: task.title,
+    description: task.desc,
+    platform: task.platform,
+    status: task.colId,
+  };
+  if (task.publishDateISO) row.publish_date = task.publishDateISO;
+  return row;
+}
+
 export function useMarketingConteudo() {
-  const { marketingContent: tasks, setMarketingContent: setTasks } = useData();
+  const { marketingContent: contentRows } = useData();
+  const [tasks, setTasks] = useState<any[]>([]);
+
+  useEffect(() => {
+    setTasks(contentRows.map(mapRowToTask));
+  }, [contentRows]);
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNewTaskModalOpen, setIsNewTaskModalOpen] = useState(false);
   const [selectedTask, setSelectedTask] = useState<any>(null);
@@ -38,22 +82,15 @@ export function useMarketingConteudo() {
       try {
         const { error } = await supabase
           .from("marketing_content")
-          .upsert({
-            id: task.id,
-            col_id: task.colId,
-            title: task.title,
-            desc: task.desc,
-            platform: task.platform,
-            date: task.date,
-            priority: task.priority,
-            value: task.value
-          });
-        
+          .upsert(taskToRow(task));
+
         if (error) {
           console.error("Supabase upsert failure:", error.message);
+          toast.error("Não foi possível salvar a pauta: " + error.message);
         }
       } catch (err) {
         console.error("Supabase communication exception:", err);
+        toast.error("Erro de comunicação ao salvar a pauta.");
       }
     }
   };
@@ -120,12 +157,13 @@ export function useMarketingConteudo() {
     }
 
     const newTask = {
-      id: String(Date.now()),
+      id: crypto.randomUUID(),
       colId: "ideia",
       title: newTitle,
       desc: newDesc || "Sem descrição.",
       platform: newPlatform,
       date: displayDate,
+      publishDateISO: newDate || "",
       priority: newPriority,
       value: parseFloat(newValue) || 0
     };

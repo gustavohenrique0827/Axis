@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import {
   Cpu, Activity, Layers, Database, UserCheck,
   Target, Award, DollarSign, Package, MessageSquare, Users, Columns3, Clock, Code2,
-  Plus, X, Building2, RefreshCw, ChevronDown, Megaphone, Pencil, Trash2, AlertTriangle
+  Plus, X, Building2, RefreshCw, ChevronDown, Megaphone, Pencil, Trash2, AlertTriangle, Sparkles
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -642,7 +642,8 @@ export default function ConfigModulosDemos() {
                   { id: 'clinica', title: "Clínica & Saúde", desc: "Prontuários, Telemedicina e Agendamento", icon: Activity },
                   { id: 'bi', title: "BI & Indicadores Relatórios", desc: "Melhores estatísticas de faturamento e OTE", icon: Columns3 },
                   { id: 'dev', title: "Dev & Tecnologia", desc: "Projetos, Sprints, Issues, Repositórios e Equipe Dev", icon: Code2 },
-                  { id: 'imobiliario', title: "Imobiliário & Corretores", desc: "Portfólio de imóveis, corretores, visitas e leads imobiliários", icon: UserCheck }
+                  { id: 'imobiliario', title: "Imobiliário & Corretores", desc: "Portfólio de imóveis, corretores, visitas e leads imobiliários", icon: UserCheck },
+                  { id: 'aurora', title: "Aurora IA", desc: "Assistente executiva com voz, agenda, WhatsApp e diretoria de IA", icon: Sparkles }
                 ].map((mod) => {
                   const isEnabled = activeModules[mod.id] ?? true;
                   return (

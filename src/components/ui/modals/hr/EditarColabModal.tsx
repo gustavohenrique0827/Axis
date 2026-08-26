@@ -99,6 +99,7 @@ export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalPro
             <div className="space-y-1.5">
               <label className={labelClass}>Telefone</label>
               <input type="tel" value={form.phone} onChange={e => set("phone", e.target.value)} className={inputClass} placeholder="(11) 99999-9999" />
+              <p className="text-xs text-slate-500">Este número dá acesso à Aurora via WhatsApp (qualquer cargo/área).</p>
             </div>
           </div>
 

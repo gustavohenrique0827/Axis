@@ -52,7 +52,7 @@ const DEFAULT_TENANT_MODULES: Record<string, TenantModules> = {
   "G-Tech Master": {
     crm: true, sdr: true, advDashboard: true, financeiro: true, marketing: true,
     educacao: true, clinica: true, produtividade: true, rh: true, bi: true,
-    engajamento: true, catalogo: true, dev: true
+    engajamento: true, catalogo: true, dev: true, aurora: true
   },
   "SolarCorp Engenharia": {
     crm: true, financeiro: true, produtividade: true, marketing: true, bi: true, rh: true, engajamento: true
