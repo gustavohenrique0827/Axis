@@ -38,6 +38,89 @@ interface MetasOverviewProps {
   projecaoInteligente: number;
 }
 
+interface BalancoGeralBannerProps {
+  totalFaturamento: number;
+  totalMeta: number;
+}
+
+export function BalancoGeralBanner({ totalFaturamento, totalMeta }: BalancoGeralBannerProps) {
+  const diff = totalFaturamento - totalMeta;
+  const isPositive = diff >= 0;
+
+  const msgVolume = totalFaturamento > 0 ? Math.round(totalFaturamento / 100) : 0;
+  const callVolume = totalFaturamento > 0 ? Math.round(totalFaturamento / 350) : 0;
+
+  return (
+    <div className="p-4 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-3xl relative overflow-hidden glass-card mb-4">
+      <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none" />
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-3 pb-3 border-b border-white/5">
+        <div>
+          <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
+            Balanço Geral & Comunicações Ativas
+          </h3>
+          <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mt-0.5">
+            Auditoria consolidada de conversão sdr/closer e diferencial líquido
+          </p>
+        </div>
+        <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[8.5px] font-mono uppercase tracking-widest px-3 py-1 rounded-xl">
+          Sincronizado via API
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        {/* Mensagens sent rate */}
+        <div className="p-3 bg-[var(--color-surface)]/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
+          <div className="p-3 bg-[#06B6D4]/10 text-[#06B6D4] rounded-xl">
+            <Flame className="w-5 h-5 text-[#06B6D4]" />
+          </div>
+          <div>
+            <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Volume de Mensagens (WhatsApp)</span>
+            <span className="text-lg font-mono font-black text-white block mt-0.5">
+              {msgVolume.toLocaleString("pt-BR")} msgs
+            </span>
+            <span className="text-[9.5px] text-[#06B6D4] font-bold block">Taxa de Resposta: 94.2%</span>
+          </div>
+        </div>
+
+        {/* Ligações dials */}
+        <div className="p-3 bg-[var(--color-surface)]/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
+          <div className="p-3 bg-[#06B6D4]/10 text-[#06B6D4] rounded-xl">
+            <Users className="w-5 h-5 text-[#06B6D4]" />
+          </div>
+          <div>
+            <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Total de Ligações Registradas</span>
+            <span className="text-lg font-mono font-black text-white block mt-0.5">
+              {callVolume.toLocaleString("pt-BR")} dials
+            </span>
+            <span className="text-[9.5px] text-[#06B6D4] font-bold block">Conexão Eficiente: 82%</span>
+          </div>
+        </div>
+
+        {/* Diferença Líquida contra o teto da meta geral */}
+        <div className={`p-3 rounded-2xl border transition-colors flex items-center gap-4 ${
+          isPositive
+            ? "bg-emerald-500/10 border-emerald-500/20 hover:border-emerald-500/30"
+            : "bg-rose-500/10 border-rose-500/20 hover:border-rose-500/30"
+        }`}>
+          <div className={`p-3 rounded-xl ${isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
+            <TrendingUp className={`w-5 h-5 ${isPositive ? "" : "transform rotate-180"}`} />
+          </div>
+          <div>
+            <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block font-sans">Diferença Líquida (Meta)</span>
+            <span className={`text-lg font-mono font-black block mt-0.5 ${isPositive ? "text-emerald-400" : "text-rose-400"}`}>
+              {isPositive ? "+" : "-"} R$ {Math.abs(diff).toLocaleString("pt-BR")}
+            </span>
+            <span className="text-[9.5px] text-slate-400 block font-medium">
+              {isPositive ? "Excedente de Meta Obtido" : "Déficit Restante do Teto"}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function MetasOverview({
   period,
   totalFaturamento,
@@ -50,12 +133,6 @@ export function MetasOverview({
   historicalOTEData,
   projecaoInteligente
 }: MetasOverviewProps) {
-  const diff = totalFaturamento - totalMeta;
-  const isPositive = diff >= 0;
-
-  const msgVolume = totalFaturamento > 0 ? Math.round(totalFaturamento / 100) : 0;
-  const callVolume = totalFaturamento > 0 ? Math.round(totalFaturamento / 350) : 0;
-
   const totalOTE = squads.reduce((sum, s) => sum + calculateOTE(s).total, 0);
   const totalOTEBonus = squads.reduce((sum, s) => sum + calculateOTE(s).bonus, 0);
 
@@ -65,82 +142,13 @@ export function MetasOverview({
   }).length;
 
   return (
-    <div className="space-y-6">
-      {/* Balanço Geral */}
-      <div className="p-6 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-3xl relative overflow-hidden glass-card">
-        <div className="absolute top-0 right-0 w-48 h-48 bg-blue-500/5 blur-[80px] rounded-full pointer-events-none" />
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4 pb-4 border-b border-white/5">
-          <div>
-            <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" />
-              Balanço Geral & Comunicações Ativas
-            </h3>
-            <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mt-0.5">
-              Auditoria consolidada de conversão sdr/closer e diferencial líquido
-            </p>
-          </div>
-          <span className="bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[8.5px] font-mono uppercase tracking-widest px-3 py-1 rounded-xl">
-            Sincronizado via API
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Mensagens sent rate */}
-          <div className="p-4 bg-[var(--color-surface)]/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
-            <div className="p-3 bg-[#06B6D4]/10 text-[#06B6D4] rounded-xl">
-              <Flame className="w-5 h-5 text-[#06B6D4]" />
-            </div>
-            <div>
-              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Volume de Mensagens (WhatsApp)</span>
-              <span className="text-lg font-mono font-black text-white block mt-0.5">
-                {msgVolume.toLocaleString("pt-BR")} msgs
-              </span>
-              <span className="text-[9.5px] text-[#06B6D4] font-bold block">Taxa de Resposta: 94.2%</span>
-            </div>
-          </div>
-
-          {/* Ligações dials */}
-          <div className="p-4 bg-[var(--color-surface)]/40 border border-white/5 rounded-2xl flex items-center gap-4 hover:border-white/10 transition-colors">
-            <div className="p-3 bg-[#06B6D4]/10 text-[#06B6D4] rounded-xl">
-              <Users className="w-5 h-5 text-[#06B6D4]" />
-            </div>
-            <div>
-              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block">Total de Ligações Registradas</span>
-              <span className="text-lg font-mono font-black text-white block mt-0.5">
-                {callVolume.toLocaleString("pt-BR")} dials
-              </span>
-              <span className="text-[9.5px] text-[#06B6D4] font-bold block">Conexão Eficiente: 82%</span>
-            </div>
-          </div>
-
-          {/* Diferença Líquida contra o teto da meta geral */}
-          <div className={`p-4 rounded-2xl border transition-colors flex items-center gap-4 ${
-            isPositive 
-              ? "bg-emerald-500/10 border-emerald-500/20 hover:border-emerald-500/30" 
-              : "bg-rose-500/10 border-rose-500/20 hover:border-rose-500/30"
-          }`}>
-            <div className={`p-3 rounded-xl ${isPositive ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"}`}>
-              <TrendingUp className={`w-5 h-5 ${isPositive ? "" : "transform rotate-180"}`} />
-            </div>
-            <div>
-              <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider block font-sans">Diferença Líquida (Meta)</span>
-              <span className={`text-lg font-mono font-black block mt-0.5 ${isPositive ? "text-emerald-400" : "text-rose-400"}`}>
-                {isPositive ? "+" : "-"} R$ {Math.abs(diff).toLocaleString("pt-BR")}
-              </span>
-              <span className="text-[9.5px] text-slate-400 block font-medium">
-                {isPositive ? "Excedente de Meta Obtido" : "Déficit Restante do Teto"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
+    <div className="space-y-4">
       {/* Top summary cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
         {/* Total revenue meta */}
-        <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
-          <div className="flex justify-between items-start mb-4">
+        <Card className="p-5 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+          <div className="flex justify-between items-start mb-3">
             <Target className="w-5 h-5 text-indigo-500" />
             <span className="text-[10px] font-black font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase tracking-widest">
               Geral {period === "monthly" ? "Mês" : period === "quarterly" ? "Trimestre" : "Ano"}
@@ -157,7 +165,7 @@ export function MetasOverview({
               </span>
             </div>
             {/* Visual Gauge */}
-            <div className="mt-4 space-y-1">
+            <div className="mt-3 space-y-1">
               <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
                 <span>Progresso consolidado</span>
                 <span className="font-extrabold text-blue-400">{totalPercent}%</span>
@@ -173,8 +181,8 @@ export function MetasOverview({
         </Card>
 
         {/* Provisioned commission and OTE payout based on calculations */}
-        <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
-          <div className="flex justify-between items-start mb-4">
+        <Card className="p-5 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+          <div className="flex justify-between items-start mb-3">
             <DollarSign className="w-5 h-5 text-emerald-500" />
             <span className="text-[10px] font-black font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase tracking-widest">
               Provisionado
@@ -187,15 +195,15 @@ export function MetasOverview({
                 R$ {totalOTE.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
-            <div className="mt-4 flex items-center justify-between text-[10px] border-t border-white/5 pt-3 text-slate-400">
+            <div className="mt-3 flex items-center justify-between text-[10px] border-t border-white/5 pt-2 text-slate-400">
               <span>Bônus superador ativo:</span>
               <span className="font-bold text-emerald-400">
                 R$ {totalOTEBonus.toLocaleString("pt-BR")}
               </span>
             </div>
-            
+
             {/* Tab Swapper Header Inside Card */}
-            <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
+            <div className="mt-3 pt-2 border-t border-white/5 flex items-center justify-between">
               <span className="text-[9px] text-slate-500 font-bold uppercase tracking-wider">Visualização OTE</span>
               <div className="flex gap-1.5 font-mono">
                 <button 
@@ -235,7 +243,7 @@ export function MetasOverview({
                     <span>Performance (Últimos 6 meses)</span>
                     <span className="text-emerald-400 font-mono">Histórico OTE</span>
                   </div>
-                  <div className="h-24 w-full">
+                  <div className="h-20 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={historicalOTEData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
@@ -257,7 +265,7 @@ export function MetasOverview({
                     <span>Faturado vs Meta 3M</span>
                     <span className="text-emerald-400 font-mono">OTE Proj</span>
                   </div>
-                  <div className="h-24 w-full">
+                  <div className="h-20 w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <ComposedChart 
                         data={[
@@ -291,8 +299,8 @@ export function MetasOverview({
         </Card>
 
         {/* Active alert indicator status card */}
-        <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
-          <div className="flex justify-between items-start mb-4">
+        <Card className="p-5 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+          <div className="flex justify-between items-start mb-3">
             <Award className="w-5 h-5 text-blue-500" />
             <span className="text-[10px] font-black font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase tracking-widest">
               Consistência
@@ -306,7 +314,7 @@ export function MetasOverview({
               </span>
               <span className="text-xs text-slate-400 font-medium font-mono">Surtindo Efeito</span>
             </div>
-            <div className="mt-4 text-[10px] border-t border-white/5 pt-3 flex items-center gap-2 text-slate-400 leading-tight">
+            <div className="mt-3 text-[10px] border-t border-white/5 pt-2 flex items-center gap-2 text-slate-400 leading-tight">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
               <span>Aceleração SDR base Palma ativa.</span>
             </div>

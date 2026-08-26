@@ -34,9 +34,9 @@ export function SquadMetasSection({
   handleSliderChange
 }: SquadMetasSectionProps) {
   return (
-    <div className="xl:col-span-2 p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl flex flex-col justify-between rounded-3xl">
+    <div className="xl:col-span-2 p-5 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl flex flex-col justify-between rounded-3xl">
       <div>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
           <div>
             <h4 className="text-sm font-bold text-white uppercase tracking-tight">Status & Alocação de Squads</h4>
             <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5">Definição, ajuste de progresso e comissão do time</p>
@@ -46,7 +46,7 @@ export function SquadMetasSection({
           </span>
         </div>
 
-        <div className="space-y-6">
+        <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-1">
           {squads.map((squad) => {
             const mult = period === "quarterly" ? 3 : period === "annual" ? 12 : 1;
             const metaReal = squad.meta * mult;
@@ -56,9 +56,9 @@ export function SquadMetasSection({
             const ote = calculateOTE(squad);
 
             return (
-              <div key={squad.id} className="p-4 bg-white/[0.01] border border-white/5 rounded-2xl relative overflow-hidden group hover:border-white/10 transition-colors">
+              <div key={squad.id} className="p-3 bg-white/[0.01] border border-white/5 rounded-2xl relative overflow-hidden group hover:border-white/10 transition-colors">
                 {/* Top title and team distribution */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-black text-white uppercase tracking-tight">{squad.name}</span>
@@ -140,7 +140,7 @@ export function SquadMetasSection({
         </div>
       </div>
 
-      <div className="border-t border-white/5 pt-4 mt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-[10px] text-slate-500 font-medium">
+      <div className="border-t border-white/5 pt-3 mt-4 flex flex-col md:flex-row items-center justify-between gap-3 text-[10px] text-slate-500 font-medium">
         <span className="flex items-center gap-1.5 text-left">
           <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
           Garantia do Acordo de Nível de Serviço (SLA) SDR ➔ Closer estabelecido por comissões escaláveis por aceitabilidade.
