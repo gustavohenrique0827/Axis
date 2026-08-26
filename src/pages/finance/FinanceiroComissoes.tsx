@@ -190,43 +190,16 @@ export default function FinanceiroComissoes() {
       breadcrumb={[{ label: 'Financeiro', path: '/app/financeiro' }, { label: 'Comissões & OTE' }]}
       actions={
         <div className="flex items-center gap-2">
-          {/* Period */}
-          <select
-            value={periodo}
-            onChange={e => { setPeriodo(e.target.value); localStorage.setItem(PERIOD_KEY, e.target.value); }}
-            className="h-11 bg-white/5 border border-white/10 rounded-xl px-3 text-[11px] font-black uppercase tracking-widest outline-none text-white cursor-pointer"
-          >
-            {PERIODOS.map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
-
-          {/* Squad filter */}
-          <div className="relative">
-            <button
-              onClick={() => setShowSquadMenu(v => !v)}
-              className="flex items-center gap-2 h-11 px-4 border border-white/10 rounded-xl text-[11px] font-black text-white bg-white/5 hover:bg-white/10 transition-colors"
-            >
-              {squadFilter} <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+          <div className="flex items-center gap-0.5 bg-white/5 border border-white/10 rounded-xl p-0.5">
+            <Link to="/app/financeiro/configuracoes">
+              <button className="h-9 w-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all" title="Configurações">
+                <Settings className="w-4 h-4" />
+              </button>
+            </Link>
+            <button onClick={handleExport} className="h-9 w-9 flex items-center justify-center rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all" title="Exportar CSV">
+              <Download className="w-4 h-4" />
             </button>
-            {showSquadMenu && (
-              <div className="absolute right-0 top-12 z-30 bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl shadow-2xl shadow-black/50 min-w-[160px] overflow-hidden">
-                {squadNames.map(s => (
-                  <button key={s} onClick={() => { setSquadFilter(s); setShowSquadMenu(false); }}
-                    className={`w-full text-left px-4 py-2.5 text-[11px] font-bold hover:bg-white/5 transition-colors ${squadFilter === s ? 'text-emerald-400' : 'text-slate-300'}`}
-                  >{s}</button>
-                ))}
-              </div>
-            )}
           </div>
-
-          <Link to="/app/financeiro/configuracoes">
-            <Button variant="outline" className="h-11 gap-2 text-[10px] font-black uppercase tracking-widest border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl">
-              <Settings className="w-4 h-4" /> Config
-            </Button>
-          </Link>
-
-          <Button variant="outline" onClick={handleExport} className="h-11 gap-2 text-[10px] font-black uppercase tracking-widest border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl">
-            <Download className="w-4 h-4" /> CSV
-          </Button>
 
           <Button
             onClick={handleRecalc}
@@ -237,6 +210,35 @@ export default function FinanceiroComissoes() {
         </div>
       }
     >
+      {/* Filter bar */}
+      <div className="flex flex-wrap items-center gap-3 mb-5">
+        <select
+          value={periodo}
+          onChange={e => { setPeriodo(e.target.value); localStorage.setItem(PERIOD_KEY, e.target.value); }}
+          className="h-10 bg-[var(--color-surface-elevated)] border border-white/[0.08] rounded-xl px-3 text-[11px] font-black uppercase tracking-widest outline-none text-white cursor-pointer"
+        >
+          {PERIODOS.map(p => <option key={p} value={p}>{p}</option>)}
+        </select>
+
+        <div className="relative">
+          <button
+            onClick={() => setShowSquadMenu(v => !v)}
+            className="flex items-center gap-2 h-10 px-4 border border-white/[0.08] rounded-xl text-[11px] font-black text-white bg-[var(--color-surface-elevated)] hover:bg-white/10 transition-colors"
+          >
+            <span className="text-slate-500 font-bold normal-case">Squad:</span> {squadFilter} <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+          </button>
+          {showSquadMenu && (
+            <div className="absolute left-0 top-11 z-30 bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl shadow-2xl shadow-black/50 min-w-[160px] overflow-hidden">
+              {squadNames.map(s => (
+                <button key={s} onClick={() => { setSquadFilter(s); setShowSquadMenu(false); }}
+                  className={`w-full text-left px-4 py-2.5 text-[11px] font-bold hover:bg-white/5 transition-colors ${squadFilter === s ? 'text-emerald-400' : 'text-slate-300'}`}
+                >{s}</button>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* KPI Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {kpis.map((kpi, i) => (

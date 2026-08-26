@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { Plus, Trash2, Settings2, DollarSign, Handshake, Receipt, Target, ArrowRight, Info } from 'lucide-react';
+import { Plus, Trash2, Settings2, DollarSign, Handshake, Receipt, Target, ArrowLeft, Info } from 'lucide-react';
 import { PageContainer } from '../../components/PageContainer';
 import { Button } from '../../components/ui/button';
 import { useOTEConfig, OTEProfile, CommissionRule, PartnershipRule, TaxRate } from './hooks/useOTEConfig';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 type ConfigTab = 'perfis' | 'comissao' | 'parceria' | 'taxas' | 'metas';
 
@@ -65,7 +65,8 @@ export default function FinanceiroConfiguracoes() {
     taxRates, addTaxRate, removeTaxRate,
   } = useOTEConfig();
 
-  const [tab, setTab] = useState<ConfigTab>('perfis');
+  const { section } = useParams<{ section?: string }>();
+  const tab: ConfigTab = (TABS.some(t => t.key === section) ? section : 'perfis') as ConfigTab;
 
   const [pForm, setPForm] = useState<Omit<OTEProfile, 'id'>>({
     cargo: 'Closer', nivel: 'Junior 1', salarioFixo: 1620,
@@ -82,43 +83,31 @@ export default function FinanceiroConfiguracoes() {
       title="Configurações Financeiras"
       description="Perfis OTE, regras de comissão, parcerias e taxas que alimentam o cálculo automático da folha de comissões."
       breadcrumb={[{ label: 'Financeiro', path: '/app/financeiro' }, { label: 'Comissões', path: '/app/financeiro/comissoes' }, { label: 'Configurações' }]}
+      actions={
+        <Link to="/app/financeiro/comissoes">
+          <Button variant="outline" className="h-11 gap-2 text-[10px] font-black uppercase tracking-widest border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl">
+            <ArrowLeft className="w-4 h-4" /> Voltar para Comissões
+          </Button>
+        </Link>
+      }
     >
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Sidebar nav */}
-        <motion.div
-          initial={{ opacity: 0, x: -10 }}
-          animate={{ opacity: 1, x: 0 }}
-          className="lg:w-64 shrink-0"
-        >
-          <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
-            <div className="p-4 border-b border-white/5">
-              <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Seções</p>
-            </div>
-            <div className="p-2">
-              {TABS.map(t => (
-                <button
-                  key={t.key}
-                  onClick={() => setTab(t.key)}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-all group ${tab === t.key
-                    ? 'bg-emerald-500/10 border border-emerald-500/20'
-                    : 'border border-transparent hover:bg-white/5'
-                    }`}
-                >
-                  <div className={`p-1.5 rounded-lg ${tab === t.key ? 'bg-emerald-500/20' : 'bg-white/5 group-hover:bg-white/10'}`}>
-                    <t.icon className={`w-3.5 h-3.5 ${tab === t.key ? 'text-emerald-400' : 'text-slate-500 group-hover:text-slate-400'}`} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-[11px] font-black uppercase tracking-wide leading-none ${tab === t.key ? 'text-white' : 'text-slate-400 group-hover:text-slate-300'}`}>
-                      {t.label}
-                    </p>
-                    <p className="text-[9px] text-slate-600 font-medium mt-0.5 leading-none truncate">{t.desc}</p>
-                  </div>
-                  {tab === t.key && <ArrowRight className="w-3 h-3 text-emerald-500 shrink-0" />}
-                </button>
-              ))}
-            </div>
-          </div>
-        </motion.div>
+      <div className="space-y-5">
+        {/* Horizontal section tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-1.5 shadow-xl shadow-black/10 scrollbar-none">
+          {TABS.map(t => (
+            <Link
+              key={t.key}
+              to={`/app/financeiro/configuracoes/${t.key}`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wide whitespace-nowrap transition-all shrink-0 ${tab === t.key
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-sm shadow-emerald-500/10'
+                : 'text-slate-400 border border-transparent hover:text-white hover:bg-white/5'
+                }`}
+            >
+              <t.icon className="w-4 h-4" />
+              {t.label}
+            </Link>
+          ))}
+        </div>
 
         {/* Content area */}
         <motion.div
@@ -126,7 +115,7 @@ export default function FinanceiroConfiguracoes() {
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.2 }}
-          className="flex-1 min-w-0 space-y-4"
+          className="space-y-4"
         >
           {/* Section title bar */}
           <div className="flex items-center gap-3">

@@ -41,8 +41,8 @@ export function ColaboradoresMetasSection({
   setColabRealizado
 }: ColaboradoresMetasSectionProps) {
   return (
-    <div className="mt-8">
-      <div className="p-6 bg-slate-900/60 border border-white/5 rounded-3xl relative overflow-hidden mb-6">
+    <div className="mt-4">
+      <div className="p-4 bg-slate-900/60 border border-white/5 rounded-3xl relative overflow-hidden mb-4">
         <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-[60px] rounded-full pointer-events-none" />
         <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
           <Users className="w-4 h-4 text-blue-500 animate-pulse" />
@@ -53,18 +53,18 @@ export function ColaboradoresMetasSection({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         {/* Listagem de Colaboradores com progresso individual e side-by-side de squad */}
-        <Card className="xl:col-span-2 p-6 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl flex flex-col justify-between rounded-3xl">
+        <Card className="xl:col-span-2 p-5 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl flex flex-col justify-between rounded-3xl">
           <div>
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex justify-between items-center mb-4">
               <div>
                 <h4 className="text-xs font-bold text-white uppercase tracking-tight">Vendedores Cadastrados & Desempenho</h4>
                 <p className="text-[9px] text-slate-500 uppercase font-bold tracking-widest mt-0.5">Visão unificada: progresso pessoal vs. progresso geral do squad</p>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pr-1">
               {colaboradores.map(colab => {
                 const mySquad = squads.find(s => s.id === colab.squadId) || squads[0];
                 
@@ -78,7 +78,7 @@ export function ColaboradoresMetasSection({
                 const squadPct = squadMetaReal > 0 ? Math.min(100, Math.round((squadFaturamentoReal / squadMetaReal) * 100)) : 0;
 
                 return (
-                  <div key={colab.id} className="p-4 bg-white/[0.01] border border-white/5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 group hover:border-white/10 transition-colors">
+                  <div key={colab.id} className="p-3 bg-white/[0.01] border border-white/5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 group hover:border-white/10 transition-colors">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2.5 mb-1">
                         <span className="w-7 h-7 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center font-bold text-xs">
@@ -159,12 +159,12 @@ export function ColaboradoresMetasSection({
         </Card>
 
         {/* Form de Configuração do Colaborador (Admin) */}
-        <Card className="p-5 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl shrink-0 rounded-3xl">
+        <Card className="p-4 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl shrink-0 rounded-3xl">
           <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-1 flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-blue-400" />
             Metas de Colaborador (Form)
           </h4>
-          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-4">Cadastrar ou atualizar metas comerciais individuais</span>
+          <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-3">Cadastrar ou atualizar metas comerciais individuais</span>
 
           <form onSubmit={(e) => {
             e.preventDefault();
@@ -202,7 +202,7 @@ export function ColaboradoresMetasSection({
               toast.success(`Metas de ${colabName} atualizadas com sucesso!`);
             }
             setSelectedColabId("new");
-          }} className="space-y-4">
+          }} className="space-y-2.5">
             
             <div className="space-y-1">
               <label className="text-[9px] text-slate-400 font-bold uppercase tracking-wider block">Ficha do Colaborador</label>

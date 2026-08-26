@@ -5,10 +5,11 @@ import { PageContainer } from "../../components/PageContainer";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { NovaReuniaoModal } from "../../components/ui/modals/reunioes/NovaReuniaoModal";
+import { ConfirmModal } from "../../components/ui/modals/shared/ConfirmModal";
 import {
   Video, Calendar, Clock, User, Search, ExternalLink, Copy,
   LayoutList, CalendarDays, ChevronLeft, ChevronRight,
-  CheckCircle2, PlayCircle, Zap, AlertCircle, Plus,
+  CheckCircle2, PlayCircle, Zap, AlertCircle, Plus, Trash2,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { toast } from "sonner";
@@ -55,7 +56,7 @@ function formatTime(iso: string) {
 }
 
 export default function ReunioesList() {
-  const { reunioes } = useData();
+  const { reunioes, deleteReuniao } = useData();
   const navigate = useNavigate();
   const [view, setView] = useState<ViewMode>("lista");
   const [search, setSearch] = useState("");
@@ -64,6 +65,7 @@ export default function ReunioesList() {
   const [calMonth, setCalMonth] = useState(() => new Date().getMonth());
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showNovaReuniao, setShowNovaReuniao] = useState(false);
+  const [reuniaoToDelete, setReuniaoToDelete] = useState<string | null>(null);
 
   const all = reunioes as Reuniao[];
 
@@ -256,21 +258,30 @@ export default function ReunioesList() {
                         >
                           <Video className="w-3 h-3 mr-1.5" /> Entrar
                         </Button>
-                        <button
-                          onClick={() => { navigator.clipboard.writeText(r.meetLink); toast.success("Link copiado!"); }}
-                          className="h-8 px-2.5 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] rounded-xl text-slate-500 hover:text-white transition-all"
-                          title="Copiar link"
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                        </button>
-                        <a href={r.meetLink} target="_blank" rel="noopener noreferrer">
+                        <div className="flex items-center gap-0.5 bg-white/[0.03] border border-white/[0.08] rounded-xl p-0.5 shrink-0">
                           <button
-                            className="h-8 px-2.5 bg-white/[0.03] hover:bg-white/[0.07] border border-white/[0.08] rounded-xl text-slate-500 hover:text-white transition-all"
-                            title="Abrir no Meet"
+                            onClick={() => { navigator.clipboard.writeText(r.meetLink); toast.success("Link copiado!"); }}
+                            className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-white/[0.07] transition-all"
+                            title="Copiar link"
                           >
-                            <ExternalLink className="w-3.5 h-3.5" />
+                            <Copy className="w-3.5 h-3.5" />
                           </button>
-                        </a>
+                          <a href={r.meetLink} target="_blank" rel="noopener noreferrer">
+                            <button
+                              className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-white hover:bg-white/[0.07] transition-all"
+                              title="Abrir no Meet"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </button>
+                          </a>
+                          <button
+                            onClick={() => setReuniaoToDelete(r.id)}
+                            className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                            title="Excluir reunião"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     </Card>
                   ))}
@@ -376,12 +387,21 @@ export default function ReunioesList() {
                             <span className="text-slate-600">·</span>
                             <span className="flex items-center gap-1 truncate"><User className="w-3 h-3 shrink-0" />{r.closerName || "—"}</span>
                           </div>
-                          <Button
-                            onClick={() => navigate(`/app/reunioes/${r.id}`)}
-                            className="w-full bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 border border-blue-500/20 h-8 text-[10px] font-black uppercase tracking-widest rounded-xl"
-                          >
-                            <Video className="w-3 h-3 mr-1.5" /> Entrar na Reunião
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              onClick={() => navigate(`/app/reunioes/${r.id}`)}
+                              className="flex-1 bg-blue-500/15 hover:bg-blue-500/25 text-blue-400 border border-blue-500/20 h-8 text-[10px] font-black uppercase tracking-widest rounded-xl"
+                            >
+                              <Video className="w-3 h-3 mr-1.5" /> Entrar na Reunião
+                            </Button>
+                            <button
+                              onClick={() => setReuniaoToDelete(r.id)}
+                              className="h-8 w-8 flex items-center justify-center rounded-xl border border-white/[0.08] text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-all shrink-0"
+                              title="Excluir reunião"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </Card>
                       ))}
                     </div>
@@ -476,6 +496,19 @@ export default function ReunioesList() {
       <NovaReuniaoModal
         isOpen={showNovaReuniao}
         onClose={() => setShowNovaReuniao(false)}
+      />
+
+      <ConfirmModal
+        isOpen={reuniaoToDelete !== null}
+        onClose={() => setReuniaoToDelete(null)}
+        onConfirm={() => {
+          if (reuniaoToDelete) {
+            deleteReuniao(reuniaoToDelete);
+            toast.success("Reunião excluída com sucesso!");
+          }
+        }}
+        title="Confirmar Exclusão de Reunião"
+        message="Tem certeza de que deseja remover permanentemente esta reunião? Os dados associados não poderão ser recuperados."
       />
     </PageContainer>
   );

@@ -87,20 +87,21 @@ export function AdminMetasConfig({
   }, [financeEntries]);
 
   return (
-    <div className="space-y-6">
-      
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+      <div className="space-y-4">
+
       {/* Dynamic Distribution Chart */}
-      <Card className="p-5 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl shrink-0 rounded-3xl">
+      <Card className="p-4 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl shrink-0 rounded-3xl">
         <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-1">Evolução do Faturamento</h4>
-        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-4">Total faturado no tempo</span>
+        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-3">Total faturado no tempo</span>
 
         {salesEvolutionData.length === 0 ? (
-          <div className="h-44 w-full flex flex-col items-center justify-center opacity-40 gap-2">
+          <div className="h-28 w-full flex flex-col items-center justify-center opacity-40 gap-2">
             <Inbox className="w-8 h-8 text-slate-500" />
             <span className="text-[10px] font-black uppercase text-slate-500">Sem dados financeiros de recebimento.</span>
           </div>
         ) : (
-          <div className="h-44 w-full">
+          <div className="h-28 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={salesEvolutionData}>
                 <XAxis dataKey="name" stroke="#64748b" fontSize={9} tickLine={false} />
@@ -117,13 +118,63 @@ export function AdminMetasConfig({
         )}
       </Card>
 
+      {/* Alert and Warning center feeds */}
+      <Card className="p-4 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl shrink-0 rounded-3xl">
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-xs font-bold text-white uppercase tracking-wider">Histórico de Alertas & Gatilhos</h4>
+          <span className="w-2 h-2 rounded-full bg-emerald-500" />
+        </div>
+
+        <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+          {alerts.map((alert) => (
+            <div key={alert.id} className="p-2.5 rounded-xl bg-white/[0.01] border border-white/5 flex gap-2 w-full text-left">
+              {alert.type === "success" ? (
+                <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              ) : alert.type === "warning" ? (
+                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              ) : (
+                <AlertTriangle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] text-slate-300 font-medium leading-relaxed">
+                  {alert.message}
+                </p>
+                <span className="text-[8px] font-bold text-slate-600 block mt-1 font-mono uppercase">
+                  {alert.time}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <Button
+          className="w-full mt-3 border border-dashed border-white/10 hover:border-white/20 bg-transparent text-slate-500 hover:text-slate-300 text-[10px] font-bold uppercase tracking-wider cursor-pointer"
+          onClick={() => {
+            setAlerts(p => [
+              {
+                id: Date.now().toString(),
+                time: "Agora",
+                type: "info",
+                message: "Log de alertas atualizado de acordo com o funil comercial."
+              },
+              ...p
+            ]);
+            toast.success("Logs recarregados em tempo de execução!");
+          }}
+        >
+          Recarregar Alertas
+        </Button>
+      </Card>
+
+      </div>
+
       {/* Formulário de Configuração - Área do Administrador */}
-      <Card className="p-5 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl shrink-0 rounded-3xl">
+      <Card className="p-4 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl shrink-0 rounded-3xl">
         <div className="flex items-center gap-2 mb-1">
           <Target className="w-4 h-4 text-blue-400" />
           <h4 className="text-xs font-bold text-white uppercase tracking-wider">Configuração de Metas (Admin)</h4>
         </div>
-        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-4">Ajustar faturamento OTE e períodos das equipes</span>
+        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest block mb-3">Ajustar faturamento OTE e períodos das equipes</span>
 
         <form onSubmit={(e) => {
           e.preventDefault();
@@ -141,7 +192,7 @@ export function AdminMetasConfig({
             return s;
           }));
           toast.success(`Configurações de metas salvas para o ${formName}!`);
-        }} className="space-y-4">
+        }} className="space-y-2.5">
           
           {/* Seleção do Squad */}
           <div className="space-y-1">
@@ -285,54 +336,6 @@ export function AdminMetasConfig({
             </Button>
           </div>
         </form>
-      </Card>
-
-      {/* Alert and Warning center feeds */}
-      <Card className="p-5 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl shrink-0 rounded-3xl">
-        <div className="flex items-center justify-between mb-4">
-          <h4 className="text-xs font-bold text-white uppercase tracking-wider">Histórico de Alertas & Gatilhos</h4>
-          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-        </div>
-
-        <div className="space-y-3">
-          {alerts.map((alert) => (
-            <div key={alert.id} className="p-3 rounded-xl bg-white/[0.01] border border-white/5 flex gap-2 w-full text-left">
-              {alert.type === "success" ? (
-                <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              ) : alert.type === "warning" ? (
-                <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-              ) : (
-                <AlertTriangle className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-              )}
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] text-slate-300 font-medium leading-relaxed">
-                  {alert.message}
-                </p>
-                <span className="text-[8px] font-bold text-slate-600 block mt-1 font-mono uppercase">
-                  {alert.time}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <Button 
-          className="w-full mt-4 border border-dashed border-white/10 hover:border-white/20 bg-transparent text-slate-500 hover:text-slate-300 text-[10px] font-bold uppercase tracking-wider cursor-pointer"
-          onClick={() => {
-            setAlerts(p => [
-              {
-                id: Date.now().toString(),
-                time: "Agora",
-                type: "info",
-                message: "Log de alertas atualizado de acordo com o funil comercial."
-              },
-              ...p
-            ]);
-            toast.success("Logs recarregados em tempo de execução!");
-          }}
-        >
-          Recarregar Alertas
-        </Button>
       </Card>
 
     </div>

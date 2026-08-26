@@ -733,6 +733,34 @@ Responda APENAS com este JSON:
   }
 });
 
+// ── Aurora (chat com o G-TECH AI OS, embutido no Axis) ─────────────────────
+// Proxy autenticado para o webhook do Chat Trigger da Aurora no n8n (workflow AURORA CORE).
+// A URL do webhook nunca chega ao navegador — só este backend a conhece (AURORA_WEBHOOK_URL).
+app.post("/api/ai/aurora-chat", requireUser, async (req: any, res: any) => {
+  const { message } = req.body ?? {};
+  if (!message?.trim()) return res.status(400).json({ error: "Mensagem vazia." });
+
+  const webhookUrl = process.env.AURORA_WEBHOOK_URL;
+  if (!webhookUrl) return res.status(503).json({ error: "Aurora não está configurada neste ambiente." });
+
+  // sessionId estável por usuário (não vem do cliente) — cada usuário master mantém uma
+  // única conversa contínua com a Aurora, aproveitando a memória real dela (últimas 50
+  // mensagens por sessionId).
+  const sessionId = `axis-aurora-${req.user.id}`;
+
+  try {
+    const { data } = await axios.post(
+      webhookUrl,
+      { action: "sendMessage", sessionId, chatInput: message },
+      { timeout: 60000 }
+    );
+    return res.json({ output: data?.output ?? "" });
+  } catch (err: any) {
+    console.error("[Aurora Chat]", err?.response?.data ?? err?.message);
+    return res.status(502).json({ error: "Aurora está indisponível agora." });
+  }
+});
+
 // ── Correção ortográfica de notas ─────────────────────────────────────────────
 app.post("/api/ai/corrigir-nota", requireUser, async (req: any, res: any) => {
   const { texto } = req.body ?? {};

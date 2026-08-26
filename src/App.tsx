@@ -196,6 +196,7 @@ function AppContent() {
             <Route path="metas" element={<FinanceiroMetas />} />
             <Route path="categorias" element={<SettingsGenericForm />} />
             <Route path="configuracoes" element={<FinanceiroConfiguracoes />} />
+            <Route path="configuracoes/:section" element={<FinanceiroConfiguracoes />} />
             <Route path="*" element={<GenericPlaceholder />} />
           </Route>
 
