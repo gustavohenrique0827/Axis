@@ -78,7 +78,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const [financeEntries, setFinanceEntries] = useState<FinanceEntry[]>([]);
 
+  // Mapa genérico key -> value de app_settings, para telas de configuração
+  // que não precisam de um campo dedicado no contexto (ver saveAppSetting).
+  const [appSettings, setAppSettings] = useState<Record<string, any>>({});
+  // Sinaliza que a busca inicial de app_settings já rodou (mesmo que não
+  // exista nenhuma linha ainda) — telas que fazem auto-save de config
+  // hidratada usam isso pra saber quando é seguro persistir, em vez de
+  // inferir "carregou" só pela presença de uma chave específica (que nunca
+  // existiria pra um tenant novo, travando o auto-save pra sempre).
+  const [appSettingsLoaded, setAppSettingsLoaded] = useState(false);
+
   const syncSetting = async (key: string, value: any) => {
+    setAppSettings(prev => ({ ...prev, [key]: value }));
     if (!supabase || !tenantId) return;
     try {
       // Escopado por tenant explicitamente — sem isso, duas empresas usando a
@@ -231,6 +242,74 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setEvolutionWebhookUrl(url);
   };
 
+  // ─── Funis do CRM (crm_funis) ────────────────────────────────────────────
+  // Substitui o antigo "axis_funis_config" (localStorage + app_settings sem
+  // filtro de tenant) pela tabela dedicada que já existia sem uso.
+  const [funis, setFunis] = useState<any[]>([]);
+
+  const rowToFunil = (r: any) => ({
+    id: r.id,
+    nome: r.nome,
+    tipo: r.tipo,
+    etapas: r.etapas || [],
+    etapasConfig: r.etapas_config?.length ? r.etapas_config : undefined,
+    ativo: r.ativo,
+    clientIds: r.client_ids || [],
+    sdrEtapaEntrada: r.sdr_etapa_entrada || '',
+    sdrEtapaHandoff: r.sdr_etapa_handoff || '',
+    sdrScoreMinimo: r.sdr_score_minimo ?? 65,
+    sdrDelayResposta: r.sdr_delay_resposta ?? 2,
+    sdrMsgBoasVindas: r.sdr_msg_boas_vindas || '',
+    sdrCriterioDesqualificacao: r.sdr_criterio_desqualificacao || 'sem_interesse',
+  });
+
+  const funilToRow = (f: any) => ({
+    ...(f.id ? { id: f.id } : {}),
+    ...(f.nome !== undefined ? { nome: f.nome } : {}),
+    ...(f.tipo !== undefined ? { tipo: f.tipo } : {}),
+    ...(f.etapas !== undefined ? { etapas: f.etapas } : {}),
+    ...(f.etapasConfig !== undefined ? { etapas_config: f.etapasConfig || [] } : {}),
+    ...(f.ativo !== undefined ? { ativo: f.ativo } : {}),
+    ...(f.clientIds !== undefined ? { client_ids: f.clientIds || [] } : {}),
+    ...(f.sdrEtapaEntrada !== undefined ? { sdr_etapa_entrada: f.sdrEtapaEntrada } : {}),
+    ...(f.sdrEtapaHandoff !== undefined ? { sdr_etapa_handoff: f.sdrEtapaHandoff } : {}),
+    ...(f.sdrScoreMinimo !== undefined ? { sdr_score_minimo: f.sdrScoreMinimo } : {}),
+    ...(f.sdrDelayResposta !== undefined ? { sdr_delay_resposta: f.sdrDelayResposta } : {}),
+    ...(f.sdrMsgBoasVindas !== undefined ? { sdr_msg_boas_vindas: f.sdrMsgBoasVindas } : {}),
+    ...(f.sdrCriterioDesqualificacao !== undefined ? { sdr_criterio_desqualificacao: f.sdrCriterioDesqualificacao } : {}),
+  });
+
+  const fetchFunis = async () => {
+    if (!supabase) return;
+    const { data } = await supabase.from('crm_funis').select('*');
+    if (data) setFunis(data.map(rowToFunil));
+  };
+
+  const addFunil = async (f: any) => {
+    const newFunil = { ...f, id: f.id || Math.random().toString(36).slice(2) };
+    setFunis(prev => [...prev, newFunil]);
+    if (supabase) {
+      const { error } = await supabase.from('crm_funis').insert(funilToRow(newFunil));
+      if (error) { console.error('[Supabase] insert crm_funis error:', error.message); toast.error(`Erro ao salvar funil: ${error.message}`); }
+    }
+  };
+
+  const updateFunil = async (id: string, updates: any) => {
+    setFunis(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
+    if (supabase) {
+      const { error } = await supabase.from('crm_funis').update(funilToRow(updates)).eq('id', id);
+      if (error) console.error('[Supabase] update crm_funis error:', error.message);
+    }
+  };
+
+  const deleteFunil = async (id: string) => {
+    setFunis(prev => prev.filter(f => f.id !== id));
+    if (supabase) {
+      const { error } = await supabase.from('crm_funis').delete().eq('id', id);
+      if (error) console.error('[Supabase] delete crm_funis error:', error.message);
+    }
+  };
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const [marketingAutomations, setMarketingAutomations] = useState<any[]>([]);
@@ -247,6 +326,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [squadMetas, setSquadMetas] = useState<any[]>([]);
   const [financialGoals, setFinancialGoals] = useState<any[]>([]);
   const [cargos, setCargos] = useState<any[]>([]);
+  const [empresaFiliais, setEmpresaFiliais] = useState<any[]>([]);
+  const [financeCommissionEntries, setFinanceCommissionEntries] = useState<any[]>([]);
+  const [financeCategories, setFinanceCategories] = useState<any[]>([]);
+  const [scheduledExports, setScheduledExports] = useState<any[]>([]);
+  const [educationContent, setEducationContent] = useState<any[]>([]);
   const [clienteBase, setClienteBase] = useState<any[]>([]);
 
   const addStudent = async (student: any) => {
@@ -302,6 +386,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'cargos' }, () => fetchTableData('cargos', setCargos))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'certificates' }, () => fetchTableData('certificates', setCertificates))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'reunioes' }, () => fetchTableData('reunioes', setReunioes as any))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'crm_funis' }, () => fetchFunis())
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'empresa_filiais' }, () => fetchTableData('empresa_filiais', setEmpresaFiliais))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_commission_entries' }, () => fetchTableData('finance_commission_entries', setFinanceCommissionEntries))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_categories' }, () => fetchTableData('finance_categories', setFinanceCategories))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'scheduled_exports' }, () => fetchTableData('scheduled_exports', setScheduledExports))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'education_content' }, () => fetchTableData('education_content', setEducationContent))
         .subscribe();
     }
 
@@ -325,7 +415,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes,
               notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
               productsRes, proposalsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
-              clienteBaseRes, reunioesRes, financialGoalsRes
+              clienteBaseRes, reunioesRes, financialGoalsRes, funisRes, filiaisRes,
+              commissionEntriesRes, financeCategoriesRes, scheduledExportsRes, educationContentRes
             ] = await Promise.all([
               supabase.from('leads').select('*').eq('tenant_id', tenantId),
               supabase.from('tasks').select('*').eq('tenant_id', tenantId),
@@ -351,6 +442,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('clientes').select('*').eq('tenant_id', tenantId),
               supabase.from('reunioes').select('*').eq('tenant_id', tenantId),
               supabase.from('financial_goals').select('*').eq('tenant_id', tenantId),
+              supabase.from('crm_funis').select('*').eq('tenant_id', tenantId),
+              supabase.from('empresa_filiais').select('*').eq('tenant_id', tenantId),
+              supabase.from('finance_commission_entries').select('*').eq('tenant_id', tenantId),
+              supabase.from('finance_categories').select('*').eq('tenant_id', tenantId),
+              supabase.from('scheduled_exports').select('*').eq('tenant_id', tenantId),
+              supabase.from('education_content').select('*').eq('tenant_id', tenantId),
             ]);
 
             if (!leadsRes.error && leadsRes.data && leadsRes.data.length > 0) setLeads(leadsRes.data as Lead[]);
@@ -385,9 +482,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!cargosRes.error && cargosRes.data) setCargos(cargosRes.data);
             if (!clienteBaseRes.error && clienteBaseRes.data) setClienteBase(clienteBaseRes.data);
             if (!reunioesRes.error && reunioesRes.data) setReunioes(reunioesRes.data as Reuniao[]);
+            if (!funisRes.error && funisRes.data) setFunis(funisRes.data.map(rowToFunil));
+            if (!filiaisRes.error && filiaisRes.data) setEmpresaFiliais(filiaisRes.data);
+            if (!commissionEntriesRes.error && commissionEntriesRes.data) setFinanceCommissionEntries(commissionEntriesRes.data);
+            if (!financeCategoriesRes.error && financeCategoriesRes.data) setFinanceCategories(financeCategoriesRes.data);
+            if (!scheduledExportsRes.error && scheduledExportsRes.data) setScheduledExports(scheduledExportsRes.data);
+            if (!educationContentRes.error && educationContentRes.data) setEducationContent(educationContentRes.data);
 
             if (!settingsRes.error && settingsRes.data) {
+              const settingsMap: Record<string, any> = {};
               settingsRes.data.forEach((setting: any) => {
+                settingsMap[setting.key] = setting.value;
                 switch (setting.key) {
                   case 'globalWebhooks': setGlobalWebhooks(setting.value); break;
                   case 'customLeadFields': setCustomLeadFields(setting.value); break;
@@ -395,6 +500,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                   case 'axis_sidebar_modules': setSidebarModulesState(setting.value); break;
                 }
               });
+              setAppSettings(settingsMap);
+              setAppSettingsLoaded(true);
             }
             console.log('[DataContext] ✅ Dados carregados do Supabase.');
         } catch (err) {
@@ -957,6 +1064,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const mktAutoCrud = createCrudHelper('marketing_automations', setMarketingAutomations);
   const squadMetaCrud = createCrudHelper('squad_metas', setSquadMetas);
   const cargoCrud = createCrudHelper('cargos', setCargos);
+  const empresaFilialCrud = createCrudHelper('empresa_filiais', setEmpresaFiliais);
+  const commissionEntryCrud = createCrudHelper('finance_commission_entries', setFinanceCommissionEntries);
+  const financeCategoryCrud = createCrudHelper('finance_categories', setFinanceCategories);
+  const scheduledExportCrud = createCrudHelper('scheduled_exports', setScheduledExports);
+  const educationContentCrud = createCrudHelper('education_content', setEducationContent);
+  const certCrud = createCrudHelper('certificates', setCertificates);
 
   const addFinanceEntry = async (entry: Omit<FinanceEntry, 'id'>) => {
     const newEntry = { ...entry, id: `f${Math.random().toString(36).substring(2, 9)}` };
@@ -1061,6 +1174,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       sidebarModules,
       setSidebarModules,
       saveAppSetting,
+      appSettings,
+      appSettingsLoaded,
       globalWebhooks,
       addGlobalWebhook,
       updateGlobalWebhook,
@@ -1070,6 +1185,33 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       updateSquad,
       addSquad,
       deleteSquad,
+      funis,
+      addFunil,
+      updateFunil,
+      deleteFunil,
+      empresaFiliais,
+      addEmpresaFilial: empresaFilialCrud.add,
+      updateEmpresaFilial: empresaFilialCrud.update,
+      deleteEmpresaFilial: empresaFilialCrud.del,
+      financeCommissionEntries,
+      addFinanceCommissionEntry: commissionEntryCrud.add,
+      updateFinanceCommissionEntry: commissionEntryCrud.update,
+      deleteFinanceCommissionEntry: commissionEntryCrud.del,
+      financeCategories,
+      addFinanceCategory: financeCategoryCrud.add,
+      updateFinanceCategory: financeCategoryCrud.update,
+      deleteFinanceCategory: financeCategoryCrud.del,
+      scheduledExports,
+      addScheduledExport: scheduledExportCrud.add,
+      updateScheduledExport: scheduledExportCrud.update,
+      deleteScheduledExport: scheduledExportCrud.del,
+      educationContent,
+      addEducationContent: educationContentCrud.add,
+      updateEducationContent: educationContentCrud.update,
+      deleteEducationContent: educationContentCrud.del,
+      addCertificate: certCrud.add,
+      updateCertificate: certCrud.update,
+      deleteCertificate: certCrud.del,
       marketingAutomations,
       setMarketingAutomations,
       addMarketingAutomation: mktAutoCrud.add,

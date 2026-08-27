@@ -6,6 +6,7 @@ import confetti from "canvas-confetti";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
+import { FUNIS_DEFAULT } from "../settings/sections/crm/funisTypes";
 
 // Matches ETAPA_CORES in SettingsCRM
 const ETAPA_DOT_COLORS: Record<string, string> = {
@@ -21,57 +22,6 @@ function getStageId(funilId: string, idx: number): string {
   return `${funilId}-${idx}`;
 }
 
-const SDR_DEFAULT_STAGES = ["Triagem SDR", "Contato Efetuado", "Qualificação SDR", "Reunião Agendada", "Promovido Closer"];
-
-function migrateParsed(parsed: any[]): { result: any[]; changed: boolean } {
-  let changed = false;
-  const result = parsed.map((f: any) => {
-    if (f.id === "funil-sdr-ia-default") {
-      const isCurrent = JSON.stringify(f.etapas) === JSON.stringify(SDR_DEFAULT_STAGES);
-      if (!isCurrent) {
-        changed = true;
-        return { ...f, etapas: SDR_DEFAULT_STAGES, etapasConfig: undefined, sdrEtapaEntrada: "Triagem SDR", sdrEtapaHandoff: "Promovido Closer" };
-      }
-    }
-    return f;
-  });
-  return { result, changed };
-}
-
-function loadFunis(): any[] {
-  try {
-    const saved = localStorage.getItem("axis_funis_config");
-    if (!saved) return [];
-    const { result, changed } = migrateParsed(JSON.parse(saved));
-    if (changed) localStorage.setItem("axis_funis_config", JSON.stringify(result));
-    return result;
-  } catch {}
-  return [];
-}
-
-async function loadFunisFromDB(): Promise<any[] | null> {
-  if (!supabase) return null;
-  try {
-    const { data } = await supabase
-      .from("app_settings")
-      .select("value")
-      .eq("key", "axis_funis_config")
-      .maybeSingle();
-    if (!data?.value) return null;
-    const parsed: any[] = Array.isArray(data.value) ? data.value : JSON.parse(data.value);
-    const { result, changed } = migrateParsed(parsed);
-    // Write back to localStorage so next load is fast
-    localStorage.setItem("axis_funis_config", JSON.stringify(result));
-    if (changed) {
-      // Also update DB to migrated version
-      await supabase.from("app_settings").update({ value: result }).eq("key", "axis_funis_config");
-    }
-    return result;
-  } catch {
-    return null;
-  }
-}
-
 export function usePipeline() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
@@ -83,7 +33,7 @@ export function usePipeline() {
   const [tempDropdownId, setTempDropdownId] = useState<string | null>(null);
   const [webhookModalLead, setWebhookModalLead] = useState<any>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
-  const { leads, updateLead, tasks, addTask, products, clienteBase } = useData();
+  const { leads, updateLead, tasks, addTask, products, clienteBase, funis: dataFunis } = useData();
   const { user, allTenantModules, tenantIdMap } = useAuth();
 
   const isMaster = user?.isMaster || user?.tenantName?.includes("G-Tech");
@@ -106,30 +56,9 @@ export function usePipeline() {
   const [draggedOverStageId, setDraggedOverStageId] = useState<string | null>(null);
   const [draggedColumnId, setDraggedColumnId] = useState<string | null>(null);
 
-  // ─── Funis config from settings (axis_funis_config) ─────────────────────────
-  const [funisConfig, setFunisConfig] = useState<any[]>(loadFunis);
-
-  // On mount: load from DB (source of truth) and merge into state
-  useEffect(() => {
-    loadFunisFromDB().then(dbFunis => {
-      if (dbFunis && dbFunis.length > 0) {
-        setFunisConfig(dbFunis);
-      }
-    });
-  }, []);
-
-  // Sync when settings page saves (same-tab won't fire StorageEvent, so also poll on focus and custom event)
-  useEffect(() => {
-    const syncFromStorage = () => setFunisConfig(loadFunis());
-    window.addEventListener("storage", syncFromStorage);
-    window.addEventListener("focus", syncFromStorage);
-    window.addEventListener("axis_funis_updated", syncFromStorage);
-    return () => {
-      window.removeEventListener("storage", syncFromStorage);
-      window.removeEventListener("focus", syncFromStorage);
-      window.removeEventListener("axis_funis_updated", syncFromStorage);
-    };
-  }, []);
+  // Funis vêm do Supabase (crm_funis, via DataContext) em tempo real; sem
+  // config salva ainda, cai nos padrões só em memória (nada é gravado sozinho).
+  const funisConfig: any[] = dataFunis.length > 0 ? dataFunis : FUNIS_DEFAULT;
 
   const allActiveFunis = useMemo(() => {
     const active = funisConfig.filter((f) => f.ativo !== false);

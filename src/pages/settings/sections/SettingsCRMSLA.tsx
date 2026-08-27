@@ -3,6 +3,7 @@ import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Clock, ShieldAlert, Sparkles, Check, AlertTriangle, ArrowRight, UserCheck, Flame } from "lucide-react";
 import { toast } from "sonner";
+import { useData } from "../../../contexts/DataContext";
 
 interface SLARule {
   priority: "Alta" | "Média" | "Baixa";
@@ -13,6 +14,7 @@ interface SLARule {
   color: string;
 }
 
+const SLA_SETTING_KEY = "crm_sla_rules";
 const DEFAULT_SLA_RULES: SLARule[] = [
   { priority: "Alta", limitHours: 2, alertBeforeMinutes: 30, autoReassign: true, active: true, color: "#EF4444" },
   { priority: "Média", limitHours: 8, alertBeforeMinutes: 60, autoReassign: false, active: true, color: "#F59E0B" },
@@ -20,21 +22,21 @@ const DEFAULT_SLA_RULES: SLARule[] = [
 ];
 
 export function ConfigCRMSLA() {
-  const [slaRules, setSlaRules] = useState<SLARule[]>(() => {
-    const saved = localStorage.getItem("axis_crm_sla_rules");
-    return saved ? JSON.parse(saved) : DEFAULT_SLA_RULES;
-  });
+  const { appSettings, saveAppSetting } = useData();
+  const savedRules: SLARule[] | undefined = appSettings?.[SLA_SETTING_KEY];
+  const [localRules, setLocalRules] = useState<SLARule[] | null>(null);
+  const slaRules = localRules ?? savedRules ?? DEFAULT_SLA_RULES;
 
   const [activePriority, setActivePriority] = useState<"Alta" | "Média" | "Baixa">("Alta");
 
   const currentRule = slaRules.find(r => r.priority === activePriority) || slaRules[0];
 
   const updateCurrentRule = (updates: Partial<SLARule>) => {
-    setSlaRules(prev => prev.map(r => r.priority === activePriority ? { ...r, ...updates } : r));
+    setLocalRules(slaRules.map(r => r.priority === activePriority ? { ...r, ...updates } : r));
   };
 
-  const handleSaveSla = () => {
-    localStorage.setItem("axis_crm_sla_rules", JSON.stringify(slaRules));
+  const handleSaveSla = async () => {
+    await saveAppSetting(SLA_SETTING_KEY, slaRules);
     toast.success("Regras de SLA salvas com sucesso!");
   };
 

@@ -4,6 +4,8 @@ import { supabase, fetchTenants, fetchTenantIdMap, fetchUserProfile, updateTenan
 export type TenantNiche = "Master" | "Solar" | "Imobiliária" | "Clínica" | "Tecnologia" | "Parceira";
 
 export interface UserSession {
+  /** public.users.id — ausente em sessões demo (sem Supabase Auth real). */
+  id?: string;
   name: string;
   email: string;
   role: string;
@@ -14,6 +16,10 @@ export interface UserSession {
   /** Preenchido só para usuários de organizações parceiras (G-Tech, Pluppex Holding,
    *  outras parceiras) — origem: public.users.partner_id / public.partners. */
   partnerId?: string;
+  phone?: string;
+  bio?: string;
+  avatarUrl?: string;
+  twoFactorEnabled?: boolean;
 }
 
 export type TenantModules = Record<string, boolean>;
@@ -23,6 +29,7 @@ interface AuthContextType {
   authLoading: boolean;
   login: (user: UserSession) => void;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   isModuleEnabled: (moduleName: keyof TenantModules) => boolean;
   updateTenantModules: (tenantName: string, modules: TenantModules) => Promise<void>;
   getTenantModules: (tenantName: string) => TenantModules;
@@ -157,6 +164,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     supabase?.auth.signOut();
   };
 
+  // Re-busca o perfil em public.users — usado depois que uma tela (ex.: Meu
+  // Perfil) grava mudanças direto na tabela, pra refletir em todo o app
+  // (Topbar etc.) sem duplicar o dado em localStorage/eventos customizados.
+  const refreshUser = async () => {
+    if (!user?.id) return;
+    const profile = await fetchUserProfile(user.id);
+    if (profile.success) setUser(profile.user as UserSession);
+  };
+
   const getTenantModules = (tenant: string): TenantModules => {
     // Normalize string matching
     const keys = Object.keys(allTenantModules);
@@ -198,7 +214,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, authLoading, login, logout, isModuleEnabled, updateTenantModules, getTenantModules, allTenantModules, tenantIdMap }}>
+    <AuthContext.Provider value={{ user, authLoading, login, logout, refreshUser, isModuleEnabled, updateTenantModules, getTenantModules, allTenantModules, tenantIdMap }}>
       {children}
     </AuthContext.Provider>
   );

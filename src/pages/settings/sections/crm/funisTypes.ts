@@ -70,24 +70,3 @@ export function initStageConfigs(etapas: string[], existing?: StageConfig[]): St
     return ex ?? { nome, cor: CORES_LISTA[i % CORES_LISTA.length], iniciarMinimizado: false };
   });
 }
-
-const SDR_DEFAULT = FUNIS_DEFAULT.find(f => f.id === "funil-sdr-ia-default")!;
-const COMERCIAL_DEFAULT = FUNIS_DEFAULT.find(f => f.id === "funil-comercial-default")!;
-
-export function migrateFunis(saved: Funil[]): Funil[] {
-  let changed = false;
-  const out = saved.map(f => {
-    if (f.id === "funil-sdr-ia-default") {
-      const expected = SDR_DEFAULT.etapas;
-      const isCurrent = JSON.stringify(f.etapas) === JSON.stringify(expected);
-      if (!isCurrent) { changed = true; return { ...SDR_DEFAULT, ativo: f.ativo }; }
-    }
-    return f;
-  });
-  const hasSdr = out.some(f => f.id === "funil-sdr-ia-default");
-  const hasComercial = out.some(f => f.id === "funil-comercial-default");
-  if (!hasSdr) { out.unshift(SDR_DEFAULT); changed = true; }
-  if (!hasComercial) { out.unshift(COMERCIAL_DEFAULT); changed = true; }
-  if (changed) localStorage.setItem("axis_funis_config", JSON.stringify(out));
-  return out;
-}

@@ -9,6 +9,7 @@ import { ConteudoKPIs } from "./components/Conteudo/ConteudoKPIs";
 import { ConteudoFilters } from "./components/Conteudo/ConteudoFilters";
 import { ConteudoTable } from "./components/Conteudo/ConteudoTable";
 import { ConteudoKanban } from "./components/Conteudo/ConteudoKanban";
+import { useData } from "../../contexts/DataContext";
 import type { DropResult } from "@hello-pangea/dnd";
 
 interface ContentItem {
@@ -23,29 +24,27 @@ interface ContentItem {
   status: "Publicado" | "Rascunho" | "Em Revisão" | "Arquivado";
 }
 
+function rowToContent(r: any): ContentItem {
+  return {
+    id: r.id, title: r.title, type: r.type, module: r.module || "", course: r.course || "",
+    duration: r.duration || undefined, lastUpdate: r.last_update || "", accessCount: r.access_count || 0,
+    status: r.status,
+  };
+}
+
 export default function Conteudo() {
+  const { educationContent, addEducationContent, updateEducationContent } = useData();
   const [viewMode, setViewMode] = useState<"Table" | "Kanban">("Kanban");
-  const [content, setContent] = useState<ContentItem[]>(() => {
-    try {
-      const saved = localStorage.getItem("axis_edu_content");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return [];
-  });
+  const content: ContentItem[] = educationContent.map(rowToContent);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<ContentItem | null>(null);
 
-  const saveContent = (updated: ContentItem[]) => {
-    setContent(updated);
-    try { localStorage.setItem("axis_edu_content", JSON.stringify(updated)); } catch (e) {}
-  };
-
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     const newStatus = result.destination.droppableId as ContentItem["status"];
-    saveContent(content.map(item => item.id === result.draggableId ? { ...item, status: newStatus } : item));
+    updateEducationContent(result.draggableId, { status: newStatus });
     toast.success(`Material movido para ${newStatus}`);
   };
 
@@ -54,16 +53,15 @@ export default function Conteudo() {
 
   const handleSubmit = (data: { title: string; type: ContentItem["type"]; duration: string; course: string; module: string; status: ContentItem["status"] }) => {
     if (editingItem) {
-      saveContent(content.map(item => item.id === editingItem.id ? { ...item, ...data, duration: data.duration || undefined } : item));
+      updateEducationContent(editingItem.id, { ...data, duration: data.duration || null });
       toast.success("Material atualizado com sucesso!");
     } else {
-      saveContent([{
-        id: Math.random().toString(36).substring(2, 9),
+      addEducationContent({
         ...data,
-        duration: data.duration || undefined,
-        lastUpdate: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }),
-        accessCount: 0,
-      }, ...content]);
+        duration: data.duration || null,
+        last_update: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }),
+        access_count: 0,
+      });
       toast.success("Material adicionado com sucesso!");
     }
     handleClose();

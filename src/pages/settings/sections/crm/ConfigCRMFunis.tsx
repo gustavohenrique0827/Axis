@@ -6,12 +6,12 @@ import { Plus, Bot, ChevronRight, ChevronDown, ToggleLeft, ToggleRight, Pencil, 
 import { useData } from "../../../../contexts/DataContext";
 import { supabase } from "../../../../lib/supabase";
 import { toast } from "sonner";
-import { Funil, FUNIS_DEFAULT, ETAPA_CORES, initStageConfigs, migrateFunis } from "./funisTypes";
+import { Funil, FUNIS_DEFAULT, ETAPA_CORES, initStageConfigs } from "./funisTypes";
 import { EtapaCard } from "./EtapaCard";
 import { FunilModal } from "./FunilModal";
 
 export function ConfigCRMFunis() {
-  const { saveAppSetting } = useData();
+  const { funis: dbFunis, addFunil, updateFunil, deleteFunil } = useData();
   const [availableClients, setAvailableClients] = useState<string[]>([]);
 
   useEffect(() => {
@@ -21,98 +21,82 @@ export function ConfigCRMFunis() {
     });
   }, []);
 
-  const [funis, setFunis] = useState<Funil[]>(() => {
-    try {
-      const saved = localStorage.getItem("axis_funis_config");
-      return saved ? migrateFunis(JSON.parse(saved)) : FUNIS_DEFAULT;
-    } catch { return FUNIS_DEFAULT; }
-  });
+  // Tenant sem nenhum funil salvo ainda: mostra os padrões só na tela (não
+  // grava nada sozinho — vira registro real assim que o usuário salvar algo).
+  const funis: Funil[] = dbFunis.length > 0 ? dbFunis : FUNIS_DEFAULT;
   const [editingFunil, setEditingFunil] = useState<Funil | null | "new">(null);
   const [expandedId, setExpandedId] = useState<string | null>(null);
-
-  const persistFunis = async (next: Funil[]) => {
-    setFunis(next);
-    localStorage.setItem("axis_funis_config", JSON.stringify(next));
-    window.dispatchEvent(new Event("axis_funis_updated"));
-    try { await saveAppSetting("axis_funis_config", next); } catch { }
-  };
 
   const handleSave = async (f: Funil) => {
     const existing = funis.find(x => x.id === f.id);
     const mergedConfigs = initStageConfigs(f.etapas, existing?.etapasConfig);
     const funilWithConfigs = { ...f, etapasConfig: mergedConfigs };
-    const next = existing
-      ? funis.map(x => x.id === f.id ? funilWithConfigs : x)
-      : [...funis, funilWithConfigs];
-    await persistFunis(next);
+    if (existing) await updateFunil(f.id, funilWithConfigs);
+    else await addFunil(funilWithConfigs);
     toast.success(existing ? `Funil "${f.nome}" atualizado!` : `Funil "${f.nome}" criado!`);
     setEditingFunil(null);
   };
 
   const handleDelete = async (id: string) => {
-    await persistFunis(funis.filter(f => f.id !== id));
+    await deleteFunil(id);
     if (expandedId === id) setExpandedId(null);
     toast.success("Funil removido.");
   };
 
-  const handleToggle = async (id: string) =>
-    persistFunis(funis.map(f => f.id === id ? { ...f, ativo: !f.ativo } : f));
+  const handleToggle = async (id: string) => {
+    const f = funis.find(x => x.id === id);
+    if (f) await updateFunil(id, { ativo: !f.ativo });
+  };
 
   const handleStageUpdate = (funilId: string, idx: number, patch: Partial<{ nome: string; cor: string; iniciarMinimizado: boolean }>) => {
-    persistFunis(funis.map(f => {
-      if (f.id !== funilId) return f;
-      const configs = initStageConfigs(f.etapas, f.etapasConfig);
-      return { ...f, etapasConfig: configs.map((c, i) => i === idx ? { ...c, ...patch } : c) };
-    }));
+    const f = funis.find(x => x.id === funilId);
+    if (!f) return;
+    const configs = initStageConfigs(f.etapas, f.etapasConfig);
+    updateFunil(funilId, { etapasConfig: configs.map((c, i) => i === idx ? { ...c, ...patch } : c) });
   };
 
   const handleStageRename = (funilId: string, idx: number, newNome: string) => {
-    persistFunis(funis.map(f => {
-      if (f.id !== funilId) return f;
-      const configs = initStageConfigs(f.etapas, f.etapasConfig);
-      const oldNome = configs[idx].nome;
-      return {
-        ...f,
-        etapas: f.etapas.map((e, i) => i === idx ? newNome : e),
-        etapasConfig: configs.map((c, i) => i === idx ? { ...c, nome: newNome } : c),
-        sdrEtapaEntrada: f.sdrEtapaEntrada === oldNome ? newNome : f.sdrEtapaEntrada,
-        sdrEtapaHandoff: f.sdrEtapaHandoff === oldNome ? newNome : f.sdrEtapaHandoff,
-      };
-    }));
+    const f = funis.find(x => x.id === funilId);
+    if (!f) return;
+    const configs = initStageConfigs(f.etapas, f.etapasConfig);
+    const oldNome = configs[idx].nome;
+    updateFunil(funilId, {
+      etapas: f.etapas.map((e, i) => i === idx ? newNome : e),
+      etapasConfig: configs.map((c, i) => i === idx ? { ...c, nome: newNome } : c),
+      sdrEtapaEntrada: f.sdrEtapaEntrada === oldNome ? newNome : f.sdrEtapaEntrada,
+      sdrEtapaHandoff: f.sdrEtapaHandoff === oldNome ? newNome : f.sdrEtapaHandoff,
+    });
   };
 
   const handleStageDelete = (funilId: string, idx: number) => {
-    persistFunis(funis.map(f => {
-      if (f.id !== funilId) return f;
-      const configs = initStageConfigs(f.etapas, f.etapasConfig);
-      return { ...f, etapas: f.etapas.filter((_, i) => i !== idx), etapasConfig: configs.filter((_, i) => i !== idx) };
-    }));
+    const f = funis.find(x => x.id === funilId);
+    if (!f) return;
+    const configs = initStageConfigs(f.etapas, f.etapasConfig);
+    updateFunil(funilId, { etapas: f.etapas.filter((_, i) => i !== idx), etapasConfig: configs.filter((_, i) => i !== idx) });
   };
 
   const handleStageAdd = (funilId: string) => {
-    persistFunis(funis.map(f => {
-      if (f.id !== funilId) return f;
-      const configs = initStageConfigs(f.etapas, f.etapasConfig);
-      const newNome = `Nova Etapa ${configs.length + 1}`;
-      const newCor = ["blue", "orange", "cyan", "emerald", "purple", "rose", "amber", "indigo", "pink", "slate"][configs.length % 10];
-      return { ...f, etapas: [...f.etapas, newNome], etapasConfig: [...configs, { nome: newNome, cor: newCor, iniciarMinimizado: false }] };
-    }));
+    const f = funis.find(x => x.id === funilId);
+    if (!f) return;
+    const configs = initStageConfigs(f.etapas, f.etapasConfig);
+    const newNome = `Nova Etapa ${configs.length + 1}`;
+    const newCor = ["blue", "orange", "cyan", "emerald", "purple", "rose", "amber", "indigo", "pink", "slate"][configs.length % 10];
+    updateFunil(funilId, { etapas: [...f.etapas, newNome], etapasConfig: [...configs, { nome: newNome, cor: newCor, iniciarMinimizado: false }] });
   };
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
     const funilId = result.source.droppableId;
-    persistFunis(funis.map(f => {
-      if (f.id !== funilId) return f;
-      const configs = initStageConfigs(f.etapas, f.etapasConfig);
-      const newEtapas = [...f.etapas];
-      const newConfigs = [...configs];
-      const [etapa] = newEtapas.splice(result.source.index, 1);
-      const [config] = newConfigs.splice(result.source.index, 1);
-      newEtapas.splice(result.destination!.index, 0, etapa);
-      newConfigs.splice(result.destination!.index, 0, config);
-      return { ...f, etapas: newEtapas, etapasConfig: newConfigs };
-    }));
+    const f = funis.find(x => x.id === funilId);
+    if (!f) return;
+    const configs = initStageConfigs(f.etapas, f.etapasConfig);
+    const newEtapas = [...f.etapas];
+    const newConfigs = [...configs];
+    const [etapa] = newEtapas.splice(result.source.index, 1);
+    const [config] = newConfigs.splice(result.source.index, 1);
+    newEtapas.splice(result.destination!.index, 0, etapa);
+    newConfigs.splice(result.destination!.index, 0, config);
+    updateFunil(funilId, { etapas: newEtapas, etapasConfig: newConfigs });
   };
 
   return (

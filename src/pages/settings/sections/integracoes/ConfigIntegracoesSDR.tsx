@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
@@ -7,8 +7,9 @@ import { Switch } from "../../../../components/ui/switch";
 import { Badge } from "../../../../components/ui/badge";
 import { Zap, Send, Save, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import { useData } from "../../../../contexts/DataContext";
 
-const STORAGE_KEY = "axis_sdr_integrations_config";
+const SETTING_KEY = "integracoes_sdr_webhooks";
 
 const DEFAULT_SDR_INTEGRATIONS = {
   webhookUrl: "https://n8n.seumodelo.com/webhook/reuniao-agendada",
@@ -18,19 +19,22 @@ const DEFAULT_SDR_INTEGRATIONS = {
 };
 
 export function ConfigIntegracoesSDR() {
-  const [config, setConfig] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return DEFAULT_SDR_INTEGRATIONS;
-  });
+  const { appSettings, saveAppSetting } = useData();
+  const [config, setConfig] = useState(DEFAULT_SDR_INTEGRATIONS);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    if (hydrated) return;
+    const saved = appSettings?.[SETTING_KEY];
+    if (saved) { setConfig(saved); setHydrated(true); }
+  }, [appSettings, hydrated]);
 
   const [testing, setTesting] = useState(false);
 
   const saveConfig = (updated: typeof config) => {
     setConfig(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    setHydrated(true);
+    saveAppSetting(SETTING_KEY, updated);
   };
 
   const testWebhook = (event: string) => {

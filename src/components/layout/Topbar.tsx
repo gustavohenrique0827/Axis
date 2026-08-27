@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -49,67 +49,18 @@ export function Topbar({
     markAllNotificationsAsRead,
     theme,
     toggleTheme,
+    appSettings,
   } = useData();
 
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<NotificationTab>("todas");
 
-  const [liveProfile, setLiveProfile] = useState<{ name: string; avatar: string | null }>(() => {
-    try {
-      const saved = localStorage.getItem("axis_user_profile");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return { name: parsed.name || user?.name || "Gustavo Portilho", avatar: parsed.avatar || null };
-      }
-    } catch {}
-    return { name: user?.name || "Gustavo Portilho", avatar: null };
-  });
-
-  const [liveEmpresaName, setLiveEmpresaName] = useState<string>(() => {
-    try {
-      const saved = localStorage.getItem("axis_empresa_dados");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        return parsed.nomeFantasia || user?.tenantName || "Axis Corp";
-      }
-    } catch {}
-    return user?.tenantName || "Axis Corp";
-  });
-
-  React.useEffect(() => {
-    const handleProfileUpdate = () => {
-      try {
-        const saved = localStorage.getItem("axis_user_profile");
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          setLiveProfile({ name: parsed.name || user?.name || "Gustavo Portilho", avatar: parsed.avatar || null });
-        }
-      } catch {}
-    };
-
-    const handleEmpresaUpdate = () => {
-      try {
-        const saved = localStorage.getItem("axis_empresa_dados");
-        if (saved) {
-          const parsed = JSON.parse(saved);
-          setLiveEmpresaName(parsed.nomeFantasia || user?.tenantName || "Axis Corp");
-        }
-      } catch {}
-    };
-
-    window.addEventListener("axis_profile_updated", handleProfileUpdate);
-    window.addEventListener("axis_empresa_updated", handleEmpresaUpdate);
-    window.addEventListener("storage", handleProfileUpdate);
-    window.addEventListener("storage", handleEmpresaUpdate);
-
-    return () => {
-      window.removeEventListener("axis_profile_updated", handleProfileUpdate);
-      window.removeEventListener("axis_empresa_updated", handleEmpresaUpdate);
-      window.removeEventListener("storage", handleProfileUpdate);
-      window.removeEventListener("storage", handleEmpresaUpdate);
-    };
-  }, [user]);
+  // Nome/avatar do usuário e da empresa vêm do Supabase (public.users via
+  // AuthContext, app_settings via DataContext) — reativos automaticamente,
+  // sem localStorage nem eventos customizados.
+  const liveProfile = { name: user?.name || "Gustavo Portilho", avatar: user?.avatarUrl || null };
+  const liveEmpresaName = appSettings?.empresa_dados?.nomeFantasia || user?.tenantName || "Axis Corp";
 
   const unreadNotifications = notifications.filter((n) => !n.read).length;
   const userInitials = liveProfile.name ? liveProfile.name.substring(0, 2).toUpperCase() : "GT";

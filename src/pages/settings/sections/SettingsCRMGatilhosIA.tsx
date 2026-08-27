@@ -3,14 +3,8 @@ import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Zap, Plus, ArrowRight, ShieldCheck, Sparkles, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-
-interface LeadScoreTrigger {
-  id: string;
-  condition: "greater" | "less";
-  scoreThreshold: number;
-  targetStageId: string;
-  autoMessage: boolean;
-}
+import { useData } from "../../../contexts/DataContext";
+import { LeadScoreTrigger } from "../../../types";
 
 const DEFAULT_SDR_STAGES: Record<string, string> = {
   "sdr-1": "Novos Leads (Inbound)",
@@ -21,15 +15,7 @@ const DEFAULT_SDR_STAGES: Record<string, string> = {
 };
 
 export function ConfigCRMGatilhosIA() {
-  const [leadScoreTriggers, setLeadScoreTriggers] = useState<LeadScoreTrigger[]>(() => {
-    const saved = localStorage.getItem("axis_crm_lead_score_triggers");
-    return saved
-      ? JSON.parse(saved)
-      : [
-          { id: "1", condition: "greater", scoreThreshold: 80, targetStageId: "sdr-3", autoMessage: true },
-          { id: "2", condition: "less", scoreThreshold: 30, targetStageId: "sdr-5", autoMessage: false },
-        ];
-  });
+  const { leadScoreTriggers, setLeadScoreTriggers } = useData();
 
   const [condition, setCondition] = useState<"greater" | "less">("greater");
   const [scoreThreshold, setScoreThreshold] = useState<number>(75);
@@ -50,16 +36,12 @@ export function ConfigCRMGatilhosIA() {
       autoMessage,
     };
 
-    const updated = [...leadScoreTriggers, newTrigger];
-    setLeadScoreTriggers(updated);
-    localStorage.setItem("axis_crm_lead_score_triggers", JSON.stringify(updated));
+    setLeadScoreTriggers([...leadScoreTriggers, newTrigger]);
     toast.success("Regra de gatilho adicionada!");
   };
 
   const handleDelete = (id: string) => {
-    const updated = leadScoreTriggers.filter((t) => t.id !== id);
-    setLeadScoreTriggers(updated);
-    localStorage.setItem("axis_crm_lead_score_triggers", JSON.stringify(updated));
+    setLeadScoreTriggers(leadScoreTriggers.filter((t) => t.id !== id));
     toast.info("Regra de gatilho removida.");
   };
 

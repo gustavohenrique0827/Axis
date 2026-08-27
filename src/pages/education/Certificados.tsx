@@ -6,6 +6,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { CertificadosKPIs } from "./components/Certificados/CertificadosKPIs";
 import { CertificadosFilters } from "./components/Certificados/CertificadosFilters";
 import { CertificadosGrid } from "./components/Certificados/CertificadosGrid";
+import { useData } from "../../contexts/DataContext";
 
 interface Certificate {
   id: string;
@@ -17,14 +18,13 @@ interface Certificate {
   grade: string;
 }
 
+function rowToCert(r: any): Certificate {
+  return { id: r.id, student: r.student || "", course: r.course || "", issueDate: r.issue_date || "", code: r.code || "", status: r.status, grade: r.grade || "" };
+}
+
 export default function Certificados() {
-  const [certs, setCerts] = useState<Certificate[]>(() => {
-    try {
-      const saved = localStorage.getItem("axis_edu_certs");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return [];
-  });
+  const { certificates, addCertificate } = useData();
+  const certs: Certificate[] = certificates.map(rowToCert);
   const [search, setSearch] = useState("");
   const [isEmitModalOpen, setIsEmitModalOpen] = useState(false);
   const [studentName, setStudentName] = useState("");
@@ -33,16 +33,12 @@ export default function Certificados() {
 
   const handleSaveCertificate = (e: { preventDefault(): void }) => {
     e.preventDefault();
-    const newCert: Certificate = {
-      id: Math.random().toString(36).substring(2, 9),
+    addCertificate({
       student: studentName, course: courseName,
-      issueDate: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }),
+      issue_date: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }),
       code: `AX-${Math.floor(1000 + Math.random() * 9000)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`,
       status: "Emitido", grade: studentGrade,
-    };
-    const updated = [newCert, ...certs];
-    setCerts(updated);
-    localStorage.setItem("axis_edu_certs", JSON.stringify(updated));
+    });
     toast.success("Certificado emitido com sucesso!");
     setIsEmitModalOpen(false);
   };

@@ -4,6 +4,7 @@ import { Button } from "../../../../components/ui/button";
 import { Plus, Store, Trash2, MapPin, Building2 } from "lucide-react";
 import { NovaFilialModal } from "../../../../components/ui/modals/settings/NovaFilialModal";
 import { toast } from "sonner";
+import { useData } from "../../../../contexts/DataContext";
 
 interface Filial {
   id: string;
@@ -14,47 +15,24 @@ interface Filial {
   status: "Principal" | "Filial";
 }
 
-const INITIAL_FILIAIS: Filial[] = [
-  {
-    id: "f1",
-    nome: "Matriz Axis Corp",
-    cnpj: "12.345.678/0001-90",
-    cidade: "São Paulo",
-    estado: "SP",
-    status: "Principal",
-  },
-];
-
 export function ConfigEmpresaFiliais() {
+  const { empresaFiliais: filiais, addEmpresaFilial, deleteEmpresaFilial } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [filiais, setFiliais] = useState<Filial[]>(() => {
-    const saved = localStorage.getItem("axis_empresa_filiais");
-    return saved ? JSON.parse(saved) : INITIAL_FILIAIS;
-  });
-
-  const saveFiliais = (updated: Filial[]) => {
-    setFiliais(updated);
-    localStorage.setItem("axis_empresa_filiais", JSON.stringify(updated));
-  };
 
   const handleCreateFilial = (data: any) => {
-    const newF: Filial = {
-      id: Date.now().toString(),
+    addEmpresaFilial({
       nome: data.nome,
       cnpj: data.cnpj || "00.000.000/0001-00",
       cidade: data.cidade || "São Paulo",
       estado: data.estado || "SP",
       status: filiais.length === 0 ? "Principal" : "Filial",
-    };
-    const updated = [...filiais, newF];
-    saveFiliais(updated);
+    });
     toast.success(`Filial "${data.nome}" cadastrada com sucesso!`);
     setIsModalOpen(false);
   };
 
   const handleDeleteFilial = (id: string, nome: string) => {
-    const updated = filiais.filter(f => f.id !== id);
-    saveFiliais(updated);
+    deleteEmpresaFilial(id);
     toast.success(`Filial "${nome}" removida.`);
   };
 

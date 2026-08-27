@@ -7,36 +7,40 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import { toast } from "sonner";
 
-export default function FinanceiroDRE() {
-  const { financeEntries } = useData();
+const SETTING_KEY = "finance_dre_config";
 
-  // Load parameter inputs from local storage or defaults
-  const [impostoPct, setImpostoPct] = useState(() => {
-    return Number(localStorage.getItem("axis_dre_imposto_pct_v2") || "0");
-  });
-  const [cpvPct, setCpvPct] = useState(() => {
-    return Number(localStorage.getItem("axis_dre_cpv_pct_v2") || "0");
-  });
-  const [despesaPessoal, setDespesaPessoal] = useState(() => {
-    return Number(localStorage.getItem("axis_dre_pessoal_v2") || "0");
-  });
-  const [despesaMarketing, setDespesaMarketing] = useState(() => {
-    return Number(localStorage.getItem("axis_dre_marketing_v2") || "0");
-  });
-  const [despesaAdmin, setDespesaAdmin] = useState(() => {
-    return Number(localStorage.getItem("axis_dre_admin_v2") || "0");
-  });
+export default function FinanceiroDRE() {
+  const { financeEntries, appSettings, appSettingsLoaded, saveAppSetting } = useData();
+
+  const [impostoPct, setImpostoPct] = useState(0);
+  const [cpvPct, setCpvPct] = useState(0);
+  const [despesaPessoal, setDespesaPessoal] = useState(0);
+  const [despesaMarketing, setDespesaMarketing] = useState(0);
+  const [despesaAdmin, setDespesaAdmin] = useState(0);
+  const [hydrated, setHydrated] = useState(false);
 
   const [period, setPeriod] = useState<"mensal" | "trimestral" | "anual">("mensal");
 
-  // Sync state changes with localStorage
+  // Hidrata do Supabase (app_settings) uma vez quando os dados do tenant chegam
   useEffect(() => {
-    localStorage.setItem("axis_dre_imposto_pct_v2", impostoPct.toString());
-    localStorage.setItem("axis_dre_cpv_pct_v2", cpvPct.toString());
-    localStorage.setItem("axis_dre_pessoal_v2", despesaPessoal.toString());
-    localStorage.setItem("axis_dre_marketing_v2", despesaMarketing.toString());
-    localStorage.setItem("axis_dre_admin_v2", despesaAdmin.toString());
-  }, [impostoPct, cpvPct, despesaPessoal, despesaMarketing, despesaAdmin]);
+    if (hydrated || !appSettingsLoaded) return;
+    const saved = appSettings?.[SETTING_KEY];
+    if (saved) {
+      setImpostoPct(saved.impostoPct ?? 0);
+      setCpvPct(saved.cpvPct ?? 0);
+      setDespesaPessoal(saved.despesaPessoal ?? 0);
+      setDespesaMarketing(saved.despesaMarketing ?? 0);
+      setDespesaAdmin(saved.despesaAdmin ?? 0);
+    }
+    setHydrated(true);
+  }, [appSettings, appSettingsLoaded, hydrated]);
+
+  // Persiste no Supabase a cada mudança, só depois de hidratar (pra não
+  // sobrescrever dado real salvo com os zeros iniciais).
+  useEffect(() => {
+    if (!hydrated) return;
+    saveAppSetting(SETTING_KEY, { impostoPct, cpvPct, despesaPessoal, despesaMarketing, despesaAdmin });
+  }, [impostoPct, cpvPct, despesaPessoal, despesaMarketing, despesaAdmin, hydrated]);
 
   // Aggregate current actuals from the data provider
   const parsedData = useMemo(() => {

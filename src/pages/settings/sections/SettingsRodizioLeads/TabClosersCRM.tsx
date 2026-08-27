@@ -1,13 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
-  ToggleLeft, ToggleRight, Lock, Unlock, ChevronDown, RefreshCw, Users, ShieldCheck,
+  ToggleLeft, ToggleRight, Lock, Unlock, ChevronDown, Users,
 } from "lucide-react";
 import { Card } from "../../../../components/ui/card";
-import { supabase } from "../../../../lib/supabase";
+import { useData } from "../../../../contexts/DataContext";
 import { toast } from "sonner";
 
 interface CloserConfig {
+  id: string;
   name: string;
   email: string;
   active: boolean;
@@ -21,95 +22,64 @@ interface GlobalConfig {
   multiClientThreshold: number;
 }
 
-const STORAGE_KEY = "axis_rotation_config";
+const GLOBAL_CONFIG_KEY = "rodizio_global_config";
 const LEAD_TYPES_DEFAULT = ["Instagram", "WhatsApp", "Indicação", "Site", "Google Ads", "Cold Call", "LinkedIn", "Orgânico"];
+const DEFAULT_GLOBAL: GlobalConfig = { distributionMode: "round-robin", blockOnMultipleClients: false, multiClientThreshold: 2 };
 const DISTRIBUTION_MODES = [
   { value: "round-robin", label: "Round-Robin",  desc: "Cada lead vai para o próximo closer na fila" },
   { value: "priority",    label: "Prioridade",   desc: "Leads vão para o closer com menos atendimentos ativos" },
   { value: "manual",      label: "Manual",       desc: "Admin distribui manualmente cada lead" },
 ];
 
-function loadLocalConfig(): { closers: CloserConfig[]; global: GlobalConfig } {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
-  return { closers: [], global: { distributionMode: "round-robin", blockOnMultipleClients: false, multiClientThreshold: 2 } };
-}
-
-function saveLocalConfig(config: { closers: CloserConfig[]; global: GlobalConfig }) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-}
-
-const DEFAULT_CLOSERS: CloserConfig[] = [
-  { name: "Lucas Martins", email: "lucas.martins@axis.com", active: true, leadTypes: LEAD_TYPES_DEFAULT, blocked: false },
-  { name: "Mariana Rios", email: "mariana.rios@axis.com", active: true, leadTypes: LEAD_TYPES_DEFAULT, blocked: false },
-  { name: "Carlos Mendes", email: "carlos.mendes@axis.com", active: true, leadTypes: LEAD_TYPES_DEFAULT, blocked: false },
-  { name: "Fernanda Lima", email: "fernanda.lima@axis.com", active: true, leadTypes: LEAD_TYPES_DEFAULT, blocked: false },
-];
-
 export function TabClosersCRM() {
-  const [closers, setClosers] = useState<CloserConfig[]>([]);
-  const [global, setGlobal] = useState<GlobalConfig>({ distributionMode: "round-robin", blockOnMultipleClients: false, multiClientThreshold: 2 });
-  const [loading, setLoading] = useState(true);
+  const { colaboradores, updateColaborador, appSettings, saveAppSetting } = useData();
   const [expandedCloser, setExpanded] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function init() {
-      const saved = loadLocalConfig();
-      setGlobal(saved.global);
-      let dbClosers: Array<{ name: string; email: string }> = [];
-      if (supabase) {
-        const { data } = await supabase.from("colaboradores").select("nome, email, cargo").ilike("cargo", "%closer%").eq("status", "Ativo");
-        if (data?.length) dbClosers = data.map((d: any) => ({ name: d.nome, email: d.email || "" }));
-      }
-      const merged: CloserConfig[] = dbClosers.map(db => {
-        const existing = saved.closers.find(c => c.name === db.name);
-        return existing ?? { name: db.name, email: db.email, active: true, leadTypes: LEAD_TYPES_DEFAULT, blocked: false };
-      });
-      const resolved = merged.length > 0 ? merged : (saved.closers.length > 0 ? saved.closers : DEFAULT_CLOSERS);
-      setClosers(resolved);
-      saveLocalConfig({ closers: resolved, global: saved.global });
-      setLoading(false);
-    }
-    init();
-  }, []);
+  const global: GlobalConfig = useMemo(
+    () => ({ ...DEFAULT_GLOBAL, ...(appSettings?.[GLOBAL_CONFIG_KEY] || {}) }),
+    [appSettings]
+  );
 
-  function persist(updatedClosers: CloserConfig[], updatedGlobal = global) {
-    saveLocalConfig({ closers: updatedClosers, global: updatedGlobal });
-  }
+  // Fonte única: colaboradores com cargo "Closer" e status Ativo no RH.
+  // Um colaborador marcado como Inativo em RH some daqui automaticamente.
+  const closers: CloserConfig[] = useMemo(() => (
+    colaboradores
+      .filter((c: any) => (c.cargo || "").toLowerCase().includes("closer") && c.status === "Ativo")
+      .map((c: any) => ({
+        id: c.id,
+        name: c.nome,
+        email: c.email || "",
+        active: c.rotation_active ?? true,
+        blocked: c.rotation_blocked ?? false,
+        leadTypes: c.rotation_lead_types?.length ? c.rotation_lead_types : LEAD_TYPES_DEFAULT,
+      }))
+  ), [colaboradores]);
 
   const updateGlobal = (patch: Partial<GlobalConfig>) => {
     const next = { ...global, ...patch };
-    setGlobal(next);
-    persist(closers, next);
+    saveAppSetting(GLOBAL_CONFIG_KEY, next);
     toast.success("Regras de distribuição atualizadas!");
   };
 
-  const toggleActive = (name: string) => {
-    const next = closers.map(c => c.name === name ? { ...c, active: !c.active } : c);
-    setClosers(next);
-    persist(next);
+  const toggleActive = (id: string, name: string) => {
+    const closer = closers.find(c => c.id === id);
+    updateColaborador(id, { rotation_active: !(closer?.active ?? true) });
     toast.success(`Status de ${name} alterado.`);
   };
 
-  const toggleBlocked = (name: string) => {
-    const next = closers.map(c => c.name === name ? { ...c, blocked: !c.blocked } : c);
-    setClosers(next);
-    persist(next);
+  const toggleBlocked = (id: string, name: string) => {
+    const closer = closers.find(c => c.id === id);
+    updateColaborador(id, { rotation_blocked: !(closer?.blocked ?? false) });
     toast.success(`Trava de ${name} atualizada.`);
   };
 
-  const toggleLeadType = (name: string, type: string) => {
-    const next = closers.map(c => {
-      if (c.name !== name) return c;
-      const leadTypes = c.leadTypes.includes(type)
-        ? c.leadTypes.filter(t => t !== type)
-        : [...c.leadTypes, type];
-      return { ...c, leadTypes };
-    });
-    setClosers(next);
-    persist(next);
+  const toggleLeadType = (id: string, type: string) => {
+    const closer = closers.find(c => c.id === id);
+    if (!closer) return;
+    const leadTypes = closer.leadTypes.includes(type)
+      ? closer.leadTypes.filter(t => t !== type)
+      : [...closer.leadTypes, type];
+    updateColaborador(id, { rotation_lead_types: leadTypes });
   };
 
   return (
@@ -193,12 +163,7 @@ export function TabClosersCRM() {
           </div>
         </div>
 
-        {loading ? (
-          <div className="p-12 flex flex-col items-center gap-2 opacity-50">
-            <RefreshCw className="w-5 h-5 text-[var(--color-primary-blue)] animate-spin" />
-            <p className="text-xs text-[var(--color-text-muted)] font-medium">Carregando closers...</p>
-          </div>
-        ) : closers.length === 0 ? (
+        {closers.length === 0 ? (
           <div className="p-12 flex flex-col items-center gap-2 text-center">
             <Users className="w-8 h-8 text-[var(--color-text-muted)] opacity-50" />
             <p className="text-xs font-bold text-[var(--color-text-primary)]">Nenhum closer ativo encontrado</p>
@@ -207,10 +172,10 @@ export function TabClosersCRM() {
         ) : (
           <div className="divide-y divide-[var(--color-border-subtle)]">
             {closers.map(closer => {
-              const isExpanded = expandedCloser === closer.name;
+              const isExpanded = expandedCloser === closer.id;
               const initials = closer.name.split(" ").map(n => n[0]).join("").substring(0, 2);
               return (
-                <div key={closer.name} className={`transition-colors ${closer.active ? "" : "opacity-50"}`}>
+                <div key={closer.id} className={`transition-colors ${closer.active ? "" : "opacity-50"}`}>
                   <div className="flex items-center gap-4 px-5 py-3.5">
                     <div className="w-8 h-8 rounded-full bg-[var(--color-primary-blue)] text-white flex items-center justify-center text-[10px] font-bold shrink-0">
                       {initials}
@@ -232,16 +197,16 @@ export function TabClosersCRM() {
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       {global.blockOnMultipleClients && (
-                        <button type="button" onClick={() => toggleBlocked(closer.name)} className="p-1.5 rounded-lg hover:bg-[var(--color-surface-sunken)] transition-colors cursor-pointer">
+                        <button type="button" onClick={() => toggleBlocked(closer.id, closer.name)} className="p-1.5 rounded-lg hover:bg-[var(--color-surface-sunken)] transition-colors cursor-pointer">
                           {closer.blocked ? <Lock className="w-4 h-4 text-rose-500" /> : <Unlock className="w-4 h-4 text-[var(--color-text-muted)]" />}
                         </button>
                       )}
-                      <button type="button" onClick={() => toggleActive(closer.name)} className="cursor-pointer">
+                      <button type="button" onClick={() => toggleActive(closer.id, closer.name)} className="cursor-pointer">
                         {closer.active ? <ToggleRight className="w-7 h-7 text-emerald-500" /> : <ToggleLeft className="w-7 h-7 text-[var(--color-text-muted)]" />}
                       </button>
-                      <button 
-                        type="button" 
-                        onClick={() => setExpanded(isExpanded ? null : closer.name)}
+                      <button
+                        type="button"
+                        onClick={() => setExpanded(isExpanded ? null : closer.id)}
                         className={`p-1.5 rounded-lg transition-all cursor-pointer ${isExpanded ? "bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"}`}
                       >
                         <ChevronDown className={`w-4 h-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
@@ -260,7 +225,7 @@ export function TabClosersCRM() {
                                 <button 
                                   key={type} 
                                   type="button"
-                                  onClick={() => toggleLeadType(closer.name, type)}
+                                  onClick={() => toggleLeadType(closer.id, type)}
                                   className={`px-2.5 py-1 rounded-md text-xs font-bold transition-all cursor-pointer border ${selected ? "bg-[var(--color-primary-blue)]/15 text-[var(--color-primary-blue)] border-[var(--color-primary-blue)]/30" : "bg-[var(--color-surface)] text-[var(--color-text-muted)] border-[var(--color-border-default)] hover:text-[var(--color-text-primary)]"}`}
                                 >
                                   {type}

@@ -45,8 +45,63 @@ import { apiFetch } from "../../../../lib/apiClient";
 // Integration Categories
 type IntegrationCategory = "todas" | "anuncios" | "mensageria" | "pagamentos" | "automacoes" | "email";
 
+const DEFAULT_META_CONFIG = {
+  connected: false,
+  accountName: "Conta Comercial Meta",
+  accountId: "act_102948172948",
+  pixelId: "10293847568291",
+  pixelStatus: "active" as "active" | "pending" | "disconnected",
+  capiToken: "EAAQZBz...sec_token",
+  datasetId: "ds_984729104",
+  trackingActive: true,
+  trackedEvents: {
+    PageView: true,
+    Lead: true,
+    Schedule: true,
+    Purchase: true,
+    ViewContent: true,
+    Contact: true,
+    CompleteRegistration: true,
+  },
+  lastTestPing: null as { event: string; timestamp: string; status: number; latency: number } | null,
+};
+
+const DEFAULT_GOOGLE_CONFIG = {
+  connected: false,
+  accountName: "Conta Google Ads Principal",
+  customerId: "948-204-1829",
+  measurementId: "G-9X7KD2P0LQ",
+  conversionLabel: "AW-1029482910/XyZ_Lead",
+  enhancedConversions: true,
+  tagStatus: "active" as "active" | "pending" | "disconnected",
+  lastTestPing: null as { event: string; timestamp: string; status: number; latency: number } | null,
+};
+
+const DEFAULT_PAYMENT_CONFIG = {
+  mercadoPago: {
+    connected: false,
+    environment: "sandbox" as "sandbox" | "production",
+    publicKey: "APP_USR-xxxx-xxxx",
+    accessToken: "APP_USR-xxxx-xxxx-xxxx",
+    webhookUrl: "https://api.seusistema.com/api/webhooks/mercadopago",
+  },
+  stripe: {
+    connected: false,
+    environment: "sandbox" as "sandbox" | "production",
+    publishableKey: "pk_test_xxxxxxxxxxxx",
+    secretKey: "sk_test_xxxxxxxxxxxx",
+    webhookSecret: "whsec_xxxxxxxxxxxx",
+  },
+  asaas: {
+    connected: false,
+    environment: "sandbox" as "sandbox" | "production",
+    apiKey: "$aact_xxxxxxxxxxxx",
+    webhookToken: "asaas_wh_token_xxxx",
+  },
+};
+
 export function ConfigIntegracoesApps() {
-  const { evolutionWebhookUrl, setEvolutionWebhookUrl } = useData();
+  const { evolutionWebhookUrl, setEvolutionWebhookUrl, appSettings, appSettingsLoaded, saveAppSetting } = useData();
 
   // Search & Filter State
   const [activeCategory, setActiveCategory] = useState<IntegrationCategory>("todas");
@@ -56,88 +111,23 @@ export function ConfigIntegracoesApps() {
   const [isNovaIntegracaoModalOpen, setIsNovaIntegracaoModalOpen] = useState(false);
   const [selectedConfigModal, setSelectedConfigModal] = useState<string | null>(null);
 
-  // Meta Ads & Pixel State
-  const [metaConfig, setMetaConfig] = useState(() => {
-    const saved = localStorage.getItem("axis_meta_ads_config");
-    return saved
-      ? JSON.parse(saved)
-      : {
-          connected: false,
-          accountName: "Conta Comercial Meta",
-          accountId: "act_102948172948",
-          pixelId: "10293847568291",
-          pixelStatus: "active" as "active" | "pending" | "disconnected",
-          capiToken: "EAAQZBz...sec_token",
-          datasetId: "ds_984729104",
-          trackingActive: true,
-          trackedEvents: {
-            PageView: true,
-            Lead: true,
-            Schedule: true,
-            Purchase: true,
-            ViewContent: true,
-            Contact: true,
-            CompleteRegistration: true,
-          },
-          lastTestPing: null as {
-            event: string;
-            timestamp: string;
-            status: number;
-            latency: number;
-          } | null,
-        };
-  });
+  // Meta Ads, Google Ads, Pagamentos e integrações customizadas vêm do
+  // Supabase (app_settings, via DataContext) — hidratado uma vez quando o
+  // fetch inicial do tenant chega, e daí em diante lido/gravado por lá.
+  const [metaConfig, setMetaConfig] = useState(DEFAULT_META_CONFIG);
+  const [googleConfig, setGoogleConfig] = useState(DEFAULT_GOOGLE_CONFIG);
+  const [paymentConfig, setPaymentConfig] = useState(DEFAULT_PAYMENT_CONFIG);
+  const [customIntegrations, setCustomIntegrations] = useState<any[]>([]);
+  const [hydrated, setHydrated] = useState(false);
 
-  // Google Ads State
-  const [googleConfig, setGoogleConfig] = useState(() => {
-    const saved = localStorage.getItem("axis_google_ads_config");
-    return saved
-      ? JSON.parse(saved)
-      : {
-          connected: false,
-          accountName: "Conta Google Ads Principal",
-          customerId: "948-204-1829",
-          measurementId: "G-9X7KD2P0LQ",
-          conversionLabel: "AW-1029482910/XyZ_Lead",
-          enhancedConversions: true,
-          tagStatus: "active" as "active" | "pending" | "disconnected",
-          lastTestPing: null as {
-            event: string;
-            timestamp: string;
-            status: number;
-            latency: number;
-          } | null,
-        };
-  });
-
-  // Payment Gateways State
-  const [paymentConfig, setPaymentConfig] = useState(() => {
-    const saved = localStorage.getItem("axis_payments_config");
-    return saved
-      ? JSON.parse(saved)
-      : {
-          mercadoPago: {
-            connected: false,
-            environment: "sandbox" as "sandbox" | "production",
-            publicKey: "APP_USR-xxxx-xxxx",
-            accessToken: "APP_USR-xxxx-xxxx-xxxx",
-            webhookUrl: "https://api.seusistema.com/api/webhooks/mercadopago",
-          },
-          stripe: {
-            connected: false,
-            environment: "sandbox" as "sandbox" | "production",
-            publishableKey: "pk_test_xxxxxxxxxxxx",
-            secretKey: "sk_test_xxxxxxxxxxxx",
-            webhookSecret: "whsec_xxxxxxxxxxxx",
-          },
-          asaas: {
-            connected: false,
-            environment: "sandbox" as "sandbox" | "production",
-            apiKey: "$aact_xxxxxxxxxxxx",
-            webhookToken: "asaas_wh_token_xxxx",
-          },
-        };
-  });
+  useEffect(() => {
+    if (hydrated || !appSettingsLoaded) return;
+    if (appSettings.integracoes_meta_ads) setMetaConfig(appSettings.integracoes_meta_ads);
+    if (appSettings.integracoes_google_ads) setGoogleConfig(appSettings.integracoes_google_ads);
+    if (appSettings.integracoes_payments) setPaymentConfig(appSettings.integracoes_payments);
+    if (appSettings.integracoes_custom) setCustomIntegrations(appSettings.integracoes_custom);
+    setHydrated(true);
+  }, [appSettings, appSettingsLoaded, hydrated]);
 
   // WhatsApp / Evolution API State
   const [instances, setInstances] = useState<any[]>([]);
@@ -149,28 +139,24 @@ export function ConfigIntegracoesApps() {
   const [savingWebhook, setSavingWebhook] = useState(false);
   const [simulating, setSimulating] = useState(false);
 
-  // Custom User Integrations
-  const [customIntegrations, setCustomIntegrations] = useState<any[]>(() => {
-    const saved = localStorage.getItem("axis_custom_integrations");
-    return saved ? JSON.parse(saved) : [];
-  });
-
-  // Save changes to localStorage whenever configs update
+  // Persiste no Supabase a cada mudança (mesmo modelo de auto-save que já
+  // existia, só trocando o destino de localStorage para app_settings) — só
+  // depois de hidratar, pra não sobrescrever dado real salvo com os padrões.
   useEffect(() => {
-    localStorage.setItem("axis_meta_ads_config", JSON.stringify(metaConfig));
-  }, [metaConfig]);
+    if (hydrated) saveAppSetting("integracoes_meta_ads", metaConfig);
+  }, [metaConfig, hydrated]);
 
   useEffect(() => {
-    localStorage.setItem("axis_google_ads_config", JSON.stringify(googleConfig));
-  }, [googleConfig]);
+    if (hydrated) saveAppSetting("integracoes_google_ads", googleConfig);
+  }, [googleConfig, hydrated]);
 
   useEffect(() => {
-    localStorage.setItem("axis_payments_config", JSON.stringify(paymentConfig));
-  }, [paymentConfig]);
+    if (hydrated) saveAppSetting("integracoes_payments", paymentConfig);
+  }, [paymentConfig, hydrated]);
 
   useEffect(() => {
-    localStorage.setItem("axis_custom_integrations", JSON.stringify(customIntegrations));
-  }, [customIntegrations]);
+    if (hydrated) saveAppSetting("integracoes_custom", customIntegrations);
+  }, [customIntegrations, hydrated]);
 
   // Load instances & contacts for WhatsApp
   useEffect(() => {

@@ -8,61 +8,29 @@ import { toast } from "sonner";
 interface SdrColaborador { id: string; nome: string; phone: string; cargo: string; status: string; }
 interface FormRodizioConfig { current_index: number; active_sdr_ids: string[] | null; }
 
-const DEFAULT_SDRS: SdrColaborador[] = [
-  { id: "sdr-1", nome: "Beatriz Oliveira", phone: "(11) 98765-4321", cargo: "SDR", status: "Ativo" },
-  { id: "sdr-2", nome: "Thiago Rocha", phone: "(11) 97654-3210", cargo: "SDR", status: "Ativo" },
-  { id: "sdr-3", nome: "Juliana Mendes", phone: "(21) 99876-5432", cargo: "SDR", status: "Ativo" },
-];
-
 export function TabFormularioSDR({ tenantId }: { tenantId: string }) {
-  const storageKey = `axis_form_rodizio_${tenantId}`;
-  const [sdrs, setSdrs] = useState<SdrColaborador[]>(() => {
-    try {
-      const saved = localStorage.getItem(`axis_sdrs_${tenantId}`);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return DEFAULT_SDRS;
-  });
-
-  const [config, setConfig] = useState<FormRodizioConfig>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return { current_index: 0, active_sdr_ids: null };
-  });
-
-  const [loading, setLoading] = useState(false);
+  const [sdrs, setSdrs] = useState<SdrColaborador[]>([]);
+  const [config, setConfig] = useState<FormRodizioConfig>({ current_index: 0, active_sdr_ids: null });
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => { loadData(); }, [tenantId]);
 
   async function loadData() {
-    let sdrData: any[] | null = null;
-    let cfgData: any = null;
-
+    setLoading(true);
     if (supabase) {
       const [resSdr, resCfg] = await Promise.all([
         supabase.from("colaboradores").select("id, nome, phone, cargo, status").eq("tenant_id", tenantId).eq("cargo", "SDR").eq("status", "Ativo").order("nome"),
         supabase.from("app_settings").select("value").eq("tenant_id", tenantId).eq("key", "form_rodizio_empreenda").maybeSingle(),
       ]);
-      sdrData = resSdr.data;
-      cfgData = resCfg.data;
+      if (resSdr.data) setSdrs(resSdr.data as SdrColaborador[]);
+      if (resCfg.data?.value) setConfig(resCfg.data.value as FormRodizioConfig);
     }
-    
-    if (sdrData && sdrData.length > 0) {
-      setSdrs(sdrData as SdrColaborador[]);
-      localStorage.setItem(`axis_sdrs_${tenantId}`, JSON.stringify(sdrData));
-    }
-    if (cfgData?.value) {
-      setConfig(cfgData.value as FormRodizioConfig);
-      localStorage.setItem(storageKey, JSON.stringify(cfgData.value));
-    }
+    setLoading(false);
   }
 
   async function saveConfig(newConfig: FormRodizioConfig) {
     setSaving(true);
-    localStorage.setItem(storageKey, JSON.stringify(newConfig));
     if (supabase) {
       await supabase.from("app_settings").upsert({
         id: `${tenantId}_form_rodizio`, tenant_id: tenantId,

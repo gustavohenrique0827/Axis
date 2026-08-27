@@ -133,22 +133,12 @@ export function ConfigProdutividadeCategorias() {
 
 export function ConfigFinanceiroCategorias() {
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [categories, setCategories] = useState<{ id: string, nome: string, tipo: "Receita" | "Despesa" }[]>(() => {
-        const saved = localStorage.getItem("axis_finance_categories");
-        return saved ? JSON.parse(saved) : [
-            { id: "1", nome: "Vendas PRO", tipo: "Receita" },
-            { id: "2", nome: "Licença Mensal", tipo: "Receita" },
-            { id: "3", nome: "Servidores AWS", tipo: "Despesa" },
-            { id: "4", nome: "Marketing & Ads", tipo: "Despesa" }
-        ];
-    });
-
-    useEffect(() => {
-        localStorage.setItem("axis_finance_categories", JSON.stringify(categories));
-    }, [categories]);
+    const { financeCategories, addFinanceCategory } = useData();
+    const categories: { id: string, nome: string, tipo: "Receita" | "Despesa" }[] =
+        financeCategories.map((c: any) => ({ id: c.id, nome: c.nome, tipo: c.tipo }));
 
     const handleSave = (data: { nome: string, tipo: "Receita" | "Despesa" }) => {
-        setCategories(prev => [...prev, { ...data, id: Date.now().toString() }]);
+        addFinanceCategory(data);
         toast.success("Nova categoria financeira cadastrada!");
         setIsModalOpen(false);
     };

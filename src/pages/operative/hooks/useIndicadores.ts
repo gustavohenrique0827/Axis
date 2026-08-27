@@ -1,20 +1,12 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Target, Activity, Zap, Users } from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
 
 export function useIndicadores() {
-  const { leads, financeEntries, contracts, financialGoals } = useData();
-  
-  const [schedules, setSchedules] = useState<{ id: string; email: string; weekday: string; time: string; active: boolean }[]>(() => {
-    const cached = localStorage.getItem("axis_scheduled_exports");
-    if (cached) {
-      try { return JSON.parse(cached); } catch (e) {}
-    }
-    return [
-      { id: "1", email: "comercial.diretoria@axis.com.br", weekday: "Segunda-feira", time: "08:00", active: true },
-    ];
-  });
+  const { leads, financeEntries, contracts, financialGoals, scheduledExports, addScheduledExport, updateScheduledExport, deleteScheduledExport } = useData();
+
+  const schedules = scheduledExports as { id: string; email: string; weekday: string; time: string; active: boolean }[];
 
   const [selectedKPI, setSelectedKPI] = useState<any>(null);
   const [criticalKPIs] = useState<string[]>(["Retention Rate"]);
@@ -23,10 +15,6 @@ export function useIndicadores() {
   const [newEmail, setNewEmail] = useState("");
   const [newWeekday, setNewWeekday] = useState("Segunda-feira");
   const [newTime, setNewTime] = useState("08:00");
-
-  useEffect(() => {
-    localStorage.setItem("axis_scheduled_exports", JSON.stringify(schedules));
-  }, [schedules]);
 
   const handleCreateSchedule = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,23 +29,23 @@ export function useIndicadores() {
       return;
     }
 
-    setSchedules([...schedules, {
-      id: Date.now().toString(),
+    addScheduledExport({
       email: newEmail.trim(),
       weekday: newWeekday,
       time: newTime,
       active: true
-    }]);
+    });
     setNewEmail("");
     toast.success(`Exportação agendada com sucesso para toda ${newWeekday}!`);
   };
 
   const handleToggleSchedule = (id: string) => {
-    setSchedules(schedules.map(s => s.id === id ? { ...s, active: !s.active } : s));
+    const item = schedules.find(s => s.id === id);
+    if (item) updateScheduledExport(id, { active: !item.active });
   };
 
   const handleDeleteSchedule = (id: string) => {
-    setSchedules(schedules.filter(s => s.id !== id));
+    deleteScheduledExport(id);
     toast.success("Agendamento de e-mail removido.");
   };
 

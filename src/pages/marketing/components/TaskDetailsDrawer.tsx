@@ -138,7 +138,6 @@ export function TaskDetailsDrawer({
                        setSelectedTask(updatedTask);
                        const updatedTasks = tasks.map(t => t.id === selectedTask.id ? updatedTask : t);
                        setTasks(updatedTasks);
-                       localStorage.setItem("axis_marketing_tasks", JSON.stringify(updatedTasks));
                        updateTaskInDatabase(updatedTask);
                      }}
                      className="bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl pl-9 pr-3.5 py-2 text-xs text-white outline-none w-full cursor-pointer hover:border-white/20 transition-all font-bold"
@@ -155,7 +154,6 @@ export function TaskDetailsDrawer({
                      setSelectedTask(updatedTask);
                      const updatedTasks = tasks.map(t => t.id === selectedTask.id ? updatedTask : t);
                      setTasks(updatedTasks);
-                     localStorage.setItem("axis_marketing_tasks", JSON.stringify(updatedTasks));
                      updateTaskInDatabase(updatedTask);
                      toast.success(`Prioridade alterada para ${updatedPriority}`);
                    }}
@@ -176,7 +174,6 @@ export function TaskDetailsDrawer({
                      setSelectedTask(updatedTask);
                      const updatedTasks = tasks.map(t => t.id === selectedTask.id ? updatedTask : t);
                      setTasks(updatedTasks);
-                     localStorage.setItem("axis_marketing_tasks", JSON.stringify(updatedTasks));
                      updateTaskInDatabase(updatedTask);
                      toast.success(`Plataforma alterada para ${updatedPlatform}`);
                    }}
@@ -201,7 +198,6 @@ export function TaskDetailsDrawer({
                     setSelectedTask(updatedTask);
                     const updatedTasks = tasks.map(t => t.id === selectedTask.id ? updatedTask : t);
                     setTasks(updatedTasks);
-                    localStorage.setItem("axis_marketing_tasks", JSON.stringify(updatedTasks));
                   }}
                   onBlur={() => {
                     updateTaskInDatabase(selectedTask);

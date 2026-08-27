@@ -114,6 +114,10 @@ export async function fetchUserProfile(userId: string): Promise<{ success: boole
       active,
       tenant_id,
       partner_id,
+      phone,
+      bio,
+      avatar_url,
+      two_factor_enabled,
       tenants (
         id,
         name,
@@ -141,6 +145,7 @@ export async function fetchUserProfile(userId: string): Promise<{ success: boole
   return {
     success: true,
     user: {
+      id: data.id,
       name: data.name,
       email: data.email,
       role: data.role,
@@ -149,6 +154,10 @@ export async function fetchUserProfile(userId: string): Promise<{ success: boole
       tenantNiche: tenant.niche,
       isMaster: data.is_master,
       partnerId: data.partner_id ?? undefined,
+      phone: (data as any).phone ?? undefined,
+      bio: (data as any).bio ?? undefined,
+      avatarUrl: (data as any).avatar_url ?? undefined,
+      twoFactorEnabled: (data as any).two_factor_enabled ?? false,
     },
   };
 }

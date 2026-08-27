@@ -4,19 +4,15 @@ import { Button } from "../../../../components/ui/button";
 import { Plus, Target, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { NovaOrigemCRMModal } from "../../../../components/ui/modals/crm/NovaOrigemCRMModal";
+import { useData } from "../../../../contexts/DataContext";
 
-const STORAGE_KEY = "axis_origens_leads";
+const SETTING_KEY = "crm_lead_origins";
 const DEFAULT_ORIGENS = ["Instagram", "WhatsApp", "Indicação", "Site / Orgânico", "Google Ads", "LinkedIn", "Outbound SDR"];
 
 export function ConfigCRMOrigens() {
+  const { appSettings, saveAppSetting } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [origens, setOrigens] = useState<string[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return DEFAULT_ORIGENS;
-  });
+  const origens: string[] = appSettings?.[SETTING_KEY] ?? DEFAULT_ORIGENS;
 
   const handleSave = (data: any) => {
     if (data.nome && data.nome.trim()) {
@@ -26,8 +22,7 @@ export function ConfigCRMOrigens() {
         return;
       }
       const updated = [trimmed, ...origens];
-      setOrigens(updated);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      saveAppSetting(SETTING_KEY, updated);
       toast.success(`Origem "${trimmed}" cadastrada com sucesso!`);
     }
     setIsModalOpen(false);
@@ -35,8 +30,7 @@ export function ConfigCRMOrigens() {
 
   const handleDelete = (origem: string) => {
     const updated = origens.filter(o => o !== origem);
-    setOrigens(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    saveAppSetting(SETTING_KEY, updated);
     toast.success(`Origem "${origem}" removida.`);
   };
 

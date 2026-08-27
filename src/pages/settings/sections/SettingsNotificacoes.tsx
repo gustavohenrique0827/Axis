@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Target, Users, ShieldAlert, Clock, Mail, Award, Bell, Volume2, ChevronDown, ChevronUp, Save, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
+import { useData } from "../../../contexts/DataContext";
+
+const SETTING_KEY = "notification_prefs";
 
 const DEFAULT_NOTIFICATION_PREFS = [
   { id: "novo_lead", category: "Comercial / CRM", title: "Novo Lead Cadastrado", description: "Notificar quando um lead entrar pelo formulário ou anúncio", inApp: true, email: true, whatsapp: true },
@@ -23,22 +26,21 @@ const iconMap: Record<string, any> = {
 };
 
 export function ConfigNotificacoesPreferencias() {
+  const { appSettings, saveAppSetting } = useData();
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  const [prefs, setPrefs] = useState(() => {
-    try {
-      const saved = localStorage.getItem("axis_notification_prefs");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.length > 0) {
-          return parsed.map((p: any) => ({
-            ...p,
-            icon: iconMap[p.id] || Target
-          }));
-        }
-      }
-    } catch {}
-    return DEFAULT_NOTIFICATION_PREFS.map(p => ({ ...p, icon: iconMap[p.id] || Target }));
-  });
+  const [prefs, setPrefs] = useState(() =>
+    DEFAULT_NOTIFICATION_PREFS.map(p => ({ ...p, icon: iconMap[p.id] || Target }))
+  );
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    if (hydrated) return;
+    const saved = appSettings?.[SETTING_KEY];
+    if (saved?.length > 0) {
+      setPrefs(saved.map((p: any) => ({ ...p, icon: iconMap[p.id] || Target })));
+      setHydrated(true);
+    }
+  }, [appSettings, hydrated]);
 
   const [generalEmail, setGeneralEmail] = useState(true);
   const [generalWhatsapp, setGeneralWhatsapp] = useState(true);
@@ -53,9 +55,10 @@ export function ConfigNotificacoesPreferencias() {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const output = prefs.map(({ icon, ...p }: any) => p);
-    localStorage.setItem("axis_notification_prefs", JSON.stringify(output));
+    setHydrated(true);
+    await saveAppSetting(SETTING_KEY, output);
     toast.success("Preferências de notificações salvas com sucesso!");
   };
 
@@ -253,7 +256,8 @@ export function ConfigNotificacoesPreferencias() {
               setGeneralEmail(true);
               setGeneralInApp(true);
               setGeneralWhatsapp(true);
-              localStorage.setItem("axis_notification_prefs", JSON.stringify(DEFAULT_NOTIFICATION_PREFS));
+              setHydrated(true);
+              saveAppSetting(SETTING_KEY, DEFAULT_NOTIFICATION_PREFS);
               toast.success("Configurações originais restauradas!");
             }}
             variant="ghost" 

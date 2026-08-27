@@ -23,21 +23,10 @@ function buildStages(funis: any[], isSDR: boolean) {
   }));
 }
 
-function loadStagesFromLocalStorage(isSDR: boolean) {
-  try {
-    const saved = localStorage.getItem("axis_funis_config");
-    if (!saved) return null;
-    const stages = buildStages(JSON.parse(saved), isSDR);
-    return stages.length > 0 ? stages : null;
-  } catch {
-    return null;
-  }
-}
-
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useLeadDetails(lead: any, onClose: () => void) {
-  const { leadActivities, addLeadActivity, updateLead, deleteLead, customLeadFields, products, turmas, addTurma, updateTurma } = useData();
+  const { leadActivities, addLeadActivity, updateLead, deleteLead, customLeadFields, products, turmas, addTurma, updateTurma, funis } = useData();
 
   // ── Exclusão ─────────────────────────────────────────────────────────────────
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
@@ -123,26 +112,10 @@ export function useLeadDetails(lead: any, onClose: () => void) {
   }, [linkedProductIds, estimatedSum]);
 
   // ── Estágios do funil ─────────────────────────────────────────────────────────
+  // Funis vêm do Supabase (crm_funis, via DataContext) — nada de localStorage.
   const isSDR = lead?.pipelineId === "sdr";
-  const [stagesDef, setStagesDef] = useState(() => loadStagesFromLocalStorage(isSDR) ?? []);
   const [currentStageId, setCurrentStageId] = useState<string>(lead?.stageId ?? "");
-
-  useEffect(() => {
-    const fromStorage = loadStagesFromLocalStorage(isSDR);
-    if (fromStorage) { setStagesDef(fromStorage); return; }
-    if (!supabase) return;
-    supabase
-      .from("app_settings").select("value").eq("key", "axis_funis_config").maybeSingle()
-      .then(({ data }) => {
-        if (!data?.value) return;
-        try {
-          const funis = Array.isArray(data.value) ? data.value : JSON.parse(data.value);
-          localStorage.setItem("axis_funis_config", JSON.stringify(funis));
-          const stages = buildStages(funis, isSDR);
-          if (stages.length > 0) setStagesDef(stages);
-        } catch {}
-      });
-  }, [lead?.id, isSDR]);
+  const stagesDef = useMemo(() => buildStages(funis, isSDR), [funis, isSDR]);
 
   // Sincroniza campos ao abrir/trocar lead
   useEffect(() => {

@@ -32,22 +32,25 @@ export interface AlertMessage {
 
 import { useData } from "../../../contexts/DataContext";
 
+const ATTENTION_THRESHOLD_KEY = "finance_attention_threshold";
+
 export function useFinanceiroMetas() {
-  const { squadMetas: squads, setSquadMetas: setSquads } = useData();
+  const { squadMetas: squads, setSquadMetas: setSquads, appSettings, appSettingsLoaded, saveAppSetting } = useData();
 
   const [period, setPeriod] = useState<"monthly" | "quarterly" | "annual">("monthly");
-  
-  const [attentionThreshold, setAttentionThreshold] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem("axis_attention_threshold_v2");
-      if (saved) return Number(saved);
-    } catch (e) {}
-    return 90; // defaults to 90%
-  });
+
+  const [attentionThreshold, setAttentionThresholdRaw] = useState<number>(90);
 
   useEffect(() => {
-    localStorage.setItem("axis_attention_threshold_v2", attentionThreshold.toString());
-  }, [attentionThreshold]);
+    if (!appSettingsLoaded) return;
+    const saved = appSettings?.[ATTENTION_THRESHOLD_KEY];
+    if (typeof saved === "number") setAttentionThresholdRaw(saved);
+  }, [appSettingsLoaded]);
+
+  const setAttentionThreshold = (value: number) => {
+    setAttentionThresholdRaw(value);
+    saveAppSetting(ATTENTION_THRESHOLD_KEY, value);
+  };
 
   const [alerts, setAlerts] = useState<AlertMessage[]>([]);
 

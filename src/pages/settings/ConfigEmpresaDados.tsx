@@ -4,6 +4,7 @@ import { Button } from "../../components/ui/button";
 import { toast } from "sonner";
 import { formatCNPJ, validateCNPJ } from "../../lib/utils";
 import { CheckCircle2, AlertTriangle, Building2, Save, Globe, Mail, Phone, MapPin } from "lucide-react";
+import { useData } from "../../contexts/DataContext";
 
 type CnpjStatus = "idle" | "checking" | "active" | "inactive" | "invalid";
 
@@ -18,27 +19,31 @@ interface EmpresaDados {
   website: string;
 }
 
-const STORAGE_KEY = "axis_empresa_dados";
+const SETTING_KEY = "empresa_dados";
 
 const DEFAULT_EMPRESA: EmpresaDados = {
-  razaoSocial: "Axis Tecnologia & Gestão Empresarial Ltda",
-  nomeFantasia: "Axis Corp",
-  cnpj: "12.345.678/0001-90",
-  inscricaoEstadual: "123.456.789.110",
-  endereco: "Av. Paulista, 1000 - Bela Vista, São Paulo - SP, CEP 01310-100",
-  emailContato: "contato@axiscorp.com.br",
-  telefoneContato: "(11) 3000-4000",
-  website: "https://axiscorp.com.br",
+  razaoSocial: "",
+  nomeFantasia: "",
+  cnpj: "",
+  inscricaoEstadual: "",
+  endereco: "",
+  emailContato: "",
+  telefoneContato: "",
+  website: "",
 };
 
 export default function ConfigEmpresaDados() {
-  const [empresa, setEmpresa] = useState<EmpresaDados>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return DEFAULT_EMPRESA;
-  });
+  const { appSettings, saveAppSetting } = useData();
+  const [empresa, setEmpresa] = useState<EmpresaDados>(DEFAULT_EMPRESA);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Hidrata uma única vez quando os dados reais do tenant chegam do Supabase
+  // (appSettings começa vazio até o fetch inicial do DataContext resolver).
+  useEffect(() => {
+    if (hydrated) return;
+    const saved = appSettings?.[SETTING_KEY];
+    if (saved) { setEmpresa(saved); setHydrated(true); }
+  }, [appSettings, hydrated]);
 
   const [cnpjStatus, setCnpjStatus] = useState<{ status: CnpjStatus; message?: string }>({ status: "idle" });
   const [isSaving, setIsSaving] = useState(false);
@@ -72,7 +77,6 @@ export default function ConfigEmpresaDados() {
               telefoneContato: data.ddd_telefone_1 || prev.telefoneContato,
               endereco: parts.length ? parts.join(", ") : prev.endereco,
             };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
             return next;
           });
           toast.success("Dados sincronizados com a Receita Federal!");
@@ -88,7 +92,7 @@ export default function ConfigEmpresaDados() {
     }
   };
 
-  const handleSave = (e?: React.FormEvent) => {
+  const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!empresa.nomeFantasia.trim()) {
       toast.error("O Nome Fantasia é obrigatório.");
@@ -96,13 +100,9 @@ export default function ConfigEmpresaDados() {
     }
 
     setIsSaving(true);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(empresa));
-    window.dispatchEvent(new Event("axis_empresa_updated"));
-
-    setTimeout(() => {
-      setIsSaving(false);
-      toast.success("Dados da empresa salvos e atualizados com sucesso!");
-    }, 400);
+    await saveAppSetting(SETTING_KEY, empresa);
+    setIsSaving(false);
+    toast.success("Dados da empresa salvos e atualizados com sucesso!");
   };
 
   return (

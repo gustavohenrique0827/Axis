@@ -45,18 +45,12 @@ const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export default function MarketingCampanhas() {
   const navigate = useNavigate();
-  const { leads, financeEntries } = useData();
+  const { leads, financeEntries, appSettings } = useData();
 
-  // Retrieve saved integration status or local state
-  const [metaConfig, setMetaConfig] = useState(() => {
-    const saved = localStorage.getItem("axis_meta_ads_config");
-    return saved ? JSON.parse(saved) : { connected: false, pixelId: "" };
-  });
-
-  const [googleConfig, setGoogleConfig] = useState(() => {
-    const saved = localStorage.getItem("axis_google_ads_config");
-    return saved ? JSON.parse(saved) : { connected: false, measurementId: "" };
-  });
+  // Status das integrações vem do Supabase (app_settings, via DataContext),
+  // gravado pela Central de Integrações.
+  const metaConfig = appSettings?.integracoes_meta_ads ?? { connected: false, pixelId: "" };
+  const googleConfig = appSettings?.integracoes_google_ads ?? { connected: false, measurementId: "" };
 
   // Compute real KPIs from leads data
   const totalLeads = leads.length;

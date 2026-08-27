@@ -34,6 +34,7 @@ export interface LeadScoreTrigger {
   scoreThreshold: number;
   condition: 'greater' | 'less';
   targetStageId: string;
+  autoMessage: boolean;
 }
 
 export interface Lead {
@@ -97,6 +98,9 @@ export interface Colaborador {
   email: string;
   avatar?: string;
   desempenho: number; // 0-100
+  rotationActive?: boolean;
+  rotationBlocked?: boolean;
+  rotationLeadTypes?: string[];
 }
 
 export interface Squad {

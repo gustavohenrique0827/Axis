@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useData } from '../../../contexts/DataContext';
 
 export interface OTEProfile {
   id: string;
@@ -61,28 +62,50 @@ const DEFAULT_TAX_RATES: TaxRate[] = [
   { id: 't2', nome: 'IR',      percent: 7.5, aplicaEm: 'total' },
 ];
 
-function load<T>(key: string, fallback: T): T {
-  try {
-    const raw = localStorage.getItem(key);
-    if (raw) return JSON.parse(raw) as T;
-  } catch {}
-  return fallback;
-}
+const SETTING_KEY = 'ote_config';
 
-function save<T>(key: string, val: T) {
-  localStorage.setItem(key, JSON.stringify(val));
+interface OTEConfigBlob {
+  profiles: OTEProfile[];
+  commRules: CommissionRule[];
+  partRules: PartnershipRule[];
+  taxRates: TaxRate[];
 }
 
 export function useOTEConfig() {
-  const [profiles, setProfilesRaw]     = useState<OTEProfile[]>(() => load('ote_profiles', DEFAULT_PROFILES));
-  const [commRules, setCommRulesRaw]   = useState<CommissionRule[]>(() => load('ote_comm_rules', DEFAULT_COMMISSION_RULES));
-  const [partRules, setPartRulesRaw]   = useState<PartnershipRule[]>(() => load('ote_part_rules', DEFAULT_PARTNERSHIP_RULES));
-  const [taxRates, setTaxRatesRaw]     = useState<TaxRate[]>(() => load('ote_tax_rates', DEFAULT_TAX_RATES));
+  const { appSettings, saveAppSetting } = useData();
 
-  const setProfiles   = (v: OTEProfile[])      => { setProfilesRaw(v);   save('ote_profiles', v); };
-  const setCommRules  = (v: CommissionRule[])  => { setCommRulesRaw(v);  save('ote_comm_rules', v); };
-  const setPartRules  = (v: PartnershipRule[]) => { setPartRulesRaw(v);  save('ote_part_rules', v); };
-  const setTaxRates   = (v: TaxRate[])         => { setTaxRatesRaw(v);   save('ote_tax_rates', v); };
+  const [profiles, setProfilesRaw]     = useState<OTEProfile[]>(DEFAULT_PROFILES);
+  const [commRules, setCommRulesRaw]   = useState<CommissionRule[]>(DEFAULT_COMMISSION_RULES);
+  const [partRules, setPartRulesRaw]   = useState<PartnershipRule[]>(DEFAULT_PARTNERSHIP_RULES);
+  const [taxRates, setTaxRatesRaw]     = useState<TaxRate[]>(DEFAULT_TAX_RATES);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    if (hydrated) return;
+    const saved: OTEConfigBlob | undefined = appSettings?.[SETTING_KEY];
+    if (saved) {
+      setProfilesRaw(saved.profiles ?? DEFAULT_PROFILES);
+      setCommRulesRaw(saved.commRules ?? DEFAULT_COMMISSION_RULES);
+      setPartRulesRaw(saved.partRules ?? DEFAULT_PARTNERSHIP_RULES);
+      setTaxRatesRaw(saved.taxRates ?? DEFAULT_TAX_RATES);
+      setHydrated(true);
+    }
+  }, [appSettings, hydrated]);
+
+  const persist = (next: Partial<OTEConfigBlob>) => {
+    setHydrated(true);
+    saveAppSetting(SETTING_KEY, {
+      profiles: next.profiles ?? profiles,
+      commRules: next.commRules ?? commRules,
+      partRules: next.partRules ?? partRules,
+      taxRates: next.taxRates ?? taxRates,
+    });
+  };
+
+  const setProfiles   = (v: OTEProfile[])      => { setProfilesRaw(v);   persist({ profiles: v }); };
+  const setCommRules  = (v: CommissionRule[])  => { setCommRulesRaw(v);  persist({ commRules: v }); };
+  const setPartRules  = (v: PartnershipRule[]) => { setPartRulesRaw(v);  persist({ partRules: v }); };
+  const setTaxRates   = (v: TaxRate[])         => { setTaxRatesRaw(v);   persist({ taxRates: v }); };
 
   const getProfile = (cargo: string, nivel: string): OTEProfile | undefined =>
     profiles.find(p => p.cargo === cargo && p.nivel === nivel);

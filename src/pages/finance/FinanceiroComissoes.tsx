@@ -50,23 +50,16 @@ interface ColabEntry {
   realizado: number;
 }
 
-const STORAGE_KEY = 'ote_period_entries_v2';
 const PERIOD_KEY  = 'ote_current_period';
-
-const DEFAULT_ENTRIES: ColabEntry[] = [
-  { id: 'e1', nome: 'Luana Pereira Alves Pinheiro Leite', cargo: 'Closer', nivel: 'Aprendiz', squad: 'Target',  meta: 70410, realizado: 591  },
-  { id: 'e2', nome: 'Paulo Victor',                       cargo: 'Closer', nivel: 'Junior 1', squad: 'Pluppex', meta: 70410, realizado: 5285 },
-  { id: 'e3', nome: 'Thais Nascimento Pereira',           cargo: 'Closer', nivel: 'Junior 1', squad: 'Target',  meta: 70410, realizado: 985  },
-  { id: 'e4', nome: 'Israel Assis de Oliveira Carvalho',  cargo: 'Closer', nivel: 'Junior 1', squad: 'Target',  meta: 89186, realizado: 197  },
-  { id: 'e5', nome: 'Wanderlei Sewaybricker Gurzoni',     cargo: 'Closer', nivel: 'Junior 1', squad: 'Target',  meta: 89186, realizado: 0    },
-  { id: 'e6', nome: 'Gabriel Lima',                       cargo: 'Closer', nivel: 'Junior 1', squad: 'Pluppex', meta: 70410, realizado: 985  },
-  { id: 'e7', nome: 'Anna Cristiny',                      cargo: 'Closer', nivel: 'Aprendiz', squad: 'Pluppex', meta: 50000, realizado: 0    },
-];
 
 const PERIODOS = ['Junho/2026', 'Maio/2026', 'Abril/2026', 'Março/2026'];
 
+function rowToEntry(r: any): ColabEntry & { period: string } {
+  return { id: r.id, nome: r.nome, cargo: r.cargo, nivel: r.nivel, squad: r.squad || '', meta: Number(r.meta) || 0, realizado: Number(r.realizado) || 0, period: r.period };
+}
+
 export default function FinanceiroComissoes() {
-  const { squads } = useData();
+  const { squads, financeCommissionEntries, addFinanceCommissionEntry, deleteFinanceCommissionEntry } = useData();
   const { profiles, calcOTE } = useOTEConfig();
 
   const [periodo, setPeriodo] = useState<string>(
@@ -79,15 +72,12 @@ export default function FinanceiroComissoes() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [form, setForm] = useState({ nome: '', cargo: 'Closer' as CargoTab, nivel: 'Junior 1', squad: '', meta: '', realizado: '' });
 
-  const [entries, setEntries] = useState<ColabEntry[]>(() => {
-    try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch {}
-    return DEFAULT_ENTRIES;
-  });
-
-  const saveEntries = (v: ColabEntry[]) => {
-    setEntries(v);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(v));
-  };
+  // Entradas de comissão vêm do Supabase (finance_commission_entries, via
+  // DataContext) — filtradas aqui pelo período selecionado no dropdown.
+  const entries = useMemo(
+    () => financeCommissionEntries.map(rowToEntry).filter(e => e.period === periodo),
+    [financeCommissionEntries, periodo]
+  );
 
   const squadNames = useMemo(() => {
     const fromSquads = squads.map(s => s.nome);
@@ -126,15 +116,15 @@ export default function FinanceiroComissoes() {
 
   const handleAddEntry = () => {
     if (!form.nome.trim() || !form.meta) return toast.error('Preencha nome e meta.');
-    saveEntries([...entries, {
-      id: `e${Date.now()}`,
+    addFinanceCommissionEntry({
+      period: periodo,
       nome: form.nome.trim(),
       cargo: form.cargo,
       nivel: form.nivel,
       squad: form.squad,
       meta: parseFloat(form.meta) || 0,
       realizado: parseFloat(form.realizado) || 0,
-    }]);
+    });
     setShowAddModal(false);
     setForm({ nome: '', cargo: 'Closer', nivel: 'Junior 1', squad: '', meta: '', realizado: '' });
     toast.success('Colaborador adicionado!');
@@ -370,7 +360,7 @@ export default function FinanceiroComissoes() {
                     </td>
                     <td className="px-3 py-3.5">
                       <button
-                        onClick={() => { saveEntries(entries.filter(e => e.id !== row.id)); toast.success('Removido.'); }}
+                        onClick={() => { deleteFinanceCommissionEntry(row.id); toast.success('Removido.'); }}
                         className="p-1.5 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all rounded-lg hover:bg-white/5"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

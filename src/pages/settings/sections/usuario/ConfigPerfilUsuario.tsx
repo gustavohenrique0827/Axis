@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
-import { 
-  User, Mail, Phone, Briefcase, Camera, 
-  ShieldCheck, KeyRound, Smartphone, LogOut, 
+import {
+  User, Mail, Phone, Briefcase, Camera,
+  ShieldCheck, KeyRound, Smartphone, LogOut,
   Save, CheckCircle2, AlertCircle, Sparkles, Building
 } from "lucide-react";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { supabase } from "../../../../lib/supabase";
 import { toast } from "sonner";
 
 interface UserProfile {
@@ -20,26 +21,27 @@ interface UserProfile {
   is2FAEnabled: boolean;
 }
 
-const STORAGE_KEY = "axis_user_profile";
+function profileFromSession(user: ReturnType<typeof useAuth>["user"]): UserProfile {
+  return {
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    role: user?.role || "",
+    bio: user?.bio || "",
+    avatar: user?.avatarUrl || null,
+    is2FAEnabled: user?.twoFactorEnabled ?? false,
+  };
+}
 
 export function ConfigPerfilUsuario() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
+  const [profile, setProfile] = useState<UserProfile>(() => profileFromSession(user));
 
-  const [profile, setProfile] = useState<UserProfile>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return {
-      name: user?.name || "Gustavo Portilho",
-      email: user?.email || "gustavo@axis.com.br",
-      phone: (user as any)?.phone || "(11) 98765-4321",
-      role: user?.role || "Diretor de Operações / Master",
-      bio: "Liderança estratégica, gestão de receita e automação de operações de alta performance.",
-      avatar: null,
-      is2FAEnabled: true,
-    };
-  });
+  // Reflete no formulário assim que o perfil real do Supabase chega/atualiza
+  // (na primeira carga, ou depois de um refreshUser() nosso).
+  useEffect(() => {
+    setProfile(profileFromSession(user));
+  }, [user?.id, user?.name, user?.email, user?.phone, user?.role, user?.bio, user?.avatarUrl, user?.twoFactorEnabled]);
 
   // Security Form
   const [currentPassword, setCurrentPassword] = useState("");
@@ -48,49 +50,59 @@ export function ConfigPerfilUsuario() {
   const [savingProfile, setSavingProfile] = useState(false);
   const [savingPassword, setSavingPassword] = useState(false);
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) {
-        toast.error("A imagem deve ter no máximo 2MB.");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        const updated = { ...profile, avatar: base64 };
-        setProfile(updated);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-        window.dispatchEvent(new Event("axis_profile_updated"));
-        toast.success("Foto de perfil atualizada e salva!");
-      };
-      reader.readAsDataURL(file);
+  const persistProfile = async (updates: Partial<{ name: string; phone: string; role: string; bio: string; avatar_url: string; two_factor_enabled: boolean }>) => {
+    if (!supabase || !user?.id) {
+      toast.error("Não foi possível identificar sua conta para salvar.");
+      return false;
     }
+    const { error } = await supabase.from("users").update(updates).eq("id", user.id);
+    if (error) {
+      toast.error(`Erro ao salvar: ${error.message}`);
+      return false;
+    }
+    await refreshUser();
+    return true;
   };
 
-  const handleSaveProfile = (e?: React.FormEvent) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("A imagem deve ter no máximo 2MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+      const base64 = reader.result as string;
+      setProfile(prev => ({ ...prev, avatar: base64 }));
+      if (await persistProfile({ avatar_url: base64 })) {
+        toast.success("Foto de perfil atualizada e salva!");
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveProfile = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!profile.name.trim()) {
       toast.error("O nome completo é obrigatório.");
       return;
     }
-    if (!profile.email.trim()) {
-      toast.error("O e-mail é obrigatório.");
-      return;
-    }
 
     setSavingProfile(true);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
-    window.dispatchEvent(new Event("axis_profile_updated"));
-
-    setTimeout(() => {
-      setSavingProfile(false);
-      toast.success("Perfil salvo e atualizado com sucesso!");
-    }, 400);
+    const ok = await persistProfile({
+      name: profile.name, phone: profile.phone, role: profile.role, bio: profile.bio,
+    });
+    setSavingProfile(false);
+    if (ok) toast.success("Perfil salvo e atualizado com sucesso!");
   };
 
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!supabase || !user?.email) {
+      toast.error("Não foi possível identificar sua conta.");
+      return;
+    }
     if (!currentPassword) {
       toast.error("Informe sua senha atual.");
       return;
@@ -105,26 +117,35 @@ export function ConfigPerfilUsuario() {
     }
 
     setSavingPassword(true);
-    localStorage.setItem("axis_user_security", JSON.stringify({
-      passwordUpdatedAt: new Date().toISOString(),
-    }));
-
-    setTimeout(() => {
+    // Reautentica com a senha atual pra confirmar que é realmente o dono da
+    // conta antes de trocar — supabase.auth.updateUser() sozinho não pede a
+    // senha atual (a sessão já é válida), então essa checagem é nossa.
+    const { error: reauthError } = await supabase.auth.signInWithPassword({
+      email: user.email, password: currentPassword,
+    });
+    if (reauthError) {
       setSavingPassword(false);
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      toast.success("Senha alterada com sucesso!");
-    }, 600);
+      toast.error("Senha atual incorreta.");
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setSavingPassword(false);
+    if (error) {
+      toast.error(`Erro ao trocar senha: ${error.message}`);
+      return;
+    }
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    toast.success("Senha alterada com sucesso!");
   };
 
-  const toggle2FA = () => {
+  const toggle2FA = async () => {
     const next = !profile.is2FAEnabled;
-    const updated = { ...profile, is2FAEnabled: next };
-    setProfile(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    window.dispatchEvent(new Event("axis_profile_updated"));
-    toast.success(next ? "Autenticação em Dois Fatores (2FA) ativada!" : "Autenticação em Dois Fatores desativada.");
+    setProfile(prev => ({ ...prev, is2FAEnabled: next }));
+    if (await persistProfile({ two_factor_enabled: next })) {
+      toast.success(next ? "Autenticação em Dois Fatores (2FA) ativada!" : "Autenticação em Dois Fatores desativada.");
+    }
   };
 
   return (
@@ -213,15 +234,14 @@ export function ConfigPerfilUsuario() {
             </div>
 
             <div>
-              <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1.5 block">E-mail Profissional *</label>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1.5 block">E-mail de Login</label>
               <input
                 type="email"
                 value={profile.email}
-                onChange={(e) => setProfile({ ...profile, email: e.target.value })}
-                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3.5 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] transition-all font-medium"
-                placeholder="seu.email@empresa.com"
-                required
+                disabled
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3.5 py-2 text-xs text-[var(--color-text-muted)] cursor-not-allowed font-medium"
               />
+              <p className="text-[10px] text-[var(--color-text-faint)] mt-1">Este é o e-mail da sua conta de acesso — não pode ser alterado por aqui.</p>
             </div>
 
             <div>

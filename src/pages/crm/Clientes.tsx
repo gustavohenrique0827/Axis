@@ -5,43 +5,23 @@ import { NovoClienteModal } from "../../components/ui/modals/crm/NovoClienteModa
 import { toast } from "sonner";
 import { PageContainer } from "../../components/PageContainer";
 import { supabase } from "../../lib/supabase";
-import { useData } from "../../contexts/DataContext";
 import { ClientesKPIs } from "./components/Clientes/ClientesKPIs";
 import { ClientesList } from "./components/Clientes/ClientesList";
 
-const STORAGE_KEY = "axis_clientes";
-
-const DEFAULT_CLIENTS = [
-  { id: "1", name: "Alpha Tech Soluções", industry: "Tecnologia", city: "São Paulo", state: "SP", phone: "(11) 98765-4321", email: "contato@alphatech.com", status: "Ativo" },
-  { id: "2", name: "Beta Logística & Frotas", industry: "Logística", city: "Curitiba", state: "PR", phone: "(41) 99876-5432", email: "suporte@betalog.com.br", status: "Em Implantação" },
-  { id: "3", name: "Gama Saúde Hospitalar", industry: "Saúde", city: "Belo Horizonte", state: "MG", phone: "(31) 97654-3210", email: "diretoria@gamasaude.com", status: "Ativo" },
-];
-
 export default function Clientes() {
-  const { clienteBase } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState("Todos as situações");
   const [sectorFilter, setSectorFilter] = useState("Todos os setores");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const [clientes, setClientes] = useState<any[]>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    if (clienteBase && clienteBase.length > 0) return clienteBase;
-    return DEFAULT_CLIENTS;
-  });
+  // Supabase (clientes) é a única fonte — sem cache local.
+  const [clientes, setClientes] = useState<any[]>([]);
 
   useEffect(() => {
     if (!supabase) return;
     supabase.from("clientes").select("*").order("created_at", { ascending: false }).then(({ data, error }) => {
-      if (error) {
-        console.error("[Supabase] clientes load error:", error.message);
-      } else if (data && data.length > 0) {
-        setClientes(data);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-      }
+      if (error) toast.error(`Erro ao carregar clientes: ${error.message}`);
+      else if (data) setClientes(data);
     });
   }, []);
 
@@ -54,8 +34,8 @@ export default function Clientes() {
 
   const handleCreateCliente = async (data: any) => {
     if (!data.nome) { toast.error("Nome da empresa é obrigatório."); return; }
+    if (!supabase) { toast.error("Supabase não configurado."); return; }
     const newClient = {
-      id: Date.now().toString(),
       name: data.nome,
       industry: data.industry || "Tecnologia",
       city: data.cidade || "São Paulo",
@@ -65,31 +45,18 @@ export default function Clientes() {
       status: "Ativo",
     };
 
-    setClientes(prev => {
-      const updated = [newClient, ...prev];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
-
-    if (supabase) {
-      const { error } = await supabase.from("clientes").insert(newClient);
-      if (error) console.error("[Supabase] clientes insert error:", error.message);
-    }
+    const { data: inserted, error } = await supabase.from("clientes").insert(newClient).select().maybeSingle();
+    if (error) { toast.error(`Erro ao cadastrar cliente: ${error.message}`); return; }
+    if (inserted) setClientes(prev => [inserted, ...prev]);
     toast.success("Cliente cadastrado com sucesso!");
     setIsModalOpen(false);
   };
 
   const handleDeleteCliente = async (id: string) => {
-    setClientes(prev => {
-      const updated = prev.filter(c => c.id !== id);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      return updated;
-    });
-
-    if (supabase) {
-      const { error } = await supabase.from("clientes").delete().eq("id", id);
-      if (error) console.error("[Supabase] clientes delete error:", error.message);
-    }
+    if (!supabase) { toast.error("Supabase não configurado."); return; }
+    const { error } = await supabase.from("clientes").delete().eq("id", id);
+    if (error) { toast.error(`Erro ao remover cliente: ${error.message}`); return; }
+    setClientes(prev => prev.filter(c => c.id !== id));
     toast.success("Cliente removido com sucesso!");
   };
 

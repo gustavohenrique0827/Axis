@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
@@ -6,8 +6,9 @@ import { FormField } from "../../../../components/ui/form-field";
 import { Alert } from "../../../../components/ui/alert";
 import { Mail, Server, ShieldCheck, Send, Save } from "lucide-react";
 import { toast } from "sonner";
+import { useData } from "../../../../contexts/DataContext";
 
-const STORAGE_KEY = "axis_smtp_config";
+const SETTING_KEY = "integracoes_smtp";
 
 const DEFAULT_SMTP = {
   smtpServer: "email-smtp.us-east-1.amazonaws.com",
@@ -19,13 +20,15 @@ const DEFAULT_SMTP = {
 };
 
 export function ConfigIntegracoesSMTP() {
-  const [config, setConfig] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return DEFAULT_SMTP;
-  });
+  const { appSettings, saveAppSetting } = useData();
+  const [config, setConfig] = useState(DEFAULT_SMTP);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    if (hydrated) return;
+    const saved = appSettings?.[SETTING_KEY];
+    if (saved) { setConfig(saved); setHydrated(true); }
+  }, [appSettings, hydrated]);
 
   const [testing, setTesting] = useState(false);
 
@@ -47,8 +50,9 @@ export function ConfigIntegracoesSMTP() {
     );
   };
 
-  const handleSave = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  const handleSave = async () => {
+    setHydrated(true);
+    await saveAppSetting(SETTING_KEY, config);
     toast.success("Preferências de SMTP salvas com sucesso!");
   };
 
