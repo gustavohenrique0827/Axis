@@ -11,7 +11,7 @@ export default function Indicadores() {
     schedules, selectedKPI, setSelectedKPI, criticalKPIs,
     newEmail, setNewEmail, newWeekday, setNewWeekday, newTime, setNewTime,
     handleCreateSchedule, handleToggleSchedule, handleDeleteSchedule,
-    simulateRunAndDownloadCSV, kpiCards, monthlyData, pieData,
+    simulateRunAndDownloadCSV, handleExportPDF, kpiCards, monthlyData, pieData,
   } = useIndicadores();
 
   return (
@@ -20,7 +20,7 @@ export default function Indicadores() {
       description="Deep dive nos KPIs corporativos, projeção de faturamento e governança de dados estratégica."
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" className="border-white/10 bg-[var(--color-surface-elevated)] text-slate-300 h-11 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px]">
+          <Button onClick={handleExportPDF} variant="outline" className="border-white/10 bg-[var(--color-surface-elevated)] text-slate-300 h-11 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px]">
             Exportar PDF
           </Button>
           <select className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl px-4 py-2 text-[10px] font-black uppercase tracking-widest outline-none focus:border-blue-500 text-white h-11">

@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 import { Target, Activity, Zap, Users } from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
 
@@ -62,7 +64,72 @@ export function useIndicadores() {
   };
 
   const simulateRunAndDownloadCSV = () => {
-    toast.success(`Simulação realizada! Relatório CSV disparado para ${schedules.filter(s => s.active).length} destinatários ativos.`);
+    const lines: string[] = [];
+    lines.push("Indicador;Valor;Tendência");
+    kpiCards.forEach(k => lines.push(`"${k.label}";"${k.value}";"${k.trend}"`));
+    lines.push("");
+    lines.push("Mês;Receita;Meta");
+    monthlyData.forEach(m => lines.push(`"${m.name}";${m.receita};${m.meta}`));
+
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `indicadores_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+
+    toast.success(`Relatório CSV gerado e disparado para ${schedules.filter(s => s.active).length} destinatários ativos.`);
+  };
+
+  const handleExportPDF = () => {
+    try {
+      const doc = new jsPDF();
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Axis SaaS - Relatório de Indicadores (BI & Analytics)", 14, 20);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(100, 116, 139);
+      doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 14, 26);
+
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(37, 99, 235);
+      doc.text("1. Indicadores-Chave", 14, 36);
+
+      (doc as any).autoTable({
+        startY: 40,
+        head: [["Indicador", "Valor", "Tendência"]],
+        body: kpiCards.map(k => [k.label, k.value, k.trend]),
+        theme: "striped",
+        headStyles: { fillColor: [37, 99, 235] },
+        styles: { fontSize: 9 }
+      });
+
+      const currentY = (doc as any).lastAutoTable.finalY + 12;
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(37, 99, 235);
+      doc.text("2. Evolução Mensal (Receita vs Meta)", 14, currentY);
+
+      (doc as any).autoTable({
+        startY: currentY + 4,
+        head: [["Mês", "Receita", "Meta"]],
+        body: monthlyData.length > 0
+          ? monthlyData.map(m => [m.name, `R$ ${m.receita.toLocaleString("pt-BR")}`, `R$ ${m.meta.toLocaleString("pt-BR")}`])
+          : [["—", "—", "—"]],
+        theme: "striped",
+        headStyles: { fillColor: [37, 99, 235] },
+        styles: { fontSize: 9 }
+      });
+
+      doc.save(`indicadores_${new Date().toISOString().slice(0, 10)}.pdf`);
+      toast.success("Relatório PDF exportado com sucesso!");
+    } catch (e) {
+      console.error("[Indicadores] PDF export error:", e);
+      toast.error("Erro ao gerar o relatório PDF.");
+    }
   };
 
   // KPIs dinâmicos
@@ -142,6 +209,7 @@ export function useIndicadores() {
     handleToggleSchedule,
     handleDeleteSchedule,
     simulateRunAndDownloadCSV,
+    handleExportPDF,
     kpiCards,
     monthlyData,
     pieData

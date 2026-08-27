@@ -1,6 +1,6 @@
 import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
-import { Users } from "lucide-react";
+import { Users, Trash2 } from "lucide-react";
 
 interface Student {
   id: string;
@@ -17,9 +17,10 @@ interface Student {
 interface AlunosTableProps {
   students: Student[];
   onManage: (student: Student) => void;
+  onDelete: (student: Student) => void;
 }
 
-export function AlunosTable({ students, onManage }: AlunosTableProps) {
+export function AlunosTable({ students, onManage, onDelete }: AlunosTableProps) {
   return (
     <div className="overflow-x-auto pb-6">
       <table className="w-full border-separate border-spacing-y-2">
@@ -56,13 +57,24 @@ export function AlunosTable({ students, onManage }: AlunosTableProps) {
                 </Badge>
               </td>
               <td className="py-4 pr-6 rounded-r-2xl border-y border-r border-white/5 text-right">
-                <Button
-                  onClick={() => onManage(aluno)}
-                  variant="ghost"
-                  className="h-8 text-[10px] uppercase font-black tracking-widest text-blue-500 hover:bg-blue-500/10"
-                >
-                  Gerenciar
-                </Button>
+                <div className="flex items-center justify-end gap-1">
+                  <Button
+                    onClick={() => onManage(aluno)}
+                    variant="ghost"
+                    className="h-8 text-[10px] uppercase font-black tracking-widest text-blue-500 hover:bg-blue-500/10"
+                  >
+                    Gerenciar
+                  </Button>
+                  <Button
+                    onClick={() => onDelete(aluno)}
+                    variant="ghost"
+                    size="icon"
+                    title="Excluir aluno"
+                    className="h-8 w-8 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </td>
             </tr>
           )) : (

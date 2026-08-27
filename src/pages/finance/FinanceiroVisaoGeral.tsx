@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { Button } from "../../components/ui/button";
-import { ArrowDownRight, Printer, Download } from "lucide-react";
+import { Printer, Download } from "lucide-react";
 import { useData } from "../../contexts/DataContext";
 import { PageContainer } from "../../components/PageContainer";
 import { FinanceiroKPIs } from "./components/FinanceiroVisaoGeral/FinanceiroKPIs";
@@ -56,19 +56,26 @@ export default function FinanceiroVisaoGeral() {
 
   const stabilityScore = receita + despesa > 0 ? Math.round((receita / (receita + despesa)) * 100) : 0;
 
+  const handleExport = () => {
+    const lines = ['Descrição;Tipo;Categoria;Data;Status;Valor'];
+    financeEntries.forEach(f => lines.push(`"${f.description}";"${f.type}";"${f.category}";"${f.date}";"${f.status}";${f.value}`));
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'painel_financeiro.csv';
+    a.click();
+  };
+
   return (
     <PageContainer
       title="Painel Financeiro"
       description="Monitoramento avançado de fluxo, MRR, inadimplência e projeção de caixa em tempo real."
       actions={
         <div className="flex gap-2">
-          <Button variant="outline" className="hidden sm:flex print:hidden h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] bg-white/5 border-white/10 text-white">
-            Q2 - 2026 <ArrowDownRight className="w-3 h-3 ml-2 opacity-50" />
-          </Button>
           <Button onClick={() => window.print()} className="print:hidden h-11 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px] bg-white/5 border-white/10 text-white hover:bg-white/10">
             <Printer className="w-4 h-4 mr-2" />
           </Button>
-          <Button className="print:hidden h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] bg-[#2563EB] hover:bg-blue-600 text-white shadow-xl shadow-blue-500/20">
+          <Button onClick={handleExport} className="print:hidden h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] bg-[#2563EB] hover:bg-blue-600 text-white shadow-xl shadow-blue-500/20">
             <Download className="w-4 h-4 mr-2" /> Exportar
           </Button>
         </div>

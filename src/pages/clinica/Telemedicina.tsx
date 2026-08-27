@@ -125,7 +125,7 @@ export default function TelemedicinaDashboard() {
           <Button 
             onClick={handleStartMeeting}
             disabled={!token || isCreatingMeeting}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2 shadow-lg shadow-indigo-950/30"
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2 shadow-lg shadow-blue-950/30"
           >
              {isCreatingMeeting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Video className="w-4 h-4" />}
              Gerar Sala Google Meet
@@ -142,7 +142,7 @@ export default function TelemedicinaDashboard() {
                 <div className="absolute inset-0">
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10" />
                   <div className="absolute inset-0 flex flex-col items-center justify-center z-20 text-center px-10">
-                     <div className="p-6 bg-indigo-600 rounded-full mb-6 animate-pulse">
+                     <div className="p-6 bg-blue-600 rounded-full mb-6 animate-pulse">
                         <Video className="w-12 h-12 text-white" />
                      </div>
                      <h2 className="text-3xl font-black text-white italic tracking-tighter mb-2">Sala Google Meet Ativa</h2>
@@ -157,7 +157,7 @@ export default function TelemedicinaDashboard() {
                      <div className="flex gap-4">
                         <Button 
                           onClick={() => window.open(activeMeeting.meetingUri, '_blank')}
-                          className="bg-white text-indigo-900 hover:bg-slate-200 rounded-2xl h-14 px-10 text-xs font-black uppercase tracking-widest gap-2 shadow-2xl"
+                          className="bg-white text-blue-900 hover:bg-slate-200 rounded-2xl h-14 px-10 text-xs font-black uppercase tracking-widest gap-2 shadow-2xl"
                         >
                            <ExternalLink className="w-5 h-5" /> Abrir Chamada
                         </Button>
@@ -220,29 +220,29 @@ export default function TelemedicinaDashboard() {
            <div className="grid md:grid-cols-2 gap-6">
               <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
                  <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-8 flex items-center gap-2">
-                    <ClipboardList className="w-4 h-4 text-indigo-400" /> Notas da Consulta
+                    <ClipboardList className="w-4 h-4 text-blue-400" /> Notas da Consulta
                  </h4>
                  <textarea 
                    placeholder="Digite as observações em tempo real..."
-                   className="w-full h-40 bg-white/5 border border-white/5 rounded-2xl p-6 text-sm text-white focus:outline-none focus:border-indigo-500/50 transition-all resize-none"
+                   className="w-full h-40 bg-white/5 border border-white/5 rounded-2xl p-6 text-sm text-white focus:outline-none focus:border-blue-500/50 transition-all resize-none"
                  />
-                 <Button className="w-full mt-4 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest h-12 rounded-2xl hover:bg-indigo-600 hover:border-indigo-600 transition-all">Anexar ao Prontuário</Button>
+                 <Button className="w-full mt-4 bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest h-12 rounded-2xl hover:bg-blue-600 hover:border-blue-600 transition-all">Anexar ao Prontuário</Button>
               </Card>
 
               <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 flex flex-col justify-between">
                  <div>
                     <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-8 flex items-center gap-2">
-                       <MessageSquare className="w-4 h-4 text-indigo-400" /> Chat com Paciente
+                       <MessageSquare className="w-4 h-4 text-blue-400" /> Chat com Paciente
                     </h4>
                     <div className="space-y-4">
                        <div className="flex gap-3">
-                          <div className="w-8 h-8 rounded-full bg-indigo-600 shrink-0" />
+                          <div className="w-8 h-8 rounded-full bg-blue-600 shrink-0" />
                           <div className="bg-white/5 rounded-2xl p-4 border border-white/5">
                              <p className="text-xs text-slate-300 leading-relaxed font-medium">Os exames de sangue já estão disponíveis no portal?</p>
                           </div>
                        </div>
                        <div className="flex gap-3 justify-end">
-                          <div className="bg-indigo-600/20 rounded-2xl p-4 border border-indigo-500/10">
+                          <div className="bg-blue-600/20 rounded-2xl p-4 border border-blue-500/10">
                              <p className="text-xs text-white leading-relaxed font-medium">Sim, acabaram de ser anexados ao sistema.</p>
                           </div>
                        </div>
@@ -250,7 +250,7 @@ export default function TelemedicinaDashboard() {
                  </div>
                  <div className="relative mt-10">
                     <input type="text" placeholder="Mensagem..." className="w-full bg-white/5 border border-white/10 rounded-2xl h-14 pl-6 pr-12 text-xs text-white" />
-                    <button className="absolute right-4 top-1/2 -translate-y-1/2 text-indigo-400"><Share2 className="w-5 h-5" /></button>
+                    <button className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-400"><Share2 className="w-5 h-5" /></button>
                  </div>
               </Card>
            </div>
@@ -262,11 +262,11 @@ export default function TelemedicinaDashboard() {
               <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-8">Fila Virtual</h4>
               <div className="space-y-4">
                  {activeConferences.map((conf) => (
-                    <div key={conf.id} className={`p-4 rounded-2xl border transition-all ${conf.status === 'In Call' ? 'bg-indigo-600/10 border-indigo-500/20' : 'bg-white/5 border-white/5 opacity-60'}`}>
+                    <div key={conf.id} className={`p-4 rounded-2xl border transition-all ${conf.status === 'In Call' ? 'bg-blue-600/10 border-blue-500/20' : 'bg-white/5 border-white/5 opacity-60'}`}>
                        <p className="text-sm font-black text-white mb-1">{conf.patient}</p>
                        <p className="text-[10px] text-slate-500 font-bold uppercase">{conf.dr}</p>
                        <div className="flex items-center justify-between mt-4">
-                          <span className="text-[9px] font-black text-indigo-400 bg-white/5 px-2 py-1 rounded-lg uppercase">{conf.status}</span>
+                          <span className="text-[9px] font-black text-blue-400 bg-white/5 px-2 py-1 rounded-lg uppercase">{conf.status}</span>
                           <span className="text-xs font-mono text-slate-500">{conf.startTime}</span>
                        </div>
                     </div>
@@ -274,11 +274,11 @@ export default function TelemedicinaDashboard() {
               </div>
            </Card>
 
-           <Card className="p-8 bg-gradient-to-br from-indigo-600/10 to-transparent border-indigo-500/20 relative overflow-hidden group">
+           <Card className="p-8 bg-gradient-to-br from-blue-600/10 to-transparent border-blue-500/20 relative overflow-hidden group">
               <div className="absolute top-0 right-0 p-8 opacity-[0.05] group-hover:scale-110 transition-transform">
-                 <ShieldCheck className="w-20 h-20 text-indigo-400" />
+                 <ShieldCheck className="w-20 h-20 text-blue-400" />
               </div>
-              <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+              <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-6 flex items-center gap-2">
                  <Zap className="w-4 h-4" /> MIA Teleanalisys
               </h4>
               <p className="text-xs text-slate-400 italic mb-6 leading-relaxed">

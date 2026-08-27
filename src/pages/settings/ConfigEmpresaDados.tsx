@@ -6,11 +6,41 @@ import { CheckCircle2, AlertTriangle } from "lucide-react";
 
 type CnpjStatus = "idle" | "checking" | "active" | "inactive" | "invalid";
 
+interface EmpresaDadosForm {
+  cnpj: string;
+  razaoSocial: string;
+  nomeFantasia: string;
+  inscricaoEstadual: string;
+  endereco: string;
+}
+
+const EMPRESA_DADOS_STORAGE_KEY = "axis_empresa_dados";
+
+const DEFAULT_EMPRESA_DADOS: EmpresaDadosForm = {
+  cnpj: "",
+  razaoSocial: "",
+  nomeFantasia: "",
+  inscricaoEstadual: "",
+  endereco: "",
+};
+
+function loadEmpresaDados(): EmpresaDadosForm {
+  try {
+    const saved = localStorage.getItem(EMPRESA_DADOS_STORAGE_KEY);
+    if (saved) return { ...DEFAULT_EMPRESA_DADOS, ...JSON.parse(saved) };
+  } catch (e) {
+    // ignore
+  }
+  return DEFAULT_EMPRESA_DADOS;
+}
+
 export default function ConfigEmpresaDados() {
-  const [cnpj, setCnpj] = useState("");
-  const [razaoSocial, setRazaoSocial] = useState("");
-  const [nomeFantasia, setNomeFantasia] = useState("");
-  const [endereco, setEndereco] = useState("");
+  const initial = loadEmpresaDados();
+  const [cnpj, setCnpj] = useState(initial.cnpj);
+  const [razaoSocial, setRazaoSocial] = useState(initial.razaoSocial);
+  const [nomeFantasia, setNomeFantasia] = useState(initial.nomeFantasia);
+  const [inscricaoEstadual, setInscricaoEstadual] = useState(initial.inscricaoEstadual);
+  const [endereco, setEndereco] = useState(initial.endereco);
   const [cnpjStatus, setCnpjStatus] = useState<{ status: CnpjStatus; message?: string }>({ status: "idle" });
 
   const handleCnpjChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,6 +80,12 @@ export default function ConfigEmpresaDados() {
     if (!validateCNPJ(cnpj)) {
       toast.error("CNPJ inválido. Verifique o formato.");
       return;
+    }
+    const payload: EmpresaDadosForm = { cnpj, razaoSocial, nomeFantasia, inscricaoEstadual, endereco };
+    try {
+      localStorage.setItem(EMPRESA_DADOS_STORAGE_KEY, JSON.stringify(payload));
+    } catch (e) {
+      // ignore
     }
     toast.success('Dados salvos com sucesso!');
   };
@@ -127,7 +163,13 @@ export default function ConfigEmpresaDados() {
             </div>
             <div className="space-y-2">
               <label className="text-xs font-semibold text-[var(--color-text-muted)]">Inscrição Estadual</label>
-              <input type="text" className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-[var(--color-text-primary)]" placeholder="Opcional" />
+              <input
+                type="text"
+                value={inscricaoEstadual}
+                onChange={(e) => setInscricaoEstadual(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-lg px-4 py-2 text-sm focus:border-[#2563EB] focus:outline-none text-[var(--color-text-primary)]"
+                placeholder="Opcional"
+              />
             </div>
           </div>
 

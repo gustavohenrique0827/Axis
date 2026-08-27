@@ -4,9 +4,61 @@ import { Button } from "../../../../components/ui/button";
 import { Zap } from "lucide-react";
 import { toast } from "sonner";
 
+interface SdrWebhookConfig {
+  reuniaoUrl: string;
+  reuniaoActive: boolean;
+  qualificadoUrl: string;
+  qualificadoActive: boolean;
+  qualificadoEventos: string[];
+}
+
+const SDR_WEBHOOK_STORAGE_KEY = "axis_integracoes_sdr_webhooks";
+
+const DEFAULT_SDR_WEBHOOK_CONFIG: SdrWebhookConfig = {
+  reuniaoUrl: "",
+  reuniaoActive: true,
+  qualificadoUrl: "",
+  qualificadoActive: true,
+  qualificadoEventos: [],
+};
+
+function loadSdrWebhookConfig(): SdrWebhookConfig {
+  try {
+    const saved = localStorage.getItem(SDR_WEBHOOK_STORAGE_KEY);
+    if (saved) return { ...DEFAULT_SDR_WEBHOOK_CONFIG, ...JSON.parse(saved) };
+  } catch (e) {
+    // ignore
+  }
+  return DEFAULT_SDR_WEBHOOK_CONFIG;
+}
+
 export function ConfigIntegracoesSDR() {
-  const [webhookUrl, setWebhookUrl] = useState("");
-  const [webhookActive, setWebhookActive] = useState(true);
+  const initial = loadSdrWebhookConfig();
+  const [webhookUrl, setWebhookUrl] = useState(initial.reuniaoUrl);
+  const [webhookActive, setWebhookActive] = useState(initial.reuniaoActive);
+  const [qualificadoUrl, setQualificadoUrl] = useState(initial.qualificadoUrl);
+  const [qualificadoActive, setQualificadoActive] = useState(initial.qualificadoActive);
+  const [qualificadoEventos, setQualificadoEventos] = useState<string[]>(initial.qualificadoEventos);
+
+  const toggleQualificadoEvento = (evt: string) => {
+    setQualificadoEventos(prev => prev.includes(evt) ? prev.filter(e => e !== evt) : [...prev, evt]);
+  };
+
+  const persist = () => {
+    const payload: SdrWebhookConfig = {
+      reuniaoUrl: webhookUrl,
+      reuniaoActive: webhookActive,
+      qualificadoUrl,
+      qualificadoActive,
+      qualificadoEventos,
+    };
+    try {
+      localStorage.setItem(SDR_WEBHOOK_STORAGE_KEY, JSON.stringify(payload));
+    } catch (e) {
+      // ignore
+    }
+    toast.success("Configuração salva com sucesso");
+  };
 
   const testWebhook = () => {
     toast.promise(new Promise(resolve => setTimeout(resolve, 1200)), {
@@ -74,7 +126,7 @@ export function ConfigIntegracoesSDR() {
 
           <div className="pt-2 flex justify-end gap-3">
             <Button variant="outline" onClick={testWebhook} className="border-white/10 hover:bg-white/5 text-xs font-bold uppercase py-2">Disparar Teste</Button>
-            <Button className="bg-[#2563EB] hover:bg-blue-600 font-bold px-5 text-xs uppercase shadow-xl" onClick={() => toast.success("Configuração salva com sucesso")}>Salvar Webhook</Button>
+            <Button className="bg-[#2563EB] hover:bg-blue-600 font-bold px-5 text-xs uppercase shadow-xl" onClick={persist}>Salvar Webhook</Button>
           </div>
         </div>
       </Card>
@@ -89,9 +141,9 @@ export function ConfigIntegracoesSDR() {
             </div>
             <label className="flex items-center cursor-pointer">
               <div className="relative">
-                <input type="checkbox" className="sr-only" defaultChecked />
-                <div className="block w-10 h-6 rounded-full bg-emerald-600" />
-                <div className="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transform translate-x-4" />
+                <input type="checkbox" className="sr-only" checked={qualificadoActive} onChange={() => setQualificadoActive(p => !p)} />
+                <div className={`block w-10 h-6 rounded-full transition-colors ${qualificadoActive ? "bg-emerald-600" : "bg-slate-700"}`} />
+                <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${qualificadoActive ? "transform translate-x-4" : ""}`} />
               </div>
             </label>
           </div>
@@ -102,6 +154,8 @@ export function ConfigIntegracoesSDR() {
             <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Endpoint URL</label>
             <input
               type="text"
+              value={qualificadoUrl}
+              onChange={e => setQualificadoUrl(e.target.value)}
               placeholder="https://n8n.seumodelo.com/webhook/sdr-qualificado"
               className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-sm text-white font-mono focus:border-emerald-500 focus:outline-none"
             />
@@ -112,7 +166,12 @@ export function ConfigIntegracoesSDR() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
               {["Atualização de Score IA", "Mapeamento de Perfil Concluído", "Contato Iniciado (1º Touchpoint)", "Identificação de Ticket Médio"].map(evt => (
                 <label key={evt} className="flex items-center gap-2 text-sm text-slate-300">
-                  <input type="checkbox" className="rounded border-white/20 bg-transparent text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0" />
+                  <input
+                    type="checkbox"
+                    checked={qualificadoEventos.includes(evt)}
+                    onChange={() => toggleQualificadoEvento(evt)}
+                    className="rounded border-white/20 bg-transparent text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0"
+                  />
                   {evt}
                 </label>
               ))}
@@ -135,7 +194,7 @@ export function ConfigIntegracoesSDR() {
 
           <div className="pt-2 flex justify-end gap-3">
             <Button variant="outline" onClick={testWebhook} className="border-white/10 hover:bg-white/5 text-xs font-bold uppercase py-2">Disparar Teste</Button>
-            <Button className="bg-[#2563EB] hover:bg-blue-600 font-bold px-5 text-xs uppercase shadow-xl" onClick={() => toast.success("Configuração salva com sucesso")}>Salvar Webhook</Button>
+            <Button className="bg-[#2563EB] hover:bg-blue-600 font-bold px-5 text-xs uppercase shadow-xl" onClick={persist}>Salvar Webhook</Button>
           </div>
         </div>
       </Card>

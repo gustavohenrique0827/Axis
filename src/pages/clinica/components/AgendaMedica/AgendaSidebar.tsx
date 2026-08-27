@@ -17,7 +17,7 @@ export function AgendaSidebar({ doctors, selectedDrs, onToggle, onSelectAll, get
       <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-xl">
         <div className="flex items-center justify-between mb-8">
           <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Painel de Médicos</h3>
-          <button onClick={onSelectAll} className="text-[9px] font-black text-emerald-400 uppercase tracking-tighter">Marcar Todos</button>
+          <button onClick={onSelectAll} className="text-[9px] font-black text-blue-400 uppercase tracking-tighter">Marcar Todos</button>
         </div>
         <div className="space-y-3">
           {doctors.length === 0 ? (
@@ -40,27 +40,27 @@ export function AgendaSidebar({ doctors, selectedDrs, onToggle, onSelectAll, get
                 <p className="text-xs font-black text-white">{dr.name}</p>
                 <p className="text-[9px] text-slate-500 font-bold uppercase">{dr.esp}</p>
               </div>
-              {selectedDrs.includes(dr.id) && <Check className="w-3 h-3 text-emerald-400" />}
+              {selectedDrs.includes(dr.id) && <Check className="w-3 h-3 text-blue-400" />}
             </button>
           ))}
         </div>
       </Card>
 
-      <Card className="p-8 bg-gradient-to-br from-[#10b981]/10 to-transparent border-emerald-500/10 group">
+      <Card className="p-8 bg-gradient-to-br from-blue-600/10 to-transparent border-blue-500/10 group">
         <div className="flex items-center justify-between mb-8">
-          <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-2">
+          <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
             <Zap className="w-3 h-3" /> Eficiência Global
           </h4>
-          <div className="w-8 h-8 rounded-full border border-emerald-500/20 flex items-center justify-center text-[10px] font-black text-emerald-400">82%</div>
+          <div className="w-8 h-8 rounded-full border border-blue-500/20 flex items-center justify-center text-[10px] font-black text-blue-400">82%</div>
         </div>
         <div className="space-y-6">
           <div>
             <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wide">
               <span>Taxa de Espera</span>
-              <span className="text-emerald-400">12min</span>
+              <span className="text-blue-400">12min</span>
             </div>
             <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-              <div className="h-full bg-emerald-500 w-[45%]" />
+              <div className="h-full bg-blue-500 w-[45%]" />
             </div>
           </div>
           <div className="p-4 bg-white/5 rounded-xl border border-white/5">

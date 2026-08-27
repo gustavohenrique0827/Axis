@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { 
-  Zap, Search, Plus, Filter, Play, 
-  Settings, Users, Mail, MessageSquare,
-  BarChart3, Clock, ChevronRight, Pause,
+import {
+  Zap, Search, Plus, Play,
+  Settings, Users, Trash2,
+  BarChart3, Pause,
   Share2, MousePointer2
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
+import { ConfirmModal } from "../../components/ui/modals/shared/ConfirmModal";
 
 interface Automation {
   id: string;
@@ -29,41 +30,70 @@ import { PageContainer } from "../../components/PageContainer";
 import { useData } from "../../contexts/DataContext";
 
 export default function MarketingAutomacoes() {
-  const { marketingAutomations: automations, setMarketingAutomations } = useData();
+  const { marketingAutomations: automations, addMarketingAutomation, updateMarketingAutomation, deleteMarketingAutomation } = useData();
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [editingAutomation, setEditingAutomation] = useState<Automation | null>(null);
+  const [deletingAutomation, setDeletingAutomation] = useState<Automation | null>(null);
   const [newFlowName, setNewFlowName] = useState("");
   const [newFlowTrigger, setNewFlowTrigger] = useState("Novo Lead");
+
+  const openCreateModal = () => {
+    setEditingAutomation(null);
+    setNewFlowName("");
+    setNewFlowTrigger("Novo Lead");
+    setIsCreateModalOpen(true);
+  };
+
+  const openEditModal = (automation: Automation) => {
+    setEditingAutomation(automation);
+    setNewFlowName(automation.name);
+    setNewFlowTrigger(automation.trigger);
+    setIsCreateModalOpen(true);
+  };
 
   const handleCreateFlow = () => {
     if (!newFlowName.trim()) {
       toast.error("Preencha o nome da automação");
       return;
     }
-    const newAutomation: Automation = {
-      id: Math.random().toString(36).substring(7),
-      name: newFlowName,
-      trigger: newFlowTrigger,
-      steps: 1,
-      activeCount: 0,
-      conversion: "0%",
-      status: "Rascunho",
-      lastRun: "-",
-    };
-    setMarketingAutomations([newAutomation, ...automations]);
+    if (editingAutomation) {
+      updateMarketingAutomation(editingAutomation.id, { name: newFlowName, trigger: newFlowTrigger });
+      toast.success("Automação atualizada com sucesso!");
+    } else {
+      const newAutomation: Automation = {
+        id: Math.random().toString(36).substring(7),
+        name: newFlowName,
+        trigger: newFlowTrigger,
+        steps: 1,
+        activeCount: 0,
+        conversion: "0%",
+        status: "Rascunho",
+        lastRun: "-",
+      };
+      addMarketingAutomation(newAutomation);
+      toast.success("Novo fluxo criado com sucesso!");
+    }
     setIsCreateModalOpen(false);
+    setEditingAutomation(null);
     setNewFlowName("");
-    toast.success("Novo fluxo criado com sucesso!");
   };
 
   const toggleStatus = (id: string) => {
     const a = automations.find(a => a.id === id);
     if (a) {
       const nextStatus = a.status === 'Ativa' ? 'Pausada' : 'Ativa';
-      setMarketingAutomations(automations.map(a => a.id === id ? { ...a, status: nextStatus } : a));
+      updateMarketingAutomation(id, { status: nextStatus });
       toast.success(`Automação "${a.name}" ${nextStatus === 'Ativa' ? 'ativada' : 'pausada'}`);
     }
+  };
+
+  const handleDeleteAutomation = () => {
+    if (!deletingAutomation) return;
+    deleteMarketingAutomation(deletingAutomation.id);
+    toast.success("Automação excluída com sucesso.");
+    setDeletingAutomation(null);
   };
 
   const filtered = automations.filter(a => {
@@ -72,6 +102,18 @@ export default function MarketingAutomacoes() {
     const matchesStatus = !activeFilter || a.status === activeFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const leadsEmFluxo = automations.reduce((sum, a) => sum + (Number(a.activeCount) || 0), 0);
+  const automacoesAtivas = automations.filter(a => a.status === 'Ativa').length;
+  const conversionValues = automations
+    .map(a => parseFloat(String(a.conversion).replace('%', '').replace(',', '.')))
+    .filter(n => !isNaN(n));
+  const conversaoMedia = conversionValues.length > 0
+    ? `${Math.round(conversionValues.reduce((s, n) => s + n, 0) / conversionValues.length)}%`
+    : "0%";
+  const eficienciaMedia = automations.length > 0
+    ? `${Math.round((automacoesAtivas / automations.length) * 100)}%`
+    : "0%";
 
   return (
     <PageContainer
@@ -82,9 +124,9 @@ export default function MarketingAutomacoes() {
           <Button className="bg-white/5 hover:bg-white/10 text-white border-white/10 h-11 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px]">
              Biblioteca
           </Button>
-          <Button 
-            onClick={() => setIsCreateModalOpen(true)}
-            className="bg-purple-600 hover:bg-purple-700 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-purple-600/20 cursor-pointer"
+          <Button
+            onClick={openCreateModal}
+            className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20 cursor-pointer"
           >
             <Plus className="w-4 h-4 mr-2" /> Criar Fluxo
           </Button>
@@ -95,10 +137,10 @@ export default function MarketingAutomacoes() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Leads em Fluxo", value: "0", icon: Users, color: "text-indigo-500" },
-          { label: "Emails Enviados", value: "0", icon: Mail, color: "text-blue-500" },
-          { label: "Conversões Assist.", value: "0", icon: MousePointer2, color: "text-emerald-500" },
-          { label: "Eficiência Média", value: "0%", icon: BarChart3, color: "text-amber-500" },
+          { label: "Leads em Fluxo", value: String(leadsEmFluxo), icon: Users, color: "text-blue-500" },
+          { label: "Automações Ativas", value: String(automacoesAtivas), icon: Zap, color: "text-blue-500" },
+          { label: "Conversão Média", value: conversaoMedia, icon: MousePointer2, color: "text-emerald-500" },
+          { label: "Eficiência Média", value: eficienciaMedia, icon: BarChart3, color: "text-amber-500" },
         ].map((stat, i) => (
           <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
             <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
@@ -115,13 +157,13 @@ export default function MarketingAutomacoes() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nome ou gatilho..." 
-            className="w-full bg-[var(--color-surface)] border-white/5 pl-12 h-12 rounded-xl text-sm italic focus:border-purple-500/50"
+            className="w-full bg-[var(--color-surface)] border-white/5 pl-12 h-12 rounded-xl text-sm italic focus:border-blue-500/50"
           />
         </div>
         <div className="flex gap-2">
-           <button 
+           <button
              onClick={() => setActiveFilter(activeFilter === 'Ativa' ? null : 'Ativa')}
-             className={`inline-flex items-center rounded-full h-10 px-4 cursor-pointer transition-all border border-white/5 text-[9px] uppercase tracking-widest font-black ${activeFilter === 'Ativa' ? 'bg-purple-600 text-white border-purple-500' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}
+             className={`inline-flex items-center rounded-full h-10 px-4 cursor-pointer transition-all border border-white/5 text-[9px] uppercase tracking-widest font-black ${activeFilter === 'Ativa' ? 'bg-blue-600 text-white border-blue-500' : 'bg-white/5 text-slate-400 hover:bg-white/10'}`}
            >
              Ativas
            </button>
@@ -136,11 +178,11 @@ export default function MarketingAutomacoes() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filtered.map((item) => (
-          <Card key={item.id} className={`p-6 border-white/5 hover:border-purple-500/30 transition-all ${item.status === 'Pausada' ? 'bg-[var(--color-surface-elevated)]/30 opacity-80' : 'bg-[var(--color-surface-elevated)]/60'}`}>
+          <Card key={item.id} className={`p-6 border-white/5 hover:border-blue-500/30 transition-all ${item.status === 'Pausada' ? 'bg-[var(--color-surface-elevated)]/30 opacity-80' : 'bg-[var(--color-surface-elevated)]/60'}`}>
              <div className="flex justify-between items-start mb-6">
                 <div className="flex items-center gap-4">
                    <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center border border-white/5">
-                      <Zap className={`w-6 h-6 ${item.status === 'Ativa' ? 'text-purple-500 animate-pulse' : 'text-slate-600'}`} />
+                      <Zap className={`w-6 h-6 ${item.status === 'Ativa' ? 'text-blue-500 animate-pulse' : 'text-slate-600'}`} />
                    </div>
                    <div>
                       <h3 className="text-lg font-bold text-white mb-0.5">{item.name}</h3>
@@ -185,11 +227,22 @@ export default function MarketingAutomacoes() {
                    >
                       {item.status === 'Ativa' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                    </Button>
-                   <Button size="icon" variant="ghost" className="w-10 h-10 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                   <Button
+                    onClick={() => openEditModal(item)}
+                    size="icon" variant="ghost" title="Editar automação"
+                    className="w-10 h-10 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all"
+                   >
                       <Settings className="w-4 h-4" />
                    </Button>
-                   <Button size="icon" variant="ghost" className="w-10 h-10 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                   <Button size="icon" variant="ghost" disabled title="Compartilhamento ainda não disponível" className="w-10 h-10 rounded-xl bg-white/5 text-slate-600 opacity-50 cursor-not-allowed transition-all">
                       <Share2 className="w-4 h-4" />
+                   </Button>
+                   <Button
+                    onClick={() => setDeletingAutomation(item)}
+                    size="icon" variant="ghost" title="Excluir automação"
+                    className="w-10 h-10 rounded-xl bg-white/5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
+                   >
+                      <Trash2 className="w-4 h-4" />
                    </Button>
                 </div>
              </div>
@@ -198,11 +251,11 @@ export default function MarketingAutomacoes() {
       </div>
       </div>
 
-      {/* Modal de Criação */}
+      {/* Modal de Criação / Edição */}
       {isCreateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <Card className="w-full max-w-md p-6 bg-[var(--color-surface)] border-white/10 shadow-2xl">
-            <h2 className="text-xl font-bold text-white mb-4">Criar Novo Fluxo</h2>
+            <h2 className="text-xl font-bold text-white mb-4">{editingAutomation ? "Editar Fluxo" : "Criar Novo Fluxo"}</h2>
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 block">Nome da Automação</label>
@@ -228,16 +281,24 @@ export default function MarketingAutomacoes() {
               </div>
             </div>
             <div className="flex gap-3 justify-end mt-6">
-              <Button variant="ghost" onClick={() => setIsCreateModalOpen(false)} className="text-slate-400 hover:text-white hover:bg-white/5">
+              <Button variant="ghost" onClick={() => { setIsCreateModalOpen(false); setEditingAutomation(null); }} className="text-slate-400 hover:text-white hover:bg-white/5">
                 Cancelar
               </Button>
-              <Button onClick={handleCreateFlow} className="bg-purple-600 hover:bg-purple-700 text-white">
-                Criar Automação
+              <Button onClick={handleCreateFlow} className="bg-blue-600 hover:bg-blue-700 text-white">
+                {editingAutomation ? "Salvar Alterações" : "Criar Automação"}
               </Button>
             </div>
           </Card>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={!!deletingAutomation}
+        onClose={() => setDeletingAutomation(null)}
+        onConfirm={handleDeleteAutomation}
+        title="Excluir Automação"
+        message={`Tem certeza que deseja excluir o fluxo "${deletingAutomation?.name}"? Esta ação não pode ser desfeita.`}
+      />
     </PageContainer>
   );
 }

@@ -12,18 +12,20 @@ interface AdminOverviewTabProps {
   globalMrr: number;
   revenueData: { name: string; mrr: number }[];
   CustomTooltip: React.ComponentType<any>;
+  totalTenants?: number | null;
+  activeUsers?: number | null;
 }
 
-export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip }: AdminOverviewTabProps) {
+export function AdminOverviewTab({ globalMrr, revenueData, CustomTooltip, totalTenants, activeUsers }: AdminOverviewTabProps) {
   const metricItems = [
-    { label: "Total de Empresas", value: "0", icon: Building2, color: "text-indigo-500" },
+    { label: "Total de Empresas", value: totalTenants != null ? String(totalTenants) : "0", icon: Building2, color: "text-blue-600" },
     {
       label: "MRR Global (SaaS)",
       value: new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(globalMrr),
       icon: DollarSign,
       color: "text-emerald-500",
     },
-    { label: "Usuários Ativos (MAU)", value: "0", icon: Users, color: "text-blue-500" },
+    { label: "Usuários Ativos (MAU)", value: activeUsers != null ? String(activeUsers) : "0", icon: Users, color: "text-blue-600" },
     { label: "Storage System", value: "0 GB", icon: HardDrive, color: "text-amber-500" },
   ];
 

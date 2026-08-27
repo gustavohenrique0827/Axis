@@ -9,6 +9,7 @@ import { getAccessToken } from "../../lib/google-auth";
 import { toast } from "sonner";
 import { AgendaSidebar } from "./components/AgendaMedica/AgendaSidebar";
 import { AgendaDetailPanel } from "./components/AgendaMedica/AgendaDetailPanel";
+import { BookingModal } from "./components/BookingModal";
 
 const hourlySlots = [
   '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
@@ -18,12 +19,31 @@ const hourlySlots = [
 
 type Appointment = {
   id: string; time: string; patient: string; drId: string; drName: string;
-  status: 'Confirmado' | 'Aguardando' | 'Atrasado' | 'Em Atendimento' | 'Finalizado';
+  status: 'Confirmado' | 'Aguardando' | 'Atrasado' | 'Em Atendimento' | 'Finalizado' | 'Cancelado';
   type: string; room: string; specialty: string;
 };
 
+function formatAgendaDate(iso: string): string {
+  try {
+    const [y, m, d] = iso.split('-').map(Number);
+    const date = new Date(y, m - 1, d);
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
+  } catch {
+    return iso;
+  }
+}
+
+function shiftDate(iso: string, days: number): string {
+  const [y, m, d] = iso.split('-').map(Number);
+  const date = new Date(y, m - 1, d);
+  date.setDate(date.getDate() + days);
+  return date.toISOString().split('T')[0];
+}
+
 export default function AgendaClinica() {
-  const { appointments, addAppointment, squads } = useData();
+  const { appointments, addAppointment, updateAppointment, squads, leads, addTask } = useData();
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   const doctors = useMemo(() => {
     if (!squads || squads.length === 0) return [];
@@ -46,8 +66,16 @@ export default function AgendaClinica() {
     if (doctors.length > 0 && selectedDrs.length === 0) setSelectedDrs(doctors.map(d => d.id));
   }, [doctors]);
 
-  const filteredAppointments = useMemo(() => appointments.filter(apt => selectedDrs.includes(apt.drId)), [selectedDrs, appointments]);
+  const filteredAppointments = useMemo(
+    () => appointments.filter(apt => selectedDrs.includes(apt.drId) && (!apt.date || apt.date === selectedDate)),
+    [selectedDrs, appointments, selectedDate]
+  );
   const selectedApt = appointments.find(a => a.id === selectedAptId);
+
+  const handleCancelAppointment = async (id: string) => {
+    await updateAppointment(id, { status: 'Cancelado' as Appointment['status'] });
+    setSelectedAptId(null);
+  };
 
   const handleSyncCalendar = async () => {
     const token = await getAccessToken();
@@ -83,6 +111,7 @@ export default function AgendaClinica() {
       case 'Em Atendimento': return 'bg-blue-500/10 text-blue-400 border-blue-500/30 ring-1 ring-blue-500/50 animate-pulse';
       case 'Atrasado': return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
       case 'Aguardando': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      case 'Cancelado': return 'bg-slate-500/10 text-slate-500 border-slate-500/20 line-through opacity-60';
       default: return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
     }
   };
@@ -98,11 +127,11 @@ export default function AgendaClinica() {
             Sincronizar Google Calendar
           </Button>
           <div className="flex bg-[var(--color-surface)] border border-white/5 p-1 rounded-2xl shadow-inner h-11">
-            <Button variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-white/5"><ChevronLeft className="w-5 h-5 text-slate-400" /></Button>
-            <div className="px-6 flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-white min-w-[150px] justify-center">28 Maio, 2026</div>
-            <Button variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-white/5"><ChevronRight className="w-5 h-5 text-slate-400" /></Button>
+            <Button onClick={() => setSelectedDate(d => shiftDate(d, -1))} variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-white/5"><ChevronLeft className="w-5 h-5 text-slate-400" /></Button>
+            <div className="px-6 flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-white min-w-[150px] justify-center">{formatAgendaDate(selectedDate)}</div>
+            <Button onClick={() => setSelectedDate(d => shiftDate(d, 1))} variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-white/5"><ChevronRight className="w-5 h-5 text-slate-400" /></Button>
           </div>
-          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2 shadow-xl shadow-emerald-900/30 group">
+          <Button onClick={() => setIsBookingOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2 shadow-xl shadow-blue-900/30 group">
             <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" /> Novo Agendamento
           </Button>
         </div>
@@ -166,7 +195,7 @@ export default function AgendaClinica() {
                             </div>
                           </motion.button>
                         )) : (
-                          <button className="w-full h-full border border-dashed border-white/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3 text-[10px] font-black text-slate-500 uppercase tracking-widest hover:bg-white/5 hover:border-white/10 active:scale-[0.99]">
+                          <button onClick={() => setIsBookingOpen(true)} className="w-full h-full border border-dashed border-white/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3 text-[10px] font-black text-slate-500 uppercase tracking-widest hover:bg-white/5 hover:border-white/10 active:scale-[0.99]">
                             <Plus className="w-3.5 h-3.5" /> Agendar Horário vago
                           </button>
                         )}
@@ -180,7 +209,13 @@ export default function AgendaClinica() {
         </div>
       </div>
 
-      <AgendaDetailPanel selectedApt={selectedApt as Appointment | undefined} onClose={() => setSelectedAptId(null)} />
+      <AgendaDetailPanel
+        selectedApt={selectedApt as Appointment | undefined}
+        onClose={() => setSelectedAptId(null)}
+        onCancel={handleCancelAppointment}
+      />
+
+      <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} leads={leads} addTask={addTask} />
     </PageContainer>
   );
 }

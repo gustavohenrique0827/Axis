@@ -98,7 +98,7 @@ export default function Pacientes() {
           >
             <Download className="w-4 h-4" /> Exportar Base
           </Button>
-          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2 shadow-xl shadow-emerald-900/30 group">
+          <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-2xl h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2 shadow-xl shadow-blue-900/30 group">
             <UserPlus className="w-4 h-4 group-hover:scale-110 transition-transform" /> Novo Paciente
           </Button>
         </div>
@@ -109,7 +109,7 @@ export default function Pacientes() {
         {/* Top Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: 'Total de Pacientes', value: totalPatients.toString(), icon: Users, color: 'text-indigo-500' },
+             { label: 'Total de Pacientes', value: totalPatients.toString(), icon: Users, color: 'text-blue-500' },
              { label: 'Novos neste Mês', value: `+${newThisMonth}`, icon: UserPlus, color: 'text-emerald-500' },
              { label: 'Taxa de Retenção', value: `${retention}%`, icon: ShieldCheck, color: 'text-blue-500' },
              { label: 'Consultas Hoje', value: consultsToday.toString(), icon: Clock, color: 'text-amber-500' },
@@ -126,11 +126,11 @@ export default function Pacientes() {
         <Card className="p-4 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-xl">
            <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative group">
-                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                  <input 
                    type="text" 
                    placeholder="Buscar por nome ou telefone..."
-                   className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500/50 transition-all"
+                   className="w-full bg-white/5 border border-white/5 rounded-2xl py-3 pl-12 pr-4 text-sm text-white focus:outline-none focus:ring-1 focus:ring-blue-500/50 transition-all"
                    value={searchTerm}
                    onChange={(e) => setSearchTerm(e.target.value)}
                  />
@@ -140,7 +140,7 @@ export default function Pacientes() {
                     <Filter className="w-4 h-4" />
                  </Button>
                  <div className="flex bg-white/5 border border-white/5 p-1 rounded-2xl">
-                    <button className="px-4 py-2 text-[10px] font-black uppercase text-emerald-400 bg-emerald-500/10 rounded-xl border border-emerald-500/20">Todos</button>
+                    <button className="px-4 py-2 text-[10px] font-black uppercase text-blue-400 bg-blue-500/10 rounded-xl border border-blue-500/20">Todos</button>
                     <button className="px-4 py-2 text-[10px] font-black uppercase text-slate-500 hover:text-white transition-colors">Ativos</button>
                  </div>
               </div>
@@ -167,13 +167,13 @@ export default function Pacientes() {
                    animate={{ opacity: 1, scale: 1 }}
                    transition={{ delay: i * 0.05 }}
                  >
-                   <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 hover:border-emerald-500/20 transition-all group cursor-pointer relative overflow-hidden">
+                   <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 hover:border-blue-500/20 transition-all group cursor-pointer relative overflow-hidden">
                       <div className="flex items-start gap-4">
-                         <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-lg font-black text-slate-400 group-hover:bg-emerald-500/20 group-hover:text-emerald-400 transition-all">
+                         <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center text-lg font-black text-slate-400 group-hover:bg-blue-500/20 group-hover:text-blue-400 transition-all">
                             {patient.photo}
                          </div>
                          <div className="flex-1">
-                            <h4 className="text-base font-black text-white group-hover:text-emerald-400 transition-colors uppercase tracking-tight truncate pr-4">{patient.name}</h4>
+                            <h4 className="text-base font-black text-white group-hover:text-blue-400 transition-colors uppercase tracking-tight truncate pr-4">{patient.name}</h4>
                             <div className="flex items-center gap-3 mt-1">
                                <span className={`text-[9px] font-black uppercase tracking-widest ${
                                  patient.status === 'Ativo' ? 'text-emerald-400' : 'text-slate-500'
@@ -206,7 +206,7 @@ export default function Pacientes() {
                       </div>
 
                       <div className="mt-8 flex items-center gap-2">
-                         <Button className="flex-1 h-11 rounded-xl bg-white/5 hover:bg-emerald-500/10 border border-white/5 hover:border-emerald-500/20 text-[10px] font-black uppercase text-slate-300 hover:text-emerald-400 gap-2 transition-all">
+                         <Button className="flex-1 h-11 rounded-xl bg-white/5 hover:bg-blue-500/10 border border-white/5 hover:border-blue-500/20 text-[10px] font-black uppercase text-slate-300 hover:text-blue-400 gap-2 transition-all">
                             <FileText className="w-4 h-4" /> Prontuário
                          </Button>
                          <Button variant="outline" className="w-11 h-11 p-0 rounded-xl border-white/5 text-slate-500 hover:text-white">

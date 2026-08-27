@@ -125,7 +125,7 @@ export function SquadMetasSection({
                   {/* Calculated OTE distribution */}
                   <div className="p-2.5 bg-slate-900/60 rounded-xl border border-white/5 text-center relative overflow-hidden group">
                     <span className="text-[9px] text-[#2563EB] font-bold uppercase tracking-wider block">Comissão + Bônus</span>
-                    <span className="text-xs font-mono font-extrabold text-emerald-400 block mt-0.5">
+                    <span className="text-xs font-mono font-extrabold text-blue-400 block mt-0.5">
                       R$ {ote.total.toLocaleString("pt-BR", { minimumFractionDigits: 0 })}
                     </span>
                     <span className="text-[8px] text-slate-500 font-mono block mt-0.5">
@@ -142,7 +142,7 @@ export function SquadMetasSection({
 
       <div className="border-t border-white/5 pt-3 mt-4 flex flex-col md:flex-row items-center justify-between gap-3 text-[10px] text-slate-500 font-medium">
         <span className="flex items-center gap-1.5 text-left">
-          <ShieldCheck className="w-4 h-4 text-emerald-500 shrink-0" />
+          <ShieldCheck className="w-4 h-4 text-blue-500 shrink-0" />
           Garantia do Acordo de Nível de Serviço (SLA) SDR ➔ Closer estabelecido por comissões escaláveis por aceitabilidade.
         </span>
         <span className="text-blue-400 font-black font-mono">Axis SaaS OTE Engine v1.4</span>

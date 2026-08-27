@@ -1,9 +1,16 @@
 import { PageContainer } from "../../components/PageContainer";
 import { Card } from "../../components/ui/card";
-import { Share2, Instagram, Facebook, Twitter, Linkedin, MessageCircle, Heart, Repeat, Eye } from "lucide-react";
+import { Instagram, Facebook, Twitter, Linkedin, MessageCircle, Heart, Repeat, Eye, Inbox, Link2Off } from "lucide-react";
 import { Button } from "../../components/ui/button";
+import { toast } from "sonner";
 
 const posts: any[] = [];
+
+const CHANNELS = [
+  { name: "Página do Facebook", icon: Facebook, color: "text-blue-500" },
+  { name: "Conta Instagram", icon: Instagram, color: "text-pink-500" },
+  { name: "Company Page (LinkedIn)", icon: Linkedin, color: "text-blue-600" },
+];
 
 export default function MarketingSocial() {
   return (
@@ -56,7 +63,17 @@ export default function MarketingSocial() {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
-          {posts.map(post => (
+          {posts.length === 0 ? (
+            <Card className="p-10 bg-[var(--color-surface-elevated)]/50 border-white/5 flex flex-col items-center justify-center text-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+                <Inbox className="w-7 h-7 text-slate-500" />
+              </div>
+              <div>
+                <p className="text-sm font-black text-slate-300">Nenhum post ainda</p>
+                <p className="text-xs text-slate-500 mt-1 max-w-xs">Conecte uma conta de rede social para começar a acompanhar o desempenho das suas publicações aqui.</p>
+              </div>
+            </Card>
+          ) : posts.map(post => (
             <Card key={post.id} className="p-5 bg-[var(--color-surface-elevated)] border-white/5 flex flex-col md:flex-row gap-6 hover:bg-[var(--color-surface-elevated)] transition-colors relative overflow-hidden group">
                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
                <div className="flex-1 relative z-10">
@@ -112,37 +129,33 @@ export default function MarketingSocial() {
           <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5">
              <h3 className="text-sm font-black text-white uppercase tracking-wider mb-4 border-b border-white/10 pb-2">Status de Integração</h3>
              <ul className="space-y-4">
-                <li className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Facebook className="w-4 h-4 text-blue-500" />
-                    <span className="text-xs font-bold text-slate-300">Página do Facebook</span>
-                  </div>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-                </li>
-                <li className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Instagram className="w-4 h-4 text-pink-500" />
-                    <span className="text-xs font-bold text-slate-300">Conta Instagram</span>
-                  </div>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-                </li>
-                <li className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Linkedin className="w-4 h-4 text-blue-600" />
-                    <span className="text-xs font-bold text-slate-300">Company Page</span>
-                  </div>
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]"></span>
-                </li>
+                {CHANNELS.map((channel) => (
+                  <li key={channel.name} className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <channel.icon className={`w-4 h-4 ${channel.color} opacity-50`} />
+                      <span className="text-xs font-bold text-slate-400">{channel.name}</span>
+                    </div>
+                    <span className="inline-flex items-center gap-1.5 text-[9px] font-black uppercase tracking-widest text-slate-500">
+                      <span className="w-2 h-2 rounded-full bg-slate-600"></span>
+                      Não conectado
+                    </span>
+                  </li>
+                ))}
              </ul>
-             <Button className="w-full mt-6 bg-white/5 hover:bg-white/10 text-white text-xs font-bold border border-white/10">Reconectar Contas</Button>
+             <Button
+              onClick={() => toast.info("Integração com redes sociais ainda não disponível. Em breve você poderá conectar suas contas por aqui.")}
+              className="w-full mt-6 bg-white/5 hover:bg-white/10 text-white text-xs font-bold border border-white/10 gap-2"
+             >
+               <Link2Off className="w-3.5 h-3.5" /> Conectar Contas
+             </Button>
           </Card>
-          
-          <Card className="p-6 bg-gradient-to-br from-indigo-500/20 to-[var(--color-surface-elevated)] border-indigo-500/20">
+
+          <Card className="p-6 bg-gradient-to-br from-blue-500/10 to-[var(--color-surface-elevated)] border-blue-500/20">
              <h3 className="text-sm font-black text-white uppercase tracking-wider mb-2">Insight Analítico IA</h3>
-             <p className="text-xs text-slate-300 leading-relaxed mb-4">
-               A ferramenta de IA do Axis CRM detectou que postagens com a palavra-chave <span className="text-indigo-400 font-bold">"Kanban"</span> geram 45% mais engajamento esta semana. Recomendamos aumentar a frequência deste tópico.
+             <p className="text-xs text-slate-400 leading-relaxed mb-4">
+               Sem dados suficientes para gerar insights. Conecte suas redes sociais e publique conteúdo para que a Master IA possa analisar o desempenho dos seus posts.
              </p>
-             <Button className="w-full bg-indigo-500 hover:bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/30">Gerar Novas Ideias</Button>
+             <Button disabled className="w-full bg-blue-500/20 text-blue-300/60 text-[10px] font-black uppercase tracking-widest cursor-not-allowed opacity-60">Gerar Novas Ideias</Button>
           </Card>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   FileText, Search, FlaskConical,
   Clock, CheckCircle2, AlertCircle, Download,
@@ -6,11 +6,56 @@ import {
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { Modal } from "../../components/ui/modal";
 import { PageContainer } from "../../components/PageContainer";
 import { useExames } from './hooks/useExames';
 
+const EMPTY_FORM = { patient: '', exam: '', date: '', lab: '' };
+
 export default function Exames() {
-  const { exames: examList } = useExames();
+  const { exames: examList, addExame } = useExames();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isAddOpen, setIsAddOpen] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [submitting, setSubmitting] = useState(false);
+
+  const filteredExames = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return examList;
+    return examList.filter(exam =>
+      exam.patient.toLowerCase().includes(term) ||
+      exam.exam.toLowerCase().includes(term) ||
+      exam.lab.toLowerCase().includes(term)
+    );
+  }, [examList, searchTerm]);
+
+  const kpis = useMemo(() => {
+    const today = new Date().toLocaleDateString('pt-BR');
+    const ordersToday = examList.filter(e => e.date === today).length;
+    const readyResults = examList.filter(e => e.status === 'Finalizado').length;
+    const inAnalysis = examList.filter(e => e.status === 'Em Análise').length;
+    const critical = examList.filter(e => e.result === 'Alerta' || e.result === 'Crítico').length;
+    return { ordersToday, readyResults, inAnalysis, critical };
+  }, [examList]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.patient.trim() || !form.exam.trim()) return;
+    setSubmitting(true);
+    try {
+      await addExame({
+        patient: form.patient.trim(),
+        exam: form.exam.trim(),
+        date: form.date ? new Date(form.date).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR'),
+        lab: form.lab.trim() || 'Lab Axis Central',
+      });
+      setForm(EMPTY_FORM);
+      setIsAddOpen(false);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <PageContainer 
@@ -21,7 +66,7 @@ export default function Exames() {
            <Button variant="outline" className="border-white/10 text-[10px] font-black uppercase tracking-widest h-10 px-4 gap-2">
               <Download className="w-4 h-4" /> Exportar Lote
            </Button>
-           <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 px-6 text-[10px] font-black uppercase tracking-widest gap-2">
+           <Button onClick={() => setIsAddOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 px-6 text-[10px] font-black uppercase tracking-widest gap-2">
               <Plus className="w-4 h-4" /> Novo Pedido
            </Button>
         </div>
@@ -32,10 +77,10 @@ export default function Exames() {
         {/* Status Hub */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Pedidos Hoje", value: "42", icon: FlaskConical, color: "text-indigo-500" },
-             { label: "Resultados Prontos", value: "18", icon: CheckCircle2, color: "text-emerald-500" },
-             { label: "Em Análise", value: "12", icon: Clock, color: "text-blue-500" },
-             { label: "Resultados Críticos", value: "05", icon: AlertCircle, color: "text-rose-500" },
+             { label: "Pedidos Hoje", value: kpis.ordersToday.toString(), icon: FlaskConical, color: "text-blue-500" },
+             { label: "Resultados Prontos", value: kpis.readyResults.toString(), icon: CheckCircle2, color: "text-emerald-500" },
+             { label: "Em Análise", value: kpis.inAnalysis.toString(), icon: Clock, color: "text-blue-500" },
+             { label: "Resultados Críticos", value: kpis.critical.toString().padStart(2, '0'), icon: AlertCircle, color: "text-rose-500" },
            ].map((stat, i) => (
              <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
                 <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
@@ -50,13 +95,15 @@ export default function Exames() {
            <Card className="lg:col-span-2 bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
               <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                  <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-emerald-400" /> Histórico de Pedidos
+                    <FileText className="w-4 h-4 text-blue-400" /> Histórico de Pedidos
                  </h3>
                  <div className="relative w-full md:w-72">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-                    <input 
-                      type="text" 
-                      placeholder="Pesquisar exames..." 
+                    <input
+                      type="text"
+                      placeholder="Pesquisar exames..."
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
                       className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:outline-none"
                     />
                  </div>
@@ -73,7 +120,7 @@ export default function Exames() {
                        </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                       {examList.map((exam) => (
+                       {filteredExames.map((exam) => (
                          <tr key={exam.id} className="hover:bg-white/[0.02] transition-colors group">
                             <td className="p-6">
                                <p className="text-sm font-black text-white">{exam.patient}</p>
@@ -105,13 +152,13 @@ export default function Exames() {
 
            {/* AI Insight Section */}
            <div className="space-y-6">
-              <Card className="p-8 bg-gradient-to-br from-emerald-600/10 to-transparent border-emerald-500/20 relative group">
+              <Card className="p-8 bg-gradient-to-br from-blue-600/10 to-transparent border-blue-500/20 relative group">
                  <h3 className="text-xs font-black text-white uppercase tracking-widest mb-8 flex items-center gap-2">
-                    <FlaskConical className="w-4 h-4 text-emerald-400" /> MIA Lab Insights
+                    <FlaskConical className="w-4 h-4 text-blue-400" /> MIA Lab Insights
                  </h3>
                  <div className="space-y-6">
                     <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                       <p className="text-[10px] text-emerald-400 font-black uppercase mb-1">Análise de Tendência</p>
+                       <p className="text-[10px] text-blue-400 font-black uppercase mb-1">Análise de Tendência</p>
                        <p className="text-xs text-slate-300 italic leading-relaxed">
                           "Houve um aumento de 15% em pedidos de exames tireoidianos este mês. Sugerimos integrar com o laboratório parceiro Beta para otimizar prazos."
                        </p>
@@ -134,11 +181,11 @@ export default function Exames() {
               <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
                  <h3 className="text-xs font-black text-white uppercase tracking-widest mb-6">Integrações API</h3>
                  <div className="grid grid-cols-2 gap-4">
-                    <button className="p-4 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center group hover:border-emerald-500/30 transition-all">
+                    <button className="p-4 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center group hover:border-blue-500/30 transition-all">
                        <div className="w-8 h-8 rounded-full bg-blue-600/20 mb-3 flex items-center justify-center text-blue-400 font-black text-xs">HL7</div>
                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center">Protocolo HL7/V2</span>
                     </button>
-                    <button className="p-4 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center group hover:border-emerald-500/30 transition-all">
+                    <button className="p-4 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center group hover:border-blue-500/30 transition-all">
                        <div className="w-8 h-8 rounded-full bg-emerald-600/20 mb-3 flex items-center justify-center text-emerald-400 font-black text-xs">DICOM</div>
                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center">Visualizador DICOM</span>
                     </button>
@@ -148,6 +195,35 @@ export default function Exames() {
         </div>
 
       </div>
+
+      <Modal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Novo Pedido de Exame" maxWidth="max-w-lg">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Paciente</label>
+            <Input value={form.patient} onChange={e => setForm(f => ({ ...f, patient: e.target.value }))} placeholder="Nome do paciente" required />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Exame</label>
+            <Input value={form.exam} onChange={e => setForm(f => ({ ...f, exam: e.target.value }))} placeholder="Ex: Hemograma Completo" required />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Data</label>
+              <Input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest px-1">Laboratório</label>
+              <Input value={form.lab} onChange={e => setForm(f => ({ ...f, lab: e.target.value }))} placeholder="Ex: Lab Axis Central" />
+            </div>
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button type="button" variant="outline" className="border-white/10" onClick={() => setIsAddOpen(false)}>Cancelar</Button>
+            <Button type="submit" disabled={submitting} className="bg-blue-600 hover:bg-blue-700 text-white">
+              {submitting ? 'Salvando...' : 'Criar Pedido'}
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }

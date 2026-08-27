@@ -14,10 +14,14 @@ import {
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
+import { useData } from "../../contexts/DataContext";
 
 export default function PainelGeralEducation() {
+  const { turmas, students } = useData();
+  const totalTurmas = turmas.length;
+  const totalAlunos = students.length;
   return (
-    <PageContainer 
+    <PageContainer
       title="BI Educacional & Dashboard Axis" 
       description="Visão 360º da operação pedagógica, métricas de engajamento e performance de tutores."
       actions={
@@ -36,12 +40,12 @@ export default function PainelGeralEducation() {
         {/* KPI Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Matrículas Ativas", value: "—", trend: "", icon: Users, color: "text-indigo-500" },
-             { label: "Taxa de Conclusão", value: "—", trend: "", icon: CheckCircle2, color: "text-emerald-500" },
-             { label: "Conteúdos Vistos", value: "—", trend: "", icon: BookOpen, color: "text-blue-500" },
-             { label: "NPS Acadêmico", value: "—", trend: "", icon: Star, color: "text-amber-500" },
+             { label: "Alunos Matriculados", value: String(totalAlunos), trend: "", icon: Users, color: "text-blue-500", real: true },
+             { label: "Taxa de Conclusão", value: "—", trend: "", icon: CheckCircle2, color: "text-emerald-500", real: false },
+             { label: "Turmas Cadastradas", value: String(totalTurmas), trend: "", icon: BookOpen, color: "text-blue-500", real: true },
+             { label: "NPS Acadêmico", value: "—", trend: "", icon: Star, color: "text-amber-500", real: false },
            ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all opacity-50">
+             <Card key={i} className={`p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all ${stat.real ? "" : "opacity-50"}`}>
                 <div className="flex items-center justify-between mb-4">
                    <stat.icon className={`w-5 h-5 ${stat.color}`} />
                    {stat.trend && (

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { exportToCSV } from "../../lib/exportCsv";
 import { NovaMatriculaModal } from "../../components/ui/modals/education/NovaMatriculaModal";
 import { AlunoGradesModal } from "../../components/ui/modals/education/AlunoGradesModal";
+import { ConfirmModal } from "../../components/ui/modals/shared/ConfirmModal";
 import { AlunosKPIs } from "./components/Alunos/AlunosKPIs";
 import { AlunosFilters } from "./components/Alunos/AlunosFilters";
 import { AlunosTable } from "./components/Alunos/AlunosTable";
@@ -20,10 +21,11 @@ interface Student {
 
 export default function Alunos() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { students: rawStudents, addStudent, updateStudent, getSmartInsight } = useData();
+  const { students: rawStudents, addStudent, updateStudent, deleteStudent, getSmartInsight } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isGradesModalOpen, setIsGradesModalOpen] = useState(false);
+  const [deletingStudent, setDeletingStudent] = useState<Student | null>(null);
 
   const students: Student[] = rawStudents.map(s => ({
     id: s.id, name: s.nome || s.name, email: s.email || "",
@@ -37,9 +39,18 @@ export default function Alunos() {
     a.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const totalEstudantes = students.length;
+  const today = new Date().toDateString();
+  const matriculasHoje = rawStudents.filter((s: any) => {
+    const d = s.created_at || s.createdAt || s.data_matricula;
+    if (!d) return false;
+    const parsed = new Date(d);
+    return !isNaN(parsed.getTime()) && parsed.toDateString() === today;
+  }).length;
+
   const kpiStats = [
-    { label: "Total Estudantes", value: "—", icon: Users, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-    { label: "Matrículas Hoje", value: "—", icon: BookOpen, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Total Estudantes", value: String(totalEstudantes), icon: Users, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Matrículas Hoje", value: String(matriculasHoje), icon: BookOpen, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
     { label: "Taxa Engajamento", value: "—", icon: Target, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
     { label: "NPS Acadêmico", value: "—", icon: Star, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
   ];
@@ -76,6 +87,7 @@ export default function Alunos() {
         <AlunosTable
           students={filteredAlunos}
           onManage={(student) => { setSelectedStudent(student); setIsGradesModalOpen(true); }}
+          onDelete={(student) => setDeletingStudent(student)}
         />
         <AlunosInsight />
       </div>
@@ -115,6 +127,18 @@ export default function Alunos() {
           toast.success("Master IA concluiu a análise.");
           return insight;
         }}
+      />
+      <ConfirmModal
+        isOpen={!!deletingStudent}
+        onClose={() => setDeletingStudent(null)}
+        onConfirm={() => {
+          if (!deletingStudent) return;
+          deleteStudent(deletingStudent.id);
+          toast.success("Aluno removido com sucesso.");
+          setDeletingStudent(null);
+        }}
+        title="Excluir Aluno"
+        message={`Tem certeza que deseja excluir "${deletingStudent?.name}"? Todo o histórico de notas e matrícula será perdido.`}
       />
     </PageContainer>
   );

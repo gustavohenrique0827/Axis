@@ -5,6 +5,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { NovaTarefaSprintModal, type TarefaSprintPayload } from "./modals/NovaTarefaSprintModal";
+import { DetalharTarefaSprintModal } from "./modals/DetalharTarefaSprintModal";
 import { useDevSprints, type Column } from "./hooks/useDevSprints";
 import { useDevProjects } from "./hooks/useDevProjects";
 import { readKanbanConfig, KANBAN_KEYS, KANBAN_COR_CLASS } from "../../hooks/useKanbanConfig";
@@ -55,10 +56,15 @@ export default function ProjetoDetalhesDev() {
   const project = useMemo(() => projects.find((p: any) => String(p.id) === String(pid)), [projects, pid]);
 
 
-  const { tasks, addTask, moveTask } = useDevSprints(pid);
+  const { tasks, addTask, moveTask, updateTask, deleteTask } = useDevSprints(pid);
   const [draggedId, setDraggedId] = useState<string | number | null>(null);
   const [dragOverCol, setDragOverCol] = useState<Column | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | number | null>(null);
+  const selectedTask = useMemo(
+    () => (selectedTaskId == null ? null : tasks.find((t) => String(t.id) === String(selectedTaskId)) ?? null),
+    [selectedTaskId, tasks]
+  );
 
   const handleDrop = async (col: Column) => {
     if (draggedId === null) return;
@@ -159,6 +165,7 @@ export default function ProjetoDetalhesDev() {
                       key={String(task.id)}
                       draggable
                       onDragStart={() => setDraggedId(task.id)}
+                      onClick={() => setSelectedTaskId(task.id)}
                       className={`p-4 bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing hover:border-white/10 transition-all select-none group ${draggedId === task.id ? "opacity-40 scale-95" : ""}`}
                     >
                       <div className="flex items-center justify-between mb-2.5">
@@ -201,6 +208,14 @@ export default function ProjetoDetalhesDev() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSave={addTask}
+      />
+
+      <DetalharTarefaSprintModal
+        isOpen={selectedTaskId !== null}
+        onClose={() => setSelectedTaskId(null)}
+        task={selectedTask}
+        onUpdate={updateTask}
+        onDelete={deleteTask}
       />
 
       <EditarProjetoDevModal

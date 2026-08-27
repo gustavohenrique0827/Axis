@@ -55,7 +55,7 @@ export default function Sprints() {
     done: true,
   });
 
-  const { tasks, addTask, moveTask } = useDevSprints(activeProjectId);
+  const { tasks, addTask, moveTask, updateTask, deleteTask } = useDevSprints(activeProjectId);
 
   const tasksFiltered = useMemo(() => {
     return tasks.filter(t => filterColumns[t.column]);
@@ -272,6 +272,8 @@ export default function Sprints() {
         isOpen={selectedTaskId !== null}
         onClose={() => setSelectedTaskId(null)}
         task={selectedTask}
+        onUpdate={updateTask}
+        onDelete={deleteTask}
       />
     </PageContainer>
   );

@@ -1,8 +1,38 @@
 import React, { useState } from "react";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
-import { Target, Users, ShieldAlert, Clock, Mail, Award, Bell, Volume2, ChevronDown, ChevronUp, Save, MessageSquare } from "lucide-react";
+import { Target, Users, ShieldAlert, Clock, Mail, Award, Bell, Volume2, ChevronDown, ChevronUp, Save, MessageSquare, CalendarClock, TrendingUp, UserPlus, FileWarning, Megaphone } from "lucide-react";
 import { toast } from "sonner";
+
+const NOTIFICATION_ICON_MAP: Record<string, any> = {
+  novo_lead: Target,
+  lead_distribuido: Users,
+  tarefa_vencida: ShieldAlert,
+  tarefa_proxima: Clock,
+  proposta_aberta: Mail,
+  proposta_expirando: FileWarning,
+  venda_fechada: Award,
+  reuniao_agendada: CalendarClock,
+  meta_atingida: TrendingUp,
+  novo_membro_equipe: UserPlus,
+  campanha_finalizada: Megaphone,
+  mensagem_whatsapp: MessageSquare,
+};
+
+const DEFAULT_NOTIFICATION_PREFS = [
+  { id: "novo_lead", category: "Leads", title: "Novo lead recebido", description: "Um novo lead entrou no funil de vendas.", inApp: true, email: true, whatsapp: false },
+  { id: "lead_distribuido", category: "Leads", title: "Lead distribuído para você", description: "Um lead foi atribuído à sua carteira.", inApp: true, email: true, whatsapp: true },
+  { id: "tarefa_vencida", category: "Tarefas", title: "Tarefa vencida", description: "Uma tarefa passou do prazo sem ser concluída.", inApp: true, email: true, whatsapp: false },
+  { id: "tarefa_proxima", category: "Tarefas", title: "Tarefa próxima do vencimento", description: "Uma tarefa vence nas próximas 24 horas.", inApp: true, email: false, whatsapp: false },
+  { id: "reuniao_agendada", category: "Reuniões", title: "Reunião agendada", description: "Uma nova reunião foi marcada com um lead ou cliente.", inApp: true, email: true, whatsapp: true },
+  { id: "proposta_aberta", category: "Propostas", title: "Proposta visualizada", description: "O cliente abriu a proposta enviada.", inApp: true, email: true, whatsapp: false },
+  { id: "proposta_expirando", category: "Propostas", title: "Proposta prestes a expirar", description: "Uma proposta enviada está próxima da data de validade.", inApp: true, email: false, whatsapp: false },
+  { id: "venda_fechada", category: "Vendas", title: "Venda fechada", description: "Um negócio foi marcado como ganho.", inApp: true, email: true, whatsapp: true },
+  { id: "meta_atingida", category: "Vendas", title: "Meta atingida", description: "Você ou sua equipe bateram a meta do período.", inApp: true, email: true, whatsapp: false },
+  { id: "novo_membro_equipe", category: "Equipe", title: "Novo membro na equipe", description: "Um novo usuário foi adicionado à sua organização.", inApp: true, email: false, whatsapp: false },
+  { id: "campanha_finalizada", category: "Marketing", title: "Campanha finalizada", description: "Uma campanha de marketing concluiu sua execução.", inApp: true, email: false, whatsapp: false },
+  { id: "mensagem_whatsapp", category: "Mensagens", title: "Nova mensagem no WhatsApp", description: "Você recebeu uma nova mensagem de um lead ou cliente.", inApp: true, email: false, whatsapp: true },
+].map((p) => ({ ...p, icon: NOTIFICATION_ICON_MAP[p.id] || Target }));
 
 export function ConfigNotificacoesPreferencias() {
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -11,24 +41,18 @@ export function ConfigNotificacoesPreferencias() {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        // Map back icons from IDs so they render correctly
-        const iconMap: Record<string, any> = {
-          novo_lead: Target,
-          lead_distribuido: Users,
-          tarefa_vencida: ShieldAlert,
-          tarefa_proxima: Clock,
-          proposta_aberta: Mail,
-          venda_fechada: Award
-        };
-        return parsed.map((p: any) => ({
-          ...p,
-          icon: iconMap[p.id] || Target
-        }));
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          // Map back icons from IDs so they render correctly
+          return parsed.map((p: any) => ({
+            ...p,
+            icon: NOTIFICATION_ICON_MAP[p.id] || Target
+          }));
+        }
       } catch (e) {
         // ignore
       }
     }
-    return [];
+    return DEFAULT_NOTIFICATION_PREFS;
   });
 
   const [generalEmail, setGeneralEmail] = useState(true);
@@ -157,7 +181,7 @@ export function ConfigNotificacoesPreferencias() {
 
       <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden">
         <div className="p-4 sm:p-5 border-b border-white/5 bg-white/[0.01] flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
-          <h3 className="text-xs font-black text-[#06B6D4] uppercase tracking-widest font-mono">Disparadores por Categoria</h3>
+          <h3 className="text-xs font-black text-[#2563EB] uppercase tracking-widest font-mono">Disparadores por Categoria</h3>
           <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Ajuste individual por canal</span>
         </div>
 
@@ -180,7 +204,7 @@ export function ConfigNotificacoesPreferencias() {
                             <div key={pref.id} className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:bg-white/[0.01] transition-colors duration-150">
                               <div className="flex gap-3 sm:gap-4 items-start min-w-0 flex-1">
                                 <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 shrink-0 mt-0.5">
-                                  <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-[#06B6D4]" />
+                                  <IconComponent className="w-4 h-4 sm:w-5 sm:h-5 text-[#2563EB]" />
                                 </div>
                                 <div className="min-w-0 flex-1">
                                   <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
@@ -238,10 +262,11 @@ export function ConfigNotificacoesPreferencias() {
           <Button 
             type="button"
             onClick={() => {
-              setPrefs([]);
+              setPrefs(DEFAULT_NOTIFICATION_PREFS);
               setGeneralEmail(true);
               setGeneralInApp(true);
               setGeneralWhatsapp(true);
+              localStorage.removeItem("axis_notification_prefs");
               toast.success("Configurações originais restauradas!");
             }}
             variant="ghost" 

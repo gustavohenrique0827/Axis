@@ -7,11 +7,33 @@ import { Reorder } from "motion/react";
 import { toast } from "sonner";
 import { useData } from "../../../contexts/DataContext";
 
+const TEMPLATES_STORAGE_KEY = "axis_engajamento_modelos";
+const DEFAULT_TEMPLATES = [
+  { id: "1", nome: "Saudação Inicial", tipo: "WhatsApp", uso: 142, conteudo: "Olá {{name}}, como posso ajudar?" }
+];
+
+function loadTemplates(): any[] {
+  try {
+    const saved = localStorage.getItem(TEMPLATES_STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch (e) {
+    // ignore
+  }
+  return DEFAULT_TEMPLATES;
+}
+
 export function ConfigEngajamentoModelos() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [templates, setTemplates] = useState<any[]>([
-    { id: "1", nome: "Saudação Inicial", tipo: "WhatsApp", uso: 142, conteudo: "Olá {{name}}, como posso ajudar?" }
-  ]);
+  const [templates, setTemplates] = useState<any[]>(loadTemplates);
+
+  const saveTemplates = (updated: any[]) => {
+    setTemplates(updated);
+    try {
+      localStorage.setItem(TEMPLATES_STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      // ignore
+    }
+  };
 
   const handleSave = (data: any) => {
     const newTemplate = {
@@ -19,7 +41,7 @@ export function ConfigEngajamentoModelos() {
       id: Math.random().toString(36).substring(7),
       uso: 0
     };
-    setTemplates([newTemplate, ...templates]);
+    saveTemplates([newTemplate, ...templates]);
     toast.success("Modelo de mensagem salvo!");
     setIsModalOpen(false);
   };

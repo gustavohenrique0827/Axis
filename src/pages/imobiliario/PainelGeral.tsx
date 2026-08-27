@@ -188,12 +188,12 @@ export default function ImobiliarioPainel() {
 
         {/* KPIs */}
         <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
-          <KPICard icon={Building2} label="Disponíveis" value={String(disponiveis)} sub="no portfólio ativo" color="text-indigo-500" />
+          <KPICard icon={Building2} label="Disponíveis" value={String(disponiveis)} sub="no portfólio ativo" color="text-blue-600" />
           <KPICard icon={TrendingUp} label="Vendidos Mês" value={String(vendidosMes)} sub="negócios fechados" color="text-emerald-500" />
-          <KPICard icon={DollarSign} label="VGV Mês" value={fmtVgv(vgvMes)} sub="volume geral de vendas" color="text-blue-500" />
-          <KPICard icon={Columns3} label="Leads Ativos" value={String(leadsAtivos)} sub="no funil de vendas" color="text-cyan-500" />
+          <KPICard icon={DollarSign} label="VGV Mês" value={fmtVgv(vgvMes)} sub="volume geral de vendas" color="text-blue-600" />
+          <KPICard icon={Columns3} label="Leads Ativos" value={String(leadsAtivos)} sub="no funil de vendas" color="text-blue-600" />
           <KPICard icon={Eye} label="Próximas Visitas" value={String(visitas.length)} sub="agendadas" color="text-amber-500" />
-          <KPICard icon={Target} label="Conversão" value={`${conversao}%`} sub="leads → fechamento" color="text-purple-500" />
+          <KPICard icon={Target} label="Conversão" value={`${conversao}%`} sub="leads → fechamento" color="text-blue-600" />
         </div>
 
         {/* Charts Row 1 */}

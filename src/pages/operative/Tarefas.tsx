@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import { LayoutGrid, List as ListIcon, RefreshCw, Plus } from "lucide-react";
+import { toast } from "sonner";
 import { NovaTarefaModal } from "../../components/ui/modals/productivity/NovaTarefaModal";
 import { ConfirmModal } from "../../components/ui/modals/shared/ConfirmModal";
 import { NovaPautaModal } from "../../components/ui/modals/productivity/NovaPautaModal";
@@ -64,6 +65,18 @@ export default function Tarefas() {
 
   const [isPautaModalOpen, setIsPautaModalOpen] = useState(false);
 
+  const handleSavePauta = (data: any) => {
+    const newPauta = { id: Date.now().toString(), ...data };
+    try {
+      const cached = localStorage.getItem("axis_pautas");
+      const pautas = cached ? JSON.parse(cached) : [];
+      localStorage.setItem("axis_pautas", JSON.stringify([newPauta, ...pautas]));
+    } catch (e) {
+      console.error("[Tarefas] pauta persist error:", e);
+    }
+    toast.success("Pauta agendada com sucesso!");
+  };
+
   return (
     <PageContainer
       title="Tarefas Axis"
@@ -88,7 +101,7 @@ export default function Tarefas() {
             <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
             {isSyncing ? 'Sincronizando...' : (needsAuth ? 'Conectar Google Tasks' : 'Sincronizar Google Tasks')}
           </Button>
-          <Button onClick={() => setIsPautaModalOpen(true)} className="gap-2 bg-purple-600 hover:bg-purple-700 h-11 px-6 rounded-xl text-[10px] uppercase font-black shadow-xl shadow-purple-600/20">
+          <Button onClick={() => setIsPautaModalOpen(true)} className="gap-2 bg-[#2563EB] hover:bg-blue-600 h-11 px-6 rounded-xl text-[10px] uppercase font-black shadow-xl shadow-blue-600/20">
             <Plus className="w-4 h-4" /> Nova Pauta
           </Button>
           <Button onClick={openNewTaskModal} className="gap-2 bg-[#2563EB] hover:bg-blue-600 h-11 px-6 rounded-xl text-[10px] uppercase font-black shadow-xl shadow-blue-500/20">
@@ -195,10 +208,7 @@ export default function Tarefas() {
       <NovaPautaModal
         isOpen={isPautaModalOpen}
         onClose={() => setIsPautaModalOpen(false)}
-        onSave={(data) => {
-          console.log("Nova Pauta criada:", data);
-          // Integrar com DataContext se necessário
-        }}
+        onSave={handleSavePauta}
       />
     </PageContainer>
   );

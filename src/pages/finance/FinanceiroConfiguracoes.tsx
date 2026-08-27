@@ -28,7 +28,7 @@ const CARGO_COLOR: Record<string, string> = {
 };
 
 function inp(cls = '') {
-  return `bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/60 w-full transition-colors placeholder:text-slate-600 ${cls}`;
+  return `bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-blue-500/60 w-full transition-colors placeholder:text-slate-600 ${cls}`;
 }
 
 function Label({ children }: { children: React.ReactNode }) {
@@ -99,7 +99,7 @@ export default function FinanceiroConfiguracoes() {
               key={t.key}
               to={`/app/financeiro/configuracoes/${t.key}`}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wide whitespace-nowrap transition-all shrink-0 ${tab === t.key
-                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-sm shadow-emerald-500/10'
+                ? 'bg-blue-500/10 text-blue-400 border border-blue-500/25 shadow-sm shadow-blue-500/10'
                 : 'text-slate-400 border border-transparent hover:text-white hover:bg-white/5'
                 }`}
             >
@@ -119,8 +119,8 @@ export default function FinanceiroConfiguracoes() {
         >
           {/* Section title bar */}
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-              <activeTab.icon className="w-4 h-4 text-emerald-400" />
+            <div className="p-2 rounded-xl bg-blue-500/10 border border-blue-500/20">
+              <activeTab.icon className="w-4 h-4 text-blue-400" />
             </div>
             <div>
               <h2 className="text-base font-black text-white uppercase tracking-widest leading-none">{activeTab.label}</h2>
@@ -193,7 +193,7 @@ export default function FinanceiroConfiguracoes() {
 
               <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
                 <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Plus className="w-3.5 h-3.5 text-emerald-400" /> Novo Perfil
+                  <Plus className="w-3.5 h-3.5 text-blue-400" /> Novo Perfil
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
                   <div className="space-y-1.5">
@@ -226,7 +226,7 @@ export default function FinanceiroConfiguracoes() {
                   </div>
                 </div>
                 <Button onClick={() => { addProfile(pForm); toast.success('Perfil OTE criado!'); }}
-                  className="mt-5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20">
+                  className="mt-5 h-10 bg-blue-600 hover:bg-blue-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-blue-500/20">
                   <Plus className="w-4 h-4" /> Adicionar Perfil
                 </Button>
               </div>
@@ -253,7 +253,7 @@ export default function FinanceiroConfiguracoes() {
                           <td className="px-5 py-3.5 text-sm font-mono text-slate-400">{r.faixaMin}%</td>
                           <td className="px-5 py-3.5 text-sm font-mono text-slate-400">{r.faixaMax}%</td>
                           <td className="px-5 py-3.5">
-                            <span className="text-sm font-black text-emerald-400">{r.percentComissao}%</span>
+                            <span className="text-sm font-black text-blue-400">{r.percentComissao}%</span>
                           </td>
                           <td className="px-5 py-3.5">
                             <button onClick={() => { removeCommRule(r.id); toast.success('Regra removida.'); }}
@@ -270,7 +270,7 @@ export default function FinanceiroConfiguracoes() {
 
               <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
                 <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Plus className="w-3.5 h-3.5 text-emerald-400" /> Nova Faixa
+                  <Plus className="w-3.5 h-3.5 text-blue-400" /> Nova Faixa
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   <div className="space-y-1.5 col-span-2 md:col-span-1">
@@ -291,7 +291,7 @@ export default function FinanceiroConfiguracoes() {
                   </div>
                 </div>
                 <Button onClick={() => { if (!cForm.nome) return toast.error('Informe o nome.'); addCommRule(cForm); toast.success('Faixa criada!'); }}
-                  className="mt-5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20">
+                  className="mt-5 h-10 bg-blue-600 hover:bg-blue-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-blue-500/20">
                   <Plus className="w-4 h-4" /> Adicionar Faixa
                 </Button>
               </div>
@@ -336,7 +336,7 @@ export default function FinanceiroConfiguracoes() {
 
               <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
                 <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Plus className="w-3.5 h-3.5 text-emerald-400" /> Nova Regra
+                  <Plus className="w-3.5 h-3.5 text-blue-400" /> Nova Regra
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="space-y-1.5">
@@ -353,7 +353,7 @@ export default function FinanceiroConfiguracoes() {
                   </div>
                 </div>
                 <Button onClick={() => { if (!prForm.tipo) return toast.error('Informe o tipo.'); addPartRule(prForm); toast.success('Regra criada!'); }}
-                  className="mt-5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20">
+                  className="mt-5 h-10 bg-blue-600 hover:bg-blue-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-blue-500/20">
                   <Plus className="w-4 h-4" /> Adicionar Regra
                 </Button>
               </div>
@@ -398,7 +398,7 @@ export default function FinanceiroConfiguracoes() {
 
               <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
                 <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Plus className="w-3.5 h-3.5 text-emerald-400" /> Nova Taxa
+                  <Plus className="w-3.5 h-3.5 text-blue-400" /> Nova Taxa
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="space-y-1.5">
@@ -417,7 +417,7 @@ export default function FinanceiroConfiguracoes() {
                   </div>
                 </div>
                 <Button onClick={() => { if (!tForm.nome) return toast.error('Informe o nome.'); addTaxRate(tForm); toast.success('Taxa criada!'); }}
-                  className="mt-5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20">
+                  className="mt-5 h-10 bg-blue-600 hover:bg-blue-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-blue-500/20">
                   <Plus className="w-4 h-4" /> Adicionar Taxa
                 </Button>
               </div>
@@ -427,15 +427,15 @@ export default function FinanceiroConfiguracoes() {
           {/* ── METAS ── */}
           {tab === 'metas' && (
             <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-12 flex flex-col items-center justify-center text-center gap-5">
-              <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-                <Target className="w-8 h-8 text-emerald-400" />
+              <div className="p-5 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+                <Target className="w-8 h-8 text-blue-400" />
               </div>
               <div>
                 <h3 className="text-base font-black text-white uppercase tracking-widest">Gerenciar Metas</h3>
                 <p className="text-sm text-slate-500 max-w-sm mt-2">As metas individuais e de squad são configuradas no módulo de Metas do Financeiro. Clique abaixo para acessar.</p>
               </div>
               <Link to="/app/financeiro/metas">
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest h-11 px-6 rounded-xl shadow-lg shadow-emerald-500/20">
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest h-11 px-6 rounded-xl shadow-lg shadow-blue-500/20">
                   <Target className="w-4 h-4" /> Abrir Módulo de Metas
                 </Button>
               </Link>

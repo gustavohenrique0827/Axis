@@ -255,13 +255,19 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
     onUpdateLead({ tags: next });
   };
 
-  const QUICK_ACTIONS = [
+  const QUICK_ACTIONS: { label: string; color: string; icon: React.ElementType; href?: string; onAction?: () => void }[] = [
     { label: "WhatsApp",    color: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20", icon: MessageSquare, href: `https://wa.me/55${phoneRaw}` },
     { label: "Ligar",       color: "bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20",             icon: Phone,         href: `tel:${phoneRaw}` },
     { label: "E-mail",      color: "bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20",         icon: Mail,          href: lead.email ? `mailto:${lead.email}` : undefined },
-    { label: "Visita",      color: "bg-violet-500/10 border-violet-500/20 text-violet-400 hover:bg-violet-500/20",     icon: Calendar,      href: undefined },
-    { label: "Proposta",    color: "bg-cyan-500/10 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20",             icon: FileText,      href: undefined },
-    { label: "Fechar",      color: "bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20",             icon: CheckCircle2,  href: undefined },
+    { label: "Visita",      color: "bg-violet-500/10 border-violet-500/20 text-violet-400 hover:bg-violet-500/20",     icon: Calendar,      onAction: () => toast.info("Agendamento de visita — em breve") },
+    {
+      label: "Proposta", color: "bg-cyan-500/10 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20", icon: FileText,
+      onAction: () => { onMoveStage("Negociação"); toast.success("Lead avançado para Negociação — proposta em andamento."); },
+    },
+    {
+      label: "Fechar", color: "bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20", icon: CheckCircle2,
+      onAction: () => { onGanho(); onClose(); },
+    },
   ];
 
   return (
@@ -442,7 +448,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
                       <button
                         key={a.label}
                         className={cn("flex flex-col items-center gap-1.5 py-3 rounded-xl border text-[10px] font-black transition-all", a.color)}
-                        onClick={() => toast.info(`${a.label} — em breve`)}
+                        onClick={() => (a.onAction ? a.onAction() : toast.info(`${a.label} — em breve`))}
                       >
                         <a.icon className="w-4 h-4" />
                         {a.label}

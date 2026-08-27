@@ -312,7 +312,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         try {
             const [
               leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes,
-              notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
+              notifRes, mktCampRes, mktContRes, mktLpRes, mktAutoRes, settingsRes,
               productsRes, proposalsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
               clienteBaseRes, reunioesRes
             ] = await Promise.all([
@@ -327,6 +327,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('marketing_campaigns').select('*').eq('tenant_id', tenantId),
               supabase.from('marketing_content').select('*').eq('tenant_id', tenantId),
               supabase.from('marketing_landing_pages').select('*').eq('tenant_id', tenantId),
+              supabase.from('marketing_automations').select('*').eq('tenant_id', tenantId),
               // app_settings inclui linhas globais (tenant_id IS NULL) por design — filtro fica só a cargo da RLS aqui.
               supabase.from('app_settings').select('*'),
               supabase.from('products').select('*').eq('tenant_id', tenantId),
@@ -362,6 +363,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!mktCampRes.error && mktCampRes.data) setMarketingCampaigns(mktCampRes.data);
             if (!mktContRes.error && mktContRes.data) setMarketingContent(mktContRes.data);
             if (!mktLpRes.error && mktLpRes.data) setMarketingLandingPages(mktLpRes.data);
+            if (!mktAutoRes.error && mktAutoRes.data) setMarketingAutomations(mktAutoRes.data);
             if (!productsRes.error && productsRes.data) setProducts(productsRes.data);
             if (!proposalsRes.error && proposalsRes.data) setProposals(proposalsRes.data);
             if (!turmasRes.error && turmasRes.data) setTurmas(turmasRes.data);
@@ -860,6 +862,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateContract = async (id: string, updates: Partial<Contract>) => {
+    setContracts(prev => prev.map(c => c.id === id ? { ...c, ...updates } : c));
+    toast.success('Contrato atualizado!');
+    if (supabase) {
+      try {
+        await supabase.from('contracts').update(updates).eq('id', id);
+      } catch (err) {
+        console.error("Supabase update contract failed:", err);
+      }
+    }
+  };
+
   const deleteContract = async (id: string) => {
     setContracts(prev => prev.filter(c => c.id !== id));
     toast.info('Contrato removido.');
@@ -1059,7 +1073,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       leads, tasks, contracts, notifications, leadActivities, financeEntries, appointments,
       theme, toggleTheme,
       addLead, updateLead, deleteLead, moveLead,
-      addTask, updateTask, deleteTask, addContract, deleteContract,
+      addTask, updateTask, deleteTask, addContract, updateContract, deleteContract,
       addNotification, markNotificationAsRead, markAllNotificationsAsRead,
       addLeadActivity,
       getSmartInsight,

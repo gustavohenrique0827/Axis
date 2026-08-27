@@ -8,17 +8,39 @@ import { NovaCategoriaTarefaModal } from "../../../components/ui/modals/producti
 import { NovoPlanoContasModal } from "../../../components/ui/modals/settings/NovoPlanoContasModal";
 import { toast } from "sonner";
 
+const TASK_CATEGORIES_STORAGE_KEY = "axis_prod_task_categories";
+const DEFAULT_TASK_CATEGORIES = [
+    { id: "1", nome: "Follow-up", cor: "bg-blue-500" },
+    { id: "2", nome: "Reunião", cor: "bg-purple-500" },
+    { id: "3", nome: "Proposta", cor: "bg-emerald-500" }
+];
+
+function loadTaskCategories(): any[] {
+    try {
+        const saved = localStorage.getItem(TASK_CATEGORIES_STORAGE_KEY);
+        if (saved) return JSON.parse(saved);
+    } catch (e) {
+        // ignore
+    }
+    return DEFAULT_TASK_CATEGORIES;
+}
+
 export function ConfigProdutividadeCategorias() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const { squads, leads } = useData();
-    const [categories, setCategories] = useState<any[]>([
-        { id: "1", nome: "Follow-up", cor: "bg-blue-500" },
-        { id: "2", nome: "Reunião", cor: "bg-purple-500" },
-        { id: "3", nome: "Proposta", cor: "bg-emerald-500" }
-    ]);
+    const [categories, setCategories] = useState<any[]>(loadTaskCategories);
+
+    const saveCategories = (updated: any[]) => {
+        setCategories(updated);
+        try {
+            localStorage.setItem(TASK_CATEGORIES_STORAGE_KEY, JSON.stringify(updated));
+        } catch (e) {
+            // ignore
+        }
+    };
 
     const handleSave = (data: any) => {
-        setCategories([{ ...data, id: Date.now().toString() }, ...categories]);
+        saveCategories([{ ...data, id: Date.now().toString() }, ...categories]);
         toast.success("Categoria de tarefa criada!");
         setIsModalOpen(false);
     };

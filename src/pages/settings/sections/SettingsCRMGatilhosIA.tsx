@@ -5,12 +5,8 @@ import { Zap, Plus } from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
 import { toast } from "sonner";
 
-import { NovaRegraIAAutomacaoModal } from "../../../components/ui/modals/marketing/NovaRegraIAAutomacaoModal";
-
 export function ConfigCRMGatilhosIA() {
   const { leadScoreTriggers, setLeadScoreTriggers } = useData();
-
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const sdrStagesMap: Record<string, string> = {
     s1: "Novo Lead",

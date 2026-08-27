@@ -51,7 +51,7 @@ export function PainelInsights({ totalAppointments, confirmed, late, activeToday
             <div className="p-5 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-3xl">
               <h5 className="text-[13px] font-black text-[var(--color-text-primary)] mb-1">📅 Agenda Vazia</h5>
               <p className="text-[11px] text-[var(--color-text-muted)] font-medium leading-relaxed mb-4">Nenhum agendamento cadastrado. Crie o primeiro agendamento para ver insights operacionais.</p>
-              <Button onClick={onNewBooking} className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white text-[9px] font-black px-4 rounded-xl">Novo Agendamento</Button>
+              <Button onClick={onNewBooking} className="h-8 bg-blue-600 hover:bg-blue-700 text-white text-[9px] font-black px-4 rounded-xl">Novo Agendamento</Button>
             </div>
           )}
           {totalAppointments > 0 && late === 0 && (

@@ -84,8 +84,8 @@ export function NovaPautaModal({
             maxWidth="max-w-2xl"
             title={
                 <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-purple-600/10 border border-purple-500/20 flex items-center justify-center mt-0.5">
-                        <Calendar className="w-4 h-4 text-purple-400" />
+                    <div className="w-9 h-9 rounded-xl bg-blue-600/10 border border-blue-500/20 flex items-center justify-center mt-0.5">
+                        <Calendar className="w-4 h-4 text-blue-400" />
                     </div>
                     <div className="leading-tight">
                         <div className="text-base font-black text-white">{title}</div>
@@ -100,7 +100,7 @@ export function NovaPautaModal({
                     <Button type="button" variant="ghost" onClick={onClose} className="text-slate-400 hover:text-white" disabled={loading}>
                         Cancelar
                     </Button>
-                    <Button type="submit" form="nova-pauta-form" className="bg-purple-600 hover:bg-purple-700 text-white font-bold px-6" disabled={!canSubmit}>
+                    <Button type="submit" form="nova-pauta-form" className="bg-[#2563EB] hover:bg-blue-600 text-white font-bold px-6" disabled={!canSubmit}>
                         {loading ? "Processando..." : submitText}
                     </Button>
                 </>

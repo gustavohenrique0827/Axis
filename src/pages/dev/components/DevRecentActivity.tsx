@@ -1,16 +1,43 @@
+import { useNavigate } from "react-router-dom";
 import { Card } from "../../../components/ui/card";
-import { GitBranch } from "lucide-react";
+import { GitBranch, AlertCircle, Circle, Clock, CheckCircle2 } from "lucide-react";
+import { useDevIssues } from "../hooks/useDevIssues";
 
-const recentActivity: { type: string; message: string; time: string; color: string; icon: React.ElementType }[] = [];
+const STATUS_ICON: Record<string, React.ElementType> = {
+  aberto: Circle,
+  'em andamento': AlertCircle,
+  'em review': Clock,
+  fechado: CheckCircle2,
+};
+
+const STATUS_COLOR: Record<string, string> = {
+  aberto: 'text-red-400',
+  'em andamento': 'text-amber-400',
+  'em review': 'text-slate-300',
+  fechado: 'text-emerald-400',
+};
 
 export function DevRecentActivity() {
+  const { issues } = useDevIssues();
+  const navigate = useNavigate();
+
+  const recentActivity = issues.slice(0, 6).map(issue => ({
+    icon: STATUS_ICON[issue.status] ?? Circle,
+    color: STATUS_COLOR[issue.status] ?? 'text-slate-400',
+    message: `#${issue.issueNumber} · ${issue.title}`,
+    time: `${issue.project} · ${issue.createdAt}`,
+  }));
+
   return (
     <Card className="lg:col-span-2 bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
       <div className="p-6 border-b border-white/5 flex justify-between items-center">
         <h3 className="text-xs font-black text-white uppercase tracking-widest flex items-center gap-2">
           <GitBranch className="w-4 h-4 text-blue-400" /> Atividade Recente
         </h3>
-        <button className="text-[10px] text-blue-400 font-black uppercase tracking-widest hover:underline">
+        <button
+          onClick={() => navigate('/app/dev/issues')}
+          className="text-[10px] text-blue-400 font-black uppercase tracking-widest hover:underline"
+        >
           Ver tudo
         </button>
       </div>

@@ -1,10 +1,10 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Activity, Server, DollarSign, TerminalSquare, Bell, Plus, Shield } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { setupMasterUser } from "../../lib/supabase";
+import { setupMasterUser, supabase } from "../../lib/supabase";
 import { toast } from "sonner";
 import { ModuleConfigModal } from "./components/ModuleConfigModal";
 import { AdminOverviewTab } from "./components/AdminOverviewTab";
@@ -41,6 +41,25 @@ export default function AdminSaaS() {
 
   const { getTenantModules, updateTenantModules } = useAuth();
   const { financeEntries } = useData();
+
+  const [totalTenants, setTotalTenants] = useState<number | null>(null);
+  const [activeUsers, setActiveUsers] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!supabase) return;
+    let cancelled = false;
+    async function loadGlobalCounts() {
+      const [tenantsRes, usersRes] = await Promise.all([
+        supabase!.from("tenants").select("id", { count: "exact", head: true }),
+        supabase!.from("users").select("id", { count: "exact", head: true }).eq("active", true),
+      ]);
+      if (cancelled) return;
+      if (!tenantsRes.error) setTotalTenants(tenantsRes.count ?? 0);
+      if (!usersRes.error) setActiveUsers(usersRes.count ?? 0);
+    }
+    loadGlobalCounts();
+    return () => { cancelled = true; };
+  }, []);
 
   const revenueData = useMemo(() => {
     const months: Record<string, { name: string; mrr: number }> = {};
@@ -126,7 +145,7 @@ export default function AdminSaaS() {
       </div>
 
       {activeTab === "overview" && (
-        <AdminOverviewTab globalMrr={globalMrr} revenueData={revenueData} CustomTooltip={CustomTooltip} />
+        <AdminOverviewTab globalMrr={globalMrr} revenueData={revenueData} CustomTooltip={CustomTooltip} totalTenants={totalTenants} activeUsers={activeUsers} />
       )}
       {activeTab === "tenants" && <AdminTenantsTab />}
       {activeTab === "billing" && (

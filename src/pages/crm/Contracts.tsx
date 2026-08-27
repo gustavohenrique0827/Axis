@@ -33,7 +33,8 @@ export default function Contracts() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [contractToDelete, setContractToDelete] = useState<string | null>(null);
-  const { contracts, addContract, deleteContract } = useData();
+  const [editingContractId, setEditingContractId] = useState<string | null>(null);
+  const { contracts, addContract, updateContract, deleteContract } = useData();
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<ContractFormData>({
     resolver: zodResolver(contractSchema),
@@ -43,15 +44,43 @@ export default function Contracts() {
     const formattedData = data.data.split("-").reverse().join("/");
     const cleanValue = parseFloat(data.valor.replace(/[^0-9,.]/g, "").replace(",", "."));
     const formattedValue = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: 0 }).format(cleanValue);
-    addContract({ client: data.cliente, plan: data.plano, mrr: formattedValue, status: "Ativo", date: formattedData, progress: 100 });
-    toast.success("Contrato criado com sucesso!");
+    if (editingContractId) {
+      updateContract(editingContractId, { client: data.cliente, plan: data.plano, mrr: formattedValue, date: formattedData });
+      toast.success("Contrato atualizado com sucesso!");
+    } else {
+      addContract({ client: data.cliente, plan: data.plano, mrr: formattedValue, status: "Ativo", date: formattedData, progress: 100 });
+      toast.success("Contrato criado com sucesso!");
+    }
     reset();
+    setEditingContractId(null);
     setIsModalOpen(false);
   };
 
-  const handleModalClose = () => { setIsModalOpen(false); reset(); };
+  const handleEdit = (contract: { id: string; client: string; plan: string; mrr: string | number; date: string }) => {
+    const [day, month, year] = contract.date.split("/");
+    reset({
+      cliente: contract.client,
+      plano: contract.plan,
+      valor: String(contract.mrr).replace(/[^0-9,]/g, ""),
+      data: year && month && day ? `${year}-${month}-${day}` : "",
+    });
+    setEditingContractId(contract.id);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => { setIsModalOpen(false); setEditingContractId(null); reset(); };
 
   const totalMRR = contracts.reduce((acc, curr) => acc + toNumberMRR(curr.mrr), 0);
+
+  const handleExportCSV = () => {
+    const lines = ['Cliente;Plano;MRR;Status;Assinatura'];
+    contracts.forEach(c => lines.push(`"${c.client}";"${c.plan}";"${c.mrr}";"${c.status}";"${c.date}"`));
+    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'contratos.csv';
+    a.click();
+  };
 
   return (
     <div className="space-y-6">
@@ -61,7 +90,7 @@ export default function Contracts() {
           <p className="text-sm text-slate-400">Contratos ativos, MRR e saúde financeira.</p>
         </div>
         <div className="flex gap-3">
-          <Button variant="outline" className="gap-2">Exportar CSV</Button>
+          <Button variant="outline" className="gap-2" onClick={handleExportCSV}>Exportar CSV</Button>
           <Button onClick={() => setIsModalOpen(true)} className="gap-2">
             <Plus className="w-4 h-4" /> Novo Contrato
           </Button>
@@ -78,17 +107,18 @@ export default function Contracts() {
         contracts={contracts}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
+        onEdit={handleEdit}
         onDelete={(id) => setContractToDelete(id)}
       />
 
       <Modal
         isOpen={isModalOpen}
         onClose={handleModalClose}
-        title="Novo Contrato"
+        title={editingContractId ? "Editar Contrato" : "Novo Contrato"}
         footer={
           <div className="flex justify-end gap-2">
             <Button variant="ghost" onClick={handleModalClose}>Cancelar</Button>
-            <Button onClick={handleSubmit(onSubmit)}>Salvar Contrato</Button>
+            <Button onClick={handleSubmit(onSubmit)}>{editingContractId ? "Salvar Alterações" : "Salvar Contrato"}</Button>
           </div>
         }
       >
