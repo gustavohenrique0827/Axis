@@ -107,11 +107,11 @@ export function Topbar({
 
         {/* Mobile Branding Pill */}
         <div className="flex sm:hidden items-center gap-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] px-3 py-1.5 rounded-xl">
-          <div className="w-5 h-5 rounded bg-[#0B1120] p-0.5">
+          <div className="w-5 h-5 rounded bg-transparent dark:bg-[var(--color-primary-blue)]/15 p-0.5">
             <img
               src={logoDarkIcon}
               alt="Axis Logo"
-              className="w-full h-full object-contain mix-blend-screen"
+              className="w-full h-full object-contain dark:mix-blend-screen"
               referrerPolicy="no-referrer"
             />
           </div>

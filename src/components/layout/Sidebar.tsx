@@ -61,14 +61,14 @@ export function Sidebar({
         <div className="h-18 flex items-center justify-center px-3.5 py-3 shrink-0 border-b border-[var(--color-border-subtle)]">
           <Link
             to="/app"
-            className={`logo-image-container sidebar-logo-header flex items-center justify-center w-full h-full rounded-xl bg-[#0B1120] shadow-xs ${isSidebarCollapsed ? "mx-auto" : ""}`}
+            className={`logo-image-container sidebar-logo-header flex items-center justify-center w-full h-full rounded-xl bg-transparent dark:bg-[var(--color-primary-blue)]/15 dark:border dark:border-[var(--color-primary-blue)]/25 transition-all ${isSidebarCollapsed ? "mx-auto" : ""}`}
           >
             {isSidebarCollapsed ? (
               <div className="w-7 h-7 rounded-lg flex items-center justify-center p-0.5">
                 <img
                   src={logoDarkIcon}
                   alt="Axis"
-                  className="w-full h-full object-contain mix-blend-screen"
+                  className="w-full h-full object-contain dark:mix-blend-screen"
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -77,7 +77,7 @@ export function Sidebar({
                 <img
                   src={logoDarkFull}
                   alt="Axis"
-                  className="logo-container mix-blend-screen max-h-7 object-contain"
+                  className="logo-container max-h-7 object-contain dark:mix-blend-screen"
                   referrerPolicy="no-referrer"
                 />
               </div>
