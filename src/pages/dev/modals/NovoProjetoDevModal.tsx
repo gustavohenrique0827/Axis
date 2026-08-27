@@ -21,8 +21,8 @@ type Props = {
   onSave: (data: NovoProjetoPayload) => void;
 };
 
-const label = "text-[10px] font-bold text-slate-400 uppercase tracking-wider";
-const input = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder-slate-600";
+const label = "text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider";
+const input = "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-4 py-2.5 text-xs text-[var(--color-text-primary)] focus:border-[var(--color-primary-blue)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary-blue)] transition-all placeholder-[var(--color-text-faint)]";
 
 export function NovoProjetoDevModal({ isOpen, onClose, onSave }: Props) {
   const [name, setName] = useState("");

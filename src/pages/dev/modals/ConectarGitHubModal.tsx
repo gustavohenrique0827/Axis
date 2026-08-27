@@ -60,29 +60,29 @@ export function ConectarGitHubModal({ isOpen, onClose, onConnected, tenantId }: 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150">
-      <div className="w-full max-w-md bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl shadow-2xl overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200">
+      <div className="w-full max-w-md bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-3xl shadow-2xl overflow-hidden ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-white/5">
+        <div className="flex items-center justify-between p-6 border-b border-[var(--color-border-subtle)]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center">
-              <GitFork className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-2xl bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] flex items-center justify-center">
+              <GitFork className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-sm font-black text-white uppercase tracking-widest">Conectar GitHub</h2>
-              <p className="text-[10px] text-slate-500 font-bold">Personal Access Token</p>
+              <h2 className="text-sm font-bold text-[var(--color-text-primary)] uppercase tracking-wider">Conectar GitHub</h2>
+              <p className="text-[10px] text-[var(--color-text-muted)] font-bold">Personal Access Token</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-xl transition-colors">
-            <X className="w-4 h-4 text-slate-400" />
+          <button onClick={onClose} className="p-2 hover:bg-[var(--color-surface-sunken)] rounded-xl transition-colors text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] cursor-pointer border-none bg-transparent">
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Body */}
         <div className="p-6 space-y-5">
           {/* Steps */}
-          <div className="bg-blue-500/5 border border-blue-500/15 rounded-xl p-4 space-y-2.5">
-            <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Como criar o token</p>
-            <ol className="space-y-1.5">
+          <div className="bg-[var(--color-primary-blue)]/5 border border-[var(--color-primary-blue)]/15 rounded-2xl p-4 space-y-2.5">
+            <p className="text-[10px] font-bold text-[var(--color-primary-blue)] uppercase tracking-wider">Como criar o token</p>
+            <ol className="space-y-2">
               {[
                 "Acesse github.com → Settings → Developer Settings",
                 'Clique em "Personal access tokens" → "Tokens (classic)"',
@@ -90,8 +90,8 @@ export function ConectarGitHubModal({ isOpen, onClose, onConnected, tenantId }: 
                 "Marque o escopo: repo (ou contents para somente leitura)",
                 "Copie e cole o token abaixo",
               ].map((step, i) => (
-                <li key={i} className="flex items-start gap-2 text-[11px] text-slate-400">
-                  <span className="w-4 h-4 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-[9px] font-black shrink-0 mt-0.5">
+                <li key={i} className="flex items-start gap-2.5 text-xs text-[var(--color-text-muted)]">
+                  <span className="w-4 h-4 rounded-full bg-[var(--color-primary-blue)]/15 text-[var(--color-primary-blue)] flex items-center justify-center text-[9px] font-black shrink-0 mt-0.5">
                     {i + 1}
                   </span>
                   {step}
@@ -102,7 +102,7 @@ export function ConectarGitHubModal({ isOpen, onClose, onConnected, tenantId }: 
               href="https://github.com/settings/tokens/new"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[10px] font-black text-blue-400 hover:text-blue-300 transition-colors mt-1"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[var(--color-primary-blue)] hover:underline transition-colors mt-1"
             >
               <ExternalLink className="w-3 h-3" /> Abrir GitHub tokens
             </a>
@@ -110,19 +110,19 @@ export function ConectarGitHubModal({ isOpen, onClose, onConnected, tenantId }: 
 
           {/* Token input */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Token</label>
+            <label className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Token</label>
             <div className="relative">
               <input
                 type={showPat ? "text" : "password"}
                 value={pat}
                 onChange={e => { setPat(e.target.value); setError(null); }}
                 placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                className="w-full bg-[var(--color-surface-elevated)] border border-white/8 rounded-xl px-4 py-3 pr-11 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50 font-mono"
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-4 py-3 pr-11 text-xs text-[var(--color-text-primary)] placeholder-[var(--color-text-faint)] focus:outline-none focus:border-[var(--color-primary-blue)] font-mono"
               />
               <button
                 type="button"
                 onClick={() => setShowPat(v => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer border-none bg-transparent"
               >
                 {showPat ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -130,29 +130,29 @@ export function ConectarGitHubModal({ isOpen, onClose, onConnected, tenantId }: 
           </div>
 
           {/* Security note */}
-          <div className="flex items-start gap-2 text-[10px] text-slate-500">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500/60 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-2 text-[10px] text-[var(--color-text-muted)]">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
             Token salvo no banco de dados (não no navegador). Acesso restrito ao seu tenant.
           </div>
 
           {/* Error */}
           {error && (
-            <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-              <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-              <p className="text-[11px] text-red-300">{error}</p>
+            <div className="flex items-center gap-2 bg-rose-500/10 border border-rose-500/25 rounded-xl px-4 py-3">
+              <AlertCircle className="w-4 h-4 text-rose-500 shrink-0" />
+              <p className="text-xs text-rose-600 dark:text-rose-400">{error}</p>
             </div>
           )}
         </div>
 
         {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 pt-0">
-          <Button variant="outline" onClick={onClose} className="h-9 px-5 text-[10px] font-black uppercase tracking-widest border-white/8">
+          <Button variant="outline" onClick={onClose} className="h-10 px-5 text-xs font-bold uppercase tracking-wider">
             Cancelar
           </Button>
           <Button
             onClick={handleConnect}
             disabled={loading || !pat.trim()}
-            className="h-9 px-5 text-[10px] font-black uppercase tracking-widest bg-white text-black hover:bg-slate-200 gap-2"
+            className="h-10 px-6 text-xs font-bold uppercase tracking-wider gap-2 shadow-xs"
           >
             {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <GitFork className="w-3.5 h-3.5" />}
             {loading ? "Validando..." : "Conectar"}

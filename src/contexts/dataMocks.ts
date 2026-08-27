@@ -184,3 +184,5 @@ export const defaultActivitiesOnLoad: LeadActivity[] = [];
 export const getDefaultAppointments = (): Appointment[] => [];
 export const defaultSquads: Squad[] = [];
 export const defaultNotifications: Notification[] = [];
+
+export const defaultColaboradores: any[] = [];

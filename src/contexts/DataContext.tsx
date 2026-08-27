@@ -411,6 +411,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [leads]);
 
+  useEffect(() => {
+    if (colaboradores && colaboradores.length > 0) {
+      localStorage.setItem("axis_colaboradores", JSON.stringify(colaboradores));
+    }
+  }, [colaboradores]);
+
   const notifiedRemindersRef = React.useRef<Record<string, boolean>>({});
 
   useEffect(() => {

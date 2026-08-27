@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useData } from "../../../contexts/DataContext";
+import { toast } from "sonner";
 
 export interface TeamMember {
   id?: string;
@@ -25,11 +26,11 @@ export interface AuditLog {
   date: string;
 }
 
-function rowToMember(row: any): TeamMember {
+function rowToMember(row: any, idx: number): TeamMember {
   return {
-    id: row.id,
-    name: row.nome || row.name || '',
-    role: row.cargo || row.role || '',
+    id: String(row.id || `colab-${idx + 1}`),
+    name: row.nome || row.name || 'Colaborador',
+    role: row.cargo || row.role || 'Geral',
     email: row.email || '',
     phone: row.phone || '',
     deals: row.deals || 0,
@@ -40,7 +41,7 @@ function rowToMember(row: any): TeamMember {
 }
 
 export function useEquipe() {
-  const { colaboradores, addColaborador, updateColaborador, squads: dataSquads, addSquad: dataAddSquad } = useData();
+  const { colaboradores, addColaborador, updateColaborador, deleteColaborador, squads: dataSquads, addSquad: dataAddSquad } = useData();
 
   const [activeTab, setActiveTab] = useState("visao-geral");
   const [memberSearch, setMemberSearch] = useState("");
@@ -61,28 +62,39 @@ export function useEquipe() {
   const team = colaboradores.map(rowToMember);
 
   const addMember = async (member: TeamMember) => {
-    addColaborador({
-      id: Date.now().toString(),
+    await addColaborador({
+      id: member.id || `colab-${Date.now()}`,
       nome: member.name,
       cargo: member.role,
       email: member.email,
       phone: member.phone,
-      deals: member.deals,
-      revenue: member.revenue,
-      status: member.status,
-      squad: member.squad,
+      deals: member.deals || 0,
+      revenue: member.revenue || "R$ 0",
+      status: member.status || "Ativo",
+      squad: member.squad || "Sem squad",
     });
   };
 
   const editMember = async (id: string, member: Partial<TeamMember>) => {
     await updateColaborador(id, {
-      nome: member.name,
-      cargo: member.role,
-      email: member.email,
-      phone: member.phone,
-      status: member.status,
-      squad: member.squad,
+      ...(member.name !== undefined ? { nome: member.name, name: member.name } : {}),
+      ...(member.role !== undefined ? { cargo: member.role, role: member.role } : {}),
+      ...(member.email !== undefined ? { email: member.email } : {}),
+      ...(member.phone !== undefined ? { phone: member.phone } : {}),
+      ...(member.status !== undefined ? { status: member.status } : {}),
+      ...(member.squad !== undefined ? { squad: member.squad } : {}),
     });
+  };
+
+  const removeMember = async (id: string) => {
+    await deleteColaborador(id);
+    toast.info("Colaborador removido da equipe.");
+  };
+
+  const toggleMemberStatus = async (id: string, currentStatus: string) => {
+    const nextStatus = currentStatus === "Ativo" ? "Inativo" : "Ativo";
+    await updateColaborador(id, { status: nextStatus });
+    toast.success(`Colaborador marcado como ${nextStatus}!`);
   };
 
   const addSquad = async (squad: Squad) => {
@@ -157,6 +169,8 @@ export function useEquipe() {
     moveMember,
     addMember,
     editMember,
+    removeMember,
+    toggleMemberStatus,
     addSquad,
   };
 }

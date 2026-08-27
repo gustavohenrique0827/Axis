@@ -28,8 +28,8 @@ const SEVERITIES: { value: NovaIssuePayload["severity"]; label: string; color: s
 const LABEL_SUGGESTIONS = ["backend", "frontend", "mobile", "auth", "performance", "ui", "api", "banco de dados", "email", "exportação", "segurança"];
 const PROJECTS = ["Plataforma Axis CRM", "API Gateway v3", "App Mobile Alunos", "Dashboard Analytics BI", "Módulo Financeiro 2.0"];
 
-const lbl = "text-[10px] font-bold text-slate-400 uppercase tracking-wider";
-const inp = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-red-500/50 focus:outline-none focus:ring-2 focus:ring-red-500/10 transition-all placeholder-slate-600";
+const lbl = "text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider";
+const inp = "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-4 py-2.5 text-xs text-[var(--color-text-primary)] focus:border-red-500/50 focus:outline-none focus:ring-1 focus:ring-red-500/20 transition-all placeholder-[var(--color-text-faint)]";
 
 export function NovaIssueDevModal({ isOpen, onClose, onSave }: Props) {
   const [title, setTitle] = useState("");

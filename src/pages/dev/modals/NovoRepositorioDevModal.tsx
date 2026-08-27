@@ -18,8 +18,8 @@ type Props = {
 
 const LANGUAGES = ["TypeScript", "JavaScript", "Python", "Go", "Rust", "Java", "C#", "PHP", "Ruby", "Dart", "Swift", "Kotlin"];
 
-const lbl = "text-[10px] font-bold text-slate-400 uppercase tracking-wider";
-const inp = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/10 transition-all placeholder-slate-600";
+const lbl = "text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider";
+const inp = "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-4 py-2.5 text-xs text-[var(--color-text-primary)] focus:border-emerald-500/50 focus:outline-none focus:ring-1 focus:ring-emerald-500/20 transition-all placeholder-[var(--color-text-faint)]";
 
 export function NovoRepositorioDevModal({ isOpen, onClose, onSave }: Props) {
   const [name, setName] = useState("");

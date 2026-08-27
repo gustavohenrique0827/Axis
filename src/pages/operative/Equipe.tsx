@@ -21,13 +21,22 @@ export default function Equipe() {
     toggleSquad, filter, setFilter,
     currentPage, setCurrentPage,
     filteredLogs, filteredTeam, paginatedLogs, totalPages,
-    moveMember, addMember, editMember, addSquad,
+    moveMember, addMember, editMember, removeMember, toggleMemberStatus, addSquad,
   } = useEquipe();
 
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
 
   const handleSaveMember = async (data: any) => {
-    await addMember({ name: data.nome, role: data.cargo, email: data.email, phone: data.phone || "", deals: 0, revenue: "R$ 0", status: "Ativo", squad: data.squad || "Sem squad" });
+    await addMember({
+      name: data.nome,
+      role: data.cargo,
+      email: data.email,
+      phone: data.phone || "",
+      deals: 0,
+      revenue: "R$ 0",
+      status: "Ativo",
+      squad: data.squad || "Sem squad"
+    });
     toast.success("Membro adicionado à equipe com sucesso!");
     setIsModalOpen(false);
   };
@@ -51,7 +60,7 @@ export default function Equipe() {
         onNewSquadDone={() => { setNewSquadData({ name: "", leader: "" }); setNewSquadExpanded(false); }}
       />
 
-      <main className="flex-1 min-w-0 p-10 pb-24 overflow-y-auto custom-scrollbar">
+      <main className="flex-1 min-w-0 p-6 sm:p-10 pb-24 overflow-y-auto custom-scrollbar">
         {activeTab === "visao-geral" && (
           <EquipeOverview
             team={team} squads={squads} logs={logs}
@@ -72,6 +81,8 @@ export default function Equipe() {
             onMemberSearchChange={setMemberSearch}
             onAdmitir={() => setIsModalOpen(true)}
             onEditMember={setEditingMember}
+            onToggleStatus={toggleMemberStatus}
+            onDeleteMember={removeMember}
           />
         )}
         {activeTab === "logs" && (
