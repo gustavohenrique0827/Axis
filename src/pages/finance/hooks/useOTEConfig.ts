@@ -33,6 +33,12 @@ export interface TaxRate {
   aplicaEm: 'variavel' | 'total' | 'acelerador';
 }
 
+// Modelo de comissão escolhido pelo tenant — define qual fórmula calcOTE aplica:
+// 'acelerador'  — variável proporcional ao atingimento (por perfil) + acelerador linear acima de 100%.
+// 'faixas'      — comissão = % da faixa de atingimento (commRules) aplicado sobre o realizado.
+// 'faturamento' — comissão = % fixo do realizado (percentFaturamento) + bônus fixo ao bater a meta.
+export type ModeloComissao = 'acelerador' | 'faixas' | 'faturamento';
+
 const DEFAULT_PROFILES: OTEProfile[] = [
   { id: 'p1', cargo: 'Closer', nivel: 'Aprendiz',  salarioFixo: 1620,  variavelAlvo: 2000, aceleradorPercent: 1.5, thresholdMinimo: 30 },
   { id: 'p2', cargo: 'Closer', nivel: 'Junior 1',  salarioFixo: 1620,  variavelAlvo: 3000, aceleradorPercent: 2.0, thresholdMinimo: 30 },
@@ -63,12 +69,18 @@ const DEFAULT_TAX_RATES: TaxRate[] = [
 ];
 
 const SETTING_KEY = 'ote_config';
+const DEFAULT_MODELO: ModeloComissao = 'acelerador';
+const DEFAULT_PERCENT_FATURAMENTO = 5;
+const DEFAULT_BONUS_META_BATIDA = 500;
 
 interface OTEConfigBlob {
   profiles: OTEProfile[];
   commRules: CommissionRule[];
   partRules: PartnershipRule[];
   taxRates: TaxRate[];
+  modeloComissao: ModeloComissao;
+  percentFaturamento: number;
+  bonusMetaBatida: number;
 }
 
 export function useOTEConfig() {
@@ -78,6 +90,9 @@ export function useOTEConfig() {
   const [commRules, setCommRulesRaw]   = useState<CommissionRule[]>(DEFAULT_COMMISSION_RULES);
   const [partRules, setPartRulesRaw]   = useState<PartnershipRule[]>(DEFAULT_PARTNERSHIP_RULES);
   const [taxRates, setTaxRatesRaw]     = useState<TaxRate[]>(DEFAULT_TAX_RATES);
+  const [modeloComissao, setModeloComissaoRaw] = useState<ModeloComissao>(DEFAULT_MODELO);
+  const [percentFaturamento, setPercentFaturamentoRaw] = useState<number>(DEFAULT_PERCENT_FATURAMENTO);
+  const [bonusMetaBatida, setBonusMetaBatidaRaw] = useState<number>(DEFAULT_BONUS_META_BATIDA);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
@@ -88,6 +103,9 @@ export function useOTEConfig() {
       setCommRulesRaw(saved.commRules ?? DEFAULT_COMMISSION_RULES);
       setPartRulesRaw(saved.partRules ?? DEFAULT_PARTNERSHIP_RULES);
       setTaxRatesRaw(saved.taxRates ?? DEFAULT_TAX_RATES);
+      setModeloComissaoRaw(saved.modeloComissao ?? DEFAULT_MODELO);
+      setPercentFaturamentoRaw(saved.percentFaturamento ?? DEFAULT_PERCENT_FATURAMENTO);
+      setBonusMetaBatidaRaw(saved.bonusMetaBatida ?? DEFAULT_BONUS_META_BATIDA);
       setHydrated(true);
     }
   }, [appSettings, hydrated]);
@@ -99,6 +117,9 @@ export function useOTEConfig() {
       commRules: next.commRules ?? commRules,
       partRules: next.partRules ?? partRules,
       taxRates: next.taxRates ?? taxRates,
+      modeloComissao: next.modeloComissao ?? modeloComissao,
+      percentFaturamento: next.percentFaturamento ?? percentFaturamento,
+      bonusMetaBatida: next.bonusMetaBatida ?? bonusMetaBatida,
     });
   };
 
@@ -106,12 +127,36 @@ export function useOTEConfig() {
   const setCommRules  = (v: CommissionRule[])  => { setCommRulesRaw(v);  persist({ commRules: v }); };
   const setPartRules  = (v: PartnershipRule[]) => { setPartRulesRaw(v);  persist({ partRules: v }); };
   const setTaxRates   = (v: TaxRate[])         => { setTaxRatesRaw(v);   persist({ taxRates: v }); };
+  const setModeloComissao = (v: ModeloComissao) => { setModeloComissaoRaw(v); persist({ modeloComissao: v }); };
+  const setPercentFaturamento = (v: number) => { setPercentFaturamentoRaw(v); persist({ percentFaturamento: v }); };
+  const setBonusMetaBatida = (v: number) => { setBonusMetaBatidaRaw(v); persist({ bonusMetaBatida: v }); };
 
   const getProfile = (cargo: string, nivel: string): OTEProfile | undefined =>
     profiles.find(p => p.cargo === cargo && p.nivel === nivel);
 
-  const calcOTE = (profile: OTEProfile, atingimento: number) => {
+  // `realizado` (R$ efetivamente vendido) só é necessário para os modelos 'faixas' e
+  // 'faturamento' — o modelo 'acelerador' calcula tudo a partir do %-atingimento e do
+  // variavelAlvo do perfil, sem precisar do valor monetário bruto.
+  const calcOTE = (profile: OTEProfile, atingimento: number, realizado = 0) => {
     const fixo = profile.salarioFixo;
+
+    if (modeloComissao === 'faixas') {
+      const rule = commRules.find(r => atingimento >= r.faixaMin && atingimento <= r.faixaMax);
+      const variavel = atingimento >= profile.thresholdMinimo && rule
+        ? (rule.percentComissao / 100) * realizado
+        : 0;
+      return { fixo, variavel, acelerador: 0, totalOTE: fixo + variavel };
+    }
+
+    if (modeloComissao === 'faturamento') {
+      const variavel = atingimento >= profile.thresholdMinimo
+        ? (percentFaturamento / 100) * realizado
+        : 0;
+      const acelerador = atingimento >= 100 ? bonusMetaBatida : 0;
+      return { fixo, variavel, acelerador, totalOTE: fixo + variavel + acelerador };
+    }
+
+    // 'acelerador' (padrão)
     const varFrac = Math.min(atingimento / 100, 1);
     const variavel = atingimento >= profile.thresholdMinimo
       ? varFrac * profile.variavelAlvo
@@ -141,6 +186,9 @@ export function useOTEConfig() {
     commRules, setCommRules, addCommRule, removeCommRule,
     partRules, setPartRules, addPartRule, removePartRule,
     taxRates, setTaxRates, addTaxRate, removeTaxRate,
+    modeloComissao, setModeloComissao,
+    percentFaturamento, setPercentFaturamento,
+    bonusMetaBatida, setBonusMetaBatida,
     getProfile, calcOTE,
   };
 }

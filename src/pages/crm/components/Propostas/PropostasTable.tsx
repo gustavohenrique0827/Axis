@@ -21,12 +21,23 @@ interface Proposta {
   id: string;
   cliente: string;
   titulo: string;
-  valor: string;
-  dataCriacao: string;
-  vencimento: string;
+  valor: number;
+  created_at?: string;
+  validade?: string;
   status: "Aceita" | "Enviada" | "Aberta" | "Recusada" | string;
   vendedor: string;
 }
+
+interface PropostaItem {
+  proposal_id: string;
+  product_id: string | null;
+  product_name: string;
+  quantidade: number;
+  preco_unitario: number;
+}
+
+const fmtCurrency = (v: number) => (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 
 const STATUS_CONFIG = {
   Aceita:   { variant: "success" as const, icon: CheckCircle2 },
@@ -38,15 +49,16 @@ const DEFAULT_STATUS = { variant: "secondary" as const, icon: History };
 
 interface PropostasTableProps {
   propostas: Proposta[];
+  proposalItems: PropostaItem[];
   search: string;
   onSearchChange: (v: string) => void;
   onUpdateStatus: (id: string, status: Proposta["status"]) => void;
   onDelete: (id: string) => void;
 }
 
-export function PropostasTable({ propostas, search, onSearchChange, onUpdateStatus, onDelete }: PropostasTableProps) {
+export function PropostasTable({ propostas, proposalItems, search, onSearchChange, onUpdateStatus, onDelete }: PropostasTableProps) {
   const filtered = propostas.filter(p =>
-    p.cliente.toLowerCase().includes(search.toLowerCase()) ||
+    (p.cliente || "").toLowerCase().includes(search.toLowerCase()) ||
     p.titulo.toLowerCase().includes(search.toLowerCase())
   );
 
@@ -94,6 +106,7 @@ export function PropostasTable({ propostas, search, onSearchChange, onUpdateStat
           <TableBody>
             {filtered.map((item) => {
               const status = STATUS_CONFIG[item.status as keyof typeof STATUS_CONFIG] || DEFAULT_STATUS;
+              const itens = proposalItems.filter(pi => pi.proposal_id === item.id);
               return (
                 <TableRow key={item.id} className="group">
                   <TableCell>
@@ -104,11 +117,16 @@ export function PropostasTable({ propostas, search, onSearchChange, onUpdateStat
                       <div>
                         <div className="text-sm font-bold text-[var(--color-text-primary)] uppercase tracking-tight">{item.cliente}</div>
                         <div className="text-xs text-[var(--color-text-muted)] italic">{item.titulo}</div>
+                        {itens.length > 0 && (
+                          <div className="text-[10px] text-[var(--color-text-faint)] mt-0.5 truncate max-w-[220px]">
+                            {itens.map(i => `${i.quantidade}x ${i.product_name}`).join(", ")}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm font-black text-[var(--color-text-primary)]">{item.valor}</div>
+                    <div className="text-sm font-black text-[var(--color-text-primary)]">{fmtCurrency(item.valor)}</div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -123,8 +141,8 @@ export function PropostasTable({ propostas, search, onSearchChange, onUpdateStat
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="text-[10px] font-bold text-[var(--color-text-muted)]">Criada: {item.dataCriacao}</div>
-                    <div className="text-[10px] font-bold text-danger">Venc: {item.vencimento}</div>
+                    <div className="text-[10px] font-bold text-[var(--color-text-muted)]">Criada: {fmtDate(item.created_at)}</div>
+                    <div className="text-[10px] font-bold text-danger">Venc: {fmtDate(item.validade)}</div>
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
@@ -136,7 +154,7 @@ export function PropostasTable({ propostas, search, onSearchChange, onUpdateStat
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => handleDownloadPdf(item as any)} title="Baixar Contrato (PDF)" className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/10 rounded-lg transition-colors">
+                      <button onClick={() => handleDownloadPdf(item as any, itens)} title="Baixar Contrato (PDF)" className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/10 rounded-lg transition-colors">
                         <Download className="w-4 h-4" />
                       </button>
                       <button onClick={() => onDelete(item.id)} title="Deletar Proposta" className="p-2 text-[var(--color-text-muted)] hover:text-danger hover:bg-danger/10 rounded-lg transition-colors">

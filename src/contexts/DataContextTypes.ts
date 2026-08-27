@@ -190,6 +190,17 @@ export interface DataContextType {
   addProposal: (p: any) => void;
   updateProposal: (id: string, updates: any) => void;
   deleteProposal: (id: string) => void;
+  proposalItems: any[];
+  createProposalWithItems: (payload: {
+    titulo: string;
+    cliente: string;
+    valor: number;
+    validade?: string | null;
+    status?: string;
+    vendedor: string;
+    leadId?: string | null;
+    itens?: Array<{ productId?: string | null; descricao: string; quantidade: number; precoUnitario: number }>;
+  }) => Promise<string>;
   certificates: any[];
   setCertificates: (v: any[]) => void;
   turmas: any[];

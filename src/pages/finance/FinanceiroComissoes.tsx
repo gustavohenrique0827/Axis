@@ -101,7 +101,7 @@ export default function FinanceiroComissoes() {
     const ating = e.meta > 0 ? (e.realizado / e.meta) * 100 : 0;
     const profile = profiles.find(p => p.cargo === e.cargo && p.nivel === e.nivel);
     const ote = profile
-      ? calcOTE(profile, ating)
+      ? calcOTE(profile, ating, e.realizado)
       : { fixo: 0, variavel: 0, acelerador: 0, totalOTE: 0 };
     return { ...e, ating, sem: semaforo(ating), ...ote, colorIdx: idx % AVATAR_COLORS.length };
   }), [filtered, profiles, calcOTE]);

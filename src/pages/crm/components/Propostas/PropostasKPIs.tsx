@@ -5,26 +5,22 @@ interface Proposta {
   id: string;
   cliente: string;
   titulo: string;
-  valor: string;
-  dataCriacao: string;
-  vencimento: string;
+  valor: number;
   status: string;
   vendedor: string;
 }
-
-const parseVal = (v: string) => parseFloat(v.replace(/[^0-9.,]/g, '').replace(',', '.'));
 
 export function PropostasKPIs({ propostas }: { propostas: Proposta[] }) {
   const stats = [
     {
       label: "Aguardando Aceite",
-      value: propostas.filter(p => p.status === 'Enviada').reduce((acc, c) => acc + parseVal(c.valor), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      value: propostas.filter(p => p.status === 'Enviada').reduce((acc, c) => acc + (c.valor || 0), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
       icon: Send,
       color: "text-info",
     },
     {
       label: "Convertidas (Mês)",
-      value: propostas.filter(p => p.status === 'Aceita').reduce((acc, c) => acc + parseVal(c.valor), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
+      value: propostas.filter(p => p.status === 'Aceita').reduce((acc, c) => acc + (c.valor || 0), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
       icon: CheckCircle2,
       color: "text-success",
     },

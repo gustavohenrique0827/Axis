@@ -92,7 +92,7 @@ export const navSections = [
       { name: "Contratos & Faturas", path: "/app/financeiro/faturas", icon: Receipt },
       { name: "Contas a Receber", path: "/app/financeiro/receber", icon: TrendingUp },
       { name: "Contas a Pagar", path: "/app/financeiro/pagar", icon: Wallet },
-      { name: "Comissões & Metas", path: "/app/financeiro/metas", icon: Award },
+      { name: "Comissões & Metas", path: "/app/financeiro/comissoes", icon: Award },
       { name: "DRE & Resultados", path: "/app/financeiro/dre", icon: PieChart },
     ],
   },

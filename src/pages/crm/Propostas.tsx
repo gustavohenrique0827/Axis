@@ -4,6 +4,7 @@ import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
 import { toast } from "sonner";
 import { useData } from "../../contexts/DataContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { CriarPropostaModal } from "../../components/ui/modals/crm/CriarPropostaModal";
 import { NovaPropostaRapidaModal } from "../../components/ui/modals/crm/NovaPropostaRapidaModal";
 
@@ -11,24 +12,22 @@ import { PropostasKPIs } from "./components/Propostas/PropostasKPIs";
 import { PropostasTable } from "./components/Propostas/PropostasTable";
 
 export default function Propostas() {
-  const { proposals: propostas, addProposal, updateProposal, deleteProposal } = useData();
+  const { proposals: propostas, proposalItems, updateProposal, deleteProposal, createProposalWithItems } = useData();
+  const { user } = useAuth();
 
   const [search, setSearch] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPropostaModalOpen, setIsPropostaModalOpen] = useState(false);
 
-  const fmt = (d: Date) => d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-
-  const handleCreatePropostaNew = (data: any) => {
-    addProposal({
-      id: Math.random().toString(36).substring(2, 9),
-      cliente: data.cliente,
+  const handleCreatePropostaNew = async (data: any) => {
+    await createProposalWithItems({
       titulo: data.titulo,
-      valor: `R$ ${parseFloat(data.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-      dataCriacao: fmt(new Date()),
-      vencimento: new Date(data.dataValidade).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }),
+      cliente: data.cliente,
+      valor: parseFloat(data.valor) || 0,
+      validade: data.dataValidade || null,
       status: "Enviada",
-      vendedor: "Sistema Axis",
+      vendedor: user?.name || "Sistema Axis",
+      itens: data.itens?.filter((i: any) => i.descricao?.trim()) || [],
     });
     toast.success("✨ Proposta criada com sucesso! Pronta para envio.");
     setIsPropostaModalOpen(false);
@@ -67,6 +66,7 @@ export default function Propostas() {
 
       <PropostasTable
         propostas={propostas as any}
+        proposalItems={proposalItems as any}
         search={search}
         onSearchChange={setSearch}
         onUpdateStatus={handleUpdateStatus}
@@ -76,15 +76,13 @@ export default function Propostas() {
       <NovaPropostaRapidaModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={({ cliente, titulo, valor, vencimento, vendedor }) => {
+        onSubmit={async ({ cliente, titulo, valor, vencimento, vendedor }) => {
           const today = new Date();
-          const valDate = vencimento ? fmt(new Date(vencimento)) : fmt(new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000));
-          addProposal({
-            id: Math.random().toString(36).substring(2, 9),
-            cliente, titulo,
-            valor: valor.startsWith("R$") ? valor : `R$ ${parseFloat(valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`,
-            dataCriacao: fmt(today),
-            vencimento: valDate,
+          const valDate = vencimento || new Date(today.getTime() + 10 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+          await createProposalWithItems({
+            titulo, cliente,
+            valor: parseFloat(valor.replace(/[^0-9.,]/g, '').replace(',', '.')) || 0,
+            validade: valDate,
             status: "Aberta",
             vendedor,
           });

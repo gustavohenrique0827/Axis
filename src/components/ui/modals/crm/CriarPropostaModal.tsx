@@ -2,6 +2,9 @@ import React, { useEffect, useMemo, useState } from "react";
 import { FileText, CheckCircle } from "lucide-react";
 import { Modal } from "../../modal";
 import { Button } from "../../button";
+import { useData } from "../../../../contexts/DataContext";
+
+type CriarPropostaItem = { productId?: string | null; descricao: string; quantidade: number; precoUnitario: number };
 
 type CriarPropostaPayload = {
     titulo: string;
@@ -10,7 +13,7 @@ type CriarPropostaPayload = {
     valor: string;
     dataValidade: string;
     condicoesPagamento: string;
-    itens: Array<{ descricao: string; quantidade: number; precoUnitario: number }>;
+    itens: CriarPropostaItem[];
 };
 
 type CriarPropostaModalProps = {
@@ -21,6 +24,8 @@ type CriarPropostaModalProps = {
     submitText?: string;
     initialValue?: Partial<CriarPropostaPayload> | null;
 };
+
+const ITEM_AVULSO = "__avulso__";
 
 const labelClass = "text-[10px] font-bold text-slate-400 uppercase tracking-wider";
 const inputBaseClass =
@@ -40,10 +45,12 @@ export function CriarPropostaModal({
     const [valor, setValor] = useState(initialValue?.valor || "");
     const [dataValidade, setDataValidade] = useState(initialValue?.dataValidade || "");
     const [condicoesPagamento, setCondicoesPagamento] = useState(initialValue?.condicoesPagamento || "Boleto - 7 dias");
-    const [itens, setItens] = useState<Array<{ descricao: string; quantidade: number; precoUnitario: number }>>(
-        initialValue?.itens || [{ descricao: "", quantidade: 1, precoUnitario: 0 }]
+    const [itens, setItens] = useState<CriarPropostaItem[]>(
+        initialValue?.itens || [{ productId: null, descricao: "", quantidade: 1, precoUnitario: 0 }]
     );
     const [loading, setLoading] = useState(false);
+    const { products } = useData();
+    const activeProducts = useMemo(() => products.filter((p: any) => p.active !== false), [products]);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -53,7 +60,7 @@ export function CriarPropostaModal({
         setValor(initialValue?.valor || "");
         setDataValidade(initialValue?.dataValidade || "");
         setCondicoesPagamento(initialValue?.condicoesPagamento || "Boleto - 7 dias");
-        setItens(initialValue?.itens || [{ descricao: "", quantidade: 1, precoUnitario: 0 }]);
+        setItens(initialValue?.itens || [{ productId: null, descricao: "", quantidade: 1, precoUnitario: 0 }]);
         setLoading(false);
     }, [isOpen, initialValue]);
 
@@ -63,7 +70,7 @@ export function CriarPropostaModal({
     }, [loading, titulo, cliente, dataValidade]);
 
     const handleAddItem = () => {
-        setItens([...itens, { descricao: "", quantidade: 1, precoUnitario: 0 }]);
+        setItens([...itens, { productId: null, descricao: "", quantidade: 1, precoUnitario: 0 }]);
     };
 
     const handleRemoveItem = (index: number) => {
@@ -73,6 +80,22 @@ export function CriarPropostaModal({
     const handleItemChange = (index: number, field: string, value: any) => {
         const novoItens = [...itens];
         novoItens[index] = { ...novoItens[index], [field]: value };
+        setItens(novoItens);
+    };
+
+    const handleItemProductChange = (index: number, productId: string) => {
+        const novoItens = [...itens];
+        if (productId === ITEM_AVULSO) {
+            novoItens[index] = { ...novoItens[index], productId: null };
+        } else {
+            const produto = activeProducts.find((p: any) => p.id === productId);
+            novoItens[index] = {
+                ...novoItens[index],
+                productId,
+                descricao: produto?.name || novoItens[index].descricao,
+                precoUnitario: produto?.price ?? novoItens[index].precoUnitario,
+            };
+        }
         setItens(novoItens);
     };
 
@@ -212,45 +235,57 @@ export function CriarPropostaModal({
                     </div>
 
                     {itens.map((item, index) => (
-                        <div key={index} className="grid grid-cols-12 gap-2 items-end">
-                            <div className="col-span-6">
-                                <input
-                                    type="text"
-                                    value={item.descricao}
-                                    onChange={(e) => handleItemChange(index, "descricao", e.target.value)}
-                                    placeholder="Descrição do item"
-                                    className={`${inputBaseClass} text-xs`}
-                                />
-                            </div>
-                            <div className="col-span-2">
-                                <input
-                                    type="number"
-                                    value={item.quantidade}
-                                    onChange={(e) => handleItemChange(index, "quantidade", parseInt(e.target.value))}
-                                    min="1"
-                                    className={`${inputBaseClass} text-xs text-center`}
-                                />
-                            </div>
-                            <div className="col-span-3">
-                                <input
-                                    type="number"
-                                    value={item.precoUnitario}
-                                    onChange={(e) => handleItemChange(index, "precoUnitario", parseFloat(e.target.value))}
-                                    step="0.01"
-                                    placeholder="0.00"
-                                    className={`${inputBaseClass} text-xs`}
-                                />
-                            </div>
-                            <div className="col-span-1">
-                                {itens.length > 1 && (
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemoveItem(index)}
-                                        className="w-full h-9 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors"
-                                    >
-                                        ×
-                                    </button>
-                                )}
+                        <div key={index} className="space-y-1.5 pb-2 border-b border-white/5 last:border-0 last:pb-0">
+                            <select
+                                value={item.productId || ITEM_AVULSO}
+                                onChange={(e) => handleItemProductChange(index, e.target.value)}
+                                className={`${inputBaseClass} text-xs`}
+                            >
+                                <option value={ITEM_AVULSO}>Item avulso (sem produto do catálogo)</option>
+                                {activeProducts.map((p: any) => (
+                                    <option key={p.id} value={p.id}>{p.name} — R$ {Number(p.price).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</option>
+                                ))}
+                            </select>
+                            <div className="grid grid-cols-12 gap-2 items-end">
+                                <div className="col-span-6">
+                                    <input
+                                        type="text"
+                                        value={item.descricao}
+                                        onChange={(e) => handleItemChange(index, "descricao", e.target.value)}
+                                        placeholder="Descrição do item"
+                                        className={`${inputBaseClass} text-xs`}
+                                    />
+                                </div>
+                                <div className="col-span-2">
+                                    <input
+                                        type="number"
+                                        value={item.quantidade}
+                                        onChange={(e) => handleItemChange(index, "quantidade", parseInt(e.target.value))}
+                                        min="1"
+                                        className={`${inputBaseClass} text-xs text-center`}
+                                    />
+                                </div>
+                                <div className="col-span-3">
+                                    <input
+                                        type="number"
+                                        value={item.precoUnitario}
+                                        onChange={(e) => handleItemChange(index, "precoUnitario", parseFloat(e.target.value))}
+                                        step="0.01"
+                                        placeholder="0.00"
+                                        className={`${inputBaseClass} text-xs`}
+                                    />
+                                </div>
+                                <div className="col-span-1">
+                                    {itens.length > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveItem(index)}
+                                            className="w-full h-9 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold transition-colors"
+                                        >
+                                            ×
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     ))}

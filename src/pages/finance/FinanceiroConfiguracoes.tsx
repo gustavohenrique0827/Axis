@@ -1,12 +1,18 @@
 import { useState } from 'react';
-import { Plus, Trash2, Settings2, DollarSign, Handshake, Receipt, Target, ArrowLeft, Info } from 'lucide-react';
+import { Plus, Trash2, Settings2, DollarSign, Handshake, Receipt, Target, ArrowLeft, Info, Zap, Layers, TrendingUp, Check } from 'lucide-react';
 import { PageContainer } from '../../components/PageContainer';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
-import { useOTEConfig, OTEProfile, CommissionRule, PartnershipRule, TaxRate } from './hooks/useOTEConfig';
+import { useOTEConfig, OTEProfile, CommissionRule, PartnershipRule, TaxRate, ModeloComissao } from './hooks/useOTEConfig';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 import { Link, useParams } from 'react-router-dom';
+
+const MODELOS: { key: ModeloComissao; label: string; icon: React.ElementType; desc: string }[] = [
+  { key: 'acelerador', label: 'Acelerador por Perfil', icon: Zap, desc: 'Variável proporcional ao %-atingimento de cada perfil, com acelerador linear acima de 100%. Usa a aba "Perfis OTE".' },
+  { key: 'faixas', label: 'Faixas de Atingimento', icon: Layers, desc: 'Comissão = % da faixa em que o colaborador se encaixa, aplicado sobre o valor realizado. Usa a aba "Regras de Comissão".' },
+  { key: 'faturamento', label: '% do Faturamento', icon: TrendingUp, desc: 'Comissão = percentual fixo sobre o valor realizado, mais um bônus fixo ao bater 100% da meta.' },
+];
 
 type ConfigTab = 'perfis' | 'comissao' | 'parceria' | 'taxas' | 'metas';
 
@@ -64,6 +70,9 @@ export default function FinanceiroConfiguracoes() {
     commRules, addCommRule, removeCommRule,
     partRules, addPartRule, removePartRule,
     taxRates, addTaxRate, removeTaxRate,
+    modeloComissao, setModeloComissao,
+    percentFaturamento, setPercentFaturamento,
+    bonusMetaBatida, setBonusMetaBatida,
   } = useOTEConfig();
 
   const { section } = useParams<{ section?: string }>();
@@ -109,6 +118,53 @@ export default function FinanceiroConfiguracoes() {
             </Link>
           ))}
         </div>
+
+        {/* Modelo de Comissão — escolha que define qual fórmula calcOTE aplica na apuração */}
+        <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
+          <SectionHeader
+            title="Modelo de Comissão da Empresa"
+            desc="Escolha como sua empresa remunera a parte variável — essa escolha define qual configuração abaixo entra de fato no cálculo do OTE."
+          />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 p-4">
+            {MODELOS.map(m => {
+              const isSelected = modeloComissao === m.key;
+              return (
+                <button
+                  key={m.key}
+                  type="button"
+                  onClick={() => { setModeloComissao(m.key); toast.success(`Modelo de comissão alterado para: ${m.label}`); }}
+                  className={`text-left p-4 rounded-xl border transition-all cursor-pointer flex flex-col gap-2 ${
+                    isSelected
+                      ? 'bg-[var(--color-primary-blue)]/10 border-[var(--color-primary-blue)] shadow-xs'
+                      : 'bg-[var(--color-surface-sunken)] border-[var(--color-border-subtle)] hover:border-[var(--color-border-default)]'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <m.icon className={`w-4 h-4 ${isSelected ? 'text-[var(--color-primary-blue)]' : 'text-[var(--color-text-muted)]'}`} />
+                    {isSelected && <Check className="w-4 h-4 text-[var(--color-primary-blue)]" />}
+                  </div>
+                  <div>
+                    <p className={`text-xs font-bold ${isSelected ? 'text-[var(--color-primary-blue)]' : 'text-[var(--color-text-primary)]'}`}>{m.label}</p>
+                    <p className="text-[10px] text-[var(--color-text-muted)] mt-1 leading-relaxed">{m.desc}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          {modeloComissao === 'faturamento' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-4 pt-0">
+              <div>
+                <Label>% de Comissão sobre o Faturamento</Label>
+                <input type="number" value={percentFaturamento} onChange={e => setPercentFaturamento(+e.target.value)} className={inp()} />
+              </div>
+              <div>
+                <Label>Bônus fixo ao bater 100% da meta (R$)</Label>
+                <input type="number" value={bonusMetaBatida} onChange={e => setBonusMetaBatida(+e.target.value)} className={inp()} />
+              </div>
+            </div>
+          )}
+        </Card>
 
         {/* Content area */}
         <motion.div
@@ -441,11 +497,11 @@ export default function FinanceiroConfiguracoes() {
               </div>
               <div>
                 <h3 className="text-base font-bold text-[var(--color-text-primary)]">Gerenciar Metas do Time</h3>
-                <p className="text-xs text-[var(--color-text-muted)] max-w-sm mt-1">As metas individuais e de squad são configuradas no módulo de Metas do Financeiro.</p>
+                <p className="text-xs text-[var(--color-text-muted)] max-w-sm mt-1">Meta e realizado de cada colaborador são cadastrados por período direto na tela de Comissões & OTE.</p>
               </div>
-              <Link to="/app/financeiro/metas">
+              <Link to="/app/financeiro/comissoes">
                 <Button className="h-9 px-5 text-xs font-bold gap-1.5 shadow-xs">
-                  <Target className="w-3.5 h-3.5" /> Abrir Módulo de Metas
+                  <Target className="w-3.5 h-3.5" /> Abrir Comissões & OTE
                 </Button>
               </Link>
             </Card>

@@ -4,16 +4,25 @@ export interface Proposta {
   id: string;
   cliente: string;
   titulo: string;
-  valor: string;
-  dataCriacao: string;
-  vencimento: string;
+  valor: number;
+  created_at?: string;
+  validade?: string;
   status: "Aberta" | "Enviada" | "Aceita" | "Recusada" | "Expirada";
   vendedor: string;
 }
 
+export interface PropostaItemPdf {
+  product_name: string;
+  quantidade: number;
+  preco_unitario: number;
+}
+
 export const INITIAL_PROPOSTAS: Proposta[] = [];
 
-export const handleDownloadPdf = (proposta: Proposta) => {
+const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }) : "—";
+const fmtCurrency = (v: number) => (v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+export const handleDownloadPdf = (proposta: Proposta, itens: PropostaItemPdf[] = []) => {
   const doc = new jsPDF();
 
   // Header
@@ -38,8 +47,8 @@ export const handleDownloadPdf = (proposta: Proposta) => {
   doc.text(`Projeto: ${proposta.titulo}`, 20, 58);
   doc.text(`Responsável Institucional: ${proposta.vendedor}`, 20, 66);
 
-  doc.text(`Data de Emissão: ${proposta.dataCriacao}`, 130, 50);
-  doc.text(`Válida até: ${proposta.vencimento}`, 130, 58);
+  doc.text(`Data de Emissão: ${fmtDate(proposta.created_at)}`, 130, 50);
+  doc.text(`Válida até: ${fmtDate(proposta.validade)}`, 130, 58);
   doc.text(`Status: ${proposta.status}`, 130, 66);
 
   // Condições Comerciais
@@ -52,7 +61,15 @@ export const handleDownloadPdf = (proposta: Proposta) => {
   doc.setFont("helvetica", "bold");
   doc.setTextColor(16, 185, 129); // Emerald 500
   doc.setFontSize(14);
-  doc.text(`${proposta.valor}`, 80, 100);
+  doc.text(fmtCurrency(proposta.valor), 80, 100);
+
+  if (itens.length > 0) {
+    doc.setFontSize(9);
+    doc.setTextColor(71, 85, 105); // Slate 600
+    doc.setFont("helvetica", "normal");
+    const itensText = itens.map(i => `${i.quantidade}x ${i.product_name} (${fmtCurrency(i.preco_unitario)}/un)`).join("  •  ");
+    doc.text(itensText, 20, 108, { maxWidth: 170 });
+  }
 
   // Escopo e Obrigações
   doc.setTextColor(30, 41, 59);

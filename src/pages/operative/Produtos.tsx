@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Plus, Package, FileSpreadsheet } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -10,10 +10,37 @@ import { ProdutosTable } from "./produtos/ProdutosTable";
 import { ProdutosKPIs } from "./components/Produtos/ProdutosKPIs";
 import { ProdutosFilters } from "./components/Produtos/ProdutosFilters";
 import { ProdutosAICombo } from "./components/Produtos/ProdutosAICombo";
+import { CriarPropostaModal } from "../../components/ui/modals/crm/CriarPropostaModal";
+import { useData } from "../../contexts/DataContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "sonner";
+import type { Product } from "../../types";
 
 export default function Catalog() {
   const f = useProdutoForm();
+  const { createProposalWithItems } = useData();
+  const { user } = useAuth();
+
+  const [sellingProduct, setSellingProduct] = useState<Product | null>(null);
+
+  const handleVender = (p: Product, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSellingProduct(p);
+  };
+
+  const handleSaveVenda = async (data: any) => {
+    await createProposalWithItems({
+      titulo: data.titulo,
+      cliente: data.cliente,
+      valor: parseFloat(data.valor) || 0,
+      validade: data.dataValidade || null,
+      status: "Enviada",
+      vendedor: user?.name || "Sistema Axis",
+      itens: data.itens?.filter((i: any) => i.descricao?.trim()) || [],
+    });
+    toast.success("✨ Proposta criada com sucesso a partir do produto!");
+    setSellingProduct(null);
+  };
 
   const exportToExcelSimulator = () => {
     toast.promise(
@@ -127,6 +154,7 @@ export default function Catalog() {
             deleteProduct={f.deleteProduct}
             setSelectedCategories={f.setSelectedCategories}
             setSearchTerm={f.setSearchTerm}
+            handleVender={handleVender}
           />
         ) : (
           <ProdutosTable
@@ -138,6 +166,25 @@ export default function Catalog() {
             handleOpenEditModal={f.handleOpenEditModal}
             duplicateProduct={f.duplicateProduct}
             deleteProduct={f.deleteProduct}
+            handleVender={handleVender}
+          />
+        )}
+
+        {sellingProduct && (
+          <CriarPropostaModal
+            isOpen={!!sellingProduct}
+            onClose={() => setSellingProduct(null)}
+            onSave={handleSaveVenda}
+            title={`Vender: ${sellingProduct.name}`}
+            submitText="Criar Proposta"
+            initialValue={{
+              itens: [{
+                productId: sellingProduct.id,
+                descricao: sellingProduct.name,
+                quantidade: 1,
+                precoUnitario: sellingProduct.price,
+              }],
+            }}
           />
         )}
 

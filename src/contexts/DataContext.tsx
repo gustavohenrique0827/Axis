@@ -309,6 +309,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [marketingLandingPages, setMarketingLandingPages] = useState<any[]>([]);
   const [products, setProducts] = useState<any[]>([]);
   const [proposals, setProposals] = useState<any[]>([]);
+  const [proposalItems, setProposalItems] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
   const [turmas, setTurmas] = useState<any[]>([]);
   const [reunioes, setReunioes] = useState<Reuniao[]>([]);
@@ -369,6 +370,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => fetchTableData('appointments', setAppointments))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchTableData('products', setProducts))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'proposals' }, () => fetchTableData('proposals', setProposals))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'proposal_items' }, () => fetchTableData('proposal_items', setProposalItems))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'turmas' }, () => fetchTableData('turmas', setTurmas))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'students' }, () => fetchTableData('students', setStudents))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'colaboradores' }, () => fetchTableData('colaboradores', setColaboradores))
@@ -405,7 +407,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             const [
               leadsRes, tasksRes, contractsRes, actsRes, financeRes, apptRes, squadsRes,
               notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
-              productsRes, proposalsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
+              productsRes, proposalsRes, proposalItemsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
               clienteBaseRes, reunioesRes, financialGoalsRes, funisRes, filiaisRes,
               commissionEntriesRes, financeCategoriesRes, scheduledExportsRes, educationContentRes
             ] = await Promise.all([
@@ -424,6 +426,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('app_settings').select('*'),
               supabase.from('products').select('*').eq('tenant_id', tenantId),
               supabase.from('proposals').select('*').eq('tenant_id', tenantId),
+              supabase.from('proposal_items').select('*').eq('tenant_id', tenantId),
               supabase.from('turmas').select('*').eq('tenant_id', tenantId),
               supabase.from('students').select('*').eq('tenant_id', tenantId),
               supabase.from('colaboradores').select('*').eq('tenant_id', tenantId),
@@ -463,6 +466,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!mktLpRes.error && mktLpRes.data) setMarketingLandingPages(mktLpRes.data);
             if (!productsRes.error && productsRes.data) setProducts(productsRes.data);
             if (!proposalsRes.error && proposalsRes.data) setProposals(proposalsRes.data);
+            if (!proposalItemsRes.error && proposalItemsRes.data) setProposalItems(proposalItemsRes.data);
             if (!turmasRes.error && turmasRes.data) setTurmas(turmasRes.data);
             if (!studentsRes.error && studentsRes.data) setStudents(studentsRes.data);
             if (colabRes.error) console.error('[Supabase] colaboradores load error:', colabRes.error.message);
@@ -1052,6 +1056,43 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const productCrud = createCrudHelper('products', setProducts);
   const proposalCrud = createCrudHelper('proposals', setProposals);
+  const proposalItemCrud = createCrudHelper('proposal_items', setProposalItems);
+
+  // Cria uma proposta e seus itens (produtos do catálogo ou avulsos) numa única chamada —
+  // usado tanto pela tela de Propostas quanto pelo botão "Vender" no catálogo de Produtos.
+  const createProposalWithItems = async (payload: {
+    titulo: string;
+    cliente: string;
+    valor: number;
+    validade?: string | null;
+    status?: string;
+    vendedor: string;
+    leadId?: string | null;
+    itens?: Array<{ productId?: string | null; descricao: string; quantidade: number; precoUnitario: number }>;
+  }) => {
+    const proposalId = Math.random().toString(36).substring(2, 9);
+    await proposalCrud.add({
+      id: proposalId,
+      titulo: payload.titulo,
+      cliente: payload.cliente,
+      valor: payload.valor,
+      validade: payload.validade || null,
+      status: payload.status || 'Enviada',
+      vendedor: payload.vendedor,
+      lead_id: payload.leadId || null,
+    });
+    for (const item of payload.itens || []) {
+      await proposalItemCrud.add({
+        id: `${proposalId}-${Math.random().toString(36).substring(2, 7)}`,
+        proposal_id: proposalId,
+        product_id: item.productId || null,
+        product_name: item.descricao,
+        quantidade: item.quantidade,
+        preco_unitario: item.precoUnitario,
+      });
+    }
+    return proposalId;
+  };
   const turmaCrud = createCrudHelper('turmas', setTurmas);
   const reuniaoCrud = createCrudHelper('reunioes', setReunioes as any);
   const studentCrud = createCrudHelper('students', setStudents);
@@ -1240,6 +1281,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addProposal: proposalCrud.add,
       updateProposal: proposalCrud.update,
       deleteProposal: proposalCrud.del,
+      proposalItems,
+      createProposalWithItems,
       certificates,
       setCertificates,
       turmas,

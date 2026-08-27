@@ -1,6 +1,6 @@
 import React from "react";
 import { Card } from "../../../components/ui/card";
-import { Package, Edit, Copy, Trash2 } from "lucide-react";
+import { Package, Edit, Copy, Trash2, ShoppingCart } from "lucide-react";
 import { Product } from "../../../types";
 
 interface ProdutosTableProps {
@@ -12,6 +12,7 @@ interface ProdutosTableProps {
   handleOpenEditModal: (p: Product, e: React.MouseEvent) => void;
   duplicateProduct: (p: Product, e: React.MouseEvent) => void;
   deleteProduct: (id: string, e: React.MouseEvent) => void;
+  handleVender: (p: Product, e: React.MouseEvent) => void;
 }
 
 export function ProdutosTable({
@@ -22,7 +23,8 @@ export function ProdutosTable({
   toggleActiveStatus,
   handleOpenEditModal,
   duplicateProduct,
-  deleteProduct
+  deleteProduct,
+  handleVender,
 }: ProdutosTableProps) {
   return (
     <Card className="bg-[var(--color-surface-elevated)]/85 border-[var(--color-border-subtle)] shadow-xl overflow-hidden">
@@ -111,7 +113,14 @@ export function ProdutosTable({
                   </td>
                   <td className="py-4 px-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex gap-1 justify-end">
-                      <button 
+                      <button
+                        onClick={(e) => handleVender(p, e)}
+                        className="p-1 hover:bg-emerald-500/10 text-emerald-400 rounded transition-colors"
+                        title="Vender"
+                      >
+                        <ShoppingCart className="w-3.5 h-3.5" />
+                      </button>
+                      <button
                         onClick={(e) => handleOpenEditModal(p, e)}
                         className="p-1 hover:bg-white/10 text-slate-400 hover:text-white rounded transition-colors"
                         title="Editar"

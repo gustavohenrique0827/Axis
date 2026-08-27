@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, FileText, User, DollarSign, Calendar, Briefcase, Loader2 } from "lucide-react";
 import { Button } from "../../button";
+import { useData } from "../../../../contexts/DataContext";
+import { useAuth } from "../../../../contexts/AuthContext";
 
 interface NovaPropostaRapidaModalProps {
   isOpen: boolean;
@@ -15,21 +17,27 @@ interface NovaPropostaRapidaModalProps {
   }) => void;
 }
 
-const VENDEDORES = ["Carlos Silva", "Ana Paula", "Roberto Neves"];
-
 const inputClass =
   "w-full bg-white/[0.04] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all placeholder:text-slate-600";
 
 export function NovaPropostaRapidaModal({ isOpen, onClose, onSubmit }: NovaPropostaRapidaModalProps) {
+  const { colaboradores } = useData();
+  const { user } = useAuth();
+  const vendedores = useMemo(() => {
+    const nomes = colaboradores.filter((c: any) => c.status === "Ativo").map((c: any) => c.nome);
+    const unique = Array.from(new Set([user?.name, ...nomes].filter(Boolean))) as string[];
+    return unique.length > 0 ? unique : ["Sem colaboradores cadastrados"];
+  }, [colaboradores, user?.name]);
+
   const [cliente, setCliente] = useState("");
   const [titulo, setTitulo] = useState("");
   const [valor, setValor] = useState("");
   const [vencimento, setVencimento] = useState("");
-  const [vendedor, setVendedor] = useState("Carlos Silva");
+  const [vendedor, setVendedor] = useState(user?.name || "");
   const [loading, setLoading] = useState(false);
 
   const reset = () => {
-    setCliente(""); setTitulo(""); setValor(""); setVencimento(""); setVendedor("Carlos Silva");
+    setCliente(""); setTitulo(""); setValor(""); setVencimento(""); setVendedor(user?.name || "");
   };
 
   const handleClose = () => { reset(); onClose(); };
@@ -150,7 +158,7 @@ export function NovaPropostaRapidaModal({ isOpen, onClose, onSubmit }: NovaPropo
                   onChange={(e) => setVendedor(e.target.value)}
                   className={inputClass}
                 >
-                  {VENDEDORES.map((v) => (
+                  {vendedores.map((v) => (
                     <option key={v} value={v}>{v}</option>
                   ))}
                 </select>
