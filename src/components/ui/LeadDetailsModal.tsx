@@ -176,8 +176,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
           />
         }
       >
-        <div className="flex flex-col h-full bg-[var(--color-surface)]">
-          <div className="flex flex-col h-full overflow-hidden">
+        <div className="flex flex-col h-full overflow-hidden bg-[var(--color-surface)]">
           <LeadDetailsModalHero
             tc={tc}
             initials={initials}
