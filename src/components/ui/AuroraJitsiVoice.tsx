@@ -15,6 +15,7 @@ interface AuroraJitsiVoiceProps {
   roomName: string;
   active: boolean;
   pendingSpeech: PendingSpeech | null;
+  onStatusChange?: (status: AuroraVoiceStatus) => void;
 }
 
 function loadLibJitsiMeet(): Promise<void> {
@@ -54,13 +55,15 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
  * considerar validado; a política de autoplay do navegador também depende de já ter havido um
  * gesto do usuário na página (o clique que abre a sala já cobre isso).
  */
-export function AuroraJitsiVoice({ roomName, active, pendingSpeech }: AuroraJitsiVoiceProps) {
+export function AuroraJitsiVoice({ roomName, active, pendingSpeech, onStatusChange }: AuroraJitsiVoiceProps) {
   const [status, setStatus] = useState<AuroraVoiceStatus>("idle");
   const connectionRef = useRef<any>(null);
   const roomRef = useRef<any>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const lastSpokenIdRef = useRef<string | null>(null);
   const localTrackRef = useRef<any>(null);
+
+  useEffect(() => { onStatusChange?.(status); }, [status, onStatusChange]);
 
   useEffect(() => {
     if (!active || !roomName) return;

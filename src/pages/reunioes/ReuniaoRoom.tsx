@@ -104,6 +104,7 @@ export default function ReuniaoRoom() {
   // vale a pena. `pendingSpeech` é o gatilho que a AuroraJitsiVoice usa pra realmente falar
   // dentro da call.
   const [pendingSpeech, setPendingSpeech] = useState<{ id: string; audioBase64: string } | null>(null);
+  const [jitsiVoiceStatus, setJitsiVoiceStatus] = useState<"connecting" | "connected" | "speaking" | "error" | "idle">("idle");
   const meetingPresence = useAuroraMeetingPresence(
     reuniao?.id,
     leadContext,
@@ -215,7 +216,32 @@ export default function ReuniaoRoom() {
       if (!res.ok || data.error) throw new Error(data.error ?? "Aurora está indisponível agora.");
       setAuroraOutput(data.output ?? "");
       if (data.audioBase64) {
+        // Esse áudio narra a análise PRIVADA (pontuação do lead, problemas identificados, o
+        // que foi registrado no Axis) — toca só localmente pra você, nunca dentro da call.
         auroraVoice.playAudioBase64(data.audioBase64, () => setAuroraSpeaking(true), () => setAuroraSpeaking(false));
+      }
+
+      // Se a sala estiver ativa e conectada via Jitsi, pede uma SEGUNDA resposta — curta, já
+      // pensada pra ser dita em voz alta pra todo mundo (incluindo o cliente), sem pontuação de
+      // lead nem detalhe interno do CRM. É esse áudio que a AuroraJitsiVoice publica na call.
+      if (meetingIsJitsi && meetingIsActive && meetingSessionId) {
+        try {
+          const resFalar = await apiFetch("/api/ai/aurora-chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message: `Com base no que você acabou de analisar e registrar nesta mesma conversa, o Gustavo está te chamando pra participar da reunião agora, com o cliente presente na call. Diga em voz alta, agora, algo que agregue à conversa (um resumo rápido, uma sugestão, uma resposta a um ponto em aberto, ou uma mensagem apropriada pro momento). Sua resposta TEM que ser exatamente e somente o que você vai falar — nada de pontuação de lead, análises internas do CRM ou qualquer coisa que não deveria ser dita na frente do cliente.`,
+              sessionId: meetingSessionId,
+            }),
+          });
+          const dataFalar = await resFalar.json();
+          if (resFalar.ok && !dataFalar.error && dataFalar.audioBase64) {
+            setPendingSpeech({ id: crypto.randomUUID(), audioBase64: dataFalar.audioBase64 });
+          }
+        } catch {
+          // Best-effort — a análise privada acima já foi salva e mostrada; não bloqueia o fluxo
+          // principal se ela não conseguir falar na call desta vez.
+        }
       }
 
       if (supabase) {
@@ -583,6 +609,24 @@ export default function ReuniaoRoom() {
               {meetingPresence.status === "error" && (meetingPresence.errorMsg || "Não consegui ouvir a reunião.")}
               {meetingPresence.status === "idle" && "Aguardando a reunião começar..."}
             </p>
+            {meetingIsJitsi && (
+              <p className={cn(
+                "text-[9px] mt-1.5 flex items-center gap-1.5 font-bold",
+                jitsiVoiceStatus === "connected" || jitsiVoiceStatus === "speaking" ? "text-emerald-400"
+                  : jitsiVoiceStatus === "error" ? "text-rose-400" : "text-slate-600"
+              )}>
+                <span className={cn(
+                  "w-1.5 h-1.5 rounded-full",
+                  jitsiVoiceStatus === "connected" || jitsiVoiceStatus === "speaking" ? "bg-emerald-400 animate-pulse"
+                    : jitsiVoiceStatus === "error" ? "bg-rose-400" : "bg-slate-600"
+                )} />
+                {jitsiVoiceStatus === "connecting" && "Entrando na sala do Jitsi..."}
+                {jitsiVoiceStatus === "connected" && "Na call — presente como \"Aurora — IA\""}
+                {jitsiVoiceStatus === "speaking" && "Falando na call agora"}
+                {jitsiVoiceStatus === "error" && "Não consegui entrar na sala do Jitsi"}
+                {jitsiVoiceStatus === "idle" && "Ainda não entrou na sala"}
+              </p>
+            )}
           </div>
           <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
             {meetingPresence.messages.length === 0 && (
@@ -609,6 +653,7 @@ export default function ReuniaoRoom() {
             <AuroraJitsiVoice
               roomName={jitsiRoomName(reuniao.meetLink)}
               active={meetingIsActive}
+              onStatusChange={setJitsiVoiceStatus}
               pendingSpeech={pendingSpeech}
             />
           )}
