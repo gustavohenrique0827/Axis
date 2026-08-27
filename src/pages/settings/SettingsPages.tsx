@@ -6,6 +6,8 @@ export { ConfigProdutividadeCategorias, ConfigFinanceiroCategorias, ConfigFinanc
 export { ConfigEngajamentoModelos, ConfigEngajamentoAutomacoes, ConfigBusinessDashboard } from "./sections/SettingsEngajamento";
 export { ConfigIntegracoesApps, ConfigIntegracoesSMTP, ConfigIntegracoesSDR } from "./sections/SettingsIntegracoes";
 export { ConfigNotificacoesPreferencias } from "./sections/SettingsNotificacoes";
+export { ConfigPerfilUsuario } from "./sections/usuario/ConfigPerfilUsuario";
+export { ConfigPreferenciasSistema } from "./sections/usuario/ConfigPreferenciasSistema";
 export { ConfigSistemaBackups } from "./sections/SettingsSistema";
 export { ConfigRodizioLeads } from "./sections/SettingsRodizioLeads";
 export { ConfigKanbanBoards } from "./sections/SettingsKanbanBoards";

@@ -56,6 +56,8 @@ import {
   ConfigEngajamentoAutomacoes,
   ConfigIntegracoesApps,
   ConfigNotificacoesPreferencias,
+  ConfigPerfilUsuario,
+  ConfigPreferenciasSistema,
   ConfigCRMCampos,
   ConfigCRMSLA,
   ConfigCRMGatilhosIA,
@@ -205,7 +207,9 @@ function AppContent() {
 
           {/* Configurações Layout & Nested Routes */}
           <Route path="configuracoes" element={<SettingsLayout />}>
-            <Route index element={<Navigate to="/app/configuracoes/usuario/notificacoes" />} />
+            <Route index element={<Navigate to="/app/configuracoes/usuario/perfil" />} />
+            <Route path="usuario/perfil" element={<ConfigPerfilUsuario />} />
+            <Route path="usuario/preferencias" element={<ConfigPreferenciasSistema />} />
             <Route path="usuario/notificacoes" element={<ConfigNotificacoesPreferencias />} />
             <Route path="empresa/dados" element={<ConfigEmpresaDados />} />
             <Route path="empresa/modulos" element={<ConfigModulosDemos />} />

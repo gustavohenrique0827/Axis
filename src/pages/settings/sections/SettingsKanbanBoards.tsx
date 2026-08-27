@@ -240,13 +240,18 @@ function BoardEditor({ boardKey, canAddRemove }: { boardKey: BoardKey; canAddRem
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           {canAddRemove && (
-            <Button onClick={handleAdd} className="bg-white/10 hover:bg-white/15 border border-white/10 text-white text-[10px] font-black uppercase tracking-widest h-9 px-4 gap-2 rounded-xl shadow-none">
+            <Button 
+              onClick={handleAdd} 
+              variant="outline"
+              className="text-[10px] font-black uppercase tracking-wider h-9 px-4 gap-2 border-[var(--color-border-default)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] shadow-none"
+            >
               <Plus className="w-3.5 h-3.5" /> Adicionar Coluna
             </Button>
           )}
           <button
+            type="button"
             onClick={handleReset}
-            className="text-[10px] font-bold text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest"
+            className="text-[10px] font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors uppercase tracking-wider cursor-pointer"
           >
             Redefinir padrão
           </button>
@@ -254,7 +259,7 @@ function BoardEditor({ boardKey, canAddRemove }: { boardKey: BoardKey; canAddRem
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 h-9 gap-2 text-[10px] uppercase tracking-widest shadow-lg shadow-blue-500/20"
+          className="h-9 px-5 gap-2 text-[10px] font-black uppercase tracking-wider shadow-xs"
         >
           <Save className="w-3.5 h-3.5" />
           {saving ? "Salvando..." : "Salvar Alterações"}

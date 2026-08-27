@@ -288,17 +288,17 @@ export function Topbar({
                   <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl shadow-xl p-1 animate-in fade-in slide-in-from-top-2">
                     <button
                       type="button"
-                      onClick={() => { setIsUserMenuOpen(false); navigate("/app/configuracoes"); }}
+                      onClick={() => { setIsUserMenuOpen(false); navigate("/app/configuracoes/usuario/perfil"); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] rounded-lg transition-colors cursor-pointer border-none bg-transparent text-left"
                     >
                       <Users className="w-3.5 h-3.5" /> Meu Perfil
                     </button>
                     <button
                       type="button"
-                      onClick={() => { setIsUserMenuOpen(false); navigate("/app/configuracoes"); }}
+                      onClick={() => { setIsUserMenuOpen(false); navigate("/app/configuracoes/usuario/preferencias"); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] rounded-lg transition-colors cursor-pointer border-none bg-transparent text-left"
                     >
-                      <Settings2 className="w-3.5 h-3.5" /> Configurações
+                      <Settings2 className="w-3.5 h-3.5" /> Preferências
                     </button>
                     <div className="h-px bg-[var(--color-border-subtle)] my-1"></div>
                     <button

@@ -23,9 +23,11 @@ export default function SettingsLayout() {
 
   const groups: SectionNavGroup[] = [
     {
-      title: "Preferências",
+      title: "Preferências & Usuário",
       icon: Bell,
       items: [
+        { title: "Meu Perfil & Conta", path: "/app/configuracoes/usuario/perfil" },
+        { title: "Preferências do Sistema", path: "/app/configuracoes/usuario/preferencias" },
         { title: "Preferências de Notificação", path: "/app/configuracoes/usuario/notificacoes" },
       ],
     },
