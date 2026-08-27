@@ -156,6 +156,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const [leads, setLeads] = useState<Lead[]>(() => {
+    try {
+      const saved = localStorage.getItem("axis_leads");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return defaultLeads;
+  });
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [leadActivities, setLeadActivities] = useState<LeadActivity[]>([]);
 
@@ -394,6 +404,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
     loadInitialData();
   }, [authLoading, tenantId]);
+
+  useEffect(() => {
+    if (leads && leads.length > 0) {
+      localStorage.setItem("axis_leads", JSON.stringify(leads));
+    }
+  }, [leads]);
+
+  const notifiedRemindersRef = React.useRef<Record<string, boolean>>({});
 
   useEffect(() => {
     const checkTeleconsultations = () => {

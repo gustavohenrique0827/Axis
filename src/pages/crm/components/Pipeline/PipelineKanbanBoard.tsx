@@ -54,16 +54,23 @@ export function PipelineKanbanBoard({
   onReuniaoStageDrop,
 }: PipelineKanbanBoardProps) {
   const getLeadValue = (l: any) => {
-    if (!l.valor) return 0;
-    const clean = String(l.valor).replace(/[^\d]/g, "");
-    return clean ? parseFloat(clean) / 100 : 0;
+    const raw = l.value ?? l.valor;
+    if (typeof raw === "number") return raw;
+    if (typeof raw === "string") {
+      const clean = raw.replace(/[^\d.,]/g, "").replace(",", ".");
+      return parseFloat(clean) || 0;
+    }
+    return 0;
   };
 
   const handleDrop = (stage: any, e: React.DragEvent) => {
     e.preventDefault();
     const leadId = e.dataTransfer.getData("text/plain") || draggedLeadId;
     if (leadId) {
-      updateLead(leadId, { status: stage.id || stage.name });
+      updateLead(leadId, {
+        stageId: stage.id,
+        status: (stage.name?.toLowerCase().includes("ganho") || stage.name?.toLowerCase().includes("fechado")) ? "Fechado" : "Em Aberto"
+      });
       if (stage.name?.toLowerCase().includes("ganho") || stage.name?.toLowerCase().includes("fechado")) {
         triggerCelebration?.();
       }
@@ -80,7 +87,14 @@ export function PipelineKanbanBoard({
     <div className="flex gap-3 overflow-x-auto pb-4 h-[calc(100vh-250px)] min-h-[500px] scrollbar-none select-none items-stretch">
       {activePipelineStages.map((stage) => {
         const isMinimized = minimizedColumns.has(stage.id);
-        const stageLeads = filteredItemsList.filter((l: any) => l.status === stage.id || l.status === stage.name);
+        const stageLeads = filteredItemsList.filter((l: any) => {
+          return (
+            l.stageId === stage.id ||
+            l.stage === stage.id ||
+            l.status === stage.id ||
+            l.status === stage.name
+          );
+        });
 
         return (
           <div
