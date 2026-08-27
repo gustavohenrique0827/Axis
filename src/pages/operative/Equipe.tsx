@@ -66,6 +66,9 @@ export default function Equipe() {
             team={team} squads={squads} logs={logs}
             onAdmitir={() => setIsModalOpen(true)}
             onGoLogs={() => setActiveTab("logs")}
+            onEditMember={setEditingMember}
+            onToggleStatus={toggleMemberStatus}
+            onDeleteMember={removeMember}
           />
         )}
         {activeTab === "performance" && (

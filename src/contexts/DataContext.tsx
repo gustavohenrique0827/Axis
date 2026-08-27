@@ -920,10 +920,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         }
       },
       update: async (id: string, updates: any) => {
+        // Atualiza estado local imediatamente (optimistic update)
         stateSetter(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
         if (supabase) {
-          const { error } = await supabase.from(tableName).update(updates).eq('id', id);
-          if (error) console.error(`[Supabase] update ${tableName} error:`, error.message);
+          // Remove campos que podem causar conflito com triggers do banco
+          const safeUpdates = { ...updates };
+          delete safeUpdates.updated_at;
+          const { error } = await supabase.from(tableName).update(safeUpdates).eq('id', id);
+          if (error) {
+            console.error(`[Supabase] update ${tableName} error:`, error.message);
+            if (error.message?.includes('updated_at')) {
+              console.warn(`[Supabase] Trigger issue on ${tableName} — execute a migration 20260827_fix_colaboradores_updated_at.sql no Supabase SQL Editor`);
+            }
+          }
         }
       },
       del: async (id: string) => {

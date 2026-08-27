@@ -257,14 +257,11 @@ export async function registerPartner(
   }
 
   try {
-    // 0. Verificar se o e-mail já existe
-    const { data: existingUser } = await supabase
-      .from("users")
-      .select("id")
-      .eq("email", email)
-      .maybeSingle();
+    // 0. Verificar se o e-mail já existe (via RPC: com RLS habilitado em
+    // `users`, um SELECT direto como anon não retorna nenhuma linha)
+    const { data: emailExists } = await supabase.rpc("email_taken", { check_email: email });
 
-    if (existingUser) {
+    if (emailExists) {
       return { success: false, error: "Este e-mail já está cadastrado no sistema." };
     }
 
