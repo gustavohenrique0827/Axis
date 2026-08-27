@@ -2,17 +2,18 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
-import { IACopilot } from "../../components/ui/IACopilot";
 import { JitsiEmbed, isJitsiLink, jitsiRoomName } from "../../components/ui/JitsiEmbed";
+import { AuroraJitsiVoice } from "../../components/ui/AuroraJitsiVoice";
 import { Button } from "../../components/ui/button";
 import { AuroraCore } from "../../components/ui/auroraCore/AuroraCore";
 import type { AuroraCoreMode } from "../../components/ui/auroraCore/auroraCoreStates";
 import { useAuroraVoice } from "../../hooks/useAuroraVoice";
+import { useAuroraMeetingPresence } from "../../hooks/useAuroraMeetingPresence";
 import {
   Brain, ArrowLeft, Video, Clock, User, Copy, ExternalLink,
   FileText, Zap, X, CheckCircle2, Calendar, Flame, Snowflake,
   Thermometer, Target, TrendingUp, Loader2, ChevronDown, ChevronUp, Save,
-  Download,
+  Download, Ear,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "../../lib/utils";
@@ -68,8 +69,7 @@ export default function ReuniaoRoom() {
   const [sdrExpanded, setSdrExpanded] = useState(true);
   const noteSaveRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Análise da Aurora (a assistente real, com memória e ferramentas — distinta do Copilot BANT
-  // genérico do painel 3, que continua existindo do jeito que está).
+  // Análise da Aurora (botão manual, "resumo completo agora" — grava de verdade no CRM).
   const [auroraLoading, setAuroraLoading] = useState(false);
   const [auroraOutput, setAuroraOutput] = useState("");
   const [auroraError, setAuroraError] = useState<string | null>(null);
@@ -94,6 +94,23 @@ export default function ReuniaoRoom() {
     lead_interesse: lead?.lead_interesse_cliente,
     pauta: reuniao?.pauta,
   };
+
+  const meetingSessionId = reuniao?.id ? `aurora-reuniao-${reuniao.id}` : undefined;
+  const meetingIsActive = !!reuniao && reuniao.status !== "Concluída" && reuniao.status !== "Cancelada";
+  const meetingIsJitsi = !!reuniao && isJitsiLink(reuniao.meetLink);
+
+  // Presença contínua da Aurora na reunião — substitui o antigo Copilot IA (Painel 3): ela
+  // ouve sozinha (sem precisar de um clique), e só interrompe em voz alta quando decide que
+  // vale a pena. `pendingSpeech` é o gatilho que a AuroraJitsiVoice usa pra realmente falar
+  // dentro da call.
+  const [pendingSpeech, setPendingSpeech] = useState<{ id: string; audioBase64: string } | null>(null);
+  const meetingPresence = useAuroraMeetingPresence(
+    reuniao?.id,
+    leadContext,
+    meetingIsActive,
+    (audioBase64, _text) => setPendingSpeech({ id: crypto.randomUUID(), audioBase64 }),
+    setTranscript
+  );
 
   // Auto-save notes to Supabase with debounce
   const saveNotes = useCallback((value: string) => {
@@ -121,7 +138,7 @@ export default function ReuniaoRoom() {
     );
   }
 
-  const isActive = reuniao.status !== "Concluída" && reuniao.status !== "Cancelada";
+  const isActive = meetingIsActive;
   const initials = ((reuniao.companyName || reuniao.leadName || "R").slice(0, 2)).toUpperCase();
   const tempCfg = lead?.temperature ? TEMP_CONFIG[lead.temperature] : null;
   const scoreColor = !lead?.scoreIA ? "text-slate-400" :
@@ -192,7 +209,7 @@ export default function ReuniaoRoom() {
       const res = await apiFetch("/api/ai/aurora-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, sessionId: meetingSessionId }),
       });
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error ?? "Aurora está indisponível agora.");
@@ -549,24 +566,52 @@ export default function ReuniaoRoom() {
           </div>
         </div>
 
-        {/* ════ PANEL 3 — AI Copilot (right, ~28%) ════ */}
+        {/* ════ PANEL 3 — Aurora ao vivo (right, ~28%) ════ */}
         <div className="w-[28%] flex flex-col overflow-hidden">
           <div className="px-4 pt-4 pb-2 border-b border-white/[0.04] shrink-0">
             <h3 className="text-[10px] font-black text-violet-400 uppercase tracking-widest flex items-center gap-2">
-              <Brain className="w-3.5 h-3.5" /> Copilot IA — Tempo Real
+              <AuroraCore
+                mode={meetingPresence.status === "analyzing" ? "thinking" : meetingPresence.status === "error" ? "error" : "idle"}
+                size={16}
+              />
+              Aurora — Ao Vivo
             </h3>
-            <p className="text-[9px] text-slate-600 mt-0.5 leading-relaxed">
-              Ative o microfone, fale com o cliente e clique em "Analisar" para obter sugestões.
+            <p className="text-[9px] text-slate-600 mt-0.5 leading-relaxed flex items-center gap-1.5">
+              <Ear className="w-3 h-3 shrink-0" />
+              {meetingPresence.status === "listening" && "Ouvindo a reunião em segundo plano — fala só quando vale a pena."}
+              {meetingPresence.status === "analyzing" && "Analisando o que foi dito..."}
+              {meetingPresence.status === "error" && (meetingPresence.errorMsg || "Não consegui ouvir a reunião.")}
+              {meetingPresence.status === "idle" && "Aguardando a reunião começar..."}
             </p>
           </div>
-          <div className="flex-1 overflow-y-auto">
-            <IACopilot
-              leadName={reuniao.leadName}
-              companyName={reuniao.companyName}
-              leadContext={leadContext}
-              onTranscriptChange={setTranscript}
-            />
+          <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+            {meetingPresence.messages.length === 0 && (
+              <p className="text-[10px] text-slate-700 text-center py-6">
+                As observações da Aurora sobre a conversa aparecem aqui conforme a reunião avança.
+              </p>
+            )}
+            {meetingPresence.messages.map((m) => (
+              <div
+                key={m.id}
+                className={cn(
+                  "px-3 py-2 rounded-xl text-[11px] leading-relaxed",
+                  m.spoken
+                    ? "bg-violet-500/[0.08] border border-violet-500/20 text-violet-200"
+                    : "bg-white/[0.03] border border-white/[0.06] text-slate-400"
+                )}
+              >
+                {m.spoken && <p className="text-[8px] font-black uppercase tracking-widest text-violet-400 mb-1">Falou na call</p>}
+                {m.text}
+              </div>
+            ))}
           </div>
+          {meetingIsJitsi && (
+            <AuroraJitsiVoice
+              roomName={jitsiRoomName(reuniao.meetLink)}
+              active={meetingIsActive}
+              pendingSpeech={pendingSpeech}
+            />
+          )}
         </div>
 
       </div>

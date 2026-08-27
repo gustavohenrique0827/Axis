@@ -708,50 +708,27 @@ app.post("/api/ai/generic-insight", requireUser, async (req, res) => {
   }
 });
 
-// ── Reunião Copilot & Post-Meeting Report ─────────────────────────────────
-
-// ── Copilot de Reunião (tempo real — BANT + transcrição) ──────────────────────
-app.post("/api/ai/reuniao-copilot", requireUser, async (req: any, res: any) => {
-  const { transcript, leadContext } = req.body ?? {};
-  const hasAI = process.env.GEMINI_API_KEY || process.env.GROQ_API_KEY || process.env.VITE_GROQ_API_KEY;
-  if (!hasAI) return res.json({ analysis: null, error: "Nenhuma chave de IA configurada." });
-  if (!transcript?.trim()) return res.status(400).json({ error: "Transcrição vazia." });
-
-  try {
-    const leadInfo = leadContext
-      ? `\nCONTEXTO DO LEAD:\n- Nome: ${leadContext.name ?? "?"} | Empresa: ${leadContext.company ?? "?"}\n- Score: ${leadContext.scoreIA ?? "N/A"} | Temperatura: ${leadContext.temperature ?? "N/A"}\n- SDR Summary: ${leadContext.iaSummary ?? "Sem relatório"}\n- Interesse: ${leadContext.lead_interesse ?? "Não informado"}\n- Pauta: ${leadContext.pauta ?? "Não definida"}`
-      : "";
-
-    const prompt = `Você é o Copilot de vendas Axis CRM. Analise a transcrição e retorne SOMENTE o JSON, sem markdown.${leadInfo}
-
-TRANSCRIÇÃO: "${transcript.slice(0, 4000)}"
-
-Responda APENAS com este JSON:
-{"bant":{"budget":{"status":"identificado","nota":"..."},"authority":{"status":"parcial","nota":"..."},"need":{"status":"identificado","nota":"..."},"timeline":{"status":"nao_identificado","nota":"..."}},"score_fechamento":65,"objecoes_detectadas":["..."],"proxima_acao":"...","pergunta_poderosa":"...","alerta":""}`;
-
-    const raw  = await generateAI(prompt);
-    const data = extractJSON(raw);
-    return res.json({ analysis: data });
-  } catch (err: any) {
-    console.error("[Copilot Reunião]", err?.message);
-    return res.status(500).json({ error: "Erro ao analisar transcrição: " + (err?.message ?? "desconhecido") });
-  }
-});
+// ── Post-Meeting Report ────────────────────────────────────────────────────
+// (o antigo Copilot de Reunião — /api/ai/reuniao-copilot, Gemini cru e paralelo à Aurora —
+// foi removido: a própria Aurora agora cobre esse papel dentro da sala, ver
+// useAuroraMeetingPresence.ts + AuroraJitsiVoice.tsx.)
 
 // ── Aurora (chat com o G-TECH AI OS, embutido no Axis) ─────────────────────
 // Proxy autenticado para o webhook do Chat Trigger da Aurora no n8n (workflow AURORA CORE).
 // A URL do webhook nunca chega ao navegador — só este backend a conhece (AURORA_WEBHOOK_URL).
 app.post("/api/ai/aurora-chat", requireUser, async (req: any, res: any) => {
-  const { message } = req.body ?? {};
+  const { message, sessionId: clientSessionId } = req.body ?? {};
   if (!message?.trim()) return res.status(400).json({ error: "Mensagem vazia." });
 
   const webhookUrl = process.env.AURORA_WEBHOOK_URL;
   if (!webhookUrl) return res.status(503).json({ error: "Aurora não está configurada neste ambiente." });
 
-  // Fixo e compartilhado com o jarvis-os (mesmo memory node no n8n) — Gustavo tem contexto
-  // contínuo entre os dois apps em vez de duas conversas isoladas. Seguro porque a própria
-  // Aurora só atende um usuário real hoje (ver system prompt do workflow AURORA CORE).
-  const sessionId = "aurora-gustavo-principal";
+  // Padrão: fixo e compartilhado com o jarvis-os (mesmo memory node no n8n) — Gustavo tem
+  // contexto contínuo entre os dois apps em vez de duas conversas isoladas. Seguro porque a
+  // própria Aurora só atende um usuário real hoje (ver system prompt do workflow AURORA CORE).
+  // Chamadores com contexto próprio (ex.: a sala de reunião, uma sessão por reuniaoId) podem
+  // passar o seu próprio sessionId pra não poluir/ser poluído pelo buffer de memória geral dela.
+  const sessionId = clientSessionId || "aurora-gustavo-principal";
 
   try {
     const { data } = await axios.post(
