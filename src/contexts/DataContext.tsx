@@ -436,58 +436,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return () => clearInterval(interval);
   }, [appointments]);
 
-  const notifsRef = React.useRef(notifications);
-  useEffect(() => {
-    notifsRef.current = notifications;
-  }, [notifications]);
-
-  // Automated real-time checking effect for critical events
-  useEffect(() => {
-    leads.forEach(l => {
-      if (l.seller && l.seller !== "Não Atribuído") {
-        const hasAssignmentNotif = notifsRef.current.some(
-          n => n.category === "CRM" &&
-            n.desc.includes(l.name) &&
-            n.desc.includes(l.seller) &&
-            (n.title.toLowerCase().includes("atribu") || n.title.toLowerCase().includes("responsável"))
-        );
-
-        if (!hasAssignmentNotif) {
-          addNotification({
-            title: "Lead Atribuído",
-            desc: `O lead '${l.name}' (${l.company}) foi direcionado ao responsável '${l.seller}'.`,
-            type: "info",
-            category: "CRM"
-          }, true);
-          toast.success(`Encaminhado: ${l.name} direcionado à(ao) ${l.seller}`);
-        }
-      }
-    });
-
-    tasks.forEach(t => {
-      if (t.status === "Atrasado") {
-        const hasOverdueNotif = notifsRef.current.some(
-          n => n.category === "Produtividade" &&
-            n.title.toLowerCase().includes("atrasa") &&
-            n.desc.includes(t.title)
-        );
-
-        if (!hasOverdueNotif) {
-          console.log(`[DISPARO DE E-MAIL] Assunto: Alerta: Tarefa Atrasada - ${t.title}`);
-          addNotification({
-            title: "Tarefa Crítica Atrasada",
-            desc: `A tarefa '${t.title}' (relacionada com: ${t.related}) está atrasada e necessita de atenção imediata!`,
-            type: "error",
-            category: "Produtividade"
-          }, true);
-          toast.error(`Alerta de Atraso: '${t.title}'`, {
-            duration: 5000,
-          });
-        }
-      }
-    });
-  }, [leads, tasks]);
-
   // Automated background checker for cold leads (Score IA < 40)
   useEffect(() => {
     const checkColdLeads = () => {

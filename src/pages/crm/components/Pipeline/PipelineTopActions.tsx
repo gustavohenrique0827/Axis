@@ -37,7 +37,7 @@ export function PipelineTopActions({
             onClick={() => setView(v)}
             className={`flex items-center gap-2 px-3.5 h-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer border-none ${
               view === v
-                ? "bg-[var(--color-primary-blue)] text-white"
+                ? "bg-[var(--color-primary-blue)] !text-white font-bold shadow-xs"
                 : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
             }`}
           >

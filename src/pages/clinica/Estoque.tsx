@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   Package, Box, Plus, Search,
   Truck, ShieldAlert, Zap,
@@ -6,138 +5,136 @@ import {
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
 import { PageContainer } from "../../components/PageContainer";
 import { useEstoque } from './hooks/useEstoque';
+import { toast } from 'sonner';
 
 export default function EstoqueClinico() {
-  const { items: stockItems, loading } = useEstoque();
+  const { items: stockItems } = useEstoque();
 
   return (
     <PageContainer 
       title="Estoque e Suprimentos" 
-      description="Controle de insumos, rastreabilidade de lotes e automação de compras."
+      description="Controle de insumos, rastreabilidade de lotes e automação de suprimentos clínicos."
       actions={
-        <div className="flex items-center gap-3">
-           <Button variant="outline" className="border-white/10 text-[10px] font-black uppercase tracking-widest h-10 px-4 gap-2">
-              <Truck className="w-4 h-4" /> Solicitar Pedido
-           </Button>
-           <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 px-6 text-[10px] font-black uppercase tracking-widest gap-2">
-              <Plus className="w-4 h-4" /> Novo Item
-           </Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button 
+            variant="outline" 
+            onClick={() => toast.success("Solicitação enviada ao setor de compras!")}
+            className="h-9 px-4 text-xs font-bold gap-1.5"
+          >
+            <Truck className="w-3.5 h-3.5" /> Solicitar Pedido
+          </Button>
+          <Button 
+            onClick={() => toast.info("Cadastro de insumo aberto")}
+            className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" /> Novo Item
+          </Button>
         </div>
       }
     >
-      <div className="space-y-6 max-w-[1700px] mx-auto pb-10">
+      <div className="space-y-6 max-w-[1700px] mx-auto pb-12">
         
         {/* Inventory Overview */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-           {[
-             { label: "Itens Cadastrados", value: "482", icon: Box, color: "text-indigo-500" },
-             { label: "Alertas de Reposição", value: "12", icon: ShieldAlert, color: "text-amber-500" },
-             { label: "Valor em Estoque", value: "R$ 42.150", icon: BarChart3, color: "text-emerald-500" },
-             { label: "Pedidos Pendentes", value: "05", icon: Truck, color: "text-blue-500" },
-           ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
-                <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
-                <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
-                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
-             </Card>
-           ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: "Itens Cadastrados", value: stockItems.length.toString(), icon: Box, color: "text-[var(--color-primary-blue)]" },
+            { label: "Alertas de Reposição", value: stockItems.filter(i => i.status === 'Crítico' || i.status === 'Alerta').length.toString(), icon: ShieldAlert, color: "text-amber-500" },
+            { label: "Valor em Estoque", value: "R$ 42.150", icon: BarChart3, color: "text-emerald-500" },
+            { label: "Pedidos Pendentes", value: "05", icon: Truck, color: "text-purple-500" },
+          ].map((stat, i) => (
+            <Card key={i} className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">{stat.label}</span>
+                <stat.icon className={`w-4 h-4 ${stat.color}`} />
+              </div>
+              <div className="text-2xl font-black font-mono text-[var(--color-text-primary)]">{stat.value}</div>
+            </Card>
+          ))}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-           {/* Detailed Inventory Table */}
-           <Card className="lg:col-span-2 bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
-              <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                 <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                    <Package className="w-4 h-4 text-blue-400" /> Lista de Insumos
-                 </h3>
-                 <div className="relative w-full md:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-                    <input 
-                      type="text" 
-                      placeholder="Pesquisar estoque..." 
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:outline-none"
-                    />
-                 </div>
-              </div>
-              <div className="overflow-x-auto">
-                 <table className="w-full">
-                    <thead>
-                       <tr className="border-b border-white/5">
-                          <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Material</th>
-                          <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Categoria</th>
-                          <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Qtd Atual</th>
-                          <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
-                          <th className="text-right p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Preço Un.</th>
-                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                       {stockItems.map((item) => (
-                         <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
-                            <td className="p-6 font-black text-sm text-white">{item.name}</td>
-                            <td className="p-6 text-xs text-slate-500 uppercase tracking-tighter">{item.category}</td>
-                            <td className="p-6">
-                               <div className="flex items-center gap-2">
-                                  <span className="text-sm font-black text-slate-300 font-mono">{item.qty}</span>
-                                  <span className="text-[9px] text-slate-600 font-bold">min: {item.minQty}</span>
-                               </div>
-                            </td>
-                            <td className="p-6">
-                               <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg border ${
-                                 item.status === 'Normal' ? 'bg-emerald-500/5 text-emerald-400 border-emerald-500/20' :
-                                 item.status === 'Crítico' ? 'bg-rose-500/5 text-rose-400 border-rose-500/20' :
-                                 'bg-amber-500/5 text-amber-400 border-amber-500/20'
-                               }`}>
-                                  {item.status}
-                               </span>
-                            </td>
-                            <td className="p-6 text-right font-mono text-xs text-slate-400">{item.price}</td>
-                         </tr>
-                       ))}
-                    </tbody>
-                 </table>
-              </div>
-           </Card>
+          {/* Detailed Inventory Table */}
+          <Card className="lg:col-span-2 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-[var(--color-border-subtle)] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-[var(--color-surface-sunken)]">
+              <h3 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
+                <Package className="w-4 h-4 text-[var(--color-primary-blue)]" /> Lista de Insumos Clínicos
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]/50">
+                    <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Material</th>
+                    <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Categoria</th>
+                    <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Qtd Atual</th>
+                    <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Status</th>
+                    <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider text-right">Preço Un.</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--color-border-subtle)]">
+                  {stockItems.map((item) => (
+                    <tr key={item.id} className="hover:bg-[var(--color-surface-sunken)]/50 transition-colors">
+                      <td className="p-3.5 text-xs font-bold text-[var(--color-text-primary)]">{item.name}</td>
+                      <td className="p-3.5 text-xs text-[var(--color-text-muted)] font-medium">{item.category}</td>
+                      <td className="p-3.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold font-mono text-[var(--color-text-primary)]">{item.qty}</span>
+                          <span className="text-[10px] text-[var(--color-text-faint)]">/ min: {item.minQty}</span>
+                        </div>
+                      </td>
+                      <td className="p-3.5">
+                        <Badge 
+                          variant={item.status === 'Normal' ? 'success' : item.status === 'Crítico' ? 'destructive' : 'warning'} 
+                        >
+                          {item.status}
+                        </Badge>
+                      </td>
+                      <td className="p-3.5 text-right font-mono text-xs font-bold text-[var(--color-text-primary)]">{item.price}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
 
-           {/* Inventory Automation IA */}
-           <div className="space-y-6">
-              <Card className="p-8 bg-gradient-to-br from-blue-600/10 to-transparent border-blue-500/20 group">
-                 <h3 className="text-xs font-black text-white uppercase tracking-widest mb-8 flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-blue-400" /> MIA Predictive Logistics
-                 </h3>
-                 <div className="space-y-6">
-                    <div className="p-5 bg-white/5 rounded-2xl border border-white/5">
-                       <p className="text-[10px] text-blue-400 font-black uppercase mb-2">Sugestão de Compra</p>
-                       <p className="text-xs text-slate-300 italic leading-relaxed">
-                          "O consumo de **Luvas Nitrílicas** aumentou 40% nas últimas 2 semanas. Sugerimos antecipar o pedido do fornecedor Alpha em 5 dias."
-                       </p>
-                    </div>
-                    <div className="space-y-4">
-                       <p className="text-[10px] text-slate-500 font-black uppercase border-b border-white/5 pb-2">Vencimentos Próximos</p>
-                       {[
-                         { item: "Lidocaína 2%", date: "12 Ago/26", qty: "14 frascos" },
-                         { item: "Vitamina C Inj.", date: "15 Jul/26", qty: "08 frascos" },
-                       ].map((v, i) => (
-                         <div key={i} className="flex justify-between items-center text-xs">
-                            <span className="font-bold text-slate-400">{v.item}</span>
-                            <span className="text-rose-400 font-mono tracking-tighter">{v.date}</span>
-                         </div>
-                       ))}
-                    </div>
-                 </div>
-              </Card>
+          {/* Logistics & Alerts */}
+          <div className="space-y-4">
+            <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+              <h3 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider mb-4 flex items-center gap-2">
+                <Zap className="w-4 h-4 text-amber-500" /> Previsão de Reabastecimento
+              </h3>
+              <div className="p-3 bg-[var(--color-surface-sunken)] rounded-[var(--radius-control)] border border-[var(--color-border-subtle)] space-y-1.5">
+                <p className="text-xs font-bold text-[var(--color-text-primary)]">Sugestão de Reposição</p>
+                <p className="text-xs text-[var(--color-text-muted)] leading-relaxed italic">
+                  O consumo de Luvas Nitrílicas aumentou 40% nas últimas 2 semanas. Sugerimos antecipar o pedido do fornecedor Alpha em 5 dias.
+                </p>
+              </div>
 
-              <Card className="p-6 bg-emerald-500/5 border-emerald-500/10">
-                 <div className="flex items-center gap-4">
-                    <RefreshCw className="w-6 h-6 text-emerald-400 animate-spin-slow" />
-                    <div>
-                       <h4 className="text-[10px] font-black text-white uppercase mb-1">Backup Sincronizado</h4>
-                       <p className="text-[9px] text-slate-500 font-medium">Última contagem cíclica: Hoje, 08:30</p>
-                    </div>
-                 </div>
-              </Card>
-           </div>
+              <div className="mt-4 space-y-2">
+                <p className="text-[10px] font-black text-[var(--color-text-faint)] uppercase tracking-wider">Vencimentos Próximos</p>
+                {[
+                  { item: "Lidocaína 2%", date: "12 Ago/26", qty: "14 frascos" },
+                  { item: "Vitamina C Inj.", date: "15 Jul/26", qty: "08 frascos" },
+                ].map((v, i) => (
+                  <div key={i} className="flex justify-between items-center text-xs p-2 bg-[var(--color-surface-sunken)] rounded-md">
+                    <span className="font-medium text-[var(--color-text-primary)]">{v.item}</span>
+                    <span className="text-rose-500 font-mono font-bold text-[10px]">{v.date}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm flex items-center gap-3">
+              <RefreshCw className="w-5 h-5 text-emerald-500 shrink-0" />
+              <div>
+                <h4 className="text-xs font-bold text-[var(--color-text-primary)]">Contagem Cíclica Atualizada</h4>
+                <p className="text-[10px] text-[var(--color-text-muted)]">Última auditoria física: Hoje às 08:30</p>
+              </div>
+            </Card>
+          </div>
         </div>
 
       </div>

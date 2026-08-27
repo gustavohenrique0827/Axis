@@ -13,71 +13,80 @@ interface AgendaSidebarProps {
 
 export function AgendaSidebar({ doctors, selectedDrs, onToggle, onSelectAll, getStatusStyle }: AgendaSidebarProps) {
   return (
-    <div className="space-y-6">
-      <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 backdrop-blur-xl">
-        <div className="flex items-center justify-between mb-8">
-          <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Painel de Médicos</h3>
-          <button onClick={onSelectAll} className="text-[9px] font-black text-emerald-400 uppercase tracking-tighter">Marcar Todos</button>
+    <div className="space-y-4">
+      <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-[var(--color-border-subtle)]">
+          <h3 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider">
+            Médicos & Especialistas
+          </h3>
+          <button
+            type="button"
+            onClick={onSelectAll}
+            className="text-[10px] font-bold text-[var(--color-primary-blue)] hover:underline cursor-pointer border-none bg-transparent"
+          >
+            Marcar Todos
+          </button>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {doctors.length === 0 ? (
-            <div className="py-6 flex flex-col items-center justify-center opacity-40">
-              <User className="w-8 h-8 text-slate-500 mb-2" />
-              <span className="text-[10px] uppercase font-black tracking-widest text-slate-500 text-center">Nenhum médico cadastrado (Squads)</span>
+            <div className="py-6 flex flex-col items-center justify-center opacity-50">
+              <User className="w-6 h-6 text-[var(--color-text-faint)] mb-2" />
+              <span className="text-xs font-bold text-[var(--color-text-muted)] text-center">Nenhum médico cadastrado</span>
             </div>
           ) : doctors.map((dr) => (
             <button
               key={dr.id}
+              type="button"
               onClick={() => onToggle(dr.id)}
-              className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all ${
+              className={`w-full flex items-center gap-3 p-3 rounded-[var(--radius-control)] border transition-all cursor-pointer ${
                 selectedDrs.includes(dr.id)
-                  ? 'bg-white/5 border-white/10 ring-1 ring-white/10'
-                  : 'bg-transparent border-dashed border-white/5 opacity-40 grayscale'
+                  ? 'bg-[var(--color-primary-blue)]/5 border-[var(--color-primary-blue)]/30'
+                  : 'bg-[var(--color-surface-sunken)] border-[var(--color-border-subtle)] opacity-50'
               }`}
             >
-              <div className="w-2 h-2 rounded-full" style={{ backgroundColor: dr.color }} />
-              <div className="text-left flex-1">
-                <p className="text-xs font-black text-white">{dr.name}</p>
-                <p className="text-[9px] text-slate-500 font-bold uppercase">{dr.esp}</p>
+              <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: dr.color }} />
+              <div className="text-left flex-1 min-w-0">
+                <p className="text-xs font-bold text-[var(--color-text-primary)] truncate">{dr.name}</p>
+                <p className="text-[10px] text-[var(--color-text-muted)] font-medium">{dr.esp}</p>
               </div>
-              {selectedDrs.includes(dr.id) && <Check className="w-3 h-3 text-emerald-400" />}
+              {selectedDrs.includes(dr.id) && <Check className="w-3.5 h-3.5 text-[var(--color-primary-blue)] shrink-0" />}
             </button>
           ))}
         </div>
       </Card>
 
-      <Card className="p-8 bg-gradient-to-br from-[#10b981]/10 to-transparent border-emerald-500/10 group">
-        <div className="flex items-center justify-between mb-8">
-          <h4 className="text-[10px] font-black text-emerald-400 uppercase tracking-widest flex items-center gap-2">
-            <Zap className="w-3 h-3" /> Eficiência Global
+      <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-[var(--color-border-subtle)]">
+          <h4 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5 text-amber-500" /> Eficiência do Dia
           </h4>
-          <div className="w-8 h-8 rounded-full border border-emerald-500/20 flex items-center justify-center text-[10px] font-black text-emerald-400">82%</div>
+          <span className="text-xs font-mono font-bold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-md">82%</span>
         </div>
-        <div className="space-y-6">
+        <div className="space-y-4">
           <div>
-            <div className="flex justify-between text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-wide">
-              <span>Taxa de Espera</span>
-              <span className="text-emerald-400">12min</span>
+            <div className="flex justify-between text-xs font-bold text-[var(--color-text-muted)] mb-1.5">
+              <span>Tempo de Espera</span>
+              <span className="text-emerald-500">12 min</span>
             </div>
-            <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-[var(--color-surface-sunken)] rounded-full overflow-hidden">
               <div className="h-full bg-emerald-500 w-[45%]" />
             </div>
           </div>
-          <div className="p-4 bg-white/5 rounded-xl border border-white/5">
-            <p className="text-[10px] text-slate-400 leading-relaxed italic">
-              "Previsão de **pico de fluxo** às 15:30 devido a 4 retornos simultâneos. Sala 02 disponível para triagem extra."
+          <div className="p-3 bg-[var(--color-surface-sunken)] rounded-[var(--radius-control)] border border-[var(--color-border-subtle)]">
+            <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed italic">
+              Previsão de maior movimentação às 15:30. Sala 02 disponível para triagem extra.
             </p>
           </div>
         </div>
       </Card>
 
-      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5">
-        <h4 className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-4">Legenda de Status</h4>
-        <div className="grid grid-cols-2 gap-3">
+      <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+        <h4 className="text-[10px] font-black text-[var(--color-text-faint)] uppercase tracking-wider mb-3">Legenda de Status</h4>
+        <div className="grid grid-cols-2 gap-2">
           {['Aguardando', 'Em Atendimento', 'Atrasado', 'Confirmado'].map(s => (
-            <div key={s} className="flex items-center gap-2">
-              <div className={`w-1.5 h-1.5 rounded-full ${getStatusStyle(s).split(' ')[1]}`} />
-              <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">{s}</span>
+            <div key={s} className="flex items-center gap-1.5">
+              <div className={`w-2 h-2 rounded-full ${getStatusStyle(s).split(' ')[1] || 'bg-slate-400'}`} />
+              <span className="text-[10px] font-bold text-[var(--color-text-muted)]">{s}</span>
             </div>
           ))}
         </div>

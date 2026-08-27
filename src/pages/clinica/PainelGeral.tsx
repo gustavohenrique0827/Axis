@@ -69,7 +69,16 @@ export default function ClinicasDashboard() {
           </Button>
           <div className="flex bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl p-1 gap-1">
             {(['geral', 'unidades', 'operacional'] as const).map(t => (
-              <button key={t} onClick={() => setView(t)} className={`px-4 py-2 text-xs rounded-xl capitalize transition-all ${view === t ? 'bg-blue-600 text-white' : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]'}`}>
+              <button
+                key={t}
+                type="button"
+                onClick={() => setView(t)}
+                className={`px-4 py-2 text-xs rounded-xl capitalize transition-all font-bold cursor-pointer border-none ${
+                  view === t
+                    ? 'bg-[var(--color-primary-blue)] !text-white font-bold shadow-xs'
+                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] bg-transparent'
+                }`}
+              >
                 {t}
               </button>
             ))}

@@ -1,27 +1,24 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { 
-  Users, Search, Filter, Plus, 
-  FileText, Activity, Heart, Thermometer,
-  History, Pill, Clipboard, ArrowUpRight,
-  ChevronRight, MoreHorizontal, Download,
-  Eye, Calendar as CalendarIcon, Clock,
-  Inbox
+  Users, Search, Plus, 
+  FileText, Activity, Heart,
+  Pill, Eye, Inbox, ArrowUpRight
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
 import { PageContainer } from "../../components/PageContainer";
-import { motion, AnimatePresence } from "motion/react";
 import { useData } from "../../contexts/DataContext";
+import { BookingModal } from "./components/BookingModal";
 
 export default function ProntuariosDashboard() {
-  const { appointments } = useData();
+  const { appointments, leads, addTask } = useData();
   const [searchTerm, setSearchTerm] = useState('');
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
-  // Computa a lista de pacientes com prontuário a partir dos agendamentos
   const patientsList = useMemo(() => {
     const map = new Map<string, any>();
     
-    // Ordena do mais recente para o mais antigo
     const sorted = [...appointments].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
     sorted.forEach(a => {
@@ -33,10 +30,10 @@ export default function ProntuariosDashboard() {
           id: a.id,
           name: name,
           photo: name.substring(0, 1).toUpperCase(),
-          age: Math.floor(Math.random() * 40) + 20, // Simulação de idade, idealmente viria do BD
+          age: 32,
           lastVisit: a.date,
-          condition: a.specialty || 'Check-up',
-          status: a.status === 'Em Atendimento' ? 'Crítico' : 'Estável',
+          condition: a.specialty || 'Clínica Geral',
+          status: a.status === 'Em Atendimento' ? 'Em Atendimento' : 'Estável',
         });
       }
     });
@@ -50,168 +47,146 @@ export default function ProntuariosDashboard() {
   return (
     <PageContainer 
       title="Prontuário Eletrônico (EHR)" 
-      description="Histórico clínico completo, prescrições digitais e telemedicina."
+      description="Histórico clínico completo, evolução do paciente e acompanhamento multiprofissional."
       actions={
-        <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 px-6 text-[10px] font-black uppercase tracking-widest gap-2">
-           <Plus className="w-4 h-4" /> Novo Paciente
+        <Button
+          onClick={() => setIsBookingOpen(true)}
+          className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
+        >
+          <Plus className="w-3.5 h-3.5" /> Novo Paciente / Consulta
         </Button>
       }
     >
-      <div className="space-y-6 max-w-[1600px] mx-auto pb-10">
+      <div className="space-y-6 max-w-[1600px] mx-auto pb-12">
         
         {/* Quick Access Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-           {[
-             { label: "Prontuários Ativos", value: totalPatients.toString(), icon: Activity, color: "text-indigo-500" },
-             { label: "Prescrições Emitidas", value: (totalPatients * 2).toString(), icon: Pill, color: "text-emerald-500" },
-             { label: "Exames Pendentes", value: "0", icon: FileText, color: "text-amber-500" },
-             { label: "Pacientes Internados", value: "0", icon: Heart, color: "text-rose-500" },
-           ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
-                <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
-                <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
-                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
-             </Card>
-           ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: "Prontuários Ativos", value: totalPatients.toString(), icon: Activity, color: "text-[var(--color-primary-blue)]" },
+            { label: "Prescrições Emitidas", value: (totalPatients * 2).toString(), icon: Pill, color: "text-emerald-500" },
+            { label: "Exames Solicitados", value: (totalPatients > 0 ? "3" : "0"), icon: FileText, color: "text-amber-500" },
+            { label: "Casos em Triagem", value: "0", icon: Heart, color: "text-purple-500" },
+          ].map((stat, i) => (
+            <Card key={i} className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">{stat.label}</span>
+                <stat.icon className={`w-4 h-4 ${stat.color}`} />
+              </div>
+              <div className="text-2xl font-black font-mono text-[var(--color-text-primary)]">{stat.value}</div>
+            </Card>
+          ))}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-           {/* Patient List */}
-           <Card className="lg:col-span-2 bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
-              <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                 <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
-                    <Users className="w-4 h-4 text-blue-400" /> Base de Pacientes
-                 </h3>
-                 <div className="relative w-full md:w-72">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-                    <input 
-                      type="text" 
-                      placeholder="Pesquisar por nome ou CPF..." 
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50"
-                      value={searchTerm}
-                      onChange={e => setSearchTerm(e.target.value)}
-                    />
-                 </div>
+          {/* Patient List */}
+          <Card className="lg:col-span-2 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-[var(--color-border-subtle)] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-[var(--color-surface-sunken)]">
+              <h3 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
+                <Users className="w-4 h-4 text-[var(--color-primary-blue)]" /> Base de Pacientes
+              </h3>
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-text-faint)]" />
+                <input 
+                  type="text" 
+                  placeholder="Pesquisar paciente..." 
+                  className="w-full bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] py-1.5 pl-9 pr-3 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
               </div>
+            </div>
 
-              {patientsList.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-40">
-                  <Inbox className="w-12 h-12 text-slate-500" />
-                  <p className="text-xs font-black text-slate-500 uppercase tracking-widest text-center">
-                    Nenhum prontuário registrado.<br/>Os prontuários serão gerados automaticamente a partir dos agendamentos.
-                  </p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                   <table className="w-full">
-                      <thead>
-                         <tr className="border-b border-white/5">
-                            <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Paciente</th>
-                            <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Condição Principal</th>
-                            <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
-                            <th className="text-right p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Ações</th>
-                         </tr>
-                      </thead>
-                      <tbody className="divide-y divide-white/5">
-                         {filteredPatients.map((p, i) => (
-                           <tr key={p.id} className="group hover:bg-white/[0.02] transition-colors">
-                              <td className="p-6">
-                                 <div className="flex items-center gap-3">
-                                    <div className="w-9 h-9 rounded-full bg-slate-800 flex items-center justify-center text-xs font-black text-slate-400">{p.photo}</div>
-                                    <div>
-                                       <p className="text-sm font-black text-white">{p.name}</p>
-                                       <p className="text-[10px] text-slate-500">
-                                          Última: {(() => {
-                                            try {
-                                              const d = new Date(p.lastVisit);
-                                              return isNaN(d.getTime()) ? p.lastVisit : d.toLocaleDateString('pt-BR');
-                                            } catch { return p.lastVisit; }
-                                          })()}
-                                       </p>
-                                    </div>
-                                 </div>
-                              </td>
-                              <td className="p-6">
-                                 <span className="text-[11px] font-bold text-slate-300">{p.condition}</span>
-                              </td>
-                              <td className="p-6">
-                                 <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg border ${
-                                   p.status === 'Estável' ? 'bg-emerald-500/5 text-emerald-500 border-emerald-500/10' :
-                                   p.status === 'Crítico' ? 'bg-rose-500/5 text-rose-500 border-rose-500/10' :
-                                   'bg-blue-500/5 text-blue-500 border-blue-500/10'
-                                 }`}>
-                                    {p.status}
-                                 </span>
-                              </td>
-                              <td className="p-6 text-right">
-                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button className="p-2 hover:bg-blue-500/10 rounded-lg text-blue-400"><Eye className="w-4 h-4" /></button>
-                                    <button className="p-2 hover:bg-white/5 rounded-lg text-slate-400"><FileText className="w-4 h-4" /></button>
-                                 </div>
-                              </td>
-                           </tr>
-                         ))}
-                      </tbody>
-                   </table>
-                </div>
-              )}
-           </Card>
-
-           {/* Health Indicators IA */}
-           <div className="space-y-6">
-              <Card className="p-8 bg-gradient-to-br from-indigo-600/20 to-transparent border-indigo-500/20 shadow-2xl shadow-indigo-950/20">
-                 <div className="flex items-center justify-between mb-8">
-                    <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                       <Activity className="w-4 h-4 text-indigo-400" /> Vitals Monitor IA
-                    </h3>
-                    <span className="text-[9px] font-black text-indigo-400 bg-white/5 px-2 py-1 rounded-full animate-pulse">LIVE</span>
-                 </div>
-                 
-                 {totalPatients === 0 ? (
-                   <div className="flex items-center justify-center py-6 opacity-50">
-                     <p className="text-[10px] uppercase font-bold text-slate-400">Aguardando telemetria de pacientes...</p>
-                   </div>
-                 ) : (
-                   <div className="space-y-6">
-                      {[
-                        { label: "BPM Médio", val: 78, unit: "bpm", alert: false },
-                        { label: "Pressão Art.", val: "12/8", unit: "mmHg", alert: false },
-                        { label: "Temp. Corp.", val: 36.8, unit: "°C", alert: false },
-                        { label: "SpO2", val: 94, unit: "%", alert: true },
-                      ].map((v, i) => (
-                         <div key={i} className="flex items-center justify-between">
-                            <div>
-                               <p className="text-[10px] text-slate-500 font-black uppercase mb-1">{v.label}</p>
-                               <p className={`text-xl font-black font-mono leading-none ${v.alert ? 'text-rose-500' : 'text-white'}`}>
-                                  {v.val} <span className="text-[10px] text-slate-600 ml-1">{v.unit}</span>
-                               </p>
+            {patientsList.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3 opacity-50">
+                <Inbox className="w-10 h-10 text-[var(--color-text-faint)]" />
+                <p className="text-xs font-bold text-[var(--color-text-muted)] text-center">
+                  Nenhum prontuário registrado.<br/>Os prontuários serão gerados conforme os agendamentos forem realizados.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]/50">
+                      <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Paciente</th>
+                      <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Especialidade</th>
+                      <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Status</th>
+                      <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider text-right">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--color-border-subtle)]">
+                    {filteredPatients.map((p) => (
+                      <tr key={p.id} className="hover:bg-[var(--color-surface-sunken)]/50 transition-colors">
+                        <td className="p-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] flex items-center justify-center text-xs font-bold">
+                              {p.photo}
                             </div>
-                            {v.alert && (
-                              <div className="p-2 rounded-xl bg-rose-500/10 text-rose-500">
-                                 <ArrowUpRight className="w-4 h-4" />
-                              </div>
-                            )}
-                         </div>
-                      ))}
-                   </div>
-                 )}
-              </Card>
+                            <div>
+                              <p className="text-xs font-bold text-[var(--color-text-primary)]">{p.name}</p>
+                              <p className="text-[10px] text-[var(--color-text-faint)] font-mono">Última: {p.lastVisit}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-3.5">
+                          <span className="text-xs text-[var(--color-text-muted)] font-medium">{p.condition}</span>
+                        </td>
+                        <td className="p-3.5">
+                          <Badge variant={p.status === 'Em Atendimento' ? 'info' : 'success'}>
+                            {p.status}
+                          </Badge>
+                        </td>
+                        <td className="p-3.5 text-right">
+                          <div className="flex items-center justify-end gap-1.5">
+                            <Button variant="ghost" size="xs" className="h-7 px-2 text-xs font-bold gap-1">
+                              <Eye className="w-3.5 h-3.5" /> Ver
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
 
-              <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5">
-                 <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-6">Anotações IA</h4>
-                 <div className="p-4 bg-white/5 rounded-2xl border border-white/5 italic">
-                    <p className="text-[11px] text-slate-300 leading-relaxed">
-                       {totalPatients > 0 
-                         ? `"Observado padrão recorrente de fadiga em pacientes recentes. Recomendada campanha preventiva de nutrição."`
-                         : `"Sem dados clínicos suficientes para gerar insights automatizados."`
-                       }
-                    </p>
-                 </div>
-              </Card>
-           </div>
+          {/* Clinical Insights */}
+          <div className="space-y-4">
+            <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+              <div className="flex items-center justify-between mb-4 pb-2 border-b border-[var(--color-border-subtle)]">
+                <h3 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-[var(--color-primary-blue)]" /> Painel de Triagem
+                </h3>
+                <Badge variant="info">Tempo Real</Badge>
+              </div>
+              
+              <div className="space-y-3">
+                {[
+                  { label: "Frequência Cardíaca Média", val: "76 bpm" },
+                  { label: "Pressão Arterial Típica", val: "120/80 mmHg" },
+                  { label: "Saturação O2 Média", val: "98%" },
+                ].map((v, i) => (
+                  <div key={i} className="p-3 bg-[var(--color-surface-sunken)] rounded-[var(--radius-control)] border border-[var(--color-border-subtle)] flex items-center justify-between">
+                    <span className="text-xs text-[var(--color-text-muted)]">{v.label}</span>
+                    <span className="text-xs font-bold font-mono text-[var(--color-text-primary)]">{v.val}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+              <h4 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider mb-2">Protocolos de Segurança</h4>
+              <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+                Prontuários eletrônicos com assinatura digital e conformidade LGPD / CFM.
+              </p>
+            </Card>
+          </div>
         </div>
 
       </div>
+
+      <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} leads={leads} addTask={addTask} />
     </PageContainer>
   );
 }

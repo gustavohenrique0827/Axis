@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   FileText, Search, FlaskConical,
   Clock, CheckCircle2, AlertCircle, Download,
@@ -6,8 +5,10 @@ import {
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
 import { PageContainer } from "../../components/PageContainer";
 import { useExames } from './hooks/useExames';
+import { toast } from 'sonner';
 
 export default function Exames() {
   const { exames: examList } = useExames();
@@ -15,136 +16,125 @@ export default function Exames() {
   return (
     <PageContainer 
       title="Exames & Laboratório" 
-      description="Gerencie pedidos de exames, acompanhe resultados e integre com laboratórios parceiros."
+      description="Gerencie pedidos de exames laboratoriais, acompanhe laudos e integre com parceiros."
       actions={
-        <div className="flex items-center gap-3">
-           <Button variant="outline" className="border-white/10 text-[10px] font-black uppercase tracking-widest h-10 px-4 gap-2">
-              <Download className="w-4 h-4" /> Exportar Lote
-           </Button>
-           <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 px-6 text-[10px] font-black uppercase tracking-widest gap-2">
-              <Plus className="w-4 h-4" /> Novo Pedido
-           </Button>
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button 
+            variant="outline" 
+            onClick={() => toast.success("Lote de exames exportado com sucesso!")}
+            className="h-9 px-4 text-xs font-bold gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" /> Exportar Lote
+          </Button>
+          <Button 
+            onClick={() => toast.info("Novo pedido de exame aberto")}
+            className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" /> Novo Pedido
+          </Button>
         </div>
       }
     >
-      <div className="space-y-6 max-w-[1700px] mx-auto pb-10">
+      <div className="space-y-6 max-w-[1700px] mx-auto pb-12">
         
         {/* Status Hub */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-           {[
-             { label: "Pedidos Hoje", value: "42", icon: FlaskConical, color: "text-indigo-500" },
-             { label: "Resultados Prontos", value: "18", icon: CheckCircle2, color: "text-emerald-500" },
-             { label: "Em Análise", value: "12", icon: Clock, color: "text-blue-500" },
-             { label: "Resultados Críticos", value: "05", icon: AlertCircle, color: "text-rose-500" },
-           ].map((stat, i) => (
-             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
-                <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
-                <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
-                <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
-             </Card>
-           ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: "Pedidos Hoje", value: "42", icon: FlaskConical, color: "text-[var(--color-primary-blue)]" },
+            { label: "Resultados Prontos", value: "18", icon: CheckCircle2, color: "text-emerald-500" },
+            { label: "Em Análise", value: "12", icon: Clock, color: "text-amber-500" },
+            { label: "Laudos Liberados", value: "35", icon: AlertCircle, color: "text-purple-500" },
+          ].map((stat, i) => (
+            <Card key={i} className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">{stat.label}</span>
+                <stat.icon className={`w-4 h-4 ${stat.color}`} />
+              </div>
+              <div className="text-2xl font-black font-mono text-[var(--color-text-primary)]">{stat.value}</div>
+            </Card>
+          ))}
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-           {/* Exams Table */}
-           <Card className="lg:col-span-2 bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden">
-              <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                 <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-emerald-400" /> Histórico de Pedidos
-                 </h3>
-                 <div className="relative w-full md:w-72">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
-                    <input 
-                      type="text" 
-                      placeholder="Pesquisar exames..." 
-                      className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-10 pr-4 text-xs text-white focus:outline-none"
-                    />
-                 </div>
-              </div>
-              <div className="overflow-x-auto">
-                 <table className="w-full">
-                    <thead>
-                       <tr className="border-b border-white/5">
-                          <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Paciente</th>
-                          <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Exame</th>
-                          <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Data</th>
-                          <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Status</th>
-                          <th className="text-right p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Ações</th>
-                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-white/5">
-                       {examList.map((exam) => (
-                         <tr key={exam.id} className="hover:bg-white/[0.02] transition-colors group">
-                            <td className="p-6">
-                               <p className="text-sm font-black text-white">{exam.patient}</p>
-                               <p className="text-[10px] text-slate-500 font-bold">{exam.lab}</p>
-                            </td>
-                            <td className="p-6 text-xs text-slate-300 font-medium">{exam.exam}</td>
-                            <td className="p-6 text-xs text-slate-500 font-mono italic">{exam.date}</td>
-                            <td className="p-6">
-                               <span className={`text-[9px] font-black uppercase px-2 py-1 rounded-lg border ${
-                                 exam.status === 'Finalizado' ? 'bg-emerald-500/5 text-emerald-400 border-emerald-500/20' :
-                                 exam.status === 'Em Análise' ? 'bg-blue-500/5 text-blue-400 border-blue-500/20' :
-                                 'bg-amber-500/5 text-amber-400 border-amber-500/20'
-                               }`}>
-                                  {exam.status}
-                               </span>
-                            </td>
-                            <td className="p-6 text-right">
-                               <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <button className="p-2 hover:bg-white/5 rounded-lg text-slate-400"><Eye className="w-4 h-4" /></button>
-                                  <button className="p-2 hover:bg-white/5 rounded-lg text-slate-400"><Share2 className="w-4 h-4" /></button>
-                               </div>
-                            </td>
-                         </tr>
-                       ))}
-                    </tbody>
-                 </table>
-              </div>
-           </Card>
+          {/* Exams Table */}
+          <Card className="lg:col-span-2 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
+            <div className="p-4 border-b border-[var(--color-border-subtle)] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-[var(--color-surface-sunken)]">
+              <h3 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
+                <FileText className="w-4 h-4 text-[var(--color-primary-blue)]" /> Histórico de Pedidos
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]/50">
+                    <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Paciente</th>
+                    <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Exame</th>
+                    <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Data</th>
+                    <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Status</th>
+                    <th className="p-3.5 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider text-right">Ações</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[var(--color-border-subtle)]">
+                  {examList.map((exam) => (
+                    <tr key={exam.id} className="hover:bg-[var(--color-surface-sunken)]/50 transition-colors">
+                      <td className="p-3.5">
+                        <p className="text-xs font-bold text-[var(--color-text-primary)]">{exam.patient}</p>
+                        <p className="text-[10px] text-[var(--color-text-muted)]">{exam.lab}</p>
+                      </td>
+                      <td className="p-3.5 text-xs text-[var(--color-text-primary)] font-medium">{exam.exam}</td>
+                      <td className="p-3.5 text-xs text-[var(--color-text-muted)] font-mono">{exam.date}</td>
+                      <td className="p-3.5">
+                        <Badge 
+                          variant={exam.status === 'Finalizado' ? 'success' : exam.status === 'Em Análise' ? 'info' : 'warning'} 
+                        >
+                          {exam.status}
+                        </Badge>
+                      </td>
+                      <td className="p-3.5 text-right">
+                        <div className="flex items-center justify-end gap-1">
+                          <Button variant="ghost" size="xs" onClick={() => toast.info(`Visualizando laudo de ${exam.patient}`)} className="h-7 w-7 p-0">
+                            <Eye className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button variant="ghost" size="xs" onClick={() => toast.success("Link do laudo compartilhado!")} className="h-7 w-7 p-0">
+                            <Share2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
 
-           {/* AI Insight Section */}
-           <div className="space-y-6">
-              <Card className="p-8 bg-gradient-to-br from-emerald-600/10 to-transparent border-emerald-500/20 relative group">
-                 <h3 className="text-xs font-black text-white uppercase tracking-widest mb-8 flex items-center gap-2">
-                    <FlaskConical className="w-4 h-4 text-emerald-400" /> MIA Lab Insights
-                 </h3>
-                 <div className="space-y-6">
-                    <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-                       <p className="text-[10px] text-emerald-400 font-black uppercase mb-1">Análise de Tendência</p>
-                       <p className="text-xs text-slate-300 italic leading-relaxed">
-                          "Houve um aumento de 15% em pedidos de exames tireoidianos este mês. Sugerimos integrar com o laboratório parceiro Beta para otimizar prazos."
-                       </p>
-                    </div>
-                    <div className="space-y-4">
-                       <p className="text-[10px] text-slate-500 font-black uppercase border-b border-white/5 pb-2">Pendências Urgentes</p>
-                       {[
-                         { item: "Hemoglobina Glicada", days: "2 dias atrasado" },
-                         { item: "Colesterol Total", days: "Hoje" },
-                       ].map((p, i) => (
-                         <div key={i} className="flex justify-between items-center text-xs">
-                            <span className="font-bold text-slate-400">{p.item}</span>
-                            <span className="text-amber-500 font-black tracking-tighter">{p.days}</span>
-                         </div>
-                       ))}
-                    </div>
-                 </div>
-              </Card>
+          {/* Lab Integration Section */}
+          <div className="space-y-4">
+            <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+              <h3 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider mb-4 flex items-center gap-2">
+                <FlaskConical className="w-4 h-4 text-[var(--color-primary-blue)]" /> Integração com Laboratórios
+              </h3>
+              <div className="p-3 bg-[var(--color-surface-sunken)] rounded-[var(--radius-control)] border border-[var(--color-border-subtle)] space-y-1">
+                <p className="text-xs font-bold text-[var(--color-text-primary)]">Fluxo Automatizado</p>
+                <p className="text-xs text-[var(--color-text-muted)] leading-relaxed italic">
+                  Laudos liberados pelos laboratórios conveniados são automaticamente vinculados ao prontuário eletrônico do paciente.
+                </p>
+              </div>
 
-              <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5">
-                 <h3 className="text-xs font-black text-white uppercase tracking-widest mb-6">Integrações API</h3>
-                 <div className="grid grid-cols-2 gap-4">
-                    <button className="p-4 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center group hover:border-emerald-500/30 transition-all">
-                       <div className="w-8 h-8 rounded-full bg-blue-600/20 mb-3 flex items-center justify-center text-blue-400 font-black text-xs">HL7</div>
-                       <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center">Protocolo HL7/V2</span>
-                    </button>
-                    <button className="p-4 bg-white/5 border border-white/5 rounded-2xl flex flex-col items-center group hover:border-emerald-500/30 transition-all">
-                       <div className="w-8 h-8 rounded-full bg-emerald-600/20 mb-3 flex items-center justify-center text-emerald-400 font-black text-xs">DICOM</div>
-                       <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest text-center">Visualizador DICOM</span>
-                    </button>
-                 </div>
-              </Card>
-           </div>
+              <div className="mt-4 space-y-2">
+                <p className="text-[10px] font-black text-[var(--color-text-faint)] uppercase tracking-wider">Protocolos Conectados</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-3 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-lg text-center">
+                    <p className="text-xs font-black text-[var(--color-primary-blue)]">HL7 / FHIR</p>
+                    <p className="text-[9px] text-[var(--color-text-muted)]">Ativo</p>
+                  </div>
+                  <div className="p-3 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-lg text-center">
+                    <p className="text-xs font-black text-emerald-500">DICOM</p>
+                    <p className="text-[9px] text-[var(--color-text-muted)]">Imagens</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
 
       </div>

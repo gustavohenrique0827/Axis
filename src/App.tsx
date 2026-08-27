@@ -120,7 +120,7 @@ function AppContent() {
 
   return (
     <>
-      {isAppRoute && <Toaster theme={theme} position="bottom-right" />}
+      {isAppRoute && <Toaster theme={theme} position="bottom-right" richColors closeButton />}
       <Routes>
         <Route path="/" element={<Navigate to="/app" replace />} />
         <Route path="/landing" element={<LandingPage />} />

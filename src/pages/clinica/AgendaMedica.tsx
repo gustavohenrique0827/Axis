@@ -9,6 +9,7 @@ import { getAccessToken } from "../../lib/google-auth";
 import { toast } from "sonner";
 import { AgendaSidebar } from "./components/AgendaMedica/AgendaSidebar";
 import { AgendaDetailPanel } from "./components/AgendaMedica/AgendaDetailPanel";
+import { BookingModal } from "./components/BookingModal";
 
 const hourlySlots = [
   '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
@@ -23,7 +24,7 @@ type Appointment = {
 };
 
 export default function AgendaClinica() {
-  const { appointments, addAppointment, squads } = useData();
+  const { appointments, addAppointment, squads, leads, addTask } = useData();
 
   const doctors = useMemo(() => {
     if (!squads || squads.length === 0) return [];
@@ -41,6 +42,7 @@ export default function AgendaClinica() {
   const [selectedDrs, setSelectedDrs] = useState<string[]>([]);
   const [selectedAptId, setSelectedAptId] = useState<string | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
 
   useEffect(() => {
     if (doctors.length > 0 && selectedDrs.length === 0) setSelectedDrs(doctors.map(d => d.id));
@@ -79,11 +81,11 @@ export default function AgendaClinica() {
 
   const getStatusStyle = (status: Appointment['status'] | string) => {
     switch (status) {
-      case 'Finalizado': return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
-      case 'Em Atendimento': return 'bg-blue-500/10 text-blue-400 border-blue-500/30 ring-1 ring-blue-500/50 animate-pulse';
-      case 'Atrasado': return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
-      case 'Aguardando': return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
-      default: return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+      case 'Finalizado': return 'bg-slate-500/10 text-[var(--color-text-muted)] border-[var(--color-border-default)]';
+      case 'Em Atendimento': return 'bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] border-[var(--color-primary-blue)]/30';
+      case 'Atrasado': return 'bg-rose-500/10 text-rose-500 border-rose-500/20';
+      case 'Aguardando': return 'bg-amber-500/10 text-amber-500 border-amber-500/20';
+      default: return 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20';
     }
   };
 
@@ -92,18 +94,30 @@ export default function AgendaClinica() {
       title="Agenda Médica"
       description="Sincronização de horários, gestão de salas e fluxo de pacientes por unidade."
       actions={
-        <div className="flex items-center gap-4">
-          <Button onClick={handleSyncCalendar} disabled={isSyncing} variant="outline" className="border-white/10 bg-[var(--color-surface)] text-white rounded-2xl h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2 hover:bg-white/5 active:scale-95 transition-all">
-            {isSyncing ? <RefreshCw className="w-4 h-4 animate-spin text-blue-400" /> : <CalendarDays className="w-4 h-4 text-blue-400" />}
-            Sincronizar Google Calendar
+        <div className="flex items-center gap-3 flex-wrap">
+          <Button
+            onClick={handleSyncCalendar}
+            disabled={isSyncing}
+            variant="outline"
+            className="h-9 px-4 text-xs font-bold gap-1.5"
+          >
+            {isSyncing ? <RefreshCw className="w-3.5 h-3.5 animate-spin text-[var(--color-primary-blue)]" /> : <CalendarDays className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" />}
+            Sincronizar Google
           </Button>
-          <div className="flex bg-[var(--color-surface)] border border-white/5 p-1 rounded-2xl shadow-inner h-11">
-            <Button variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-white/5"><ChevronLeft className="w-5 h-5 text-slate-400" /></Button>
-            <div className="px-6 flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-white min-w-[150px] justify-center">28 Maio, 2026</div>
-            <Button variant="ghost" className="h-9 w-9 p-0 rounded-xl hover:bg-white/5"><ChevronRight className="w-5 h-5 text-slate-400" /></Button>
+
+          <div className="flex bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] p-0.5 rounded-[var(--radius-control)] h-9 items-center">
+            <Button variant="ghost" size="xs" className="h-7 w-7 p-0"><ChevronLeft className="w-4 h-4 text-[var(--color-text-muted)]" /></Button>
+            <div className="px-3 flex items-center text-xs font-bold text-[var(--color-text-primary)] min-w-[120px] justify-center">
+              Hoje
+            </div>
+            <Button variant="ghost" size="xs" className="h-7 w-7 p-0"><ChevronRight className="w-4 h-4 text-[var(--color-text-muted)]" /></Button>
           </div>
-          <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2 shadow-xl shadow-emerald-900/30 group">
-            <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" /> Novo Agendamento
+
+          <Button
+            onClick={() => setIsBookingOpen(true)}
+            className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
+          >
+            <Plus className="w-4 h-4" /> Novo Agendamento
           </Button>
         </div>
       }
@@ -118,55 +132,67 @@ export default function AgendaClinica() {
         />
 
         <div className="lg:col-span-3 space-y-6">
-          <Card className="bg-[var(--color-surface-elevated)]/80 border-white/5 overflow-hidden shadow-2xl">
-            <div className="flex items-center p-6 border-b border-white/5 bg-[var(--color-surface)]/50">
-              <div className="w-24 shrink-0 text-[10px] font-black text-slate-600 uppercase tracking-widest">Hora</div>
-              <div className="flex-1 text-[10px] font-black text-slate-600 uppercase tracking-widest pl-4">Paciente & Especialista</div>
-              <div className="hidden md:block w-32 text-center text-[10px] font-black text-slate-600 uppercase tracking-widest">Sala</div>
-              <div className="hidden md:block w-40 text-right text-[10px] font-black text-slate-600 uppercase tracking-widest">Status</div>
-              <div className="w-12" />
+          <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
+            <div className="flex items-center p-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]">
+              <div className="w-20 shrink-0 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Hora</div>
+              <div className="flex-1 text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider pl-4">Paciente & Especialista</div>
+              <div className="hidden md:block w-32 text-center text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Sala</div>
+              <div className="hidden md:block w-36 text-right text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">Status</div>
+              <div className="w-8" />
             </div>
-            <div className="grid grid-cols-1 divide-y divide-white/5 overflow-y-auto max-h-[800px] no-scrollbar">
+            <div className="grid grid-cols-1 divide-y divide-[var(--color-border-subtle)] overflow-y-auto max-h-[800px] scrollbar-thin">
               {hourlySlots.map((slot, i) => {
                 const apts = filteredAppointments.filter(a => a.time === slot);
                 return (
-                  <div key={i} className={`flex group min-h-[90px] relative transition-colors ${apts.length > 0 ? '' : 'hover:bg-white/[0.01]'}`}>
-                    <div className={`w-24 p-6 border-r border-white/5 flex flex-col items-center justify-center bg-[var(--color-surface)]/30 shrink-0 ${apts.length > 0 ? 'border-l-4 border-l-emerald-500/40' : ''}`}>
-                      <span className="text-base font-black text-white font-mono tracking-tighter">{slot}</span>
-                      <span className="text-[9px] text-slate-600 font-bold uppercase mt-1">30min</span>
+                  <div key={i} className={`flex group min-h-[80px] relative transition-colors ${apts.length > 0 ? '' : 'hover:bg-[var(--color-surface-sunken)]/40'}`}>
+                    <div className={`w-20 p-4 border-r border-[var(--color-border-subtle)] flex flex-col items-center justify-center bg-[var(--color-surface-sunken)]/30 shrink-0 ${apts.length > 0 ? 'border-l-4 border-l-[var(--color-primary-blue)]' : ''}`}>
+                      <span className="text-sm font-black text-[var(--color-text-primary)] font-mono">{slot}</span>
+                      <span className="text-[9px] text-[var(--color-text-faint)] font-medium mt-0.5">30min</span>
                     </div>
-                    <div className="flex-1 p-3 space-y-2">
+                    <div className="flex-1 p-2.5 space-y-2">
                       <AnimatePresence>
                         {apts.length > 0 ? apts.map(apt => (
-                          <motion.button key={apt.id} onClick={() => setSelectedAptId(apt.id)} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }}
-                            className={`w-full flex items-center justify-between p-4 rounded-2xl border transition-all text-left shadow-lg group/apt ${getStatusStyle(apt.status)}`}>
-                            <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center font-black text-xs">{apt.patient[0]}</div>
+                          <motion.button
+                            key={apt.id}
+                            type="button"
+                            onClick={() => setSelectedAptId(apt.id)}
+                            initial={{ opacity: 0, x: 10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className={`w-full flex items-center justify-between p-3 rounded-[var(--radius-control)] border transition-all text-left shadow-xs cursor-pointer ${getStatusStyle(apt.status)}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)] flex items-center justify-center font-bold text-xs text-[var(--color-text-primary)]">
+                                {apt.patient[0]}
+                              </div>
                               <div>
-                                <h4 className="text-sm font-black text-white group-hover/apt:underline">{apt.patient}</h4>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <span className="text-[10px] font-bold opacity-70 flex items-center gap-1 uppercase tracking-widest"><Stethoscope className="w-3 h-3" /> {apt.drName}</span>
-                                  <span className="w-1 h-1 rounded-full bg-white/10" />
-                                  <span className="text-[10px] font-medium opacity-60 italic">{apt.type}</span>
+                                <h4 className="text-xs font-bold text-[var(--color-text-primary)]">{apt.patient}</h4>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <span className="text-[10px] text-[var(--color-text-muted)] flex items-center gap-1">
+                                    <Stethoscope className="w-3 h-3 text-[var(--color-primary-blue)]" /> {apt.drName}
+                                  </span>
+                                  <span className="text-[10px] text-[var(--color-text-faint)]">• {apt.type}</span>
                                 </div>
                               </div>
                             </div>
-                            <div className="flex items-center gap-10">
-                              <div className="hidden md:flex flex-col items-center gap-1">
-                                <MapPin className="w-3 h-3 opacity-40" />
-                                <span className="text-[9px] font-black uppercase tracking-widest opacity-80">{apt.room}</span>
+                            <div className="flex items-center gap-6">
+                              <div className="hidden md:flex items-center gap-1 text-[10px] text-[var(--color-text-muted)]">
+                                <MapPin className="w-3 h-3 text-[var(--color-text-faint)]" />
+                                <span className="font-medium">{apt.room}</span>
                               </div>
-                              <div className="hidden md:flex items-center gap-3 w-32 justify-end">
-                                {apt.status === 'Confirmado' && <CheckCircle2 className="w-4 h-4" />}
-                                {apt.status === 'Atrasado' && <AlertCircle className="w-4 h-4 animate-pulse text-rose-500" />}
-                                {apt.status === 'Em Atendimento' && <Activity className="w-4 h-4 animate-pulse text-blue-500" />}
-                                <span className="text-[10px] font-black uppercase tracking-widest">{apt.status}</span>
+                              <div className="hidden md:flex items-center gap-1.5 w-28 justify-end text-xs font-bold">
+                                {apt.status === 'Confirmado' && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />}
+                                {apt.status === 'Atrasado' && <AlertCircle className="w-3.5 h-3.5 text-rose-500" />}
+                                {apt.status === 'Em Atendimento' && <Activity className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" />}
+                                <span>{apt.status}</span>
                               </div>
-                              <button className="p-2 hover:bg-white/10 rounded-xl transition-colors"><MoreVertical className="w-4 h-4 opacity-40 group-hover/apt:opacity-100" /></button>
                             </div>
                           </motion.button>
                         )) : (
-                          <button className="w-full h-full border border-dashed border-white/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-3 text-[10px] font-black text-slate-500 uppercase tracking-widest hover:bg-white/5 hover:border-white/10 active:scale-[0.99]">
+                          <button
+                            type="button"
+                            onClick={() => setIsBookingOpen(true)}
+                            className="w-full h-full min-h-[50px] border border-dashed border-[var(--color-border-subtle)] rounded-[var(--radius-control)] opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center gap-2 text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider hover:bg-[var(--color-surface-sunken)] hover:border-[var(--color-border-default)] cursor-pointer bg-transparent"
+                          >
                             <Plus className="w-3.5 h-3.5" /> Agendar Horário vago
                           </button>
                         )}
@@ -181,6 +207,7 @@ export default function AgendaClinica() {
       </div>
 
       <AgendaDetailPanel selectedApt={selectedApt as Appointment | undefined} onClose={() => setSelectedAptId(null)} />
+      <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} leads={leads} addTask={addTask} />
     </PageContainer>
   );
 }
