@@ -121,13 +121,13 @@ export function Sidebar({
                       type="button"
                       className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5" : "gap-2.5 px-3 py-2"} text-xs font-bold rounded-[var(--radius-control)] transition-all cursor-pointer border-none text-left ${
                         isActive
-                          ? "bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] shadow-xs"
+                          ? "bg-[var(--color-primary-blue)] !text-white font-bold shadow-md shadow-blue-500/20"
                           : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]"
                       }`}
                     >
-                      <item.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? "text-[var(--color-primary-blue)]" : "text-[var(--color-text-faint)]"}`} />
+                      <item.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? "!text-white" : "text-[var(--color-text-faint)]"}`} />
                       {!isSidebarCollapsed && (
-                        <span className="truncate">{item.name}</span>
+                        <span className={`truncate ${isActive ? "!text-white" : ""}`}>{item.name}</span>
                       )}
                     </button>
                   );

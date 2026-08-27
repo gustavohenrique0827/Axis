@@ -576,13 +576,13 @@ html:not(.dark) th {
   @apply inline-flex items-center justify-center font-medium rounded-lg text-sm bg-rose-500/10 border border-rose-500/25 text-rose-400 hover:bg-rose-500/20 active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;
 }
 
-/* Ensure all blue background buttons and toggles always have pure white text */
-button[class*="bg-[#2563EB]"],
-button[class*="bg-[var(--color-primary-blue)]"],
-button[class*="bg-blue-600"],
-a[class*="bg-[#2563EB]"],
-a[class*="bg-[var(--color-primary-blue)]"],
-a[class*="bg-blue-600"],
+/* Ensure all solid blue background buttons and toggles always have pure white text */
+button[class*="bg-[#2563EB]"]:not([class*="/"]):not([class*="bg-[#2563EB]/"]),
+button[class*="bg-[var(--color-primary-blue)]"]:not([class*="/"]):not([class*="bg-[var(--color-primary-blue)]/"]),
+button[class*="bg-blue-600"]:not([class*="/"]):not([class*="bg-blue-600/"]),
+a[class*="bg-[#2563EB]"]:not([class*="/"]),
+a[class*="bg-[var(--color-primary-blue)]"]:not([class*="/"]),
+a[class*="bg-blue-600"]:not([class*="/"]),
 .btn-primary {
   color: #ffffff !important;
 }
