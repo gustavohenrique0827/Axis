@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Plus, Trash2, Settings2, DollarSign, Handshake, Receipt, Target, ArrowLeft, Info } from 'lucide-react';
 import { PageContainer } from '../../components/PageContainer';
 import { Button } from '../../components/ui/button';
+import { Card } from '../../components/ui/card';
 import { useOTEConfig, OTEProfile, CommissionRule, PartnershipRule, TaxRate } from './hooks/useOTEConfig';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
@@ -22,28 +23,28 @@ const NIVEIS = ['Aprendiz', 'Junior 1', 'Junior 2', 'Pleno', 'Senior'];
 const APLICA = ['total', 'variavel', 'acelerador'] as const;
 
 const CARGO_COLOR: Record<string, string> = {
-  Closer: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-  SDR: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
-  Gestor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
+  Closer: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  SDR: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
+  Gestor: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
 };
 
 function inp(cls = '') {
-  return `bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white outline-none focus:border-emerald-500/60 w-full transition-colors placeholder:text-slate-600 ${cls}`;
+  return `bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] w-full transition-all ${cls}`;
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{children}</label>;
+  return <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">{children}</label>;
 }
 
 function SectionHeader({ title, desc }: { title: string; desc: string }) {
   return (
-    <div className="flex items-start gap-3 p-5 border-b border-white/5">
-      <div className="p-2 rounded-xl bg-white/5 border border-white/10 mt-0.5">
-        <Info className="w-3.5 h-3.5 text-slate-500" />
+    <div className="flex items-start gap-3 p-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]">
+      <div className="p-2 rounded-xl bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] mt-0.5">
+        <Info className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
       </div>
       <div>
-        <h3 className="text-[11px] font-black text-white uppercase tracking-widest">{title}</h3>
-        <p className="text-[10px] text-slate-500 mt-0.5 font-medium">{desc}</p>
+        <h3 className="text-xs font-bold text-[var(--color-text-primary)]">{title}</h3>
+        <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 font-medium">{desc}</p>
       </div>
     </div>
   );
@@ -51,7 +52,7 @@ function SectionHeader({ title, desc }: { title: string; desc: string }) {
 
 function Th({ children, right }: { children?: React.ReactNode; right?: boolean }) {
   return (
-    <th className={`px-5 py-3.5 text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] whitespace-nowrap ${right ? 'text-right' : 'text-left'}`}>
+    <th className={`px-5 py-3 text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider whitespace-nowrap ${right ? 'text-right' : 'text-left'}`}>
       {children}
     </th>
   );
@@ -85,25 +86,25 @@ export default function FinanceiroConfiguracoes() {
       breadcrumb={[{ label: 'Financeiro', path: '/app/financeiro' }, { label: 'Comissões', path: '/app/financeiro/comissoes' }, { label: 'Configurações' }]}
       actions={
         <Link to="/app/financeiro/comissoes">
-          <Button variant="outline" className="h-11 gap-2 text-[10px] font-black uppercase tracking-widest border-white/10 bg-white/5 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl">
-            <ArrowLeft className="w-4 h-4" /> Voltar para Comissões
+          <Button variant="outline" className="h-9 px-4 text-xs font-bold gap-1.5 border-[var(--color-border-default)]">
+            <ArrowLeft className="w-3.5 h-3.5" /> Voltar para Comissões
           </Button>
         </Link>
       }
     >
-      <div className="space-y-5">
+      <div className="space-y-5 max-w-[1700px] mx-auto pb-12">
         {/* Horizontal section tabs */}
-        <div className="flex items-center gap-1.5 overflow-x-auto bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-1.5 shadow-xl shadow-black/10 scrollbar-none">
+        <div className="flex items-center gap-1.5 overflow-x-auto bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl p-1 shadow-sm scrollbar-none">
           {TABS.map(t => (
             <Link
               key={t.key}
               to={`/app/financeiro/configuracoes/${t.key}`}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wide whitespace-nowrap transition-all shrink-0 ${tab === t.key
-                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/25 shadow-sm shadow-emerald-500/10'
-                : 'text-slate-400 border border-transparent hover:text-white hover:bg-white/5'
+              className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-all shrink-0 ${tab === t.key
+                ? 'bg-[var(--color-primary-blue)] !text-white shadow-xs'
+                : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]'
                 }`}
             >
-              <t.icon className="w-4 h-4" />
+              <t.icon className="w-3.5 h-3.5" />
               {t.label}
             </Link>
           ))}
@@ -119,26 +120,26 @@ export default function FinanceiroConfiguracoes() {
         >
           {/* Section title bar */}
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-              <activeTab.icon className="w-4 h-4 text-emerald-400" />
+            <div className="p-2 rounded-xl bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] border border-[var(--color-primary-blue)]/20">
+              <activeTab.icon className="w-4 h-4" />
             </div>
             <div>
-              <h2 className="text-base font-black text-white uppercase tracking-widest leading-none">{activeTab.label}</h2>
-              <p className="text-[10px] text-slate-500 mt-0.5 font-medium">{activeTab.desc}</p>
+              <h2 className="text-sm font-bold text-[var(--color-text-primary)] leading-none">{activeTab.label}</h2>
+              <p className="text-xs text-[var(--color-text-muted)] mt-1">{activeTab.desc}</p>
             </div>
           </div>
 
           {/* ── PERFIS OTE ── */}
           {tab === 'perfis' && (
             <div className="space-y-4">
-              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
+              <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
                 <SectionHeader
                   title="Perfis cadastrados"
                   desc="Cada perfil define fixo, variável-alvo e acelerador por cargo + nível. O threshold é o % mínimo de atingimento para ganhar variável."
                 />
                 <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="border-b border-white/5">
+                  <table className="w-full text-xs">
+                    <thead className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]">
                       <tr>
                         <Th>Cargo</Th>
                         <Th>Nível</Th>
@@ -149,38 +150,38 @@ export default function FinanceiroConfiguracoes() {
                         <Th children={''}></Th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/[0.04]">
+                    <tbody className="divide-y divide-[var(--color-border-subtle)]">
                       {profiles.map(p => (
-                        <tr key={p.id} className="hover:bg-white/[0.02] transition-colors group">
-                          <td className="px-5 py-3.5">
-                            <span className={`text-[10px] font-black uppercase tracking-wide px-2.5 py-1 rounded-lg border ${CARGO_COLOR[p.cargo] || 'bg-white/5 text-slate-400 border-white/10'}`}>
+                        <tr key={p.id} className="hover:bg-[var(--color-surface-sunken)]/50 transition-colors group">
+                          <td className="px-5 py-3">
+                            <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${CARGO_COLOR[p.cargo] || 'bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)]'}`}>
                               {p.cargo}
                             </span>
                           </td>
-                          <td className="px-5 py-3.5 text-sm font-bold text-slate-400">{p.nivel}</td>
-                          <td className="px-5 py-3.5">
+                          <td className="px-5 py-3 font-semibold text-[var(--color-text-primary)]">{p.nivel}</td>
+                          <td className="px-5 py-3">
                             <input type="number" value={p.salarioFixo}
                               onChange={e => updateProfile(p.id, { salarioFixo: +e.target.value })}
                               className={inp('w-28')} />
                           </td>
-                          <td className="px-5 py-3.5">
+                          <td className="px-5 py-3">
                             <input type="number" value={p.variavelAlvo}
                               onChange={e => updateProfile(p.id, { variavelAlvo: +e.target.value })}
                               className={inp('w-28')} />
                           </td>
-                          <td className="px-5 py-3.5">
+                          <td className="px-5 py-3">
                             <input type="number" value={p.aceleradorPercent}
                               onChange={e => updateProfile(p.id, { aceleradorPercent: +e.target.value })}
                               className={inp('w-20')} />
                           </td>
-                          <td className="px-5 py-3.5">
+                          <td className="px-5 py-3">
                             <input type="number" value={p.thresholdMinimo}
                               onChange={e => updateProfile(p.id, { thresholdMinimo: +e.target.value })}
                               className={inp('w-20')} />
                           </td>
-                          <td className="px-5 py-3.5">
+                          <td className="px-5 py-3 text-right">
                             <button onClick={() => { removeProfile(p.id); toast.success('Perfil removido.'); }}
-                              className="p-1.5 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all rounded-lg hover:bg-white/5">
+                              className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </td>
@@ -189,75 +190,77 @@ export default function FinanceiroConfiguracoes() {
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </Card>
 
-              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
-                <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Plus className="w-3.5 h-3.5 text-emerald-400" /> Novo Perfil
+              <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] p-6 shadow-sm">
+                <h3 className="text-xs font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+                  <Plus className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" /> Novo Perfil OTE
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Cargo</Label>
                     <select value={pForm.cargo} onChange={e => setPForm(f => ({ ...f, cargo: e.target.value as any }))} className={inp()}>
                       {CARGOS.map(c => <option key={c}>{c}</option>)}
                     </select>
                   </div>
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Nível</Label>
                     <select value={pForm.nivel} onChange={e => setPForm(f => ({ ...f, nivel: e.target.value }))} className={inp()}>
                       {NIVEIS.map(n => <option key={n}>{n}</option>)}
                     </select>
                   </div>
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Fixo (R$)</Label>
                     <input type="number" value={pForm.salarioFixo} onChange={e => setPForm(f => ({ ...f, salarioFixo: +e.target.value }))} className={inp()} />
                   </div>
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Variável (R$)</Label>
                     <input type="number" value={pForm.variavelAlvo} onChange={e => setPForm(f => ({ ...f, variavelAlvo: +e.target.value }))} className={inp()} />
                   </div>
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Acelerador %</Label>
                     <input type="number" value={pForm.aceleradorPercent} onChange={e => setPForm(f => ({ ...f, aceleradorPercent: +e.target.value }))} className={inp()} />
                   </div>
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Threshold %</Label>
                     <input type="number" value={pForm.thresholdMinimo} onChange={e => setPForm(f => ({ ...f, thresholdMinimo: +e.target.value }))} className={inp()} />
                   </div>
                 </div>
-                <Button onClick={() => { addProfile(pForm); toast.success('Perfil OTE criado!'); }}
-                  className="mt-5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20">
-                  <Plus className="w-4 h-4" /> Adicionar Perfil
-                </Button>
-              </div>
+                <div className="mt-4 flex justify-end">
+                  <Button onClick={() => { addProfile(pForm); toast.success('Perfil OTE criado com sucesso!'); }}
+                    className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+                    <Plus className="w-3.5 h-3.5" /> Adicionar Perfil
+                  </Button>
+                </div>
+              </Card>
             </div>
           )}
 
           {/* ── REGRAS DE COMISSÃO ── */}
           {tab === 'comissao' && (
             <div className="space-y-4">
-              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
+              <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
                 <SectionHeader
                   title="Faixas de Comissionamento"
                   desc="Define o % de comissão pago conforme o atingimento de meta. Faixas avaliadas em ordem crescente."
                 />
                 <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="border-b border-white/5">
+                  <table className="w-full text-xs">
+                    <thead className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]">
                       <tr><Th>Nome da Faixa</Th><Th>Ating. Mín. %</Th><Th>Ating. Máx. %</Th><Th>% Comissão</Th><Th children={''}></Th></tr>
                     </thead>
-                    <tbody className="divide-y divide-white/[0.04]">
+                    <tbody className="divide-y divide-[var(--color-border-subtle)]">
                       {commRules.map(r => (
-                        <tr key={r.id} className="hover:bg-white/[0.02] transition-colors group">
-                          <td className="px-5 py-3.5 text-sm font-black text-white">{r.nome}</td>
-                          <td className="px-5 py-3.5 text-sm font-mono text-slate-400">{r.faixaMin}%</td>
-                          <td className="px-5 py-3.5 text-sm font-mono text-slate-400">{r.faixaMax}%</td>
-                          <td className="px-5 py-3.5">
-                            <span className="text-sm font-black text-emerald-400">{r.percentComissao}%</span>
+                        <tr key={r.id} className="hover:bg-[var(--color-surface-sunken)]/50 transition-colors group">
+                          <td className="px-5 py-3 font-bold text-[var(--color-text-primary)]">{r.nome}</td>
+                          <td className="px-5 py-3 font-mono text-[var(--color-text-muted)]">{r.faixaMin}%</td>
+                          <td className="px-5 py-3 font-mono text-[var(--color-text-muted)]">{r.faixaMax}%</td>
+                          <td className="px-5 py-3">
+                            <span className="font-bold text-emerald-500">{r.percentComissao}%</span>
                           </td>
-                          <td className="px-5 py-3.5">
+                          <td className="px-5 py-3 text-right">
                             <button onClick={() => { removeCommRule(r.id); toast.success('Regra removida.'); }}
-                              className="p-1.5 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all rounded-lg hover:bg-white/5">
+                              className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </td>
@@ -266,64 +269,66 @@ export default function FinanceiroConfiguracoes() {
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </Card>
 
-              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
-                <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Plus className="w-3.5 h-3.5 text-emerald-400" /> Nova Faixa
+              <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] p-6 shadow-sm">
+                <h3 className="text-xs font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+                  <Plus className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" /> Nova Faixa
                 </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div className="space-y-1.5 col-span-2 md:col-span-1">
+                  <div className="col-span-2 md:col-span-1">
                     <Label>Nome</Label>
                     <input value={cForm.nome} onChange={e => setCForm(f => ({ ...f, nome: e.target.value }))} className={inp()} placeholder="Ex: Acelerador" />
                   </div>
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Mín. %</Label>
                     <input type="number" value={cForm.faixaMin} onChange={e => setCForm(f => ({ ...f, faixaMin: +e.target.value }))} className={inp()} />
                   </div>
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Máx. %</Label>
                     <input type="number" value={cForm.faixaMax} onChange={e => setCForm(f => ({ ...f, faixaMax: +e.target.value }))} className={inp()} />
                   </div>
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>% Comissão</Label>
                     <input type="number" value={cForm.percentComissao} onChange={e => setCForm(f => ({ ...f, percentComissao: +e.target.value }))} className={inp()} />
                   </div>
                 </div>
-                <Button onClick={() => { if (!cForm.nome) return toast.error('Informe o nome.'); addCommRule(cForm); toast.success('Faixa criada!'); }}
-                  className="mt-5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20">
-                  <Plus className="w-4 h-4" /> Adicionar Faixa
-                </Button>
-              </div>
+                <div className="mt-4 flex justify-end">
+                  <Button onClick={() => { if (!cForm.nome) return toast.error('Informe o nome.'); addCommRule(cForm); toast.success('Faixa criada!'); }}
+                    className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+                    <Plus className="w-3.5 h-3.5" /> Adicionar Faixa
+                  </Button>
+                </div>
+              </Card>
             </div>
           )}
 
           {/* ── REGRAS DE PARCERIA ── */}
           {tab === 'parceria' && (
             <div className="space-y-4">
-              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
+              <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
                 <SectionHeader
                   title="Regras de Parceria"
                   desc="Co-vendas, indicações e splits entre SDR e Closer. Aplicados sobre o valor da comissão gerada."
                 />
                 <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="border-b border-white/5">
+                  <table className="w-full text-xs">
+                    <thead className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]">
                       <tr><Th>Tipo</Th><Th>Descrição</Th><Th>Split %</Th><Th children={''}></Th></tr>
                     </thead>
-                    <tbody className="divide-y divide-white/[0.04]">
+                    <tbody className="divide-y divide-[var(--color-border-subtle)]">
                       {partRules.map(r => (
-                        <tr key={r.id} className="hover:bg-white/[0.02] transition-colors group">
-                          <td className="px-5 py-3.5">
-                            <span className="text-[10px] font-black uppercase tracking-wide px-2.5 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                        <tr key={r.id} className="hover:bg-[var(--color-surface-sunken)]/50 transition-colors group">
+                          <td className="px-5 py-3">
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] border border-[var(--color-primary-blue)]/20">
                               {r.tipo}
                             </span>
                           </td>
-                          <td className="px-5 py-3.5 text-sm text-slate-400">{r.descricao}</td>
-                          <td className="px-5 py-3.5 text-sm font-black text-violet-400">{r.percentSplit}%</td>
-                          <td className="px-5 py-3.5">
+                          <td className="px-5 py-3 text-[var(--color-text-muted)]">{r.descricao}</td>
+                          <td className="px-5 py-3 font-bold text-purple-500">{r.percentSplit}%</td>
+                          <td className="px-5 py-3 text-right">
                             <button onClick={() => { removePartRule(r.id); toast.success('Regra removida.'); }}
-                              className="p-1.5 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all rounded-lg hover:bg-white/5">
+                              className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </td>
@@ -332,60 +337,62 @@ export default function FinanceiroConfiguracoes() {
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </Card>
 
-              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
-                <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Plus className="w-3.5 h-3.5 text-emerald-400" /> Nova Regra
+              <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] p-6 shadow-sm">
+                <h3 className="text-xs font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+                  <Plus className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" /> Nova Regra
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Tipo</Label>
                     <input value={prForm.tipo} onChange={e => setPrForm(f => ({ ...f, tipo: e.target.value }))} className={inp()} placeholder="Ex: Co-venda" />
                   </div>
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Descrição</Label>
                     <input value={prForm.descricao} onChange={e => setPrForm(f => ({ ...f, descricao: e.target.value }))} className={inp()} placeholder="Breve explicação" />
                   </div>
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Split %</Label>
                     <input type="number" value={prForm.percentSplit} onChange={e => setPrForm(f => ({ ...f, percentSplit: +e.target.value }))} className={inp()} />
                   </div>
                 </div>
-                <Button onClick={() => { if (!prForm.tipo) return toast.error('Informe o tipo.'); addPartRule(prForm); toast.success('Regra criada!'); }}
-                  className="mt-5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20">
-                  <Plus className="w-4 h-4" /> Adicionar Regra
-                </Button>
-              </div>
+                <div className="mt-4 flex justify-end">
+                  <Button onClick={() => { if (!prForm.tipo) return toast.error('Informe o tipo.'); addPartRule(prForm); toast.success('Regra criada!'); }}
+                    className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+                    <Plus className="w-3.5 h-3.5" /> Adicionar Regra
+                  </Button>
+                </div>
+              </Card>
             </div>
           )}
 
           {/* ── TAXAS E DEDUÇÕES ── */}
           {tab === 'taxas' && (
             <div className="space-y-4">
-              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden">
+              <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
                 <SectionHeader
                   title="Taxas e Deduções"
                   desc="INSS, IR e outros descontos aplicados sobre o total OTE ou componentes individuais."
                 />
                 <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="border-b border-white/5">
+                  <table className="w-full text-xs">
+                    <thead className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]">
                       <tr><Th>Nome</Th><Th>% Dedução</Th><Th>Aplica em</Th><Th children={''}></Th></tr>
                     </thead>
-                    <tbody className="divide-y divide-white/[0.04]">
+                    <tbody className="divide-y divide-[var(--color-border-subtle)]">
                       {taxRates.map(t => (
-                        <tr key={t.id} className="hover:bg-white/[0.02] transition-colors group">
-                          <td className="px-5 py-3.5 text-sm font-black text-white">{t.nome}</td>
-                          <td className="px-5 py-3.5 text-sm font-black text-rose-400">{t.percent}%</td>
-                          <td className="px-5 py-3.5">
-                            <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-slate-400">
+                        <tr key={t.id} className="hover:bg-[var(--color-surface-sunken)]/50 transition-colors group">
+                          <td className="px-5 py-3 font-bold text-[var(--color-text-primary)]">{t.nome}</td>
+                          <td className="px-5 py-3 font-bold text-rose-500">{t.percent}%</td>
+                          <td className="px-5 py-3">
+                            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)]">
                               {t.aplicaEm}
                             </span>
                           </td>
-                          <td className="px-5 py-3.5">
+                          <td className="px-5 py-3 text-right">
                             <button onClick={() => { removeTaxRate(t.id); toast.success('Taxa removida.'); }}
-                              className="p-1.5 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all rounded-lg hover:bg-white/5">
+                              className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </td>
@@ -394,52 +401,54 @@ export default function FinanceiroConfiguracoes() {
                     </tbody>
                   </table>
                 </div>
-              </div>
+              </Card>
 
-              <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-6">
-                <h3 className="text-[11px] font-black text-white uppercase tracking-widest mb-4 flex items-center gap-2">
-                  <Plus className="w-3.5 h-3.5 text-emerald-400" /> Nova Taxa
+              <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] p-6 shadow-sm">
+                <h3 className="text-xs font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+                  <Plus className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" /> Nova Taxa
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Nome</Label>
                     <input value={tForm.nome} onChange={e => setTForm(f => ({ ...f, nome: e.target.value }))} className={inp()} placeholder="Ex: INSS" />
                   </div>
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>% Dedução</Label>
                     <input type="number" value={tForm.percent} onChange={e => setTForm(f => ({ ...f, percent: +e.target.value }))} className={inp()} />
                   </div>
-                  <div className="space-y-1.5">
+                  <div>
                     <Label>Aplica em</Label>
                     <select value={tForm.aplicaEm} onChange={e => setTForm(f => ({ ...f, aplicaEm: e.target.value as any }))} className={inp()}>
                       {APLICA.map(a => <option key={a} value={a}>{a}</option>)}
                     </select>
                   </div>
                 </div>
-                <Button onClick={() => { if (!tForm.nome) return toast.error('Informe o nome.'); addTaxRate(tForm); toast.success('Taxa criada!'); }}
-                  className="mt-5 h-10 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20">
-                  <Plus className="w-4 h-4" /> Adicionar Taxa
-                </Button>
-              </div>
+                <div className="mt-4 flex justify-end">
+                  <Button onClick={() => { if (!tForm.nome) return toast.error('Informe o nome.'); addTaxRate(tForm); toast.success('Taxa criada!'); }}
+                    className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+                    <Plus className="w-3.5 h-3.5" /> Adicionar Taxa
+                  </Button>
+                </div>
+              </Card>
             </div>
           )}
 
           {/* ── METAS ── */}
           {tab === 'metas' && (
-            <div className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl p-12 flex flex-col items-center justify-center text-center gap-5">
-              <div className="p-5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
-                <Target className="w-8 h-8 text-emerald-400" />
+            <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl p-12 flex flex-col items-center justify-center text-center gap-4 shadow-sm">
+              <div className="p-4 rounded-2xl bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] border border-[var(--color-primary-blue)]/20">
+                <Target className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-base font-black text-white uppercase tracking-widest">Gerenciar Metas</h3>
-                <p className="text-sm text-slate-500 max-w-sm mt-2">As metas individuais e de squad são configuradas no módulo de Metas do Financeiro. Clique abaixo para acessar.</p>
+                <h3 className="text-base font-bold text-[var(--color-text-primary)]">Gerenciar Metas do Time</h3>
+                <p className="text-xs text-[var(--color-text-muted)] max-w-sm mt-1">As metas individuais e de squad são configuradas no módulo de Metas do Financeiro.</p>
               </div>
               <Link to="/app/financeiro/metas">
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest h-11 px-6 rounded-xl shadow-lg shadow-emerald-500/20">
-                  <Target className="w-4 h-4" /> Abrir Módulo de Metas
+                <Button className="h-9 px-5 text-xs font-bold gap-1.5 shadow-xs">
+                  <Target className="w-3.5 h-3.5" /> Abrir Módulo de Metas
                 </Button>
               </Link>
-            </div>
+            </Card>
           )}
         </motion.div>
       </div>

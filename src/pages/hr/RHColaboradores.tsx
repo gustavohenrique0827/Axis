@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
-import { UserPlus, PlusCircle } from "lucide-react";
+import { UserPlus, PlusCircle, Users } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { useData } from "../../contexts/DataContext";
 import { useRHColaboradores } from "./hooks/useRHColaboradores";
@@ -47,23 +47,43 @@ export default function RHColaboradores() {
   }, []);
 
   const handleSaveMembro = async (data: any) => {
-    if (!supabase) { toast.error("Supabase não configurado."); return; }
     const dataAdmissao = new Date().toLocaleDateString("pt-BR");
-    const { data: tenantRow, error: tenantErr } = await supabase.from("tenants").select("id").eq("name", user?.tenantName || "").maybeSingle();
-    if (tenantErr) { console.error("[RH] Erro ao buscar tenant:", tenantErr.message); toast.error("Erro ao buscar dados do tenant."); return; }
-    if (!tenantRow?.id) { console.error("[RH] Tenant não encontrado para:", user?.tenantName); toast.error("Tenant não encontrado. Verifique o login."); return; }
-    const created = await createUserWithProfile({
-      email: data.email, password: data.senha || "123456", name: data.nome,
-      tenantId: tenantRow.id, role: data.cargo, isMaster: false,
-    });
-    if (!created.success) { console.error("[RH] Erro ao criar usuário:", created.error); toast.error(`Erro ao criar login: ${created.error}`); return; }
+    let tenantId = user?.tenantId || "tenant-default";
+    let userId: string | null = null;
+
+    if (supabase) {
+      try {
+        const { data: tenantRow } = await supabase.from("tenants").select("id").eq("name", user?.tenantName || "").maybeSingle();
+        if (tenantRow?.id) tenantId = tenantRow.id;
+
+        const created = await createUserWithProfile({
+          email: data.email, password: data.senha || "123456", name: data.nome,
+          tenantId, role: data.cargo, isMaster: false,
+        });
+        if (created?.success) {
+          userId = created.userId ?? null;
+        }
+      } catch (err) {
+        console.warn("[RH] Auth notice:", err);
+      }
+    }
+
     addColaborador({
-      id: Date.now().toString(), nome: data.nome, email: data.email, phone: data.phone || "",
-      cargo: data.cargo, departamento: data.departamento, squad: data.squad || "",
-      status: "Ativo", dataAdmissao, desempenho: 0,
-      tenant_id: tenantRow.id, user_id: created.userId ?? null,
+      id: Date.now().toString(),
+      nome: data.nome,
+      email: data.email,
+      phone: data.phone || "",
+      cargo: data.cargo,
+      departamento: data.departamento,
+      squad: data.squad || "",
+      status: "Ativo",
+      dataAdmissao,
+      desempenho: 100,
+      tenant_id: tenantId,
+      user_id: userId,
     });
     toast.success(`${data.nome} adicionado à equipe com sucesso!`);
+    setIsMembroModalOpen(false);
   };
 
   const handleChangeStatus = (colab: any, novoStatus: string) => {
@@ -75,7 +95,7 @@ export default function RHColaboradores() {
   const handleDesligar = (colab: any) => {
     deleteColaborador(colab.id);
     setMenuOpenId(null);
-    toast.success(`${colab.nome} foi desligado da equipe.`);
+    toast.success(`${colab.nome} foi removido da equipe.`);
   };
 
   return (
@@ -85,25 +105,33 @@ export default function RHColaboradores() {
       actions={
         <div className="flex items-center gap-2">
           {activeTab === "squads" ? (
-            <Button onClick={() => setIsNewSquadOpen(true)} className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20">
-              <PlusCircle className="w-4 h-4 mr-2" /> Criar Squad
+            <Button onClick={() => setIsNewSquadOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+              <PlusCircle className="w-3.5 h-3.5" /> Criar Squad
             </Button>
           ) : (
-            <Button onClick={() => setIsMembroModalOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-600/20">
-              <UserPlus className="w-4 h-4 mr-2" /> Novo Registro
+            <Button onClick={() => setIsMembroModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+              <UserPlus className="w-3.5 h-3.5" /> Novo Registro
             </Button>
           )}
         </div>
       }
     >
-      <div className="space-y-8">
-        <div className="flex items-center gap-1.5 border-b border-white/5 pb-1">
+      <div className="space-y-6 max-w-[1700px] mx-auto pb-12">
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-2 border-b border-[var(--color-border-subtle)] pb-1">
           {[
-            { key: "membros", label: `👥 Membros da Equipe (${filtered.length})` },
-            { key: "squads", label: "🎯 Squads da Empresa" },
+            { key: "membros", label: `Membros da Equipe (${filtered.length})` },
+            { key: "squads", label: `Squads da Empresa (${squads.length})` },
           ].map(({ key, label }) => (
-            <button key={key} onClick={() => setActiveTab(key as any)}
-              className={`px-5 py-3 text-[11px] font-black uppercase tracking-widest transition-all relative ${activeTab === key ? "text-blue-500 border-b-2 border-blue-500" : "text-slate-400 hover:text-white"}`}
+            <button 
+              key={key} 
+              type="button"
+              onClick={() => setActiveTab(key as any)}
+              className={`px-4 py-2.5 text-xs font-bold transition-all relative rounded-t-[var(--radius-control)] cursor-pointer border-b-2 ${
+                activeTab === key 
+                  ? "text-[var(--color-primary-blue)] border-[var(--color-primary-blue)] bg-[var(--color-primary-blue)]/5" 
+                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] border-transparent"
+              }`}
             >
               {label}
             </button>

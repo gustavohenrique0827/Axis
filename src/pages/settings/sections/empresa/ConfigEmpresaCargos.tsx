@@ -7,9 +7,9 @@ import { toast } from "sonner";
 import { CargoModal } from "./CargoModal";
 
 const NIVEL_COLORS: Record<string, string> = {
-  "Estratégico": "text-purple-400 bg-purple-500/10 border-purple-500/20",
-  "Tático": "text-blue-400 bg-blue-500/10 border-blue-500/20",
-  "Operacional": "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+  "Estratégico": "text-purple-500 bg-purple-500/10 border-purple-500/20",
+  "Tático": "text-blue-500 bg-blue-500/10 border-blue-500/20",
+  "Operacional": "text-emerald-500 bg-emerald-500/10 border-emerald-500/20",
 };
 
 type CargoFormData = { nome: string; nivel: string; descricao: string };
@@ -31,48 +31,68 @@ export function ConfigEmpresaCargos() {
   };
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl space-y-6 animate-in fade-in duration-300 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Cargos</h1>
-          <p className="text-sm text-slate-400">Cadastre os cargos da empresa.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)] flex items-center gap-2">
+            Cargos & Estrutura <Briefcase className="w-5 h-5 text-[var(--color-primary-blue)]" />
+          </h1>
+          <p className="text-sm text-[var(--color-text-muted)]">Cadastre e estruture os cargos hierárquicos da empresa.</p>
         </div>
-        <Button onClick={() => { setEditingCargo(null); setIsModalOpen(true); }} className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 shadow-lg shadow-blue-500/20">
-          <Plus className="w-4 h-4 mr-2" /> Novo Cargo
+        <Button 
+          onClick={() => { setEditingCargo(null); setIsModalOpen(true); }} 
+          className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
+        >
+          <Plus className="w-3.5 h-3.5" /> Novo Cargo
         </Button>
       </div>
 
       {cargos.length === 0 ? (
-        <Card className="p-8 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-col items-center justify-center text-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
-            <Briefcase className="w-6 h-6 text-slate-500" />
+        <Card className="p-12 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] flex flex-col items-center justify-center text-center gap-3">
+          <div className="w-12 h-12 rounded-2xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] flex items-center justify-center text-[var(--color-text-muted)]">
+            <Briefcase className="w-6 h-6" />
           </div>
-          <p className="text-slate-400 text-sm">Nenhum cargo cadastrado ainda.</p>
-          <p className="text-slate-500 text-xs">Clique em "Novo Cargo" para começar.</p>
+          <p className="text-[var(--color-text-primary)] font-bold text-sm">Nenhum cargo cadastrado ainda.</p>
+          <p className="text-[var(--color-text-muted)] text-xs">Clique em "Novo Cargo" para começar a estruturar sua equipe.</p>
         </Card>
       ) : (
         <div className="grid gap-3">
           {cargos.map((cargo) => {
             const nivelClass = NIVEL_COLORS[cargo.nivel as string] ?? NIVEL_COLORS["Operacional"];
             return (
-              <Card key={cargo.id} className="px-5 py-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex items-center gap-4">
-                <div className="w-9 h-9 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                  <Briefcase className="w-4 h-4 text-slate-400" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-bold text-white text-sm">{cargo.nome}</span>
-                    <span className={`text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border ${nivelClass}`}>
-                      {cargo.nivel || "Operacional"}
-                    </span>
+              <Card key={cargo.id} className="px-5 py-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] flex items-center justify-between gap-4 shadow-sm">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] flex items-center justify-center shrink-0">
+                    <Briefcase className="w-4 h-4" />
                   </div>
-                  {cargo.descricao && <p className="text-xs text-slate-500 mt-1 truncate">{cargo.descricao}</p>}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-[var(--color-text-primary)] text-sm">{cargo.nome}</span>
+                      <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${nivelClass}`}>
+                        {cargo.nivel || "Operacional"}
+                      </span>
+                    </div>
+                    {cargo.descricao && <p className="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">{cargo.descricao}</p>}
+                  </div>
                 </div>
+
                 <div className="flex items-center gap-1 shrink-0">
-                  <Button variant="ghost" size="icon" onClick={() => { setEditingCargo(cargo); setIsModalOpen(true); }} className="w-8 h-8 text-slate-400 hover:text-white hover:bg-white/5 rounded-lg">
+                  <Button 
+                    variant="ghost" 
+                    size="xs" 
+                    onClick={() => { setEditingCargo(cargo); setIsModalOpen(true); }} 
+                    className="h-8 w-8 p-0"
+                    title="Editar cargo"
+                  >
                     <Pencil className="w-3.5 h-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => { deleteCargo(cargo.id); toast.success(`Cargo "${cargo.nome}" removido.`); }} className="w-8 h-8 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg">
+                  <Button 
+                    variant="ghost" 
+                    size="xs" 
+                    onClick={() => { deleteCargo(cargo.id); toast.success(`Cargo "${cargo.nome}" removido.`); }} 
+                    className="h-8 w-8 p-0 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10"
+                    title="Excluir cargo"
+                  >
                     <Trash2 className="w-3.5 h-3.5" />
                   </Button>
                 </div>

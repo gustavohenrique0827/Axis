@@ -1,13 +1,14 @@
 import { Card } from "../../components/ui/card";
-import { Download, Filter, Percent, DollarSign, Calendar, RefreshCw, BarChart3, Presentation, PiggyBank, ArrowDownRight, ArrowUpRight } from "lucide-react";
+import { Download, Percent, DollarSign, Calendar, RefreshCw, BarChart3, PiggyBank } from "lucide-react";
 import { useData } from "../../contexts/DataContext";
 import { useMemo, useState, useEffect } from "react";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
 import { PageContainer } from "../../components/PageContainer";
+import { Button } from "../../components/ui/button";
 import { toast } from "sonner";
 
 export default function FinanceiroDRE() {
-  const { financeEntries, contracts } = useData();
+  const { financeEntries } = useData();
 
   // Load parameter inputs from local storage or defaults
   const [impostoPct, setImpostoPct] = useState(() => {
@@ -39,35 +40,27 @@ export default function FinanceiroDRE() {
 
   // Aggregate current actuals from the data provider
   const parsedData = useMemo(() => {
-    // Current total of paid incoming entries
     const receitaBrutaPaid = financeEntries
       .filter(f => f.type === "Receber" && f.status === "Pago")
       .reduce((sum, f) => sum + f.value, 0);
 
-    // Sum of incoming pending/a vencer entries (for projection calculations)
-    const receitaBrutaPending = financeEntries
-      .filter(f => f.type === "Receber" && f.status === "A Vencer")
-      .reduce((sum, f) => sum + f.value, 0);
-
     const finalReceitaBruta = receitaBrutaPaid;
 
-    // Apply period scaling factors
     const scaleFactor = period === "mensal" ? 1 : period === "trimestral" ? 3 : 12;
     const scaledReceitaBruta = finalReceitaBruta * scaleFactor;
 
-    // Direct calculated deductions
     const impostos = scaledReceitaBruta * (impostoPct / 100);
     const receitaLiquida = scaledReceitaBruta - impostos;
     const cpv = receitaLiquida * (cpvPct / 100);
     const lucroBruto = receitaLiquida - cpv;
 
-    // Scaled expenses
-    const pessoal = despesaPessoal * scaleFactor;
-    const marketing = despesaMarketing * scaleFactor;
-    const admin = despesaAdmin * scaleFactor;
-    const totalDespesasOperacionais = pessoal + marketing + admin;
+    const fixedExpensesPaid = financeEntries
+      .filter(f => f.type === "Pagar" && f.status === "Pago")
+      .reduce((sum, f) => sum + f.value, 0) * scaleFactor;
 
-    const ebitda = lucroBruto - totalDespesasOperacionais;
+    const despesasOp = fixedExpensesPaid + (despesaPessoal + despesaMarketing + despesaAdmin) * scaleFactor;
+    const ebitda = lucroBruto - despesasOp;
+    const lucroLiquido = ebitda;
 
     return {
       receitaBruta: scaledReceitaBruta,
@@ -75,48 +68,40 @@ export default function FinanceiroDRE() {
       receitaLiquida,
       cpv,
       lucroBruto,
-      pessoal,
-      marketing,
-      admin,
-      totalDespesasOperacionais,
+      despesasOp,
       ebitda,
+      lucroLiquido
     };
   }, [financeEntries, impostoPct, cpvPct, despesaPessoal, despesaMarketing, despesaAdmin, period]);
 
-  const currencyFormat = (val: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-      maximumFractionDigits: 0
-    }).format(val);
+  const fmt = (v: number) => {
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
   };
 
-  const dreLines = [
-    { name: "Receita Operacional Bruta", value: currencyFormat(parsedData.receitaBruta), isTotal: true },
-    { name: `(-) Impostos e Deduções (${impostoPct}%)`, value: `(${currencyFormat(parsedData.impostos)})`, isSub: true, indent: true },
-    { name: "Receita Operacional Líquida", value: currencyFormat(parsedData.receitaLiquida), isTotal: true },
-    { name: `(-) Custos dos Serviços / CPV (${cpvPct}%)`, value: `(${currencyFormat(parsedData.cpv)})`, isSub: true, indent: true },
-    { name: "Lucro Bruto", value: currencyFormat(parsedData.lucroBruto), isTotal: true },
-    { name: "(-) Despesas Operacionais", value: `(${currencyFormat(parsedData.totalDespesasOperacionais)})`, isSub: true, indent: true },
-    { name: "   - Despesas com Pessoal", value: `(${currencyFormat(parsedData.pessoal)})`, indent: true },
-    { name: "   - Despesas de Marketing (SDR/IA/Anúncios)", value: `(${currencyFormat(parsedData.marketing)})`, indent: true },
-    { name: "   - Despesas Administrativas Geral", value: `(${currencyFormat(parsedData.admin)})`, indent: true },
-    { name: "Lucro Operacional (EBITDA)", value: currencyFormat(parsedData.ebitda), isTotal: true, isEbitda: true },
+  const chartData = [
+    { name: "Receita Bruta", Valor: Math.max(0, parsedData.receitaBruta), fill: "#2563EB" },
+    { name: "Receita Líquida", Valor: Math.max(0, parsedData.receitaLiquida), fill: "#3b82f6" },
+    { name: "Lucro Bruto", Valor: Math.max(0, parsedData.lucroBruto), fill: "#10b981" },
+    { name: "EBITDA", Valor: Math.max(0, parsedData.ebitda), fill: "#8b5cf6" },
   ];
 
-  // Dummy monthly projection charts using scaled data
-  const chartData = useMemo(() => {
-    const factor = period === "mensal" ? 1 : period === "trimestral" ? 3 : 12;
-    return [
-      { name: "Receita Bruta", Valor: parsedData.receitaBruta, fill: "#2563EB" },
-      { name: "Margem CPV", Valor: parsedData.lucroBruto, fill: "#10B981" },
-      { name: "EBITDA", Valor: parsedData.ebitda, fill: parsedData.ebitda >= 0 ? "#8B5CF6" : "#EF4444" }
-    ];
-  }, [parsedData, period]);
+  const dreLines = [
+    { name: "1. RECEITA OPERACIONAL BRUTA", value: fmt(parsedData.receitaBruta), isTotal: true },
+    { name: "(-) Impostos sobre Vendas", value: `(${fmt(parsedData.impostos)})`, isSub: true, indent: true },
+    { name: "2. RECEITA OPERACIONAL LÍQUIDA", value: fmt(parsedData.receitaLiquida), isTotal: true },
+    { name: "(-) Custos dos Produtos / Serviços (CPV)", value: `(${fmt(parsedData.cpv)})`, isSub: true, indent: true },
+    { name: "3. LUCRO BRUTO", value: fmt(parsedData.lucroBruto), isTotal: true },
+    { name: "(-) Despesas com Pessoal & Folha", value: `(${fmt(despesaPessoal * (period === 'mensal' ? 1 : period === 'trimestral' ? 3 : 12))})`, isSub: true, indent: true },
+    { name: "(-) Despesas com Marketing & Tráfego", value: `(${fmt(despesaMarketing * (period === 'mensal' ? 1 : period === 'trimestral' ? 3 : 12))})`, isSub: true, indent: true },
+    { name: "(-) Despesas Administrativas & Infra", value: `(${fmt(despesaAdmin * (period === 'mensal' ? 1 : period === 'trimestral' ? 3 : 12))})`, isSub: true, indent: true },
+    { name: "4. DESPESAS OPERACIONAIS TOTAIS", value: `(${fmt(parsedData.despesasOp)})`, isTotal: true },
+    { name: "5. EBITDA / LAJIDA", value: fmt(parsedData.ebitda), isTotal: true, isEbitda: true },
+    { name: "6. RESULTADO LÍQUIDO DO EXERCÍCIO", value: fmt(parsedData.lucroLiquido), isTotal: true },
+  ];
 
   const handleExportXLS = () => {
-    const csvContent = "data:text/csv;charset=utf-8,\uFEFF" 
-      + ["Linha no DRE;Valor Calculado"].join("\r\n") + "\r\n"
+    const csvContent = "data:text/csv;charset=utf-8,"
+      + "Linha DRE;Valor\r\n"
       + dreLines.map(line => `"${line.name.trim()}";"${line.value}"`).join("\r\n");
 
     const encodedUri = encodeURI(csvContent);
@@ -143,8 +128,8 @@ export default function FinanceiroDRE() {
       title="DRE Gerencial Axis"
       description="Demonstrativo de Resultados do Exercício gerado em tempo real com apuração de fluxo de caixa e filtros inteligentes."
       actions={
-        <div className="flex gap-2 flex-wrap">
-          <div className="flex bg-white/5 border border-white/10 rounded-xl p-1 gap-1 h-11">
+        <div className="flex gap-2 flex-wrap items-center">
+          <div className="flex bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] p-0.5 gap-1 h-9">
             {[
               { id: "mensal", label: "Mensal" },
               { id: "trimestral", label: "Trimestral" },
@@ -152,9 +137,10 @@ export default function FinanceiroDRE() {
             ].map(p => (
               <button
                 key={p.id}
+                type="button"
                 onClick={() => setPeriod(p.id as any)}
-                className={`px-4 text-[10px] uppercase font-black tracking-wider rounded-lg transition-all cursor-pointer ${
-                  period === p.id ? "bg-blue-600 text-white font-bold" : "text-slate-400 hover:text-white"
+                className={`px-3 text-xs font-bold rounded cursor-pointer transition-all ${
+                  period === p.id ? "bg-[var(--color-primary-blue)] !text-white" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
                 }`}
               >
                 {p.label}
@@ -162,27 +148,27 @@ export default function FinanceiroDRE() {
             ))}
           </div>
 
-          <button 
+          <Button 
             onClick={handleExportXLS}
-            className="px-5 bg-[#2563EB] hover:bg-blue-600 text-white rounded-xl flex items-center gap-2 text-xs font-black uppercase tracking-wider h-11 shadow-lg shadow-blue-500/20 transition-all cursor-pointer"
+            className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
           >
-            <Download className="w-4 h-4" /> Exportar DRE
-          </button>
+            <Download className="w-3.5 h-3.5" /> Exportar DRE
+          </Button>
         </div>
       }
     >
-      <div className="space-y-6">
-        
+      <div className="space-y-6 max-w-[1700px] mx-auto pb-12">
         {/* Dynamic setup and simulation panel */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card className="lg:col-span-2 p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border-white/5">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/5">
-              <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                <BarChart3 className="w-4 h-4 text-blue-500" /> Parâmetros e Simulação do DRE
+          <Card className="lg:col-span-2 p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--color-border-subtle)]">
+              <h3 className="text-sm font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-[var(--color-primary-blue)]" /> Parâmetros e Simulação do DRE
               </h3>
               <button 
+                type="button"
                 onClick={handleResetParameters}
-                className="text-[10px] uppercase tracking-widest font-black text-slate-500 hover:text-blue-400 flex items-center gap-1.5 transition-colors"
+                className="text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-primary-blue)] flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <RefreshCw className="w-3.5 h-3.5" /> Resetar Padrões
               </button>
@@ -191,9 +177,9 @@ export default function FinanceiroDRE() {
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1"><Percent className="w-3 h-3 text-blue-500" /> Impostos / Deduções</span>
-                    <span className="font-mono text-white font-black">{impostoPct}%</span>
+                  <div className="flex justify-between text-xs font-bold">
+                    <span className="text-[var(--color-text-muted)] flex items-center gap-1"><Percent className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" /> Impostos / Deduções</span>
+                    <span className="font-mono text-[var(--color-text-primary)]">{impostoPct}%</span>
                   </div>
                   <input 
                     type="range" 
@@ -201,14 +187,14 @@ export default function FinanceiroDRE() {
                     max="40" 
                     value={impostoPct} 
                     onChange={(e) => setImpostoPct(Number(e.target.value))}
-                    className="w-full accent-blue-500 bg-white/5 h-1.5 rounded-lg appearance-none cursor-pointer"
+                    className="w-full accent-[var(--color-primary-blue)] bg-[var(--color-surface-sunken)] h-2 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <div className="flex justify-between text-xs">
-                    <span className="font-extrabold text-slate-400 uppercase tracking-wider flex items-center gap-1"><Percent className="w-3 h-3 text-emerald-500" /> CPV / Provedores</span>
-                    <span className="font-mono text-white font-black">{cpvPct}%</span>
+                  <div className="flex justify-between text-xs font-bold">
+                    <span className="text-[var(--color-text-muted)] flex items-center gap-1"><Percent className="w-3.5 h-3.5 text-emerald-500" /> CPV / Provedores</span>
+                    <span className="font-mono text-[var(--color-text-primary)]">{cpvPct}%</span>
                   </div>
                   <input 
                     type="range" 
@@ -216,52 +202,52 @@ export default function FinanceiroDRE() {
                     max="60" 
                     value={cpvPct} 
                     onChange={(e) => setCpvPct(Number(e.target.value))}
-                    className="w-full accent-emerald-500 bg-white/5 h-1.5 rounded-lg appearance-none cursor-pointer"
+                    className="w-full accent-emerald-500 bg-[var(--color-surface-sunken)] h-2 rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
               </div>
 
-              <div className="border-t border-white/5 my-4" />
+              <div className="border-t border-[var(--color-border-subtle)] my-4" />
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Folha de Pessoal (R$/Mês)</label>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Folha de Pessoal (R$/Mês)</label>
                   <div className="relative">
-                    <DollarSign className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <DollarSign className="w-3.5 h-3.5 text-[var(--color-text-faint)] absolute left-3 top-1/2 -translate-y-1/2" />
                     <input 
                       type="number"
                       step="1000"
                       value={despesaPessoal}
                       onChange={(e) => setDespesaPessoal(Number(e.target.value))}
-                      className="w-full bg-[var(--color-surface-elevated)]/50 border border-white/5 h-11 rounded-xl pl-8 pr-4 text-xs font-black text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] h-9 rounded-[var(--radius-control)] pl-8 pr-3 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Orçamento Marketing (R$/Mês)</label>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Orçamento Marketing (R$/Mês)</label>
                   <div className="relative">
-                    <DollarSign className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <DollarSign className="w-3.5 h-3.5 text-[var(--color-text-faint)] absolute left-3 top-1/2 -translate-y-1/2" />
                     <input 
                       type="number"
                       step="500"
                       value={despesaMarketing}
                       onChange={(e) => setDespesaMarketing(Number(e.target.value))}
-                      className="w-full bg-[var(--color-surface-elevated)]/50 border border-white/5 h-11 rounded-xl pl-8 pr-4 text-xs font-black text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] h-9 rounded-[var(--radius-control)] pl-8 pr-3 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                     />
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Despesa Admin / Infra (R$/Mês)</label>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Despesa Admin / Infra (R$/Mês)</label>
                   <div className="relative">
-                    <DollarSign className="w-3.5 h-3.5 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <DollarSign className="w-3.5 h-3.5 text-[var(--color-text-faint)] absolute left-3 top-1/2 -translate-y-1/2" />
                     <input 
                       type="number"
                       step="500"
                       value={despesaAdmin}
                       onChange={(e) => setDespesaAdmin(Number(e.target.value))}
-                      className="w-full bg-[var(--color-surface-elevated)]/50 border border-white/5 h-11 rounded-xl pl-8 pr-4 text-xs font-black text-white focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] h-9 rounded-[var(--radius-control)] pl-8 pr-3 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                     />
                   </div>
                 </div>
@@ -269,15 +255,15 @@ export default function FinanceiroDRE() {
             </div>
           </Card>
 
-          <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border-white/5 flex flex-col justify-between">
+          <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm flex flex-col justify-between">
             <div>
-              <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-6">Gráfico de Lucratividade</h4>
-              <div className="h-32 w-full">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-4">Gráfico de Lucratividade</h4>
+              <div className="h-36 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} layout="vertical">
                     <XAxis type="number" hide />
-                    <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={9} width={80} tickLine={false} axisLine={false} />
-                    <Tooltip contentStyle={{ backgroundColor: "var(--color-surface)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px" }} itemStyle={{ fontSize: "10px", color: "#FFF" }} />
+                    <YAxis dataKey="name" type="category" stroke="var(--color-text-muted)" fontSize={10} width={90} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={{ backgroundColor: "var(--color-surface-elevated)", border: "1px solid var(--color-border-default)", borderRadius: "8px" }} itemStyle={{ fontSize: "11px", color: "var(--color-text-primary)" }} />
                     <Bar dataKey="Valor" radius={[0, 4, 4, 0]}>
                       {chartData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -288,14 +274,14 @@ export default function FinanceiroDRE() {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-white/5 mt-4 flex items-center justify-between">
+            <div className="pt-4 border-t border-[var(--color-border-subtle)] mt-4 flex items-center justify-between">
                <div>
-                  <p className="text-[9px] font-extrabold uppercase tracking-widest text-slate-500">Margem EBITDA Líquida</p>
-                  <h5 className="text-lg font-black text-emerald-400 font-mono">
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Margem EBITDA Líquida</p>
+                  <h5 className="text-lg font-black text-emerald-500 font-mono">
                     {parsedData.receitaBruta > 0 ? ((parsedData.ebitda / parsedData.receitaBruta) * 100).toFixed(1) : "0"}%
                   </h5>
                </div>
-               <div className="p-2 bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 rounded-xl">
+               <div className="p-2.5 bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 rounded-xl">
                  <PiggyBank className="w-5 h-5" />
                </div>
             </div>
@@ -303,14 +289,14 @@ export default function FinanceiroDRE() {
         </div>
 
         {/* Dynamic DRE Table display */}
-        <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border-white/10 p-6 overflow-hidden shadow-2xl">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-white/10">
+        <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] p-6 overflow-hidden shadow-sm">
+          <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--color-border-subtle)]">
              <div>
-                <h3 className="text-base font-black text-white uppercase italic tracking-tight flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-blue-500" /> Demonstração Consolidada ({period === "mensal" ? "Mês Atual" : period === "trimestral" ? "Trimestre" : "Anual"})
+                <h3 className="text-base font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-[var(--color-primary-blue)]" /> Demonstração Consolidada ({period === "mensal" ? "Mês Atual" : period === "trimestral" ? "Trimestre" : "Anual"})
                 </h3>
              </div>
-             <span className="text-[9px] font-black uppercase tracking-widest px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-xl text-blue-400">
+             <span className="text-[10px] font-bold uppercase tracking-wider px-3 py-1 bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/20 rounded-lg text-[var(--color-primary-blue)]">
                Regime de Caixa
              </span>
           </div>
@@ -319,17 +305,17 @@ export default function FinanceiroDRE() {
              {dreLines.map((line, idx) => (
                <div 
                   key={idx} 
-                  className={`flex items-center justify-between p-3 rounded-xl transition-all ${
+                  className={`flex items-center justify-between p-3 rounded-lg transition-all ${
                     line.isTotal 
-                      ? 'bg-white/5 font-black text-white border border-white/5' 
-                      : 'text-slate-400 hover:text-white'
-                  } ${line.indent && !line.isTotal ? 'pl-8' : ''} ${line.isEbitda && parsedData.ebitda < 0 ? 'bg-red-500/10 border-red-500/20' : ''}`}
+                      ? 'bg-[var(--color-surface-sunken)] font-bold text-[var(--color-text-primary)] border border-[var(--color-border-subtle)]' 
+                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+                  } ${line.indent && !line.isTotal ? 'pl-8' : ''}`}
                >
-                  <div className={`text-xs font-black uppercase tracking-tight ${line.isSub ? 'text-slate-500 italic' : ''}`}>{line.name}</div>
-                  <div className={`font-mono font-black ${line.isTotal ? 'text-sm sm:text-base' : 'text-xs sm:text-sm'} ${
+                  <div className={`text-xs font-bold ${line.isSub ? 'text-[var(--color-text-muted)] italic' : ''}`}>{line.name}</div>
+                  <div className={`font-mono font-bold ${line.isTotal ? 'text-sm' : 'text-xs'} ${
                     line.value.includes('(') 
-                      ? 'text-rose-400' 
-                      : (line.isTotal ? 'text-emerald-400 text-shadow-glow' : 'text-slate-300')
+                      ? 'text-rose-500' 
+                      : (line.isTotal ? 'text-emerald-500' : 'text-[var(--color-text-primary)]')
                   }`}>
                      {line.value}
                   </div>
@@ -341,4 +327,3 @@ export default function FinanceiroDRE() {
     </PageContainer>
   );
 }
-

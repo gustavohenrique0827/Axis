@@ -237,14 +237,15 @@ function VisitaDetailDrawer({ v, onClose, onEdit, onDelete, onUpdateStatus }: {
                 return (
                   <button
                     key={s}
+                    type="button"
                     onClick={() => onUpdateStatus(s)}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-[10px] font-black border transition-all ${
+                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                       v.status === s
                         ? STATUS_COLORS[s] + " ring-1 ring-current"
-                        : "bg-white/5 text-slate-500 border-white/10 hover:text-white hover:bg-white/10"
+                        : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] border-[var(--color-border-default)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface)]"
                     }`}
                   >
-                    <Icon className="w-3 h-3" /> {s}
+                    <Icon className="w-3.5 h-3.5" /> {s}
                   </button>
                 );
               })}
@@ -386,18 +387,18 @@ export default function Visitas() {
             </button>
           )}
           {v.status !== "Cancelada" && v.status !== "Realizada" && (
-            <button onClick={() => updateStatus(v.id, "Cancelada")} className="p-2 rounded-lg bg-white/5 hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-all" title="Cancelar">
+            <button type="button" onClick={() => updateStatus(v.id, "Cancelada")} className="p-2 rounded-lg bg-[var(--color-surface-sunken)] hover:bg-rose-500/10 text-[var(--color-text-muted)] hover:text-rose-500 transition-all cursor-pointer" title="Cancelar">
               <XCircle className="w-3.5 h-3.5" />
             </button>
           )}
-          <button onClick={() => setEditVisita(v)} className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white transition-all" title="Editar">
+          <button type="button" onClick={() => setEditVisita(v)} className="p-2 rounded-lg bg-[var(--color-surface-sunken)] hover:bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-all cursor-pointer" title="Editar">
             <Edit2 className="w-3.5 h-3.5" />
           </button>
-          <button onClick={() => handleDelete(v.id)} className="p-2 rounded-lg bg-white/5 hover:bg-red-500/10 text-slate-400 hover:text-red-400 transition-all" title="Remover">
+          <button type="button" onClick={() => handleDelete(v.id)} className="p-2 rounded-lg bg-[var(--color-surface-sunken)] hover:bg-rose-500/10 text-[var(--color-text-faint)] hover:text-rose-500 transition-all cursor-pointer" title="Remover">
             <Trash2 className="w-3.5 h-3.5" />
           </button>
         </div>
-        <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0 mt-1" />
+        <ChevronRight className="w-4 h-4 text-[var(--color-text-muted)] group-hover:text-[var(--color-text-primary)] transition-colors shrink-0 mt-1" />
       </div>
     );
   };
@@ -407,8 +408,8 @@ export default function Visitas() {
       title="Visitas"
       description="Controle e organize todas as visitas de imóveis com clientes."
       actions={
-        <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 h-10 gap-2 font-bold">
-          <Plus className="w-4 h-4" /> Agendar Visita
+        <Button onClick={() => setShowForm(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+          <Plus className="w-3.5 h-3.5" /> Agendar Visita
         </Button>
       }
     >

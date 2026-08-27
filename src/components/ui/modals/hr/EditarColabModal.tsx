@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pencil, X } from "lucide-react";
 import { useData } from "../../../../contexts/DataContext";
+import { Button } from "../../../ui/button";
 
 type EditarColabModalProps = {
   colab: any | null;
@@ -9,8 +10,8 @@ type EditarColabModalProps = {
 };
 
 const inputClass =
-  "w-full bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-indigo-500 focus:outline-none transition-all";
-const labelClass = "text-[10px] font-black uppercase tracking-wider text-slate-400";
+  "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] transition-all";
+const labelClass = "text-xs font-bold text-[var(--color-text-muted)] mb-1 block";
 
 export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalProps) {
   const [form, setForm] = useState({
@@ -21,7 +22,7 @@ export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalPro
     departamento: "",
     squad: "",
     status: "Ativo",
-    desempenho: 0,
+    desempenho: 100,
   });
 
   useEffect(() => {
@@ -34,7 +35,7 @@ export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalPro
         departamento: colab.departamento || "",
         squad: colab.squad || "",
         status: colab.status || "Ativo",
-        desempenho: colab.desempenho || 0,
+        desempenho: colab.desempenho ?? 100,
       });
     }
   }, [colab]);
@@ -47,40 +48,40 @@ export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalPro
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-lg bg-[var(--color-surface)] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200"
+        className="w-full max-w-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-8 pt-8 pb-4 border-b border-white/5">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-indigo-600/10 border border-indigo-500/20 flex items-center justify-center">
-              <Pencil className="w-4 h-4 text-indigo-400" />
+            <div className="w-8 h-8 rounded-xl bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] flex items-center justify-center">
+              <Pencil className="w-4 h-4" />
             </div>
             <div>
-              <div className="text-base font-black text-white">Editar Perfil</div>
-              <div className="text-[10px] font-black uppercase tracking-widest text-slate-500">{colab.nome}</div>
+              <div className="text-sm font-bold text-[var(--color-text-primary)]">Editar Colaborador</div>
+              <div className="text-[10px] font-mono text-[var(--color-text-muted)]">{colab.nome}</div>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 hover:text-white transition-colors"
+            className="w-8 h-8 rounded-full bg-[var(--color-surface)] border border-[var(--color-border-default)] flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Fields */}
-        <div className="px-8 py-6 space-y-4">
+        <div className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div>
               <label className={labelClass}>Nome Completo</label>
               <input value={form.nome} onChange={e => set("nome", e.target.value)} className={inputClass} />
             </div>
-            <div className="space-y-1.5">
+            <div>
               <label className={labelClass}>Cargo</label>
               <select value={form.cargo} onChange={e => set("cargo", e.target.value)} className={inputClass}>
                 <option value="">Selecione um cargo...</option>
@@ -92,19 +93,18 @@ export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalPro
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div>
               <label className={labelClass}>E-mail</label>
               <input type="email" value={form.email} onChange={e => set("email", e.target.value)} className={inputClass} />
             </div>
-            <div className="space-y-1.5">
-              <label className={labelClass}>Telefone</label>
+            <div>
+              <label className={labelClass}>Telefone / WhatsApp</label>
               <input type="tel" value={form.phone} onChange={e => set("phone", e.target.value)} className={inputClass} placeholder="(11) 99999-9999" />
-              <p className="text-xs text-slate-500">Este número dá acesso à Aurora via WhatsApp (qualquer cargo/área).</p>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div>
               <label className={labelClass}>Departamento</label>
               <select value={form.departamento} onChange={e => set("departamento", e.target.value)} className={inputClass}>
                 <option value="">Selecione...</option>
@@ -113,9 +113,10 @@ export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalPro
                 <option value="Tecnologia">Tecnologia</option>
                 <option value="Sucesso do Cliente">Sucesso do Cliente</option>
                 <option value="Administrativo">Administrativo</option>
+                <option value="Operações">Operações</option>
               </select>
             </div>
-            <div className="space-y-1.5">
+            <div>
               <label className={labelClass}>Squad</label>
               <select value={form.squad} onChange={e => set("squad", e.target.value)} className={inputClass}>
                 <option value="">Sem squad</option>
@@ -127,7 +128,7 @@ export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalPro
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1.5">
+            <div>
               <label className={labelClass}>Status</label>
               <select value={form.status} onChange={e => set("status", e.target.value)} className={inputClass}>
                 <option value="Ativo">Ativo</option>
@@ -136,7 +137,7 @@ export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalPro
                 <option value="Afastado">Afastado</option>
               </select>
             </div>
-            <div className="space-y-1.5">
+            <div>
               <label className={labelClass}>Desempenho (%)</label>
               <input
                 type="number" min={0} max={100}
@@ -146,23 +147,25 @@ export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalPro
               />
             </div>
           </div>
-
         </div>
 
         {/* Footer */}
-        <div className="px-8 pb-8 flex gap-3">
-          <button
+        <div className="px-6 py-4 bg-[var(--color-surface-sunken)] border-t border-[var(--color-border-subtle)] flex justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
             onClick={onClose}
-            className="flex-1 h-11 rounded-xl border border-white/10 text-slate-400 hover:text-white font-black text-[10px] uppercase tracking-widest transition-colors"
+            className="h-9 px-4 text-xs font-bold border-[var(--color-border-default)]"
           >
             Cancelar
-          </button>
-          <button
+          </Button>
+          <Button
+            type="button"
             onClick={() => { onSave(colab.id, form); onClose(); }}
-            className="flex-1 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-[10px] uppercase tracking-widest transition-colors shadow-lg shadow-indigo-600/20"
+            className="h-9 px-5 text-xs font-bold shadow-xs"
           >
             Salvar Alterações
-          </button>
+          </Button>
         </div>
       </div>
     </div>

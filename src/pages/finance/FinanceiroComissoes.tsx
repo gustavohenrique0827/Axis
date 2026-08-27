@@ -215,23 +215,24 @@ export default function FinanceiroComissoes() {
         <select
           value={periodo}
           onChange={e => { setPeriodo(e.target.value); localStorage.setItem(PERIOD_KEY, e.target.value); }}
-          className="h-10 bg-[var(--color-surface-elevated)] border border-white/[0.08] rounded-xl px-3 text-[11px] font-black uppercase tracking-widest outline-none text-white cursor-pointer"
+          className="h-9 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 text-xs font-bold text-[var(--color-text-primary)] outline-none cursor-pointer"
         >
           {PERIODOS.map(p => <option key={p} value={p}>{p}</option>)}
         </select>
 
         <div className="relative">
           <button
+            type="button"
             onClick={() => setShowSquadMenu(v => !v)}
-            className="flex items-center gap-2 h-10 px-4 border border-white/[0.08] rounded-xl text-[11px] font-black text-white bg-[var(--color-surface-elevated)] hover:bg-white/10 transition-colors"
+            className="flex items-center gap-2 h-9 px-3.5 border border-[var(--color-border-default)] rounded-[var(--radius-control)] text-xs font-bold text-[var(--color-text-primary)] bg-[var(--color-surface-sunken)] hover:bg-[var(--color-surface-elevated)] transition-colors cursor-pointer"
           >
-            <span className="text-slate-500 font-bold normal-case">Squad:</span> {squadFilter} <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+            <span className="text-[var(--color-text-muted)] font-normal">Squad:</span> {squadFilter} <ChevronDown className="w-3.5 h-3.5 opacity-60" />
           </button>
           {showSquadMenu && (
-            <div className="absolute left-0 top-11 z-30 bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl shadow-2xl shadow-black/50 min-w-[160px] overflow-hidden">
+            <div className="absolute left-0 top-10 z-30 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl shadow-xl min-w-[160px] p-1 overflow-hidden animate-in fade-in">
               {squadNames.map(s => (
                 <button key={s} onClick={() => { setSquadFilter(s); setShowSquadMenu(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-[11px] font-bold hover:bg-white/5 transition-colors ${squadFilter === s ? 'text-emerald-400' : 'text-slate-300'}`}
+                  className={`w-full text-left px-3 py-2 text-xs font-bold rounded-lg hover:bg-[var(--color-surface-sunken)] transition-colors cursor-pointer ${squadFilter === s ? 'text-[var(--color-primary-blue)]' : 'text-[var(--color-text-primary)]'}`}
                 >{s}</button>
               ))}
             </div>
@@ -248,11 +249,11 @@ export default function FinanceiroComissoes() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07 }}
           >
-            <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
-              <kpi.icon className={`w-5 h-5 ${kpi.color} mb-4`} />
-              <div className="text-2xl font-display font-black text-white mb-1 italic">{kpi.value}</div>
-              <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{kpi.label}</div>
-              <p className="text-[10px] text-slate-600 mt-1 font-medium">{kpi.sub}</p>
+            <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+              <kpi.icon className={`w-5 h-5 ${kpi.color} mb-3`} />
+              <div className="text-2xl font-black font-mono text-[var(--color-text-primary)] mb-1">{kpi.value}</div>
+              <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">{kpi.label}</div>
+              <p className="text-[11px] text-[var(--color-text-faint)] mt-1 font-medium">{kpi.sub}</p>
             </Card>
           </motion.div>
         ))}
@@ -263,22 +264,23 @@ export default function FinanceiroComissoes() {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/5 rounded-2xl overflow-hidden"
+        className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl overflow-hidden shadow-sm"
       >
         {/* Tab bar */}
-        <div className="flex items-center gap-0 border-b border-white/5 px-4 pt-1">
+        <div className="flex items-center gap-0 border-b border-[var(--color-border-subtle)] px-4 pt-1 bg-[var(--color-surface-sunken)]">
           {CARGO_TABS.map(tab => (
             <button
               key={tab.key}
+              type="button"
               onClick={() => setActiveTab(tab.key)}
-              className={`px-5 py-3.5 text-[11px] font-black uppercase tracking-widest transition-all border-b-2 -mb-px whitespace-nowrap ${
+              className={`px-4 py-3 text-xs font-bold transition-all border-b-2 -mb-px whitespace-nowrap cursor-pointer ${
                 activeTab === tab.key
-                  ? 'border-emerald-500 text-white'
-                  : 'border-transparent text-slate-500 hover:text-slate-300'
+                  ? 'border-[var(--color-primary-blue)] text-[var(--color-primary-blue)]'
+                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
               }`}
             >
               {tab.label} / {tab.sublabel}
-              <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-md font-black ${activeTab === tab.key ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/5 text-slate-600'}`}>
+              <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-md font-bold ${activeTab === tab.key ? 'bg-[var(--color-primary-blue)]/15 text-[var(--color-primary-blue)]' : 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
                 {tabCount(tab.key)}
               </span>
             </button>
@@ -286,7 +288,7 @@ export default function FinanceiroComissoes() {
           <div className="ml-auto">
             <Button
               onClick={() => setShowAddModal(true)}
-              className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 text-[10px] font-black uppercase tracking-widest px-4 rounded-lg shadow-lg shadow-emerald-500/20"
+              className="h-8 text-xs font-bold gap-1.5 shadow-xs"
             >
               <Plus className="w-3.5 h-3.5" /> Adicionar
             </Button>
@@ -402,66 +404,73 @@ export default function FinanceiroComissoes() {
 
       {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150" onClick={() => setShowAddModal(false)}>
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-[#0F172A] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl shadow-black/60 overflow-hidden"
+            className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            onClick={e => e.stopPropagation()}
           >
-            <div className="p-6 border-b border-white/10 flex justify-between items-center">
+            <div className="p-6 border-b border-[var(--color-border-subtle)] flex justify-between items-center bg-[var(--color-surface-sunken)]">
               <div>
-                <h3 className="text-sm font-black text-white uppercase tracking-widest">Adicionar Colaborador</h3>
-                <p className="text-[10px] text-slate-500 mt-0.5">Perfil OTE aplicado automaticamente pelo cargo + nível</p>
+                <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Adicionar Colaborador OTE</h3>
+                <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">Perfil OTE aplicado automaticamente pelo cargo + nível</p>
               </div>
-              <button onClick={() => setShowAddModal(false)} className="p-1.5 rounded-lg text-slate-500 hover:text-white hover:bg-white/5 transition-colors">✕</button>
+              <button 
+                type="button"
+                onClick={() => setShowAddModal(false)} 
+                className="w-8 h-8 rounded-full bg-[var(--color-surface)] border border-[var(--color-border-default)] flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
             </div>
             <div className="p-6 space-y-4">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nome Completo</label>
+              <div>
+                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Nome Completo</label>
                 <input value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 placeholder:text-slate-600 transition-colors"
+                  className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                   placeholder="Nome completo" />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cargo</label>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Cargo</label>
                   <select value={form.cargo} onChange={e => setForm(f => ({ ...f, cargo: e.target.value as CargoTab }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 transition-colors">
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]">
                     <option>Closer</option><option>SDR</option><option>Gestor</option>
                   </select>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nível</label>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Nível</label>
                   <select value={form.nivel} onChange={e => setForm(f => ({ ...f, nivel: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 transition-colors">
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]">
                     <option>Aprendiz</option><option>Junior 1</option><option>Junior 2</option><option>Pleno</option><option>Senior</option>
                   </select>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Squad</label>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Squad</label>
                   <input value={form.squad} onChange={e => setForm(f => ({ ...f, squad: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 placeholder:text-slate-600 transition-colors"
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                     placeholder="Ex: Target" />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Meta (R$)</label>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Meta (R$)</label>
                   <input type="number" value={form.meta} onChange={e => setForm(f => ({ ...f, meta: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 placeholder:text-slate-600 transition-colors"
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                     placeholder="70000" />
                 </div>
               </div>
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Realizado (R$)</label>
+              <div>
+                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Realizado (R$)</label>
                 <input type="number" value={form.realizado} onChange={e => setForm(f => ({ ...f, realizado: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 placeholder:text-slate-600 transition-colors"
+                  className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                   placeholder="0" />
               </div>
             </div>
-            <div className="p-6 border-t border-white/10 flex gap-3">
-              <Button variant="ghost" onClick={() => setShowAddModal(false)} className="flex-1 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl">Cancelar</Button>
-              <Button onClick={handleAddEntry} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20">
+            <div className="p-6 border-t border-[var(--color-border-subtle)] flex justify-end gap-2 bg-[var(--color-surface-sunken)]">
+              <Button type="button" variant="outline" onClick={() => setShowAddModal(false)} className="h-9 px-4 text-xs font-bold border-[var(--color-border-default)]">Cancelar</Button>
+              <Button type="button" onClick={handleAddEntry} className="h-9 px-5 text-xs font-bold shadow-xs">
                 Adicionar
               </Button>
             </div>

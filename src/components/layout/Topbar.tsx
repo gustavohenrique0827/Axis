@@ -55,8 +55,64 @@ export function Topbar({
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<NotificationTab>("todas");
 
+  const [liveProfile, setLiveProfile] = useState<{ name: string; avatar: string | null }>(() => {
+    try {
+      const saved = localStorage.getItem("axis_user_profile");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return { name: parsed.name || user?.name || "Gustavo Portilho", avatar: parsed.avatar || null };
+      }
+    } catch {}
+    return { name: user?.name || "Gustavo Portilho", avatar: null };
+  });
+
+  const [liveEmpresaName, setLiveEmpresaName] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem("axis_empresa_dados");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return parsed.nomeFantasia || user?.tenantName || "Axis Corp";
+      }
+    } catch {}
+    return user?.tenantName || "Axis Corp";
+  });
+
+  React.useEffect(() => {
+    const handleProfileUpdate = () => {
+      try {
+        const saved = localStorage.getItem("axis_user_profile");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setLiveProfile({ name: parsed.name || user?.name || "Gustavo Portilho", avatar: parsed.avatar || null });
+        }
+      } catch {}
+    };
+
+    const handleEmpresaUpdate = () => {
+      try {
+        const saved = localStorage.getItem("axis_empresa_dados");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setLiveEmpresaName(parsed.nomeFantasia || user?.tenantName || "Axis Corp");
+        }
+      } catch {}
+    };
+
+    window.addEventListener("axis_profile_updated", handleProfileUpdate);
+    window.addEventListener("axis_empresa_updated", handleEmpresaUpdate);
+    window.addEventListener("storage", handleProfileUpdate);
+    window.addEventListener("storage", handleEmpresaUpdate);
+
+    return () => {
+      window.removeEventListener("axis_profile_updated", handleProfileUpdate);
+      window.removeEventListener("axis_empresa_updated", handleEmpresaUpdate);
+      window.removeEventListener("storage", handleProfileUpdate);
+      window.removeEventListener("storage", handleEmpresaUpdate);
+    };
+  }, [user]);
+
   const unreadNotifications = notifications.filter((n) => !n.read).length;
-  const userInitials = user?.name ? user.name.substring(0, 2).toUpperCase() : "GT";
+  const userInitials = liveProfile.name ? liveProfile.name.substring(0, 2).toUpperCase() : "GT";
 
   const handleLogout = () => {
     logout();
@@ -271,15 +327,19 @@ export function Topbar({
 
         <div className="flex items-center gap-3 pl-4 sm:pl-6 border-l border-[var(--color-border-default)]">
           <div className="text-right hidden sm:block">
-            <p className="text-xs font-bold text-[var(--color-text-primary)] leading-tight">{user?.name || "Usuário"}</p>
-            <p className="text-[10px] text-[var(--color-primary-blue)] font-bold uppercase tracking-wider">{user?.tenantName || "Empresa"}</p>
+            <p className="text-xs font-bold text-[var(--color-text-primary)] leading-tight">{liveProfile.name}</p>
+            <p className="text-[10px] text-[var(--color-primary-blue)] font-bold uppercase tracking-wider">{liveEmpresaName}</p>
           </div>
           <div className="relative">
             <div
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2563EB] to-blue-700 flex items-center justify-center text-xs font-bold text-white hover:opacity-90 transition-all cursor-pointer shadow-xs"
+              className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2563EB] to-blue-700 flex items-center justify-center text-xs font-bold text-white hover:opacity-90 transition-all cursor-pointer shadow-xs overflow-hidden border border-[var(--color-border-default)]"
             >
-              {userInitials}
+              {liveProfile.avatar ? (
+                <img src={liveProfile.avatar} alt={liveProfile.name} className="w-full h-full object-cover" />
+              ) : (
+                userInitials
+              )}
             </div>
             {isUserMenuOpen && (
               <>

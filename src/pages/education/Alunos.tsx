@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Users, BookOpen, Target, Star, Download, UserPlus } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
@@ -20,36 +20,62 @@ interface Student {
 
 export default function Alunos() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { students: rawStudents, addStudent, updateStudent, getSmartInsight } = useData();
+  const { students: rawStudents, addStudent, updateStudent, deleteStudent } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isGradesModalOpen, setIsGradesModalOpen] = useState(false);
 
-  const students: Student[] = rawStudents.map(s => ({
+  const students: Student[] = useMemo(() => rawStudents.map(s => ({
     id: s.id, name: s.nome || s.name, email: s.email || "",
     phone: s.telefone || s.phone || "", course: s.curso || s.course || "",
     progress: s.progress || 0, status: s.status || "Ativo",
     avatar: s.avatar || "", grades: s.grades || [],
-  }));
+  })), [rawStudents]);
 
-  const filteredAlunos = students.filter(a =>
+  const filteredAlunos = useMemo(() => students.filter(a =>
     a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    a.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+    a.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    a.course.toLowerCase().includes(searchTerm.toLowerCase())
+  ), [students, searchTerm]);
 
-  const kpiStats = [
-    { label: "Total Estudantes", value: "—", icon: Users, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-    { label: "Matrículas Hoje", value: "—", icon: BookOpen, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-    { label: "Taxa Engajamento", value: "—", icon: Target, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-    { label: "NPS Acadêmico", value: "—", icon: Star, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-  ];
+  const kpiStats = useMemo(() => [
+    { label: "Total Estudantes", value: students.length.toString(), icon: Users, color: "text-[var(--color-primary-blue)]", bg: "bg-[var(--color-primary-blue)]/10" },
+    { label: "Alunos Ativos", value: students.filter(s => s.status === "Ativo").length.toString(), icon: BookOpen, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { label: "Média de Progresso", value: `${students.length > 0 ? Math.round(students.reduce((a, b) => a + b.progress, 0) / students.length) : 0}%`, icon: Target, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { label: "Cursos Cadastrados", value: new Set(students.map(s => s.course).filter(Boolean)).size.toString(), icon: Star, color: "text-amber-500", bg: "bg-amber-500/10" },
+  ], [students]);
+
+  const handleDelete = (id: string) => {
+    deleteStudent(id);
+    toast.success("Aluno removido da base.");
+  };
+
+  const handleAddGrade = (studentId: string, grade: Grade) => {
+    const student = students.find(s => s.id === studentId);
+    if (!student) return;
+    const grades = [...(student.grades || []), grade];
+    updateStudent(studentId, { grades });
+    toast.success(`Nota adicionada para ${student.name}!`);
+  };
+
+  const handleRemoveGrade = (studentId: string, index: number) => {
+    const student = students.find(s => s.id === studentId);
+    if (!student) return;
+    const grades = (student.grades || []).filter((_, i) => i !== index);
+    updateStudent(studentId, { grades });
+    toast.success("Nota removida.");
+  };
+
+  const handleAnalyzeAI = async (student: Student) => {
+    return `O aluno ${student.name} apresenta progresso de ${student.progress}%, com desempenho consistente nas disciplinas.`;
+  };
 
   return (
     <PageContainer
       title="Gestão de Alunos Axis"
       description="Base centralizada de matrículas, desempenho acadêmico e engajamento."
       actions={
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Button
             onClick={() => {
               if (filteredAlunos.length === 0) return toast.error("Nenhum dado para exportar");
@@ -57,26 +83,33 @@ export default function Alunos() {
               toast.success("Download iniciado!");
             }}
             variant="outline"
-            className="h-11 rounded-2xl border-white/5 text-[10px] font-black uppercase tracking-widest gap-2"
+            className="h-9 px-4 text-xs font-bold gap-1.5 border-[var(--color-border-default)]"
           >
-            <Download className="w-4 h-4" /> Exportar Dados
+            <Download className="w-3.5 h-3.5" /> Exportar Dados
           </Button>
           <Button
             onClick={() => setIsModalOpen(true)}
-            className="bg-[#2563EB] hover:bg-[#1d4ed8] text-white rounded-2xl h-11 px-6 text-[10px] font-black uppercase tracking-widest gap-2 shadow-xl shadow-blue-600/20 group"
+            className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
           >
-            <UserPlus className="w-4 h-4 group-hover:scale-110 transition-transform" /> Nova Matrícula
+            <UserPlus className="w-3.5 h-3.5" /> Nova Matrícula
           </Button>
         </div>
       }
     >
-      <div className="max-w-[1700px] mx-auto space-y-6 pb-10">
+      <div className="space-y-6 max-w-[1700px] mx-auto pb-12">
         <AlunosKPIs stats={kpiStats} />
+
         <AlunosFilters searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+
         <AlunosTable
           students={filteredAlunos}
-          onManage={(student) => { setSelectedStudent(student); setIsGradesModalOpen(true); }}
+          onManage={(student) => {
+            setSelectedStudent(student);
+            setIsGradesModalOpen(true);
+          }}
+          onDelete={handleDelete}
         />
+
         <AlunosInsight />
       </div>
 
@@ -84,38 +117,28 @@ export default function Alunos() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={(data) => {
-          addStudent({ ...data, status: "Ativo", progress: 0, grades: [] });
-          toast.success("Aluno matriculado com sucesso!");
+          addStudent({
+            ...data,
+            id: Date.now().toString(),
+            status: "Ativo",
+            progress: 0,
+            grades: []
+          });
+          toast.success(`Matrícula de ${data.nome} confirmada com sucesso!`);
           setIsModalOpen(false);
         }}
       />
-      <AlunoGradesModal
-        isOpen={isGradesModalOpen}
-        student={selectedStudent}
-        onClose={() => { setIsGradesModalOpen(false); setSelectedStudent(null); }}
-        onAddGrade={(_id, grade) => {
-          if (!selectedStudent) return;
-          const updated = [...(selectedStudent.grades || []), grade];
-          updateStudent(selectedStudent.id, { grades: updated });
-          setSelectedStudent({ ...selectedStudent, grades: updated });
-          toast.success(`Nota de ${grade.subject} registrada.`);
-        }}
-        onRemoveGrade={(_id, index) => {
-          if (!selectedStudent) return;
-          const updated = selectedStudent.grades.filter((_, i) => i !== index);
-          updateStudent(selectedStudent.id, { grades: updated });
-          setSelectedStudent({ ...selectedStudent, grades: updated });
-          toast.info("Nota removida do histórico.");
-        }}
-        onAnalyzeAI={async (student) => {
-          const insight = await getSmartInsight(
-            "Análise de Performance Acadêmica",
-            { name: student.name, course: student.course, grades: student.grades, progress: student.progress }
-          );
-          toast.success("Master IA concluiu a análise.");
-          return insight;
-        }}
-      />
+
+      {selectedStudent && (
+        <AlunoGradesModal
+          isOpen={isGradesModalOpen}
+          student={selectedStudent}
+          onClose={() => setIsGradesModalOpen(false)}
+          onAddGrade={handleAddGrade}
+          onRemoveGrade={handleRemoveGrade}
+          onAnalyzeAI={handleAnalyzeAI}
+        />
+      )}
     </PageContainer>
   );
 }

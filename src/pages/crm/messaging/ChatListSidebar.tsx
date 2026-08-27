@@ -18,9 +18,9 @@ interface ChatListSidebarProps {
 
 const getChannelIcon = (channel: Channel, className = "w-4 h-4") => {
   switch (channel) {
-    case "WhatsApp": return <MessageCircle className={`${className} text-emerald-400`} />;
-    case "Instagram": return <Instagram className={`${className} text-pink-400`} />;
-    case "Email": return <Mail className={`${className} text-blue-400`} />;
+    case "WhatsApp": return <MessageCircle className={`${className} text-emerald-500`} />;
+    case "Instagram": return <Instagram className={`${className} text-pink-500`} />;
+    case "Email": return <Mail className={`${className} text-blue-500`} />;
   }
 };
 
@@ -40,28 +40,28 @@ export function ChatListSidebar({
     <div className={`${
         isMobile 
           ? `absolute inset-0 flex flex-col transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] z-10 ${activeChat ? '-translate-x-1/4 opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'}` 
-          : 'w-[320px] lg:w-[380px] h-full flex flex-col shrink-0 border-r border-white/5 z-10'
-      } bg-[var(--color-surface)]`}>
+          : 'w-[320px] lg:w-[380px] h-full flex flex-col shrink-0 border-r border-[var(--color-border-default)] z-10'
+      } bg-[var(--color-surface-elevated)]`}>
       
       {/* Header */}
-      <div className="shrink-0 h-[72px] px-5 flex items-center justify-between border-b border-white/5">
-        <h1 className="text-xl font-bold text-white tracking-tight">Mensagens</h1>
-        <div className="flex items-center gap-3 text-slate-400">
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors cursor-pointer"><Search className="w-5 h-5" /></button>
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors cursor-pointer"><MoreVertical className="w-5 h-5" /></button>
+      <div className="shrink-0 h-[64px] px-5 flex items-center justify-between border-b border-[var(--color-border-subtle)]">
+        <h1 className="text-base font-bold text-[var(--color-text-primary)] tracking-tight">Mensagens</h1>
+        <div className="flex items-center gap-1 text-[var(--color-text-muted)]">
+          <button className="p-2 hover:bg-[var(--color-surface-sunken)] rounded-lg transition-colors cursor-pointer text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"><Search className="w-4 h-4" /></button>
+          <button className="p-2 hover:bg-[var(--color-surface-sunken)] rounded-lg transition-colors cursor-pointer text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"><MoreVertical className="w-4 h-4" /></button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="shrink-0 flex overflow-x-auto scrollbar-none border-b border-white/5 px-3 py-3 gap-2 bg-[var(--color-surface)]/50 backdrop-blur-md">
+      <div className="shrink-0 flex overflow-x-auto scrollbar-none border-b border-[var(--color-border-subtle)] px-3 py-2.5 gap-1.5 bg-[var(--color-surface-sunken)]">
         {tabs.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`whitespace-nowrap px-4 py-1.5 text-[13px] font-medium rounded-full transition-all cursor-pointer ${
+            className={`whitespace-nowrap px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               activeTab === tab 
-                ? 'bg-blue-600 text-white shadow-md shadow-blue-900/20' 
-                : 'bg-white/5 hover:bg-white/10 text-slate-300'
+                ? 'bg-[var(--color-primary-blue)] !text-white shadow-xs' 
+                : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-elevated)]'
             }`}
           >
             {tab}
@@ -70,20 +70,20 @@ export function ChatListSidebar({
       </div>
 
       {/* Quick Search */}
-      <div className="shrink-0 px-5 py-3 border-b border-white/5 bg-[var(--color-surface)]/40">
+      <div className="shrink-0 px-4 py-3 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)]">
         <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Buscar por nome ou tag..."
-            className="w-full bg-black/40 border border-white/5 rounded-xl pl-10 pr-8 py-2.5 text-xs text-white focus:outline-none focus:border-blue-500 transition-colors placeholder:text-slate-500"
+            className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl pl-9 pr-8 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] transition-all placeholder:text-[var(--color-text-muted)]"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 rounded-full hover:bg-white/10 cursor-pointer"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] p-1 rounded-full hover:bg-[var(--color-surface)] cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -97,20 +97,20 @@ export function ChatListSidebar({
           key={`${searchQuery}-${activeTab}-${isSearching}`}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.25, ease: "easeOut" }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
           className="w-full flex flex-col"
         >
           {isSearching ? (
             /* Skeleton Loader */
             Array.from({ length: 4 }).map((_, idx) => (
-              <div key={`skeleton-${idx}`} className="w-full flex items-center gap-4 pl-[16px] pr-5 py-4 border-b border-white/5 border-l-4 border-transparent animate-pulse">
-                <div className="w-12 h-12 rounded-full bg-slate-800 shrink-0" />
+              <div key={`skeleton-${idx}`} className="w-full flex items-center gap-3.5 px-4 py-3 border-b border-[var(--color-border-subtle)] animate-pulse">
+                <div className="w-10 h-10 rounded-full bg-[var(--color-surface-sunken)] shrink-0" />
                 <div className="flex-1 space-y-2">
                   <div className="flex justify-between items-center">
-                    <div className="h-4 bg-slate-800 rounded w-1/3" />
-                    <div className="h-3 bg-slate-800 rounded w-10" />
+                    <div className="h-3.5 bg-[var(--color-surface-sunken)] rounded w-1/3" />
+                    <div className="h-3 bg-[var(--color-surface-sunken)] rounded w-8" />
                   </div>
-                  <div className="h-3.5 bg-slate-800 rounded w-3/4" />
+                  <div className="h-3 bg-[var(--color-surface-sunken)] rounded w-3/4" />
                 </div>
               </div>
             ))
@@ -123,42 +123,42 @@ export function ChatListSidebar({
                   <button
                     key={contact.id}
                     onClick={() => handleChatSelect(contact.id)}
-                    className={`w-full flex items-center gap-4 py-4 transition-all border-b border-white/5 text-left cursor-pointer group border-l-4 ${
+                    className={`w-full flex items-center gap-3.5 px-4 py-3.5 transition-all border-b border-[var(--color-border-subtle)] text-left cursor-pointer group border-l-4 ${
                       isActive 
-                        ? 'selecao-ativa border-l-blue-500 bg-blue-500/10 pl-[16px] pr-5 shadow-[inset_4px_0_15px_rgba(59,130,246,0.15),0_0_15px_rgba(59,130,246,0.1)] ring-1 ring-blue-500/20 text-white' 
-                        : 'border-transparent pl-[16px] pr-5 hover:bg-white/5'
+                        ? 'border-l-[var(--color-primary-blue)] bg-[var(--color-primary-blue)]/10 text-[var(--color-text-primary)]' 
+                        : 'border-transparent hover:bg-[var(--color-surface-sunken)]/60'
                     }`}
                   >
                     {/* Avatar */}
                     <div className="relative shrink-0">
-                      <div className={`w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-white shadow-inner ${
-                        contact.channel === 'WhatsApp' ? 'bg-gradient-to-br from-emerald-500 to-emerald-700' :
-                        contact.channel === 'Instagram' ? 'bg-gradient-to-br from-pink-500 to-purple-700' :
-                        'bg-gradient-to-br from-blue-500 to-indigo-700'
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-xs ${
+                        contact.channel === 'WhatsApp' ? 'bg-emerald-600' :
+                        contact.channel === 'Instagram' ? 'bg-pink-600' :
+                        'bg-blue-600'
                       }`}>
                         {contact.avatar}
                       </div>
-                      <div className="absolute -bottom-1 -right-1 bg-[#0F172A] rounded-full p-[3px] shadow-sm ring-2 ring-[#0B1120]">
-                        {getChannelIcon(contact.channel, "w-[14px] h-[14px]")}
+                      <div className="absolute -bottom-1 -right-1 bg-[var(--color-surface-elevated)] rounded-full p-[2px] shadow-xs border border-[var(--color-border-subtle)]">
+                        {getChannelIcon(contact.channel, "w-3 h-3")}
                       </div>
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                    <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5">
                       <div className="flex justify-between items-center">
-                        <h3 className={`font-semibold text-[15px] truncate ${contact.unread > 0 ? "text-white" : "text-slate-200"}`}>
+                        <h3 className={`font-bold text-xs truncate ${contact.unread > 0 ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-primary)]"}`}>
                           {contact.name}
                         </h3>
-                        <span className={`text-[11px] font-medium ${contact.unread > 0 ? 'text-blue-400' : 'text-slate-500'}`}>
+                        <span className={`text-[10px] font-medium ${contact.unread > 0 ? 'text-[var(--color-primary-blue)] font-bold' : 'text-[var(--color-text-muted)]'}`}>
                           {contact.time}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between gap-3">
-                        <p className={`text-[13px] truncate flex-1 leading-snug ${contact.unread > 0 ? "text-slate-300 font-medium" : "text-slate-500"}`}>
+                      <div className="flex items-center justify-between gap-2">
+                        <p className={`text-xs truncate flex-1 ${contact.unread > 0 ? "text-[var(--color-text-primary)] font-semibold" : "text-[var(--color-text-muted)]"}`}>
                           {contact.lastMessage}
                         </p>
                         {contact.unread > 0 && (
-                          <span className="bg-blue-600 text-white text-[11px] font-bold h-[22px] min-w-[22px] rounded-full flex items-center justify-center px-1.5 shrink-0 shadow-sm animate-pulse">
+                          <span className="bg-[var(--color-primary-blue)] text-white text-[10px] font-bold h-4 min-w-4 rounded-full flex items-center justify-center px-1 shrink-0 shadow-xs">
                             {contact.unread}
                           </span>
                         )}
@@ -169,14 +169,14 @@ export function ChatListSidebar({
               })}
               
               {filteredContacts.length === 0 && (
-                <div className="p-10 flex flex-col items-center justify-center gap-4 text-center animate-in fade-in duration-300">
-                  <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-slate-400 shadow-lg">
-                    <Search className="w-8 h-8 text-slate-400" strokeWidth={1.5} />
+                <div className="p-8 flex flex-col items-center justify-center gap-3 text-center animate-in fade-in duration-200">
+                  <div className="w-12 h-12 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] flex items-center justify-center text-[var(--color-text-muted)]">
+                    <Search className="w-5 h-5" />
                   </div>
                   <div className="space-y-1">
-                    <h4 className="text-sm font-bold text-white">Nenhum resultado encontrado</h4>
-                    <p className="text-xs text-slate-400 max-w-[220px]">
-                      Não encontramos nenhuma conversa que corresponda ao termo buscando ou aos filtros aplicados.
+                    <h4 className="text-xs font-bold text-[var(--color-text-primary)]">Nenhum resultado encontrado</h4>
+                    <p className="text-[11px] text-[var(--color-text-muted)] max-w-[200px]">
+                      Não encontramos nenhuma conversa que corresponda à busca.
                     </p>
                   </div>
                 </div>

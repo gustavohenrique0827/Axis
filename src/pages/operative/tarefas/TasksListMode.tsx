@@ -34,73 +34,74 @@ export function TasksListMode({
     .filter(Boolean);
 
   return (
-    <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden shadow-2xl rounded-3xl">
-      <div className="px-5 py-4 border-b border-white/10 bg-white/[0.01] flex flex-wrap items-center justify-between gap-3 text-left">
-         <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+    <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm rounded-2xl">
+      <div className="px-5 py-3.5 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)] flex flex-wrap items-center justify-between gap-3 text-left">
+         <div className="text-xs font-bold text-[var(--color-text-primary)]">
            Minhas demandas registradas ({filteredTasks.length})
          </div>
-         <span className="text-[10px] text-slate-500 font-medium">Toque para concluir ou gerenciar</span>
+         <span className="text-[11px] text-[var(--color-text-muted)] font-medium">Toque no checkbox para concluir ou gerenciar</span>
       </div>
 
-      <div className="divide-y divide-white/5">
+      <div className="divide-y divide-[var(--color-border-subtle)]">
         {filteredTasks.length > 0 ? (
           filteredTasks.map((t) => (
-            <div key={t.id} className="p-4 hover:bg-white/[0.015] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
+            <div key={t.id} className="p-4 hover:bg-[var(--color-surface-sunken)]/50 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-left">
               {/* Left Column: Actions indicator & Title */}
               <div className="flex items-start gap-3.5 min-w-0 flex-1">
                 <button 
+                  type="button"
                   onClick={() => toggleTaskStatus(t.id, t.status)}
-                  className={`mt-1 w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-colors cursor-pointer ${
+                  className={`mt-0.5 w-5 h-5 rounded-md border flex items-center justify-center shrink-0 transition-all cursor-pointer ${
                     t.status === 'Concluída' 
-                    ? 'bg-emerald-500 border-emerald-500 shadow-[0_0_8px_#10b981]' 
-                    : 'border-slate-500 hover:border-[#2563EB]'
+                    ? 'bg-emerald-500 border-emerald-500 text-white shadow-xs' 
+                    : 'border-[var(--color-border-default)] hover:border-[var(--color-primary-blue)] bg-[var(--color-surface)]'
                   }`}
                   title={t.status === 'Concluída' ? "Marcar como pendente" : "Marcar como concluída"}
                 >
-                  {t.status === 'Concluída' && <CheckCircle2 className="w-3 h-3 text-white" />}
+                  {t.status === 'Concluída' && <CheckCircle2 className="w-3.5 h-3.5 stroke-[3]" />}
                 </button>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                     <span className="text-[9px] font-extrabold uppercase bg-white/5 border border-white/5 text-slate-400 px-2 py-0.5 rounded-md">
+                     <span className="text-[10px] font-bold uppercase bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] px-2 py-0.5 rounded-md">
                        {t.type}
                      </span>
-                     <span className={`text-[9px] font-bold px-2 py-0.5 rounded-md border ${getPriorityColor(t.priority)}`}>
+                     <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${getPriorityColor(t.priority)}`}>
                        {t.priority}
                      </span>
-                     <span className={`text-[9px] px-1.5 py-0.5 rounded font-black uppercase border ${
-                        t.status === 'Concluída' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 
-                        t.status === 'Atrasado' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20 animate-pulse' : 
-                        'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                     <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold uppercase border ${
+                        t.status === 'Concluída' ? 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20' : 
+                        t.status === 'Atrasado' ? 'bg-rose-500/10 text-rose-500 border-rose-500/20' : 
+                        'bg-amber-500/10 text-amber-500 border-amber-500/20'
                      }`}>
                        {t.status}
                      </span>
                   </div>
-                  <h4 className={`text-sm font-bold leading-tight ${t.status === 'Concluída' ? 'text-slate-500 line-through' : 'text-white'}`}>
+                  <h4 className={`text-xs font-bold leading-snug ${t.status === 'Concluída' ? 'text-[var(--color-text-muted)] line-through' : 'text-[var(--color-text-primary)]'}`}>
                     {t.title}
                   </h4>
-                  <p className="text-[10px] text-slate-500 mt-1 font-semibold uppercase tracking-wider flex flex-wrap items-center gap-2">
-                    <span>Relacionado a: <span className="text-[#06B6D4] hover:underline cursor-pointer">{t.related}</span></span>
-                    <span className="text-slate-700">&bull;</span>
+                  <p className="text-[11px] text-[var(--color-text-muted)] mt-1 font-medium flex flex-wrap items-center gap-2">
+                    <span>Relacionado a: <strong className="text-[var(--color-primary-blue)]">{t.related}</strong></span>
+                    <span className="text-[var(--color-border-default)]">&bull;</span>
                     <span className="flex items-center gap-1">
                       <span>Responsável:</span>
                       <select
                         value={t.seller || ""}
                         onChange={(e) => updateTask(t.id, { seller: e.target.value })}
-                        className="bg-[var(--color-surface-elevated)] text-[10px] text-slate-300 font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1.5 py-0.5 border border-white/10 cursor-pointer hover:bg-white/10"
+                        className="bg-[var(--color-surface-sunken)] text-xs text-[var(--color-text-primary)] font-bold focus:outline-none focus:ring-1 focus:ring-[var(--color-primary-blue)] rounded px-2 py-0.5 border border-[var(--color-border-default)] cursor-pointer"
                       >
-                        <option value="" className="text-slate-400">Sem responsável</option>
+                        <option value="" className="text-[var(--color-text-muted)]">Sem responsável</option>
                         {sellerOptions.map(name => (
-                          <option key={name} value={name} className="text-white">{name}</option>
+                          <option key={name} value={name}>{name}</option>
                         ))}
                       </select>
                     </span>
                     
                     {t.relatedProductIds && t.relatedProductIds.length > 0 && (
                         <>
-                            <span className="text-slate-700">&bull;</span>
+                            <span className="text-[var(--color-border-default)]">&bull;</span>
                             <span className="flex items-center gap-1">
-                                <Sparkles className="w-3 h-3 text-[#06B6D4]" />
-                                <span className="text-[#06B6D4] truncate max-w-[150px] sm:max-w-xs">{t.relatedProductIds.join(', ')}</span>
+                                <Sparkles className="w-3 h-3 text-[var(--color-primary-blue)]" />
+                                <span className="text-[var(--color-primary-blue)] font-bold truncate max-w-[150px] sm:max-w-xs">{t.relatedProductIds.join(', ')}</span>
                             </span>
                         </>
                     )}
@@ -109,26 +110,27 @@ export function TasksListMode({
               </div>
 
               {/* Right Column: Date, Change Stage & Actions */}
-              <div className="flex flex-wrap items-center gap-3 sm:justify-end shrink-0 pl-8 sm:pl-0">
+              <div className="flex flex-wrap items-center gap-2.5 sm:justify-end shrink-0 pl-8 sm:pl-0">
                 <div className={`flex items-center gap-1.5 text-xs font-semibold ${
-                  t.status === 'Concluída' ? 'text-slate-500' :
-                  t.date.includes('Ontem') || t.status === 'Atrasado' ? 'text-rose-400' : 
-                  t.date.includes('Hoje') ? 'text-yellow-400' : 'text-slate-400'
+                  t.status === 'Concluída' ? 'text-[var(--color-text-muted)]' :
+                  t.date.includes('Ontem') || t.status === 'Atrasado' ? 'text-rose-500 font-bold' : 
+                  t.date.includes('Hoje') ? 'text-amber-500 font-bold' : 'text-[var(--color-text-muted)]'
                 }`}>
                   <Calendar className="w-3.5 h-3.5" />
                   <span>{t.date}</span>
                 </div>
 
                 {/* Change columns quickly on list mode */}
-                <div className="flex gap-1 items-center bg-[var(--color-surface)] border border-white/5 rounded-lg p-0.5">
+                <div className="flex gap-1 items-center bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] p-0.5">
                   {columns.map(col => (
                     <button
                       key={col.id}
+                      type="button"
                       onClick={() => moveTaskStatus(t.id, col.id)}
-                      className={`text-[9px] font-black px-2 py-1 rounded transition-colors cursor-pointer ${
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded transition-all cursor-pointer ${
                         t.status === col.id
-                        ? 'bg-[#2563EB] text-white'
-                        : 'text-slate-500 hover:text-white hover:bg-white/5'
+                        ? 'bg-[var(--color-primary-blue)] !text-white shadow-xs'
+                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
                       }`}
                     >
                       {col.nome}
@@ -138,15 +140,17 @@ export function TasksListMode({
 
                 {/* Action buttons */}
                 <button 
+                  type="button"
                   onClick={() => openEditTaskModal(t)}
-                  className="p-2 text-slate-500 hover:text-[#06B6D4] hover:bg-white/5 rounded-lg transition-colors ml-1 cursor-pointer"
+                  className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] rounded-lg transition-colors cursor-pointer"
                   title="Editar tarefa"
                 >
                   <Edit className="w-3.5 h-3.5" />
                 </button>
                 <button 
+                  type="button"
                   onClick={() => handleDeleteTask(t.id)}
-                  className="p-2 text-slate-500 hover:text-red-400 hover:bg-white/5 rounded-lg transition-colors ml-1 cursor-pointer"
+                  className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                   title="Excluir tarefa"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -155,10 +159,10 @@ export function TasksListMode({
             </div>
           ))
         ) : (
-          <div className="p-16 text-center text-slate-500">
-            <CheckSquare className="w-12 h-12 text-slate-700 mx-auto mb-3" />
-            <p className="text-sm font-bold uppercase tracking-widest text-slate-400">Nenhuma tarefa encontrada</p>
-            <p className="text-xs text-slate-500 mt-1">Experimente remover filtros de busca ou criar novas demandas no botão acima.</p>
+          <div className="p-16 text-center text-[var(--color-text-muted)]">
+            <CheckSquare className="w-10 h-10 opacity-30 mx-auto mb-2" />
+            <p className="text-sm font-bold text-[var(--color-text-primary)]">Nenhuma tarefa encontrada</p>
+            <p className="text-xs text-[var(--color-text-muted)] mt-1">Experimente remover filtros de busca ou criar novas demandas no botão acima.</p>
           </div>
         )}
       </div>

@@ -1,4 +1,4 @@
-import { Users, Mail, Calendar, X } from "lucide-react";
+import { Users, Mail, Calendar, X, Phone, Building } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
 
@@ -10,50 +10,57 @@ interface ColaboradorPerfilModalProps {
 export function ColaboradorPerfilModal({ colab, onClose }: ColaboradorPerfilModalProps) {
   if (!colab) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-150" onClick={onClose}>
-      <div className="w-full max-w-md bg-[var(--color-surface)] border border-white/10 rounded-[2rem] overflow-hidden shadow-2xl ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200" onClick={e => e.stopPropagation()}>
-        <div className="h-28 bg-gradient-to-r from-indigo-600/30 to-blue-600/30 relative flex items-end justify-center">
-          <button onClick={onClose} className="absolute top-4 right-4 w-8 h-8 rounded-full bg-black/40 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150" onClick={onClose}>
+      <div className="w-full max-w-md bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+        <div className="h-20 bg-[var(--color-primary-blue)]/15 relative flex items-end justify-center border-b border-[var(--color-border-subtle)]">
+          <button 
+            onClick={onClose} 
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-[var(--color-surface)] border border-[var(--color-border-default)] flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+          >
             <X className="w-4 h-4" />
           </button>
-          <div className="w-20 h-20 rounded-2xl bg-[var(--color-surface)] border-4 border-[var(--color-surface)] -mb-10 flex items-center justify-center text-indigo-500">
-            <Users className="w-8 h-8 opacity-40" />
+          <div className="w-16 h-16 rounded-2xl bg-[var(--color-primary-blue)] text-white font-bold text-xl border-4 border-[var(--color-surface-elevated)] -mb-8 flex items-center justify-center shadow-md">
+            {colab.nome.substring(0, 2).toUpperCase()}
           </div>
         </div>
-        <div className="px-8 pt-14 pb-8 text-center">
-          <Badge className={`${
-            colab.status === "Ativo"  ? "bg-emerald-500/10 text-emerald-500" :
-            colab.status === "Férias" ? "bg-blue-500/10 text-blue-500" :
-                                        "bg-rose-500/10 text-rose-500"
-          } font-black uppercase tracking-widest text-[8px] px-3 py-1 border-none mb-3`}>
-            {colab.status}
-          </Badge>
-          <h2 className="text-xl font-black text-white uppercase tracking-tight">{colab.nome}</h2>
-          <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">{colab.cargo}</p>
+        <div className="p-6 pt-10 text-center space-y-4">
+          <div>
+            <Badge variant={colab.status === "Ativo" ? "success" : colab.status === "Férias" ? "info" : "destructive"}>
+              ● {colab.status}
+            </Badge>
+            <h2 className="text-base font-bold text-[var(--color-text-primary)] mt-2">{colab.nome}</h2>
+            <p className="text-xs text-[var(--color-text-muted)] font-medium">{colab.cargo}</p>
+          </div>
 
-          <div className="grid grid-cols-2 gap-4 border-y border-white/5 py-5 mt-6 mb-6 text-left">
+          <div className="grid grid-cols-2 gap-3 border-y border-[var(--color-border-subtle)] py-3 text-left">
             <div>
-              <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Departamento</div>
-              <div className="text-sm font-bold text-slate-200">{colab.departamento || "—"}</div>
+              <div className="text-[10px] font-black text-[var(--color-text-faint)] uppercase">Departamento</div>
+              <div className="text-xs font-bold text-[var(--color-text-primary)]">{colab.departamento || "—"}</div>
             </div>
             <div>
-              <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Desempenho</div>
-              <div className="text-sm font-bold text-emerald-400">{colab.desempenho ?? 0}%</div>
+              <div className="text-[10px] font-black text-[var(--color-text-faint)] uppercase">Desempenho</div>
+              <div className="text-xs font-bold text-emerald-500">{colab.desempenho ?? 100}%</div>
             </div>
           </div>
 
-          <div className="space-y-4 text-left">
-            <div className="flex items-center gap-3 text-slate-400">
-              <Mail className="w-4 h-4 shrink-0" />
-              <span className="text-sm font-medium truncate">{colab.email}</span>
+          <div className="space-y-2 text-left text-xs text-[var(--color-text-muted)]">
+            <div className="flex items-center gap-2.5">
+              <Mail className="w-4 h-4 text-[var(--color-text-faint)] shrink-0" />
+              <span className="truncate">{colab.email}</span>
             </div>
-            <div className="flex items-center gap-3 text-slate-400">
-              <Calendar className="w-4 h-4 shrink-0" />
-              <span className="text-sm font-medium">Admissão: {colab.dataAdmissao || "—"}</span>
+            {colab.phone && (
+              <div className="flex items-center gap-2.5">
+                <Phone className="w-4 h-4 text-[var(--color-text-faint)] shrink-0" />
+                <span className="font-mono">{colab.phone}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2.5">
+              <Calendar className="w-4 h-4 text-[var(--color-text-faint)] shrink-0" />
+              <span>Admissão: {colab.dataAdmissao || "—"}</span>
             </div>
           </div>
 
-          <Button onClick={onClose} className="w-full mt-8 h-11 bg-indigo-600 hover:bg-indigo-700 font-black uppercase tracking-widest text-[10px] rounded-xl">
+          <Button onClick={onClose} className="w-full h-9 text-xs font-bold shadow-xs">
             Fechar
           </Button>
         </div>

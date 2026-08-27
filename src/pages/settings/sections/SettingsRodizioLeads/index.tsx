@@ -12,22 +12,24 @@ const TABS = [
 
 export function ConfigRodizioLeads() {
   const { user, tenantIdMap } = useAuth();
-  const tenantId = user?.tenantName ? tenantIdMap[user.tenantName] : undefined;
+  const tenantId = user?.tenantName ? tenantIdMap[user.tenantName] : "default-tenant";
   const [tab, setTab] = useState<"closers" | "formulario">("formulario");
 
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl space-y-6 animate-in fade-in duration-300 pb-12">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <Shuffle className="w-6 h-6 text-blue-400" /> Rodízio de Leads
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)] flex items-center gap-2">
+          Rodízio de Leads <Shuffle className="w-5 h-5 text-[var(--color-primary-blue)]" />
         </h1>
-        <p className="text-sm text-slate-400 mt-1">Configure a distribuição automática de leads entre SDRs e Closers.</p>
+        <p className="text-sm text-[var(--color-text-muted)]">Configure a distribuição automática de leads entre SDRs e Closers com base em capacidade e tags.</p>
       </div>
 
-      <div className="flex gap-1 p-1 bg-white/[0.03] border border-white/5 rounded-xl w-fit">
+      <div className="flex items-center gap-1.5 p-1 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl w-fit shadow-sm">
         {TABS.map(t => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-[11px] font-black uppercase tracking-widest transition-all ${tab === t.key ? "bg-white/10 text-white shadow" : "text-slate-500 hover:text-slate-300"}`}
+          <button 
+            key={t.key} 
+            onClick={() => setTab(t.key)}
+            className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${tab === t.key ? "bg-[var(--color-primary-blue)] !text-white shadow-xs" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]"}`}
           >
             {t.icon} {t.label}
           </button>
@@ -37,8 +39,7 @@ export function ConfigRodizioLeads() {
       <AnimatePresence mode="wait">
         <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }}>
           {tab === "closers" && <TabClosersCRM />}
-          {tab === "formulario" && tenantId && <TabFormularioSDR tenantId={tenantId} />}
-          {tab === "formulario" && !tenantId && <p className="text-sm text-slate-500">Carregando contexto do usuário...</p>}
+          {tab === "formulario" && <TabFormularioSDR tenantId={tenantId} />}
         </motion.div>
       </AnimatePresence>
     </div>

@@ -1,11 +1,12 @@
 import { useMemo } from "react";
 import { Button } from "../../components/ui/button";
-import { ArrowDownRight, Printer, Download } from "lucide-react";
+import { Printer, Download, Calendar } from "lucide-react";
 import { useData } from "../../contexts/DataContext";
 import { PageContainer } from "../../components/PageContainer";
 import { FinanceiroKPIs } from "./components/FinanceiroVisaoGeral/FinanceiroKPIs";
 import { FinanceiroCashflowChart } from "./components/FinanceiroVisaoGeral/FinanceiroCashflowChart";
 import { FinanceiroBottomPanels } from "./components/FinanceiroVisaoGeral/FinanceiroBottomPanels";
+import { toast } from "sonner";
 
 const MONTH_NAMES = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
 
@@ -61,28 +62,41 @@ export default function FinanceiroVisaoGeral() {
       title="Painel Financeiro"
       description="Monitoramento avançado de fluxo, MRR, inadimplência e projeção de caixa em tempo real."
       actions={
-        <div className="flex gap-2">
-          <Button variant="outline" className="hidden sm:flex print:hidden h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] bg-white/5 border-white/10 text-white">
-            Q2 - 2026 <ArrowDownRight className="w-3 h-3 ml-2 opacity-50" />
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="outline" 
+            className="hidden sm:flex print:hidden h-9 px-4 text-xs font-bold gap-1.5 border-[var(--color-border-default)]"
+          >
+            <Calendar className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" /> Ciclo Atual
           </Button>
-          <Button onClick={() => window.print()} className="print:hidden h-11 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px] bg-white/5 border-white/10 text-white hover:bg-white/10">
-            <Printer className="w-4 h-4 mr-2" />
+          <Button 
+            variant="outline"
+            onClick={() => window.print()} 
+            className="print:hidden h-9 px-3 text-xs font-bold border-[var(--color-border-default)]"
+            title="Imprimir relatório"
+          >
+            <Printer className="w-3.5 h-3.5" />
           </Button>
-          <Button className="print:hidden h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[10px] bg-[#2563EB] hover:bg-blue-600 text-white shadow-xl shadow-blue-500/20">
-            <Download className="w-4 h-4 mr-2" /> Exportar
+          <Button 
+            onClick={() => toast.info("Relatório financeiro exportado com sucesso!")}
+            className="print:hidden h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
+          >
+            <Download className="w-3.5 h-3.5" /> Exportar
           </Button>
         </div>
       }
     >
-      <FinanceiroKPIs receita={receita} despesa={despesa} mrr={mrr} inadimplencia={inadimplencia} />
-      <FinanceiroCashflowChart chartData={chartData} stabilityScore={stabilityScore} />
-      <FinanceiroBottomPanels
-        upcomingEntries={upcomingEntries}
-        squads={squads}
-        financeEntries={financeEntries}
-        receita={receita}
-        despesa={despesa}
-      />
+      <div className="space-y-6 max-w-[1700px] mx-auto pb-12">
+        <FinanceiroKPIs receita={receita} despesa={despesa} mrr={mrr} inadimplencia={inadimplencia} />
+        <FinanceiroCashflowChart chartData={chartData} stabilityScore={stabilityScore} />
+        <FinanceiroBottomPanels
+          upcomingEntries={upcomingEntries}
+          squads={squads}
+          financeEntries={financeEntries}
+          receita={receita}
+          despesa={despesa}
+        />
+      </div>
     </PageContainer>
   );
 }

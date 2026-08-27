@@ -149,35 +149,38 @@ export function ActiveChatArea({
           </div>
         </div>
         
-        <div className="flex items-center gap-1 text-slate-400 shrink-0">
+        <div className="flex items-center gap-1 text-[var(--color-text-muted)] shrink-0">
           <button 
+            type="button"
             onClick={() => setRightPanel(p => p === "ai" ? "none" : "ai")}
             title="Assistente de IA"
-            className={`p-2 rounded-full cursor-pointer transition-all ${rightPanel === "ai" ? 'bg-blue-600/20 text-blue-400 ring-1 ring-blue-500/50' : 'hover:bg-white/10 hover:text-white'}`}
+            className={`p-2 rounded-lg cursor-pointer transition-all ${rightPanel === "ai" ? 'bg-[var(--color-primary-blue)]/20 text-[var(--color-primary-blue)] ring-1 ring-[var(--color-primary-blue)]/50' : 'hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-primary)]'}`}
           >
-            <Sparkles className={`w-5 h-5 ${rightPanel === "ai" ? 'animate-pulse' : ''}`} />
+            <Sparkles className={`w-4 h-4 ${rightPanel === "ai" ? 'animate-pulse' : ''}`} />
           </button>
-          <div className="w-[1px] h-6 bg-white/10 mx-2"></div>
-          <button className="p-2 hover:bg-white/10 hover:text-white rounded-full cursor-pointer transition-colors hidden sm:flex"><Search className="w-5 h-5" /></button>
-          <button className="p-2 hover:bg-white/10 hover:text-white rounded-full cursor-pointer transition-colors"><Phone className="w-5 h-5" /></button>
+          <div className="w-[1px] h-5 bg-[var(--color-border-subtle)] mx-1"></div>
+          <button type="button" className="p-2 hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-primary)] rounded-lg cursor-pointer transition-colors hidden sm:flex"><Search className="w-4 h-4" /></button>
+          <button type="button" className="p-2 hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-primary)] rounded-lg cursor-pointer transition-colors"><Phone className="w-4 h-4" /></button>
           <button 
+            type="button"
             onClick={() => setRightPanel(p => p === "info" ? "none" : "info")}
             title="Info do Contato"
-            className={`p-2 rounded-full cursor-pointer transition-colors ${rightPanel === "info" ? 'bg-white/10 text-white' : 'hover:bg-white/10 hover:text-white'}`}
+            className={`p-2 rounded-lg cursor-pointer transition-colors ${rightPanel === "info" ? 'bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)]' : 'hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-primary)]'}`}
           >
-            <MoreVertical className="w-5 h-5" />
+            <MoreVertical className="w-4 h-4" />
           </button>
         </div>
       </div>
 
       {/* View Mode Switcher and Binding Status header */}
-      <div className="shrink-0 bg-[#0F172A]/40 border-b border-white/5 py-2 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-        <div className="flex bg-black/40 rounded-xl p-1 border border-white/5 w-fit">
+      <div className="shrink-0 bg-[var(--color-surface-sunken)] border-b border-[var(--color-border-subtle)] py-2 px-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="flex bg-[var(--color-surface)] rounded-xl p-0.5 border border-[var(--color-border-default)] w-fit">
           <button 
+            type="button"
             onClick={() => setViewMode("chat")}
-            className={`px-3 py-1.5 rounded-lg text-[11px] font-bold tracking-tight transition-all cursor-pointer ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold tracking-tight transition-all cursor-pointer ${
               viewMode === "chat" 
-                ? "bg-blue-600 text-white shadow-md shadow-blue-500/10" 
+                ? "bg-[var(--color-primary-blue)] !text-white shadow-xs" 
                 : "text-slate-400 hover:text-white"
             }`}
           >

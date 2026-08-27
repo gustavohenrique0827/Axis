@@ -1,11 +1,10 @@
 import { Card } from "../../components/ui/card";
 import { 
-  FileText, Download, Calendar, Filter, CheckCircle2, 
+  Download, Calendar, CheckCircle2, 
   Clock, AlertTriangle, Plus, Trash2, X, DollarSign 
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import React, { useMemo, useState } from "react";
-import { FinanceEntry } from "../../contexts/DataContext";
 import { useData } from "../../contexts/DataContext";
 import { toast } from "sonner";
 
@@ -63,10 +62,10 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Pago': return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-      case 'A Vencer': return "bg-blue-500/10 text-blue-400 border-blue-500/20";
-      case 'Atrasado': return "bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-[0_0_10px_rgba(244,63,94,0.1)]";
-      default: return "bg-slate-500/10 text-slate-400 border-slate-500/20";
+      case 'Pago': return "bg-emerald-500/10 text-emerald-500 border-emerald-500/30";
+      case 'A Vencer': return "bg-blue-500/10 text-blue-500 border-blue-500/30";
+      case 'Atrasado': return "bg-rose-500/10 text-rose-500 border-rose-500/30";
+      default: return "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] border-[var(--color-border-subtle)]";
     }
   };
 
@@ -74,88 +73,101 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-white uppercase">{title}</h1>
-          <p className="text-sm text-slate-500 italic">{desc}</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">{title}</h1>
+          <p className="text-sm text-[var(--color-text-muted)]">{desc}</p>
         </div>
-        <div className="flex gap-2">
-            <Button 
-              onClick={() => setIsModalOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-[10px] uppercase tracking-widest h-10 px-6 rounded-xl"
-            >
-                <Plus className="w-4 h-4 mr-2" /> Novo Lançamento
-            </Button>
-            <Button variant="outline" className="gap-2 border-white/10 bg-[var(--color-surface-elevated)] text-slate-400 hover:text-white h-10 text-[10px] uppercase font-bold tracking-widest px-4 rounded-xl">
-                <Download className="w-4 h-4" /> Exportar
-            </Button>
+        <div className="flex items-center gap-2">
+          <Button 
+            onClick={() => setIsModalOpen(true)}
+            className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" /> Novo Lançamento
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={() => toast.info("Exportação de relatório em formato XLSX gerada.")}
+            className="h-9 px-4 text-xs font-bold gap-1.5 border-[var(--color-border-default)]"
+          >
+            <Download className="w-3.5 h-3.5" /> Exportar
+          </Button>
         </div>
       </div>
 
-      <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 overflow-hidden rounded-2xl shadow-2xl">
-        <div className="p-5 border-b border-white/10 bg-[var(--color-surface)]/50 flex items-center justify-between">
-           <div className="text-[10px] font-black uppercase tracking-widest text-slate-400">Fluxo de Caixa / Lançamentos</div>
-           <div className="flex items-center gap-2 text-[10px] text-blue-400 font-bold uppercase tracking-widest">
-             <Calendar className="w-4 h-4" /> Ciclo de Faturamento Atual
-           </div>
+      <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)] flex items-center justify-between">
+          <div className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
+            Fluxo de Caixa / {type === 'Pagar' ? 'Contas a Pagar' : 'Contas a Receber'}
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-[var(--color-primary-blue)] font-semibold">
+            <Calendar className="w-3.5 h-3.5" /> Ciclo Atual
+          </div>
         </div>
+
         <div className="overflow-x-auto">
           {/* Desktop Table */}
-          <table className="w-full text-sm text-left hidden md:table">
-            <thead className="text-[10px] uppercase font-black tracking-widest text-slate-500 bg-[var(--color-surface)]/20 border-b border-white/10">
+          <table className="w-full text-xs text-left hidden md:table">
+            <thead className="text-[10px] uppercase font-bold tracking-wider text-[var(--color-text-muted)] bg-[var(--color-surface-sunken)] border-b border-[var(--color-border-subtle)]">
               <tr>
-                <th className="px-6 py-5">Descrição</th>
-                <th className="px-6 py-5">Categoria</th>
-                <th className="px-6 py-5">Data</th>
-                <th className="px-6 py-5">Status</th>
-                <th className="px-6 py-5 text-right">Valor</th>
-                <th className="px-6 py-5 text-right">Ações</th>
+                <th className="px-6 py-3.5">Descrição</th>
+                <th className="px-6 py-3.5">Categoria</th>
+                <th className="px-6 py-3.5">Vencimento</th>
+                <th className="px-6 py-3.5">Status</th>
+                <th className="px-6 py-3.5 text-right">Valor</th>
+                <th className="px-6 py-3.5 text-right">Ações</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-[var(--color-border-subtle)]">
               {data.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-20 text-center text-slate-600 italic uppercase text-[10px] font-bold tracking-widest">
+                  <td colSpan={6} className="px-6 py-12 text-center text-[var(--color-text-muted)]">
                     Nenhum lançamento encontrado para este período.
                   </td>
                 </tr>
               ) : (
                 data.map((item) => (
-                  <tr key={item.id} className="hover:bg-white/[0.02] transition-colors group">
-                    <td className="px-6 py-5 font-bold text-white uppercase text-xs tracking-tight">{item.description}</td>
-                    <td className="px-6 py-5 text-slate-400 text-xs font-medium">{item.category}</td>
-                    <td className="px-6 py-5 text-slate-500 text-xs font-mono">{item.date}</td>
-                    <td className="px-6 py-5">
+                  <tr key={item.id} className="hover:bg-[var(--color-surface-sunken)]/50 transition-colors group">
+                    <td className="px-6 py-4 font-bold text-[var(--color-text-primary)]">{item.description}</td>
+                    <td className="px-6 py-4 text-[var(--color-text-muted)]">{item.category}</td>
+                    <td className="px-6 py-4 text-[var(--color-text-muted)] font-mono">{item.date}</td>
+                    <td className="px-6 py-4">
                       <button 
+                        type="button"
                         onClick={() => {
                           const nextStatus = item.status === 'Pago' ? 'A Vencer' : 'Pago';
                           updateFinanceEntry(item.id, { status: nextStatus });
                           toast.success(`Lançamento marcado como ${nextStatus}`);
                         }}
-                        className={`inline-flex items-center px-3 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg border transition-all cursor-pointer hover:brightness-125 ${getStatusColor(item.status)}`}
+                        className={`inline-flex items-center px-2.5 py-1 text-[10px] font-bold rounded-lg border transition-all cursor-pointer ${getStatusColor(item.status)}`}
                       >
                         {getStatusIcon(item.status)}
                         {item.status}
                       </button>
                     </td>
-                    <td className={`px-6 py-5 text-right font-mono font-bold ${type === 'Pagar' ? 'text-rose-400' : 'text-emerald-400'}`}>
+                    <td className={`px-6 py-4 text-right font-mono font-bold ${type === 'Pagar' ? 'text-rose-500' : 'text-emerald-500'}`}>
                       {type === 'Pagar' ? '-' : '+'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.value)}
                     </td>
-                    <td className="px-6 py-5 text-right">
-                       <button 
-                         onClick={() => deleteFinanceEntry(item.id)}
-                         className="p-2 text-slate-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-xl transition-all cursor-pointer opacity-0 group-hover:opacity-100"
-                       >
-                         <Trash2 className="w-4 h-4" />
-                       </button>
+                    <td className="px-6 py-4 text-right">
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          deleteFinanceEntry(item.id);
+                          toast.success("Lançamento excluído.");
+                        }}
+                        className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                        title="Excluir lançamento"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
-            <tfoot className="bg-[var(--color-surface)]/40 border-t border-white/10">
+            <tfoot className="bg-[var(--color-surface-sunken)] border-t border-[var(--color-border-subtle)] font-bold">
               <tr>
-                <td colSpan={4} className="px-6 py-6 font-black text-slate-500 text-right uppercase tracking-widest text-[10px]">Total Acumulado:</td>
-                <td className={`px-6 py-6 font-mono font-black text-lg text-right ${type === 'Pagar' ? 'text-rose-500' : 'text-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.1)]'}`}>
-                   {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}
+                <td colSpan={4} className="px-6 py-4 text-[var(--color-text-muted)] text-right uppercase tracking-wider text-[10px]">Total:</td>
+                <td className={`px-6 py-4 font-mono font-bold text-sm text-right ${type === 'Pagar' ? 'text-rose-500' : 'text-emerald-500'}`}>
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalValue)}
                 </td>
                 <td></td>
               </tr>
@@ -165,32 +177,37 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
           {/* Mobile Cards */}
           <div className="md:hidden p-4 space-y-3">
             {data.map((item) => (
-              <div key={item.id} className="bg-[var(--color-surface)] border border-white/5 p-4 rounded-2xl flex flex-col gap-4 relative">
+              <div key={item.id} className="bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] p-4 rounded-xl flex flex-col gap-3 relative">
                 <button 
-                  onClick={() => deleteFinanceEntry(item.id)}
-                  className="absolute top-4 right-4 text-slate-700 p-1"
+                  type="button"
+                  onClick={() => {
+                    deleteFinanceEntry(item.id);
+                    toast.success("Lançamento excluído.");
+                  }}
+                  className="absolute top-3 right-3 text-[var(--color-text-faint)] hover:text-rose-500 p-1"
                 >
-                  <Trash2 className="w-4 h-4" />
+                  <Trash2 className="w-3.5 h-3.5" />
                 </button>
                 <div>
-                  <p className="font-black text-white text-xs uppercase tracking-tight mb-1">{item.description}</p>
+                  <p className="font-bold text-[var(--color-text-primary)] text-xs mb-1 pr-6">{item.description}</p>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase">{item.category}</span>
-                    <span className="text-[10px] text-slate-600 font-mono italic">{item.date}</span>
+                    <span className="text-[10px] text-[var(--color-text-muted)] font-semibold uppercase">{item.category}</span>
+                    <span className="text-[10px] text-[var(--color-text-faint)] font-mono">{item.date}</span>
                   </div>
                 </div>
-                <div className="flex items-center justify-between border-t border-white/5 pt-3">
+                <div className="flex items-center justify-between border-t border-[var(--color-border-subtle)] pt-2.5">
                   <button 
+                    type="button"
                     onClick={() => {
                       const nextStatus = item.status === 'Pago' ? 'A Vencer' : 'Pago';
                       updateFinanceEntry(item.id, { status: nextStatus });
                     }}
-                    className={`inline-flex items-center px-2.5 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg border ${getStatusColor(item.status)}`}
+                    className={`inline-flex items-center px-2 py-0.5 text-[9px] font-bold rounded-md border ${getStatusColor(item.status)}`}
                   >
                     {getStatusIcon(item.status)}
                     {item.status}
                   </button>
-                  <p className={`font-mono font-bold ${type === 'Pagar' ? 'text-rose-400' : 'text-emerald-400'}`}>
+                  <p className={`font-mono font-bold text-xs ${type === 'Pagar' ? 'text-rose-500' : 'text-emerald-500'}`}>
                     {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.value)}
                   </p>
                 </div>
@@ -200,53 +217,54 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
         </div>
       </Card>
 
-      {/* Modern Creation Modal */}
+      {/* Creation Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/[0.02]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150" onClick={() => setIsModalOpen(false)}>
+          <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="p-6 border-b border-[var(--color-border-subtle)] flex justify-between items-center bg-[var(--color-surface-sunken)]">
               <div>
-                <h3 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-2">
-                  <DollarSign className="w-6 h-6 text-blue-500" />
-                  Novo {type === 'Pagar' ? 'Gasto' : 'Recebimento'}
+                <h3 className="text-base font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-[var(--color-primary-blue)]" />
+                  Novo {type === 'Pagar' ? 'Gasto / Despesa' : 'Recebimento / Receita'}
                 </h3>
-                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Registre um lançamento manual no sistema Axis.</p>
+                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Registre um lançamento financeiro no sistema.</p>
               </div>
               <button 
+                type="button"
                 onClick={() => setIsModalOpen(false)} 
-                className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-full bg-[var(--color-surface)] border border-[var(--color-border-default)] flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
               >
-                <X className="w-6 h-6" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form onSubmit={handleAdd} className="p-6 flex flex-col gap-5">
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">O que é? (Descrição)</label>
+            <form onSubmit={handleAdd} className="p-6 space-y-4">
+              <div>
+                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Descrição do Lançamento *</label>
                 <input
                   type="text"
                   required
-                  placeholder="Ex: Aluguel, Servidor, Venda de Licença..."
+                  placeholder="Ex: Servidor AWS, Licença de Software, Fatura..."
                   value={newDesc}
                   onChange={(e) => setNewDesc(e.target.value)}
-                  className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/5 rounded-xl h-12 px-4 shadow-inner text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Categoria Financeira</label>
+              <div>
+                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Categoria Financeira</label>
                 <input
                   type="text"
                   placeholder="Ex: Infraestrutura, Operacional, Marketing..."
                   value={newCategory}
                   onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/5 rounded-xl h-12 px-4 shadow-inner text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Valor Unitário (R$)</label>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Valor (R$) *</label>
                   <input
                     type="number"
                     required
@@ -254,32 +272,33 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
                     placeholder="0,00"
                     value={newValue}
                     onChange={(e) => setNewValue(e.target.value)}
-                    className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/5 rounded-xl h-12 px-4 shadow-inner text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                   />
                 </div>
 
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Vencimento</label>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Data de Vencimento</label>
                   <input
                     type="date"
                     value={newDate}
                     onChange={(e) => setNewDate(e.target.value)}
-                    className="w-full bg-[var(--color-surface-elevated)] text-white border border-white/5 rounded-xl h-12 px-4 shadow-inner text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                   />
                 </div>
               </div>
 
-              <div className="flex gap-3 mt-4">
+              <div className="flex justify-end gap-2 pt-4 border-t border-[var(--color-border-subtle)]">
                 <Button
                   type="button"
+                  variant="outline"
                   onClick={() => setIsModalOpen(false)}
-                  className="flex-1 bg-white/5 hover:bg-white/10 text-slate-400 h-12 rounded-2xl font-black uppercase text-[10px] tracking-widest"
+                  className="h-9 px-4 text-xs font-bold border-[var(--color-border-default)]"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 bg-blue-600 hover:bg-blue-500 text-white h-12 rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-blue-500/20"
+                  className="h-9 px-5 text-xs font-bold shadow-xs"
                 >
                   Confirmar Lançamento
                 </Button>

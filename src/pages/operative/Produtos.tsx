@@ -65,18 +65,19 @@ export default function Catalog() {
       title="Produtos & SKUs Axis"
       description="Painel Central de Gestão de Preços, Margem de Lucro, SKU e Comissionamento Comercial."
       actions={
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <Button
+            variant="outline"
             onClick={exportToExcelSimulator}
-            className="gap-2 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 rounded-xl px-4 h-11 text-[10px] uppercase font-black transition-all"
+            className="h-9 px-4 text-xs font-bold gap-1.5 border-[var(--color-border-default)]"
           >
-            <FileSpreadsheet className="w-4 h-4" /> Exportar Planilha
+            <FileSpreadsheet className="w-3.5 h-3.5" /> Exportar Planilha
           </Button>
           <Button
             onClick={f.handleOpenAddModal}
-            className="gap-2 bg-[#2563EB] hover:bg-blue-600 text-white rounded-xl px-5 h-11 font-black uppercase text-[10px] shadow-xl shadow-blue-500/20"
+            className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
           >
-            <Plus className="w-4 h-4" /> Cadastrar Produto
+            <Plus className="w-3.5 h-3.5" /> Cadastrar Produto
           </Button>
         </div>
       }

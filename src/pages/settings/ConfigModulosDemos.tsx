@@ -368,16 +368,18 @@ export default function ConfigModulosDemos() {
             </div>
             <div className="flex items-center gap-2 shrink-0">
               <button
+                type="button"
                 onClick={() => handleReloadTenants()}
                 disabled={reloading}
                 title="Recarregar parceiros do banco"
-                className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-slate-400 hover:text-white transition-all"
+                className="p-2.5 bg-[var(--color-surface-sunken)] hover:bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-all cursor-pointer"
               >
                 <RefreshCw className={`w-4 h-4 ${reloading ? 'animate-spin' : ''}`} />
               </button>
               <button
+                type="button"
                 onClick={() => { setShowAddTenant(v => !v); setShowEditTenant(false); setConfirmingDelete(false); }}
-                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+                className="flex items-center gap-2 px-4 py-2.5 bg-[var(--color-primary-blue)] hover:bg-blue-600 text-white text-xs font-bold uppercase tracking-wider rounded-xl transition-all shadow-xs cursor-pointer"
               >
                 {showAddTenant ? <X className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
                 {showAddTenant ? "Cancelar" : "Nova Empresa"}
@@ -387,7 +389,7 @@ export default function ConfigModulosDemos() {
 
           {/* Company list */}
           {tenantOptions.length <= 1 ? (
-            <div className="p-3 bg-yellow-500/5 border border-yellow-500/20 rounded-xl text-xs text-yellow-400/80 flex items-center gap-2">
+            <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-xs text-amber-500 flex items-center gap-2">
               <span>⚠️</span>
               <span>Nenhum parceiro cadastrado ainda. Clique em <strong>Nova Empresa</strong> para adicionar.</span>
             </div>
@@ -400,38 +402,41 @@ export default function ConfigModulosDemos() {
                 return (
                   <div
                     key={name}
-                    className={`flex items-center gap-3 p-3 rounded-2xl border transition-all ${isSelected ? 'bg-blue-600/[0.06] border-blue-500/40' : 'bg-slate-900/50 border-white/5 hover:border-white/10'}`}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${isSelected ? 'bg-[var(--color-primary-blue)]/10 border-[var(--color-primary-blue)]' : 'bg-[var(--color-surface-sunken)] border-[var(--color-border-subtle)] hover:border-[var(--color-border-default)]'}`}
                   >
                     <button
+                      type="button"
                       onClick={() => setSelectedTenant(name)}
-                      className="flex-1 min-w-0 flex items-center gap-3 text-left"
+                      className="flex-1 min-w-0 flex items-center gap-3 text-left cursor-pointer"
                     >
-                      <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-black shrink-0 ${isSelected ? 'bg-blue-600 text-white' : 'bg-white/5 text-slate-400'}`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${isSelected ? 'bg-[var(--color-primary-blue)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text-muted)] border border-[var(--color-border-default)]'}`}>
                         {name[0]}
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-bold text-white truncate">{name}</p>
-                        <p className="text-[10px] text-slate-500 uppercase font-bold tracking-wider">{isMaster ? "Master" : detail?.niche || "—"}</p>
+                        <p className="text-xs font-bold text-[var(--color-text-primary)] truncate">{name}</p>
+                        <p className="text-[10px] text-[var(--color-text-muted)] uppercase font-bold tracking-wider">{isMaster ? "Master" : detail?.niche || "—"}</p>
                       </div>
                       {isSelected && (
-                        <span className="ml-auto shrink-0 text-[9px] font-black uppercase tracking-widest text-blue-400 bg-blue-500/10 border border-blue-500/20 px-2 py-1 rounded-full">
+                        <span className="ml-auto shrink-0 text-[9px] font-bold uppercase tracking-wider text-[var(--color-primary-blue)] bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/20 px-2 py-0.5 rounded-full">
                           Gerenciando
                         </span>
                       )}
                     </button>
                     {!isMaster && (
-                      <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="flex items-center gap-1 shrink-0">
                         <button
+                          type="button"
                           onClick={() => openEditTenant(name)}
                           title="Editar empresa"
-                          className="p-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-slate-400 hover:text-white transition-all"
+                          className="p-1.5 bg-[var(--color-surface)] hover:bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-all cursor-pointer"
                         >
                           {showEditTenant && isSelected ? <X className="w-3.5 h-3.5" /> : <Pencil className="w-3.5 h-3.5" />}
                         </button>
                         <button
+                          type="button"
                           onClick={() => openDeleteConfirm(name)}
                           title="Excluir empresa"
-                          className="p-2 bg-rose-600/10 hover:bg-rose-600/20 border border-rose-500/25 rounded-lg text-rose-400 hover:text-rose-300 transition-all"
+                          className="p-1.5 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 rounded-lg text-rose-500 hover:text-rose-600 transition-all cursor-pointer"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
@@ -516,15 +521,17 @@ export default function ConfigModulosDemos() {
                         </p>
                         <div className="flex gap-2">
                           <button
+                            type="button"
                             onClick={() => setConfirmingDelete(false)}
-                            className="flex-1 py-2.5 bg-white/5 hover:bg-white/10 text-slate-300 text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+                            className="flex-1 py-2 bg-[var(--color-surface-sunken)] hover:bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] text-xs font-bold rounded-xl transition-all cursor-pointer"
                           >
                             Cancelar
                           </button>
                           <button
+                            type="button"
                             onClick={handleDeleteTenant}
                             disabled={deletingTenant}
-                            className="flex-1 py-2.5 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+                            className="flex-1 py-2 bg-rose-600 hover:bg-rose-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all cursor-pointer"
                           >
                             {deletingTenant ? "Excluindo..." : "Confirmar exclusão"}
                           </button>
@@ -537,37 +544,37 @@ export default function ConfigModulosDemos() {
                   {showEditTenant && (
                     <ErrorBoundary compact>
                     <div className="overflow-hidden">
-                      <div className="p-4 bg-[var(--color-surface)] border border-blue-500/20 rounded-xl space-y-3">
-                        <div className="flex items-center gap-2 text-blue-400 text-xs font-black uppercase tracking-widest">
+                      <div className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-primary-blue)]/30 rounded-xl space-y-3 shadow-sm">
+                        <div className="flex items-center gap-2 text-[var(--color-primary-blue)] text-xs font-bold uppercase tracking-wider">
                           <Pencil className="w-4 h-4" /> Editar "{selectedTenant}"
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div className="space-y-1">
-                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Nome da Empresa</label>
+                            <label className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase tracking-wider">Nome da Empresa</label>
                             <input
                               value={editTenantName}
                               onChange={e => setEditTenantName(e.target.value)}
-                              className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-500/50"
+                              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                             />
                           </div>
                           <div className="space-y-1">
-                            <label className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Nicho</label>
+                            <label className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase tracking-wider">Nicho</label>
                             <div className="relative">
                               <select
                                 value={editTenantNiche}
                                 onChange={e => setEditTenantNiche(e.target.value)}
-                                className="w-full appearance-none bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50 pr-8"
+                                className="w-full appearance-none bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] pr-8"
                               >
                                 {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
                               </select>
-                              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
+                              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-text-muted)] pointer-events-none" />
                             </div>
                           </div>
                         </div>
 
                         <div className="pt-1 space-y-1">
-                          <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Acesso do administrador da empresa</p>
-                          <p className="text-[10px] text-slate-600">
+                          <p className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase tracking-wider">Acesso do administrador da empresa</p>
+                          <p className="text-[10px] text-[var(--color-text-faint)]">
                             {loadingAdminUser ? "Carregando administrador..." : editAdminUserId ? "Altere o e-mail e/ou defina uma nova senha. Deixe a senha em branco para mantê-la." : "Nenhum administrador encontrado para editar credenciais."}
                           </p>
                         </div>
@@ -582,9 +589,10 @@ export default function ConfigModulosDemos() {
                         />
 
                         <button
+                          type="button"
                           onClick={handleSaveEditTenant}
                           disabled={savingEdit}
-                          className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all"
+                          className="w-full py-2 bg-[var(--color-primary-blue)] hover:bg-blue-600 disabled:opacity-50 text-white text-xs font-bold rounded-xl transition-all shadow-xs cursor-pointer"
                         >
                           {savingEdit ? "Salvando..." : "Salvar Alterações"}
                         </button>
@@ -597,36 +605,39 @@ export default function ConfigModulosDemos() {
           <div className="lg:col-span-2 space-y-4">
             <div className="space-y-6">
               <div className="space-y-1">
-                <h3 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                  <Layers className="w-5 h-5 text-cyan-400" /> Módulos de "{selectedTenant}"
+                <h3 className="text-lg font-bold tracking-tight text-[var(--color-text-primary)] flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-[var(--color-primary-blue)]" /> Módulos de "{selectedTenant}"
                 </h3>
-                <p className="text-xs text-slate-400">Ative ou desative seções inteiras da barra lateral para simplificar a interface e moldar o CRM para a operação desta empresa.</p>
+                <p className="text-xs text-[var(--color-text-muted)]">Ative ou desative seções inteiras da barra lateral para simplificar a interface e moldar o CRM para a operação desta empresa.</p>
               </div>
 
               {/* Quick Presets */}
-              <div className="p-4 bg-slate-900/50 border border-white/5 rounded-2xl space-y-3">
-                <span className="text-[10px] font-black uppercase tracking-widest text-blue-400">🎯 Presets Estratégicos de Operação</span>
+              <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl space-y-3 shadow-sm">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-primary-blue)]">🎯 Presets Estratégicos de Operação</span>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   <button
+                    type="button"
                     onClick={() => applyPreset("ALL_ACTIVE")}
-                    className="px-3 py-2 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                    className="px-3 py-2 bg-[var(--color-surface-sunken)] hover:bg-[var(--color-surface-elevated)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-lg text-xs font-bold transition-all cursor-pointer"
                   >
                     🌐 Geral Full
                   </button>
                   <button
+                    type="button"
                     onClick={() => applyPreset("EDUCACAO")}
-                    className="px-3 py-2 bg-purple-600/10 hover:bg-purple-600/20 text-purple-400 border border-purple-500/25 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                    className="px-3 py-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-500 border border-purple-500/25 rounded-lg text-xs font-bold transition-all cursor-pointer"
                   >
                     🎓 Escola/Edu
                   </button>
                   <button
+                    type="button"
                     onClick={() => applyPreset("SDR_CLOSER")}
-                    className="px-3 py-2 bg-cyan-600/10 hover:bg-cyan-600/20 text-cyan-400 border border-cyan-500/25 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all"
+                    className="px-3 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-500 border border-cyan-500/25 rounded-lg text-xs font-bold transition-all cursor-pointer"
                   >
                     ⚡ SDR & Closers
                   </button>
                 </div>
-              </div>
+              </Card>
 
               {/* Individual toggles list */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-2">

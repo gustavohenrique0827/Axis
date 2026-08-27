@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { GraduationCap, Users, BookOpen, CheckCircle2, Filter, Plus } from "lucide-react";
+import { GraduationCap, Users, BookOpen, CheckCircle2, Plus } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import EducationTurmaDetalhes from "./EducationTurmaDetalhes";
 import { useData } from "../../contexts/DataContext";
@@ -58,10 +58,10 @@ export default function Turmas() {
     : `${Math.round((students.filter((s: any) => s.status === "Ativo" || s.ativo === true || !s.status).length / students.length) * 100)}%`;
 
   const kpiStats = [
-    { label: "Turmas Ativas", value: String(turmasAtivas), icon: GraduationCap, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-    { label: "Alunos Matriculados", value: students.length.toLocaleString("pt-BR"), icon: Users, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-    { label: "Vagas Disponíveis", value: String(vagasDisponiveis), icon: BookOpen, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-    { label: "Taxa de Retenção", value: taxaRetencao, icon: CheckCircle2, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Turmas Ativas", value: String(turmasAtivas), icon: GraduationCap, color: "text-[var(--color-primary-blue)]", bg: "bg-[var(--color-primary-blue)]/10" },
+    { label: "Alunos Matriculados", value: students.length.toLocaleString("pt-BR"), icon: Users, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+    { label: "Vagas Disponíveis", value: String(vagasDisponiveis), icon: BookOpen, color: "text-purple-500", bg: "bg-purple-500/10" },
+    { label: "Taxa de Retenção", value: taxaRetencao, icon: CheckCircle2, color: "text-amber-500", bg: "bg-amber-500/10" },
   ];
 
   const filteredTurmas = turmas.filter(t =>
@@ -74,24 +74,22 @@ export default function Turmas() {
       title="Gestão de Turmas Axis"
       description="Controle pedagógico, alocação de instrutores e monitoramento de vagas em tempo real."
       actions={
-        <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-white/10 h-11 px-6 rounded-xl font-black uppercase tracking-widest text-[10px]">
-            <Filter className="w-4 h-4 mr-2" /> Filtros Avançados
-          </Button>
-          <Button
+        <div className="flex items-center gap-2">
+          <Button 
             onClick={() => setIsModalOpen(true)}
-            className="bg-[#2563EB] hover:bg-[#1d4ed8] text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20"
+            className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
           >
-            <Plus className="w-4 h-4 mr-2" /> Nova Turma
+            <Plus className="w-3.5 h-3.5" /> Nova Turma
           </Button>
         </div>
       }
     >
-      <div className="max-w-[1700px] mx-auto space-y-8">
+      <div className="max-w-[1700px] mx-auto space-y-6 pb-12">
         <TurmasKPIs stats={kpiStats} />
         <TurmasFilters search={search} onSearchChange={setSearch} />
         <TurmasGrid turmas={filteredTurmas} onSelect={setSelectedTurma} />
       </div>
+
       <NovaTurmaModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
