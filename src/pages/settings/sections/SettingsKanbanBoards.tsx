@@ -12,7 +12,6 @@ import {
   KANBAN_COR_DOT,
   KANBAN_COR_TOP,
   readKanbanConfig,
-  writeKanbanConfig,
 } from "../../../hooks/useKanbanConfig";
 
 // ─── Colors ───────────────────────────────────────────────────────────────────
@@ -180,8 +179,8 @@ const BOARDS: BoardDef[] = [
 // ─── Board Editor ─────────────────────────────────────────────────────────────
 
 function BoardEditor({ boardKey, canAddRemove }: { boardKey: BoardKey; canAddRemove: boolean }) {
-  const { saveAppSetting } = useData();
-  const [cols, setCols] = useState<KanbanColConfig[]>(() => readKanbanConfig(boardKey));
+  const { appSettings, saveAppSetting } = useData();
+  const [cols, setCols] = useState<KanbanColConfig[]>(() => readKanbanConfig(appSettings, boardKey));
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
 
@@ -228,7 +227,6 @@ function BoardEditor({ boardKey, canAddRemove }: { boardKey: BoardKey; canAddRem
 
   const handleSave = async () => {
     setSaving(true);
-    writeKanbanConfig(boardKey, cols);
     try {
       await saveAppSetting(KANBAN_KEYS[boardKey], cols);
     } catch {}

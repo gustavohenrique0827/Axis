@@ -33,7 +33,7 @@ function rowToContent(r: any): ContentItem {
 }
 
 export default function Conteudo() {
-  const { educationContent, addEducationContent, updateEducationContent } = useData();
+  const { educationContent, addEducationContent, updateEducationContent, appSettings } = useData();
   const [viewMode, setViewMode] = useState<"Table" | "Kanban">("Kanban");
   const content: ContentItem[] = educationContent.map(rowToContent);
   const [search, setSearch] = useState("");
@@ -76,7 +76,7 @@ export default function Conteudo() {
     return matchesSearch && c.type === typeMap[selectedCategory];
   });
 
-  const columns = readKanbanConfig(KANBAN_KEYS.educacao).map(c => ({
+  const columns = readKanbanConfig(appSettings, KANBAN_KEYS.educacao).map(c => ({
     id: c.id as ContentItem["status"],
     label: c.nome,
     dotColor: KANBAN_COR_DOT[c.cor] ?? KANBAN_COR_DOT.slate,

@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
-import { 
-  Sliders, Sun, Moon, Laptop, Globe, DollarSign, 
-  Volume2, VolumeX, Eye, Columns3, Check, Save
+import {
+  Sliders, Sun, Moon, Laptop, Globe,
+  Volume2, VolumeX, Columns3, Check, Save
 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "../../../../contexts/AuthContext";
 
-const STORAGE_KEY = "axis_system_preferences";
+const PREF_KEY = "systemPreferences";
 
 interface SystemPreferences {
   theme: "light" | "dark" | "system";
@@ -26,21 +27,25 @@ const DEFAULT_PREFS: SystemPreferences = {
 };
 
 export function ConfigPreferenciasSistema() {
-  const [prefs, setPrefs] = useState<SystemPreferences>(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    const themeSaved = (localStorage.getItem("axis_theme_pref") as any) || (localStorage.getItem("axis_theme") as any) || "dark";
-    return { ...DEFAULT_PREFS, theme: themeSaved };
+  const { user, updatePreferences } = useAuth();
+  const [prefs, setPrefs] = useState<SystemPreferences>({
+    ...DEFAULT_PREFS,
+    ...(user?.preferences?.[PREF_KEY] || {}),
   });
 
-  const applyTheme = (newTheme: "light" | "dark" | "system") => {
-    const updated = { ...prefs, theme: newTheme };
+  useEffect(() => {
+    if (user?.preferences?.[PREF_KEY]) {
+      setPrefs({ ...DEFAULT_PREFS, ...user.preferences[PREF_KEY] });
+    }
+  }, [user?.preferences]);
+
+  const persist = (updated: SystemPreferences) => {
     setPrefs(updated);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    localStorage.setItem("axis_theme_pref", newTheme);
-    localStorage.setItem("axis_theme", newTheme === "system" ? "dark" : newTheme);
+    updatePreferences({ [PREF_KEY]: updated, theme: updated.theme === "system" ? "dark" : updated.theme });
+  };
+
+  const applyTheme = (newTheme: "light" | "dark" | "system") => {
+    persist({ ...prefs, theme: newTheme });
 
     const root = document.documentElement;
     if (newTheme === "dark") {
@@ -55,8 +60,7 @@ export function ConfigPreferenciasSistema() {
   };
 
   const handleSave = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
-    window.dispatchEvent(new Event("axis_preferences_updated"));
+    persist(prefs);
     toast.success("Preferências do sistema salvas com sucesso!");
   };
 
@@ -120,11 +124,7 @@ export function ConfigPreferenciasSistema() {
             <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1.5 block">Idioma da Plataforma</label>
             <select
               value={prefs.language}
-              onChange={(e) => {
-                const updated = { ...prefs, language: e.target.value };
-                setPrefs(updated);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-              }}
+              onChange={(e) => persist({ ...prefs, language: e.target.value })}
               className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
             >
               <option value="pt-BR">Português (Brasil)</option>
@@ -137,11 +137,7 @@ export function ConfigPreferenciasSistema() {
             <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1.5 block">Moeda Padrão</label>
             <select
               value={prefs.currency}
-              onChange={(e) => {
-                const updated = { ...prefs, currency: e.target.value };
-                setPrefs(updated);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-              }}
+              onChange={(e) => persist({ ...prefs, currency: e.target.value })}
               className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
             >
               <option value="BRL">Real Brasileiro (R$ - BRL)</option>
@@ -167,22 +163,14 @@ export function ConfigPreferenciasSistema() {
             <div className="flex gap-1.5 bg-[var(--color-surface-elevated)] p-1 rounded-lg border border-[var(--color-border-default)]">
               <button
                 type="button"
-                onClick={() => {
-                  const updated: SystemPreferences = { ...prefs, defaultCrmView: "kanban" };
-                  setPrefs(updated);
-                  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-                }}
+                onClick={() => persist({ ...prefs, defaultCrmView: "kanban" })}
                 className={`px-3 py-1 text-xs font-bold rounded cursor-pointer transition-all ${prefs.defaultCrmView === "kanban" ? "bg-[var(--color-primary-blue)] !text-white" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"}`}
               >
                 Kanban
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  const updated: SystemPreferences = { ...prefs, defaultCrmView: "list" };
-                  setPrefs(updated);
-                  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-                }}
+                onClick={() => persist({ ...prefs, defaultCrmView: "list" })}
                 className={`px-3 py-1 text-xs font-bold rounded cursor-pointer transition-all ${prefs.defaultCrmView === "list" ? "bg-[var(--color-primary-blue)] !text-white" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"}`}
               >
                 Lista
@@ -199,8 +187,7 @@ export function ConfigPreferenciasSistema() {
               type="button"
               onClick={() => {
                 const updated = { ...prefs, soundEnabled: !prefs.soundEnabled };
-                setPrefs(updated);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+                persist(updated);
                 toast.info(updated.soundEnabled ? "Sons ativados!" : "Sons desativados.");
               }}
               className={`p-2 rounded-lg border transition-colors cursor-pointer ${prefs.soundEnabled ? "bg-[var(--color-primary-blue)]/10 border-[var(--color-primary-blue)]/30 text-[var(--color-primary-blue)]" : "bg-[var(--color-surface-elevated)] border-[var(--color-border-default)] text-[var(--color-text-muted)]"}`}

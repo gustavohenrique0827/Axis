@@ -5,8 +5,8 @@ import { DropResult } from "@hello-pangea/dnd";
 import { useData } from "../../contexts/DataContext";
 import { readKanbanConfig, KANBAN_KEYS, KANBAN_COR_CLASS } from "../../hooks/useKanbanConfig";
 
-function getMarketingColumns() {
-  return readKanbanConfig(KANBAN_KEYS.marketing).map(c => ({
+function getMarketingColumns(appSettings: Record<string, any>) {
+  return readKanbanConfig(appSettings, KANBAN_KEYS.marketing).map(c => ({
     id: c.id,
     title: c.nome,
     color: KANBAN_COR_CLASS[c.cor] ?? "bg-slate-500",
@@ -52,7 +52,7 @@ function taskToRow(task: any) {
 }
 
 export function useMarketingConteudo() {
-  const { marketingContent: contentRows } = useData();
+  const { marketingContent: contentRows, appSettings } = useData();
   const [tasks, setTasks] = useState<any[]>([]);
 
   useEffect(() => {
@@ -132,7 +132,7 @@ export function useMarketingConteudo() {
       setTasks(updatedTasks);
       setTasks(updatedTasks);
 
-      const colName = getMarketingColumns().find(c => c.id === destColId)?.title;
+      const colName = getMarketingColumns(appSettings).find(c => c.id === destColId)?.title;
       toast.success(`"${movedTask.title}" movido para ${colName}`);
       
       await updateTaskInDatabase(updatedMovedTask);
@@ -211,7 +211,7 @@ export function useMarketingConteudo() {
     newDate, setNewDate,
     newDesc, setNewDesc,
     newPriority, setNewPriority,
-    initialColumns: getMarketingColumns(),
+    initialColumns: getMarketingColumns(appSettings),
     onDragEnd,
     handleCreateTask,
     openTask,

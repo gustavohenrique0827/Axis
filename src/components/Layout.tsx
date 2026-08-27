@@ -28,17 +28,8 @@ export default function Layout() {
     if (!user) navigate("/login");
   }, [user, navigate]);
 
-  const [logoDarkFull, setLogoDarkFull] = useState(() => localStorage.getItem("axis_brand_logo_dark_full") || "/logo-full.png");
-  const [logoDarkIcon, setLogoDarkIcon] = useState(() => localStorage.getItem("axis_brand_logo_dark_icon") || "/logo-icon.png");
-
-  useEffect(() => {
-    const handleBrandChange = () => {
-      setLogoDarkFull(localStorage.getItem("axis_brand_logo_dark_full") || "/logo-full.png");
-      setLogoDarkIcon(localStorage.getItem("axis_brand_logo_dark_icon") || "/logo-icon.png");
-    };
-    window.addEventListener("axis_brand_changed", handleBrandChange);
-    return () => window.removeEventListener("axis_brand_changed", handleBrandChange);
-  }, []);
+  const logoDarkFull = "/logo-full.png";
+  const logoDarkIcon = "/logo-icon.png";
 
   return (
     <div className="h-screen overflow-hidden bg-[var(--color-surface)] text-[var(--color-text-primary)] font-sans flex transition-all">

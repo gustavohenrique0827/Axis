@@ -78,15 +78,10 @@ export const KANBAN_COR_TOP: Record<string, string> = {
   pink: '#db2777',
 };
 
-export function readKanbanConfig(key: string): KanbanColConfig[] {
-  try {
-    const saved = localStorage.getItem(key);
-    return saved ? JSON.parse(saved) : (KANBAN_DEFAULTS[key] ?? []);
-  } catch {
-    return KANBAN_DEFAULTS[key] ?? [];
-  }
-}
-
-export function writeKanbanConfig(key: string, cols: KanbanColConfig[]): void {
-  localStorage.setItem(key, JSON.stringify(cols));
+// Configuração das colunas do board é dado de tenant (compartilhado pelo time),
+// gravada via `saveAppSetting` em app_settings — lida aqui a partir do mapa já
+// carregado pelo DataContext (`useData().appSettings`), nunca de localStorage.
+export function readKanbanConfig(appSettings: Record<string, any>, key: string): KanbanColConfig[] {
+  const saved = appSettings?.[key];
+  return Array.isArray(saved) && saved.length > 0 ? saved : (KANBAN_DEFAULTS[key] ?? []);
 }

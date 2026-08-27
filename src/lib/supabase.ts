@@ -118,6 +118,7 @@ export async function fetchUserProfile(userId: string): Promise<{ success: boole
       bio,
       avatar_url,
       two_factor_enabled,
+      preferences,
       tenants (
         id,
         name,
@@ -158,6 +159,7 @@ export async function fetchUserProfile(userId: string): Promise<{ success: boole
       bio: (data as any).bio ?? undefined,
       avatarUrl: (data as any).avatar_url ?? undefined,
       twoFactorEnabled: (data as any).two_factor_enabled ?? false,
+      preferences: (data as any).preferences ?? {},
     },
   };
 }

@@ -7,6 +7,7 @@ import { PageContainer } from '../../components/PageContainer';
 import { useDevSprints, type Column } from './hooks/useDevSprints';
 import { readKanbanConfig, KANBAN_KEYS, KANBAN_COR_CLASS } from '../../hooks/useKanbanConfig';
 import { useDevProjectsForFilter } from './hooks/useDevProjectsForFilter';
+import { useData } from '../../contexts/DataContext';
 
 const PRIORITY_STYLE: Record<string, string> = {
   crítica: 'bg-red-500/15 text-red-400 border-red-500/25',
@@ -29,8 +30,8 @@ const TYPE_COLOR: Record<string, string> = {
   refactor: 'text-indigo-400',
 };
 
-function getSprintColumns(): { id: Column; label: string; accent: string; dotColor: string }[] {
-  return readKanbanConfig(KANBAN_KEYS.sprint).map(c => ({
+function getSprintColumns(appSettings: Record<string, any>): { id: Column; label: string; accent: string; dotColor: string }[] {
+  return readKanbanConfig(appSettings, KANBAN_KEYS.sprint).map(c => ({
     id: c.id as Column,
     label: c.nome,
     accent: `border-${c.cor}-500/30`,
@@ -41,7 +42,8 @@ function getSprintColumns(): { id: Column; label: string; accent: string; dotCol
 type DevProject = { id: string | number; name: string };
 
 export default function Sprints() {
-  const COLUMNS = getSprintColumns();
+  const { appSettings } = useData();
+  const COLUMNS = getSprintColumns(appSettings);
 
   const projects = useDevProjectsForFilter() as DevProject[];
 

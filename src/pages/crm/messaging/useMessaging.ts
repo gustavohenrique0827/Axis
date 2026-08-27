@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useData } from "../../../contexts/DataContext";
+import { useAuth } from "../../../contexts/AuthContext";
 import { toast } from "sonner";
 import { apiFetch } from "../../../lib/apiClient";
 
@@ -32,8 +33,7 @@ export interface Message {
 export type RightPanelState = "none" | "info" | "ai";
 
 
-const playIncomingMessageSound = () => {
-  const soundEnabled = localStorage.getItem("axis_whatsapp_sound") !== "false";
+const playIncomingMessageSound = (soundEnabled: boolean) => {
   if (!soundEnabled) return;
 
   try {
@@ -63,6 +63,8 @@ const playIncomingMessageSound = () => {
 
 export function useMessaging() {
   const { leads, leadActivities, addLeadActivity } = useData();
+  const { user } = useAuth();
+  const soundEnabled = user?.preferences?.whatsappSound !== false;
 
   const parseMessageTimeToTimestamp = (timeStr: string): number => {
     const now = new Date();
@@ -201,7 +203,7 @@ export function useMessaging() {
           setContacts(data);
           const currentUnread = data.reduce((sum: number, c: any) => sum + (c.unread || 0), 0);
           if (currentUnread > prevUnreadCountRef.current) {
-            playIncomingMessageSound();
+            playIncomingMessageSound(soundEnabled);
           }
           prevUnreadCountRef.current = currentUnread;
         }

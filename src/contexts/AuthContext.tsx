@@ -20,6 +20,7 @@ export interface UserSession {
   bio?: string;
   avatarUrl?: string;
   twoFactorEnabled?: boolean;
+  preferences?: Record<string, any>;
 }
 
 export type TenantModules = Record<string, boolean>;
@@ -30,6 +31,7 @@ interface AuthContextType {
   login: (user: UserSession) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  updatePreferences: (partial: Record<string, any>) => Promise<void>;
   isModuleEnabled: (moduleName: keyof TenantModules) => boolean;
   updateTenantModules: (tenantName: string, modules: TenantModules) => Promise<void>;
   getTenantModules: (tenantName: string) => TenantModules;
@@ -41,13 +43,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Sessões demo (Acesso Demonstração) não passam pelo Supabase Auth — não há
 // JWT/cookie real para o supabase-js persistir sozinho entre reloads. Guardamos
-// aqui como fallback local para essas sessões (e como rede de segurança caso o
-// client do Supabase não esteja configurado no ambiente).
+// aqui como fallback (sessionStorage, não localStorage: some ao fechar a aba)
+// para essas sessões, e como rede de segurança caso o client do Supabase não
+// esteja configurado no ambiente.
 const AXIS_SESSION_KEY = "axis_user_session";
 
 function readSavedSession(): UserSession | null {
   try {
-    const raw = localStorage.getItem(AXIS_SESSION_KEY);
+    const raw = sessionStorage.getItem(AXIS_SESSION_KEY);
     return raw ? (JSON.parse(raw) as UserSession) : null;
   } catch {
     return null;
@@ -154,12 +157,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // o perfil resolvido no estado local; onAuthStateChange mantém a sessão
     // sincronizada em refreshes futuros. Também guardamos localmente para que
     // sessões demo (sem JWT real do Supabase) sobrevivam a um reload da página.
-    localStorage.setItem(AXIS_SESSION_KEY, JSON.stringify(session));
+    sessionStorage.setItem(AXIS_SESSION_KEY, JSON.stringify(session));
     setUser(session);
   };
 
   const logout = () => {
-    localStorage.removeItem(AXIS_SESSION_KEY);
+    sessionStorage.removeItem(AXIS_SESSION_KEY);
     setUser(null);
     supabase?.auth.signOut();
   };
@@ -171,6 +174,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user?.id) return;
     const profile = await fetchUserProfile(user.id);
     if (profile.success) setUser(profile.user as UserSession);
+  };
+
+  // Preferências de UI por usuário (tema, sons, colunas de kanban, etc.) —
+  // gravadas em public.users.preferences, nunca em localStorage.
+  const updatePreferences = async (partial: Record<string, any>) => {
+    if (!user) return;
+    const merged = { ...(user.preferences || {}), ...partial };
+    setUser({ ...user, preferences: merged });
+    if (!supabase || !user.id) return;
+    const { error } = await supabase.from("users").update({ preferences: merged }).eq("id", user.id);
+    if (error) console.error('[AuthContext] Falha ao salvar preferências:', error.message);
   };
 
   const getTenantModules = (tenant: string): TenantModules => {
@@ -214,7 +228,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, authLoading, login, logout, refreshUser, isModuleEnabled, updateTenantModules, getTenantModules, allTenantModules, tenantIdMap }}>
+    <AuthContext.Provider value={{ user, authLoading, login, logout, refreshUser, updatePreferences, isModuleEnabled, updateTenantModules, getTenantModules, allTenantModules, tenantIdMap }}>
       {children}
     </AuthContext.Provider>
   );

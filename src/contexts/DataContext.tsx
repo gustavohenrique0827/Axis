@@ -8,7 +8,6 @@ import {
   defaultCustomLeadFields,
   defaultFinanceEntries,
   defaultGlobalWebhooks,
-  defaultLeads,
   defaultTasks,
   defaultContracts,
   defaultActivitiesOnLoad,
@@ -24,19 +23,20 @@ export { useData };
 export type { DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, Reuniao };
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { user, authLoading } = useAuth();
+  const { user, authLoading, updatePreferences } = useAuth();
   const tenantId = user?.tenantId;
 
-  const [theme, setTheme] = useState<'dark' | 'light'>(
-    () => (localStorage.getItem('axis_theme') as 'dark' | 'light') || 'light'
-  );
+  const [theme, setTheme] = useState<'dark' | 'light'>('light');
+
+  useEffect(() => {
+    const saved = user?.preferences?.theme;
+    if (saved === 'dark' || saved === 'light') setTheme(saved);
+  }, [user?.preferences?.theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => {
-      const next = prev === 'dark' ? 'light' : 'dark';
-      localStorage.setItem('axis_theme', next);
-      return next;
-    });
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    updatePreferences({ theme: next });
   };
 
   useEffect(() => {
@@ -166,16 +166,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("axis_brand_changed", applyBrandColors);
   }, []);
 
-  const [leads, setLeads] = useState<Lead[]>(() => {
-    try {
-      const saved = localStorage.getItem("axis_leads");
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {}
-    return defaultLeads;
-  });
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [leadActivities, setLeadActivities] = useState<LeadActivity[]>([]);
@@ -511,18 +502,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
     loadInitialData();
   }, [authLoading, tenantId]);
-
-  useEffect(() => {
-    if (leads && leads.length > 0) {
-      localStorage.setItem("axis_leads", JSON.stringify(leads));
-    }
-  }, [leads]);
-
-  useEffect(() => {
-    if (colaboradores && colaboradores.length > 0) {
-      localStorage.setItem("axis_colaboradores", JSON.stringify(colaboradores));
-    }
-  }, [colaboradores]);
 
   const notifiedRemindersRef = React.useRef<Record<string, boolean>>({});
 

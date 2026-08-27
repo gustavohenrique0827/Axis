@@ -1,14 +1,7 @@
-import { useState, useEffect } from "react";
 import { LoginForm } from "./components/LoginForm";
 
 export default function Login() {
-  const [logoDarkFull, setLogoDarkFull] = useState(() => localStorage.getItem("axis_brand_logo_dark_full") || "/logo-full.png");
-
-  useEffect(() => {
-    const handleBrandChange = () => setLogoDarkFull(localStorage.getItem("axis_brand_logo_dark_full") || "/logo-full.png");
-    window.addEventListener("axis_brand_changed", handleBrandChange);
-    return () => window.removeEventListener("axis_brand_changed", handleBrandChange);
-  }, []);
+  const logoDarkFull = "/logo-full.png";
 
   return (
     <div className="min-h-screen bg-[var(--color-surface)] text-[var(--color-text-primary)] font-sans flex items-center justify-center relative overflow-hidden">

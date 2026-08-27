@@ -1,9 +1,10 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { RefreshCw, TrendingUp, TrendingDown, Settings, ChevronDown, Download, Plus, Trash2, Users, DollarSign, Zap } from 'lucide-react';
 import { PageContainer } from '../../components/PageContainer';
 import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { useData } from '../../contexts/DataContext';
+import { useAuth } from '../../contexts/AuthContext';
 import { useOTEConfig } from './hooks/useOTEConfig';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
@@ -60,11 +61,15 @@ function rowToEntry(r: any): ColabEntry & { period: string } {
 
 export default function FinanceiroComissoes() {
   const { squads, financeCommissionEntries, addFinanceCommissionEntry, deleteFinanceCommissionEntry } = useData();
+  const { user, updatePreferences } = useAuth();
   const { profiles, calcOTE } = useOTEConfig();
 
-  const [periodo, setPeriodo] = useState<string>(
-    () => localStorage.getItem(PERIOD_KEY) || PERIODOS[0]
-  );
+  const [periodo, setPeriodo] = useState<string>(user?.preferences?.[PERIOD_KEY] || PERIODOS[0]);
+
+  useEffect(() => {
+    const saved = user?.preferences?.[PERIOD_KEY];
+    if (saved) setPeriodo(saved);
+  }, [user?.preferences]);
   const [activeTab, setActiveTab] = useState<CargoTab>('Closer');
   const [squadFilter, setSquadFilter] = useState('Todos');
   const [showSquadMenu, setShowSquadMenu] = useState(false);
@@ -204,7 +209,7 @@ export default function FinanceiroComissoes() {
       <div className="flex flex-wrap items-center gap-3 mb-5">
         <select
           value={periodo}
-          onChange={e => { setPeriodo(e.target.value); localStorage.setItem(PERIOD_KEY, e.target.value); }}
+          onChange={e => { setPeriodo(e.target.value); updatePreferences({ [PERIOD_KEY]: e.target.value }); }}
           className="h-9 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 text-xs font-bold text-[var(--color-text-primary)] outline-none cursor-pointer"
         >
           {PERIODOS.map(p => <option key={p} value={p}>{p}</option>)}

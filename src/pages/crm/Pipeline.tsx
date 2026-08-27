@@ -9,6 +9,7 @@ import { AgendarReuniaoModal } from "../../components/ui/modals/crm/AgendarReuni
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
+import { useAuth } from "../../contexts/AuthContext";
 
 import { usePipeline } from "./usePipeline";
 import { PipelineAnalytics } from "./components/Pipeline/PipelineAnalytics";
@@ -26,23 +27,20 @@ const tempOrder: Record<string, number> = { quente: 3, morno: 2, frio: 1 };
 
 export default function Pipeline() {
   const navigate = useNavigate();
-  const [view, setView] = useState<ViewMode>(() => {
-    try {
-      const prefs = localStorage.getItem("axis_system_preferences");
-      if (prefs) {
-        const parsed = JSON.parse(prefs);
-        if (parsed.defaultCrmView === "list") return "lista";
-        if (parsed.defaultCrmView === "kanban") return "kanban";
-      }
-      const savedView = localStorage.getItem("axis_pipeline_view");
-      if (savedView === "kanban" || savedView === "lista") return savedView;
-    } catch {}
-    return "kanban";
-  });
+  const { user, updatePreferences } = useAuth();
+  const [view, setView] = useState<ViewMode>("kanban");
+
+  useEffect(() => {
+    const saved = user?.preferences?.pipelineView;
+    if (saved === "kanban" || saved === "lista") { setView(saved); return; }
+    const defaultCrmView = user?.preferences?.systemPreferences?.defaultCrmView;
+    if (defaultCrmView === "list") setView("lista");
+    else if (defaultCrmView === "kanban") setView("kanban");
+  }, [user?.preferences]);
 
   const handleSetView = (v: ViewMode) => {
     setView(v);
-    localStorage.setItem("axis_pipeline_view", v);
+    updatePreferences({ pipelineView: v });
   };
 
   const [minimizedColumns, setMinimizedColumns] = useState<Set<string>>(new Set());

@@ -11,6 +11,7 @@ import { readKanbanConfig, KANBAN_KEYS, KANBAN_COR_CLASS } from "../../hooks/use
 import { EditarProjetoDevModal } from "./modals/EditarProjetoDevModal";
 import { ApagarProjetoDevModal } from "./modals/ApagarProjetoDevModal";
 import { useNavigate } from 'react-router-dom';
+import { useData } from "../../contexts/DataContext";
 
 
 const PRIORITY_STYLE: Record<string, string> = {
@@ -34,8 +35,8 @@ const TYPE_COLOR: Record<string, string> = {
   refactor: "text-slate-400",
 };
 
-function getSprintColumns(): { id: Column; label: string; dotColor: string }[] {
-  return readKanbanConfig(KANBAN_KEYS.sprint).map((c: any) => ({
+function getSprintColumns(appSettings: Record<string, any>): { id: Column; label: string; dotColor: string }[] {
+  return readKanbanConfig(appSettings, KANBAN_KEYS.sprint).map((c: any) => ({
     id: c.id as Column,
     label: c.nome,
     dotColor: KANBAN_COR_CLASS[c.cor] ?? "bg-slate-500",
@@ -46,9 +47,9 @@ export default function ProjetoDetalhesDev() {
   const { projectId } = useParams();
   const pid = projectId ?? null;
   const navigate = useNavigate();
+  const { appSettings } = useData();
 
-
-  const COLUMNS = useMemo(() => getSprintColumns(), []);
+  const COLUMNS = useMemo(() => getSprintColumns(appSettings), [appSettings]);
 
   // Carrega projetos pra mostrar header/status.
   const { projects, updateProject, deleteProject } = useDevProjects();

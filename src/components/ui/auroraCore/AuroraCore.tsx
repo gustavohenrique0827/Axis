@@ -1,7 +1,8 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense } from "react";
 import { Box, Layers } from "lucide-react";
 import { AuroraCore2D } from "./AuroraCore2D";
 import type { AuroraCoreMode } from "./auroraCoreStates";
+import { useAuth } from "../../../contexts/AuthContext";
 
 // Three.js + @react-three/fiber só entram no bundle quando alguém de fato troca pro núcleo 3D —
 // sem isso, o Three.js (~1MB+) carregava no chunk principal do Axis pra TODA página, mesmo pra
@@ -10,17 +11,6 @@ import type { AuroraCoreMode } from "./auroraCoreStates";
 const AuroraCore3D = lazy(() => import("./AuroraCore3D").then((m) => ({ default: m.AuroraCore3D })));
 
 type CoreVariant = "2d" | "3d";
-
-const STORAGE_KEY = "axis_aurora_core_variant";
-
-function readVariant(): CoreVariant {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    return saved === "3d" ? "3d" : "2d";
-  } catch {
-    return "2d";
-  }
-}
 
 interface AuroraCoreProps {
   mode: AuroraCoreMode;
@@ -32,27 +22,17 @@ interface AuroraCoreProps {
 
 /**
  * Núcleo visual da Aurora — alterna entre a versão 2D (Canvas leve, sem dependências) e a versão
- * 3D (Three.js, porta real do núcleo do jarvis-os). A preferência é do usuário e persiste local
- * (por navegador), lida uma vez na montagem — cada instância do núcleo na tela reflete a mesma
- * escolha porque todas leem a mesma chave.
+ * 3D (Three.js, porta real do núcleo do jarvis-os). A preferência é do usuário, gravada em
+ * public.users.preferences — cada instância do núcleo na tela reflete a mesma escolha porque
+ * todas leem do mesmo UserSession no AuthContext.
  */
 export function AuroraCore({ mode, size, showToggle = false }: AuroraCoreProps) {
-  const [variant, setVariant] = useState<CoreVariant>(readVariant);
-
-  useEffect(() => {
-    const onStorage = () => setVariant(readVariant());
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
+  const { user, updatePreferences } = useAuth();
+  const variant: CoreVariant = user?.preferences?.auroraCoreVariant === "3d" ? "3d" : "2d";
 
   const toggle = () => {
     const next: CoreVariant = variant === "2d" ? "3d" : "2d";
-    setVariant(next);
-    try {
-      localStorage.setItem(STORAGE_KEY, next);
-    } catch {
-      // localStorage indisponível (modo privado etc.) — a troca ainda funciona nesta sessão
-    }
+    updatePreferences({ auroraCoreVariant: next });
   };
 
   return (

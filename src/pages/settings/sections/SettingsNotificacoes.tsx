@@ -4,6 +4,7 @@ import { Button } from "../../../components/ui/button";
 import { Target, Users, ShieldAlert, Clock, Mail, Award, Bell, Volume2, ChevronDown, ChevronUp, Save, MessageSquare } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "../../../contexts/DataContext";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const SETTING_KEY = "notification_prefs";
 
@@ -27,6 +28,7 @@ const iconMap: Record<string, any> = {
 
 export function ConfigNotificacoesPreferencias() {
   const { appSettings, saveAppSetting } = useData();
+  const { user, updatePreferences } = useAuth();
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [prefs, setPrefs] = useState(() =>
     DEFAULT_NOTIFICATION_PREFS.map(p => ({ ...p, icon: iconMap[p.id] || Target }))
@@ -70,14 +72,11 @@ export function ConfigNotificacoesPreferencias() {
     toast.info(`Todas as notificações de ${channel === 'inApp' ? 'Plataforma' : channel === 'email' ? 'E-mail' : 'WhatsApp'} foram ${value ? 'ativadas' : 'desativadas'}.`);
   };
 
-  const [soundEnabled, setSoundEnabled] = useState(() => {
-    return localStorage.getItem("axis_whatsapp_sound") !== "false";
-  });
+  const soundEnabled = user?.preferences?.whatsappSound !== false;
 
   const toggleSound = () => {
     const newVal = !soundEnabled;
-    setSoundEnabled(newVal);
-    localStorage.setItem("axis_whatsapp_sound", String(newVal));
+    updatePreferences({ whatsappSound: newVal });
     toast.info(`Alerta sonoro de nova mensagem ${newVal ? 'ativado' : 'desativado'}.`);
   };
 

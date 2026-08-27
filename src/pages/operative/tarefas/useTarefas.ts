@@ -14,7 +14,7 @@ export function useTarefas() {
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [deadlineFilter, setDeadlineFilter] = useState<string>("");
-  const { tasks, addTask, updateTask, deleteTask } = useData();
+  const { tasks, addTask, updateTask, deleteTask, appSettings } = useData();
 
   const [needsAuth, setNeedsAuth] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -288,7 +288,7 @@ export function useTarefas() {
     setTaskToDelete(id);
   };
   return {
-    columns: readKanbanConfig(KANBAN_KEYS.tarefas) as KanbanColConfig[],
+    columns: readKanbanConfig(appSettings, KANBAN_KEYS.tarefas) as KanbanColConfig[],
     getPriorityColor: (p: string) => {
       switch(p) {
         case "Alta": return "text-rose-400 bg-rose-500/10 border-rose-500/20";
