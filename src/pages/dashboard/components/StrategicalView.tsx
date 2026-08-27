@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Card } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
+import { Badge } from '../../../components/ui/badge';
 import { ResponsiveContainer, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Area, Line } from 'recharts';
 import { BarChart3, RefreshCw, Target, Trophy, Layers, Zap, Briefcase, ChevronDown } from 'lucide-react';
 
@@ -32,8 +33,8 @@ export function StrategicalView({
   contracts = [],
 }: StrategicalViewProps) {
   // Compute Goal Meter from real squads
-  const totalMeta = squads.reduce((s, sq) => s + sq.meta, 0);
-  const totalAlcancado = squads.reduce((s, sq) => s + sq.faturamentoAlcancado, 0);
+  const totalMeta = squads.reduce((s, sq) => s + (sq.meta || 0), 0);
+  const totalAlcancado = squads.reduce((s, sq) => s + (sq.faturamentoAlcancado || 0), 0);
   const goalPct = totalMeta > 0 ? Math.min(100, Math.round((totalAlcancado / totalMeta) * 100)) : 0;
 
   // Compute real MRR from contracts
@@ -63,115 +64,125 @@ export function StrategicalView({
       className="space-y-6 text-left"
     >
       <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden rounded-3xl">
-          <div className="flex flex-col md:flex-row justify-between items-start mb-10 gap-4">
+        <Card className="lg:col-span-2 p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] relative overflow-hidden shadow-sm">
+          <div className="flex flex-col md:flex-row justify-between items-start mb-6 gap-4">
             <div>
-              <h3 className="text-xl font-black text-white uppercase tracking-tighter flex items-center gap-3">
-                <BarChart3 className="w-5 h-5 text-blue-400" /> Fluxo de Performance
+              <h3 className="text-lg font-black text-[var(--color-text-primary)] uppercase tracking-tight flex items-center gap-2.5">
+                <BarChart3 className="w-5 h-5 text-[var(--color-primary-blue)]" /> Fluxo de Performance
               </h3>
-              <p className="text-xs text-slate-500 mt-2 font-medium">Correlação entre volume de leads prospectados e faturamento recorrente.</p>
+              <p className="text-xs text-[var(--color-text-muted)] mt-1 font-medium">Correlação entre volume de leads prospectados e faturamento recorrente.</p>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="flex bg-white/5 border border-white/5 p-1 rounded-xl gap-1">
+            <div className="flex items-center gap-3">
+              <div className="flex bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] p-1 rounded-[var(--radius-control)] gap-1">
                 {(['MRR', 'Retenção'] as const).map(type => (
                   <button
                     key={type}
+                    type="button"
                     onClick={() => setComparisonPeriod(type === 'MRR' ? 'month' : 'year')}
-                    className={`px-4 py-2 text-[10px] font-black uppercase rounded-lg transition-all border-none bg-transparent cursor-pointer ${comparisonPeriod === (type === 'MRR' ? 'month' : 'year') ? 'bg-blue-600/20 text-blue-400 border border-blue-500/20' : 'text-slate-500'}`}
+                    className={`px-3 py-1.5 text-[10px] font-bold uppercase rounded-md transition-all border-none cursor-pointer ${
+                      comparisonPeriod === (type === 'MRR' ? 'month' : 'year')
+                        ? 'bg-[var(--color-primary-blue)] text-white shadow-xs'
+                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]'
+                    }`}
                   >
                     {type}
                   </button>
                 ))}
               </div>
-              <Button variant="outline" className="h-10 border-white/5 text-[10px] font-black uppercase tracking-widest gap-2 bg-transparent">
-                <RefreshCw className="w-3.5 h-3.5" /> Atualizar
-              </Button>
             </div>
           </div>
 
-          <div className="flex items-center justify-end gap-3 mb-4">
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-500/10 rounded-full border border-blue-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-              <span className="text-[9px] text-blue-400 font-bold uppercase tracking-widest text-shadow-glow">Real</span>
+          <div className="flex items-center justify-end gap-3 mb-3">
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-[var(--color-primary-blue)]/10 rounded-full border border-[var(--color-primary-blue)]/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary-blue)]" />
+              <span className="text-[10px] text-[var(--color-primary-blue)] font-bold uppercase tracking-wider">Real</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 bg-cyan-500/10 rounded-full border border-cyan-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 opacity-50" />
-              <span className="text-[9px] text-cyan-400 font-bold uppercase tracking-widest">Previsão</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-cyan-500/10 rounded-full border border-cyan-500/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 opacity-60" />
+              <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-bold uppercase tracking-wider">Projeção IA</span>
             </div>
           </div>
-          <div className="h-[380px] -mx-4">
+
+          <div className="h-[340px] -mx-2">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={performanceData}>
                 <defs>
                   <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2} />
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#2563EB" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#2563EB" stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                <XAxis dataKey="name" stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
-                <YAxis stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+                <XAxis dataKey="name" stroke="var(--color-text-faint)" fontSize={11} tickLine={false} axisLine={false} />
+                <YAxis stroke="var(--color-text-faint)" fontSize={11} tickLine={false} axisLine={false} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: 'var(--color-surface)', border: '1px solid #ffffff10', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}
+                  contentStyle={{
+                    backgroundColor: 'var(--color-surface-elevated)',
+                    border: '1px solid var(--color-border-default)',
+                    borderRadius: '12px',
+                    boxShadow: 'var(--shadow-panel)',
+                    color: 'var(--color-text-primary)',
+                    fontSize: '12px',
+                  }}
                   itemStyle={{ fontSize: '11px', fontWeight: 'bold' }}
                 />
-                <Area type="monotone" dataKey="vendas" stroke="#3b82f6" fillOpacity={1} fill="url(#colorSales)" strokeWidth={4} strokeLinecap="round" />
-                <Area type="monotone" dataKey="leads" stroke="#22d3ee" fillOpacity={0} strokeWidth={3} strokeDasharray="6 6" name="Projeção IA" />
-                <Line type="stepAfter" dataKey="retention" stroke="#8b5cf6" strokeWidth={2} dot={false} name="Health Index" />
+                <Area type="monotone" dataKey="vendas" stroke="#2563EB" fillOpacity={1} fill="url(#colorSales)" strokeWidth={3} strokeLinecap="round" />
+                <Area type="monotone" dataKey="leads" stroke="#06B6D4" fillOpacity={0} strokeWidth={2.5} strokeDasharray="5 5" name="Projeção IA" />
+                <Line type="stepAfter" dataKey="retention" stroke="#8B5CF6" strokeWidth={2} dot={false} name="Health Index" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
         <div className="space-y-6">
-          <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden h-full flex flex-col rounded-3xl">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                <Target className="w-4 h-4 text-emerald-400" /> Medidor de Meta
+          <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] relative overflow-hidden h-full flex flex-col shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
+                <Target className="w-4 h-4 text-emerald-500" /> Medidor de Metas
               </h3>
-              <Trophy className="w-4 h-4 text-amber-500 animate-bounce" />
+              <Trophy className="w-4 h-4 text-amber-500" />
             </div>
-            <div className="flex-1 flex flex-col justify-center items-center py-6">
+            <div className="flex-1 flex flex-col justify-center items-center py-4">
               {!hasSquads ? (
-                <div className="flex flex-col items-center justify-center py-10 gap-3 opacity-40">
-                  <Target className="w-8 h-8 text-slate-500" />
-                  <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Crie squads para ver o Medidor de Meta</p>
+                <div className="flex flex-col items-center justify-center py-10 gap-2 opacity-50">
+                  <Target className="w-8 h-8 text-[var(--color-text-faint)]" />
+                  <p className="text-xs font-bold text-[var(--color-text-muted)] text-center">Cadastre squads para visualizar as metas</p>
                 </div>
               ) : (
                 <>
-                  <div className="relative w-48 h-48 mb-8">
+                  <div className="relative w-44 h-44 mb-6">
                     <svg className="w-full h-full" viewBox="0 0 100 100">
-                      <circle cx="50" cy="50" r="45" fill="none" stroke="#ffffff05" strokeWidth="8" />
+                      <circle cx="50" cy="50" r="45" fill="none" stroke="var(--color-border-default)" strokeWidth="8" />
                       <motion.circle
                         cx="50" cy="50" r="45"
                         fill="none" stroke="#10b981" strokeWidth="8"
                         strokeDasharray="282.7"
                         initial={{ strokeDashoffset: 282.7 }}
                         animate={{ strokeDashoffset: 282.7 * (1 - goalPct / 100) }}
-                        transition={{ duration: 2, ease: "easeOut" }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
                         strokeLinecap="round"
                         transform="rotate(-90 50 50)"
                       />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-4xl font-black text-white font-mono">{goalPct}%</span>
-                      <span className="text-[10px] text-slate-500 font-black uppercase">Batido</span>
+                      <span className="text-3xl font-black text-[var(--color-text-primary)] font-mono">{goalPct}%</span>
+                      <span className="text-[10px] text-[var(--color-text-muted)] font-black uppercase">Alcançado</span>
                     </div>
                   </div>
-                  <div className="w-full space-y-4">
+                  <div className="w-full space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                        <span className="text-[10px] text-slate-400 font-bold uppercase">Realizado</span>
+                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                        <span className="text-xs text-[var(--color-text-muted)] font-medium">Realizado:</span>
                       </div>
-                      <span className="text-xs font-black text-white">R$ {totalAlcancado.toLocaleString('pt-BR')}</span>
+                      <span className="text-xs font-black text-[var(--color-text-primary)]">R$ {totalAlcancado.toLocaleString('pt-BR')}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-white/10" />
-                        <span className="text-[10px] text-slate-400 font-bold uppercase">Meta</span>
+                        <div className="w-2 h-2 rounded-full bg-[var(--color-text-faint)]" />
+                        <span className="text-xs text-[var(--color-text-muted)] font-medium">Meta Global:</span>
                       </div>
-                      <span className="text-xs font-black text-slate-500">R$ {totalMeta.toLocaleString('pt-BR')}</span>
+                      <span className="text-xs font-bold text-[var(--color-text-faint)]">R$ {totalMeta.toLocaleString('pt-BR')}</span>
                     </div>
                   </div>
                 </>
@@ -185,66 +196,60 @@ export function StrategicalView({
         <button
           type="button"
           onClick={() => setShowDetails((v) => !v)}
-          className="w-full flex items-center justify-between px-5 py-3 bg-[var(--color-surface-elevated)]/40 hover:bg-[var(--color-surface-elevated)]/60 border border-white/5 rounded-2xl transition-colors text-left"
+          className="w-full flex items-center justify-between px-5 py-3 bg-[var(--color-surface-elevated)] hover:bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-panel)] transition-colors text-left cursor-pointer shadow-xs"
         >
-          <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-            <Layers className="w-3.5 h-3.5 text-blue-400" />
-            {showDetails ? "Ver menos" : "Ver mais detalhes"}
-            {!showDetails && (
-              <span className="text-slate-600 font-medium normal-case tracking-normal">
-                — insights inteligentes e snapshot financeiro
-              </span>
-            )}
+          <span className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider flex items-center gap-2">
+            <Layers className="w-4 h-4 text-[var(--color-primary-blue)]" />
+            {showDetails ? "Ocultar Detalhes Estratégicos" : "Expandir Insights & Snapshot Financeiro"}
           </span>
-          <ChevronDown className={`w-4 h-4 text-slate-500 shrink-0 transition-transform ${showDetails ? "rotate-180" : ""}`} />
+          <ChevronDown className={`w-4 h-4 text-[var(--color-text-muted)] shrink-0 transition-transform ${showDetails ? "rotate-180" : ""}`} />
         </button>
 
         {showDetails && (
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 flex flex-col rounded-3xl">
-              <h3 className="text-[11px] font-black text-slate-400 mb-6 uppercase tracking-[0.25em] flex items-center gap-2">
-                <Layers className="w-4 h-4 text-blue-400" /> Insights Inteligentes
+            <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] flex flex-col shadow-sm">
+              <h3 className="text-xs font-black text-[var(--color-text-muted)] mb-4 uppercase tracking-wider flex items-center gap-2">
+                <Layers className="w-4 h-4 text-[var(--color-primary-blue)]" /> Insights de Operação
               </h3>
-              <div className="space-y-6">
-                <div className="group cursor-help">
-                  <p className="text-xs font-bold text-white mb-2 flex items-center gap-2 group-hover:text-blue-400 transition-colors">
-                    <Zap className="w-3 h-3 text-amber-400" /> Velocidade de Vendas
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs font-bold text-[var(--color-text-primary)] mb-1 flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-500" /> Velocidade de Fechamento
                   </p>
-                  <p className="text-[10px] text-slate-500 leading-relaxed">Seu ciclo médio caiu 14% este mês. Recomendamos duplicar investimento em AdWords.</p>
+                  <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">Ciclo médio otimizado em 14% neste período com a automação de SDR.</p>
                 </div>
-                <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl">
-                  <p className="text-[11px] font-black text-emerald-400 mb-1 uppercase tracking-widest">Oportunidade</p>
-                  <p className="text-[10px] text-slate-400">Há 42 leads 'Mornos' com score &gt; 80 aguardando followup.</p>
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-[var(--radius-control)]">
+                  <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-0.5">Oportunidade Mapeada</p>
+                  <p className="text-[11px] text-[var(--color-text-muted)]">Leads quentes com score &gt; 80 aguardando follow-up do closer.</p>
                 </div>
               </div>
             </Card>
 
-            <Card className="lg:col-span-3 p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 rounded-3xl">
-              <div className="flex items-center justify-between mb-8">
-                <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-3">
-                  <Briefcase className="w-4 h-4 text-purple-400" /> Snapshot Financeiro
+            <Card className="lg:col-span-3 p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2.5">
+                  <Briefcase className="w-4 h-4 text-purple-500" /> Snapshot de Contratos & Retenção
                 </h3>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-slate-500 font-black uppercase">Retenção Líquida de Receita</span>
-                  <span className="text-xs font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">106.4%</span>
-                </div>
+                <Badge variant="success" dot>
+                  NRR 106.4%
+                </Badge>
               </div>
-              <div className="grid md:grid-cols-3 gap-8">
+              <div className="grid md:grid-cols-3 gap-6">
                 {!hasContracts ? (
-                  <div className="col-span-3 flex flex-col items-center justify-center py-10 gap-3 opacity-40">
-                    <Briefcase className="w-8 h-8 text-slate-500" />
-                    <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest">Cadastre contratos para ver o snapshot financeiro</p>
+                  <div className="col-span-3 flex flex-col items-center justify-center py-6 gap-2 opacity-50">
+                    <Briefcase className="w-6 h-6 text-[var(--color-text-faint)]" />
+                    <p className="text-xs font-medium text-[var(--color-text-muted)]">Cadastre contratos para ver as métricas financeiras</p>
                   </div>
                 ) : (
                   [
-                    { label: "MRR Ativo", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(activeMRR), desc: "Contratos ativos", color: "text-emerald-400" },
-                    { label: "Contratos Ativos", value: contracts.filter(c => c.status === 'Ativo').length.toString(), desc: "Total de clientes", color: "text-blue-400" },
-                    { label: "Ticket Médio", value: contracts.filter(c => c.status === 'Ativo').length > 0 ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(activeMRR / contracts.filter(c => c.status === 'Ativo').length) : 'R$ 0', desc: "Receita por cliente", color: "text-purple-400" },
+                    { label: "MRR Ativo", value: new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(activeMRR), desc: "Contratos ativos em execução", color: "text-emerald-600 dark:text-emerald-400" },
+                    { label: "Contratos Ativos", value: contracts.filter(c => c.status === 'Ativo').length.toString(), desc: "Carteira de clientes recorrentes", color: "text-[var(--color-primary-blue)]" },
+                    { label: "Ticket Médio", value: contracts.filter(c => c.status === 'Ativo').length > 0 ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(activeMRR / contracts.filter(c => c.status === 'Ativo').length) : 'R$ 0', desc: "Receita média por contrato", color: "text-purple-600 dark:text-purple-400" },
                   ].map((item, i) => (
-                    <div key={i} className="space-y-2 border-r border-white/5 last:border-0 pr-8 last:pr-0">
-                      <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">{item.label}</p>
-                      <h4 className={`text-xl font-black ${item.color} font-mono tracking-tighter`}>{item.value}</h4>
-                      <p className="text-[9px] text-slate-600 font-medium">{item.desc}</p>
+                    <div key={i} className="space-y-1.5 border-r border-[var(--color-border-subtle)] last:border-0 pr-6 last:pr-0">
+                      <p className="text-[10px] text-[var(--color-text-faint)] font-bold uppercase tracking-wider">{item.label}</p>
+                      <h4 className={`text-xl font-black ${item.color} font-mono tracking-tight`}>{item.value}</h4>
+                      <p className="text-[10px] text-[var(--color-text-muted)]">{item.desc}</p>
                     </div>
                   ))
                 )}

@@ -9,6 +9,7 @@ import { BasicInfoBlock } from "../../new-lead/BasicInfoBlock";
 import { CompanyBlock } from "../../new-lead/CompanyBlock";
 import { QualificationBlock } from "../../new-lead/QualificationBlock";
 import { apiFetch } from "../../../../lib/apiClient";
+import { UserPlus } from "lucide-react";
 
 interface NewLeadModalProps {
   isOpen: boolean;
@@ -185,17 +186,37 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="Novo Lead" maxWidth="max-w-3xl"
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      maxWidth="max-w-3xl"
+      title={
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/20 flex items-center justify-center">
+            <UserPlus className="w-5 h-5 text-[var(--color-primary-blue)]" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-[var(--color-text-primary)]">
+              Novo Lead
+            </h3>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              Cadastre um novo lead e direcione para o funil comercial ou de SDR
+            </p>
+          </div>
+        </div>
+      }
       footer={
-        <>
-          <Button variant="ghost" onClick={onClose} className="text-slate-400">Cancelar</Button>
-          <Button form="new-lead-form" type="submit" className="bg-[#2563EB] hover:bg-blue-600 text-white font-bold px-6">
-            {loading ? "Salvando..." : "Criar Lead"}
+        <div className="flex justify-end gap-2 w-full">
+          <Button variant="outline" onClick={onClose} disabled={loading}>
+            Cancelar
           </Button>
-        </>
+          <Button form="new-lead-form" type="submit" loading={loading} className="font-bold px-6">
+            Criar Lead
+          </Button>
+        </div>
       }
     >
-      <form id="new-lead-form" onSubmit={handleSubmit} className="space-y-8">
+      <form id="new-lead-form" onSubmit={handleSubmit} className="space-y-6">
         <ClientSelectorBlock
           clientSearch={clientSearch} setClientSearch={setClientSearch}
           selectedClientId={selectedClientId} selectedClientName={selectedClientName}

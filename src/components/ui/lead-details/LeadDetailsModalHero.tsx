@@ -56,16 +56,13 @@ export function LeadDetailsModalHero({
 
   return (
     <>
-      {/* Temperature stripe */}
+      {/* Top indicator stripe */}
       <div className={`h-[3px] shrink-0 bg-gradient-to-r ${tc.stripe}`} />
 
-      <div className={`relative shrink-0 bg-gradient-to-b ${tc.hero} border-b border-white/[0.06] overflow-hidden`}>
-        {/* Ambient glow */}
-        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-[0.08] bg-white pointer-events-none" />
-
+      <div className="relative shrink-0 bg-[var(--color-surface-elevated)] border-b border-[var(--color-border-default)] overflow-hidden">
         {/* Top action bar */}
-        <div className="relative flex items-center justify-between px-5 pt-4 pb-3">
-          <div className="flex items-center gap-1.5">
+        <div className="relative flex items-center justify-between px-5 pt-3.5 pb-2.5">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => {
                 const lastStage = stagesDef[stagesDef.length - 1];
@@ -76,7 +73,7 @@ export function LeadDetailsModalHero({
                   ...prev,
                 ]);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-[10px] font-black uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-emerald-500/10 active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-control)] border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
             >
               <Trophy className="w-3 h-3" /> Ganho
             </button>
@@ -89,19 +86,19 @@ export function LeadDetailsModalHero({
                   ...prev,
                 ]);
               }}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-[10px] font-black uppercase tracking-wider transition-all hover:shadow-lg hover:shadow-rose-500/10 active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-control)] border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 text-[10px] font-black uppercase tracking-wider transition-all active:scale-95 cursor-pointer"
             >
               <ThumbsDown className="w-3 h-3" /> Perdido
             </button>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {onAgendarReuniao && (
               <button
                 type="button"
                 onClick={onAgendarReuniao}
                 title="Agendar Reunião"
-                className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-blue-500/25 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-[9px] font-black uppercase tracking-wider transition-all"
+                className="flex items-center gap-1 px-2.5 py-1.5 rounded-[var(--radius-control)] border border-[var(--color-primary-blue)]/30 bg-[var(--color-primary-blue)]/10 hover:bg-[var(--color-primary-blue)]/20 text-[var(--color-primary-blue)] text-[10px] font-black uppercase tracking-wider transition-all cursor-pointer"
               >
                 <CalendarPlus className="w-3.5 h-3.5" />
                 <span className="hidden sm:inline">Reunião</span>
@@ -112,10 +109,10 @@ export function LeadDetailsModalHero({
               onClick={() => setShowCopilot(!showCopilot)}
               title="IA Copilot"
               className={cn(
-                "p-1.5 rounded-lg border transition-all",
+                "p-1.5 rounded-[var(--radius-control)] border transition-all cursor-pointer",
                 showCopilot
-                  ? "bg-violet-500/20 border-violet-500/40 text-violet-400 shadow-md shadow-violet-500/20"
-                  : "border-white/10 text-slate-500 hover:text-violet-400 hover:border-violet-500/30 hover:bg-violet-500/10"
+                  ? "bg-purple-500/20 border-purple-500/40 text-purple-600 dark:text-purple-400 shadow-sm"
+                  : "border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:text-purple-600 hover:border-purple-500/30 hover:bg-purple-500/10"
               )}
             >
               <Brain className="w-4 h-4" />
@@ -123,27 +120,28 @@ export function LeadDetailsModalHero({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-white transition-colors"
+              className="p-1.5 hover:bg-[var(--color-surface-sunken)] rounded-[var(--radius-control)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Lead identity */}
-        <div className="relative flex items-center gap-4 px-5 pb-4">
-          <div className={cn(
-            "w-14 h-14 rounded-2xl flex items-center justify-center text-xl font-black shrink-0 shadow-lg",
-            "ring-2 ring-offset-2 ring-offset-[#0B1120] select-none",
-            tc.avatar
-          )}>
+        {/* Lead Identity Summary */}
+        <div className="relative flex items-center gap-3.5 px-5 pb-3.5">
+          <div
+            className={cn(
+              "w-12 h-12 rounded-xl flex items-center justify-center text-lg font-black shrink-0 select-none",
+              tc.avatar
+            )}
+          >
             {initials}
           </div>
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-base font-black text-white truncate leading-tight">
-                {companyName || leadName || <span className="text-slate-500 italic font-normal text-sm">Sem nome</span>}
+              <h2 className="text-base font-black text-[var(--color-text-primary)] truncate leading-tight">
+                {companyName || leadName || <span className="text-[var(--color-text-faint)] italic font-normal text-sm">Sem nome cadastrado</span>}
               </h2>
               <span className={cn(
                 "inline-flex items-center gap-1 text-[9px] font-black px-2 py-0.5 rounded-full border uppercase tracking-wider shrink-0",
@@ -155,24 +153,24 @@ export function LeadDetailsModalHero({
             </div>
 
             {companyName && leadName && (
-              <p className="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
-                <User className="w-3 h-3 shrink-0 text-slate-500" />
-                <span className="truncate">{leadName}</span>
+              <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 flex items-center gap-1 truncate">
+                <User className="w-3 h-3 shrink-0 text-[var(--color-text-faint)]" />
+                <span>{leadName}</span>
               </p>
             )}
 
             <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-              <span className="text-sm font-black text-emerald-400 font-mono tracking-tight">
+              <span className="text-sm font-black text-emerald-600 dark:text-emerald-400 font-mono tracking-tight">
                 {formattedValue}
               </span>
-              <div className="w-px h-3 bg-white/10 shrink-0" />
+              <div className="w-px h-3 bg-[var(--color-border-default)] shrink-0" />
               <span className={cn(
                 "text-[10px] font-bold px-2 py-0.5 rounded-full border",
                 priority === "Alta"
-                  ? "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                  ? "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400"
                   : priority === "Média"
-                  ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                  : "bg-slate-700/40 border-white/10 text-slate-500"
+                  ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
+                  : "bg-[var(--color-surface-sunken)] border-[var(--color-border-default)] text-[var(--color-text-muted)]"
               )}>
                 ▲ {priority}
               </span>
@@ -180,10 +178,10 @@ export function LeadDetailsModalHero({
                 <span className={cn(
                   "text-[10px] font-bold px-2 py-0.5 rounded-full border",
                   slaStatus === "Em Dia"
-                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
+                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
                     : slaStatus === "Crítico"
-                    ? "bg-amber-500/10 border-amber-500/20 text-amber-400"
-                    : "bg-rose-500/10 border-rose-500/20 text-rose-400"
+                    ? "bg-amber-500/10 border-amber-500/20 text-amber-600 dark:text-amber-400"
+                    : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400"
                 )}>
                   SLA · {slaStatus}
                 </span>
@@ -193,7 +191,7 @@ export function LeadDetailsModalHero({
         </div>
 
         {/* Stage stepper */}
-        <div className="relative px-5 pb-4 overflow-x-auto scrollbar-none">
+        <div className="relative px-5 pb-3.5 overflow-x-auto scrollbar-none border-t border-[var(--color-border-subtle)] pt-2.5">
           <div className="flex items-center min-w-max">
             {stagesDef.map((stg: any, idx: number) => {
               const isActive = currentStageId === stg.id;
@@ -204,26 +202,26 @@ export function LeadDetailsModalHero({
                   <button
                     onClick={() => moveToStage(stg)}
                     className={cn(
-                      "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer border",
+                      "flex items-center gap-1.5 px-2.5 py-1 rounded-[var(--radius-control)] text-[10px] font-bold whitespace-nowrap shrink-0 transition-all cursor-pointer border",
                       isActive
-                        ? "bg-blue-500/15 text-blue-300 border-blue-500/35 shadow-sm shadow-blue-500/15"
+                        ? "bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] border-[var(--color-primary-blue)]/30 font-black shadow-sm"
                         : isPast
-                        ? "text-emerald-500/70 border-transparent hover:border-white/10 hover:bg-white/5"
-                        : "text-slate-600 border-transparent hover:text-slate-300 hover:border-white/10 hover:bg-white/5"
+                        ? "text-emerald-600 dark:text-emerald-400 border-transparent hover:border-[var(--color-border-default)] hover:bg-[var(--color-surface-sunken)]"
+                        : "text-[var(--color-text-muted)] border-transparent hover:text-[var(--color-text-primary)] hover:border-[var(--color-border-default)] hover:bg-[var(--color-surface-sunken)]"
                     )}
                   >
                     {isActive && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse shrink-0" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary-blue)] animate-pulse shrink-0" />
                     )}
                     {isPast && (
                       <span className="w-3.5 h-3.5 rounded-full bg-emerald-500/15 flex items-center justify-center shrink-0">
-                        <Check className="w-2 h-2 text-emerald-400" />
+                        <Check className="w-2 h-2 text-emerald-600 dark:text-emerald-400" />
                       </span>
                     )}
                     {stg.name}
                   </button>
                   {!isLast && (
-                    <ChevronRight className="w-3 h-3 text-slate-700 shrink-0 mx-0.5" />
+                    <ChevronRight className="w-3 h-3 text-[var(--color-text-faint)] shrink-0 mx-0.5" />
                   )}
                 </React.Fragment>
               );

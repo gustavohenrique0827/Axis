@@ -1,4 +1,6 @@
 import { Building2, Hash, Building, LinkIcon, AlertTriangle, Target } from "lucide-react";
+import { FormField } from "../form-field";
+import { Input } from "../input";
 
 type CnpjStatus = { status: "idle" | "checking" | "active" | "inactive" | "invalid"; message?: string };
 
@@ -14,70 +16,68 @@ interface CompanyBlockProps {
 export function CompanyBlock({
   cnpjValue, handleCnpjChange, cnpjStatus, isCnpjDuplicate, companyValue, setCompanyValue,
 }: CompanyBlockProps) {
-  const inputCls = "w-full bg-[var(--color-surface)]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[var(--color-surface)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all";
-
   return (
-    <div className="space-y-5">
-      <h4 className="text-sm font-black text-white border-b border-white/5 pb-2 mb-2 flex items-center gap-2 uppercase tracking-wide">
-        <Building2 className="w-4 h-4 text-emerald-400" /> Dados Empresariais
+    <div className="space-y-4">
+      <h4 className="text-xs font-black text-[var(--color-text-primary)] border-b border-[var(--color-border-subtle)] pb-2 flex items-center gap-2 uppercase tracking-wider">
+        <Building2 className="w-3.5 h-3.5 text-emerald-500" /> Dados da Empresa
       </h4>
 
-      <div className="p-5 bg-[var(--color-surface)]/30 rounded-xl border border-white/5 space-y-4">
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5 justify-between">
-            <span className="flex items-center gap-1.5">
-              <Hash className="w-3.5 h-3.5" /> Documento CNPJ
-            </span>
-            <span className="text-[10px] text-blue-400 font-bold bg-blue-500/10 px-2 py-0.5 rounded-full">
-              Receita Federal Sync
-            </span>
-          </label>
-          <input
-            name="cnpj" maxLength={18} value={cnpjValue} onChange={handleCnpjChange} type="text"
-            className={`${inputCls} font-mono`} placeholder="Digite o CNPJ para auto-preenchimento..."
+      <div className="p-4 bg-[var(--color-surface-sunken)] rounded-[var(--radius-control)] border border-[var(--color-border-subtle)] space-y-3.5">
+        <FormField
+          label="Documento CNPJ"
+          hint="Digite os 14 dígitos para buscar na Receita Federal"
+          error={isCnpjDuplicate ? "CNPJ já cadastrado no CRM" : undefined}
+        >
+          <Input
+            name="cnpj"
+            maxLength={18}
+            value={cnpjValue}
+            onChange={handleCnpjChange}
+            type="text"
+            className="font-mono"
+            placeholder="00.000.000/0000-00"
           />
-          <div className="mt-2 min-h-[24px]">
-            {isCnpjDuplicate && (
-              <p className="text-[10px] text-amber-500 flex items-center gap-1 font-bold bg-amber-500/10 px-2 py-1 rounded-md w-fit">
-                <AlertTriangle className="w-3 h-3" /> Já cadastrado no CRM!
-              </p>
-            )}
+          <div className="mt-1.5 min-h-[20px]">
             {cnpjStatus.status === "checking" && (
-              <p className="text-[10px] text-blue-400 animate-pulse font-bold uppercase tracking-widest flex items-center gap-1.5 bg-blue-500/10 px-2 py-1 rounded-md w-fit">
-                <span className="w-2 h-2 rounded-full bg-blue-500 animate-ping" /> Buscando dados...
+              <p className="text-[10px] text-[var(--color-primary-blue)] animate-pulse font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[var(--color-primary-blue)] animate-ping" /> Consultando Receita Federal...
               </p>
             )}
             {cnpjStatus.status === "active" && (
-              <p className="text-[10px] text-emerald-400 font-black uppercase tracking-widest flex items-center gap-1 bg-emerald-500/10 px-2 py-1 rounded-md w-fit">
+              <p className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
                 <Target className="w-3 h-3" /> CNPJ Validado e Ativo
               </p>
             )}
             {cnpjStatus.status === "inactive" && (
-              <p className="text-[10px] text-amber-500 font-black uppercase tracking-widest flex items-center gap-1 bg-amber-500/10 px-2 py-1 rounded-md w-fit">
+              <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" /> Situação: {cnpjStatus.message}
               </p>
             )}
             {cnpjStatus.status === "invalid" && (
-              <p className="text-[10px] text-rose-500 font-black uppercase tracking-widest flex items-center gap-1 bg-rose-500/10 px-2 py-1 rounded-md w-fit">
+              <p className="text-[10px] text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1">
                 <AlertTriangle className="w-3 h-3" /> {cnpjStatus.message}
               </p>
             )}
           </div>
-        </div>
+        </FormField>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-2">
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <Building className="w-3.5 h-3.5" /> Razão Social / Fantasia
-            </label>
-            <input name="company" type="text" value={companyValue} onChange={(e) => setCompanyValue(e.target.value)} className={inputCls} placeholder="Preenchido automaticamente..." />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <LinkIcon className="w-3.5 h-3.5" /> Website Corporativo
-            </label>
-            <input name="website" type="url" className={inputCls} placeholder="https://www.empresa.com" />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField label="Razão Social / Nome Fantasia">
+            <Input
+              name="company"
+              type="text"
+              value={companyValue}
+              onChange={(e) => setCompanyValue(e.target.value)}
+              placeholder="Nome da empresa..."
+            />
+          </FormField>
+          <FormField label="Website Corporativo">
+            <Input
+              name="website"
+              type="url"
+              placeholder="https://www.empresa.com.br"
+            />
+          </FormField>
         </div>
       </div>
     </div>

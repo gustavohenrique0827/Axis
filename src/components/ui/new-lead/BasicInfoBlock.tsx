@@ -1,4 +1,6 @@
 import { User, Mail, Phone, Tag, Users, Target, AlertTriangle } from "lucide-react";
+import { FormField } from "../form-field";
+import { Input } from "../input";
 
 interface BasicInfoBlockProps {
   emailValue: string;
@@ -17,77 +19,79 @@ export function BasicInfoBlock({
   emailValue, setEmailValue, phoneValue, handlePhoneChange, isEmailDuplicate,
   selectedSeller, setSelectedSeller, sellerOptions, sellerPipelineId, sellerCargoLabel,
 }: BasicInfoBlockProps) {
-  const inputCls = "w-full bg-[var(--color-surface)]/50 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:border-[#2563EB] focus:bg-[var(--color-surface)] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/50 transition-all";
-
   return (
-    <div className="space-y-5">
-      <h4 className="text-sm font-black text-white border-b border-white/5 pb-2 mb-2 flex items-center gap-2 uppercase tracking-wide">
-        <User className="w-4 h-4 text-blue-400" /> Informações Básicas
+    <div className="space-y-4">
+      <h4 className="text-xs font-black text-[var(--color-text-primary)] border-b border-[var(--color-border-subtle)] pb-2 flex items-center gap-2 uppercase tracking-wider">
+        <User className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" /> Informações do Contato
       </h4>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5" /> Nome Principal
-          </label>
-          <input name="name" required type="text" className={inputCls} placeholder="Nome completo do lead" />
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Tag className="w-3.5 h-3.5" /> Sufixo / Título (opcional)
-          </label>
-          <input name="nameSuffix" type="text" className={inputCls} placeholder="Ex: Diretor de TI, Dr." />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField label="Nome do Contato" required>
+          <Input name="name" required type="text" placeholder="Nome completo do lead" />
+        </FormField>
+
+        <FormField label="Cargo / Sufixo (Opcional)">
+          <Input name="nameSuffix" type="text" placeholder="Ex: Diretor de TI, Dr." />
+        </FormField>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Mail className="w-3.5 h-3.5" /> E-mail Comercial <span className="text-slate-600 normal-case font-normal">(opcional)</span>
-          </label>
-          <input name="email" type="email" value={emailValue} onChange={(e) => setEmailValue(e.target.value)} className={inputCls} placeholder="contato@empresa.com" />
-          {isEmailDuplicate && (
-            <p className="text-[10px] text-amber-500 mt-1.5 flex items-center gap-1 font-bold bg-amber-500/10 px-2 py-1 rounded-md w-fit">
-              <AlertTriangle className="w-3 h-3" /> Já cadastrado no CRM!
-            </p>
-          )}
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Phone className="w-3.5 h-3.5" /> Celular / WhatsApp
-          </label>
-          <input name="phone" type="tel" value={phoneValue} onChange={handlePhoneChange} maxLength={15} className={`${inputCls} font-mono`} placeholder="(00) 00000-0000" />
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          label="E-mail Comercial"
+          error={isEmailDuplicate ? "Este e-mail já existe na base do CRM" : undefined}
+        >
+          <Input
+            name="email"
+            type="email"
+            value={emailValue}
+            onChange={(e) => setEmailValue(e.target.value)}
+            placeholder="contato@empresa.com"
+          />
+        </FormField>
+
+        <FormField label="Celular / WhatsApp">
+          <Input
+            name="phone"
+            type="tel"
+            value={phoneValue}
+            onChange={handlePhoneChange}
+            maxLength={15}
+            className="font-mono"
+            placeholder="(00) 00000-0000"
+          />
+        </FormField>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-4 border-t border-white/5">
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Origem Principal</label>
-          <select className={inputCls}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-[var(--color-border-subtle)]">
+        <FormField label="Origem de Aquisição">
+          <select className="w-full bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] h-9">
             <option>Site (Orgânico)</option>
             <option>Google Ads</option>
-            <option>Meta Ads</option>
+            <option>Meta Ads (Facebook / Instagram)</option>
             <option>Indicação</option>
-            <option>Prospecção Ativa</option>
+            <option>Prospecção Ativa (Outbound)</option>
+            <option>WhatsApp Direto</option>
           </select>
-        </div>
-        <div className="space-y-2">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-            <Users className="w-3.5 h-3.5" /> Vendedor Responsável
-            {sellerOptions.length === 0 && <span className="text-[9px] text-amber-400 font-bold ml-1">(sem colaboradores)</span>}
-          </label>
-          <select name="seller" value={selectedSeller} onChange={(e) => setSelectedSeller(e.target.value)} className={inputCls}>
+        </FormField>
+
+        <FormField label="Responsável Comercial">
+          <select
+            name="seller"
+            value={selectedSeller}
+            onChange={(e) => setSelectedSeller(e.target.value)}
+            className="w-full bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] h-9"
+          >
             {sellerOptions.length > 0
-              ? sellerOptions.map(s => <option key={s} value={s} className="bg-[var(--color-surface-elevated)]">{s}</option>)
-              : <option value="" disabled className="bg-[var(--color-surface-elevated)] text-slate-500">Nenhum colaborador cadastrado</option>
+              ? sellerOptions.map(s => <option key={s} value={s}>{s}</option>)
+              : <option value="" disabled>Nenhum vendedor cadastrado</option>
             }
           </select>
           {selectedSeller && (
-            <p className={`text-[10px] font-black flex items-center gap-1 ${sellerPipelineId === "sdr" ? "text-purple-400" : "text-blue-400"}`}>
-              <Target className="w-3 h-3" /> Pipeline: {sellerCargoLabel}
+            <p className={`text-[10px] font-bold flex items-center gap-1 mt-1 ${sellerPipelineId === "sdr" ? "text-purple-600 dark:text-purple-400" : "text-[var(--color-primary-blue)]"}`}>
+              <Target className="w-3 h-3" /> Funil: {sellerCargoLabel}
             </p>
           )}
-        </div>
+        </FormField>
       </div>
     </div>
   );

@@ -1,21 +1,13 @@
 import { motion } from 'motion/react';
 import { Card } from '../../../../components/ui/card';
 import { Filter, TrendingUp } from 'lucide-react';
+import { EmptyState } from '../../../../components/ui/empty-state';
 
 interface FunnelStep {
   label: string;
   value: number;
   drop: number;
   color: string;
-}
-
-function EmptyState({ icon: Icon, message }: { icon: React.ElementType; message: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 gap-3 opacity-40">
-      <Icon className="w-8 h-8 text-slate-500" />
-      <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">{message}</p>
-    </div>
-  );
 }
 
 interface FunnelConversionChartProps {
@@ -28,35 +20,36 @@ export function FunnelConversionChart({ funnelData, topConversionRate }: FunnelC
   const maxFunnelValue = funnelData[0]?.value || 1;
 
   return (
-    <div className="space-y-6">
-      <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 relative overflow-hidden rounded-3xl">
-        <h3 className="text-sm font-black text-white mb-8 uppercase tracking-widest flex items-center gap-2">
-          <Filter className="w-4 h-4 text-emerald-400" /> Funil de Conversão
+    <div className="space-y-4">
+      <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] relative overflow-hidden shadow-sm">
+        <h3 className="text-xs font-black text-[var(--color-text-primary)] mb-6 uppercase tracking-wider flex items-center gap-2">
+          <Filter className="w-4 h-4 text-emerald-500" /> Funil de Conversão Comercial
         </h3>
         {!hasFunnel ? (
-          <EmptyState icon={Filter} message="Nenhum lead cadastrado ainda. Adicione leads para ver o funil." />
+          <EmptyState
+            icon={Filter}
+            title="Funil sem movimentações"
+            description="Cadastre oportunidades e avance de etapas no Kanban."
+            className="py-10"
+          />
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             {funnelData.map((step, i) => (
               <div key={i} className="relative">
-                <div className="flex items-center justify-between mb-1.5 px-1">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{step.label}</p>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-black text-white">{step.value}</span>
-                    {step.drop > 0 && <span className="text-[9px] font-black text-rose-500">-{step.drop}%</span>}
+                <div className="flex items-center justify-between mb-1 px-1">
+                  <p className="text-xs font-bold text-[var(--color-text-muted)]">{step.label}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-[var(--color-text-primary)] font-mono">{step.value}</span>
+                    {step.drop > 0 && <span className="text-[10px] font-bold text-rose-500">-{step.drop}%</span>}
                   </div>
                 </div>
-                <div className="w-full h-8 bg-white/5 rounded-lg overflow-hidden relative border border-white/5">
+                <div className="w-full h-7 bg-[var(--color-surface-sunken)] rounded-[var(--radius-control)] overflow-hidden relative border border-[var(--color-border-subtle)]">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${(step.value / maxFunnelValue) * 100}%` }}
-                    transition={{ delay: i * 0.1, duration: 1 }}
-                    className={`h-full ${step.color} opacity-40`}
+                    transition={{ delay: i * 0.08, duration: 0.8 }}
+                    className={`h-full ${step.color} opacity-60`}
                   />
-                  <div className="absolute inset-0 flex items-center px-3 pointer-events-none">
-                    <div className="flex-1" />
-                    <div className="w-[1px] h-4 bg-white/10" />
-                  </div>
                 </div>
               </div>
             ))}
@@ -64,15 +57,14 @@ export function FunnelConversionChart({ funnelData, topConversionRate }: FunnelC
         )}
       </Card>
 
-      <Card className="p-6 bg-blue-600/10 border border-blue-500/20 rounded-3xl relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-6 opacity-[0.05] group-hover:opacity-[0.1] transition-opacity rotate-12">
-          <TrendingUp className="w-16 h-16 text-blue-400" />
-        </div>
-        <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2">Performance do Pipeline</h4>
-        <p className="text-[11px] text-slate-300 leading-relaxed font-medium">
+      <Card className="p-4 bg-[var(--color-primary-blue)]/5 border border-[var(--color-primary-blue)]/20 shadow-sm relative overflow-hidden">
+        <h4 className="text-[10px] font-black text-[var(--color-primary-blue)] uppercase tracking-wider mb-1 flex items-center gap-1.5">
+          <TrendingUp className="w-3.5 h-3.5" /> Eficiência do Pipeline
+        </h4>
+        <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
           {hasFunnel
-            ? `${funnelData[0].value} leads na prospecção. Taxa de conversão atual: ${topConversionRate}%.`
-            : 'Cadastre leads e contratos para ver insights de performance do seu pipeline.'}
+            ? `${funnelData[0].value} leads em prospecção com taxa de conversão média estimada em ${topConversionRate}%.`
+            : 'Cadastre leads e avance os negócios para visualizar a taxa de conversão do time.'}
         </p>
       </Card>
     </div>

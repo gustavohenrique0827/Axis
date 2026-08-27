@@ -7,7 +7,7 @@ interface QuickStatsGridProps {
   stats: any[];
 }
 
-const ICON_COLORS = ["text-indigo-500", "text-emerald-500", "text-blue-500", "text-rose-500"];
+const ICON_COLORS = ["text-[var(--color-primary-blue)]", "text-emerald-500", "text-cyan-500", "text-rose-500"];
 
 export function QuickStatsGrid({ stats }: QuickStatsGridProps) {
   return (
@@ -23,18 +23,24 @@ export function QuickStatsGrid({ stats }: QuickStatsGridProps) {
           key={i}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.1 }}
+          transition={{ delay: i * 0.08 }}
         >
-          <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
-            <div className="flex items-center justify-between mb-4">
+          <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] hover:border-[var(--color-primary-blue)]/40 transition-all shadow-sm">
+            <div className="flex items-center justify-between mb-3">
               <stat.icon className={`w-5 h-5 ${ICON_COLORS[i % ICON_COLORS.length]}`} />
-              <span className={`text-xs flex items-center gap-0.5 ${stat.trend.startsWith('+') ? 'text-emerald-400' : 'text-rose-400'}`}>
-                {stat.trend} {stat.trend.startsWith('+') ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+              <span className={`text-xs font-bold flex items-center gap-0.5 ${stat.trend.startsWith('+') ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                {stat.trend} {stat.trend.startsWith('+') ? <ArrowUpRight className="w-3.5 h-3.5" /> : <ArrowDownRight className="w-3.5 h-3.5" />}
               </span>
             </div>
-            <div className="text-2xl font-display font-black text-white mb-1 italic">{stat.value}</div>
-            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</div>
-            <div className="text-[10px] text-slate-600 mt-1">Proj: {stat.forecast}</div>
+            <div className="text-2xl font-display font-black text-[var(--color-text-primary)] mb-1 italic">
+              {stat.value}
+            </div>
+            <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">
+              {stat.label}
+            </div>
+            <div className="text-[10px] text-[var(--color-text-faint)] mt-1 font-medium">
+              Proj: {stat.forecast}
+            </div>
           </Card>
         </motion.div>
       ))}

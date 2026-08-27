@@ -1,6 +1,6 @@
 import { Card } from '../../../../components/ui/card';
 import { ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, Radar } from 'recharts';
-import { Eye } from 'lucide-react';
+import { Compass } from 'lucide-react';
 
 interface SalesEntry {
   name: string;
@@ -26,23 +26,23 @@ export function RadarAtributos({ salesRanking, funnelLeadsCount }: RadarAtributo
   ];
 
   return (
-    <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 lg:col-span-1 rounded-3xl">
-      <h3 className="text-xs font-black text-slate-400 mb-10 uppercase tracking-[0.2em] flex items-center gap-2">
-        <Eye className="w-4 h-4 text-purple-400" /> Radar de Atributos
+    <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] lg:col-span-1 shadow-sm">
+      <h3 className="text-xs font-black text-[var(--color-text-primary)] mb-6 uppercase tracking-wider flex items-center gap-2">
+        <Compass className="w-4 h-4 text-purple-500" /> Radar de Competências
       </h3>
-      <div className="h-[280px]">
+      <div className="h-[260px]">
         <ResponsiveContainer width="100%" height="100%">
           <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-            <PolarGrid stroke="#64748b20" />
-            <PolarAngleAxis dataKey="subject" stroke="#64748b" fontSize={9} fontStyle="bold" />
-            <Radar name="Top Closers" dataKey="A" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.5} />
+            <PolarGrid stroke="rgba(148, 163, 184, 0.2)" />
+            <PolarAngleAxis dataKey="subject" stroke="var(--color-text-muted)" fontSize={10} fontStyle="bold" />
+            <Radar name="Top Closers" dataKey="A" stroke="#2563EB" fill="#2563EB" fillOpacity={0.35} />
           </RadarChart>
         </ResponsiveContainer>
       </div>
-      <div className="mt-6 flex flex-wrap justify-center gap-6">
-        <div className="flex items-center gap-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]" />
-          <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest">Seu Time</span>
+      <div className="mt-4 flex flex-wrap justify-center gap-4">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[var(--color-primary-blue)]" />
+          <span className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase tracking-wider">Desempenho Comercial</span>
         </div>
       </div>
     </Card>

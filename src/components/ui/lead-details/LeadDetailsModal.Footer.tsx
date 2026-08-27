@@ -25,13 +25,16 @@ export function LeadDetailsModalFooter(props: {
         onConfirm={props.onConfirmDelete}
         title="Remover Lead Permanentemente?"
         message={`Você tem certeza ABSOLUTA de que deseja deletar o lead "${props.companyName || props.leadName}"? Todos os relatórios de alteração, e-mails de interações e produtos vinculados no faturamento serão destruídos.`}
+        message={`Você tem certeza de que deseja deletar o lead "${props.companyName || props.leadName}"? O histórico, atividades e produtos vinculados serão removidos.`}
       />
 
       <div className="flex items-center justify-between w-full gap-2">
         <Button
           variant="outline"
+          variant="danger"
           onClick={() => props.setIsConfirmDeleteOpen(true)}
           className="border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 hover:text-rose-200 gap-1.5 h-9 px-4 text-xs"
+          className="gap-1.5 h-9 px-3.5 text-xs font-bold"
         >
           <Trash className="w-3.5 h-3.5" />
           Excluir
@@ -39,8 +42,10 @@ export function LeadDetailsModalFooter(props: {
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
+            variant="outline"
             onClick={props.onClose}
             className="text-slate-400 font-bold px-4 h-9 hover:text-white text-xs"
+            className="h-9 px-4 text-xs font-bold"
           >
             Fechar
           </Button>
@@ -57,6 +62,22 @@ export function LeadDetailsModalFooter(props: {
           >
             Editar Lead
           </Button>
+          {props.isEditingInline ? (
+            <Button
+              onClick={props.handleSaveAll}
+              className="h-9 px-5 text-xs font-bold gap-1.5"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Salvar Alterações
+            </Button>
+          ) : (
+            <Button
+              onClick={() => props.setIsEditingInline(true)}
+              className="h-9 px-5 text-xs font-bold"
+            >
+              Editar Lead
+            </Button>
+          )}
         </div>
       </div>
     </>

@@ -2,12 +2,12 @@ import React, { useState, useMemo } from "react";
 import { Card } from "../card";
 import {
   Sparkles, Brain, ArrowRight, Tag, Trophy,
-  Phone, MessageSquare, Mail, FileCheck,
+  Phone, MessageSquare, Mail, FileCheck, Clock, TrendingUp, ShieldCheck
 } from "lucide-react";
 import { Button } from "../button";
+import { Badge } from "../badge";
 import { useData } from "../../../contexts/DataContext";
 import { toast } from "sonner";
-import { ProfileHeroCard } from "./ProfileHeroCard";
 import { ProfileDataForm } from "./ProfileDataForm";
 
 interface ProfileSectionProps {
@@ -83,7 +83,6 @@ export function ProfileSection({
   }, [colaboradores, allLeads]);
 
   const displayValue = useMemo(() => {
-    // Produto vinculado tem prioridade sobre o valor manual
     const ids: string[] = Array.isArray(lead?.productIds) ? lead.productIds : [];
     if (ids.length > 0) {
       const total = (products as any[]).reduce(
@@ -128,59 +127,77 @@ export function ProfileSection({
 
   const quickActions = [
     {
-      label: "WhatsApp", icon: MessageSquare, color: "text-[#25D366]",
-      bg: "bg-[#25D366]/10 hover:bg-[#25D366]/20 border-[#25D366]/20",
+      label: "WhatsApp",
+      icon: MessageSquare,
+      color: "text-emerald-600 dark:text-emerald-400",
       action: () => window.open(`https://wa.me/55${phone.replace(/\D/g, "")}`, "_blank"),
     },
     {
-      label: "Instagram", icon: Phone, color: "text-pink-400",
-      bg: "bg-pink-500/10 hover:bg-pink-500/20 border-pink-500/20",
-      action: () => window.open("https://instagram.com", "_blank"),
-    },
-    {
-      label: "Ligação VoIP", icon: Phone, color: "text-cyan-400",
-      bg: "bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-500/20",
+      label: "Ligação VoIP",
+      icon: Phone,
+      color: "text-[var(--color-primary-blue)]",
       action: () => {
         addActivityCtx(lead.id, "Ligação", "Ligação VoIP", "Discagem virtual executada pelo sistema Axis.", seller || "Sistema");
-        toast.success("Ligação VoIP registrada!");
+        toast.success("Ligação VoIP registrada no histórico!");
       },
     },
     {
-      label: "E-mail", icon: Mail, color: "text-amber-400",
-      bg: "bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/20",
+      label: "Enviar E-mail",
+      icon: Mail,
+      color: "text-amber-600 dark:text-amber-400",
       action: () => window.open(`mailto:${email}`),
     },
     {
-      label: "Contrato", icon: FileCheck, color: "text-emerald-400",
-      bg: "bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/20",
+      label: "Contrato",
+      icon: FileCheck,
+      color: "text-purple-600 dark:text-purple-400",
       action: () =>
         setAlterationLogs((prev: any[]) => [
-          { id: Date.now().toString(), author: seller || "Sistema", desc: "Contrato criado via DocuSign", time: "Agora" },
+          { id: Date.now().toString(), author: seller || "Sistema", desc: "Contrato gerado via DocuSign", time: "Agora" },
           ...prev,
         ]),
     },
     {
-      label: "Converter", icon: Trophy, color: "text-purple-400",
-      bg: "bg-purple-500/10 hover:bg-purple-500/20 border-purple-500/20",
+      label: "Converter Lead",
+      icon: Trophy,
+      color: "text-rose-600 dark:text-rose-400",
       action: handleConvertLead,
     },
   ];
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
+      {/* ── Compact Key Metrics Bar (replaces the duplicate ProfileHeroCard) ── */}
+      <div className="grid grid-cols-3 gap-2.5">
+        <Card className="p-3 text-center bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
+          <div className="text-[10px] font-bold text-[var(--color-text-faint)] uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+            <Sparkles className="w-3 h-3 text-[var(--color-primary-blue)]" /> Score IA
+          </div>
+          <div className="text-lg font-display font-black text-[var(--color-text-primary)]">
+            {score || 0}<span className="text-xs text-[var(--color-text-faint)] font-normal">/100</span>
+          </div>
+        </Card>
 
-      <ProfileHeroCard
-        temperature={temperature}
-        companyName={companyName}
-        leadName={leadName}
-        displayValue={displayValue}
-        slaStatus={slaStatus}
-        priority={priority}
-        score={score}
-        probability={probability}
-        timeIdle={timeIdle}
-      />
+        <Card className="p-3 text-center bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
+          <div className="text-[10px] font-bold text-[var(--color-text-faint)] uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+            <TrendingUp className="w-3 h-3 text-emerald-500" /> Probabilidade
+          </div>
+          <div className="text-lg font-display font-black text-emerald-600 dark:text-emerald-400">
+            {Math.round(Number(probability) || 0)}%
+          </div>
+        </Card>
 
+        <Card className="p-3 text-center bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
+          <div className="text-[10px] font-bold text-[var(--color-text-faint)] uppercase tracking-wider mb-1 flex items-center justify-center gap-1">
+            <Clock className="w-3 h-3 text-amber-500" /> Inatividade
+          </div>
+          <div className="text-lg font-display font-black text-[var(--color-text-primary)]">
+            {timeIdle || "0h"}
+          </div>
+        </Card>
+      </div>
+
+      {/* ── Main Data Form ── */}
       <ProfileDataForm
         isEditingInline={isEditingInline}
         setIsEditingInline={setIsEditingInline}
@@ -204,100 +221,97 @@ export function ProfileSection({
       />
 
       {/* ── Quick Actions ── */}
-      <Card className="border-white/10 bg-[var(--color-surface-elevated)]/70 p-4">
-        <h4 className="text-[8px] font-black uppercase tracking-widest text-slate-500 mb-3">Ações Rápidas</h4>
-        <div className="grid grid-cols-3 gap-2">
-          {quickActions.map(({ label, icon: Icon, color, bg, action }) => (
+      <Card className="p-3.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+        <h4 className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)] mb-2.5">
+          Ações Rápidas
+        </h4>
+        <div className="grid grid-cols-5 gap-2">
+          {quickActions.map(({ label, icon: Icon, color, action }) => (
             <button
               key={label}
+              type="button"
               onClick={action}
-              className={`flex flex-col items-center gap-1.5 py-3 ${bg} border rounded-xl transition-all cursor-pointer hover:scale-[1.03] active:scale-[0.97]`}
+              className="flex flex-col items-center gap-1.5 py-2 px-1 rounded-[var(--radius-control)] border border-[var(--color-border-default)] bg-[var(--color-surface-sunken)] hover:bg-[var(--color-surface-elevated)] hover:border-[var(--color-primary-blue)]/40 transition-all cursor-pointer group"
             >
-              <Icon className={`w-4 h-4 ${color}`} />
-              <span className={`text-[8px] font-black uppercase text-center leading-tight px-1 ${color}`}>{label}</span>
+              <Icon className={`w-4 h-4 ${color} group-hover:scale-110 transition-transform`} />
+              <span className="text-[9px] font-bold text-[var(--color-text-muted)] group-hover:text-[var(--color-text-primary)] text-center leading-tight truncate w-full">
+                {label}
+              </span>
             </button>
           ))}
         </div>
       </Card>
 
       {/* ── AI Copilot Recommendation ── */}
-      <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-950/30 to-[var(--color-surface-elevated)] p-4 relative overflow-hidden">
-        <div className="absolute -top-6 -right-6 w-24 h-24 bg-cyan-500/[0.07] rounded-full" />
-        <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-blue-500/[0.06] rounded-full" />
-        <div className="relative">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-lg bg-cyan-500/20 flex items-center justify-center shrink-0">
-                <Brain className="w-3.5 h-3.5 text-cyan-400" />
-              </div>
-              <span className="text-[9px] font-black uppercase tracking-widest text-cyan-400">Recomendação Axis CoPilot</span>
+      <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-primary-blue)]/20 shadow-sm relative overflow-hidden">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-[var(--color-primary-blue)]/10 flex items-center justify-center shrink-0">
+              <Brain className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" />
             </div>
-            <span className="text-[8px] font-black bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
-              <Sparkles className="w-2 h-2 animate-pulse" /> IA
+            <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-primary)]">
+              Recomendação Axis Copilot
             </span>
           </div>
-          <p className="text-xs text-slate-300 leading-relaxed">
-            Score <strong className="text-cyan-300">{score}</strong> — este lead demonstra interesse em produtos recorrentes.
-            Envie a proposta{" "}
-            <strong className="text-white">Consultoria Enterprise + Licença Usuário</strong>{" "}
-            hoje mesmo para antecipar o fechamento.
-          </p>
-          <div className="mt-3 bg-[var(--color-surface)]/60 rounded-xl p-2.5 border border-cyan-500/15 flex items-center justify-between">
-            <span className="text-[10px] text-slate-500">Sugestão de ação:</span>
-            <button
-              onClick={() => {
-                setActiveTab("whatsapp");
-                setChatChannel("whatsapp");
-                applyMessageTemplate("Olá {client}! Preparei a proposta para {company}. Segue em anexo.");
-              }}
-              className="text-[10px] text-cyan-400 font-bold hover:underline flex items-center gap-1"
-            >
-              Aplicar Proposta <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
+          <Badge variant="purple" dot dotPulse>IA</Badge>
         </div>
-      </div>
+        <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+          Score <strong className="text-[var(--color-text-primary)] font-bold">{score}</strong> — Lead com alto interesse em propostas personalizadas. Recomendamos contato ativo para acelerar o fechamento.
+        </p>
+        <div className="mt-3 pt-2.5 border-t border-[var(--color-border-subtle)] flex items-center justify-between">
+          <span className="text-[11px] text-[var(--color-text-faint)]">Ação sugerida:</span>
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab("whatsapp");
+              setChatChannel("whatsapp");
+              applyMessageTemplate("Olá {client}! Preparei a proposta para {company}. Segue em anexo.");
+            }}
+            className="text-xs text-[var(--color-primary-blue)] font-bold hover:underline flex items-center gap-1 cursor-pointer"
+          >
+            Abrir Chat WhatsApp <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
+      </Card>
 
       {/* ── Tags ── */}
-      <Card className="border-white/10 bg-[var(--color-surface-elevated)]/70 overflow-hidden p-0">
-        <div className="px-4 py-2.5 border-b border-white/[0.05] bg-white/[0.01]">
-          <h4 className="text-[8px] font-black uppercase tracking-widest text-cyan-500/60 flex items-center gap-1.5">
-            <Tag className="w-3 h-3" /> Tags Corporativas
-          </h4>
-        </div>
-        <div className="p-3.5 space-y-3">
-          <div className="flex flex-wrap gap-1.5 min-h-[28px]">
+      <Card className="p-3.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+        <h4 className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)] mb-2.5 flex items-center gap-1.5">
+          <Tag className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" /> Tags Corporativas
+        </h4>
+        <div className="space-y-2.5">
+          <div className="flex flex-wrap gap-1.5 min-h-[26px]">
             {customTags.length === 0 ? (
-              <span className="text-[10px] text-slate-600 italic self-center">Nenhuma tag adicionada ainda</span>
+              <span className="text-xs text-[var(--color-text-faint)] italic self-center">Nenhuma tag vinculada</span>
             ) : (
               customTags.map((tag) => (
                 <span
                   key={tag}
                   onClick={() => handleRemoveTag(tag)}
                   title="Clique para remover"
-                  className="group flex items-center gap-1 bg-blue-500/10 hover:bg-rose-500/10 text-blue-300 hover:text-rose-400 border border-blue-500/15 hover:border-rose-500/20 text-[10px] font-bold px-2.5 py-1 rounded-full transition-all cursor-pointer"
+                  className="group flex items-center gap-1 bg-[var(--color-surface-sunken)] hover:bg-rose-500/10 text-[var(--color-text-primary)] hover:text-rose-600 dark:hover:text-rose-400 border border-[var(--color-border-default)] hover:border-rose-500/30 text-[11px] font-semibold px-2.5 py-0.5 rounded-full transition-all cursor-pointer"
                 >
                   #{tag}
-                  <span className="text-[8px] font-black opacity-0 group-hover:opacity-100">&times;</span>
+                  <span className="text-[9px] font-bold opacity-0 group-hover:opacity-100">&times;</span>
                 </span>
               ))
             )}
           </div>
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             <input
               type="text"
-              placeholder="Nova tag... (Enter para adicionar)"
+              placeholder="Adicionar nova tag..."
               value={newTagInput}
               onChange={(e) => setNewTagInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddTag()}
-              className="flex-1 bg-[var(--color-surface)] border border-white/[0.08] rounded-lg px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40 focus:ring-1 focus:ring-blue-500/10 transition-all"
+              className="flex-1 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-1.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] transition-all"
             />
             <Button
               size="sm"
               onClick={handleAddTag}
-              className="bg-blue-500/20 hover:bg-blue-500/30 text-blue-300 border border-blue-500/20 px-3 font-black shrink-0"
+              className="px-3 text-xs font-bold shrink-0"
             >
-              +
+              Adicionar
             </Button>
           </div>
         </div>
