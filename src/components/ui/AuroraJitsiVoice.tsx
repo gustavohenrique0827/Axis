@@ -60,6 +60,7 @@ export function AuroraJitsiVoice({ roomName, active, pendingSpeech }: AuroraJits
   const roomRef = useRef<any>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const lastSpokenIdRef = useRef<string | null>(null);
+  const localTrackRef = useRef<any>(null);
 
   useEffect(() => {
     if (!active || !roomName) return;
@@ -109,9 +110,11 @@ export function AuroraJitsiVoice({ roomName, active, pendingSpeech }: AuroraJits
 
     return () => {
       disposed = true;
+      try { localTrackRef.current?.dispose(); } catch {}
       try { roomRef.current?.leave(); } catch {}
       try { connectionRef.current?.disconnect(); } catch {}
       try { audioCtxRef.current?.close(); } catch {}
+      localTrackRef.current = null;
       roomRef.current = null;
       connectionRef.current = null;
       audioCtxRef.current = null;
@@ -147,7 +150,18 @@ export function AuroraJitsiVoice({ roomName, active, pendingSpeech }: AuroraJits
             videoType: null,
           },
         ]);
-        await room.replaceTrack(room.getLocalAudioTrack?.() ?? null, localTrack);
+
+        // addTrack só funciona pra publicar a PRIMEIRA faixa — depois disso, trocar de faixa
+        // (cada fala nova é um AudioBufferSourceNode/track novo, não dá pra reiniciar o mesmo)
+        // exige replaceTrack com a faixa anterior explícita, não null.
+        const previousTrack = localTrackRef.current;
+        if (previousTrack) {
+          await room.replaceTrack(previousTrack, localTrack);
+          try { previousTrack.dispose(); } catch {}
+        } else {
+          await room.addTrack(localTrack);
+        }
+        localTrackRef.current = localTrack;
 
         source.onended = () => {
           if (roomRef.current === room) setStatus("connected");
