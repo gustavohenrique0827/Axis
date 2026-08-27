@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { GitBranch, GitFork, Star, Lock, Globe, Plus, Search, Clock, Code2, Archive, CheckCircle2, ExternalLink, Unlink } from 'lucide-react';
-import { toast } from 'sonner';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
@@ -148,14 +147,7 @@ export default function Repositorios() {
               </div>
             )}
             {filtered.map(repo => (
-              <div
-                key={String(repo.id)}
-                onClick={() => {
-                  if (repo.githubUrl) window.open(repo.githubUrl, '_blank', 'noopener,noreferrer');
-                  else toast.info('Este repositório ainda não tem um link externo (GitHub) associado.');
-                }}
-                className="flex items-start gap-4 p-5 hover:bg-white/[0.02] transition-colors group cursor-pointer"
-              >
+              <div key={String(repo.id)} className="flex items-start gap-4 p-5 hover:bg-white/[0.02] transition-colors group cursor-pointer">
                 <div className="p-2.5 rounded-xl bg-white/5 shrink-0">
                   {repo.status === 'arquivado'
                     ? <Archive className="w-4 h-4 text-slate-500" />
@@ -231,10 +223,7 @@ export default function Repositorios() {
                       <ExternalLink className="w-4 h-4" />
                     </a>
                   ) : (
-                    <button
-                      onClick={e => { e.stopPropagation(); toast.info('Este repositório ainda não tem um link externo (GitHub) associado.'); }}
-                      className="text-slate-600 hover:text-blue-400 transition-colors"
-                    >
+                    <button className="text-slate-600 hover:text-blue-400 transition-colors">
                       <ExternalLink className="w-4 h-4" />
                     </button>
                   )}

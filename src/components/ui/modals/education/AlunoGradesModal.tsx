@@ -97,9 +97,9 @@ export function AlunoGradesModal({ isOpen, student, onClose, onAddGrade, onRemov
             className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-3xl w-full max-w-2xl shadow-2xl shadow-black/60 overflow-hidden flex flex-col max-h-[90vh] ring-1 ring-black/5 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200"
           >
             {/* Header */}
-            <div className="relative p-6 border-b border-white/10 bg-gradient-to-br from-blue-600/10 via-transparent to-transparent shrink-0">
+            <div className="relative p-6 border-b border-white/10 bg-gradient-to-br from-indigo-600/10 via-transparent to-transparent shrink-0">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-black text-sm border border-blue-500/20 shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center font-black text-sm border border-indigo-500/20 shrink-0">
                   {initials}
                 </div>
                 <div>
@@ -118,18 +118,18 @@ export function AlunoGradesModal({ isOpen, student, onClose, onAddGrade, onRemov
             {/* Scrollable body */}
             <div className="overflow-y-auto flex-1 p-6 space-y-5">
               {/* IA Panel */}
-              <div className="p-5 bg-gradient-to-br from-blue-600/10 to-transparent border border-blue-500/20 rounded-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-2xl rounded-full pointer-events-none" />
+              <div className="p-5 bg-gradient-to-br from-indigo-600/10 to-transparent border border-indigo-500/20 rounded-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 blur-2xl rounded-full pointer-events-none" />
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-2">
-                    <Brain className="w-4 h-4 text-blue-400" />
-                    <h4 className="text-[10px] font-black text-blue-400 uppercase tracking-widest">Master IA — Análise de Desempenho</h4>
+                    <Brain className="w-4 h-4 text-indigo-400" />
+                    <h4 className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Master IA — Análise de Desempenho</h4>
                   </div>
                   <Button
                     onClick={handleAnalyze}
                     disabled={isAnalyzing}
                     variant="outline"
-                    className="h-8 border-blue-500/30 text-blue-400 text-[9px] font-black uppercase tracking-widest gap-2 bg-blue-500/5 hover:bg-blue-500/15"
+                    className="h-8 border-indigo-500/30 text-indigo-400 text-[9px] font-black uppercase tracking-widest gap-2 bg-indigo-500/5 hover:bg-indigo-500/15"
                   >
                     {isAnalyzing ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Zap className="w-3 h-3" />}
                     {isAnalyzing ? "Analisando..." : "Solicitar Análise"}
@@ -150,7 +150,7 @@ export function AlunoGradesModal({ isOpen, student, onClose, onAddGrade, onRemov
                     value={subject}
                     onChange={(e) => setSubject(e.target.value)}
                     placeholder="Ex: Anatomia Aplicada"
-                    className="w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-4 text-sm text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all placeholder:text-slate-600"
+                    className="w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-4 text-sm text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all placeholder:text-slate-600"
                   />
                 </div>
                 <div>
@@ -159,12 +159,12 @@ export function AlunoGradesModal({ isOpen, student, onClose, onAddGrade, onRemov
                     value={gradeValue}
                     onChange={(e) => setGradeValue(e.target.value)}
                     placeholder="0.0"
-                    className="w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-4 text-sm text-white font-mono focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all placeholder:text-slate-600"
+                    className="w-full h-11 bg-white/[0.04] border border-white/10 rounded-xl px-4 text-sm text-white font-mono focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-all placeholder:text-slate-600"
                   />
                 </div>
                 <Button
                   type="submit"
-                  className="h-11 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest gap-2 shadow-lg shadow-blue-600/20"
+                  className="h-11 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-[10px] font-black uppercase tracking-widest gap-2 shadow-lg shadow-indigo-600/20"
                 >
                   <Plus className="w-4 h-4" /> Lançar
                 </Button>
@@ -219,7 +219,7 @@ export function AlunoGradesModal({ isOpen, student, onClose, onAddGrade, onRemov
             {/* Footer */}
             <div className="p-5 bg-white/[0.01] border-t border-white/10 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-400 border border-blue-500/20">
+                <div className="p-2.5 bg-indigo-500/10 rounded-xl text-indigo-400 border border-indigo-500/20">
                   <Calculator className="w-4 h-4" />
                 </div>
                 <div>

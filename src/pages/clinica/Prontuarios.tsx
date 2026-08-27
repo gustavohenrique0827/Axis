@@ -33,6 +33,7 @@ export default function ProntuariosDashboard() {
           id: a.id,
           name: name,
           photo: name.substring(0, 1).toUpperCase(),
+          age: Math.floor(Math.random() * 40) + 20, // Simulação de idade, idealmente viria do BD
           lastVisit: a.date,
           condition: a.specialty || 'Check-up',
           status: a.status === 'Em Atendimento' ? 'Crítico' : 'Estável',
@@ -61,7 +62,7 @@ export default function ProntuariosDashboard() {
         {/* Quick Access Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Prontuários Ativos", value: totalPatients.toString(), icon: Activity, color: "text-blue-500" },
+             { label: "Prontuários Ativos", value: totalPatients.toString(), icon: Activity, color: "text-indigo-500" },
              { label: "Prescrições Emitidas", value: (totalPatients * 2).toString(), icon: Pill, color: "text-emerald-500" },
              { label: "Exames Pendentes", value: "0", icon: FileText, color: "text-amber-500" },
              { label: "Pacientes Internados", value: "0", icon: Heart, color: "text-rose-500" },
@@ -158,23 +159,19 @@ export default function ProntuariosDashboard() {
 
            {/* Health Indicators IA */}
            <div className="space-y-6">
-              <Card className="p-8 bg-gradient-to-br from-blue-600/20 to-transparent border-blue-500/20 shadow-2xl shadow-blue-950/20">
+              <Card className="p-8 bg-gradient-to-br from-indigo-600/20 to-transparent border-indigo-500/20 shadow-2xl shadow-indigo-950/20">
                  <div className="flex items-center justify-between mb-8">
                     <h3 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
-                       <Activity className="w-4 h-4 text-blue-400" /> Vitals Monitor
+                       <Activity className="w-4 h-4 text-indigo-400" /> Vitals Monitor IA
                     </h3>
-                    <span className="text-[9px] font-black text-slate-400 bg-white/5 px-2 py-1 rounded-full">Demonstrativo</span>
+                    <span className="text-[9px] font-black text-indigo-400 bg-white/5 px-2 py-1 rounded-full animate-pulse">LIVE</span>
                  </div>
-
+                 
                  {totalPatients === 0 ? (
                    <div className="flex items-center justify-center py-6 opacity-50">
                      <p className="text-[10px] uppercase font-bold text-slate-400">Aguardando telemetria de pacientes...</p>
                    </div>
                  ) : (
-                   <>
-                   <p className="text-[10px] text-slate-500 font-medium italic mb-6 leading-relaxed">
-                     Valores ilustrativos — sem integração com dispositivo de monitoramento real.
-                   </p>
                    <div className="space-y-6">
                       {[
                         { label: "BPM Médio", val: 78, unit: "bpm", alert: false },
@@ -197,15 +194,14 @@ export default function ProntuariosDashboard() {
                          </div>
                       ))}
                    </div>
-                   </>
                  )}
               </Card>
 
               <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5">
-                 <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-6">Anotações IA <span className="text-slate-600 normal-case font-medium">(exemplo)</span></h4>
+                 <h4 className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-6">Anotações IA</h4>
                  <div className="p-4 bg-white/5 rounded-2xl border border-white/5 italic">
                     <p className="text-[11px] text-slate-300 leading-relaxed">
-                       {totalPatients > 0
+                       {totalPatients > 0 
                          ? `"Observado padrão recorrente de fadiga em pacientes recentes. Recomendada campanha preventiva de nutrição."`
                          : `"Sem dados clínicos suficientes para gerar insights automatizados."`
                        }

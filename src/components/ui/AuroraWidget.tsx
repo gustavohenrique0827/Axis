@@ -1,18 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Sparkles, X, Send, RefreshCw } from "lucide-react";
+import { X, Send, RefreshCw, Mic, Square } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { apiFetch } from "../../lib/apiClient";
 import { AuroraCore } from "./auroraCore/AuroraCore";
 import type { AuroraCoreMode } from "./auroraCore/auroraCoreStates";
-
-/** Por quanto tempo o núcleo pulsa em "speaking" depois que a resposta da Aurora chega. */
-const SPEAKING_PULSE_MS = 1500;
+import { useAuroraVoice } from "../../hooks/useAuroraVoice";
 
 interface AuroraMessage {
   id: string;
   role: "user" | "aurora";
   text: string;
 }
+
+const GREETING: AuroraMessage = {
+  id: "greeting",
+  role: "aurora",
+  text: "Olá, Senhor Gustavo. Sou a Aurora. Pode falar ou digitar — pergunte sobre a diretoria, agenda, Spotify, WhatsApp ou o Axis.",
+};
 
 /**
  * Balão de chat flutuante global com a Aurora (assistente do G-TECH AI OS), embutido no Axis.
@@ -30,29 +34,20 @@ export function AuroraWidget() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [speaking, setSpeaking] = useState(false);
+  const [listening, setListening] = useState(false);
+  const [interim, setInterim] = useState("");
   const bodyRef = useRef<HTMLDivElement>(null);
-  const speakingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const loadingRef = useRef(loading);
+  loadingRef.current = loading;
 
-  useEffect(() => {
-    bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: "smooth" });
-  }, [messages, loading]);
+  const send = async (overrideText?: string) => {
+    const text = (overrideText ?? input).trim();
+    if (!text || loadingRef.current) return;
 
-  useEffect(() => () => {
-    if (speakingTimerRef.current) clearTimeout(speakingTimerRef.current);
-  }, []);
-
-  // Mapeia o estado real do widget (não há voz/execução distinta no Axis hoje) pro modelo de
-  // estados do núcleo — honesto com o que existe: sem "listening"/"analyzing"/"executing" fake.
-  const coreMode: AuroraCoreMode = useMemo(() => {
-    if (error) return "error";
-    if (loading) return "thinking";
-    if (speaking) return "speaking";
-    return "idle";
-  }, [error, loading, speaking]);
-
-  const send = async () => {
-    const text = input.trim();
-    if (!text || loading) return;
+    // Destrava o autoplay do áudio de resposta AQUI — dentro do mesmo gesto do clique/Enter que
+    // disparou o envio. Antes só acontecia dentro do fluxo do microfone; digitando e mandando por
+    // texto, o navegador bloqueava a voz da resposta em silêncio (sem erro nenhum aparecendo).
+    voice.primeAudio();
 
     setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "user", text }]);
     setInput("");
@@ -73,14 +68,48 @@ export function AuroraWidget() {
       }
       if (!res.ok || data.error) throw new Error(data.error ?? "Aurora está indisponível agora.");
       setMessages((prev) => [...prev, { id: crypto.randomUUID(), role: "aurora", text: data.output ?? "" }]);
-      setSpeaking(true);
-      if (speakingTimerRef.current) clearTimeout(speakingTimerRef.current);
-      speakingTimerRef.current = setTimeout(() => setSpeaking(false), SPEAKING_PULSE_MS);
+      if (data.audioBase64) {
+        voice.playAudioBase64(data.audioBase64, () => setSpeaking(true), () => setSpeaking(false));
+      }
     } catch (err: any) {
       setError(err.message ?? "Falha ao falar com a Aurora.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const voice = useAuroraVoice((text) => send(text));
+
+  useEffect(() => {
+    bodyRef.current?.scrollTo({ top: bodyRef.current.scrollHeight, behavior: "smooth" });
+  }, [messages, loading]);
+
+  // Saudação local (nunca enviada à Aurora) na primeira vez que o painel abre vazio — pra não
+  // começar em branco.
+  useEffect(() => {
+    if (isOpen && messages.length === 0) setMessages([GREETING]);
+  }, [isOpen, messages.length]);
+
+  // Mapeia o estado real do widget pro modelo de estados do núcleo — tudo aqui agora é real:
+  // "listening" enquanto o microfone está ativo, "speaking" enquanto o áudio de resposta toca.
+  const coreMode: AuroraCoreMode = useMemo(() => {
+    if (listening) return "listening";
+    if (error) return "error";
+    if (loading) return "thinking";
+    if (speaking) return "speaking";
+    return "idle";
+  }, [listening, error, loading, speaking]);
+
+  const toggleMic = () => {
+    if (listening) {
+      voice.stopPushToTalk();
+      return;
+    }
+    voice.startPushToTalk(
+      () => { setListening(true); setInterim(""); },
+      () => { setListening(false); setInterim(""); },
+      (text) => setInterim(text)
+    );
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -115,14 +144,6 @@ export function AuroraWidget() {
 
           {/* Body */}
           <div ref={bodyRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-2.5">
-            {messages.length === 0 && !loading && (
-              <div className="flex flex-col items-center justify-center gap-2 h-full text-center px-6">
-                <Sparkles className="w-10 h-10 text-slate-700" />
-                <p className="text-[11px] text-slate-500 leading-relaxed">
-                  Pergunte alguma coisa pra Aurora — diretoria, agenda, Spotify, WhatsApp, Axis.
-                </p>
-              </div>
-            )}
 
             {messages.map((m) => (
               <div key={m.id} className={cn("flex", m.role === "user" ? "justify-end" : "justify-start")}>
@@ -156,23 +177,46 @@ export function AuroraWidget() {
           </div>
 
           {/* Input */}
-          <div className="p-3 border-t border-white/[0.07] shrink-0 flex items-end gap-2">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={loading}
-              rows={1}
-              placeholder="Fale com a Aurora..."
-              className="flex-1 resize-none bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-2.5 text-[11px] text-white placeholder:text-slate-600 focus:outline-none focus:border-violet-500/40 disabled:opacity-50"
-            />
-            <button
-              onClick={send}
-              disabled={loading || !input.trim()}
-              className="shrink-0 w-9 h-9 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all"
-            >
-              <Send className="w-3.5 h-3.5 text-white" />
-            </button>
+          <div className="border-t border-white/[0.07] shrink-0">
+            {listening && (
+              <div className="px-3 pt-2 flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
+                <p className="text-[10px] text-slate-400 italic truncate">{interim || "Ouvindo..."}</p>
+              </div>
+            )}
+            <div className="p-3 flex items-end gap-2">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                disabled={loading}
+                rows={1}
+                placeholder="Fale ou digite pra Aurora..."
+                className="flex-1 resize-none bg-white/[0.03] border border-white/[0.08] rounded-xl px-3 py-2.5 text-[11px] text-white placeholder:text-slate-600 focus:outline-none focus:border-violet-500/40 disabled:opacity-50"
+              />
+              {voice.isVoiceInputSupported() && (
+                <button
+                  onClick={toggleMic}
+                  disabled={loading}
+                  title={listening ? "Parar de ouvir" : "Falar com a Aurora"}
+                  className={cn(
+                    "shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed",
+                    listening
+                      ? "bg-rose-600 hover:bg-rose-500 animate-pulse"
+                      : "bg-white/[0.06] hover:bg-white/[0.1] border border-white/[0.08]"
+                  )}
+                >
+                  {listening ? <Square className="w-3.5 h-3.5 text-white" /> : <Mic className="w-3.5 h-3.5 text-slate-300" />}
+                </button>
+              )}
+              <button
+                onClick={() => send()}
+                disabled={loading || !input.trim()}
+                className="shrink-0 w-9 h-9 rounded-xl bg-violet-600 hover:bg-violet-500 disabled:opacity-30 disabled:cursor-not-allowed flex items-center justify-center transition-all"
+              >
+                <Send className="w-3.5 h-3.5 text-white" />
+              </button>
+            </div>
           </div>
         </div>
       )}

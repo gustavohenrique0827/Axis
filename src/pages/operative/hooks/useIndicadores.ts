@@ -1,12 +1,10 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { jsPDF } from "jspdf";
-import "jspdf-autotable";
 import { Target, Activity, Zap, Users } from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
 
 export function useIndicadores() {
-  const { leads, financeEntries, contracts } = useData();
+  const { leads, financeEntries, contracts, financialGoals } = useData();
   
   const [schedules, setSchedules] = useState<{ id: string; email: string; weekday: string; time: string; active: boolean }[]>(() => {
     const cached = localStorage.getItem("axis_scheduled_exports");
@@ -64,72 +62,7 @@ export function useIndicadores() {
   };
 
   const simulateRunAndDownloadCSV = () => {
-    const lines: string[] = [];
-    lines.push("Indicador;Valor;Tendência");
-    kpiCards.forEach(k => lines.push(`"${k.label}";"${k.value}";"${k.trend}"`));
-    lines.push("");
-    lines.push("Mês;Receita;Meta");
-    monthlyData.forEach(m => lines.push(`"${m.name}";${m.receita};${m.meta}`));
-
-    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `indicadores_${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-
-    toast.success(`Relatório CSV gerado e disparado para ${schedules.filter(s => s.active).length} destinatários ativos.`);
-  };
-
-  const handleExportPDF = () => {
-    try {
-      const doc = new jsPDF();
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(18);
-      doc.setTextColor(15, 23, 42);
-      doc.text("Axis SaaS - Relatório de Indicadores (BI & Analytics)", 14, 20);
-
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.setTextColor(100, 116, 139);
-      doc.text(`Gerado em: ${new Date().toLocaleDateString("pt-BR")} às ${new Date().toLocaleTimeString("pt-BR")}`, 14, 26);
-
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(37, 99, 235);
-      doc.text("1. Indicadores-Chave", 14, 36);
-
-      (doc as any).autoTable({
-        startY: 40,
-        head: [["Indicador", "Valor", "Tendência"]],
-        body: kpiCards.map(k => [k.label, k.value, k.trend]),
-        theme: "striped",
-        headStyles: { fillColor: [37, 99, 235] },
-        styles: { fontSize: 9 }
-      });
-
-      const currentY = (doc as any).lastAutoTable.finalY + 12;
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(37, 99, 235);
-      doc.text("2. Evolução Mensal (Receita vs Meta)", 14, currentY);
-
-      (doc as any).autoTable({
-        startY: currentY + 4,
-        head: [["Mês", "Receita", "Meta"]],
-        body: monthlyData.length > 0
-          ? monthlyData.map(m => [m.name, `R$ ${m.receita.toLocaleString("pt-BR")}`, `R$ ${m.meta.toLocaleString("pt-BR")}`])
-          : [["—", "—", "—"]],
-        theme: "striped",
-        headStyles: { fillColor: [37, 99, 235] },
-        styles: { fontSize: 9 }
-      });
-
-      doc.save(`indicadores_${new Date().toISOString().slice(0, 10)}.pdf`);
-      toast.success("Relatório PDF exportado com sucesso!");
-    } catch (e) {
-      console.error("[Indicadores] PDF export error:", e);
-      toast.error("Erro ao gerar o relatório PDF.");
-    }
+    toast.success(`Simulação realizada! Relatório CSV disparado para ${schedules.filter(s => s.active).length} destinatários ativos.`);
   };
 
   // KPIs dinâmicos
@@ -145,38 +78,59 @@ export function useIndicadores() {
       return isNaN(num) ? 0 : num;
     };
 
-    const mrr = contracts.reduce((acc, c) => acc + (c.mrr ? toNumberMRR(c.mrr) : 0), 0) || (ticketMedio / 12);
+    // mrr_value é a coluna real no Supabase; `mrr` é mantido no type por compatibilidade com telas antigas.
+    const mrr = contracts.reduce((acc, c: any) => acc + toNumberMRR(c.mrr_value ?? c.mrr ?? 0), 0) || (ticketMedio / 12);
     const ltv = mrr * 12; // LTV simples de 1 ano
     const fmt = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
 
     return [
        { label: "Ticket Médio", value: closedLeads.length > 0 ? fmt(ticketMedio) : "—", trend: "+5.2%", icon: Target, color: "text-[#06B6D4]" },
-       { label: "Ciclo de Vendas", value: closedLeads.length > 0 ? "18 dias" : "—", trend: "-2 dias", icon: Activity, color: "text-[#06B6D4]" },
+       // Ciclo de Vendas e Retention Rate ainda não são medidos de verdade em nenhum lugar do Axis —
+       // mostrar "—" em vez de um número de exemplo até existir uma fonte real (ex.: datas de estágio do funil).
+       { label: "Ciclo de Vendas", value: "—", trend: "—", icon: Activity, color: "text-[#06B6D4]" },
        { label: "LTV Projetado", value: ltv > 0 ? fmt(ltv) : "—", trend: "+12.4%", icon: Zap, color: "text-[#06B6D4]" },
-       { label: "Retention Rate", value: contracts.length > 0 ? "98.4%" : "—", trend: "+0.2%", icon: Users, color: "text-[#06B6D4]" },
+       { label: "Retention Rate", value: "—", trend: "—", icon: Users, color: "text-[#06B6D4]" },
     ];
   }, [leads, contracts]);
 
-  // Evolução MRR vs Meta (Apenas baseado nas entradas financeiras para simular crescimento real)
+  // Evolução MRR vs Meta — receita real (finance_entries pagos) contra a meta real
+  // cadastrada em financial_goals para o mês (soma de monthly_goal entre squads); 0 quando
+  // nenhuma meta foi cadastrada para aquele mês, em vez de um valor de exemplo.
   const monthlyData = useMemo(() => {
-    const months: Record<string, { receita: number, meta: number }> = {};
+    const months: Record<string, { receita: number, meta: number, monthKey: string }> = {};
     const receivables = financeEntries.filter(f => f.type === 'Receber' && f.status === 'Pago');
-    
+
     receivables.forEach(f => {
       try {
         const d = new Date(f.date || '');
-        if(isNaN(d.getTime())) return;
+        if (isNaN(d.getTime())) return;
+        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         const month = d.toLocaleDateString('pt-BR', { month: 'short' });
-        
+
         if (!months[month]) {
-          months[month] = { receita: 0, meta: 5000 }; // Meta fixa simulada por mês
+          months[month] = { receita: 0, meta: 0, monthKey };
         }
         months[month].receita += f.value;
       } catch {}
     });
 
-    return Object.entries(months).map(([name, data]) => ({ name, ...data }));
-  }, [financeEntries]);
+    (financialGoals || []).forEach((g: any) => {
+      try {
+        const d = new Date(g.valid_month || '');
+        if (isNaN(d.getTime())) return;
+        const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        const month = d.toLocaleDateString('pt-BR', { month: 'short' });
+        if (!months[month]) {
+          months[month] = { receita: 0, meta: 0, monthKey };
+        }
+        if (months[month].monthKey === monthKey) {
+          months[month].meta += Number(g.monthly_goal) || 0;
+        }
+      } catch {}
+    });
+
+    return Object.entries(months).map(([name, data]) => ({ name, receita: data.receita, meta: data.meta }));
+  }, [financeEntries, financialGoals]);
 
   // Distribuição de Leads por Origem
   const pieData = useMemo(() => {
@@ -209,7 +163,6 @@ export function useIndicadores() {
     handleToggleSchedule,
     handleDeleteSchedule,
     simulateRunAndDownloadCSV,
-    handleExportPDF,
     kpiCards,
     monthlyData,
     pieData

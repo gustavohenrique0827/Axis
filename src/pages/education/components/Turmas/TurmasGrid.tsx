@@ -1,8 +1,7 @@
-import { useState } from "react";
 import { Card } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
-import { MoreVertical, Clock, Calendar, ChevronRight, Pencil, Trash2 } from "lucide-react";
+import { MoreVertical, Clock, Calendar, ChevronRight } from "lucide-react";
 
 interface Turma {
   id: string;
@@ -20,13 +19,9 @@ interface Turma {
 interface TurmasGridProps {
   turmas: Turma[];
   onSelect: (turma: Turma) => void;
-  onEdit: (turma: Turma) => void;
-  onDelete: (turma: Turma) => void;
 }
 
-export function TurmasGrid({ turmas, onSelect, onEdit, onDelete }: TurmasGridProps) {
-  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-
+export function TurmasGrid({ turmas, onSelect }: TurmasGridProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
       {turmas.map((turma) => (
@@ -49,36 +44,9 @@ export function TurmasGrid({ turmas, onSelect, onEdit, onDelete }: TurmasGridPro
                   {turma.name}
                 </h3>
               </div>
-              <div className="relative shrink-0">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setOpenMenuId(openMenuId === turma.id ? null : turma.id); }}
-                  className="p-2 text-slate-600 hover:text-white transition-colors"
-                >
-                  <MoreVertical className="w-5 h-5" />
-                </button>
-                {openMenuId === turma.id && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={(e) => { e.stopPropagation(); setOpenMenuId(null); }} />
-                    <div
-                      className="absolute right-0 top-full mt-1 w-44 bg-[var(--color-surface)] border border-white/10 rounded-xl shadow-2xl p-1 z-50 overflow-hidden"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      <button
-                        onClick={() => { setOpenMenuId(null); onEdit(turma); }}
-                        className="flex items-center gap-2 w-full p-2 hover:bg-white/5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-colors border-none bg-transparent cursor-pointer text-left"
-                      >
-                        <Pencil className="w-3.5 h-3.5 shrink-0" /> Editar
-                      </button>
-                      <button
-                        onClick={() => { setOpenMenuId(null); onDelete(turma); }}
-                        className="flex items-center gap-2 w-full p-2 hover:bg-rose-500/10 rounded-lg text-xs font-semibold text-rose-400 transition-colors border-none bg-transparent cursor-pointer text-left"
-                      >
-                        <Trash2 className="w-3.5 h-3.5 shrink-0" /> Excluir
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
+              <button className="p-2 text-slate-600 hover:text-white transition-colors">
+                <MoreVertical className="w-5 h-5" />
+              </button>
             </div>
 
             <div className="space-y-4 mb-8">

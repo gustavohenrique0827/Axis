@@ -89,7 +89,7 @@ export default function EstatisticasClinicas() {
         {/* Metric Grid */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Taxa de Ocupação", value: occupancy, trend: "+5%", icon: Activity, color: "text-blue-500" },
+             { label: "Taxa de Ocupação", value: occupancy, trend: "+5%", icon: Activity, color: "text-indigo-500" },
              { label: "NPS Paciente", value: appointments.length > 0 ? "9.4" : "—", trend: "+0.2", icon: Star, color: "text-amber-500" },
              { label: "Total Pacientes", value: totalPacientes.toString(), trend: "+12%", icon: Users, color: "text-emerald-500" },
              { label: "Tempo Médio Espera", value: avgWaitTime, trend: "-2m", icon: Clock, color: "text-blue-500" },
@@ -211,12 +211,12 @@ export default function EstatisticasClinicas() {
         </div>
 
         {/* Predictive AI Analytics */}
-        <Card className="p-10 bg-gradient-to-br from-blue-600/10 to-transparent border-blue-500/20 group relative overflow-hidden">
+        <Card className="p-10 bg-gradient-to-br from-indigo-600/10 to-transparent border-indigo-500/20 group relative overflow-hidden">
            <div className="absolute top-0 right-0 p-10 opacity-[0.03] group-hover:scale-110 transition-transform">
-              <Target className="w-32 h-32 text-blue-400" />
+              <Target className="w-32 h-32 text-indigo-400" />
            </div>
            <div className="relative z-10">
-              <h3 className="text-xs font-black text-blue-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+              <h3 className="text-xs font-black text-indigo-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
                  <Activity className="w-4 h-4" /> MIA Predictive Diagnostics
               </h3>
               <div className="grid md:grid-cols-2 gap-12">
@@ -230,7 +230,7 @@ export default function EstatisticasClinicas() {
                     </p>
                  </div>
                  <div className="flex items-center justify-end">
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-12 px-8 text-xs font-black uppercase tracking-widest gap-2">
+                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl h-12 px-8 text-xs font-black uppercase tracking-widest gap-2">
                        Ver Relatório IA Detalhado
                     </Button>
                  </div>

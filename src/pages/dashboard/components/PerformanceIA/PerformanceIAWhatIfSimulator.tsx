@@ -18,14 +18,14 @@ export function PerformanceIAWhatIfSimulator(props: {
         <div className="flex items-center justify-between mb-10">
           <div>
             <h3 className="text-lg font-black text-white uppercase tracking-tighter flex items-center gap-3">
-              <Play className="w-5 h-5 text-blue-400" /> Simulador de Cenários
+              <Play className="w-5 h-5 text-purple-400" /> Simulador de Cenários
             </h3>
             <p className="text-xs text-slate-500 mt-2">Modele o crescimento alterando variáveis críticas de aquisição.</p>
           </div>
           <Button
             onClick={runSimulation}
             disabled={isSimulating || simulationData.length === 0}
-            className="bg-[#2563EB] hover:bg-blue-600 text-white rounded-xl px-6 h-12 text-xs font-black uppercase tracking-widest gap-2 disabled:opacity-50"
+            className="bg-purple-600 hover:bg-purple-700 text-white rounded-xl px-6 h-12 text-xs font-black uppercase tracking-widest gap-2 disabled:opacity-50"
           >
             {isSimulating ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4 fill-current" />}
             {isSimulating ? "Simulando..." : "Executar Simulação"}

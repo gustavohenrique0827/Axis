@@ -144,6 +144,7 @@ export function NovoMembroModal({
                     <div className="space-y-2">
                         <label htmlFor="membro-phone" className={labelClass}>Telefone / WhatsApp</label>
                         <input id="membro-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} className={inputBaseClass} placeholder="(11) 99999-9999" />
+                        <p className="text-xs text-slate-500">Preencher este número já libera o acesso à Aurora (assistente de IA) via WhatsApp para esta pessoa — qualquer cargo ou área, não só vendas.</p>
                     </div>
 
                     <div className="space-y-2">

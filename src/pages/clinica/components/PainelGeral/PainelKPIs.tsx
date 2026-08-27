@@ -12,7 +12,7 @@ interface Stat {
 
 interface PainelKPIsProps { stats: Stat[]; }
 
-const ICON_COLORS = ["text-blue-500", "text-emerald-500", "text-blue-500", "text-rose-500", "text-amber-500", "text-cyan-500", "text-purple-500"];
+const ICON_COLORS = ["text-indigo-500", "text-emerald-500", "text-blue-500", "text-rose-500", "text-amber-500", "text-cyan-500", "text-purple-500"];
 
 export function PainelKPIs({ stats }: PainelKPIsProps) {
   return (

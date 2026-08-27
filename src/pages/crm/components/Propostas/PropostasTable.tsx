@@ -1,9 +1,11 @@
 import { Card } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
 import { Badge } from "../../../../components/ui/badge";
+import { Button } from "../../../../components/ui/button";
 import {
   FileText, Search, Clock, CheckCircle2, XCircle, User, Download, Trash2, History, Send,
 } from "lucide-react";
+import { toast } from "sonner";
 import { handleDownloadPdf } from "../../utils/proposalPdf";
 
 interface Proposta {
@@ -50,6 +52,15 @@ export function PropostasTable({ propostas, search, onSearchChange, onUpdateStat
             placeholder="Buscar por cliente ou título..."
             className="w-full bg-transparent border-white/5 pl-12 h-12 rounded-xl text-sm italic text-white"
           />
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            onClick={() => toast.info("Filtros extras ativados automaticamente para seller ativo.")}
+            className="text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-white"
+          >
+            Filtros Avançados
+          </Button>
         </div>
       </Card>
 

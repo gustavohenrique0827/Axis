@@ -5,35 +5,13 @@ import { Plus, Target } from "lucide-react";
 import { toast } from "sonner";
 import { NovaOrigemCRMModal } from "../../../../components/ui/modals/crm/NovaOrigemCRMModal";
 
-const ORIGENS_STORAGE_KEY = "axis_crm_origens";
-const DEFAULT_ORIGENS = ["Instagram", "WhatsApp", "Indicação", "Site", "Google Ads"];
-
-function loadOrigens(): string[] {
-  try {
-    const saved = localStorage.getItem(ORIGENS_STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
-  } catch (e) {
-    // ignore
-  }
-  return DEFAULT_ORIGENS;
-}
-
 export function ConfigCRMOrigens() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [origens, setOrigens] = useState<string[]>(loadOrigens);
-
-  const saveOrigens = (updated: string[]) => {
-    setOrigens(updated);
-    try {
-      localStorage.setItem(ORIGENS_STORAGE_KEY, JSON.stringify(updated));
-    } catch (e) {
-      // ignore
-    }
-  };
+  const [origens, setOrigens] = useState<string[]>(["Instagram", "WhatsApp", "Indicação", "Site", "Google Ads"]);
 
   const handleSave = (data: any) => {
     if (data.nome) {
-      saveOrigens([data.nome, ...origens]);
+      setOrigens([data.nome, ...origens]);
       toast.success("Origem cadastrada!");
     }
     setIsModalOpen(false);

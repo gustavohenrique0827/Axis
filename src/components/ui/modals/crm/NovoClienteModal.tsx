@@ -19,10 +19,6 @@ interface NovoClienteModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAction: (data: Record<string, string | string[] | null>) => void;
-  initialValue?: Partial<NovoClienteForm> | null;
-  heading?: string;
-  subheading?: string;
-  submitLabel?: string;
 }
 
 const DEFAULT: NovoClienteForm = {
@@ -68,20 +64,17 @@ function formatDocumento(raw: string): string {
 
 type CnpjStatus = "idle" | "checking" | "active" | "inactive" | "invalid";
 
-export function NovoClienteModal({
-  isOpen, onClose, onAction, initialValue = null,
-  heading = "Novo Cliente", subheading = "Cadastro de conta no CRM Axis", submitLabel = "Cadastrar Cliente",
-}: NovoClienteModalProps) {
+export function NovoClienteModal({ isOpen, onClose, onAction }: NovoClienteModalProps) {
   const [form, setForm] = useState<NovoClienteForm>(DEFAULT);
   const [loading, setLoading] = useState(false);
   const [cnpjStatus, setCnpjStatus] = useState<{ status: CnpjStatus; message?: string }>({ status: "idle" });
 
   useEffect(() => {
     if (isOpen) {
-      setForm(initialValue ? { ...DEFAULT, ...initialValue } : DEFAULT);
+      setForm(DEFAULT);
       setCnpjStatus({ status: "idle" });
     }
-  }, [isOpen, initialValue]);
+  }, [isOpen]);
 
   const set = (k: keyof NovoClienteForm) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -146,9 +139,9 @@ export function NovoClienteModal({
             <Building2 className="w-5 h-5 text-blue-400" />
           </div>
           <div>
-            <div className="text-base font-black text-white">{heading}</div>
+            <div className="text-base font-black text-white">Novo Cliente</div>
             <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">
-              {subheading}
+              Cadastro de conta no CRM Axis
             </div>
           </div>
         </div>
@@ -170,7 +163,7 @@ export function NovoClienteModal({
             disabled={!canSubmit || loading}
             className="bg-blue-600 hover:bg-blue-500 text-white px-6 h-10 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-600/20 disabled:opacity-50"
           >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : submitLabel}
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Cadastrar Cliente"}
           </Button>
         </>
       }

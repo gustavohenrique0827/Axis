@@ -89,7 +89,7 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
             className="relative w-full max-w-xl bg-[var(--color-surface)] border border-white/10 rounded-[32px] overflow-hidden shadow-2xl"
             onClick={e => e.stopPropagation()}
           >
-            <div className="p-8 bg-gradient-to-br from-blue-600/20 to-transparent border-b border-white/5">
+            <div className="p-8 bg-gradient-to-br from-emerald-600/20 to-transparent border-b border-white/5">
                <div className="flex items-center justify-between mb-2">
                   <h2 className="text-2xl font-black text-white italic tracking-tighter uppercase">Novo Agendamento</h2>
                   <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-full text-slate-400 transition-colors">
@@ -112,7 +112,7 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
                            value={searchPatient}
                            onChange={(e) => setSearchPatient(e.target.value)}
                            placeholder="Pesquisar na base de pacientes..."
-                           className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl pl-12 pr-4 text-sm font-medium text-white focus:outline-none focus:border-blue-500/50 transition-all"
+                           className="w-full h-14 bg-white/5 border border-white/5 rounded-2xl pl-12 pr-4 text-sm font-medium text-white focus:outline-none focus:border-emerald-500/50 transition-all"
                          />
                          {filteredPatients.length > 0 && (
                            <div className="absolute top-full left-0 w-full mt-2 bg-slate-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl z-50">
@@ -137,12 +137,12 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
                          )}
                        </>
                      ) : (
-                       <div className="flex items-center justify-between p-4 bg-blue-500/10 border border-blue-500/30 rounded-2xl shadow-inner">
+                       <div className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl shadow-inner">
                           <div className="flex items-center gap-4">
-                             <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-black shadow-lg shadow-blue-900/40">{selectedPatient?.name[0]}</div>
+                             <div className="w-10 h-10 rounded-full bg-emerald-500 flex items-center justify-center text-white font-black shadow-lg shadow-emerald-900/40">{selectedPatient?.name[0]}</div>
                              <div>
                                 <p className="text-sm font-black text-white">{selectedPatient?.name}</p>
-                                <p className="text-[10px] text-blue-400 font-bold uppercase tracking-widest">Paciente Verificado</p>
+                                <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest">Paciente Verificado</p>
                              </div>
                           </div>
                           <button type="button" onClick={() => setSelectedPatientId(null)} className="p-2 text-rose-400 hover:bg-rose-500/10 rounded-xl transition-colors">
@@ -214,7 +214,7 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
 
                <Button 
                  type="submit"
-                 className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl shadow-blue-900/20 active:scale-95 transition-all"
+                 className="w-full h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black uppercase tracking-[0.2em] shadow-xl shadow-emerald-900/20 active:scale-95 transition-all"
                >
                   Confirmar Agendamento <Check className="ml-2 w-5 h-5" />
                </Button>

@@ -98,26 +98,5 @@ export function useDevIssues() {
     }
   }
 
-  async function updateIssue(id: string | number, patch: Partial<Pick<DevIssue, 'title' | 'description' | 'severity' | 'status' | 'assignee' | 'labels'>>) {
-    setIssues(prev => prev.map(i => (i.id === id ? { ...i, ...patch } : i)));
-
-    if (!supabase) {
-      toast.success('Issue atualizado!');
-      return;
-    }
-
-    const { error } = await supabase.from('dev_issues').update(patch).eq('id', id);
-    if (error) { toast.error('Erro ao atualizar issue'); return; }
-    toast.success('Issue atualizado!');
-  }
-
-  async function closeIssue(id: string | number) {
-    await updateIssue(id, { status: 'fechado' });
-  }
-
-  async function reopenIssue(id: string | number) {
-    await updateIssue(id, { status: 'aberto' });
-  }
-
-  return { issues, loading, addIssue, updateIssue, closeIssue, reopenIssue };
+  return { issues, loading, addIssue };
 }

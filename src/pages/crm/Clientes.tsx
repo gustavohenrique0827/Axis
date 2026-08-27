@@ -10,7 +10,6 @@ import { ClientesList } from "./components/Clientes/ClientesList";
 
 export default function Clientes() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCliente, setEditingCliente] = useState<any | null>(null);
   const [statusFilter, setStatusFilter] = useState("Todos as situações");
   const [sectorFilter, setSectorFilter] = useState("Todos os setores");
   const [searchQuery, setSearchQuery] = useState("");
@@ -51,31 +50,6 @@ export default function Clientes() {
     toast.success("Cliente inserido com sucesso!");
   };
 
-  const handleEditCliente = (cliente: any) => {
-    setEditingCliente(cliente);
-    setIsModalOpen(true);
-  };
-
-  const handleUpdateCliente = async (data: any) => {
-    if (!editingCliente) return;
-    if (!data.nome) { toast.error("Nome da empresa é obrigatório."); return; }
-    const updated = {
-      name: data.nome,
-      industry: data.industry || editingCliente.industry,
-      city: data.cidade || editingCliente.city,
-      state: (data.estado || editingCliente.state || "SP").toUpperCase(),
-      phone: data.telefone || editingCliente.phone,
-      email: data.email || editingCliente.email,
-    };
-    setClientes(prev => prev.map(c => c.id === editingCliente.id ? { ...c, ...updated } : c));
-    if (supabase) {
-      const { error } = await supabase.from("clientes").update(updated).eq("id", editingCliente.id);
-      if (error) console.error("[Supabase] clientes update error:", error.message);
-    }
-    toast.success("Cliente atualizado com sucesso!");
-    setEditingCliente(null);
-  };
-
   const handleDeleteCliente = async (id: string) => {
     setClientes(prev => prev.filter(c => c.id !== id));
     if (supabase) {
@@ -106,24 +80,12 @@ export default function Clientes() {
         statusFilter={statusFilter}
         onStatusChange={setStatusFilter}
         onDelete={handleDeleteCliente}
-        onEdit={handleEditCliente}
       />
 
       <NovoClienteModal
         isOpen={isModalOpen}
-        onClose={() => { setIsModalOpen(false); setEditingCliente(null); }}
-        onAction={editingCliente ? handleUpdateCliente : handleCreateCliente}
-        initialValue={editingCliente ? {
-          nome: editingCliente.name,
-          industry: editingCliente.industry,
-          email: editingCliente.email,
-          telefone: editingCliente.phone,
-          cidade: editingCliente.city,
-          estado: editingCliente.state,
-        } : null}
-        heading={editingCliente ? "Editar Cliente" : "Novo Cliente"}
-        subheading={editingCliente ? "Atualize os dados da conta no CRM Axis" : "Cadastro de conta no CRM Axis"}
-        submitLabel={editingCliente ? "Salvar Alterações" : "Cadastrar Cliente"}
+        onClose={() => setIsModalOpen(false)}
+        onAction={handleCreateCliente}
       />
     </PageContainer>
   );

@@ -15,7 +15,6 @@ interface ContractsTableProps {
   contracts: Contract[];
   searchQuery: string;
   onSearchChange: (v: string) => void;
-  onEdit: (contract: Contract) => void;
   onDelete: (id: string) => void;
 }
 
@@ -25,7 +24,7 @@ const STATUS_STYLE: Record<string, string> = {
   Cancelado:    "bg-red-500/10 text-red-500 border-red-500/20",
 };
 
-export function ContractsTable({ contracts, searchQuery, onSearchChange, onEdit, onDelete }: ContractsTableProps) {
+export function ContractsTable({ contracts, searchQuery, onSearchChange, onDelete }: ContractsTableProps) {
   const filtered = contracts.filter(c =>
     c.client.toLowerCase().includes(searchQuery.toLowerCase()) ||
     c.plan.toLowerCase().includes(searchQuery.toLowerCase())
@@ -91,10 +90,7 @@ export function ContractsTable({ contracts, searchQuery, onSearchChange, onEdit,
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => onEdit(contract)}
-                      className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-md transition-colors"
-                    >
+                    <button className="p-2 text-slate-400 hover:text-white hover:bg-white/5 rounded-md transition-colors">
                       <Edit2 className="w-3.5 h-3.5" />
                     </button>
                     <button

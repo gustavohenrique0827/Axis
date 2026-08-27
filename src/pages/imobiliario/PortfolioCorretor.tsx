@@ -1,38 +1,47 @@
-import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Building2, Phone, Mail, Star, MapPin, Bed, Bath, Car, Home, MessageCircle, ChevronLeft, Loader2 } from "lucide-react";
+import { Building2, Phone, Mail, Star, MapPin, Bed, Bath, Car, Home, MessageCircle, ChevronLeft, ExternalLink } from "lucide-react";
 import { Card } from "../../components/ui/card";
-import { supabase } from "../../lib/supabase";
 
-type Corretor = {
-  id: string;
-  nome: string;
-  creci: string;
-  telefone: string;
-  email: string;
-  especialidade: string;
-  bio: string;
-  avaliacao: number;
-  totalVendas: number;
+// Mock data — no futuro substituir por fetch ao Supabase via slug
+const CORRETORES_DB: Record<string, {
+  id: string; nome: string; creci: string; telefone: string; email: string;
+  especialidade: string; bio: string; empresa: string; avaliacao: number; totalVendas: number;
+  imoveis: Array<{
+    id: string; titulo: string; tipo: string; operacao: string; status: string;
+    valor: number; bairro: string; cidade: string; area: number; quartos: number;
+    banheiros: number; vagas: number; descricao: string;
+  }>;
+}> = {
+  "ana-lima": {
+    id: "1", nome: "Ana Lima", creci: "CRECI-SP 123456", telefone: "(11) 98765-4321",
+    email: "ana@imobiliaria.com", especialidade: "Alto Padrão", empresa: "Axis Imóveis",
+    bio: "Especialista em imóveis de alto padrão em São Paulo há mais de 10 anos. Atendo clientes que buscam exclusividade, qualidade e localização privilegiada. Minha missão é transformar o sonho da casa própria em realidade com segurança e transparência.",
+    avaliacao: 4.9, totalVendas: 87,
+    imoveis: [
+      { id: "1", titulo: "Apartamento 3 quartos - Moema", tipo: "Apartamento", operacao: "Venda", status: "Disponível", valor: 850000, bairro: "Moema", cidade: "São Paulo", area: 120, quartos: 3, banheiros: 2, vagas: 2, descricao: "Apartamento moderno com varanda gourmet, vista livre e acabamento de alto padrão. Próximo ao Parque do Ibirapuera." },
+      { id: "4", titulo: "Kitnet Centro", tipo: "Kitnet", operacao: "Locação", status: "Locado", valor: 1800, bairro: "Centro", cidade: "São Paulo", area: 28, quartos: 1, banheiros: 1, vagas: 0, descricao: "Kitnet reformada e funcional, excelente para quem trabalha no centro de São Paulo. Próximo ao metrô." },
+    ],
+  },
+  "carlos-matos": {
+    id: "2", nome: "Carlos Matos", creci: "CRECI-SP 234567", telefone: "(11) 97654-3210",
+    email: "carlos@imobiliaria.com", especialidade: "Residencial", empresa: "Axis Imóveis",
+    bio: "Corretor residencial com foco em famílias que buscam qualidade de vida. Especializado em condomínios fechados e bairros planejados na Grande São Paulo.",
+    avaliacao: 4.7, totalVendas: 54,
+    imoveis: [
+      { id: "2", titulo: "Casa 4 quartos - Alphaville", tipo: "Casa", operacao: "Venda", status: "Vendido", valor: 1500000, bairro: "Alphaville", cidade: "Barueri", area: 280, quartos: 4, banheiros: 4, vagas: 4, descricao: "Casa ampla em condomínio fechado com toda infraestrutura de lazer. Acabamento premium e área gourmet." },
+      { id: "5", titulo: "Sala Comercial - Faria Lima", tipo: "Comercial", operacao: "Venda", status: "Disponível", valor: 950000, bairro: "Itaim Bibi", cidade: "São Paulo", area: 80, quartos: 0, banheiros: 2, vagas: 2, descricao: "Sala comercial no coração financeiro de São Paulo. Vista panorâmica e localização estratégica." },
+    ],
+  },
+  "fernanda-rocha": {
+    id: "3", nome: "Fernanda Rocha", creci: "CRECI-SP 345678", telefone: "(11) 96543-2109",
+    email: "fernanda@imobiliaria.com", especialidade: "Comercial", empresa: "Axis Imóveis",
+    bio: "Especialista em imóveis comerciais e salas de escritório. Atendo empresas que buscam o espaço ideal para seus negócios com custo-benefício e excelente localização.",
+    avaliacao: 4.8, totalVendas: 31,
+    imoveis: [
+      { id: "3", titulo: "Cobertura Duplex - Vila Olímpia", tipo: "Cobertura", operacao: "Venda", status: "Disponível", valor: 2200000, bairro: "Vila Olímpia", cidade: "São Paulo", area: 320, quartos: 4, banheiros: 5, vagas: 4, descricao: "Cobertura duplex com piscina privativa, churrasqueira e vista 360°. Acabamento exclusivo e tecnologia de ponta." },
+    ],
+  },
 };
-
-type Imovel = {
-  id: string;
-  titulo: string;
-  tipo: string;
-  operacao: string;
-  status: string;
-  valor: number;
-  bairro: string;
-  cidade: string;
-  area: number;
-  quartos: number;
-  banheiros: number;
-  vagas: number;
-  descricao: string;
-};
-
-const EMPRESA = "Axis Imóveis";
 
 function StatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
@@ -52,85 +61,7 @@ function formatValor(operacao: string, valor: number) {
 
 export default function PortfolioCorretor() {
   const { slug } = useParams<{ slug: string }>();
-  const [loading, setLoading] = useState(true);
-  const [corretor, setCorretor] = useState<Corretor | null>(null);
-  const [imoveis, setImoveis] = useState<Imovel[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      if (!slug || !supabase) {
-        if (!cancelled) setLoading(false);
-        return;
-      }
-
-      const { data: corretorRow } = await supabase
-        .from("imobiliario_corretores")
-        .select("*")
-        .eq("slug", slug)
-        .maybeSingle();
-
-      if (cancelled) return;
-
-      if (!corretorRow) {
-        setCorretor(null);
-        setLoading(false);
-        return;
-      }
-
-      const mapped: Corretor = {
-        id: corretorRow.id,
-        nome: corretorRow.nome,
-        creci: corretorRow.creci ?? "",
-        telefone: corretorRow.telefone ?? "",
-        email: corretorRow.email ?? "",
-        especialidade: corretorRow.especialidade ?? "",
-        bio: corretorRow.bio ?? "",
-        avaliacao: Number(corretorRow.avaliacao ?? 5),
-        totalVendas: corretorRow.total_vendas ?? 0,
-      };
-      setCorretor(mapped);
-
-      const { data: imoveisRows } = await supabase
-        .from("imobiliario_imoveis")
-        .select("*")
-        .eq("corretor", corretorRow.nome)
-        .order("created_at", { ascending: false });
-
-      if (cancelled) return;
-
-      setImoveis(
-        (imoveisRows ?? []).map(r => ({
-          id: r.id,
-          titulo: r.titulo,
-          tipo: r.tipo,
-          operacao: r.operacao,
-          status: r.status,
-          valor: Number(r.valor ?? 0),
-          bairro: r.bairro ?? "",
-          cidade: r.cidade ?? "",
-          area: Number(r.area ?? 0),
-          quartos: Number(r.quartos ?? 0),
-          banheiros: Number(r.banheiros ?? 0),
-          vagas: Number(r.vagas ?? 0),
-          descricao: r.descricao ?? "",
-        }))
-      );
-      setLoading(false);
-    }
-
-    load();
-    return () => { cancelled = true; };
-  }, [slug]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[var(--color-surface)] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-      </div>
-    );
-  }
+  const corretor = slug ? CORRETORES_DB[slug] : null;
 
   if (!corretor) {
     return (
@@ -139,9 +70,6 @@ export default function PortfolioCorretor() {
           <Building2 className="w-16 h-16 text-slate-600 mx-auto mb-4" />
           <h1 className="text-2xl font-black text-white mb-2">Corretor não encontrado</h1>
           <p className="text-slate-500">O link que você acessou pode estar desatualizado.</p>
-          <a href="/" className="inline-flex items-center gap-1.5 text-[11px] text-blue-500 hover:text-blue-400 transition-colors mt-4">
-            <ChevronLeft className="w-3.5 h-3.5" /> Voltar ao site
-          </a>
         </div>
       </div>
     );
@@ -149,8 +77,8 @@ export default function PortfolioCorretor() {
 
   const whatsappLink = `https://wa.me/55${corretor.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${corretor.nome}! Vi seu portfólio e gostaria de saber mais sobre os imóveis disponíveis.`)}`;
 
-  const disponíveis = imoveis.filter(i => i.status === "Disponível");
-  const outros = imoveis.filter(i => i.status !== "Disponível");
+  const disponíveis = corretor.imoveis.filter(i => i.status === "Disponível");
+  const outros = corretor.imoveis.filter(i => i.status !== "Disponível");
 
   return (
     <div className="min-h-screen bg-[var(--color-surface)] text-white">
@@ -164,7 +92,7 @@ export default function PortfolioCorretor() {
           <div className="flex items-center justify-between mb-10">
             <div className="flex items-center gap-2">
               <Building2 className="w-5 h-5 text-blue-400" />
-              <span className="text-sm font-black text-slate-400">{EMPRESA}</span>
+              <span className="text-sm font-black text-slate-400">{corretor.empresa}</span>
             </div>
             <a href="/" className="flex items-center gap-1.5 text-[11px] text-slate-600 hover:text-slate-400 transition-colors">
               <ChevronLeft className="w-3.5 h-3.5" /> Voltar ao site
@@ -192,7 +120,7 @@ export default function PortfolioCorretor() {
             </div>
           </div>
 
-          {corretor.bio && <p className="text-slate-400 text-sm leading-relaxed max-w-2xl mb-8">{corretor.bio}</p>}
+          <p className="text-slate-400 text-sm leading-relaxed max-w-2xl mb-8">{corretor.bio}</p>
 
           {/* CTAs */}
           <div className="flex flex-wrap gap-3">
@@ -225,8 +153,8 @@ export default function PortfolioCorretor() {
         {/* Stats rápidas */}
         <div className="grid grid-cols-3 gap-4 mb-10">
           <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
-            <Building2 className="w-5 h-5 text-blue-500 mb-4" />
-            <div className="text-2xl font-display font-black text-white mb-1 italic">{imoveis.length}</div>
+            <Building2 className="w-5 h-5 text-indigo-500 mb-4" />
+            <div className="text-2xl font-display font-black text-white mb-1 italic">{corretor.imoveis.length}</div>
             <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Imóveis no Portfólio</div>
           </Card>
           <Card className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
@@ -269,7 +197,7 @@ export default function PortfolioCorretor() {
           </div>
         )}
 
-        {imoveis.length === 0 && (
+        {corretor.imoveis.length === 0 && (
           <div className="text-center py-20 text-slate-600">
             <Building2 className="w-14 h-14 mx-auto mb-4 opacity-20" />
             <p className="font-bold text-lg">Nenhum imóvel cadastrado ainda</p>
@@ -282,14 +210,14 @@ export default function PortfolioCorretor() {
       <footer className="border-t border-white/5 py-6">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-600">
           <span>Portfólio gerado por <span className="text-blue-500 font-bold">Axis CRM</span></span>
-          <span>{corretor.creci} · {EMPRESA}</span>
+          <span>{corretor.creci} · {corretor.empresa}</span>
         </div>
       </footer>
     </div>
   );
 }
 
-function ImovelCard({ imovel: im, corretor, dimmed = false }: { imovel: Imovel; corretor: Corretor; dimmed?: boolean }) {
+function ImovelCard({ imovel: im, corretor, dimmed = false }: { imovel: any; corretor: any; dimmed?: boolean }) {
   const whatsappLink = `https://wa.me/55${corretor.telefone.replace(/\D/g, "")}?text=${encodeURIComponent(`Olá ${corretor.nome}! Tenho interesse no imóvel "${im.titulo}". Pode me passar mais informações?`)}`;
 
   return (

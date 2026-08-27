@@ -33,16 +33,6 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
     return data.reduce((acc, item) => acc + item.value, 0);
   }, [data]);
 
-  const handleExport = () => {
-    const lines = ['Descrição;Categoria;Data;Status;Valor'];
-    data.forEach(item => lines.push(`"${item.description}";"${item.category}";"${item.date}";"${item.status}";${item.value}`));
-    const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `${type === 'Pagar' ? 'contas_a_pagar' : 'contas_a_receber'}.csv`;
-    a.click();
-  };
-
   const handleAdd = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newDesc || !newValue) return;
@@ -94,7 +84,7 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
             >
                 <Plus className="w-4 h-4 mr-2" /> Novo Lançamento
             </Button>
-            <Button onClick={handleExport} variant="outline" className="gap-2 border-white/10 bg-[var(--color-surface-elevated)] text-slate-400 hover:text-white h-10 text-[10px] uppercase font-bold tracking-widest px-4 rounded-xl">
+            <Button variant="outline" className="gap-2 border-white/10 bg-[var(--color-surface-elevated)] text-slate-400 hover:text-white h-10 text-[10px] uppercase font-bold tracking-widest px-4 rounded-xl">
                 <Download className="w-4 h-4" /> Exportar
             </Button>
         </div>

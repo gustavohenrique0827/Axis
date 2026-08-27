@@ -81,7 +81,7 @@ export default function FaturamentoClinico() {
            <Button variant="outline" className="border-white/10 text-[10px] font-black uppercase tracking-widest h-10 px-4 gap-2">
               <Download className="w-4 h-4" /> Exportar Relatório
            </Button>
-           <Button className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-10 px-6 text-[10px] font-black uppercase tracking-widest gap-2">
+           <Button className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl h-10 px-6 text-[10px] font-black uppercase tracking-widest gap-2">
               <FileText className="w-4 h-4" /> Nova Fatura
            </Button>
         </div>
@@ -92,7 +92,7 @@ export default function FaturamentoClinico() {
         {/* Financial KPIs */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
            {[
-             { label: "Faturamento Bruto", value: fmt(totalBilled), trend: "+12%", icon: Landmark, color: "text-blue-500" },
+             { label: "Faturamento Bruto", value: fmt(totalBilled), trend: "+12%", icon: Landmark, color: "text-indigo-500" },
              { label: "Receita Líquida", value: fmt(totalReceived), trend: "+8.5%", icon: Wallet, color: "text-emerald-500" },
              { label: "Taxa de Glosa (Atrasos)", value: glosaRate, trend: "-0.5%", icon: AlertCircle, color: "text-rose-500" },
              { label: "Ticket Médio Estimado", value: fmt(avgTicket), trend: "+3%", icon: CreditCard, color: "text-blue-500" },

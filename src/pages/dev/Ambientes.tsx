@@ -27,22 +27,14 @@ function MetricBar({ value, color }: { value: number; color: string }) {
 }
 
 export default function Ambientes() {
-  const { environments, loading, refetch } = useAmbientes();
+  const { environments, loading } = useAmbientes();
   const [refreshing, setRefreshing] = useState<string | null>(null);
-  const [refreshingAll, setRefreshingAll] = useState(false);
 
   const operacionalCount = environments.filter(e => e.status === 'operacional').length;
 
-  const handleRefresh = async (id: string) => {
+  const handleRefresh = (id: string) => {
     setRefreshing(id);
-    await refetch();
-    setRefreshing(null);
-  };
-
-  const handleRefreshAll = async () => {
-    setRefreshingAll(true);
-    await refetch();
-    setRefreshingAll(false);
+    setTimeout(() => setRefreshing(null), 1800);
   };
 
   return (
@@ -58,8 +50,8 @@ export default function Ambientes() {
               {operacionalCount}/{environments.length} operacionais
             </span>
           </div>
-          <Button variant="outline" onClick={handleRefreshAll} disabled={refreshingAll} className="h-10 rounded-xl border-white/5 text-xs gap-2">
-            <RefreshCw className={`w-4 h-4 ${refreshingAll ? 'animate-spin' : ''}`} /> Atualizar Todos
+          <Button variant="outline" className="h-10 rounded-xl border-white/5 text-xs gap-2">
+            <RefreshCw className="w-4 h-4" /> Atualizar Todos
           </Button>
         </div>
       }

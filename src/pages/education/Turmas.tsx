@@ -6,7 +6,6 @@ import { useData } from "../../contexts/DataContext";
 import { PageContainer } from "../../components/PageContainer";
 import { toast } from "sonner";
 import { NovaTurmaModal } from "../../components/ui/modals/education/NovaTurmaModal";
-import { ConfirmModal } from "../../components/ui/modals/shared/ConfirmModal";
 import { TurmasKPIs } from "./components/Turmas/TurmasKPIs";
 import { TurmasFilters } from "./components/Turmas/TurmasFilters";
 import { TurmasGrid } from "./components/Turmas/TurmasGrid";
@@ -25,12 +24,10 @@ interface Turma {
 }
 
 export default function Turmas() {
-  const { turmas: rawTurmas, addTurma, updateTurma, deleteTurma, students } = useData();
+  const { turmas: rawTurmas, addTurma, students } = useData();
   const [search, setSearch] = useState("");
   const [selectedTurma, setSelectedTurma] = useState<Turma | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTurma, setEditingTurma] = useState<Turma | null>(null);
-  const [deletingTurma, setDeletingTurma] = useState<Turma | null>(null);
 
   const turmas: Turma[] = rawTurmas.map(t => ({
     id: t.id,
@@ -93,12 +90,7 @@ export default function Turmas() {
       <div className="max-w-[1700px] mx-auto space-y-8">
         <TurmasKPIs stats={kpiStats} />
         <TurmasFilters search={search} onSearchChange={setSearch} />
-        <TurmasGrid
-          turmas={filteredTurmas}
-          onSelect={setSelectedTurma}
-          onEdit={setEditingTurma}
-          onDelete={setDeletingTurma}
-        />
+        <TurmasGrid turmas={filteredTurmas} onSelect={setSelectedTurma} />
       </div>
       <NovaTurmaModal
         isOpen={isModalOpen}
@@ -115,43 +107,6 @@ export default function Turmas() {
           toast.success("Turma criada com sucesso!");
           setIsModalOpen(false);
         }}
-      />
-      <NovaTurmaModal
-        isOpen={!!editingTurma}
-        onClose={() => setEditingTurma(null)}
-        title="Editar Turma"
-        submitLabel="Salvar Alterações"
-        initialData={editingTurma ? {
-          nome: editingTurma.name,
-          curso: editingTurma.subject,
-          professor: editingTurma.instructor,
-          vagas: String(editingTurma.capacity || 30),
-          shift: editingTurma.shift,
-          data_inicio: editingTurma.startDate,
-        } : undefined}
-        onSubmit={(data) => {
-          if (!editingTurma) return;
-          updateTurma(editingTurma.id, {
-            nome: data.nome, curso: data.curso,
-            professor: data.professor || "Não definido",
-            vagas: parseInt(data.vagas) || 30,
-            shift: data.shift, data_inicio: data.data_inicio,
-          });
-          toast.success("Turma atualizada com sucesso!");
-          setEditingTurma(null);
-        }}
-      />
-      <ConfirmModal
-        isOpen={!!deletingTurma}
-        onClose={() => setDeletingTurma(null)}
-        onConfirm={() => {
-          if (!deletingTurma) return;
-          deleteTurma(deletingTurma.id);
-          toast.success("Turma excluída com sucesso.");
-          setDeletingTurma(null);
-        }}
-        title="Excluir Turma"
-        message={`Tem certeza que deseja excluir a turma "${deletingTurma?.name}"? Todos os dados associados a esta turma serão perdidos.`}
       />
     </PageContainer>
   );

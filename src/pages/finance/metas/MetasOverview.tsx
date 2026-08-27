@@ -183,7 +183,7 @@ export function MetasOverview({
         {/* Provisioned commission and OTE payout based on calculations */}
         <Card className="p-5 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
           <div className="flex justify-between items-start mb-3">
-            <DollarSign className="w-5 h-5 text-blue-500" />
+            <DollarSign className="w-5 h-5 text-emerald-500" />
             <span className="text-[10px] font-black font-mono text-slate-400 bg-white/5 px-2 py-0.5 rounded border border-white/5 uppercase tracking-widest">
               Provisionado
             </span>
@@ -197,7 +197,7 @@ export function MetasOverview({
             </div>
             <div className="mt-3 flex items-center justify-between text-[10px] border-t border-white/5 pt-2 text-slate-400">
               <span>Bônus superador ativo:</span>
-              <span className="font-bold text-blue-400">
+              <span className="font-bold text-emerald-400">
                 R$ {totalOTEBonus.toLocaleString("pt-BR")}
               </span>
             </div>
@@ -210,7 +210,7 @@ export function MetasOverview({
                   onClick={() => setOteActiveTab("history")} 
                   className={`text-[8.5px] font-bold px-2 py-0.5 rounded transition-colors uppercase cursor-pointer ${
                     oteActiveTab === "history" 
-                      ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
                       : "text-slate-500 hover:text-slate-400"
                   }`}
                 >
@@ -220,7 +220,7 @@ export function MetasOverview({
                   onClick={() => setOteActiveTab("projection")} 
                   className={`text-[8.5px] font-bold px-2 py-0.5 rounded transition-colors uppercase cursor-pointer ${
                     oteActiveTab === "projection" 
-                      ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                      ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
                       : "text-slate-500 hover:text-slate-400"
                   }`}
                 >

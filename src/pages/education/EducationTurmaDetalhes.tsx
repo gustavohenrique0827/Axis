@@ -50,7 +50,7 @@ export default function EducationTurmaDetalhes({ turma, onBack }: EducationTurma
           >
             <ArrowLeft className="w-4 h-4 mr-2" /> Voltar
           </Button>
-          <Button className="bg-blue-600 hover:bg-blue-700 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-blue-600/20">
+          <Button className="bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-600/20">
             <Plus className="w-4 h-4 mr-2" /> Adicionar Aluno
           </Button>
         </div>

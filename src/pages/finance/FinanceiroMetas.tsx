@@ -70,9 +70,9 @@ export default function FinanceiroMetas() {
 
       <Button
         onClick={handleSimulateSale}
-        className="bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-widest gap-1.5 h-10 px-4 rounded-xl transition-all shadow-lg shadow-blue-500/10"
+        className="bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] uppercase tracking-widest gap-1.5 h-10 px-4 rounded-xl transition-all shadow-lg shadow-emerald-500/10"
       >
-        <Play className="w-3.5 h-3.5 text-blue-300 animate-pulse" /> Simular Venda
+        <Play className="w-3.5 h-3.5 text-emerald-300 animate-pulse" /> Simular Venda
       </Button>
 
       <Button

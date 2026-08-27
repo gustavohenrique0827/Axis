@@ -116,23 +116,21 @@ export function useAmbientes() {
   const [environments, setEnvironments] = useState<DevEnvironment[]>(supabase ? [] : MOCK_ENVIRONMENTS);
   const [loading, setLoading] = useState(false);
 
-  async function load() {
-    if (!supabase) return;
-    setLoading(true);
-    const { data, error } = await supabase
-      .from('dev_environments')
-      .select('*')
-      .order('created_at', { ascending: true });
-    if (!error && data !== null) {
-      setEnvironments(data.map(rowToEnv));
-    }
-    setLoading(false);
-  }
-
   useEffect(() => {
+    if (!supabase) return;
+    async function load() {
+      setLoading(true);
+      const { data, error } = await supabase!
+        .from('dev_environments')
+        .select('*')
+        .order('created_at', { ascending: true });
+      if (!error && data !== null) {
+        setEnvironments(data.map(rowToEnv));
+      }
+      setLoading(false);
+    }
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { environments, loading, refetch: load };
+  return { environments, loading };
 }

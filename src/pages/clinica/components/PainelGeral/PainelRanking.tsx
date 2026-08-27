@@ -16,7 +16,7 @@ export function PainelRanking({ doctorRanking, totalAppointments, finalized }: P
       <Card className="lg:col-span-3 p-8 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
         <div className="flex items-center justify-between mb-8">
           <h3 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-widest flex items-center gap-2">
-            <Activity className="w-4 h-4 text-blue-500" /> Ranking de Performance Clínica
+            <Activity className="w-4 h-4 text-emerald-500" /> Ranking de Performance Clínica
           </h3>
           <span className="text-[10px] text-[var(--color-text-muted)] font-black uppercase italic">Por agendamentos</span>
         </div>
@@ -28,9 +28,9 @@ export function PainelRanking({ doctorRanking, totalAppointments, finalized }: P
         ) : (
           <div className="space-y-4">
             {doctorRanking.map((dr, i) => (
-              <div key={i} className="grid grid-cols-4 items-center p-4 bg-[var(--color-surface-sunken)] rounded-2xl border border-[var(--color-border-default)] hover:border-blue-500/40 transition-all group">
+              <div key={i} className="grid grid-cols-4 items-center p-4 bg-[var(--color-surface-sunken)] rounded-2xl border border-[var(--color-border-default)] hover:border-emerald-500/40 transition-all group">
                 <div className="col-span-2 flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-full bg-[var(--color-border-default)] flex items-center justify-center text-xs font-black text-[var(--color-text-muted)] group-hover:text-blue-500 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-[var(--color-border-default)] flex items-center justify-center text-xs font-black text-[var(--color-text-muted)] group-hover:text-emerald-500 transition-colors">
                     {dr.name[0]}
                   </div>
                   <div>
@@ -47,7 +47,7 @@ export function PainelRanking({ doctorRanking, totalAppointments, finalized }: P
                     <span className="text-[9px] font-black text-[var(--color-text-primary)]">{Math.round((dr.patients / Math.max(totalAppointments, 1)) * 100)}%</span>
                   </div>
                   <div className="w-full h-1 bg-[var(--color-border-default)] rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-500" style={{ width: `${Math.round((dr.patients / Math.max(totalAppointments, 1)) * 100)}%` }} />
+                    <div className="h-full bg-emerald-500" style={{ width: `${Math.round((dr.patients / Math.max(totalAppointments, 1)) * 100)}%` }} />
                   </div>
                 </div>
               </div>
@@ -56,18 +56,18 @@ export function PainelRanking({ doctorRanking, totalAppointments, finalized }: P
         )}
       </Card>
 
-      <Card className="p-8 bg-gradient-to-br from-blue-600/10 to-[var(--color-surface-elevated)] border border-blue-500/20 flex flex-col justify-between relative overflow-hidden group">
+      <Card className="p-8 bg-gradient-to-br from-purple-500/10 to-[var(--color-surface-elevated)] border border-purple-500/20 flex flex-col justify-between relative overflow-hidden group">
         <div className="absolute top-0 right-0 p-8 opacity-[0.08] group-hover:scale-110 transition-transform">
-          <Heart className="w-20 h-20 text-blue-400" />
+          <Heart className="w-20 h-20 text-purple-400" />
         </div>
         <div>
-          <h3 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.25em] mb-6">Índice de Retorno</h3>
+          <h3 className="text-[10px] font-black text-purple-500 uppercase tracking-[0.25em] mb-6">Índice de Retorno</h3>
           <div className="text-5xl font-black text-[var(--color-text-primary)] font-mono italic tracking-tighter">
             {totalAppointments > 0 ? `${Math.round((finalized / totalAppointments) * 100)}` : '0'}<span className="text-xl text-[var(--color-text-faint)]">%</span>
           </div>
           <p className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase mt-4 leading-relaxed">Consultas finalizadas sobre total agendado.</p>
         </div>
-        <Button variant="outline" className="w-full border-blue-500/30 text-blue-500 text-[10px] font-black h-12 rounded-2xl hover:bg-blue-500/10 mt-10">
+        <Button variant="outline" className="w-full border-purple-500/30 text-purple-600 text-[10px] font-black h-12 rounded-2xl hover:bg-purple-500/10 mt-10">
           Gerenciar Recalls ↗
         </Button>
       </Card>

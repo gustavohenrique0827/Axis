@@ -1,5 +1,5 @@
 import { Card } from "../../../../components/ui/card";
-import { Search, Building, Building2, MapPin, Phone, Mail, Trash2, Pencil } from "lucide-react";
+import { Search, Building, Building2, MapPin, Phone, Mail, Trash2 } from "lucide-react";
 
 interface Cliente {
   id: string;
@@ -21,12 +21,11 @@ interface ClientesListProps {
   statusFilter: string;
   onStatusChange: (v: string) => void;
   onDelete: (id: string) => void;
-  onEdit: (cliente: Cliente) => void;
 }
 
 export function ClientesList({
   clientes, searchQuery, onSearchChange,
-  sectorFilter, onSectorChange, statusFilter, onStatusChange, onDelete, onEdit,
+  sectorFilter, onSectorChange, statusFilter, onStatusChange, onDelete,
 }: ClientesListProps) {
   const filtered = clientes.filter(c => {
     if (statusFilter !== "Todos as situações" && c.status !== statusFilter) return false;
@@ -93,7 +92,7 @@ export function ClientesList({
           </thead>
           <tbody className="divide-y divide-white/5">
             {filtered.map((c) => (
-              <tr key={c.id} onClick={() => onEdit(c)} className="hover:bg-white/[0.02] transition-colors cursor-pointer group">
+              <tr key={c.id} className="hover:bg-white/[0.02] transition-colors cursor-pointer group">
                 <td className="px-6 py-4">
                   <div className="font-semibold text-white group-hover:text-blue-400 transition-colors flex items-center gap-2">
                     <div className="w-7 h-7 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
@@ -128,22 +127,13 @@ export function ClientesList({
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-1">
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onEdit(c); }}
-                      title="Editar Cliente"
-                      className="p-2 text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
-                      title="Remover Cliente"
-                      className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
+                    title="Remover Cliente"
+                    className="p-2 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </td>
               </tr>
             ))}
@@ -163,7 +153,7 @@ export function ClientesList({
       {/* Mobile cards */}
       <div className="sm:hidden divide-y divide-white/5">
         {filtered.map((c) => (
-          <div key={c.id} onClick={() => onEdit(c)} className="p-4 flex flex-col gap-3 hover:bg-white/[0.01] transition-all cursor-pointer">
+          <div key={c.id} className="p-4 flex flex-col gap-3 hover:bg-white/[0.01] transition-all">
             <div className="flex justify-between items-start">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
@@ -177,12 +167,6 @@ export function ClientesList({
                   c.status === "Em Implantação" ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
                                                   "bg-slate-500/10 text-slate-400 border-slate-500/20"
                 }`}>{c.status}</span>
-                <button
-                  onClick={(e) => { e.stopPropagation(); onEdit(c); }}
-                  className="p-1 text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 rounded transition-colors"
-                >
-                  <Pencil className="w-3.5 h-3.5" />
-                </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
                   className="p-1 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded transition-colors"

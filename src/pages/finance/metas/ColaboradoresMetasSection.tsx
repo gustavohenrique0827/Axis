@@ -266,7 +266,7 @@ export function ColaboradoresMetasSection({
             <div className="pt-2 flex gap-2">
               <Button 
                 type="submit"
-                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black text-[10px] uppercase tracking-widest h-10 rounded-xl transition-all shadow-md shadow-blue-500/10 cursor-pointer"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-[10px] uppercase tracking-widest h-10 rounded-xl transition-all shadow-md shadow-emerald-500/10 cursor-pointer"
               >
                 {selectedColabId === "new" ? "Cadastrar Meta" : "Salvar Alterações"}
               </Button>

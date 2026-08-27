@@ -203,7 +203,7 @@ export default function FinanceiroComissoes() {
 
           <Button
             onClick={handleRecalc}
-            className="h-11 bg-blue-600 hover:bg-blue-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest px-5 rounded-xl shadow-lg shadow-blue-500/20"
+            className="h-11 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-[10px] font-black uppercase tracking-widest px-5 rounded-xl shadow-lg shadow-emerald-500/20"
           >
             <RefreshCw className={`w-4 h-4 ${spinning ? 'animate-spin' : ''}`} /> Recalcular OTE
           </Button>
@@ -231,7 +231,7 @@ export default function FinanceiroComissoes() {
             <div className="absolute left-0 top-11 z-30 bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl shadow-2xl shadow-black/50 min-w-[160px] overflow-hidden">
               {squadNames.map(s => (
                 <button key={s} onClick={() => { setSquadFilter(s); setShowSquadMenu(false); }}
-                  className={`w-full text-left px-4 py-2.5 text-[11px] font-bold hover:bg-white/5 transition-colors ${squadFilter === s ? 'text-blue-400' : 'text-slate-300'}`}
+                  className={`w-full text-left px-4 py-2.5 text-[11px] font-bold hover:bg-white/5 transition-colors ${squadFilter === s ? 'text-emerald-400' : 'text-slate-300'}`}
                 >{s}</button>
               ))}
             </div>
@@ -273,12 +273,12 @@ export default function FinanceiroComissoes() {
               onClick={() => setActiveTab(tab.key)}
               className={`px-5 py-3.5 text-[11px] font-black uppercase tracking-widest transition-all border-b-2 -mb-px whitespace-nowrap ${
                 activeTab === tab.key
-                  ? 'border-blue-500 text-white'
+                  ? 'border-emerald-500 text-white'
                   : 'border-transparent text-slate-500 hover:text-slate-300'
               }`}
             >
               {tab.label} / {tab.sublabel}
-              <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-md font-black ${activeTab === tab.key ? 'bg-blue-500/15 text-blue-400' : 'bg-white/5 text-slate-600'}`}>
+              <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded-md font-black ${activeTab === tab.key ? 'bg-emerald-500/15 text-emerald-400' : 'bg-white/5 text-slate-600'}`}>
                 {tabCount(tab.key)}
               </span>
             </button>
@@ -286,7 +286,7 @@ export default function FinanceiroComissoes() {
           <div className="ml-auto">
             <Button
               onClick={() => setShowAddModal(true)}
-              className="h-8 bg-blue-600 hover:bg-blue-700 text-white gap-1.5 text-[10px] font-black uppercase tracking-widest px-4 rounded-lg shadow-lg shadow-blue-500/20"
+              className="h-8 bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5 text-[10px] font-black uppercase tracking-widest px-4 rounded-lg shadow-lg shadow-emerald-500/20"
             >
               <Plus className="w-3.5 h-3.5" /> Adicionar
             </Button>
@@ -312,7 +312,7 @@ export default function FinanceiroComissoes() {
                     <div className="flex flex-col items-center gap-3">
                       <div className="p-4 rounded-2xl bg-white/5"><Users className="w-6 h-6 text-slate-600" /></div>
                       <p className="text-[11px] font-black text-slate-600 uppercase tracking-widest">Nenhum colaborador nesta categoria</p>
-                      <button onClick={() => setShowAddModal(true)} className="text-[10px] font-bold text-blue-500 hover:text-blue-400 underline underline-offset-2">Adicionar colaborador</button>
+                      <button onClick={() => setShowAddModal(true)} className="text-[10px] font-bold text-emerald-500 hover:text-emerald-400 underline underline-offset-2">Adicionar colaborador</button>
                     </div>
                   </td>
                 </tr>
@@ -364,7 +364,7 @@ export default function FinanceiroComissoes() {
                         : <span className="text-slate-700">—</span>}
                     </td>
                     <td className="px-5 py-3.5 whitespace-nowrap">
-                      <span className="text-sm font-black text-blue-400">{fmt(row.totalOTE)}</span>
+                      <span className="text-sm font-black text-emerald-400">{fmt(row.totalOTE)}</span>
                     </td>
                     <td className="px-3 py-3.5">
                       <button
@@ -394,7 +394,7 @@ export default function FinanceiroComissoes() {
             </div>
             <div className="text-right">
               <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">Total OTE</p>
-              <p className="text-base font-black text-blue-400">{fmt(totals.ote)}</p>
+              <p className="text-base font-black text-emerald-400">{fmt(totals.ote)}</p>
             </div>
           </div>
         )}
@@ -419,21 +419,21 @@ export default function FinanceiroComissoes() {
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nome Completo</label>
                 <input value={form.nome} onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500/60 placeholder:text-slate-600 transition-colors"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 placeholder:text-slate-600 transition-colors"
                   placeholder="Nome completo" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Cargo</label>
                   <select value={form.cargo} onChange={e => setForm(f => ({ ...f, cargo: e.target.value as CargoTab }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-blue-500/60 transition-colors">
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 transition-colors">
                     <option>Closer</option><option>SDR</option><option>Gestor</option>
                   </select>
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Nível</label>
                   <select value={form.nivel} onChange={e => setForm(f => ({ ...f, nivel: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-blue-500/60 transition-colors">
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 transition-colors">
                     <option>Aprendiz</option><option>Junior 1</option><option>Junior 2</option><option>Pleno</option><option>Senior</option>
                   </select>
                 </div>
@@ -442,26 +442,26 @@ export default function FinanceiroComissoes() {
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Squad</label>
                   <input value={form.squad} onChange={e => setForm(f => ({ ...f, squad: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500/60 placeholder:text-slate-600 transition-colors"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 placeholder:text-slate-600 transition-colors"
                     placeholder="Ex: Target" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Meta (R$)</label>
                   <input type="number" value={form.meta} onChange={e => setForm(f => ({ ...f, meta: e.target.value }))}
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500/60 placeholder:text-slate-600 transition-colors"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 placeholder:text-slate-600 transition-colors"
                     placeholder="70000" />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Realizado (R$)</label>
                 <input type="number" value={form.realizado} onChange={e => setForm(f => ({ ...f, realizado: e.target.value }))}
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-blue-500/60 placeholder:text-slate-600 transition-colors"
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-emerald-500/60 placeholder:text-slate-600 transition-colors"
                   placeholder="0" />
               </div>
             </div>
             <div className="p-6 border-t border-white/10 flex gap-3">
               <Button variant="ghost" onClick={() => setShowAddModal(false)} className="flex-1 text-slate-400 hover:text-white hover:bg-white/5 rounded-xl">Cancelar</Button>
-              <Button onClick={handleAddEntry} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-blue-500/20">
+              <Button onClick={handleAddEntry} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] uppercase tracking-widest rounded-xl shadow-lg shadow-emerald-500/20">
                 Adicionar
               </Button>
             </div>
