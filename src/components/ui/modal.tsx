@@ -74,8 +74,8 @@ export function Modal({
       <div
         className={`relative w-[95vw] sm:w-full ${maxWidth} bg-[var(--color-surface-elevated)] shadow-2xl shadow-black/30 ring-1 ring-black/5 overflow-hidden flex flex-col animate-in fade-in duration-200 ${
           position === "right"
-            ? "h-full border-l border-[var(--color-border-default)] rounded-l-2xl max-h-screen slide-in-from-right-10"
-            : "border border-[var(--color-border-default)] rounded-3xl max-h-[90vh] zoom-in-95 slide-in-from-bottom-2"
+            ? "h-full border-l border-[var(--color-border-default)] rounded-l-[var(--radius-panel-lg)] max-h-screen slide-in-from-right-10"
+            : "border border-[var(--color-border-default)] rounded-[var(--radius-panel-lg)] max-h-[90vh] zoom-in-95 slide-in-from-bottom-2"
         }`}
         role="dialog"
         aria-modal="true"

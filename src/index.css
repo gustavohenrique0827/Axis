@@ -4,6 +4,16 @@
   /* Regra 60-30-10: 60% Dominante (Fundo), 30% Secundário (Superfícies/Bordas), 10% Destaque (Ações) */
   --color-primary-blue: #2563EB; /* 10% Destaque */
   --color-tech-cyan: #06B6D4;    /* 10% Destaque Alt */
+  --color-accent: var(--color-tech-cyan); /* nome formal do destaque secundário */
+
+  /* Tokens semânticos de status — usados por Button/Badge/Alert e por toda página que hoje
+     usa emerald/rose/amber/blue cru para os mesmos conceitos. Modificador de opacidade
+     (ex.: bg-success/10) cobre os usos "soft" sem precisar de token separado. */
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #F43F5E;
+  --color-destructive: var(--color-danger); /* alias — Badge já usava o nome "destructive" */
+  --color-info: #3B82F6;
 
   /* Tokens semânticos de superfície/texto — valores CLAROS por padrão (tema claro é o novo default) */
   --color-surface: #F8FAFC;          /* fundo de página */
@@ -23,6 +33,22 @@
   --font-sans: Arial, "Helvetica Neue", Helvetica, ui-sans-serif, system-ui, sans-serif;
   --font-display: Arial, "Helvetica Neue", Helvetica, ui-sans-serif, system-ui, sans-serif;
   --font-mono: Arial, "Helvetica Neue", Helvetica, ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Escala nomeada de radius/shadow para os primitivos (src/components/ui). Não sobrescreve a
+   escala padrão do Tailwind (rounded-lg etc.) de propósito — isso evitaria mudar visualmente
+   toda tela ainda não migrada nesta mesma Fase 0. À medida que cada primitivo/módulo é
+   revisado, ele passa a referenciar estes tokens via classe arbitrária (ex.: rounded-[var(--radius-control)]). */
+:root {
+  --radius-control: 0.625rem; /* inputs, botões, badges */
+  --radius-panel: 1rem;       /* cards */
+  --radius-panel-lg: 1.5rem;  /* modais, painéis grandes */
+  --shadow-control: 0 1px 2px 0 rgba(2, 6, 23, 0.06);
+  --shadow-panel: 0 8px 24px -6px rgba(2, 6, 23, 0.10);
+}
+html.dark {
+  --shadow-control: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  --shadow-panel: 0 8px 24px -6px rgba(0, 0, 0, 0.45);
 }
 
 /* Modo escuro — sobrescreve os mesmos tokens semânticos quando <html class="dark"> */

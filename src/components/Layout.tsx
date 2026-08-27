@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Toaster } from "sonner";
 import { useAuth } from "../contexts/AuthContext";
 import { Sidebar } from "./layout/Sidebar";
 import { Topbar } from "./layout/Topbar";
@@ -12,7 +13,7 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isModuleEnabled } = useAuth();
-  useData();
+  const { theme } = useData();
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
@@ -78,6 +79,19 @@ export default function Layout() {
           tenants do Axis (Target AgroTech, Pluppex, etc.) verem esse chat. Além disso, agora
           é um módulo de verdade (Configurações → Módulos) — dá pra desligar sem mexer em código. */}
       {user?.isMaster && isModuleEnabled("aurora") && <AuroraWidget />}
+
+      <Toaster
+        theme={theme}
+        position="top-right"
+        richColors
+        closeButton
+        toastOptions={{
+          classNames: {
+            toast: "!rounded-[var(--radius-panel)] !border-[var(--color-border-default)] !bg-[var(--color-surface-elevated)] !text-[var(--color-text-primary)] !shadow-[var(--shadow-panel)]",
+            description: "!text-[var(--color-text-muted)]",
+          },
+        }}
+      />
     </div>
   );
 }
