@@ -92,10 +92,10 @@ export default function RHColaboradores() {
     toast.success(`Status de ${colab.nome} alterado para ${novoStatus}.`);
   };
 
-  const handleDesligar = (colab: any) => {
-    deleteColaborador(colab.id);
+  const handleDesligar = async (colab: any) => {
     setMenuOpenId(null);
-    toast.success(`${colab.nome} foi removido da equipe.`);
+    const ok = await deleteColaborador(colab.id);
+    if (ok) toast.success(`${colab.nome} foi removido da equipe.`);
   };
 
   return (

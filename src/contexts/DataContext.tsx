@@ -1022,11 +1022,30 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         }
       },
       del: async (id: string) => {
-        stateSetter(prev => prev.filter(item => item.id !== id));
-        if (supabase) {
-          const { error } = await supabase.from(tableName).delete().eq('id', id);
-          if (error) console.error(`[Supabase] delete ${tableName} error:`, error.message);
+        const removed = await new Promise<any>(resolve => {
+          stateSetter(prev => {
+            resolve(prev.find(item => item.id === id));
+            return prev.filter(item => item.id !== id);
+          });
+        });
+        if (!supabase) return true;
+        // .select() força o Postgrest a devolver as linhas afetadas — sem isso, um DELETE
+        // filtrado a 0 linhas pela RLS (tenant errado, sem permissão) retorna error: null
+        // e pareceria bem-sucedido mesmo sem apagar nada no banco.
+        const { data, error } = await supabase.from(tableName).delete().eq('id', id).select('id');
+        if (error) {
+          console.error(`[Supabase] delete ${tableName} error:`, error.message);
+          toast.error(`Erro ao remover: ${error.message}`);
+          if (removed) stateSetter(prev => [removed, ...prev]);
+          return false;
         }
+        if (!data || data.length === 0) {
+          console.error(`[Supabase] delete ${tableName}: nenhuma linha afetada (id=${id})`);
+          toast.error('Não foi possível remover — sem permissão ou registro não encontrado.');
+          if (removed) stateSetter(prev => [removed, ...prev]);
+          return false;
+        }
+        return true;
       }
     };
   };

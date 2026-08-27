@@ -199,11 +199,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isModuleEnabled = (moduleName: keyof TenantModules): boolean => {
     if (!user) return false;
-    // is_master vem do perfil resolvido em public.users (via fetchUserProfile),
-    // não mais de um match de string no nome do tenant — não é mais spoofável
-    // editando localStorage.
-    if (user.isMaster) return true;
-
+    // Master também respeita o módulo real do próprio tenant — antes havia um bypass
+    // incondicional aqui, o que fazia o toggle de módulos em "Empresas Parceiras" nunca
+    // refletir no próprio sidebar de quem está testando (sempre master). Acesso
+    // administrativo (Painel G-Tech, Configurações) não depende de isModuleEnabled,
+    // então master não perde acesso a essas telas por causa disso.
     const modules = getTenantModules(user.tenantName);
     return !!modules[moduleName];
   };
