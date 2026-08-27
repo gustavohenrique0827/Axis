@@ -12,7 +12,7 @@ import { useData } from "../../contexts/DataContext";
 import { BookingModal } from "./components/BookingModal";
 
 export default function ProntuariosDashboard() {
-  const { appointments, leads, addTask } = useData();
+  const { appointments, leads, addTask, addAppointment } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
@@ -186,7 +186,13 @@ export default function ProntuariosDashboard() {
 
       </div>
 
-      <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} leads={leads} addTask={addTask} />
+      <BookingModal 
+        isOpen={isBookingOpen} 
+        onClose={() => setIsBookingOpen(false)} 
+        leads={leads} 
+        addTask={addTask} 
+        addAppointment={addAppointment} 
+      />
     </PageContainer>
   );
 }

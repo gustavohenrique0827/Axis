@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "motion/react";
 import { Button } from "../../../../components/ui/button";
-import { X, Stethoscope, MapPin, Activity, CheckCircle2, AlertCircle, Clock, Calendar } from "lucide-react";
+import { X, Stethoscope, MapPin, Activity, CheckCircle2, AlertCircle, Clock, Calendar, Trash2, Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface Appointment {
   id: string;
@@ -17,9 +18,13 @@ interface Appointment {
 interface AgendaDetailPanelProps {
   selectedApt: Appointment | undefined;
   onClose: () => void;
+  onUpdateStatus?: (status: Appointment['status']) => void;
+  onDelete?: () => void;
 }
 
-export function AgendaDetailPanel({ selectedApt, onClose }: AgendaDetailPanelProps) {
+export function AgendaDetailPanel({ selectedApt, onClose, onUpdateStatus, onDelete }: AgendaDetailPanelProps) {
+  const navigate = useNavigate();
+
   return (
     <AnimatePresence>
       {selectedApt && (
@@ -40,7 +45,7 @@ export function AgendaDetailPanel({ selectedApt, onClose }: AgendaDetailPanelPro
             {/* Header */}
             <div className="p-6 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-black text-[var(--color-primary-blue)] uppercase tracking-wider">
+                <h3 className="text-xs font-bold text-[var(--color-primary-blue)] uppercase tracking-wider">
                   Detalhes do Atendimento
                 </h3>
                 <button
@@ -52,7 +57,7 @@ export function AgendaDetailPanel({ selectedApt, onClose }: AgendaDetailPanelPro
                 </button>
               </div>
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/20 flex items-center justify-center text-xl font-black text-[var(--color-primary-blue)]">
+                <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/20 flex items-center justify-center text-xl font-bold text-[var(--color-primary-blue)]">
                   {selectedApt.patient[0]}
                 </div>
                 <div className="min-w-0">
@@ -63,7 +68,7 @@ export function AgendaDetailPanel({ selectedApt, onClose }: AgendaDetailPanelPro
                     {selectedApt.specialty}
                   </p>
                   <div className="flex items-center gap-1.5 mt-2">
-                    <span className="text-[9px] font-bold uppercase text-[var(--color-primary-blue)] bg-[var(--color-primary-blue)]/10 px-2 py-0.5 rounded">
+                    <span className="text-[10px] font-bold uppercase text-[var(--color-primary-blue)] bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/20 px-2 py-0.5 rounded-full">
                       {selectedApt.status}
                     </span>
                   </div>
@@ -112,20 +117,46 @@ export function AgendaDetailPanel({ selectedApt, onClose }: AgendaDetailPanelPro
 
               <div className="space-y-3 pt-4 border-t border-[var(--color-border-subtle)]">
                 <h4 className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider">
-                  Ações Rápidas
+                  Ações Rápidas de Status
                 </h4>
                 <div className="grid grid-cols-2 gap-2.5">
-                  <Button size="sm" className="h-10 text-xs font-bold shadow-xs">
-                    Iniciar Atendimento
-                  </Button>
-                  <Button variant="outline" size="sm" className="h-10 text-xs font-bold">
-                    Remarcar Horário
-                  </Button>
-                  <Button variant="danger" size="sm" className="h-10 text-xs font-bold">
-                    Cancelar
-                  </Button>
-                  <Button variant="subtle" size="sm" className="h-10 text-xs font-bold">
+                  {selectedApt.status !== 'Em Atendimento' && (
+                    <Button 
+                      size="sm" 
+                      onClick={() => onUpdateStatus?.('Em Atendimento')}
+                      className="h-10 text-xs font-bold shadow-xs"
+                    >
+                      <Activity className="w-3.5 h-3.5 mr-1" /> Em Atendimento
+                    </Button>
+                  )}
+                  {selectedApt.status !== 'Finalizado' && (
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={() => onUpdateStatus?.('Finalizado')}
+                      className="h-10 text-xs font-bold text-emerald-600 dark:text-emerald-400"
+                    >
+                      <Check className="w-3.5 h-3.5 mr-1" /> Finalizar Consulta
+                    </Button>
+                  )}
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      onClose();
+                      navigate('/app/clinica/prontuarios');
+                    }}
+                    className="h-10 text-xs font-bold"
+                  >
                     Ver Prontuário
+                  </Button>
+                  <Button 
+                    variant="danger" 
+                    size="sm" 
+                    onClick={onDelete}
+                    className="h-10 text-xs font-bold"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 mr-1" /> Cancelar Consulta
                   </Button>
                 </div>
               </div>

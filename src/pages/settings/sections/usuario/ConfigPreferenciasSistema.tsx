@@ -7,20 +7,40 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+const STORAGE_KEY = "axis_system_preferences";
+
+interface SystemPreferences {
+  theme: "light" | "dark" | "system";
+  language: string;
+  currency: string;
+  soundEnabled: boolean;
+  defaultCrmView: "kanban" | "list";
+}
+
+const DEFAULT_PREFS: SystemPreferences = {
+  theme: "dark",
+  language: "pt-BR",
+  currency: "BRL",
+  soundEnabled: true,
+  defaultCrmView: "kanban",
+};
+
 export function ConfigPreferenciasSistema() {
-  const [theme, setTheme] = useState<"light" | "dark" | "system">(() => {
-    return (localStorage.getItem("axis_theme_pref") as any) || "dark";
+  const [prefs, setPrefs] = useState<SystemPreferences>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    const themeSaved = (localStorage.getItem("axis_theme_pref") as any) || (localStorage.getItem("axis_theme") as any) || "dark";
+    return { ...DEFAULT_PREFS, theme: themeSaved };
   });
 
-  const [language, setLanguage] = useState("pt-BR");
-  const [currency, setCurrency] = useState("BRL");
-  const [soundEnabled, setSoundEnabled] = useState(true);
-  const [defaultCrmView, setDefaultCrmView] = useState<"kanban" | "list">("kanban");
-  const [compactCards, setCompactCards] = useState(false);
-
   const applyTheme = (newTheme: "light" | "dark" | "system") => {
-    setTheme(newTheme);
+    const updated = { ...prefs, theme: newTheme };
+    setPrefs(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     localStorage.setItem("axis_theme_pref", newTheme);
+    localStorage.setItem("axis_theme", newTheme === "system" ? "dark" : newTheme);
 
     const root = document.documentElement;
     if (newTheme === "dark") {
@@ -35,6 +55,8 @@ export function ConfigPreferenciasSistema() {
   };
 
   const handleSave = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+    window.dispatchEvent(new Event("axis_preferences_updated"));
     toast.success("Preferências do sistema salvas com sucesso!");
   };
 
@@ -51,7 +73,7 @@ export function ConfigPreferenciasSistema() {
 
       {/* Theme Selector */}
       <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm space-y-4">
-        <h3 className="text-base font-bold text-[var(--color-text-primary)] flex items-center gap-2 pb-2 border-b border-[var(--color-border-subtle)]">
+        <h3 className="text-sm font-bold text-[var(--color-text-primary)] flex items-center gap-2 pb-2 border-b border-[var(--color-border-subtle)]">
           <Sun className="w-4 h-4 text-amber-500" /> Aparência & Tema
         </h3>
 
@@ -61,7 +83,7 @@ export function ConfigPreferenciasSistema() {
             { id: "light", label: "Modo Claro (Light)", icon: Sun, desc: "Superfície clara para ambientes iluminados" },
             { id: "system", label: "Seguir Sistema", icon: Laptop, desc: "Alterna automaticamente com o SO" },
           ].map((t) => {
-            const isSelected = theme === t.id;
+            const isSelected = prefs.theme === t.id;
             return (
               <button
                 key={t.id}
@@ -89,7 +111,7 @@ export function ConfigPreferenciasSistema() {
 
       {/* Regional & Formats */}
       <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm space-y-4">
-        <h3 className="text-base font-bold text-[var(--color-text-primary)] flex items-center gap-2 pb-2 border-b border-[var(--color-border-subtle)]">
+        <h3 className="text-sm font-bold text-[var(--color-text-primary)] flex items-center gap-2 pb-2 border-b border-[var(--color-border-subtle)]">
           <Globe className="w-4 h-4 text-[var(--color-primary-blue)]" /> Idioma & Moeda
         </h3>
 
@@ -97,9 +119,13 @@ export function ConfigPreferenciasSistema() {
           <div>
             <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1.5 block">Idioma da Plataforma</label>
             <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none"
+              value={prefs.language}
+              onChange={(e) => {
+                const updated = { ...prefs, language: e.target.value };
+                setPrefs(updated);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+              }}
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
             >
               <option value="pt-BR">Português (Brasil)</option>
               <option value="en-US">English (United States)</option>
@@ -110,9 +136,13 @@ export function ConfigPreferenciasSistema() {
           <div>
             <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1.5 block">Moeda Padrão</label>
             <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none"
+              value={prefs.currency}
+              onChange={(e) => {
+                const updated = { ...prefs, currency: e.target.value };
+                setPrefs(updated);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+              }}
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
             >
               <option value="BRL">Real Brasileiro (R$ - BRL)</option>
               <option value="USD">Dólar Americano ($ - USD)</option>
@@ -124,7 +154,7 @@ export function ConfigPreferenciasSistema() {
 
       {/* CRM & Workspace Experience */}
       <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm space-y-4">
-        <h3 className="text-base font-bold text-[var(--color-text-primary)] flex items-center gap-2 pb-2 border-b border-[var(--color-border-subtle)]">
+        <h3 className="text-sm font-bold text-[var(--color-text-primary)] flex items-center gap-2 pb-2 border-b border-[var(--color-border-subtle)]">
           <Columns3 className="w-4 h-4 text-[var(--color-primary-blue)]" /> Visualização & Alertas do CRM
         </h3>
 
@@ -137,15 +167,23 @@ export function ConfigPreferenciasSistema() {
             <div className="flex gap-1.5 bg-[var(--color-surface-elevated)] p-1 rounded-lg border border-[var(--color-border-default)]">
               <button
                 type="button"
-                onClick={() => setDefaultCrmView("kanban")}
-                className={`px-3 py-1 text-xs font-bold rounded cursor-pointer ${defaultCrmView === "kanban" ? "bg-[var(--color-primary-blue)] !text-white" : "text-[var(--color-text-muted)]"}`}
+                onClick={() => {
+                  const updated: SystemPreferences = { ...prefs, defaultCrmView: "kanban" };
+                  setPrefs(updated);
+                  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+                }}
+                className={`px-3 py-1 text-xs font-bold rounded cursor-pointer transition-all ${prefs.defaultCrmView === "kanban" ? "bg-[var(--color-primary-blue)] !text-white" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"}`}
               >
                 Kanban
               </button>
               <button
                 type="button"
-                onClick={() => setDefaultCrmView("list")}
-                className={`px-3 py-1 text-xs font-bold rounded cursor-pointer ${defaultCrmView === "list" ? "bg-[var(--color-primary-blue)] !text-white" : "text-[var(--color-text-muted)]"}`}
+                onClick={() => {
+                  const updated: SystemPreferences = { ...prefs, defaultCrmView: "list" };
+                  setPrefs(updated);
+                  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+                }}
+                className={`px-3 py-1 text-xs font-bold rounded cursor-pointer transition-all ${prefs.defaultCrmView === "list" ? "bg-[var(--color-primary-blue)] !text-white" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"}`}
               >
                 Lista
               </button>
@@ -159,10 +197,15 @@ export function ConfigPreferenciasSistema() {
             </div>
             <button
               type="button"
-              onClick={() => setSoundEnabled(!soundEnabled)}
-              className={`p-2 rounded-lg border transition-colors cursor-pointer ${soundEnabled ? "bg-[var(--color-primary-blue)]/10 border-[var(--color-primary-blue)]/30 text-[var(--color-primary-blue)]" : "bg-[var(--color-surface-elevated)] border-[var(--color-border-default)] text-[var(--color-text-muted)]"}`}
+              onClick={() => {
+                const updated = { ...prefs, soundEnabled: !prefs.soundEnabled };
+                setPrefs(updated);
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+                toast.info(updated.soundEnabled ? "Sons ativados!" : "Sons desativados.");
+              }}
+              className={`p-2 rounded-lg border transition-colors cursor-pointer ${prefs.soundEnabled ? "bg-[var(--color-primary-blue)]/10 border-[var(--color-primary-blue)]/30 text-[var(--color-primary-blue)]" : "bg-[var(--color-surface-elevated)] border-[var(--color-border-default)] text-[var(--color-text-muted)]"}`}
             >
-              {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              {prefs.soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
             </button>
           </div>
         </div>
@@ -176,4 +219,3 @@ export function ConfigPreferenciasSistema() {
     </div>
   );
 }
-

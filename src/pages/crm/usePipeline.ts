@@ -118,14 +118,16 @@ export function usePipeline() {
     });
   }, []);
 
-  // Sync when settings page saves (same-tab won't fire StorageEvent, so also poll on focus)
+  // Sync when settings page saves (same-tab won't fire StorageEvent, so also poll on focus and custom event)
   useEffect(() => {
     const syncFromStorage = () => setFunisConfig(loadFunis());
     window.addEventListener("storage", syncFromStorage);
     window.addEventListener("focus", syncFromStorage);
+    window.addEventListener("axis_funis_updated", syncFromStorage);
     return () => {
       window.removeEventListener("storage", syncFromStorage);
       window.removeEventListener("focus", syncFromStorage);
+      window.removeEventListener("axis_funis_updated", syncFromStorage);
     };
   }, []);
 

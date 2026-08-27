@@ -25,7 +25,7 @@ import { BookingModal } from "./components/BookingModal";
 import { useNavigate } from "react-router-dom";
 
 export default function Pacientes() {
-  const { appointments, leads, addTask } = useData();
+  const { appointments, leads, addTask, addAppointment } = useData();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [isBookingOpen, setIsBookingOpen] = useState(false);
@@ -218,7 +218,13 @@ export default function Pacientes() {
         )}
       </div>
 
-      <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} leads={leads} addTask={addTask} />
+      <BookingModal 
+        isOpen={isBookingOpen} 
+        onClose={() => setIsBookingOpen(false)} 
+        leads={leads} 
+        addTask={addTask} 
+        addAppointment={addAppointment} 
+      />
     </PageContainer>
   );
 }

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
-import { Plus, GripVertical, Pencil, Trash2, Save, Columns3, BookOpen, CheckSquare, Zap } from "lucide-react";
+import { Plus, GripVertical, Pencil, Trash2, Save, Columns3, BookOpen, CheckSquare, Zap, Code2 } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "../../../contexts/DataContext";
 import {
@@ -48,23 +48,23 @@ function ColCard({
 
   return (
     <div
-      className="flex-shrink-0 w-[200px] rounded-2xl border border-white/10 bg-[var(--color-surface)] flex flex-col relative"
+      className="flex-shrink-0 w-[200px] rounded-2xl border border-[var(--color-border-default)] bg-[var(--color-surface-elevated)] flex flex-col relative shadow-sm"
       style={{ borderTop: `4px solid ${topColor}` }}
     >
       <div className="p-3 flex-1">
         <div className="flex items-center justify-between mb-2">
           <span
             {...(dragHandleProps ?? {})}
-            className="cursor-grab active:cursor-grabbing p-0.5 rounded text-slate-600 hover:text-slate-400 transition-colors"
+            className="cursor-grab active:cursor-grabbing p-0.5 rounded text-[var(--color-text-faint)] hover:text-[var(--color-text-primary)] transition-colors"
           >
             <GripVertical className="w-4 h-4" />
           </span>
           <div className="flex items-center gap-1">
-            <button onClick={() => setEditing(true)} className="p-1 text-slate-500 hover:text-slate-300 transition-colors rounded">
+            <button onClick={() => setEditing(true)} className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors rounded border-none bg-transparent cursor-pointer">
               <Pencil className="w-3 h-3" />
             </button>
             {canDelete && (
-              <button onClick={onDelete} className="p-1 text-slate-500 hover:text-rose-400 transition-colors rounded">
+              <button onClick={onDelete} className="p-1 text-[var(--color-text-muted)] hover:text-rose-500 transition-colors rounded border-none bg-transparent cursor-pointer">
                 <Trash2 className="w-3 h-3" />
               </button>
             )}
@@ -75,19 +75,19 @@ function ColCard({
           <div className="relative flex-shrink-0 z-20">
             <button
               onClick={() => setShowPicker(v => !v)}
-              className="w-3 h-3 rounded-full transition-all hover:ring-2 hover:ring-white/30"
+              className="w-3.5 h-3.5 rounded-full transition-all hover:ring-2 hover:ring-[var(--color-primary-blue)]/50 cursor-pointer border-none"
               style={{ backgroundColor: dotColor }}
             />
             {showPicker && (
-              <div className="absolute top-5 left-0 z-[100] p-2 bg-[var(--color-surface-elevated)] border border-white/10 rounded-xl shadow-2xl grid grid-cols-5 gap-1.5 w-[116px]">
+              <div className="absolute top-5 left-0 z-[100] p-2 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl shadow-2xl grid grid-cols-5 gap-1.5 w-[120px]">
                 {CORES_LISTA.map(cor => (
                   <button
                     key={cor}
                     onClick={() => { onColorChange(cor); setShowPicker(false); }}
-                    className="w-5 h-5 rounded-full transition-transform hover:scale-110 border-2"
+                    className="w-5 h-5 rounded-full transition-transform hover:scale-110 border-2 cursor-pointer"
                     style={{
                       backgroundColor: KANBAN_COR_DOT[cor],
-                      borderColor: col.cor === cor ? "#fff" : "transparent",
+                      borderColor: col.cor === cor ? "var(--color-primary-blue)" : "transparent",
                     }}
                   />
                 ))}
@@ -101,76 +101,78 @@ function ColCard({
               value={nome}
               onChange={e => setNome(e.target.value)}
               onBlur={save}
-              onKeyDown={e => {
-                if (e.key === "Enter") save();
-                if (e.key === "Escape") { setNome(col.nome); setEditing(false); }
-              }}
-              className="text-xs font-bold bg-transparent border-b border-blue-500 text-white outline-none flex-1 min-w-0"
+              onKeyDown={e => { if (e.key === "Enter") save(); if (e.key === "Escape") setEditing(false); }}
+              className="text-xs font-bold bg-[var(--color-surface-sunken)] border border-[var(--color-primary-blue)] rounded px-1.5 py-0.5 text-[var(--color-text-primary)] w-full outline-none"
             />
           ) : (
-            <button
+            <span
               onClick={() => setEditing(true)}
-              className="text-xs font-bold text-white truncate text-left hover:text-blue-300 transition-colors flex-1 min-w-0"
+              className="text-xs font-bold text-[var(--color-text-primary)] cursor-pointer truncate hover:text-[var(--color-primary-blue)] transition-colors"
+              title="Clique para renomear"
             >
               {col.nome}
-            </button>
+            </span>
           )}
         </div>
-
-        <div className="space-y-1.5">
-          {[1, 2, 3].map(i => (
-            <div key={i} className="h-8 rounded-lg bg-white/[0.04] border border-white/5" />
-          ))}
-        </div>
       </div>
 
-      <div className="border-t border-white/5 px-3 py-2.5 flex items-center justify-between">
-        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Minimizado</span>
-        <button
-          onClick={() => onUpdate({ iniciarMinimizado: !col.iniciarMinimizado })}
-          className={`relative w-8 h-4 rounded-full transition-colors ${col.iniciarMinimizado ? "bg-blue-500" : "bg-white/10"}`}
-        >
-          <div className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all ${col.iniciarMinimizado ? "left-[18px]" : "left-0.5"}`} />
-        </button>
-      </div>
-      <div className="px-3 pb-2.5">
-        <span className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">Coluna {idx + 1}</span>
+      <div className="p-2 border-t border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)] flex items-center justify-between text-[10px] text-[var(--color-text-muted)]">
+        <span className="font-mono">#{idx + 1}</span>
+        <span className="capitalize font-bold">{col.cor}</span>
       </div>
     </div>
   );
 }
 
-// ─── Board types ──────────────────────────────────────────────────────────────
+// ─── Board Configs ────────────────────────────────────────────────────────────
 
 type BoardKey = 'marketing' | 'educacao' | 'tarefas' | 'sprint';
 
-const BOARDS: { key: BoardKey; label: string; icon: React.ReactNode; description: string; canAddRemove: boolean }[] = [
+interface BoardDef {
+  key: BoardKey;
+  label: string;
+  icon: React.ReactNode;
+  description: string;
+  storageKey: string;
+  defaults: KanbanColConfig[];
+  canAddRemove: boolean;
+}
+
+const BOARDS: BoardDef[] = [
   {
     key: 'marketing',
-    label: 'Marketing Conteúdo',
+    label: 'Marketing / Conteúdo',
     icon: <Zap className="w-4 h-4" />,
-    description: 'Quadro kanban da página de gestão de pautas e conteúdo de marketing.',
+    description: 'Etapas de produção e publicação de campanhas e criativos.',
+    storageKey: KANBAN_KEYS.marketing,
+    defaults: KANBAN_DEFAULTS[KANBAN_KEYS.marketing],
+    canAddRemove: true,
+  },
+  {
+    key: 'tarefas',
+    label: 'Tarefas / Produtividade',
+    icon: <CheckSquare className="w-4 h-4" />,
+    description: 'Fluxo operacional de tarefas internas e follow-ups.',
+    storageKey: KANBAN_KEYS.tarefas,
+    defaults: KANBAN_DEFAULTS[KANBAN_KEYS.tarefas],
     canAddRemove: true,
   },
   {
     key: 'educacao',
-    label: 'Conteúdo Educacional',
+    label: 'Educação / Conteúdos',
     icon: <BookOpen className="w-4 h-4" />,
-    description: 'Quadro kanban do repositório de materiais educacionais.',
-    canAddRemove: false,
-  },
-  {
-    key: 'tarefas',
-    label: 'Tarefas',
-    icon: <CheckSquare className="w-4 h-4" />,
-    description: 'Quadro kanban da página de tarefas operacionais.',
-    canAddRemove: false,
+    description: 'Status de acompanhamento e publicação dos conteúdos pedagógicos.',
+    storageKey: KANBAN_KEYS.educacao,
+    defaults: KANBAN_DEFAULTS[KANBAN_KEYS.educacao],
+    canAddRemove: true,
   },
   {
     key: 'sprint',
-    label: 'Sprint (Dev)',
-    icon: <Columns3 className="w-4 h-4" />,
-    description: 'Quadro kanban do painel de sprints de desenvolvimento.',
+    label: 'Desenvolvimento / Sprint',
+    icon: <Code2 className="w-4 h-4" />,
+    description: 'Quadro ágil para tracking de demandas técnicas e engenharia.',
+    storageKey: KANBAN_KEYS.sprint,
+    defaults: KANBAN_DEFAULTS[KANBAN_KEYS.sprint],
     canAddRemove: true,
   },
 ];
@@ -179,79 +181,82 @@ const BOARDS: { key: BoardKey; label: string; icon: React.ReactNode; description
 
 function BoardEditor({ boardKey, canAddRemove }: { boardKey: BoardKey; canAddRemove: boolean }) {
   const { saveAppSetting } = useData();
-  const storageKey = KANBAN_KEYS[boardKey];
-
-  const [cols, setCols] = useState<KanbanColConfig[]>(() => readKanbanConfig(storageKey));
+  const [cols, setCols] = useState<KanbanColConfig[]>(() => readKanbanConfig(boardKey));
   const [saving, setSaving] = useState(false);
-
-  const persist = (next: KanbanColConfig[]) => setCols(next);
-
-  const handleSave = async () => {
-    setSaving(true);
-    writeKanbanConfig(storageKey, cols);
-    try { await saveAppSetting(storageKey, cols); } catch { }
-    setSaving(false);
-    toast.success("Configuração do kanban salva!");
-  };
-
-  const handleReset = () => {
-    const defaults = KANBAN_DEFAULTS[storageKey] ?? [];
-    setCols(defaults);
-    toast.info("Colunas redefinidas para o padrão.");
-  };
-
-  const handleRename = (idx: number, nome: string) => {
-    persist(cols.map((c, i) => i === idx ? { ...c, nome } : c));
-  };
-
-  const handleColorChange = (idx: number, cor: string) => {
-    persist(cols.map((c, i) => i === idx ? { ...c, cor } : c));
-  };
-
-  const handleUpdate = (idx: number, patch: Partial<KanbanColConfig>) => {
-    persist(cols.map((c, i) => i === idx ? { ...c, ...patch } : c));
-  };
-
-  const handleDelete = (idx: number) => {
-    persist(cols.filter((_, i) => i !== idx));
-  };
-
-  const handleAdd = () => {
-    const newId = `col_${Date.now()}`;
-    const newCol: KanbanColConfig = {
-      id: newId,
-      nome: `Nova Coluna ${cols.length + 1}`,
-      cor: CORES_LISTA[cols.length % CORES_LISTA.length],
-      iniciarMinimizado: false,
-    };
-    persist([...cols, newCol]);
-  };
+  const [dirty, setDirty] = useState(false);
 
   const onDragEnd = (result: DropResult) => {
     if (!result.destination) return;
-    const next = [...cols];
-    const [removed] = next.splice(result.source.index, 1);
-    next.splice(result.destination.index, 0, removed);
-    persist(next);
+    const items = Array.from(cols);
+    const [reordered] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reordered);
+    setCols(items);
+    setDirty(true);
+  };
+
+  const handleRename = (idx: number, nome: string) => {
+    setCols(cols.map((c, i) => i === idx ? { ...c, nome } : c));
+    setDirty(true);
+  };
+
+  const handleColorChange = (idx: number, cor: string) => {
+    setCols(cols.map((c, i) => i === idx ? { ...c, cor } : c));
+    setDirty(true);
+  };
+
+  const handleUpdate = (idx: number, patch: Partial<KanbanColConfig>) => {
+    setCols(cols.map((c, i) => i === idx ? { ...c, ...patch } : c));
+    setDirty(true);
+  };
+
+  const handleDelete = (idx: number) => {
+    setCols(cols.filter((_, i) => i !== idx));
+    setDirty(true);
+  };
+
+  const handleAdd = () => {
+    const cor = CORES_LISTA[cols.length % CORES_LISTA.length];
+    const newCol: KanbanColConfig = {
+      id: `col-${Date.now()}`,
+      nome: `Nova Coluna ${cols.length + 1}`,
+      cor,
+      iniciarMinimizado: false,
+    };
+    setCols([...cols, newCol]);
+    setDirty(true);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    writeKanbanConfig(boardKey, cols);
+    try {
+      await saveAppSetting(KANBAN_KEYS[boardKey], cols);
+    } catch {}
+    setSaving(false);
+    setDirty(false);
+    toast.success("Estrutura do Kanban salva com sucesso!");
+  };
+
+  const handleReset = () => {
+    const def = KANBAN_DEFAULTS[KANBAN_KEYS[boardKey]];
+    setCols(def);
+    setDirty(true);
+    toast.info("Configuração padrão restaurada (não se esqueça de salvar).");
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          {canAddRemove && (
-            <Button 
-              onClick={handleAdd} 
-              variant="outline"
-              className="text-[10px] font-black uppercase tracking-wider h-9 px-4 gap-2 border-[var(--color-border-default)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] shadow-none"
-            >
-              <Plus className="w-3.5 h-3.5" /> Adicionar Coluna
-            </Button>
+          {dirty && (
+            <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
+              Alterações não salvas
+            </span>
           )}
           <button
             type="button"
             onClick={handleReset}
-            className="text-[10px] font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors uppercase tracking-wider cursor-pointer"
+            className="text-[10px] font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors uppercase tracking-wider cursor-pointer border-none bg-transparent"
           >
             Redefinir padrão
           </button>
@@ -259,7 +264,7 @@ function BoardEditor({ boardKey, canAddRemove }: { boardKey: BoardKey; canAddRem
         <Button
           onClick={handleSave}
           disabled={saving}
-          className="h-9 px-5 gap-2 text-[10px] font-black uppercase tracking-wider shadow-xs"
+          className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
         >
           <Save className="w-3.5 h-3.5" />
           {saving ? "Salvando..." : "Salvar Alterações"}
@@ -302,10 +307,10 @@ function BoardEditor({ boardKey, canAddRemove }: { boardKey: BoardKey; canAddRem
                 {canAddRemove && (
                   <button
                     onClick={handleAdd}
-                    className="flex-shrink-0 w-[200px] rounded-2xl border border-dashed border-white/10 bg-transparent flex flex-col items-center justify-center min-h-[220px] gap-2 text-slate-600 hover:text-slate-400 hover:border-white/20 transition-all"
+                    className="flex-shrink-0 w-[200px] rounded-2xl border border-dashed border-[var(--color-border-default)] bg-[var(--color-surface-sunken)] flex flex-col items-center justify-center min-h-[220px] gap-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:border-[var(--color-primary-blue)] transition-all cursor-pointer"
                   >
                     <Plus className="w-6 h-6" />
-                    <span className="text-[9px] font-black uppercase tracking-widest">Adicionar Coluna</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider">Adicionar Coluna</span>
                   </button>
                 )}
               </div>
@@ -315,7 +320,7 @@ function BoardEditor({ boardKey, canAddRemove }: { boardKey: BoardKey; canAddRem
       </div>
 
       {!canAddRemove && (
-        <p className="text-[10px] text-slate-600 font-bold uppercase tracking-widest">
+        <p className="text-[10px] text-[var(--color-text-muted)] font-bold uppercase tracking-wider">
           * As colunas deste quadro são fixas. Você pode renomear, reordenar e alterar cores, mas não adicionar ou remover colunas.
         </p>
       )}
@@ -330,10 +335,12 @@ export function ConfigKanbanBoards() {
   const board = BOARDS.find(b => b.key === activeBoard)!;
 
   return (
-    <div className="max-w-5xl space-y-6">
+    <div className="max-w-5xl space-y-6 animate-in fade-in duration-300 pb-12">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Funis / Kanbans</h1>
-        <p className="text-sm text-slate-400">Configure as colunas dos quadros kanban de cada módulo da plataforma.</p>
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)] flex items-center gap-2">
+          Funis & Quadros Kanban <Columns3 className="w-5 h-5 text-[var(--color-primary-blue)]" />
+        </h1>
+        <p className="text-sm text-[var(--color-text-muted)]">Personalize as colunas, cores e etapas dos quadros de tarefas, marketing e educação da plataforma.</p>
       </div>
 
       {/* Board Tabs */}
@@ -342,10 +349,10 @@ export function ConfigKanbanBoards() {
           <button
             key={b.key}
             onClick={() => setActiveBoard(b.key)}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-[10px] font-black uppercase tracking-widest transition-all ${
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
               activeBoard === b.key
-                ? "bg-blue-600/10 border-blue-500/40 text-blue-400"
-                : "bg-white/[0.02] border-white/10 text-slate-400 hover:text-white hover:border-white/20"
+                ? "bg-[var(--color-primary-blue)] !text-white border-[var(--color-primary-blue)] shadow-xs"
+                : "bg-[var(--color-surface-elevated)] border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
             }`}
           >
             {b.icon}
@@ -355,14 +362,14 @@ export function ConfigKanbanBoards() {
       </div>
 
       {/* Active Board Card */}
-      <Card className="bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 p-6 space-y-5">
-        <div className="flex items-center gap-3 pb-4 border-b border-white/5">
-          <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+      <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] p-6 space-y-5 shadow-sm">
+        <div className="flex items-center gap-3 pb-4 border-b border-[var(--color-border-subtle)]">
+          <div className="w-9 h-9 rounded-xl bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] flex items-center justify-center shrink-0">
             {board.icon}
           </div>
           <div>
-            <div className="font-black text-white text-sm uppercase tracking-tight">{board.label}</div>
-            <div className="text-[10px] text-slate-500 mt-0.5">{board.description}</div>
+            <div className="font-bold text-[var(--color-text-primary)] text-sm">{board.label}</div>
+            <div className="text-xs text-[var(--color-text-muted)] mt-0.5">{board.description}</div>
           </div>
         </div>
 

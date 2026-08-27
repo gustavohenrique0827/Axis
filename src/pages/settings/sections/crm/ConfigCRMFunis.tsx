@@ -33,6 +33,7 @@ export function ConfigCRMFunis() {
   const persistFunis = async (next: Funil[]) => {
     setFunis(next);
     localStorage.setItem("axis_funis_config", JSON.stringify(next));
+    window.dispatchEvent(new Event("axis_funis_updated"));
     try { await saveAppSetting("axis_funis_config", next); } catch { }
   };
 

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from "motion/react";
-import { X, Search, ChevronDown, Check, Calendar } from 'lucide-react';
+import { X, Search, ChevronDown, Check, Calendar, UserPlus } from 'lucide-react';
 import { Button } from "../../../components/ui/button";
 import { toast } from "sonner";
 
@@ -9,16 +9,17 @@ interface BookingModalProps {
   onClose: () => void;
   leads: any[];
   addTask: (task: any) => void;
+  addAppointment?: (apt: any) => void;
 }
 
 const doctors = [
   { id: '1', name: 'Dr. Ricardo Silva', bio: 'Cardiologia Avançada', specialty: 'Cardiologia' },
   { id: '2', name: 'Dra. Marina Costa', bio: 'Dermatologia Clínica', specialty: 'Dermatologia' },
   { id: '3', name: 'Dr. Pedro Santos', bio: 'Ginecologia e Obstetrícia', specialty: 'Ginecologia' },
-  { id: '4', name: 'Dra. Elena Ramos', bio: 'Pediatria e Hebiatria', specialty: 'Ginecologia' },
+  { id: '4', name: 'Dra. Elena Ramos', bio: 'Pediatria e Hebiatria', specialty: 'Pediatria' },
 ];
 
-export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalProps) {
+export function BookingModal({ isOpen, onClose, leads, addTask, addAppointment }: BookingModalProps) {
   // Booking Form State
   const [searchPatient, setSearchPatient] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
@@ -36,27 +37,48 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
   }, [leads, searchPatient]);
 
   const selectedPatient = leads.find(l => l.id === selectedPatientId);
+  const patientName = selectedPatient?.name || (searchPatient.trim().length > 0 ? searchPatient.trim() : '');
 
   const handleBooking = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedPatientId || !selectedDoctorId || !bookingDate || !bookingTime) {
+    if (!patientName) {
+      toast.error('Informe ou selecione o nome do paciente.');
+      return;
+    }
+    if (!selectedDoctorId || !bookingDate || !bookingTime) {
       toast.error('Preencha todos os campos obrigatórios.');
       return;
     }
 
     const doctor = doctors.find(d => d.id === selectedDoctorId);
+    const specialty = selectedSpecialty || doctor?.specialty || 'Clínica Geral';
 
     addTask({
-      title: `Consulta: ${selectedSpecialty} - ${doctor?.name}`,
-      related: selectedPatient?.name || 'Paciente Externo',
+      title: `Consulta: ${specialty} - ${doctor?.name || 'Médico'}`,
+      related: patientName,
       type: 'Consulta',
       date: `${bookingDate}, ${bookingTime}`,
       status: 'Em Aberto',
       priority: 'Alta',
-      tags: ['Clínica', selectedSpecialty]
+      tags: ['Clínica', specialty]
     });
 
-    toast.success('Consulta agendada com sucesso!');
+    if (addAppointment) {
+      addAppointment({
+        time: bookingTime,
+        patient: patientName,
+        phone: (selectedPatient as any)?.phone || '(11) 98888-0000',
+        drId: doctor?.id || '1',
+        drName: doctor?.name || 'Dr. Ricardo Silva',
+        status: 'Confirmado',
+        type: 'Consulta',
+        room: 'Consultório 01',
+        specialty: specialty,
+        date: bookingDate
+      });
+    }
+
+    toast.success(`Consulta agendada para ${patientName}!`);
     onClose();
     resetForm();
   };
@@ -96,11 +118,11 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
                     <Calendar className="w-4 h-4" />
                   </div>
                   <div>
-                    <h2 className="text-base font-black text-[var(--color-text-primary)] uppercase tracking-tight">
+                    <h2 className="text-base font-bold text-[var(--color-text-primary)] uppercase tracking-tight">
                       Novo Agendamento Clínico
                     </h2>
-                    <p className="text-[10px] text-[var(--color-text-muted)] font-medium">
-                      Agende consultas e procedimentos médicos
+                    <p className="text-xs text-[var(--color-text-muted)]">
+                      Cadastre uma nova consulta ou atendimento.
                     </p>
                   </div>
                 </div>
@@ -128,7 +150,7 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
                         type="text"
                         value={searchPatient}
                         onChange={(e) => setSearchPatient(e.target.value)}
-                        placeholder="Buscar por nome ou e-mail do paciente..."
+                        placeholder="Digite o nome ou busque um paciente cadastrado..."
                         className="w-full h-10 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] pl-10 pr-4 text-xs font-medium text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] transition-all"
                       />
                       {filteredPatients.length > 0 && (
@@ -141,9 +163,9 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
                                 setSelectedPatientId(p.id);
                                 setSearchPatient('');
                               }}
-                              className="w-full p-3 hover:bg-[var(--color-surface-sunken)] flex items-center justify-between transition-colors cursor-pointer border-none bg-transparent"
+                              className="w-full p-3 hover:bg-[var(--color-surface-sunken)] flex items-center justify-between transition-colors cursor-pointer border-none bg-transparent text-left"
                             >
-                              <div className="text-left">
+                              <div>
                                 <p className="text-xs font-bold text-[var(--color-text-primary)]">{p.name}</p>
                                 <p className="text-[10px] text-[var(--color-text-muted)]">{p.email || p.phone}</p>
                               </div>
@@ -154,7 +176,7 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
                       )}
                     </>
                   ) : (
-                    <div className="flex items-center justify-between p-3 bg-[var(--color-primary-blue)]/5 border border-[var(--color-primary-blue)]/20 rounded-[var(--radius-control)]">
+                    <div className="flex items-center justify-between p-3 bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/20 rounded-[var(--radius-control)]">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-[var(--color-primary-blue)] flex items-center justify-center text-white font-bold text-xs">
                           {selectedPatient?.name[0]}
@@ -184,10 +206,14 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
                   </label>
                   <select
                     value={selectedSpecialty}
-                    onChange={(e) => setSelectedSpecialty(e.target.value)}
-                    className="w-full h-10 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] cursor-pointer"
+                    onChange={(e) => {
+                      setSelectedSpecialty(e.target.value);
+                      const matched = doctors.find(d => d.specialty === e.target.value);
+                      if (matched) setSelectedDoctorId(matched.id);
+                    }}
+                    className="w-full h-10 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 text-xs font-medium text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                   >
-                    <option value="">Selecione...</option>
+                    <option value="">Selecione a Especialidade</option>
                     <option value="Cardiologia">Cardiologia</option>
                     <option value="Dermatologia">Dermatologia</option>
                     <option value="Ginecologia">Ginecologia</option>
@@ -197,16 +223,17 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
 
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-[var(--color-text-primary)]">
-                    Médico Responsável <span className="text-rose-500">*</span>
+                    Médico / Especialista <span className="text-rose-500">*</span>
                   </label>
                   <select
                     value={selectedDoctorId}
                     onChange={(e) => setSelectedDoctorId(e.target.value)}
-                    className="w-full h-10 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] cursor-pointer"
+                    className="w-full h-10 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 text-xs font-medium text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
+                    required
                   >
-                    <option value="">Selecione...</option>
-                    {doctors.filter(d => !selectedSpecialty || d.specialty === selectedSpecialty).map(d => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
+                    <option value="">Selecione o Médico</option>
+                    {doctors.map(d => (
+                      <option key={d.id} value={d.id}>{d.name} ({d.specialty})</option>
                     ))}
                   </select>
                 </div>
@@ -222,7 +249,8 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
                     type="date"
                     value={bookingDate}
                     onChange={(e) => setBookingDate(e.target.value)}
-                    className="w-full h-10 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 text-xs font-medium text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] cursor-pointer"
+                    className="w-full h-10 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 text-xs font-medium text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
+                    required
                   />
                 </div>
 
@@ -234,17 +262,26 @@ export function BookingModal({ isOpen, onClose, leads, addTask }: BookingModalPr
                     type="time"
                     value={bookingTime}
                     onChange={(e) => setBookingTime(e.target.value)}
-                    className="w-full h-10 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 text-xs font-medium text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] cursor-pointer"
+                    className="w-full h-10 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 text-xs font-medium text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-mono"
+                    required
                   />
                 </div>
               </div>
 
-              <div className="pt-3">
+              <div className="pt-4 border-t border-[var(--color-border-subtle)] flex items-center justify-end gap-2.5">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={onClose}
+                  className="h-10 px-4 text-xs font-bold"
+                >
+                  Cancelar
+                </Button>
                 <Button
                   type="submit"
-                  className="w-full h-11 font-bold text-xs uppercase tracking-wider gap-2 shadow-xs"
+                  className="h-10 px-5 text-xs font-bold shadow-xs gap-1.5"
                 >
-                  Confirmar Agendamento <Check className="w-4 h-4" />
+                  <Check className="w-4 h-4" /> Confirmar Agendamento
                 </Button>
               </div>
             </form>

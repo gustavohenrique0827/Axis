@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Edit2, Trash2, Sliders } from "lucide-react";
 import { useData } from "../../../../contexts/DataContext";
 import { NovoCampoCRMModal } from "../../../../components/ui/modals/crm/NovoCampoCRMModal";
+import { toast } from "sonner";
 
 export function ConfigCRMCampos() {
   const { customLeadFields, setCustomLeadFields } = useData();
@@ -13,49 +14,83 @@ export function ConfigCRMCampos() {
   const handleSave = (field: any) => {
     if (editingField) {
       setCustomLeadFields(customLeadFields.map(f => f.id === editingField.id ? { ...field, id: editingField.id } : f));
+      toast.success(`Campo "${field.name}" atualizado!`);
     } else {
-      setCustomLeadFields([...customLeadFields, { ...field, id: Math.random().toString(36).substr(2, 9) }]);
+      const newField = { ...field, id: Math.random().toString(36).substring(2, 9) };
+      setCustomLeadFields([...customLeadFields, newField]);
+      toast.success(`Campo "${field.name}" criado com sucesso!`);
     }
     setIsModalOpen(false);
     setEditingField(null);
   };
 
+  const handleDelete = (id: string, name: string) => {
+    setCustomLeadFields(customLeadFields.filter(f => f.id !== id));
+    toast.success(`Campo "${name}" removido.`);
+  };
+
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl space-y-6 animate-in fade-in duration-300 pb-12">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Campos Personalizados (CRM)</h1>
-          <p className="text-sm text-slate-400">Defina campos adicionais e validações para seus leads.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)] flex items-center gap-2">
+            Campos Personalizados (CRM) <Sliders className="w-5 h-5 text-[var(--color-primary-blue)]" />
+          </h1>
+          <p className="text-sm text-[var(--color-text-muted)]">Defina campos adicionais, tipos de dados e regras de validação para os leads.</p>
         </div>
         <Button
           onClick={() => { setEditingField(null); setIsModalOpen(true); }}
-          className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 shadow-lg shadow-blue-500/20"
+          className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
         >
-          <Plus className="w-4 h-4 mr-2" /> Novo Campo
+          <Plus className="w-3.5 h-3.5" /> Novo Campo
         </Button>
       </div>
 
-      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
+      <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
         <div className="space-y-3">
           {customLeadFields.map((field) => (
-            <div key={field.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-[var(--color-surface)] border border-white/5 rounded-xl group hover:border-white/10 transition-colors">
+            <div 
+              key={field.id} 
+              className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl hover:border-[var(--color-border-default)] transition-colors"
+            >
               <div className="flex flex-col">
-                <span className="font-bold text-white">{field.name}</span>
-                <div className="flex gap-4 mt-0.5">
-                  <span className="text-xs text-slate-500 font-mono">Tipo: {field.type}</span>
-                  {field.validationRegex && <span className="text-xs text-slate-500 font-mono italic">Regex: {field.validationRegex}</span>}
+                <span className="font-bold text-xs text-[var(--color-text-primary)]">{field.name}</span>
+                <div className="flex items-center gap-3 mt-1">
+                  <span className="text-[10px] text-[var(--color-text-muted)] font-mono uppercase bg-[var(--color-surface)] px-2 py-0.5 rounded border border-[var(--color-border-subtle)]">
+                    Tipo: {field.type}
+                  </span>
+                  {field.validationRegex && (
+                    <span className="text-[10px] text-[var(--color-text-faint)] font-mono italic">
+                      Regex: {field.validationRegex}
+                    </span>
+                  )}
                 </div>
               </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-slate-400 hover:text-white group-hover:opacity-100 opacity-0"
-                onClick={() => { setEditingField(field); setIsModalOpen(true); }}
-              >
-                Editar
-              </Button>
+              <div className="flex items-center gap-2 self-end sm:self-center">
+                <Button
+                  variant="outline"
+                  size="xs"
+                  className="h-8 px-2.5 text-xs font-bold"
+                  onClick={() => { setEditingField(field); setIsModalOpen(true); }}
+                >
+                  <Edit2 className="w-3 h-3 mr-1" /> Editar
+                </Button>
+                <Button
+                  variant="danger"
+                  size="xs"
+                  className="h-8 px-2.5 text-xs font-bold"
+                  onClick={() => handleDelete(field.id, field.name)}
+                >
+                  <Trash2 className="w-3 h-3 mr-1" /> Excluir
+                </Button>
+              </div>
             </div>
           ))}
+          {customLeadFields.length === 0 && (
+            <div className="text-center py-10 text-xs text-[var(--color-text-muted)]">
+              Nenhum campo personalizado cadastrado.
+            </div>
+          )}
         </div>
       </Card>
 

@@ -24,7 +24,7 @@ type Appointment = {
 };
 
 export default function AgendaClinica() {
-  const { appointments, addAppointment, squads, leads, addTask } = useData();
+  const { appointments, addAppointment, updateAppointment, deleteAppointment, squads, leads, addTask } = useData();
 
   const doctors = useMemo(() => {
     if (!squads || squads.length === 0) return [];
@@ -206,8 +206,30 @@ export default function AgendaClinica() {
         </div>
       </div>
 
-      <AgendaDetailPanel selectedApt={selectedApt as Appointment | undefined} onClose={() => setSelectedAptId(null)} />
-      <BookingModal isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} leads={leads} addTask={addTask} />
+      <AgendaDetailPanel 
+        selectedApt={selectedApt as Appointment | undefined} 
+        onClose={() => setSelectedAptId(null)}
+        onUpdateStatus={(status) => {
+          if (selectedAptId) {
+            updateAppointment(selectedAptId, { status });
+            toast.success(`Status atualizado para ${status}!`);
+          }
+        }}
+        onDelete={() => {
+          if (selectedAptId) {
+            deleteAppointment(selectedAptId);
+            setSelectedAptId(null);
+            toast.success("Agendamento cancelado com sucesso!");
+          }
+        }}
+      />
+      <BookingModal 
+        isOpen={isBookingOpen} 
+        onClose={() => setIsBookingOpen(false)} 
+        leads={leads} 
+        addTask={addTask} 
+        addAppointment={addAppointment} 
+      />
     </PageContainer>
   );
 }

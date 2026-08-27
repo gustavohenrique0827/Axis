@@ -41,6 +41,13 @@ function saveLocalConfig(config: { closers: CloserConfig[]; global: GlobalConfig
   localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
 }
 
+const DEFAULT_CLOSERS: CloserConfig[] = [
+  { name: "Lucas Martins", email: "lucas.martins@axis.com", active: true, leadTypes: LEAD_TYPES_DEFAULT, blocked: false },
+  { name: "Mariana Rios", email: "mariana.rios@axis.com", active: true, leadTypes: LEAD_TYPES_DEFAULT, blocked: false },
+  { name: "Carlos Mendes", email: "carlos.mendes@axis.com", active: true, leadTypes: LEAD_TYPES_DEFAULT, blocked: false },
+  { name: "Fernanda Lima", email: "fernanda.lima@axis.com", active: true, leadTypes: LEAD_TYPES_DEFAULT, blocked: false },
+];
+
 export function TabClosersCRM() {
   const [closers, setClosers] = useState<CloserConfig[]>([]);
   const [global, setGlobal] = useState<GlobalConfig>({ distributionMode: "round-robin", blockOnMultipleClients: false, multiClientThreshold: 2 });
@@ -60,7 +67,9 @@ export function TabClosersCRM() {
         const existing = saved.closers.find(c => c.name === db.name);
         return existing ?? { name: db.name, email: db.email, active: true, leadTypes: LEAD_TYPES_DEFAULT, blocked: false };
       });
-      setClosers(merged.length > 0 ? merged : saved.closers);
+      const resolved = merged.length > 0 ? merged : (saved.closers.length > 0 ? saved.closers : DEFAULT_CLOSERS);
+      setClosers(resolved);
+      saveLocalConfig({ closers: resolved, global: saved.global });
       setLoading(false);
     }
     init();

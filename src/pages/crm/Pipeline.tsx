@@ -26,7 +26,25 @@ const tempOrder: Record<string, number> = { quente: 3, morno: 2, frio: 1 };
 
 export default function Pipeline() {
   const navigate = useNavigate();
-  const [view, setView] = useState<ViewMode>("kanban");
+  const [view, setView] = useState<ViewMode>(() => {
+    try {
+      const prefs = localStorage.getItem("axis_system_preferences");
+      if (prefs) {
+        const parsed = JSON.parse(prefs);
+        if (parsed.defaultCrmView === "list") return "lista";
+        if (parsed.defaultCrmView === "kanban") return "kanban";
+      }
+      const savedView = localStorage.getItem("axis_pipeline_view");
+      if (savedView === "kanban" || savedView === "lista") return savedView;
+    } catch {}
+    return "kanban";
+  });
+
+  const handleSetView = (v: ViewMode) => {
+    setView(v);
+    localStorage.setItem("axis_pipeline_view", v);
+  };
+
   const [minimizedColumns, setMinimizedColumns] = useState<Set<string>>(new Set());
   const [temperatureFilter, setTemperatureFilter] = useState("Todas");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
@@ -126,7 +144,7 @@ export default function Pipeline() {
       actions={
         <PipelineTopActions
           view={view}
-          setView={setView}
+          setView={handleSetView}
           showAnalytics={showAnalytics}
           setShowAnalytics={setShowAnalytics}
           onNewLead={checkCapacityAndOpenModal}

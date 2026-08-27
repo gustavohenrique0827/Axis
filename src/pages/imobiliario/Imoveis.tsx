@@ -322,9 +322,75 @@ function ImovelDetailDrawer({ im, onClose, onEdit, onDelete }: {
   );
 }
 
+const STORAGE_KEY = "axis_imobiliario_imoveis";
+
+const DEFAULT_IMOVEIS: Imovel[] = [
+  {
+    id: "1",
+    titulo: "Apartamento de Alto Padrão - Jardins",
+    tipo: "Apartamento",
+    operacao: "Venda",
+    status: "Disponível",
+    valor: 2450000,
+    bairro: "Jardins",
+    cidade: "São Paulo",
+    area: 185,
+    quartos: 3,
+    banheiros: 4,
+    vagas: 3,
+    corretor: "Lucas Martins",
+    visitas: 14,
+    descricao: "Apartamento com vista panorâmica, varanda gourmet integrada e acabamento em mármore.",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "2",
+    titulo: "Casa em Condomínio Fechado",
+    tipo: "Casa",
+    operacao: "Venda",
+    status: "Reservado",
+    valor: 3800000,
+    bairro: "Alphaville",
+    cidade: "Barueri",
+    area: 420,
+    quartos: 4,
+    banheiros: 5,
+    vagas: 4,
+    corretor: "Mariana Rios",
+    visitas: 28,
+    descricao: "Casa sustentável com energia solar fotovoltaica, piscina aquecida e área gourmet completa.",
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: "3",
+    titulo: "Conjunto Comercial Faria Lima",
+    tipo: "Comercial",
+    operacao: "Locação",
+    status: "Disponível",
+    valor: 18500,
+    bairro: "Itaim Bibi",
+    cidade: "São Paulo",
+    area: 210,
+    quartos: 0,
+    banheiros: 3,
+    vagas: 5,
+    corretor: "Carlos Mendes",
+    visitas: 9,
+    descricao: "Laje corporativa pronta para ocupação, piso elevado, gerador para área privativa e 5 vagas.",
+    created_at: new Date().toISOString(),
+  },
+];
+
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function Imoveis() {
-  const [imoveis, setImoveis] = useState<Imovel[]>([]);
+  const [imoveis, setImoveis] = useState<Imovel[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return DEFAULT_IMOVEIS;
+  });
+
   const [search, setSearch] = useState("");
   const [tipoFilter, setTipoFilter] = useState("Todos");
   const [statusFilter, setStatusFilter] = useState("Todos");
@@ -337,14 +403,16 @@ export default function Imoveis() {
   useEffect(() => {
     if (!supabase) return;
     supabase.from("imobiliario_imoveis").select("*").order("created_at", { ascending: false }).then(({ data }) => {
-      if (data) {
-        setImoveis(data.map(r => ({
+      if (data && data.length > 0) {
+        const mapped: Imovel[] = data.map(r => ({
           id: r.id, titulo: r.titulo, tipo: r.tipo, operacao: r.operacao,
           status: r.status, valor: Number(r.valor), bairro: r.bairro ?? "",
           cidade: r.cidade ?? "São Paulo", area: Number(r.area), quartos: r.quartos,
           banheiros: r.banheiros, vagas: r.vagas, corretor: r.corretor ?? "",
           visitas: r.visitas ?? 0, descricao: r.descricao ?? "", created_at: r.created_at,
-        })));
+        }));
+        setImoveis(mapped);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(mapped));
       }
     });
   }, []);
@@ -361,8 +429,12 @@ export default function Imoveis() {
 
   const handleSave = async (form: any) => {
     const novo: Imovel = { ...form, id: Date.now().toString(), visitas: 0, created_at: new Date().toISOString() };
-    setImoveis(prev => [novo, ...prev]);
-    toast.success("Imóvel cadastrado!");
+    setImoveis(prev => {
+      const updated = [novo, ...prev];
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
+    toast.success("Imóvel cadastrado com sucesso!");
     if (supabase) {
       const { error } = await supabase.from("imobiliario_imoveis").insert({ ...form, id: novo.id });
       if (error) console.error("[Supabase]", error.message);
@@ -372,9 +444,13 @@ export default function Imoveis() {
   const handleEdit = async (form: any) => {
     if (!editImovel) return;
     const updated = { ...editImovel, ...form };
-    setImoveis(prev => prev.map(i => i.id === editImovel.id ? updated : i));
+    setImoveis(prev => {
+      const next = prev.map(i => i.id === editImovel.id ? updated : i);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      return next;
+    });
     if (selectedImovel?.id === editImovel.id) setSelectedImovel(updated);
-    toast.success("Imóvel atualizado!");
+    toast.success("Imóvel atualizado com sucesso!");
     if (supabase) {
       const { error } = await supabase.from("imobiliario_imoveis").update(form).eq("id", editImovel.id);
       if (error) console.error("[Supabase]", error.message);
@@ -383,7 +459,11 @@ export default function Imoveis() {
   };
 
   const handleDelete = async (id: string) => {
-    setImoveis(prev => prev.filter(i => i.id !== id));
+    setImoveis(prev => {
+      const updated = prev.filter(i => i.id !== id);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      return updated;
+    });
     toast.success("Imóvel removido.");
     if (supabase) await supabase.from("imobiliario_imoveis").delete().eq("id", id);
   };
@@ -398,8 +478,8 @@ export default function Imoveis() {
       title="Imóveis"
       description="Gerencie o portfólio completo de imóveis disponíveis, vendidos e locados."
       actions={
-        <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 h-10 gap-2 font-bold">
-          <Plus className="w-4 h-4" /> Novo Imóvel
+        <Button onClick={() => setShowForm(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+          <Plus className="w-3.5 h-3.5" /> Novo Imóvel
         </Button>
       }
     >

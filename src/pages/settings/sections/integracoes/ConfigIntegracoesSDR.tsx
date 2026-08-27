@@ -5,15 +5,33 @@ import { Input } from "../../../../components/ui/input";
 import { FormField } from "../../../../components/ui/form-field";
 import { Switch } from "../../../../components/ui/switch";
 import { Badge } from "../../../../components/ui/badge";
-import { Zap, Send, CheckCircle2 } from "lucide-react";
+import { Zap, Send, Save, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
+const STORAGE_KEY = "axis_sdr_integrations_config";
+
+const DEFAULT_SDR_INTEGRATIONS = {
+  webhookUrl: "https://n8n.seumodelo.com/webhook/reuniao-agendada",
+  webhookActive: true,
+  leadQualificadoUrl: "https://n8n.seumodelo.com/webhook/sdr-qualificado",
+  leadQualificadoActive: true,
+};
+
 export function ConfigIntegracoesSDR() {
-  const [webhookUrl, setWebhookUrl] = useState("https://n8n.seumodelo.com/webhook/reuniao-agendada");
-  const [webhookActive, setWebhookActive] = useState(true);
-  const [leadQualificadoUrl, setLeadQualificadoUrl] = useState("https://n8n.seumodelo.com/webhook/sdr-qualificado");
-  const [leadQualificadoActive, setLeadQualificadoActive] = useState(true);
+  const [config, setConfig] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return DEFAULT_SDR_INTEGRATIONS;
+  });
+
   const [testing, setTesting] = useState(false);
+
+  const saveConfig = (updated: typeof config) => {
+    setConfig(updated);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+  };
 
   const testWebhook = (event: string) => {
     setTesting(true);
@@ -33,10 +51,20 @@ export function ConfigIntegracoesSDR() {
     );
   };
 
+  const handleSaveReuniao = () => {
+    saveConfig(config);
+    toast.success("Webhook de Reunião Agendada salvo com sucesso!");
+  };
+
+  const handleSaveQualificado = () => {
+    saveConfig(config);
+    toast.success("Webhook de Lead Qualificado salvo com sucesso!");
+  };
+
   return (
-    <div className="max-w-4xl space-y-6">
+    <div className="max-w-4xl space-y-6 animate-in fade-in duration-300 pb-12">
       <div>
-        <h1 className="text-2xl font-black tracking-tight text-[var(--color-text-primary)] flex items-center gap-2.5">
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)] flex items-center gap-2.5">
           Integrações SDR & Pré-Vendas
           <Zap className="w-5 h-5 text-purple-500" />
         </h1>
@@ -50,11 +78,11 @@ export function ConfigIntegracoesSDR() {
         <div className="p-5 border-b border-[var(--color-border-subtle)] bg-purple-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-[var(--color-text-primary)] text-base">
+              <h3 className="font-bold text-[var(--color-text-primary)] text-sm">
                 Reunião Agendada (Qualificação Concluída)
               </h3>
-              <Badge variant={webhookActive ? "purple" : "neutral"} dot dotPulse={webhookActive}>
-                {webhookActive ? "Ativo" : "Pausado"}
+              <Badge variant={config.webhookActive ? "purple" : "neutral"} dot dotPulse={config.webhookActive}>
+                {config.webhookActive ? "Ativo" : "Pausado"}
               </Badge>
             </div>
             <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
@@ -62,9 +90,9 @@ export function ConfigIntegracoesSDR() {
             </p>
           </div>
           <Switch
-            checked={webhookActive}
-            onCheckedChange={setWebhookActive}
-            label={webhookActive ? "Ativado" : "Desativado"}
+            checked={config.webhookActive}
+            onCheckedChange={(val) => saveConfig({ ...config, webhookActive: val })}
+            label={config.webhookActive ? "Ativado" : "Desativado"}
           />
         </div>
 
@@ -72,8 +100,8 @@ export function ConfigIntegracoesSDR() {
           <FormField label="Endpoint URL (POST)" required hint="URL que receberá o JSON com os dados do lead e da reunião">
             <Input
               type="url"
-              value={webhookUrl}
-              onChange={(e) => setWebhookUrl(e.target.value)}
+              value={config.webhookUrl}
+              onChange={(e) => setConfig({ ...config, webhookUrl: e.target.value })}
               placeholder="https://n8n.sua-empresa.com/webhook/..."
               className="font-mono text-xs"
             />
@@ -98,20 +126,22 @@ export function ConfigIntegracoesSDR() {
 }`}</pre>
           </div>
 
-          <div className="pt-2 flex justify-end gap-3">
+          <div className="pt-2 flex justify-end gap-2">
             <Button
+              type="button"
               variant="outline"
               onClick={() => testWebhook("sdr.reuniao_agendada")}
               loading={testing}
-              className="text-xs font-bold gap-1.5"
+              className="h-9 px-4 text-xs font-bold gap-1.5"
             >
               <Send className="w-3.5 h-3.5" /> Disparar Teste
             </Button>
             <Button
-              onClick={() => toast.success("Webhook de Reunião Agendada salvo com sucesso!")}
-              className="font-bold text-xs"
+              type="button"
+              onClick={handleSaveReuniao}
+              className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
             >
-              Salvar Webhook
+              <Save className="w-3.5 h-3.5" /> Salvar Webhook
             </Button>
           </div>
         </div>
@@ -122,11 +152,11 @@ export function ConfigIntegracoesSDR() {
         <div className="p-5 border-b border-[var(--color-border-subtle)] bg-emerald-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-[var(--color-text-primary)] text-base">
+              <h3 className="font-bold text-[var(--color-text-primary)] text-sm">
                 Lead Qualificado (Score IA Atingido)
               </h3>
-              <Badge variant={leadQualificadoActive ? "success" : "neutral"} dot dotPulse={leadQualificadoActive}>
-                {leadQualificadoActive ? "Ativo" : "Pausado"}
+              <Badge variant={config.leadQualificadoActive ? "success" : "neutral"} dot dotPulse={config.leadQualificadoActive}>
+                {config.leadQualificadoActive ? "Ativo" : "Pausado"}
               </Badge>
             </div>
             <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
@@ -134,9 +164,9 @@ export function ConfigIntegracoesSDR() {
             </p>
           </div>
           <Switch
-            checked={leadQualificadoActive}
-            onCheckedChange={setLeadQualificadoActive}
-            label={leadQualificadoActive ? "Ativado" : "Desativado"}
+            checked={config.leadQualificadoActive}
+            onCheckedChange={(val) => saveConfig({ ...config, leadQualificadoActive: val })}
+            label={config.leadQualificadoActive ? "Ativado" : "Desativado"}
           />
         </div>
 
@@ -144,8 +174,8 @@ export function ConfigIntegracoesSDR() {
           <FormField label="Endpoint URL (POST)" required hint="URL para receber leads qualificados pela Master AI">
             <Input
               type="url"
-              value={leadQualificadoUrl}
-              onChange={(e) => setLeadQualificadoUrl(e.target.value)}
+              value={config.leadQualificadoUrl}
+              onChange={(e) => setConfig({ ...config, leadQualificadoUrl: e.target.value })}
               placeholder="https://n8n.seumodelo.com/webhook/sdr-qualificado"
               className="font-mono text-xs"
             />
@@ -167,20 +197,22 @@ export function ConfigIntegracoesSDR() {
 }`}</pre>
           </div>
 
-          <div className="pt-2 flex justify-end gap-3">
+          <div className="pt-2 flex justify-end gap-2">
             <Button
+              type="button"
               variant="outline"
               onClick={() => testWebhook("sdr.lead_qualificado")}
               loading={testing}
-              className="text-xs font-bold gap-1.5"
+              className="h-9 px-4 text-xs font-bold gap-1.5"
             >
               <Send className="w-3.5 h-3.5" /> Disparar Teste
             </Button>
             <Button
-              onClick={() => toast.success("Webhook de Lead Qualificado salvo com sucesso!")}
-              className="font-bold text-xs"
+              type="button"
+              onClick={handleSaveQualificado}
+              className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
             >
-              Salvar Webhook
+              <Save className="w-3.5 h-3.5" /> Salvar Webhook
             </Button>
           </div>
         </div>
