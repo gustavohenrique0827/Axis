@@ -83,10 +83,10 @@ export default function SettingsLayout() {
       title: "Integrações",
       icon: Plug,
       items: [
-        { title: "Google, WhatsApp...", path: "/app/configuracoes/integracoes/apps" },
-        { title: "Servidores SMTP", path: "/app/configuracoes/integracoes/smtp" },
-        { title: "Webhooks & logs API", path: "/app/configuracoes/integracoes/webhooks" },
-        { title: "Webhooks do SDR", path: "/app/configuracoes/integracoes/sdr-webhooks" },
+        { title: "Central de Aplicativos & Ads", path: "/app/configuracoes/integracoes/apps" },
+        { title: "Servidores SMTP (E-mail)", path: "/app/configuracoes/integracoes/smtp" },
+        { title: "Webhooks Globais & Logs", path: "/app/configuracoes/integracoes/webhooks" },
+        { title: "Webhooks de SDR & Pré-Vendas", path: "/app/configuracoes/integracoes/sdr-webhooks" },
       ],
     },
     {

@@ -1,222 +1,364 @@
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { PageContainer } from "../../components/PageContainer";
 import { Card } from "../../components/ui/card";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, BarChart, Bar } from "recharts";
-import { Users, MousePointerClick, DollarSign, Target, ArrowUpRight, Facebook, Search, Link2, Plus, Zap, Inbox } from "lucide-react";
+import { Badge } from "../../components/ui/badge";
 import { Button } from "../../components/ui/button";
+import { EmptyState } from "../../components/ui/empty-state";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "../../components/ui/table";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+  BarChart,
+  Bar,
+} from "recharts";
+import {
+  Users,
+  MousePointerClick,
+  DollarSign,
+  Target,
+  ArrowUpRight,
+  Facebook,
+  Globe,
+  Plus,
+  Zap,
+  Inbox,
+  Settings,
+  TrendingUp,
+} from "lucide-react";
 import { useData } from "../../contexts/DataContext";
 
-const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export default function MarketingCampanhas() {
+  const navigate = useNavigate();
   const { leads, financeEntries } = useData();
-  const [metaConnected, setMetaConnected] = useState(false);
-  const [googleConnected, setGoogleConnected] = useState(false);
-  const [isConnecting, setIsConnecting] = useState(false);
+
+  // Retrieve saved integration status or local state
+  const [metaConfig, setMetaConfig] = useState(() => {
+    const saved = localStorage.getItem("axis_meta_ads_config");
+    return saved ? JSON.parse(saved) : { connected: false, pixelId: "" };
+  });
+
+  const [googleConfig, setGoogleConfig] = useState(() => {
+    const saved = localStorage.getItem("axis_google_ads_config");
+    return saved ? JSON.parse(saved) : { connected: false, measurementId: "" };
+  });
 
   // Compute real KPIs from leads data
   const totalLeads = leads.length;
-  const closedLeads = leads.filter(l => l.status === 'Fechado').length;
+  const closedLeads = leads.filter((l) => l.status === "Fechado").length;
 
   // Revenue from paid financeEntries
-  const totalRevenue = useMemo(() => 
-    financeEntries.filter(f => f.type === 'Receber' && f.status === 'Pago').reduce((s, f) => s + f.value, 0),
-  [financeEntries]);
+  const totalRevenue = useMemo(
+    () =>
+      financeEntries
+        .filter((f) => f.type === "Receber" && f.status === "Pago")
+        .reduce((s, f) => s + f.value, 0),
+    [financeEntries]
+  );
 
   // Total spent (despesas pagas)
-  const totalSpent = useMemo(() =>
-    financeEntries.filter(f => f.type === 'Pagar' && f.status === 'Pago').reduce((s, f) => s + f.value, 0),
-  [financeEntries]);
+  const totalSpent = useMemo(
+    () =>
+      financeEntries
+        .filter((f) => f.type === "Pagar" && f.status === "Pago")
+        .reduce((s, f) => s + f.value, 0),
+    [financeEntries]
+  );
 
   const cpa = totalLeads > 0 ? totalSpent / totalLeads : 0;
 
   // Leads grouped by weekday for traffic chart
   const trafficData = useMemo(() => {
-    return WEEKDAYS.map(day => {
-      const dayLeads = leads.filter(l => {
+    return WEEKDAYS.map((day) => {
+      const dayLeads = leads.filter((l) => {
         try {
-          const d = new Date(l.date || '');
+          const d = new Date(l.date || "");
           return !isNaN(d.getTime()) && WEEKDAYS[d.getDay()] === day;
-        } catch { return false; }
+        } catch {
+          return false;
+        }
       });
       return { name: day, leads: dayLeads.length, spend: 0 };
     });
   }, [leads]);
 
-  const handleConnectGoogle = () => {
-    setIsConnecting(true);
-    toast.promise(new Promise(res => setTimeout(res, 2000)), {
-      loading: 'Conectando ao Google Ads API...',
-      success: () => {
-        setGoogleConnected(true);
-        setIsConnecting(false);
-        return 'Conta Google Ads conectada com sucesso!';
-      },
-      error: 'Erro na autenticação.',
-    });
-  };
-
-  const handleDisconnect = (platform: string) => {
-    if (platform === 'meta') setMetaConnected(false);
-    if (platform === 'google') setGoogleConnected(false);
-    toast.info(`Conta ${platform} desconectada.`);
-  };
-
-  const fmt = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
+  const fmt = (n: number) =>
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+      maximumFractionDigits: 0,
+    }).format(n);
 
   return (
     <PageContainer
-      title="Gestão de Campanhas (Tráfego)"
-      subtitle="Acompanhe o ROI e performance dos seus anúncios Meta e Google."
+      title="Gestão de Campanhas & Tráfego"
+      subtitle="Acompanhe o ROI, performance de conversões e conexões ativas do Meta Ads e Google Ads."
+      actions={
+        <Button
+          onClick={() => navigate("/app/configuracoes/integracoes/apps")}
+          variant="outline"
+          className="gap-2 text-xs font-bold"
+        >
+          <Settings className="w-3.5 h-3.5" /> Central de Integrações
+        </Button>
+      }
     >
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        <Card className={`p-5 flex flex-col justify-between transition-all duration-500 ${metaConnected ? 'bg-gradient-to-br from-blue-600/20 to-[var(--color-surface-elevated)] border-blue-500/30' : 'bg-[var(--color-surface-elevated)] border-white/5 opacity-70 grayscale'}`}>
+      {/* Channels Status Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+        {/* Meta Ads Card */}
+        <Card
+          className={`p-5 flex flex-col justify-between transition-all duration-200 ${
+            metaConfig.connected
+              ? "border-[var(--color-primary-blue)]/40 shadow-sm"
+              : "opacity-90"
+          }`}
+        >
           <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${metaConnected ? 'bg-blue-500/20' : 'bg-white/10'}`}>
-                 <Facebook className={`w-5 h-5 ${metaConnected ? 'text-blue-400' : 'text-slate-500'}`} />
-              </div>
-              {metaConnected ? (
-                <span className="text-[10px] uppercase font-black tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Conectado</span>
-              ) : (
-                <span className="text-[10px] uppercase font-black tracking-widest text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/10">Desconectado</span>
-              )}
-            </div>
-            <h4 className="text-white font-bold mb-1">Meta Ads (Facebook/Insta)</h4>
-            <p className="text-xs text-slate-400">{metaConnected ? 'Conta conectada e sincronizando' : 'Nenhuma conta ativa'}</p>
-          </div>
-          <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-              {metaConnected ? 'Sincronizado' : 'Aguardando conexão'}
-            </span>
-            {metaConnected ? (
-              <Button onClick={() => handleDisconnect('meta')} variant="ghost" size="sm" className="h-7 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10">Desconectar</Button>
-            ) : (
-              <Button onClick={() => setMetaConnected(true)} variant="ghost" size="sm" className="h-7 text-xs text-blue-400 hover:text-blue-300 hover:bg-white/5">Conectar</Button>
-            )}
-          </div>
-        </Card>
-        
-        <Card className={`p-5 flex flex-col justify-between transition-all duration-500 ${googleConnected ? 'bg-gradient-to-br from-emerald-600/20 to-[var(--color-surface-elevated)] border-emerald-500/30' : 'bg-[var(--color-surface-elevated)] border-white/5 opacity-70 grayscale'}`}>
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${googleConnected ? 'bg-emerald-500/20' : 'bg-white/10'}`}>
-                 <Search className={`w-5 h-5 ${googleConnected ? 'text-emerald-400' : 'text-slate-500'}`} />
-              </div>
-              {googleConnected ? (
-                <span className="text-[10px] uppercase font-black tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Conectado</span>
-              ) : (
-                <span className="text-[10px] uppercase font-black tracking-widest text-slate-500 bg-white/5 px-2 py-0.5 rounded border border-white/10">Desconectado</span>
-              )}
-            </div>
-            <h4 className="text-white font-bold mb-1">Google Ads</h4>
-            <p className="text-xs text-slate-400">{googleConnected ? 'Conta conectada e sincronizando' : 'Nenhuma conta conectada'}</p>
-          </div>
-          <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-              {googleConnected ? 'Sincronizado' : 'Aguardando conexão'}
-            </span>
-            {googleConnected ? (
-              <Button onClick={() => handleDisconnect('google')} variant="ghost" size="sm" className="h-7 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-500/10">Desconectar</Button>
-            ) : (
-              <Button 
-                onClick={handleConnectGoogle} 
-                disabled={isConnecting}
-                size="sm" 
-                className="h-7 text-[10px] font-black uppercase tracking-widest gap-2 bg-white text-slate-900 hover:bg-slate-200"
+            <div className="flex items-center justify-between mb-3.5">
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                  metaConfig.connected
+                    ? "bg-blue-600/10 text-blue-500 border-blue-500/20"
+                    : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] border-[var(--color-border-default)]"
+                }`}
               >
-                 <Link2 className="w-3 h-3" /> {isConnecting ? 'Conectando...' : 'Conectar'}
-              </Button>
-            )}
+                <Facebook className="w-5 h-5" />
+              </div>
+              <Badge
+                variant={metaConfig.connected ? "success" : "neutral"}
+                dot
+                dotPulse={metaConfig.connected}
+              >
+                {metaConfig.connected ? "Pixel Ativo" : "Desconectado"}
+              </Badge>
+            </div>
+            <h4 className="font-bold text-[var(--color-text-primary)] text-base mb-1">
+              Meta Ads (Facebook & Instagram)
+            </h4>
+            <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+              {metaConfig.connected
+                ? `Pixel ${metaConfig.pixelId || "Ativo"} e CAPI sincronizados`
+                : "Conecte sua conta para rastrear visitantes e conversões"}
+            </p>
+          </div>
+          <div className="mt-4 pt-3.5 border-t border-[var(--color-border-subtle)] flex justify-between items-center">
+            <span className="text-[11px] font-mono text-[var(--color-text-faint)]">
+              {metaConfig.connected ? "Rastreamento OK" : "Aguardando conexão"}
+            </span>
+            <Button
+              onClick={() => navigate("/app/configuracoes/integracoes/apps")}
+              variant="outline"
+              size="sm"
+              className="text-xs font-bold h-7"
+            >
+              Configurar
+            </Button>
           </div>
         </Card>
 
-        <Card className="p-5 bg-[var(--color-surface-elevated)] border-white/5 border-dashed flex flex-col justify-center items-center text-center cursor-pointer hover:bg-white/5 transition-all">
-           <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mb-3">
-             <Plus className="w-6 h-6 text-slate-400" />
-           </div>
-           <h4 className="text-white font-bold mb-1">Nova Integração</h4>
-           <p className="text-xs text-slate-400">TikTok, LinkedIn, Taboola...</p>
+        {/* Google Ads Card */}
+        <Card
+          className={`p-5 flex flex-col justify-between transition-all duration-200 ${
+            googleConfig.connected
+              ? "border-emerald-500/40 shadow-sm"
+              : "opacity-90"
+          }`}
+        >
+          <div>
+            <div className="flex items-center justify-between mb-3.5">
+              <div
+                className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
+                  googleConfig.connected
+                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                    : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] border-[var(--color-border-default)]"
+                }`}
+              >
+                <Globe className="w-5 h-5" />
+              </div>
+              <Badge
+                variant={googleConfig.connected ? "success" : "neutral"}
+                dot
+                dotPulse={googleConfig.connected}
+              >
+                {googleConfig.connected ? "Tag Ativa" : "Desconectado"}
+              </Badge>
+            </div>
+            <h4 className="font-bold text-[var(--color-text-primary)] text-base mb-1">
+              Google Ads & Analytics
+            </h4>
+            <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+              {googleConfig.connected
+                ? `Tag ${googleConfig.measurementId || "G-Tag"} conectada`
+                : "Acompanhe palavras-chave, conversões e Enhanced Tags"}
+            </p>
+          </div>
+          <div className="mt-4 pt-3.5 border-t border-[var(--color-border-subtle)] flex justify-between items-center">
+            <span className="text-[11px] font-mono text-[var(--color-text-faint)]">
+              {googleConfig.connected ? "Tag OK" : "Aguardando conexão"}
+            </span>
+            <Button
+              onClick={() => navigate("/app/configuracoes/integracoes/apps")}
+              variant="outline"
+              size="sm"
+              className="text-xs font-bold h-7"
+            >
+              Configurar
+            </Button>
+          </div>
         </Card>
-      </div>
 
-      <div className="flex items-center gap-2 mb-4 bg-blue-500/10 border border-blue-500/20 text-blue-400 p-3 rounded-xl text-sm justify-center">
-        <Zap className="w-4 h-4 shrink-0" />
-        <p><strong>Dados em Tempo Real:</strong> Os KPIs abaixo são calculados a partir dos leads e lançamentos financeiros cadastrados no sistema.</p>
+        {/* Nova Conexão Card */}
+        <Card
+          onClick={() => navigate("/app/configuracoes/integracoes/apps")}
+          className="p-5 border-dashed border-[var(--color-border-default)] flex flex-col justify-center items-center text-center cursor-pointer hover:border-[var(--color-primary-blue)]/50 hover:bg-[var(--color-surface-sunken)]/40 transition-all"
+        >
+          <div className="w-10 h-10 rounded-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] flex items-center justify-center mb-2 text-[var(--color-text-muted)]">
+            <Plus className="w-5 h-5" />
+          </div>
+          <h4 className="font-bold text-[var(--color-text-primary)] text-sm mb-0.5">
+            Nova Integração de Tráfego
+          </h4>
+          <p className="text-xs text-[var(--color-text-muted)]">
+            TikTok Ads, LinkedIn, Taboola, Webhooks...
+          </p>
+        </Card>
       </div>
 
       {/* Real KPI cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         {[
-          { label: "Total Investido", value: fmt(totalSpent), icon: DollarSign, color: "text-rose-500" },
-          { label: "Receita Gerada", value: fmt(totalRevenue), icon: ArrowUpRight, color: "text-emerald-500" },
-          { label: "CPA Médio", value: cpa > 0 ? fmt(cpa) : '—', icon: Target, color: "text-amber-500" },
-          { label: "Leads Gerados", value: totalLeads.toString(), icon: Users, color: "text-indigo-500" },
+          {
+            label: "Total Investido",
+            value: fmt(totalSpent),
+            icon: DollarSign,
+            color: "text-rose-500",
+            sub: "Despesas de tráfego pagas",
+          },
+          {
+            label: "Receita Gerada",
+            value: fmt(totalRevenue),
+            icon: ArrowUpRight,
+            color: "text-emerald-500",
+            sub: "Contratos e vendas fechadas",
+          },
+          {
+            label: "CPA Médio",
+            value: cpa > 0 ? fmt(cpa) : "—",
+            icon: Target,
+            color: "text-amber-500",
+            sub: "Custo por lead adquirido",
+          },
+          {
+            label: "Leads Gerados",
+            value: totalLeads.toString(),
+            icon: Users,
+            color: "text-[var(--color-primary-blue)]",
+            sub: `${closedLeads} negócios ganhos`,
+          },
         ].map((kpi, i) => (
-          <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
-            <kpi.icon className={`w-5 h-5 ${kpi.color} mb-4`} />
-            <div className="text-2xl font-display font-black text-white mb-1 italic">{kpi.value}</div>
-            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{kpi.label}</div>
+          <Card key={i} className="p-4 hover:border-[var(--color-border-default)]/80 transition-all">
+            <div className="flex items-center justify-between mb-2">
+              <kpi.icon className={`w-4 h-4 ${kpi.color}`} />
+              <span className="text-[10px] font-bold text-[var(--color-text-faint)] uppercase tracking-wider">
+                {kpi.label}
+              </span>
+            </div>
+            <div className="text-xl md:text-2xl font-display font-black text-[var(--color-text-primary)] mb-1 italic">
+              {kpi.value}
+            </div>
+            <div className="text-[10px] text-[var(--color-text-muted)] truncate">
+              {kpi.sub}
+            </div>
           </Card>
         ))}
       </div>
 
+      {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5">
-          <h3 className="text-sm font-black text-white uppercase tracking-wider mb-6 flex items-center gap-2">
-            <Target className="w-4 h-4 text-blue-500" /> Leads por Dia da Semana
+        <Card className="p-5">
+          <h3 className="text-sm font-bold text-[var(--color-text-primary)] uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Target className="w-4 h-4 text-[var(--color-primary-blue)]" /> Leads por Dia da Semana
           </h3>
           {totalLeads === 0 ? (
-            <div className="h-72 flex flex-col items-center justify-center gap-4 opacity-40">
-              <Inbox className="w-8 h-8 text-slate-500" />
-              <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Nenhum lead cadastrado ainda.</p>
+            <div className="h-64 flex flex-col items-center justify-center gap-2 opacity-50">
+              <Inbox className="w-8 h-8 text-[var(--color-text-faint)]" />
+              <p className="text-xs text-[var(--color-text-muted)] font-medium">Nenhum lead registrado na base.</p>
             </div>
           ) : (
-            <div className="h-72">
+            <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={trafficData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: 'var(--color-surface-elevated)', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
-                    itemStyle={{ fontSize: '12px', fontWeight: 'bold' }}
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+                  <XAxis dataKey="name" stroke="var(--color-text-faint)" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="var(--color-text-faint)" fontSize={11} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "var(--color-surface-elevated)",
+                      border: "1px solid var(--color-border-default)",
+                      borderRadius: "12px",
+                      fontSize: "12px",
+                      color: "var(--color-text-primary)",
+                      boxShadow: "var(--shadow-panel)",
+                    }}
                   />
-                  <Line type="monotone" dataKey="leads" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#1E293B', strokeWidth: 2 }} activeDot={{ r: 6, stroke: '#fff' }} name="Leads" />
+                  <Line
+                    type="monotone"
+                    dataKey="leads"
+                    stroke="#2563EB"
+                    strokeWidth={3}
+                    dot={{ r: 4, fill: "#2563EB" }}
+                    activeDot={{ r: 6 }}
+                    name="Leads"
+                  />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           )}
         </Card>
-        
-        <Card className="p-6 bg-[var(--color-surface-elevated)] border-white/5">
-          <h3 className="text-sm font-black text-white uppercase tracking-wider mb-6 flex items-center gap-2">
-            <MousePointerClick className="w-4 h-4 text-blue-500" /> Volume de Leads (Bar)
+
+        <Card className="p-5">
+          <h3 className="text-sm font-bold text-[var(--color-text-primary)] uppercase tracking-wider mb-4 flex items-center gap-2">
+            <MousePointerClick className="w-4 h-4 text-[var(--color-primary-blue)]" /> Distribuição de Volume
           </h3>
           {totalLeads === 0 ? (
-            <div className="h-72 flex flex-col items-center justify-center gap-4 opacity-40">
-              <Inbox className="w-8 h-8 text-slate-500" />
-              <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">Cadastre leads para ver o gráfico.</p>
+            <div className="h-64 flex flex-col items-center justify-center gap-2 opacity-50">
+              <Inbox className="w-8 h-8 text-[var(--color-text-faint)]" />
+              <p className="text-xs text-[var(--color-text-muted)] font-medium">Cadastre leads para visualizar os dados.</p>
             </div>
           ) : (
-            <div className="h-72">
+            <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={trafficData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff10" vertical={false} />
-                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={10} tickLine={false} axisLine={false} />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                    contentStyle={{ backgroundColor: 'var(--color-surface-elevated)', border: 'none', borderRadius: '12px', fontSize: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" vertical={false} />
+                  <XAxis dataKey="name" stroke="var(--color-text-faint)" fontSize={11} tickLine={false} axisLine={false} />
+                  <YAxis stroke="var(--color-text-faint)" fontSize={11} tickLine={false} axisLine={false} />
+                  <Tooltip
+                    cursor={{ fill: "rgba(37, 99, 235, 0.05)" }}
+                    contentStyle={{
+                      backgroundColor: "var(--color-surface-elevated)",
+                      border: "1px solid var(--color-border-default)",
+                      borderRadius: "12px",
+                      fontSize: "12px",
+                      color: "var(--color-text-primary)",
+                      boxShadow: "var(--shadow-panel)",
+                    }}
                   />
-                  <Bar dataKey="leads" fill="url(#colorLeads)" radius={[6, 6, 0, 0]} name="Leads" maxBarSize={40} />
-                  <defs>
-                    <linearGradient id="colorLeads" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#0ea5e9" stopOpacity={1}/>
-                      <stop offset="100%" stopColor="#2563eb" stopOpacity={1}/>
-                    </linearGradient>
-                  </defs>
+                  <Bar dataKey="leads" fill="#2563EB" radius={[6, 6, 0, 0]} name="Leads" maxBarSize={36} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -224,58 +366,73 @@ export default function MarketingCampanhas() {
         </Card>
       </div>
 
-      {/* Campaigns table — empty state or summary from leads sources */}
-      <Card className="bg-[var(--color-surface-elevated)] border-white/5 overflow-hidden">
-        <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <h3 className="text-sm font-black text-white uppercase tracking-wider flex items-center gap-2">
-             <Target className="w-4 h-4 text-emerald-400" /> Origens de Leads (Fonte)
+      {/* Campaigns by Source Table */}
+      <Card className="overflow-hidden">
+        <div className="p-4 border-b border-[var(--color-border-subtle)] flex justify-between items-center">
+          <h3 className="text-sm font-bold text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-emerald-500" /> Desempenho por Origem de Tráfego
           </h3>
         </div>
+
         {totalLeads === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4 opacity-40">
-            <Inbox className="w-10 h-10 text-slate-500" />
-            <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest text-center">
-              Nenhum lead cadastrado ainda.<br/>Cadastre leads com 'fonte' para ver as campanhas aqui.
-            </p>
-          </div>
+          <EmptyState
+            icon={Inbox}
+            title="Nenhum lead com origem cadastrada"
+            description="Cadastre leads atribuindo fontes de tráfego (Meta Ads, Google, Orgânico) para visualizar métricas comparativas."
+            className="border-none rounded-none"
+          />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/5">
-                  <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Fonte</th>
-                  <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Leads</th>
-                  <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Fechados</th>
-                  <th className="text-right p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Conversão</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {(() => {
-                  const bySource: Record<string, { leads: number; closed: number }> = {};
-                  leads.forEach(l => {
-                    const src = l.source || 'Orgânico';
-                    if (!bySource[src]) bySource[src] = { leads: 0, closed: 0 };
-                    bySource[src].leads++;
-                    if (l.status === 'Fechado') bySource[src].closed++;
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Fonte de Aquisição</TableHead>
+                <TableHead>Total de Leads</TableHead>
+                <TableHead>Vendas Fechadas</TableHead>
+                <TableHead className="text-right">Taxa de Conversão</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {(() => {
+                const bySource: Record<string, { leads: number; closed: number }> = {};
+                leads.forEach((l) => {
+                  const src = l.source || "Orgânico / Direto";
+                  if (!bySource[src]) bySource[src] = { leads: 0, closed: 0 };
+                  bySource[src].leads++;
+                  if (l.status === "Fechado") bySource[src].closed++;
+                });
+
+                return Object.entries(bySource)
+                  .sort((a, b) => b[1].leads - a[1].leads)
+                  .map(([source, data], i) => {
+                    const rate = data.leads > 0 ? Math.round((data.closed / data.leads) * 100) : 0;
+                    return (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <span className="font-bold text-[var(--color-text-primary)] text-sm">
+                            {source}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-mono text-xs font-bold text-[var(--color-primary-blue)]">
+                            {data.leads}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">
+                            {data.closed}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant={rate > 20 ? "success" : rate > 0 ? "warning" : "secondary"}>
+                            {rate}%
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
                   });
-                  return Object.entries(bySource)
-                    .sort((a, b) => b[1].leads - a[1].leads)
-                    .map(([source, data], i) => (
-                      <tr key={i} className="hover:bg-white/[0.02] transition-colors">
-                        <td className="p-6">
-                          <p className="text-sm font-black text-white">{source}</p>
-                        </td>
-                        <td className="p-6 text-xs text-blue-400 font-mono font-bold">{data.leads}</td>
-                        <td className="p-6 text-xs text-emerald-400 font-mono font-bold">{data.closed}</td>
-                        <td className="p-6 text-right text-xs text-purple-400 font-mono font-black">
-                          {data.leads > 0 ? `${Math.round((data.closed / data.leads) * 100)}%` : '0%'}
-                        </td>
-                      </tr>
-                    ));
-                })()}
-              </tbody>
-            </table>
-          </div>
+              })()}
+            </TableBody>
+          </Table>
         )}
       </Card>
     </PageContainer>

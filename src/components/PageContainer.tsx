@@ -27,34 +27,34 @@ export function PageContainer({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           {/* Breadcrumb Pattern */}
-          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2 overflow-x-auto whitespace-nowrap scrollbar-none">
-            <Link to="/app/dashboard" className="hover:text-white transition-colors flex items-center gap-1">
-              <Home className="w-3 h-3" /> Início
+          <div className="flex items-center gap-1.5 text-[10px] text-[var(--color-text-faint)] font-bold uppercase tracking-widest mb-2 overflow-x-auto whitespace-nowrap scrollbar-none">
+            <Link to="/app/dashboard" className="hover:text-[var(--color-text-primary)] transition-colors flex items-center gap-1">
+              <Home className="w-3 h-3 text-[var(--color-text-muted)]" /> Início
             </Link>
             {breadcrumb?.map((item, i) => (
               <div key={i} className="flex items-center gap-1.5">
-                <ChevronRight className="w-3 h-3 text-slate-700" />
+                <ChevronRight className="w-3 h-3 text-[var(--color-text-faint)]" />
                 {item.path ? (
-                  <Link to={item.path} className="hover:text-white transition-colors">{item.label}</Link>
+                  <Link to={item.path} className="hover:text-[var(--color-text-primary)] transition-colors">{item.label}</Link>
                 ) : (
-                  <span className="text-[#2563EB]">{item.label}</span>
+                  <span className="text-[var(--color-primary-blue)] font-black">{item.label}</span>
                 )}
               </div>
             ))}
             {!breadcrumb && (
                <>
-                <ChevronRight className="w-3 h-3 text-slate-700" />
-                <span className="text-[#2563EB]">{title}</span>
+                <ChevronRight className="w-3 h-3 text-[var(--color-text-faint)]" />
+                <span className="text-[var(--color-primary-blue)] font-black">{title}</span>
                </>
             )}
           </div>
 
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight text-white flex items-center gap-3">
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight text-[var(--color-text-primary)] flex items-center gap-3">
             {title}
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse hidden md:inline-block"></span>
+            <span className="w-2 h-2 rounded-full bg-[var(--color-primary-blue)] animate-pulse hidden md:inline-block"></span>
           </h1>
           {displayDescription && (
-            <p className="text-slate-500 text-sm mt-1 max-w-2xl font-medium">{displayDescription}</p>
+            <p className="text-[var(--color-text-muted)] text-sm mt-1 max-w-2xl font-medium leading-relaxed">{displayDescription}</p>
           )}
         </div>
         
@@ -66,11 +66,8 @@ export function PageContainer({
       </div>
 
       {/* Page Content */}
-      <div className="relative">
-        <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-500/10 to-transparent opacity-50"></div>
-        <div className="pt-2">
-          {children}
-        </div>
+      <div className="relative pt-1">
+        {children}
       </div>
     </div>
   );

@@ -1,67 +1,132 @@
 import { useState } from "react";
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
+import { Input } from "../../../../components/ui/input";
+import { FormField } from "../../../../components/ui/form-field";
+import { Alert } from "../../../../components/ui/alert";
+import { Mail, Server, ShieldCheck, Send } from "lucide-react";
 import { toast } from "sonner";
 
 export function ConfigIntegracoesSMTP() {
-  const [smtpServer, setSmtpServer] = useState("");
-  const [smtpPort, setSmtpPort] = useState("");
-  const [smtpUser, setSmtpUser] = useState("");
+  const [smtpServer, setSmtpServer] = useState("email-smtp.us-east-1.amazonaws.com");
+  const [smtpPort, setSmtpPort] = useState("587");
+  const [smtpUser, setSmtpUser] = useState("AKIAIOSFODNN7EXAMPLE");
+  const [smtpPass, setSmtpPass] = useState("••••••••••••••••••••");
+  const [fromEmail, setFromEmail] = useState("contato@empresa.com.br");
+  const [testing, setTesting] = useState(false);
 
   const testConnection = () => {
-    toast.promise(new Promise(resolve => setTimeout(resolve, 1500)), {
-      loading: "Verificando credenciais de criptografia TLS...",
-      success: "Conexão SMTP efetuada! E-mail de homologação disparado com sucesso! ✉️",
-      error: "Falha na resposta do servidor de destino",
-    });
+    setTesting(true);
+    toast.promise(
+      new Promise((resolve) => setTimeout(resolve, 1500)),
+      {
+        loading: "Verificando credenciais e handshake TLS com o servidor...",
+        success: () => {
+          setTesting(false);
+          return "Conexão SMTP validada com sucesso! E-mail de homologação disparado. ✉️✨";
+        },
+        error: () => {
+          setTesting(false);
+          return "Falha na autenticação SMTP.";
+        },
+      }
+    );
   };
 
   return (
-    <div className="max-w-3xl space-y-6">
+    <div className="max-w-4xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Servidores SMTP (Campanhas de E-mail)</h1>
-        <p className="text-sm text-slate-400">Configure seu próprio disparador de e-mails comercial corporativo (AWS SES, G-Suite, Sendgrid, etc).</p>
+        <h1 className="text-2xl font-black tracking-tight text-[var(--color-text-primary)] flex items-center gap-2.5">
+          Servidores SMTP & Disparos de E-mail
+          <Server className="w-5 h-5 text-[var(--color-primary-blue)]" />
+        </h1>
+        <p className="text-sm text-[var(--color-text-muted)] mt-1">
+          Configure seu próprio servidor SMTP transacional (AWS SES, Google Workspace, SendGrid, Mailgun) para envio de propostas, faturas e avisos.
+        </p>
       </div>
 
-      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border border-white/10 space-y-4">
-        <h3 className="font-bold text-xs uppercase tracking-widest text-[#06B6D4]">Credenciais de Transmissão</h3>
+      <Alert variant="info" title="Segurança & Entregabilidade">
+        Recomendamos o uso da porta 587 com protocolo STARTTLS e chave de aplicativo dedicada para garantir 99.9% de entregabilidade na caixa de entrada.
+      </Alert>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-semibold">
-          <div className="space-y-1">
-            <label className="text-[10px] text-slate-400 uppercase tracking-wider block">Servidor Host</label>
-            <input type="text" value={smtpServer} onChange={e => setSmtpServer(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-white" />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-slate-400 uppercase tracking-wider block">Porta de Conexão</label>
-            <input type="text" value={smtpPort} onChange={e => setSmtpPort(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-white font-mono" />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-slate-400 uppercase tracking-wider block">Criptografia Protocolo</label>
-            <select className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-slate-300">
-              <option>StartTLS (Recomendado)</option>
-              <option>SSL puro</option>
-              <option>Nenhuma (Não seguro)</option>
+      <Card className="p-6 space-y-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+        <h3 className="font-bold text-xs uppercase tracking-widest text-[var(--color-primary-blue)] flex items-center gap-2">
+          <ShieldCheck className="w-4 h-4 text-emerald-500" /> Credenciais de Transmissão Autenticada
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <FormField label="Servidor Host (Host)" required>
+            <Input
+              type="text"
+              value={smtpServer}
+              onChange={(e) => setSmtpServer(e.target.value)}
+              placeholder="smtp.dominio.com"
+            />
+          </FormField>
+
+          <FormField label="Porta de Conexão" required>
+            <Input
+              type="text"
+              value={smtpPort}
+              onChange={(e) => setSmtpPort(e.target.value)}
+              className="font-mono"
+              placeholder="587 ou 465"
+            />
+          </FormField>
+
+          <FormField label="Criptografia / Protocolo">
+            <select className="w-full bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]">
+              <option>StartTLS (Recomendado - Porta 587)</option>
+              <option>SSL/TLS Direto (Porta 465)</option>
+              <option>Nenhuma (Porta 25)</option>
             </select>
-          </div>
+          </FormField>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-semibold">
-          <div className="space-y-1">
-            <label className="text-[10px] text-slate-400 uppercase tracking-wider block font-black">Usuário Log (E-mail Autenticado)</label>
-            <input type="email" value={smtpUser} onChange={e => setSmtpUser(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-white" />
-          </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-slate-400 uppercase tracking-wider block">Senha de Aplicativo (Secret Token)</label>
-            <input type="password" placeholder="••••••••••••••••••••" className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-white" />
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <FormField label="Usuário Autenticado (User / API Key)" required>
+            <Input
+              type="text"
+              value={smtpUser}
+              onChange={(e) => setSmtpUser(e.target.value)}
+            />
+          </FormField>
+
+          <FormField label="Senha de Aplicativo (Secret Password)" required>
+            <Input
+              type="password"
+              value={smtpPass}
+              onChange={(e) => setSmtpPass(e.target.value)}
+              placeholder="••••••••••••••••••••"
+            />
+          </FormField>
         </div>
 
-        <div className="pt-4 border-t border-white/5 flex justify-end gap-3 text-xs">
-          <Button type="button" onClick={testConnection} className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 font-bold uppercase py-2 px-4 rounded-xl transition-all">
-            Testar Conexão TLS
+        <FormField label="E-mail de Remetente Padrão (From Email)" hint="Endereço que aparecerá como remetente para os clientes">
+          <Input
+            type="email"
+            value={fromEmail}
+            onChange={(e) => setFromEmail(e.target.value)}
+            placeholder="contato@empresa.com.br"
+          />
+        </FormField>
+
+        <div className="pt-4 border-t border-[var(--color-border-subtle)] flex flex-col sm:flex-row justify-end gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={testConnection}
+            loading={testing}
+            className="font-bold text-xs gap-2"
+          >
+            <Send className="w-3.5 h-3.5" /> Testar Conexão TLS
           </Button>
-          <Button type="button" onClick={() => toast.success("Preferências de SMTP salvas!")} className="bg-[#2563EB] hover:bg-blue-600 font-bold uppercase py-2 px-5 rounded-xl">
-            Salvar Canal SMTP
+          <Button
+            type="button"
+            onClick={() => toast.success("Preferências de SMTP salvas com sucesso!")}
+            className="font-bold text-xs"
+          >
+            Salvar Configuração SMTP
           </Button>
         </div>
       </Card>

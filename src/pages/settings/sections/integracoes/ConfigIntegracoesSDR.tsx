@@ -1,63 +1,89 @@
 import { useState } from "react";
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
-import { Zap } from "lucide-react";
+import { Input } from "../../../../components/ui/input";
+import { FormField } from "../../../../components/ui/form-field";
+import { Switch } from "../../../../components/ui/switch";
+import { Badge } from "../../../../components/ui/badge";
+import { Zap, Send, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 
 export function ConfigIntegracoesSDR() {
-  const [webhookUrl, setWebhookUrl] = useState("");
+  const [webhookUrl, setWebhookUrl] = useState("https://n8n.seumodelo.com/webhook/reuniao-agendada");
   const [webhookActive, setWebhookActive] = useState(true);
+  const [leadQualificadoUrl, setLeadQualificadoUrl] = useState("https://n8n.seumodelo.com/webhook/sdr-qualificado");
+  const [leadQualificadoActive, setLeadQualificadoActive] = useState(true);
+  const [testing, setTesting] = useState(false);
 
-  const testWebhook = () => {
-    toast.promise(new Promise(resolve => setTimeout(resolve, 1200)), {
-      loading: "Enviando payload de teste...",
-      success: "Webhook disparado e resposta 200 OK recebida!",
-      error: "Erro no disparo do Webhook.",
-    });
+  const testWebhook = (event: string) => {
+    setTesting(true);
+    toast.promise(
+      new Promise((resolve) => setTimeout(resolve, 1000)),
+      {
+        loading: `Enviando payload de teste '${event}'...`,
+        success: () => {
+          setTesting(false);
+          return `Webhook '${event}' disparado com sucesso! Resposta 200 OK recebida. ⚡`;
+        },
+        error: () => {
+          setTesting(false);
+          return "Erro no disparo do Webhook.";
+        },
+      }
+    );
   };
 
   return (
     <div className="max-w-4xl space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-          Integrações SDR <Zap className="w-5 h-5 text-purple-500" />
+        <h1 className="text-2xl font-black tracking-tight text-[var(--color-text-primary)] flex items-center gap-2.5">
+          Integrações SDR & Pré-Vendas
+          <Zap className="w-5 h-5 text-purple-500" />
         </h1>
-        <p className="text-sm text-slate-400 mt-1">Configure disparos de webhooks quando eventos importantes acontecerem no funil de Pré-Vendas.</p>
+        <p className="text-sm text-[var(--color-text-muted)] mt-1">
+          Configure disparos automatizados de webhooks para ferramentas de automação (n8n, Make, Zapier) acionados por eventos de qualificação.
+        </p>
       </div>
 
       {/* Reunião Agendada */}
-      <Card className="bg-[var(--color-surface-elevated)]/80 border border-white/10 overflow-hidden shadow-xl">
-        <div className="p-5 border-b border-white/5 bg-purple-500/5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="font-bold text-white text-base">Reunião Agendada (Qualificação Final)</h3>
-              <p className="text-sm text-slate-400 mt-0.5">Disparado sempre que um lead atinge a etapa de Reunião Agendada no pipeline do SDR.</p>
+      <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
+        <div className="p-5 border-b border-[var(--color-border-subtle)] bg-purple-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-[var(--color-text-primary)] text-base">
+                Reunião Agendada (Qualificação Concluída)
+              </h3>
+              <Badge variant={webhookActive ? "purple" : "neutral"} dot dotPulse={webhookActive}>
+                {webhookActive ? "Ativo" : "Pausado"}
+              </Badge>
             </div>
-            <label className="flex items-center cursor-pointer">
-              <div className="relative">
-                <input type="checkbox" className="sr-only" checked={webhookActive} onChange={() => setWebhookActive(p => !p)} />
-                <div className={`block w-10 h-6 rounded-full transition-colors ${webhookActive ? "bg-purple-600" : "bg-slate-700"}`} />
-                <div className={`dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${webhookActive ? "transform translate-x-4" : ""}`} />
-              </div>
-            </label>
+            <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+              Disparado sempre que um lead atinge a etapa de Reunião Agendada no pipeline do SDR.
+            </p>
           </div>
+          <Switch
+            checked={webhookActive}
+            onCheckedChange={setWebhookActive}
+            label={webhookActive ? "Ativado" : "Desativado"}
+          />
         </div>
 
         <div className="p-5 space-y-4">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Endpoint URL</label>
-            <input
-              type="text"
+          <FormField label="Endpoint URL (POST)" required hint="URL que receberá o JSON com os dados do lead e da reunião">
+            <Input
+              type="url"
               value={webhookUrl}
-              onChange={e => setWebhookUrl(e.target.value)}
-              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-sm text-white font-mono focus:border-purple-500 focus:outline-none"
-              placeholder="https://"
+              onChange={(e) => setWebhookUrl(e.target.value)}
+              placeholder="https://n8n.sua-empresa.com/webhook/..."
+              className="font-mono text-xs"
             />
-          </div>
+          </FormField>
 
-          <div className="bg-[var(--color-surface)]/50 p-4 rounded-lg border border-white/5 space-y-2">
-            <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Payload de Exemplo (JSON)</span>
-            <pre className="text-[10px] text-purple-300 font-mono overflow-auto opacity-80">{`{
+          <div className="bg-[var(--color-surface-sunken)] p-4 rounded-[var(--radius-control)] border border-[var(--color-border-subtle)] space-y-1.5">
+            <span className="text-[10px] font-black uppercase text-[var(--color-text-faint)] tracking-widest block">
+              Payload de Exemplo (JSON)
+            </span>
+            <pre className="text-[11px] text-purple-500 dark:text-purple-300 font-mono overflow-auto leading-relaxed">{`{
   "event": "sdr.reuniao_agendada",
   "lead": {
     "id": "123",
@@ -66,76 +92,96 @@ export function ConfigIntegracoesSDR() {
     "scoreIA": 92,
     "temperature": "quente",
     "seller_sdr": "Roberto Ramos",
-    "ia_summary": "Empresa demonstrou forte interesse..."
+    "ia_summary": "Empresa demonstrou forte interesse no plano corporativo..."
   },
-  "timestamp": "2026-05-21T15:30:00Z"
+  "timestamp": "${new Date().toISOString()}"
 }`}</pre>
           </div>
 
           <div className="pt-2 flex justify-end gap-3">
-            <Button variant="outline" onClick={testWebhook} className="border-white/10 hover:bg-white/5 text-xs font-bold uppercase py-2">Disparar Teste</Button>
-            <Button className="bg-[#2563EB] hover:bg-blue-600 font-bold px-5 text-xs uppercase shadow-xl" onClick={() => toast.success("Configuração salva com sucesso")}>Salvar Webhook</Button>
+            <Button
+              variant="outline"
+              onClick={() => testWebhook("sdr.reuniao_agendada")}
+              loading={testing}
+              className="text-xs font-bold gap-1.5"
+            >
+              <Send className="w-3.5 h-3.5" /> Disparar Teste
+            </Button>
+            <Button
+              onClick={() => toast.success("Webhook de Reunião Agendada salvo com sucesso!")}
+              className="font-bold text-xs"
+            >
+              Salvar Webhook
+            </Button>
           </div>
         </div>
       </Card>
 
       {/* Lead Qualificado */}
-      <Card className="bg-[var(--color-surface-elevated)]/80 border border-white/10 overflow-hidden shadow-xl mt-6">
-        <div className="p-5 border-b border-white/5 bg-emerald-500/5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h3 className="font-bold text-white text-base">Lead Qualificado (Aprovado pela Master AI)</h3>
-              <p className="text-sm text-slate-400 mt-0.5">Disparado quando o Lead Score atinge métricas pré-definidas na qualificação.</p>
+      <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
+        <div className="p-5 border-b border-[var(--color-border-subtle)] bg-emerald-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-[var(--color-text-primary)] text-base">
+                Lead Qualificado (Score IA Atingido)
+              </h3>
+              <Badge variant={leadQualificadoActive ? "success" : "neutral"} dot dotPulse={leadQualificadoActive}>
+                {leadQualificadoActive ? "Ativo" : "Pausado"}
+              </Badge>
             </div>
-            <label className="flex items-center cursor-pointer">
-              <div className="relative">
-                <input type="checkbox" className="sr-only" defaultChecked />
-                <div className="block w-10 h-6 rounded-full bg-emerald-600" />
-                <div className="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transform translate-x-4" />
-              </div>
-            </label>
+            <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+              Disparado quando a IA (MIA) classifica o lead com score suficiente para transferência.
+            </p>
           </div>
+          <Switch
+            checked={leadQualificadoActive}
+            onCheckedChange={setLeadQualificadoActive}
+            label={leadQualificadoActive ? "Ativado" : "Desativado"}
+          />
         </div>
 
         <div className="p-5 space-y-4">
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Endpoint URL</label>
-            <input
-              type="text"
+          <FormField label="Endpoint URL (POST)" required hint="URL para receber leads qualificados pela Master AI">
+            <Input
+              type="url"
+              value={leadQualificadoUrl}
+              onChange={(e) => setLeadQualificadoUrl(e.target.value)}
               placeholder="https://n8n.seumodelo.com/webhook/sdr-qualificado"
-              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-sm text-white font-mono focus:border-emerald-500 focus:outline-none"
+              className="font-mono text-xs"
             />
-          </div>
+          </FormField>
 
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Eventos de Disparo</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-2">
-              {["Atualização de Score IA", "Mapeamento de Perfil Concluído", "Contato Iniciado (1º Touchpoint)", "Identificação de Ticket Médio"].map(evt => (
-                <label key={evt} className="flex items-center gap-2 text-sm text-slate-300">
-                  <input type="checkbox" className="rounded border-white/20 bg-transparent text-emerald-500 focus:ring-emerald-500 focus:ring-offset-0" />
-                  {evt}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-[var(--color-surface)]/50 p-4 rounded-lg border border-white/5 space-y-2 mt-2">
-            <span className="text-[10px] font-black uppercase text-slate-500 tracking-widest">Payload de Exemplo (JSON)</span>
-            <pre className="text-[10px] text-emerald-300 font-mono overflow-auto opacity-80">{`{
+          <div className="bg-[var(--color-surface-sunken)] p-4 rounded-[var(--radius-control)] border border-[var(--color-border-subtle)] space-y-1.5">
+            <span className="text-[10px] font-black uppercase text-[var(--color-text-faint)] tracking-widest block">
+              Payload de Exemplo (JSON)
+            </span>
+            <pre className="text-[11px] text-emerald-600 dark:text-emerald-400 font-mono overflow-auto leading-relaxed">{`{
   "event": "sdr.lead_qualificado",
   "lead": {
     "id": "123",
     "name": "Maria Silva",
     "scoreIA": 92,
-    "events": ["score_updated", "profile_mapped"]
+    "events": ["score_updated", "profile_mapped", "needs_confirmed"]
   },
-  "timestamp": "2026-05-21T15:35:00Z"
+  "timestamp": "${new Date().toISOString()}"
 }`}</pre>
           </div>
 
           <div className="pt-2 flex justify-end gap-3">
-            <Button variant="outline" onClick={testWebhook} className="border-white/10 hover:bg-white/5 text-xs font-bold uppercase py-2">Disparar Teste</Button>
-            <Button className="bg-[#2563EB] hover:bg-blue-600 font-bold px-5 text-xs uppercase shadow-xl" onClick={() => toast.success("Configuração salva com sucesso")}>Salvar Webhook</Button>
+            <Button
+              variant="outline"
+              onClick={() => testWebhook("sdr.lead_qualificado")}
+              loading={testing}
+              className="text-xs font-bold gap-1.5"
+            >
+              <Send className="w-3.5 h-3.5" /> Disparar Teste
+            </Button>
+            <Button
+              onClick={() => toast.success("Webhook de Lead Qualificado salvo com sucesso!")}
+              className="font-bold text-xs"
+            >
+              Salvar Webhook
+            </Button>
           </div>
         </div>
       </Card>

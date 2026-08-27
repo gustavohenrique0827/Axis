@@ -167,12 +167,13 @@ export const navSections = [
     ],
   },
   {
-    title: "Sistema",
+    title: "Sistema & Config",
     items: [
-      { name: "Integrações SDR", action: "sdr-webhooks", icon: Zap },
-      { name: "Configurações", path: "/app/configuracoes", icon: Settings },
+      { name: "Central de Integrações", path: "/app/configuracoes/integracoes/apps", icon: Zap },
+      { name: "Configurações Gerais", path: "/app/configuracoes", icon: Settings },
       { name: "Painel G-Tech", path: "/app/admin", icon: Server, reqCondition: "master-or-gtech" as NavReqCondition },
       { name: "Visão de Parceiros", path: "/app/parceiros", icon: Handshake, reqCondition: "master-or-partner" as NavReqCondition },
+      { name: "Webhooks SDR", action: "sdr-webhooks", icon: Zap },
     ],
   },
 ];
