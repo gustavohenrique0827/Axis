@@ -200,7 +200,6 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
           />
 
           {/* ── Tab bar ── */}
-          <div className="flex border-b border-white/[0.06] overflow-x-auto scrollbar-none shrink-0 bg-[var(--color-surface)] px-1 pt-1 gap-0.5">
           <div className="flex border-b border-[var(--color-border-subtle)] overflow-x-auto scrollbar-none shrink-0 bg-[var(--color-surface-elevated)] px-2 pt-1.5 gap-1">
             {LeadDetailsModalTabs.map((tab) => {
               const isActive = currentTab === tab.id;
@@ -209,20 +208,15 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                   key={tab.id}
                   onClick={() => setCurrentTab(tab.id)}
                   className={cn(
-                    "relative flex flex-col items-center justify-center gap-0.5 pt-2 pb-2.5 px-3.5 text-[8px] font-black tracking-widest whitespace-nowrap transition-all shrink-0 cursor-pointer min-w-[64px] rounded-t-lg",
                     "relative flex flex-col items-center justify-center gap-1 pt-2 pb-2.5 px-3 text-[9px] font-black tracking-wider whitespace-nowrap transition-all shrink-0 cursor-pointer min-w-[64px] rounded-t-lg",
                     isActive
-                      ? "text-[#06B6D4] bg-cyan-500/[0.07]"
-                      : "text-slate-600 hover:text-slate-300 hover:bg-white/[0.03]"
                       ? "text-[var(--color-primary-blue)] bg-[var(--color-primary-blue)]/10 font-bold"
                       : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]"
                   )}
                 >
-                  <tab.icon className={cn("w-3.5 h-3.5 transition-all", isActive ? "scale-110 text-[#06B6D4]" : "text-slate-600")} />
                   <tab.icon className={cn("w-3.5 h-3.5 transition-all", isActive ? "scale-110 text-[var(--color-primary-blue)]" : "text-[var(--color-text-faint)]")} />
                   <span>{tab.short}</span>
                   {isActive && (
-                    <div className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-[#06B6D4]" />
                     <div className="absolute bottom-0 left-2 right-2 h-[2px] rounded-full bg-[var(--color-primary-blue)]" />
                   )}
                 </button>
@@ -231,7 +225,6 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
           </div>
 
           {/* ── Tab content ── */}
-          <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
           <div className="flex-1 overflow-y-auto min-h-0 scrollbar-thin scrollbar-thumb-[var(--color-border-default)] scrollbar-track-transparent">
               <div className="h-full">
                 {currentTab === "informacoes" && (
@@ -424,8 +417,6 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
               </div>
             </div>
           </div>
-
-        </div>
       </Modal>
 
       {lead && (

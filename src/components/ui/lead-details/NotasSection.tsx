@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { Phone, Mic, MicOff, Plus, Trash2, MessageSquare } from "lucide-react";
 import { Phone, Mic, MicOff, Plus, Trash2, MessageSquare, Sparkles } from "lucide-react";
 import { supabase } from "../../../lib/supabase";
 import { toast } from "sonner";
@@ -35,22 +34,16 @@ function parseNotes(raw: string | null | undefined): Note[] {
 
 function formatDate(iso: string): string {
   const d = new Date(iso);
-  return `${d.toLocaleDateString("pt-BR")} ÀS ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
   return `${d.toLocaleDateString("pt-BR")} às ${d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`;
 }
 
 export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) {
-  const [notes, setNotes]         = useState<Note[]>([]);
-  const [input, setInput]         = useState("");
-  const [saving, setSaving]       = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
   const [input, setInput] = useState("");
   const [saving, setSaving] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [authorName, setAuthorName] = useState("Usuário");
 
-  const recognitionRef  = useRef<any>(null);
-  const inputPrefixRef  = useRef("");          // texto digitado antes de iniciar gravação
   const recognitionRef = useRef<any>(null);
   const inputPrefixRef = useRef("");
 
@@ -85,13 +78,11 @@ export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) 
     const note: Note = { id, text, author: authorName, createdAt: new Date().toISOString() };
     const updated = [note, ...notes];
 
-    // Salva e limpa imediatamente
     setNotes(updated);
     setInput("");
     await persist(updated);
     setSaving(false);
 
-    // IA corrige ortografia em background (silencioso)
     try {
       const res = await apiFetch("/api/ai/corrigir-nota", {
         method: "POST",
@@ -110,9 +101,6 @@ export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) 
           await persist(corrected);
         }
       }
-    } catch {
-      // Falha silenciosa — mantém texto original
-    }
     } catch {}
   };
 
@@ -124,10 +112,8 @@ export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) 
 
   const startRecording = () => {
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SR) { toast.error("Gravação de voz não suportada. Use Chrome ou Edge."); return; }
     if (!SR) { toast.error("Gravação de voz não suportada neste navegador."); return; }
 
-    // Preserva o que já foi digitado — voz vai CONTINUAR de onde parou
     inputPrefixRef.current = input.trim();
 
     const r = new SR();
@@ -144,7 +130,6 @@ export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) 
       }
       const voiceText = (final + interim).trim();
       const prefix = inputPrefixRef.current;
-      // Voz vai DENTRO do textarea — continua do texto pré-existente
       setInput(prefix ? `${prefix} ${voiceText}` : voiceText);
     };
 
@@ -166,35 +151,25 @@ export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) 
     recognitionRef.current?.stop();
     recognitionRef.current = null;
     setIsRecording(false);
-    // Texto fica no textarea para o usuário revisar e clicar "+"
   };
 
   return (
-    <div className="px-5 py-4 space-y-3">
-
     <div className="px-5 py-4 space-y-4">
       {/* ── Header ── */}
       <div className="flex items-center justify-between gap-2">
         <div>
-          <p className="text-[9px] font-black uppercase tracking-widest text-slate-500">Nova Nota</p>
-          <p className="text-[8px] text-slate-700 truncate max-w-[120px]">{leadName}</p>
           <p className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">Notas & Registros</p>
           <p className="text-xs text-[var(--color-text-faint)] truncate max-w-[140px]">{leadName}</p>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <button
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={() => setInput((v) => v ? `${v}\n📞 Chamada — ` : `📞 Chamada — `)}
             disabled={isRecording}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-white/[0.1] text-slate-400 text-[8px] font-black uppercase tracking-widest hover:border-cyan-500/30 hover:text-cyan-400 transition-all disabled:opacity-40"
             className="text-[10px] font-bold h-7 gap-1"
           >
-            <Phone className="w-3 h-3" /> Chamada ao Vivo
-          </button>
-          <button
             <Phone className="w-3 h-3 text-[var(--color-primary-blue)]" /> Chamada
           </Button>
           <Button
@@ -202,29 +177,18 @@ export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) 
             variant={isRecording ? "danger" : "outline"}
             size="sm"
             onClick={() => (isRecording ? stopRecording() : startRecording())}
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl border text-[8px] font-black uppercase tracking-widest transition-all ${
-              isRecording
-                ? "border-rose-500/30 text-rose-400 bg-rose-500/10 animate-pulse"
-                : "border-white/[0.1] text-slate-400 hover:border-violet-500/30 hover:text-violet-400"
-            }`}
             className="text-[10px] font-bold h-7 gap-1"
           >
-            {isRecording ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3" />}
-            {isRecording ? "Parar" : "Gravar Voz"}
-          </button>
             {isRecording ? <MicOff className="w-3 h-3" /> : <Mic className="w-3 h-3 text-purple-500" />}
             {isRecording ? "Parar Gravação" : "Gravar Voz"}
           </Button>
         </div>
       </div>
 
-      {/* ── Textarea + botão + ── */}
       {/* ── Textarea ── */}
       <div className="relative">
         {isRecording && (
           <div className="absolute top-2.5 left-3.5 flex items-center gap-1.5 z-10 pointer-events-none">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse" />
-            <span className="text-[8px] text-rose-400 font-black uppercase tracking-widest">Ao vivo</span>
             <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
             <span className="text-[9px] text-rose-500 font-black uppercase tracking-widest">Ouvindo...</span>
           </div>
@@ -235,90 +199,60 @@ export function NotasSection({ lead, leadName, updateLead }: NotasSectionProps) 
           onKeyDown={(e) => {
             if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); addNote(); }
           }}
-          placeholder="Digite uma nota ou use 'Gravar Voz'..."
-          rows={4}
-          className={`w-full bg-white/[0.03] border rounded-2xl px-4 py-3 pr-12 text-xs text-white placeholder:text-slate-600 focus:outline-none transition-all resize-none leading-relaxed ${
           placeholder="Escreva anotações importantes sobre a negociação..."
           rows={3}
           className={`w-full bg-[var(--color-surface-elevated)] border rounded-[var(--radius-control)] px-4 py-3 pr-12 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] transition-all resize-none leading-relaxed ${
             isRecording
-              ? "border-rose-500/25 pt-8"
-              : "border-white/[0.08] focus:border-white/[0.18]"
               ? "border-rose-500/30 pt-8"
               : "border-[var(--color-border-default)]"
           }`}
         />
-        {/* Botão + */}
-        <button
         <Button
           size="sm"
           onClick={addNote}
           disabled={!input.trim() || saving}
-          className="absolute bottom-3 right-3 w-8 h-8 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-white flex items-center justify-center transition-all disabled:opacity-25 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/25"
           loading={saving}
           className="absolute bottom-3 right-3 w-7 h-7 p-0 rounded-lg shrink-0"
         >
-          {saving
-            ? <span className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-            : <Plus className="w-4 h-4" />
-          }
-        </button>
           <Plus className="w-4 h-4" />
         </Button>
       </div>
-      <div className="flex items-center justify-between -mt-1">
-        <p className="text-[8px] text-slate-600">
-          Anotando como <span className="text-slate-400 font-semibold">{authorName}</span>
       <div className="flex items-center justify-between -mt-2">
         <p className="text-[10px] text-[var(--color-text-faint)]">
           Autor: <span className="text-[var(--color-text-muted)] font-semibold">{authorName}</span>
         </p>
-        <p className="text-[8px] text-slate-700">⌘+Enter · IA corrige ortografia</p>
         <p className="text-[10px] text-[var(--color-text-faint)] flex items-center gap-1">
           <Sparkles className="w-3 h-3 text-purple-500" /> Correção automática por IA
         </p>
       </div>
 
-      {/* ── Cards de notas ── */}
       {/* ── Notes List ── */}
       {notes.length > 0 ? (
         <div className="space-y-2.5">
           {notes.map((note) => (
-            <div key={note.id} className="bg-white/[0.02] border border-white/[0.07] rounded-2xl overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-2 border-b border-white/[0.05]">
             <Card key={note.id} className="p-3.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-[9px] font-black text-emerald-400 uppercase tracking-widest">
                   <p className="text-[10px] font-bold text-[var(--color-primary-blue)] uppercase tracking-wider">
                     {formatDate(note.createdAt)}
                   </p>
-                  <p className="text-[9px] text-slate-500">por {note.author}</p>
                   <p className="text-[10px] text-[var(--color-text-faint)]">por {note.author}</p>
                 </div>
                 <button
                   onClick={() => deleteNote(note.id)}
-                  className="p-1.5 hover:bg-rose-500/10 rounded-lg text-slate-700 hover:text-rose-400 transition-all"
                   className="p-1 hover:bg-rose-500/10 rounded text-[var(--color-text-faint)] hover:text-rose-500 transition-all cursor-pointer"
                   title="Remover Nota"
                 >
-                  <Trash2 className="w-3 h-3" />
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <p className="px-4 py-3 text-[11px] text-slate-300 leading-relaxed whitespace-pre-wrap">
               <p className="text-xs text-[var(--color-text-primary)] leading-relaxed whitespace-pre-wrap">
                 {note.text}
               </p>
-            </div>
             </Card>
           ))}
         </div>
       ) : (
-        <div className="flex flex-col items-center gap-2 py-8 text-center border border-dashed border-white/[0.06] rounded-2xl">
-          <MessageSquare className="w-7 h-7 text-slate-700" />
-          <p className="text-[10px] text-slate-600 font-bold">Nenhuma nota registrada.</p>
-          <p className="text-[9px] text-slate-700">Escreva ou grave para adicionar.</p>
         <div className="flex flex-col items-center gap-2 py-8 text-center border border-dashed border-[var(--color-border-default)] rounded-[var(--radius-panel)]">
           <MessageSquare className="w-6 h-6 text-[var(--color-text-faint)]" />
           <p className="text-xs text-[var(--color-text-muted)] font-bold">Nenhuma anotação cadastrada.</p>
