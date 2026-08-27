@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import { Card } from "../ui/card";
+import { Button } from "../ui/button";
+import { Badge } from "../ui/badge";
 import { CommandPalette } from "../CommandPalette";
 import {
   Menu,
@@ -17,6 +19,9 @@ import {
   Users,
   Settings2,
   AlertCircle,
+  CheckCheck,
+  Trash2,
+  ChevronRight,
 } from "lucide-react";
 
 interface TopbarProps {
@@ -26,6 +31,8 @@ interface TopbarProps {
   setIsMobileSidebarOpen: (val: boolean) => void;
   logoDarkIcon: string;
 }
+
+type NotificationTab = "todas" | "unread" | "CRM" | "Financeiro" | "Sistema";
 
 export function Topbar({
   isSidebarCollapsed,
@@ -40,13 +47,13 @@ export function Topbar({
     notifications,
     markNotificationAsRead,
     markAllNotificationsAsRead,
-
     theme,
     toggleTheme,
   } = useData();
 
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<NotificationTab>("todas");
 
   const unreadNotifications = notifications.filter((n) => !n.read).length;
   const userInitials = user?.name ? user.name.substring(0, 2).toUpperCase() : "GT";
@@ -56,10 +63,36 @@ export function Topbar({
     navigate("/login");
   };
 
+  const filteredNotifications = notifications.filter((n) => {
+    if (activeTab === "unread") return !n.read;
+    if (activeTab === "CRM") return n.category === "CRM";
+    if (activeTab === "Financeiro") return n.category === "Financeiro";
+    if (activeTab === "Sistema") return n.category === "Sistema";
+    return true;
+  });
+
+  const getCategoryStyle = (cat?: string) => {
+    switch (cat) {
+      case "CRM":
+        return { icon: Target, bg: "bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] border-[var(--color-primary-blue)]/20", label: "CRM" };
+      case "Produtividade":
+        return { icon: CheckSquare, bg: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20", label: "Tarefas" };
+      case "Financeiro":
+        return { icon: Wallet, bg: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20", label: "Financeiro" };
+      case "Engajamento":
+        return { icon: Mail, bg: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20", label: "Omnichannel" };
+      case "Sistema":
+        return { icon: Server, bg: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20", label: "Sistema" };
+      default:
+        return { icon: Bell, bg: "bg-slate-500/10 text-[var(--color-text-muted)] border-[var(--color-border-default)]", label: cat || "Geral" };
+    }
+  };
+
   return (
-    <header className="h-16 border-b border-[var(--color-border-default)] bg-[var(--color-surface)]/80 backdrop-blur-xl flex items-center justify-between px-6 z-40 shrink-0">
+    <header className="h-16 border-b border-[var(--color-border-default)] bg-[var(--color-surface)]/80 backdrop-blur-xl flex items-center justify-between px-6 z-40 shrink-0 select-none">
       <div className="flex items-center gap-4 flex-1">
         <button
+          type="button"
           onClick={() => {
             if (window.innerWidth < 1024) {
               setIsMobileSidebarOpen(!isMobileSidebarOpen);
@@ -67,7 +100,7 @@ export function Topbar({
               setIsSidebarCollapsed(!isSidebarCollapsed);
             }
           }}
-          className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] bg-[var(--color-surface-sunken)] hover:bg-[var(--color-border-default)] rounded-lg transition-colors mr-2 block"
+          className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] bg-[var(--color-surface-sunken)] hover:bg-[var(--color-border-default)] rounded-xl transition-colors mr-2 cursor-pointer border-none"
         >
           <Menu className="w-5 h-5" />
         </button>
@@ -92,152 +125,188 @@ export function Topbar({
         </div>
       </div>
 
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-4 sm:gap-5">
         <button
+          type="button"
           onClick={() => toggleTheme()}
-          className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] bg-[var(--color-surface-sunken)] hover:bg-[var(--color-border-default)] rounded-xl transition-colors"
+          className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] bg-[var(--color-surface-sunken)] hover:bg-[var(--color-border-default)] rounded-xl transition-colors cursor-pointer border-none"
           title="Alternar Tema (Light/Dark)"
         >
-          {theme === "dark" ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-500" />}
+          {theme === "dark" ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-indigo-500" />}
         </button>
+
         <div className="relative">
           <button
+            type="button"
             onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-            className={`text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-all relative p-2.5 rounded-xl border border-transparent ${isNotificationsOpen
-                ? "bg-[var(--color-border-default)] text-[var(--color-text-primary)] shadow-lg"
+            className={`text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-all relative p-2 rounded-xl border border-transparent cursor-pointer ${
+              isNotificationsOpen
+                ? "bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] shadow-sm"
                 : unreadNotifications > 0
-                  ? "bg-rose-500/5 border-rose-500/20 hover:bg-rose-500/10 text-rose-500"
-                  : "hover:bg-[var(--color-surface-sunken)]"
-              }`}
+                ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                : "hover:bg-[var(--color-surface-sunken)]"
+            }`}
             title="Notificações"
           >
-            <Bell className={`w-5 h-5 ${unreadNotifications > 0 ? "animate-[bounce_2s_infinite]" : ""}`} />
+            <Bell className="w-4 h-4" />
             {unreadNotifications > 0 && (
-              <>
-                <span className="absolute top-2 right-2 w-4 h-4 rounded-full bg-rose-500 animate-ping opacity-75" />
-                <span className="absolute top-2 right-2 w-4 h-4 flex items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white shadow-[0_0_8px_#f43f5e] border-2 border-[var(--color-surface)]">
-                  {unreadNotifications}
-                </span>
-              </>
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-rose-500 text-[9px] font-black text-white shadow-xs">
+                {unreadNotifications}
+              </span>
             )}
           </button>
 
           {isNotificationsOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setIsNotificationsOpen(false)}></div>
-              <Card className="fixed left-4 right-4 sm:left-auto sm:right-4 md:absolute md:left-auto md:right-0 top-16 md:top-full md:mt-4 md:w-[410px] bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
-                <div className="p-4 border-b border-[var(--color-border-default)] flex justify-between items-center bg-[var(--color-surface-sunken)]">
+              <Card className="fixed left-4 right-4 sm:left-auto sm:right-4 md:absolute md:left-auto md:right-0 top-16 md:top-full md:mt-3 md:w-[440px] bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-2xl z-50 overflow-hidden animate-in fade-in slide-in-from-top-3 duration-200">
+                {/* Header */}
+                <div className="p-4 border-b border-[var(--color-border-subtle)] flex justify-between items-center bg-[var(--color-surface-sunken)]">
                   <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-black uppercase tracking-tight text-[var(--color-text-primary)]">
-                      Central de Notificações
-                    </h4>
-                    <span className="px-2 py-0.5 rounded-full bg-[#2563EB] text-[9px] font-black text-white">
-                      {unreadNotifications} novas
-                    </span>
+                    <div className="w-7 h-7 rounded-lg bg-[var(--color-primary-blue)]/10 flex items-center justify-center">
+                      <Bell className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-black uppercase tracking-wider text-[var(--color-text-primary)]">
+                        Central de Notificações
+                      </h4>
+                      <p className="text-[10px] text-[var(--color-text-muted)]">
+                        {unreadNotifications} {unreadNotifications === 1 ? "pendente de leitura" : "pendentes de leitura"}
+                      </p>
+                    </div>
                   </div>
-                  <button onClick={() => markAllNotificationsAsRead()} className="text-[10px] text-[#2563EB] font-bold hover:underline">
-                    Marcar todas como lidas
-                  </button>
+
+                  {unreadNotifications > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => markAllNotificationsAsRead()}
+                      className="text-[11px] text-[var(--color-primary-blue)] font-bold hover:underline flex items-center gap-1 cursor-pointer bg-transparent border-none"
+                    >
+                      <CheckCheck className="w-3.5 h-3.5" /> Ler todas
+                    </button>
+                  )}
                 </div>
 
-                <div className="bg-[var(--color-surface-sunken)] border-b border-[var(--color-border-default)] p-3 flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] font-black text-[var(--color-text-muted)] uppercase tracking-wider flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Simulador Real-Time
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[9px] text-[var(--color-text-muted)]">Simulações desativadas</span>
-                  </div>
+                {/* Tabs filter */}
+                <div className="flex items-center gap-1 p-2 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-elevated)] overflow-x-auto scrollbar-none">
+                  {[
+                    { id: "todas" as const, label: "Todas", count: notifications.length },
+                    { id: "unread" as const, label: "Não lidas", count: unreadNotifications },
+                    { id: "CRM" as const, label: "CRM", count: notifications.filter(n => n.category === "CRM").length },
+                    { id: "Financeiro" as const, label: "Finanças", count: notifications.filter(n => n.category === "Financeiro").length },
+                    { id: "Sistema" as const, label: "Sistema", count: notifications.filter(n => n.category === "Sistema").length },
+                  ].map((tab) => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase transition-all shrink-0 cursor-pointer border-none flex items-center gap-1.5 ${
+                        activeTab === tab.id
+                          ? "bg-[var(--color-primary-blue)] text-white shadow-xs"
+                          : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                      }`}
+                    >
+                      {tab.label}
+                      {tab.count > 0 && (
+                        <span className={`px-1 rounded-full text-[8px] font-mono ${activeTab === tab.id ? "bg-white/25 text-white" : "bg-[var(--color-border-default)] text-[var(--color-text-muted)]"}`}>
+                          {tab.count}
+                        </span>
+                      )}
+                    </button>
+                  ))}
                 </div>
 
-                <div className="max-h-[450px] overflow-y-auto scrollbar-thin">
-                  {(() => {
-                    const groupedNotifications: { [key: string]: typeof notifications } = {};
-                    notifications.forEach((n) => {
-                      const groupKey = n.date || "Mais Antigos";
-                      if (!groupedNotifications[groupKey]) groupedNotifications[groupKey] = [];
-                      groupedNotifications[groupKey].push(n);
-                    });
+                {/* Notifications List */}
+                <div className="max-h-[420px] overflow-y-auto scrollbar-thin divide-y divide-[var(--color-border-subtle)]">
+                  {filteredNotifications.length > 0 ? (
+                    filteredNotifications.map((n) => {
+                      const style = getCategoryStyle(n.category);
+                      const IconComp = style.icon;
 
-                    return notifications.length > 0 ? (
-                      Object.keys(groupedNotifications).map((groupName) => (
-                        <div key={groupName} className="space-y-0.5">
-                          <div className="px-4 py-1.5 bg-[var(--color-surface-sunken)] border-y border-[var(--color-border-default)] text-[9px] uppercase font-black tracking-widest text-[#06B6D4] flex items-center justify-between">
-                            <span>{groupName}</span>
-                            <span className="text-[8px] font-bold lowercase text-[var(--color-text-faint)]">{groupedNotifications[groupName].length} item(ns)</span>
+                      return (
+                        <div
+                          key={n.id}
+                          onClick={() => markNotificationAsRead(n.id)}
+                          className={`p-3.5 hover:bg-[var(--color-surface-sunken)] cursor-pointer transition-all flex gap-3 relative group ${
+                            !n.read ? "bg-[var(--color-primary-blue)]/[0.04]" : ""
+                          }`}
+                        >
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${style.bg}`}>
+                            <IconComp className="w-4 h-4" />
                           </div>
-                          {groupedNotifications[groupName].map((n) => {
-                            const getCategoryStyle = (cat?: string) => {
-                              switch (cat) {
-                                case "CRM": return { icon: Target, bg: "bg-blue-500/10 border-blue-500/20 text-blue-500", label: "CRM" };
-                                case "Produtividade": return { icon: CheckSquare, bg: "bg-purple-500/10 border-purple-500/20 text-purple-500", label: "Produtividade" };
-                                case "Financeiro": return { icon: Wallet, bg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-500", label: "Financeiro" };
-                                case "Engajamento": return { icon: Mail, bg: "bg-cyan-500/10 border-cyan-500/20 text-cyan-500", label: "Engajamento" };
-                                case "Sistema": return { icon: Server, bg: "bg-amber-500/10 border-amber-500/20 text-amber-500", label: "Sistema" };
-                                default: return { icon: Bell, bg: "bg-slate-500/10 border-slate-500/20 text-slate-500", label: cat || "Geral" };
-                              }
-                            };
-                            const style = getCategoryStyle(n.category);
-                            const IconComp = style.icon;
-
-                            return (
-                              <div key={n.id} onClick={() => markNotificationAsRead(n.id)} className={`p-4 border-b border-[var(--color-border-default)] hover:bg-[var(--color-surface-sunken)] cursor-pointer transition-all flex gap-4 relative group ${!n.read ? "bg-[#2563EB]/5" : ""}`}>
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105 ${style.bg}`}>
-                                  <IconComp className="w-5 h-5" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex justify-between items-start mb-1 gap-1">
-                                    <div className="flex items-center gap-1.5 min-w-0">
-                                      <h5 className={`text-xs font-bold truncate ${!n.read ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"}`}>{n.title}</h5>
-                                    </div>
-                                    <span className="text-[9px] text-[var(--color-text-faint)] font-medium shrink-0 whitespace-nowrap">{n.time}</span>
-                                  </div>
-                                  <p className="text-xs text-[var(--color-text-muted)] line-clamp-3 leading-relaxed mb-1">{n.desc}</p>
-                                </div>
-                                {!n.read && <div className="absolute right-4 top-1/2 -translate-y-1/2"><div className="w-2 h-2 rounded-full bg-[#2563EB] shadow-[0_0_8px_#2563EB]"></div></div>}
-                              </div>
-                            );
-                          })}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex justify-between items-start mb-0.5 gap-1">
+                              <h5 className={`text-xs font-bold truncate ${!n.read ? "text-[var(--color-text-primary)]" : "text-[var(--color-text-muted)]"}`}>
+                                {n.title}
+                              </h5>
+                              <span className="text-[10px] text-[var(--color-text-faint)] font-mono shrink-0">
+                                {n.time}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-[var(--color-text-muted)] line-clamp-2 leading-relaxed">
+                              {n.desc}
+                            </p>
+                          </div>
+                          {!n.read && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                              <div className="w-2 h-2 rounded-full bg-[var(--color-primary-blue)] shadow-xs"></div>
+                            </div>
+                          )}
                         </div>
-                      ))
-                    ) : (
-                      <div className="p-12 flex flex-col items-center justify-center text-center opacity-40">
-                        <Bell className="w-12 h-12 mb-4 text-[var(--color-text-faint)]" />
-                        <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-text-muted)]">Nenhuma notificação</p>
-                      </div>
-                    );
-                  })()}
+                      );
+                    })
+                  ) : (
+                    <div className="p-10 flex flex-col items-center justify-center text-center opacity-50">
+                      <Bell className="w-8 h-8 mb-2 text-[var(--color-text-faint)]" />
+                      <p className="text-xs font-bold text-[var(--color-text-muted)]">
+                        Nenhuma notificação {activeTab !== "todas" ? "nesta categoria" : ""}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </Card>
             </>
           )}
         </div>
 
-        <div className="flex items-center gap-3 pl-6 border-l border-[var(--color-border-default)]">
+        <div className="flex items-center gap-3 pl-4 sm:pl-6 border-l border-[var(--color-border-default)]">
           <div className="text-right hidden sm:block">
-            <p className="text-sm font-bold text-[var(--color-text-primary)] leading-tight">{user?.name || "Usuário"}</p>
-            <p className="text-[10px] text-[#06B6D4] uppercase font-black tracking-widest">{user?.tenantName || "Empresa"}</p>
+            <p className="text-xs font-bold text-[var(--color-text-primary)] leading-tight">{user?.name || "Usuário"}</p>
+            <p className="text-[10px] text-[var(--color-primary-blue)] font-bold uppercase tracking-wider">{user?.tenantName || "Empresa"}</p>
           </div>
           <div className="relative">
-            <div onClick={() => setIsUserMenuOpen(!isUserMenuOpen)} className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#2563EB] to-blue-700 flex items-center justify-center text-sm font-black shadow-[0_8px_20px_rgba(37,99,235,0.4)] text-white hover:scale-110 hover:rotate-3 transition-all cursor-pointer">
+            <div
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#2563EB] to-blue-700 flex items-center justify-center text-xs font-bold text-white hover:opacity-90 transition-all cursor-pointer shadow-xs"
+            >
               {userInitials}
             </div>
             {isUserMenuOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setIsUserMenuOpen(false)}></div>
                 <div className="absolute top-full right-0 pt-2 w-48 z-50">
-                  <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl shadow-2xl p-1 animate-in fade-in slide-in-from-top-2">
-                    <button onClick={() => { setIsUserMenuOpen(false); navigate("/app/configuracoes"); }} className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] rounded-lg transition-colors cursor-pointer">
-                      <Users className="w-4 h-4" /> Meu Perfil
+                  <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl shadow-xl p-1 animate-in fade-in slide-in-from-top-2">
+                    <button
+                      type="button"
+                      onClick={() => { setIsUserMenuOpen(false); navigate("/app/configuracoes"); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] rounded-lg transition-colors cursor-pointer border-none bg-transparent text-left"
+                    >
+                      <Users className="w-3.5 h-3.5" /> Meu Perfil
                     </button>
-                    <button onClick={() => { setIsUserMenuOpen(false); navigate("/app/configuracoes"); }} className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] rounded-lg transition-colors cursor-pointer">
-                      <Settings2 className="w-4 h-4" /> Configs
+                    <button
+                      type="button"
+                      onClick={() => { setIsUserMenuOpen(false); navigate("/app/configuracoes"); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] rounded-lg transition-colors cursor-pointer border-none bg-transparent text-left"
+                    >
+                      <Settings2 className="w-3.5 h-3.5" /> Configurações
                     </button>
-                    <div className="h-px bg-[var(--color-border-default)] my-1"></div>
-                    <button onClick={() => { setIsUserMenuOpen(false); handleLogout(); }} className="w-full flex items-center gap-3 px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer">
-                      <AlertCircle className="w-4 h-4" /> Sair
+                    <div className="h-px bg-[var(--color-border-subtle)] my-1"></div>
+                    <button
+                      type="button"
+                      onClick={() => { setIsUserMenuOpen(false); handleLogout(); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer border-none bg-transparent text-left"
+                    >
+                      <AlertCircle className="w-3.5 h-3.5" /> Sair da Conta
                     </button>
                   </div>
                 </div>

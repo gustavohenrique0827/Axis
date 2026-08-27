@@ -35,6 +35,10 @@ import {
   KeySquare,
   Server,
   Handshake,
+  CalendarDays,
+  Receipt,
+  TrendingUp,
+  SlidersHorizontal,
 } from "lucide-react";
 
 /**
@@ -45,26 +49,60 @@ export type NavReqCondition = "master-or-gtech" | "master-or-partner";
 
 export const navSections = [
   {
-    title: "Geral",
+    title: "Visão Geral",
     items: [
       { name: "Dashboard", path: "/app/dashboard", icon: LayoutDashboard },
     ],
   },
   {
-    title: "CRM & Pipeline",
+    title: "CRM & Vendas",
     reqModule: "crm",
     items: [
       { name: "Leads & Pipeline", path: "/app/pipeline", icon: Columns3 },
+      { name: "Agenda Comercial", path: "/app/crm/agenda", icon: CalendarDays },
       { name: "Reuniões", path: "/app/reunioes", icon: Video },
       { name: "Propostas", path: "/app/propostas", icon: FileText },
-      { name: "Clientes", path: "/app/clientes", icon: Users },
+      { name: "Base de Clientes", path: "/app/clientes", icon: Users },
     ],
   },
   {
-    title: "Catálogo",
-    reqModule: "catalogo",
+    title: "Comunicação & Mkt",
     items: [
-      { name: "Produtos", path: "/app/produtos", icon: FolderOpen },
+      { name: "Mensageria Omnichannel", path: "/app/mensageria", icon: Mail, reqModule: "engajamento" },
+      { name: "Automações", path: "/app/automacoes", icon: Zap, reqModule: "engajamento" },
+      { name: "Campanhas de Mkt", path: "/app/marketing/campanhas", icon: Megaphone, reqModule: "marketing" },
+      { name: "Landing Pages", path: "/app/marketing/landing-pages", icon: Globe, reqModule: "marketing" },
+      { name: "Formulários", path: "/app/marketing/formularios", icon: FileText, reqModule: "marketing" },
+      { name: "Conteúdo & Social", path: "/app/marketing/conteudo", icon: Edit3, reqModule: "marketing" },
+      { name: "Analytics de Mkt", path: "/app/marketing/analytics", icon: BarChart2, reqModule: "marketing" },
+    ],
+  },
+  {
+    title: "Operações & Catálogo",
+    items: [
+      { name: "Catálogo de Produtos", path: "/app/produtos", icon: FolderOpen, reqModule: "catalogo" },
+      { name: "Tarefas & Projetos", path: "/app/tarefas", icon: CheckSquare, reqModule: "produtividade" },
+    ],
+  },
+  {
+    title: "Gestão Financeira",
+    reqModule: "financeiro",
+    items: [
+      { name: "Painel Financeiro", path: "/app/financeiro", icon: Wallet },
+      { name: "Contratos & Faturas", path: "/app/financeiro/faturas", icon: Receipt },
+      { name: "Contas a Receber", path: "/app/financeiro/receber", icon: TrendingUp },
+      { name: "Contas a Pagar", path: "/app/financeiro/pagar", icon: Wallet },
+      { name: "Comissões & Metas", path: "/app/financeiro/metas", icon: Award },
+      { name: "DRE & Resultados", path: "/app/financeiro/dre", icon: PieChart },
+    ],
+  },
+  {
+    title: "Inteligência & BI",
+    reqModule: "bi",
+    items: [
+      { name: "Performance SDR / IA", path: "/app/performance-ia", icon: Brain },
+      { name: "CPM & Indicadores", path: "/app/indicadores", icon: BarChart2 },
+      { name: "Relatórios Executivos", path: "/app/relatorios", icon: PieChart },
     ],
   },
   {
@@ -76,34 +114,14 @@ export const navSections = [
       { name: "Pacientes", path: "/app/clinica/pacientes", icon: Users },
       { name: "Prontuários EHR", path: "/app/clinica/prontuarios", icon: FileText },
       { name: "Faturamento", path: "/app/clinica/faturamento", icon: Wallet },
-      { name: "Estoque", path: "/app/clinica/estoque", icon: Archive },
+      { name: "Estoque Clínico", path: "/app/clinica/estoque", icon: Archive },
       { name: "Telemedicina", path: "/app/clinica/telemedicina", icon: Video },
       { name: "Exames & Labs", path: "/app/clinica/exames", icon: FlaskConical },
       { name: "BI Clínico", path: "/app/clinica/bi", icon: BarChart3 },
     ],
   },
   {
-    title: "Engajamento",
-    reqModule: "engajamento",
-    items: [
-      { name: "Mensageria", path: "/app/mensageria", icon: Mail },
-      { name: "Automações", path: "/app/automacoes", icon: Zap },
-    ],
-  },
-  {
-    title: "Marketing",
-    reqModule: "marketing",
-    items: [
-      { name: "Conteúdo", path: "/app/marketing/conteudo", icon: Edit3 },
-      { name: "Social Media", path: "/app/marketing/social", icon: Share2 },
-      { name: "Landing Pages", path: "/app/marketing/landing-pages", icon: Globe },
-      { name: "Formulários", path: "/app/marketing/formularios", icon: FileText },
-      { name: "Campanhas", path: "/app/marketing/campanhas", icon: Megaphone },
-      { name: "Métricas", path: "/app/marketing/analytics", icon: BarChart2 },
-    ],
-  },
-  {
-    title: "Educação",
+    title: "Educação & Cursos",
     reqModule: "educacao",
     items: [
       { name: "Painel Educação", path: "/app/educacao/painel", icon: LayoutDashboard },
@@ -111,41 +129,6 @@ export const navSections = [
       { name: "Base de Alunos", path: "/app/educacao/alunos", icon: Users },
       { name: "Banco de Conteúdo", path: "/app/educacao/conteudo", icon: BookOpen },
       { name: "Certificados", path: "/app/educacao/certificados", icon: Award },
-    ],
-  },
-  {
-    title: "Financeiro",
-    reqModule: "financeiro",
-    items: [
-      { name: "Painel Financeiro", path: "/app/financeiro", icon: Wallet },
-    ],
-  },
-  {
-    title: "Produtividade",
-    reqModule: "produtividade",
-    items: [
-      { name: "Tarefas", path: "/app/tarefas", icon: CheckSquare },
-    ],
-  },
-  {
-    title: "BI & Indicadores",
-    reqModule: "bi",
-    items: [
-      { name: "Performance SDR/IA", path: "/app/performance-ia", icon: Brain },
-      { name: "CPM / Indicadores", path: "/app/indicadores", icon: BarChart2 },
-      { name: "Relatórios", path: "/app/relatorios", icon: PieChart },
-    ],
-  },
-  {
-    title: "Dev & Tecnologia",
-    reqModule: "dev",
-    items: [
-      { name: "Painel Dev", path: "/app/dev/painel", icon: Code2 },
-      { name: "Projetos", path: "/app/dev/projetos", icon: FolderCode },
-      { name: "Sprints", path: "/app/dev/sprints", icon: Kanban },
-      { name: "Issues & Bugs", path: "/app/dev/issues", icon: Bug },
-      { name: "Repositórios", path: "/app/dev/repositorios", icon: GitBranch },
-      { name: "Ambientes", path: "/app/dev/ambientes", icon: MonitorCheck },
     ],
   },
   {
@@ -160,20 +143,26 @@ export const navSections = [
     ],
   },
   {
-    title: "RH & Colaboradores",
-    reqModule: "rh",
+    title: "Dev & Engenharia",
+    reqModule: "dev",
     items: [
-      { name: "Colaboradores", path: "/app/equipe", icon: Users },
+      { name: "Painel Dev", path: "/app/dev/painel", icon: Code2 },
+      { name: "Projetos", path: "/app/dev/projetos", icon: FolderCode },
+      { name: "Sprints", path: "/app/dev/sprints", icon: Kanban },
+      { name: "Issues & Bugs", path: "/app/dev/issues", icon: Bug },
+      { name: "Repositórios", path: "/app/dev/repositorios", icon: GitBranch },
+      { name: "Ambientes", path: "/app/dev/ambientes", icon: MonitorCheck },
     ],
   },
   {
-    title: "Sistema & Config",
+    title: "Pessoas & Sistema",
     items: [
+      { name: "Colaboradores & RH", path: "/app/equipe", icon: Users, reqModule: "rh" },
       { name: "Central de Integrações", path: "/app/configuracoes/integracoes/apps", icon: Zap },
       { name: "Configurações Gerais", path: "/app/configuracoes", icon: Settings },
       { name: "Painel G-Tech", path: "/app/admin", icon: Server, reqCondition: "master-or-gtech" as NavReqCondition },
       { name: "Visão de Parceiros", path: "/app/parceiros", icon: Handshake, reqCondition: "master-or-partner" as NavReqCondition },
-      { name: "Webhooks SDR", action: "sdr-webhooks", icon: Zap },
+      { name: "Webhooks SDR", action: "sdr-webhooks", icon: SlidersHorizontal },
     ],
   },
 ];

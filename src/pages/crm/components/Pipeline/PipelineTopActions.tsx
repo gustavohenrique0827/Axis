@@ -1,5 +1,5 @@
-import { Plus } from "lucide-react";
-
+import { Plus, CalendarDays } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "../../../../components/ui/button";
 
 type Props = {
@@ -18,13 +18,24 @@ export function PipelineTopActions({
   onNewLead,
 }: Props) {
   return (
-    <div className="flex items-center gap-2 shrink-0">
-      <div className="flex items-center bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] overflow-hidden h-11">
+    <div className="flex items-center gap-2 shrink-0 flex-wrap">
+      <Link to="/app/crm/agenda">
+        <Button
+          variant="outline"
+          className="font-bold text-[10px] uppercase tracking-wider gap-1.5 h-10 px-3.5"
+        >
+          <CalendarDays className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" />
+          Agenda Comercial
+        </Button>
+      </Link>
+
+      <div className="flex items-center bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] overflow-hidden h-10">
         {(["lista", "kanban"] as const).map((v) => (
           <button
             key={v}
+            type="button"
             onClick={() => setView(v)}
-            className={`flex items-center gap-2 px-4 h-full text-[10px] font-bold uppercase tracking-widest transition-all cursor-pointer border-none ${
+            className={`flex items-center gap-2 px-3.5 h-full text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer border-none ${
               view === v
                 ? "bg-[var(--color-primary-blue)] text-white"
                 : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
@@ -39,7 +50,7 @@ export function PipelineTopActions({
         <Button
           onClick={() => setShowAnalytics(!showAnalytics)}
           variant="subtle"
-          className="font-bold text-[10px] uppercase tracking-widest gap-2 h-11 px-4"
+          className="font-bold text-[10px] uppercase tracking-wider gap-1.5 h-10 px-3.5"
         >
           {showAnalytics ? "Ocultar" : "Performance"}
         </Button>
@@ -47,11 +58,10 @@ export function PipelineTopActions({
 
       <Button
         onClick={onNewLead}
-        className="font-bold text-[10px] uppercase tracking-widest gap-2 h-11 px-6 shadow-lg shadow-blue-500/20"
+        className="font-bold text-[10px] uppercase tracking-wider gap-1.5 h-10 px-5 shadow-xs"
       >
         <Plus className="w-4 h-4" /> Novo Lead
       </Button>
     </div>
   );
 }
-

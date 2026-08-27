@@ -18,6 +18,7 @@ import Layout from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Pipeline from "./pages/crm/Pipeline";
 import Clientes from "./pages/crm/Clientes";
+import AgendaCRM from "./pages/crm/AgendaCRM";
 import Tarefas from "./pages/operative/Tarefas";
 import Produtos from "./pages/operative/Produtos";
 import Indicadores from "./pages/operative/Indicadores";
@@ -138,6 +139,8 @@ function AppContent() {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="leads" element={<Navigate to="/app/pipeline" replace />} />
           <Route path="pipeline" element={<Pipeline />} />
+          <Route path="crm/agenda" element={<AgendaCRM />} />
+          <Route path="agenda" element={<Navigate to="/app/crm/agenda" replace />} />
           <Route path="performance-ia" element={<PerformanceIA />} />
           <Route path="clinica">
             <Route index element={<Navigate to="painel" replace />} />

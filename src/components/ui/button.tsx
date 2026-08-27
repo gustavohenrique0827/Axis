@@ -13,7 +13,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", asChild = false, loading = false, disabled, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     const variants = {
-      default: "bg-[var(--color-primary-blue)] text-white border border-[var(--color-primary-blue)]/25 hover:brightness-110 shadow-[var(--shadow-control)] active:scale-[0.98]",
+      default: "bg-[var(--color-primary-blue)] !text-white font-bold border border-[var(--color-primary-blue)]/25 hover:brightness-110 shadow-[var(--shadow-control)] active:scale-[0.98]",
       outline: "border border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-primary)] active:scale-[0.98]",
       ghost: "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-primary)] active:scale-[0.98]",
       success: "bg-success/10 border border-success/25 text-success hover:bg-success/20 active:scale-[0.98]",
@@ -65,7 +65,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
               />
             </svg>
-            <span>{children}</span>
+            <span className="!text-white font-bold">{children}</span>
           </>
         ) : (
           children

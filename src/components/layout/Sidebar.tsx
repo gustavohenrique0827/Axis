@@ -53,18 +53,18 @@ export function Sidebar({
       <aside
         className={`
         fixed inset-y-0 left-0 z-50 lg:z-30 lg:relative lg:h-full
-        ${isSidebarCollapsed ? "lg:w-20" : "lg:w-72"}
+        ${isSidebarCollapsed ? "lg:w-20" : "lg:w-68"}
         ${isMobileSidebarOpen ? "translate-x-0 w-64" : "-translate-x-full lg:translate-x-0"}
-        transition-all duration-300 ease-in-out border-r border-[var(--color-border-default)] bg-[var(--color-surface)] flex flex-col shrink-0
+        transition-all duration-300 ease-in-out border-r border-[var(--color-border-default)] bg-[var(--color-surface)] flex flex-col shrink-0 select-none
       `}
       >
-        <div className="h-20 flex items-center justify-center px-3 py-3 shrink-0">
+        <div className="h-18 flex items-center justify-center px-3.5 py-3 shrink-0 border-b border-[var(--color-border-subtle)]">
           <Link
             to="/app"
-            className={`logo-image-container sidebar-logo-header flex items-center justify-center w-full h-full rounded-2xl bg-[#0B1120] shadow-sm ${isSidebarCollapsed ? "mx-auto" : ""}`}
+            className={`logo-image-container sidebar-logo-header flex items-center justify-center w-full h-full rounded-xl bg-[#0B1120] shadow-xs ${isSidebarCollapsed ? "mx-auto" : ""}`}
           >
             {isSidebarCollapsed ? (
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center p-1">
+              <div className="w-7 h-7 rounded-lg flex items-center justify-center p-0.5">
                 <img
                   src={logoDarkIcon}
                   alt="Axis"
@@ -73,11 +73,11 @@ export function Sidebar({
                 />
               </div>
             ) : (
-              <div className="relative w-full h-full flex items-center justify-center overflow-hidden px-2">
+              <div className="relative w-full h-full flex items-center justify-center overflow-hidden px-3">
                 <img
                   src={logoDarkFull}
                   alt="Axis"
-                  className="logo-container mix-blend-screen"
+                  className="logo-container mix-blend-screen max-h-7 object-contain"
                   referrerPolicy="no-referrer"
                 />
               </div>
@@ -85,35 +85,50 @@ export function Sidebar({
           </Link>
         </div>
 
-        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-8 scrollbar-none">
+        <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 scrollbar-thin">
           {navSections
-            .filter((section) => {
-              const mod = (section as any).reqModule;
-              if (!mod) return true;
-              return canAccessModule(mod);
+            .map((section) => {
+              if (section.reqModule && !canAccessModule(section.reqModule)) {
+                return null;
+              }
+
+              const visibleItems = section.items.filter((item: any) => {
+                if (item.reqModule && item.reqModule !== 'master' && !canAccessModule(item.reqModule)) return false;
+                if (item.reqModule === 'master' && !user?.isMaster) return false;
+                if (item.reqCondition && !conditionCheckers[item.reqCondition as NavReqCondition](user)) return false;
+                return true;
+              });
+
+              if (visibleItems.length === 0) return null;
+
+              return { ...section, items: visibleItems };
             })
-            .map((section, idx) => (
-              <div key={idx} className="space-y-1.5">
+            .filter(Boolean)
+            .map((section: any, idx) => (
+              <div key={idx} className="space-y-1">
                 {!isSidebarCollapsed ? (
-                  <div className="px-3 text-[10px] font-black text-[var(--color-text-faint)] uppercase tracking-[0.2em] mb-2">
-                    {section.title}
+                  <div className="px-2.5 text-[10px] font-black text-[var(--color-text-faint)] uppercase tracking-wider mb-1.5 flex items-center justify-between">
+                    <span>{section.title}</span>
                   </div>
                 ) : (
-                  <div className="h-4"></div>
+                  <div className="h-2"></div>
                 )}
                 {section.items.map((item: any) => {
-                  if (item.reqModule && item.reqModule !== 'master' && !canAccessModule(item.reqModule)) return null;
-                  if (item.reqModule === 'master' && !user?.isMaster) return null;
-                  if (item.reqCondition && !conditionCheckers[item.reqCondition as NavReqCondition](user)) return null;
-
-                  const isActive = item.path ? location.pathname.startsWith(item.path) : false;
+                  const isActive = item.path ? location.pathname === item.path || (item.path !== '/app/dashboard' && item.path !== '/app' && location.pathname.startsWith(item.path)) : false;
 
                   const btnContent = (
                     <button
-                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5" : "gap-3 px-3 py-2.5"} text-sm font-bold rounded-[var(--radius-control)] transition-all ${isActive ? "bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] border border-[var(--color-primary-blue)]/20 shadow-[0_0_20px_rgba(37,99,235,0.05)]" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]"}`}
+                      type="button"
+                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5" : "gap-2.5 px-3 py-2"} text-xs font-bold rounded-[var(--radius-control)] transition-all cursor-pointer border-none text-left ${
+                        isActive
+                          ? "bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] shadow-xs"
+                          : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]"
+                      }`}
                     >
-                      <item.icon className={`w-4 h-4 shrink-0 ${isActive ? "text-[var(--color-primary-blue)]" : "text-[var(--color-text-faint)]"}`} />{" "}
-                      {!isSidebarCollapsed && item.name}
+                      <item.icon className={`w-4 h-4 shrink-0 transition-colors ${isActive ? "text-[var(--color-primary-blue)]" : "text-[var(--color-text-faint)]"}`} />
+                      {!isSidebarCollapsed && (
+                        <span className="truncate">{item.name}</span>
+                      )}
                     </button>
                   );
 
@@ -139,6 +154,7 @@ export function Sidebar({
                       to={item.path}
                       title={isSidebarCollapsed ? item.name : undefined}
                       onClick={() => setIsMobileSidebarOpen(false)}
+                      className="block"
                     >
                       {btnContent}
                     </Link>
@@ -149,15 +165,15 @@ export function Sidebar({
         </div>
 
         {!isSidebarCollapsed && (
-          <div className="p-4 border-t border-[var(--color-border-default)] bg-[var(--color-surface-sunken)]/40">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></div>
-              <span className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">
-                Global Status 99.8%
+          <div className="p-3 border-t border-[var(--color-border-default)] bg-[var(--color-surface-sunken)]/40 shrink-0">
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+              <span className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">
+                Sistema Operacional 100%
               </span>
             </div>
-            <div className="text-[10px] text-[var(--color-text-faint)] font-medium italic line-clamp-1 border-l border-[var(--color-primary-blue)]/20 pl-2">
-              Próximo backup global em 4h 12m
+            <div className="text-[10px] text-[var(--color-text-faint)] font-medium truncate">
+              {user?.tenantName || "Axis Gestão Corporativa"}
             </div>
           </div>
         )}

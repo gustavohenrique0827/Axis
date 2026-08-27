@@ -557,7 +557,7 @@ html:not(.dark) th {
 
 /* Unified and Standardized Button Styles for consistent sizes, colors, rounding and feedback */
 .btn-primary {
-  @apply inline-flex items-center justify-center font-medium rounded-lg text-sm bg-[#2563EB] text-[#F8FAFC] border border-blue-500/20 shadow-md shadow-blue-500/10 hover:bg-blue-600 active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;
+  @apply inline-flex items-center justify-center font-bold rounded-lg text-sm bg-[#2563EB] !text-white border border-blue-500/20 shadow-md shadow-blue-500/10 hover:bg-blue-600 active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;
 }
 
 .btn-outline {
