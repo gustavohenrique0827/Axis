@@ -173,13 +173,21 @@ html.dark {
 
 .logo-container {
   background-color: transparent !important;
-  mix-blend-mode: screen;
   object-fit: contain;
   width: auto;
   height: auto;
   max-width: 100%;
   max-height: 100%;
   transition: all 0.3s ease-in-out;
+}
+
+html.dark .logo-container {
+  mix-blend-mode: screen;
+}
+
+html:not(.dark) .logo-container {
+  mix-blend-mode: multiply;
+  filter: invert(1) hue-rotate(180deg) contrast(1.2);
 }
 
 .logo-container:hover {
@@ -327,6 +335,15 @@ html:not(.dark) .sidebar-logo-header div {
 html.dark .sidebar-logo-header {
   background-color: rgba(37, 99, 235, 0.15) !important;
   border: 1px solid rgba(37, 99, 235, 0.25) !important;
+}
+
+html:not(.dark) .sidebar-logo-header img {
+  mix-blend-mode: multiply !important;
+  filter: invert(1) hue-rotate(180deg) contrast(1.2) !important;
+}
+html.dark .sidebar-logo-header img {
+  mix-blend-mode: screen !important;
+  filter: none !important;
 }
 
 /* Botões de Ação com cores sólidas mantêm texto branco */
