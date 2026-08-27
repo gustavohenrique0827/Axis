@@ -87,7 +87,7 @@ export function usePipeline() {
   const { user, allTenantModules, tenantIdMap } = useAuth();
 
   const isMaster = user?.isMaster || user?.tenantName?.includes("G-Tech");
-  const [tenantFilter, setTenantFilter] = useState(user?.tenantId || "");
+  const [tenantFilter, setTenantFilter] = useState("");
 
   const [clientFilter, setClientFilter] = useState("Todos");
   const [clientsList, setClientsList] = useState<string[]>([]);
@@ -187,12 +187,12 @@ export function usePipeline() {
   // Filtra apenas por pipeline+tenant — sem seller/company/client — para que os
   // dropdowns mostrem só as opções relevantes ao pipeline que está sendo visto.
   const pipelineLeads = useMemo(() => leads.filter((item: any) => {
-    const matchesTenant   = !isMaster || !tenantFilter || item.tenantId === tenantFilter;
+    const matchesTenant = !tenantFilter || tenantFilter === "Todos" || item.tenantId === tenantFilter || !item.tenantId;
     const matchesPipeline = currentPipeline === "sdr"
       ? item.pipelineId === "sdr"
       : !item.pipelineId || item.pipelineId === "comercial";
     return matchesTenant && matchesPipeline;
-  }), [leads, currentPipeline, isMaster, tenantFilter]);
+  }), [leads, currentPipeline, tenantFilter]);
 
   // Mapa clientName → clientId para filtrar leads que têm clientId mas não clientName
   const clientNameToId = useMemo(() => {
@@ -228,7 +228,7 @@ export function usePipeline() {
   // ─── Filtered leads ───────────────────────────────────────────────────────────
   const filteredItemsList = useMemo(() => leads
     .filter((item: any) => {
-      const matchesTenant   = !isMaster || !tenantFilter || item.tenantId === tenantFilter;
+      const matchesTenant = !tenantFilter || tenantFilter === "Todos" || item.tenantId === tenantFilter || !item.tenantId;
       const matchesPipeline = currentPipeline === "sdr"
         ? item.pipelineId === "sdr"
         : !item.pipelineId || item.pipelineId === "comercial";

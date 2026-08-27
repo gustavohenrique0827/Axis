@@ -155,7 +155,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("axis_brand_changed", applyBrandColors);
   }, []);
 
-  const [leads, setLeads] = useState<Lead[]>([]);
+  const [leads, setLeads] = useState<Lead[]>(() => {
+    try {
+      const saved = localStorage.getItem("axis_leads");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {}
+    return defaultLeads;
+  });
   const [tasks, setTasks] = useState<Task[]>([]);
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [leadActivities, setLeadActivities] = useState<LeadActivity[]>([]);
@@ -344,7 +353,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('financial_goals').select('*').eq('tenant_id', tenantId),
             ]);
 
-            if (!leadsRes.error && leadsRes.data) setLeads(leadsRes.data as Lead[]);
+            if (!leadsRes.error && leadsRes.data && leadsRes.data.length > 0) setLeads(leadsRes.data as Lead[]);
             if (!tasksRes.error && tasksRes.data) setTasks(tasksRes.data as Task[]);
             if (!contractsRes.error && contractsRes.data) setContracts(contractsRes.data as Contract[]);
             if (!actsRes.error && actsRes.data) setLeadActivities(actsRes.data as LeadActivity[]);
@@ -396,6 +405,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
     loadInitialData();
   }, [authLoading, tenantId]);
+
+  useEffect(() => {
+    if (leads && leads.length > 0) {
+      localStorage.setItem("axis_leads", JSON.stringify(leads));
+    }
+  }, [leads]);
+
   const notifiedRemindersRef = React.useRef<Record<string, boolean>>({});
   useEffect(() => {
     const checkTeleconsultations = () => {
