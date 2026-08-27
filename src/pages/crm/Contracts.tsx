@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button } from "../../components/ui/button";
 import { Modal } from "../../components/ui/modal";
+import { Input } from "../../components/ui/input";
+import { FormField } from "../../components/ui/form-field";
 import { ConfirmModal } from "../../components/ui/modals/shared/ConfirmModal";
 import { Plus } from "lucide-react";
 import { z } from "zod";
@@ -58,7 +60,7 @@ export default function Contracts() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Gestão de Contratos</h1>
-          <p className="text-sm text-slate-400">Contratos ativos, MRR e saúde financeira.</p>
+          <p className="text-sm text-[var(--color-text-muted)]">Contratos ativos, MRR e saúde financeira.</p>
         </div>
         <div className="flex gap-3">
           <Button variant="outline" className="gap-2">Exportar CSV</Button>
@@ -93,38 +95,30 @@ export default function Contracts() {
         }
       >
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Cliente</label>
-            <select {...register("cliente")} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none">
+          <FormField label="Cliente" error={errors.cliente?.message}>
+            <select {...register("cliente")} className="w-full h-10 rounded-[var(--radius-control)] border border-[var(--color-border-default)] bg-[var(--color-surface-elevated)] px-3 py-2 text-sm text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-blue)]">
               <option value="">Selecione o Cliente</option>
               <option value="TechCorp Brasil">TechCorp Brasil</option>
               <option value="Construtora RS">Construtora RS</option>
               <option value="Clínica Vida">Clínica Vida</option>
               <option value="Mendes Consultoria">Mendes Consultoria</option>
             </select>
-            {errors.cliente && <p className="text-rose-400 text-xs">{errors.cliente.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Plano Acordado</label>
-            <select {...register("plano")} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none">
+          </FormField>
+          <FormField label="Plano Acordado" error={errors.plano?.message}>
+            <select {...register("plano")} className="w-full h-10 rounded-[var(--radius-control)] border border-[var(--color-border-default)] bg-[var(--color-surface-elevated)] px-3 py-2 text-sm text-[var(--color-text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary-blue)]">
               <option value="">Selecione o Plano</option>
               <option value="Starter">Starter</option>
               <option value="Pro">Pro</option>
               <option value="Enterprise">Enterprise</option>
               <option value="Consultoria Avulsa">Consultoria Avulsa</option>
             </select>
-            {errors.plano && <p className="text-rose-400 text-xs">{errors.plano.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Valor (MRR)</label>
-            <input type="text" {...register("valor")} placeholder="Ex: 1500,00" className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-white focus:border-[#2563EB] focus:outline-none" />
-            {errors.valor && <p className="text-rose-400 text-xs">{errors.valor.message}</p>}
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-400">Data de Assinatura</label>
-            <input type="date" {...register("data")} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg px-4 py-2 text-slate-300 focus:border-[#2563EB] focus:outline-none [color-scheme:dark]" />
-            {errors.data && <p className="text-rose-400 text-xs">{errors.data.message}</p>}
-          </div>
+          </FormField>
+          <FormField label="Valor (MRR)" error={errors.valor?.message}>
+            <Input type="text" {...register("valor")} placeholder="Ex: 1500,00" />
+          </FormField>
+          <FormField label="Data de Assinatura" error={errors.data?.message}>
+            <Input type="date" {...register("data")} />
+          </FormField>
         </form>
       </Modal>
 

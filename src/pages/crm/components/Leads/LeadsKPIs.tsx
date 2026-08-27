@@ -6,18 +6,18 @@ export function LeadsKpis(props: {
 }) {
   const { stats } = props;
   const items = [
-    { label: "Total", value: stats.total, icon: Users, color: "text-indigo-500" },
-    { label: "Alta Prior.", value: stats.hot, icon: Flame, color: "text-amber-500" },
-    { label: "Ganhos", value: stats.closed, icon: CheckCircle2, color: "text-emerald-500" },
+    { label: "Total", value: stats.total, icon: Users, color: "text-[var(--color-primary-blue)]" },
+    { label: "Alta Prior.", value: stats.hot, icon: Flame, color: "text-warning" },
+    { label: "Ganhos", value: stats.closed, icon: CheckCircle2, color: "text-success" },
   ];
 
   return (
     <div className="grid grid-cols-3 gap-3 mb-6">
       {items.map(({ label, value, icon: Icon, color }) => (
-        <Card key={label} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
+        <Card key={label} className="p-6">
           <Icon className={`w-5 h-5 ${color} mb-4`} />
-          <div className="text-2xl font-display font-black text-white mb-1 italic">{value}</div>
-          <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</div>
+          <div className="text-2xl font-display font-black text-[var(--color-text-primary)] mb-1 italic">{value}</div>
+          <div className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">{label}</div>
         </Card>
       ))}
     </div>

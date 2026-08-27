@@ -1,9 +1,15 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { Server, Handshake } from "lucide-react";
 
-import { navSections as defaultNavSections } from "./navData";
+import { navSections, type NavReqCondition } from "./navData";
+
+// Predicados para itens gated por `reqCondition` (não dá pra resolver
+// estaticamente em navData.ts porque dependem do usuário logado).
+const conditionCheckers: Record<NavReqCondition, (user: ReturnType<typeof useAuth>["user"]) => boolean> = {
+  "master-or-gtech": (user) => !!user?.isMaster || !!user?.tenantName?.includes("G-Tech"),
+  "master-or-partner": (user) => !!user?.isMaster || !!user?.partnerId,
+};
 
 interface SidebarProps {
   isSidebarCollapsed: boolean;
@@ -34,44 +40,6 @@ export function Sidebar({
     if (!cargoModulos) return isModuleEnabled(mod);
     return isModuleEnabled(mod) && cargoModulos.includes(mod);
   };
-
-  const navSections = defaultNavSections.map(s => ({ ...s, items: [...s.items] }));
-
-  if (user?.isMaster || user?.tenantName?.includes("G-Tech")) {
-    const sistemaSection = navSections.find((s) => s.title === "Gestão do Sistema") || navSections.find((s) => s.title === "Sistema");
-    if (sistemaSection) {
-      if (!sistemaSection.items.some((item: any) => item.name === "Painel G-Tech")) {
-        sistemaSection.items.push({
-          name: "Painel G-Tech",
-          path: "/app/admin",
-          icon: Server,
-        });
-      }
-    } else {
-        navSections.push({
-            title: "Sistema",
-            items: [
-                { name: "Painel G-Tech", path: "/app/admin", icon: Server }
-            ]
-        })
-    }
-  }
-
-  // "Visão de Parceiros": usuários de organizações parceiras (G-Tech, Pluppex
-  // Holding, outras parceiras — user.partnerId vem de public.users.partner_id)
-  // veem os clientes atribuídos a elas + agregado da plataforma. Separado do
-  // "Painel G-Tech" acima, que é o admin completo do SaaS (só master/G-Tech).
-  if (user?.isMaster || !!user?.partnerId) {
-    const sistemaSection = navSections.find((s) => s.title === "Gestão do Sistema") || navSections.find((s) => s.title === "Sistema");
-    const partnersItem = { name: "Visão de Parceiros", path: "/app/parceiros", icon: Handshake };
-    if (sistemaSection) {
-      if (!sistemaSection.items.some((item: any) => item.name === "Visão de Parceiros")) {
-        sistemaSection.items.push(partnersItem);
-      }
-    } else {
-      navSections.push({ title: "Sistema", items: [partnersItem] });
-    }
-  }
 
   return (
     <>
@@ -136,14 +104,15 @@ export function Sidebar({
                 {section.items.map((item: any) => {
                   if (item.reqModule && item.reqModule !== 'master' && !canAccessModule(item.reqModule)) return null;
                   if (item.reqModule === 'master' && !user?.isMaster) return null;
+                  if (item.reqCondition && !conditionCheckers[item.reqCondition as NavReqCondition](user)) return null;
 
                   const isActive = item.path ? location.pathname.startsWith(item.path) : false;
 
                   const btnContent = (
                     <button
-                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5" : "gap-3 px-3 py-2.5"} text-sm font-bold rounded-xl transition-all ${isActive ? "bg-blue-600/10 text-blue-500 border border-blue-600/20 shadow-[0_0_20px_rgba(37,99,235,0.05)]" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]"}`}
+                      className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5" : "gap-3 px-3 py-2.5"} text-sm font-bold rounded-[var(--radius-control)] transition-all ${isActive ? "bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] border border-[var(--color-primary-blue)]/20 shadow-[0_0_20px_rgba(37,99,235,0.05)]" : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]"}`}
                     >
-                      <item.icon className={`w-4 h-4 shrink-0 ${isActive ? "text-blue-500" : "text-[var(--color-text-faint)]"}`} />{" "}
+                      <item.icon className={`w-4 h-4 shrink-0 ${isActive ? "text-[var(--color-primary-blue)]" : "text-[var(--color-text-faint)]"}`} />{" "}
                       {!isSidebarCollapsed && item.name}
                     </button>
                   );
@@ -182,12 +151,12 @@ export function Sidebar({
         {!isSidebarCollapsed && (
           <div className="p-4 border-t border-[var(--color-border-default)] bg-[var(--color-surface-sunken)]/40">
             <div className="flex items-center gap-2 mb-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+              <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></div>
               <span className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-widest">
                 Global Status 99.8%
               </span>
             </div>
-            <div className="text-[10px] text-[var(--color-text-faint)] font-medium italic line-clamp-1 border-l border-blue-500/20 pl-2">
+            <div className="text-[10px] text-[var(--color-text-faint)] font-medium italic line-clamp-1 border-l border-[var(--color-primary-blue)]/20 pl-2">
               Próximo backup global em 4h 12m
             </div>
           </div>

@@ -33,7 +33,15 @@ import {
   MonitorCheck,
   Building2,
   KeySquare,
+  Server,
+  Handshake,
 } from "lucide-react";
+
+/**
+ * Condições de visibilidade que dependem do usuário logado (não dá pra
+ * resolver estaticamente aqui). Ver `conditionCheckers` em Sidebar.tsx.
+ */
+export type NavReqCondition = "master-or-gtech" | "master-or-partner";
 
 export const navSections = [
   {
@@ -163,6 +171,8 @@ export const navSections = [
     items: [
       { name: "Integrações SDR", action: "sdr-webhooks", icon: Zap },
       { name: "Configurações", path: "/app/configuracoes", icon: Settings },
+      { name: "Painel G-Tech", path: "/app/admin", icon: Server, reqCondition: "master-or-gtech" as NavReqCondition },
+      { name: "Visão de Parceiros", path: "/app/parceiros", icon: Handshake, reqCondition: "master-or-partner" as NavReqCondition },
     ],
   },
 ];
