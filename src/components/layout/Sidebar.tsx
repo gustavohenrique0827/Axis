@@ -58,13 +58,13 @@ export function Sidebar({
         transition-all duration-300 ease-in-out border-r border-[var(--color-border-default)] bg-[var(--color-surface)] flex flex-col shrink-0 select-none
       `}
       >
-        <div className="h-18 flex items-center justify-center px-3.5 py-3 shrink-0 border-b border-[var(--color-border-subtle)]">
+        <div className="h-20 flex items-center justify-center px-3 py-2.5 shrink-0 border-b border-[var(--color-border-subtle)]">
           <Link
             to="/app"
             className={`logo-image-container sidebar-logo-header flex items-center justify-center w-full h-full rounded-xl bg-transparent dark:bg-[var(--color-primary-blue)]/15 dark:border dark:border-[var(--color-primary-blue)]/25 transition-all ${isSidebarCollapsed ? "mx-auto" : ""}`}
           >
             {isSidebarCollapsed ? (
-              <div className="w-7 h-7 rounded-lg flex items-center justify-center p-0.5">
+              <div className="w-9 h-9 rounded-lg flex items-center justify-center p-0.5">
                 <img
                   src={logoDarkIcon}
                   alt="Axis"
@@ -73,11 +73,11 @@ export function Sidebar({
                 />
               </div>
             ) : (
-              <div className="relative w-full h-full flex items-center justify-center overflow-hidden px-3">
+              <div className="relative w-full h-full flex items-center justify-center overflow-hidden px-2">
                 <img
                   src={logoDarkFull}
                   alt="Axis"
-                  className="logo-container max-h-7 object-contain dark:mix-blend-screen"
+                  className="logo-container max-h-10.5 w-auto object-contain dark:mix-blend-screen"
                   referrerPolicy="no-referrer"
                 />
               </div>

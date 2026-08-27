@@ -1,56 +1,57 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
-import { MessageSquare, ExternalLink, Bell, Plus, Sparkles } from "lucide-react";
+import { Plus, MessageSquare, ExternalLink, Bell } from "lucide-react";
 import { NovoModeloModal } from "../../../components/ui/modals/marketing/NovoModeloModal";
 import { Reorder } from "motion/react";
 import { toast } from "sonner";
-import { useData } from "../../../contexts/DataContext";
 
 export function ConfigEngajamentoModelos() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [templates, setTemplates] = useState<any[]>([
-    { id: "1", nome: "Saudação Inicial", tipo: "WhatsApp", uso: 142, conteudo: "Olá {{name}}, como posso ajudar?" }
+    { id: 1, nome: 'Apresentação Comercial Inicial', tipo: 'WhatsApp', uso: '1.240 disparos' },
+    { id: 2, nome: 'Recuperação de Lead Inativo (7 dias)', tipo: 'E-mail', uso: '450 disparos' },
+    { id: 3, nome: 'Confirmação de Reunião com Closer', tipo: 'WhatsApp', uso: '890 disparos' },
+    { id: 4, nome: 'Cobrança Prévia de Fatura', tipo: 'SMS', uso: '120 disparos' },
   ]);
 
-  const handleSave = (data: any) => {
-    const newTemplate = {
-      ...data,
-      id: Math.random().toString(36).substring(7),
-      uso: 0
-    };
-    setTemplates([newTemplate, ...templates]);
-    toast.success("Modelo de mensagem salvo!");
+  const handleSave = (modelo: any) => {
+    setTemplates(prev => [...prev, { ...modelo, id: Date.now(), uso: '0 disparos' }]);
     setIsModalOpen(false);
+    toast.success("Modelo criado com sucesso!");
   };
 
   return (
     <div className="max-w-4xl space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Modelos de Mensagem</h1>
-          <p className="text-sm text-slate-400">Gerencie os templates de comunicação automatizada da sua empresa.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">Modelos de Mensagem</h1>
+          <p className="text-sm text-[var(--color-text-muted)]">Gerencie os templates de comunicação automatizada da sua empresa.</p>
         </div>
-        <Button onClick={() => setIsModalOpen(true)} className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 shadow-lg shadow-blue-500/20"><Plus className="w-4 h-4 mr-2" /> Novo Modelo</Button>
+        <Button onClick={() => setIsModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+          <Plus className="w-4 h-4 mr-1" /> Novo Modelo
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-4">
         {templates.map((modelo: any, i) => (
-          <Card key={i} className="p-4 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <Card key={i} className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm">
             <div className="flex items-start gap-4">
-              <div className="p-2 bg-white/5 rounded-lg">
-                <MessageSquare className="w-5 h-5 text-slate-400" />
+              <div className="p-2 bg-[var(--color-surface-sunken)] rounded-lg text-[var(--color-primary-blue)] border border-[var(--color-border-subtle)]">
+                <MessageSquare className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-white">{modelo.nome}</h4>
-                <div className="text-xs text-slate-400 mt-1 flex gap-2 items-center">
-                  <span className="bg-white/5 px-2 py-0.5 rounded uppercase tracking-wider">{modelo.tipo}</span>
+                <h4 className="font-bold text-sm text-[var(--color-text-primary)]">{modelo.nome}</h4>
+                <div className="text-xs text-[var(--color-text-muted)] mt-1 flex gap-2 items-center">
+                  <span className="bg-[var(--color-surface-sunken)] px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">{modelo.tipo}</span>
                   <span>&bull;</span>
                   <span>Usado: {modelo.uso}</span>
                 </div>
               </div>
             </div>
-            <Button variant="outline" className="bg-transparent border-white/10 hover:bg-white/5 shrink-0">Editar Modelo</Button>
+            <Button variant="outline" size="sm" className="shrink-0 text-xs font-bold border-[var(--color-border-default)] hover:bg-[var(--color-surface-sunken)]">
+              Editar Modelo
+            </Button>
           </Card>
         ))}
       </div>
@@ -69,15 +70,25 @@ export function ConfigEngajamentoAutomacoes() {
     <div className="max-w-4xl space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Regras de Automação</h1>
-          <p className="text-sm text-slate-400">Gatilhos do sistema baseados em eventos do pipeline.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">Regras de Automação</h1>
+          <p className="text-sm text-[var(--color-text-muted)]">Gatilhos do sistema baseados em eventos do pipeline.</p>
         </div>
-        <Button onClick={() => window.location.href = '/app/automacoes'} className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 shadow-lg shadow-blue-500/20"><Plus className="w-4 h-4 mr-2" /> Nova Automação</Button>
+        <Button onClick={() => window.location.href = '/app/automacoes'} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+          <Plus className="w-4 h-4 mr-1" /> Nova Automação
+        </Button>
       </div>
 
-      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
-        <p className="text-slate-400">O construtor central de automações agora possui uma tela dedicada em tela cheia.</p>
-        <Button onClick={() => window.location.href = '/app/automacoes'} className="mt-4 bg-[var(--color-surface)] border border-white/10 text-white hover:bg-white/5">Abrir Motor de Automação <ExternalLink className="w-4 h-4 ml-2" /></Button>
+      <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+        <p className="text-sm text-[var(--color-text-muted)] leading-relaxed">
+          O construtor central de automações agora possui uma tela dedicada em tela cheia.
+        </p>
+        <Button 
+          onClick={() => window.location.href = '/app/automacoes'} 
+          variant="outline"
+          className="mt-4 h-9 px-4 text-xs font-bold gap-2 text-[var(--color-text-primary)] border-[var(--color-border-default)] hover:bg-[var(--color-surface-sunken)]"
+        >
+          Abrir Motor de Automação <ExternalLink className="w-3.5 h-3.5" />
+        </Button>
       </Card>
     </div>
   );
@@ -115,49 +126,53 @@ export function ConfigBusinessDashboard() {
     <div className="max-w-4xl space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Dashboard de Negócios</h1>
-          <p className="text-sm text-slate-400">Personalize os KPIs e alertas da tela inicial.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">Dashboard de Negócios</h1>
+          <p className="text-sm text-[var(--color-text-muted)]">Personalize os KPIs e alertas da tela inicial.</p>
         </div>
-        <Button onClick={handleExport} className="bg-white/10 hover:bg-white/20 border border-white/10">Exportar Relatório</Button>
+        <Button onClick={handleExport} variant="outline" className="h-9 px-4 text-xs font-bold border-[var(--color-border-default)]">
+          Exportar Relatório
+        </Button>
       </div>
 
-      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
-        <Reorder.Group axis="y" values={selectedKPIs} onReorder={setSelectedKPIs} className="space-y-4">
+      <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+        <Reorder.Group axis="y" values={selectedKPIs} onReorder={setSelectedKPIs} className="space-y-3">
           {selectedKPIs.map((kpi) => (
-            <Reorder.Item key={kpi.name} value={kpi} className="flex items-center justify-between p-4 bg-[var(--color-surface)] border border-white/5 rounded-xl cursor-grab active:cursor-grabbing">
+            <Reorder.Item key={kpi.name} value={kpi} className="flex items-center justify-between p-3.5 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-[var(--radius-control)] cursor-grab active:cursor-grabbing">
               <div className="flex items-center gap-3">
-                <span className="font-bold text-white">{kpi.name}</span>
+                <span className="font-bold text-sm text-[var(--color-text-primary)]">{kpi.name}</span>
               </div>
 
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
-                  <input type="checkbox" checked={kpi.alertEnabled} onChange={(e) => updateKPI(kpi.name, 'alertEnabled', e.target.checked)} className="rounded border-white/10 bg-white/5" />
-                  <span className="text-xs text-slate-400 flex items-center gap-1"><Bell className="w-3 h-3" /> Alerta (Meta: {kpi.target})</span>
-                  <input type="number" value={kpi.target} onChange={(e) => updateKPI(kpi.name, 'target', Number(e.target.value))} className="w-20 bg-[var(--color-surface-elevated)] border border-white/10 rounded px-2 py-1 text-xs text-white" />
+                  <input type="checkbox" checked={kpi.alertEnabled} onChange={(e) => updateKPI(kpi.name, 'alertEnabled', e.target.checked)} className="rounded border-[var(--color-border-default)] bg-[var(--color-surface)]" />
+                  <span className="text-xs text-[var(--color-text-muted)] flex items-center gap-1"><Bell className="w-3 h-3 text-amber-500" /> Alerta (Meta: {kpi.target})</span>
+                  <input type="number" value={kpi.target} onChange={(e) => updateKPI(kpi.name, 'target', Number(e.target.value))} className="w-20 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded px-2 py-1 text-xs text-[var(--color-text-primary)]" />
                 </div>
                 <input
                   type="checkbox"
                   checked={true}
                   onChange={() => toggleKPI(kpi.name)}
-                  className="w-4 h-4 rounded border-white/10 bg-white/5 cursor-pointer"
+                  className="w-4 h-4 rounded border-[var(--color-border-default)] bg-[var(--color-surface)] cursor-pointer"
                 />
               </div>
             </Reorder.Item>
           ))}
           {availableKPIs.filter(kpi => !selectedKPIs.find(s => s.name === kpi)).map(kpi => (
-            <div key={kpi} className="flex items-center justify-between p-4 bg-[var(--color-surface)] border border-white/5 rounded-xl opacity-60">
-              <span className="font-bold text-white">{kpi}</span>
+            <div key={kpi} className="flex items-center justify-between p-3.5 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-[var(--radius-control)] opacity-60">
+              <span className="font-bold text-sm text-[var(--color-text-muted)]">{kpi}</span>
               <input
                 type="checkbox"
                 checked={false}
                 onChange={() => toggleKPI(kpi)}
-                className="w-4 h-4 rounded border-white/10 bg-white/5 cursor-pointer"
+                className="w-4 h-4 rounded border-[var(--color-border-default)] bg-[var(--color-surface)] cursor-pointer"
               />
             </div>
           ))}
         </Reorder.Group>
-        <Button onClick={() => toast.success("Configuração de Dashboard salva com sucesso!")} className="mt-6 bg-[#2563EB] hover:bg-blue-600 font-bold px-6">Salvar Dashboards</Button>
+        <Button onClick={() => toast.success("Configuração de Dashboard salva com sucesso!")} className="mt-6 h-9 px-6 text-xs font-bold shadow-xs">
+          Salvar Dashboards
+        </Button>
       </Card>
     </div>
-  )
+  );
 }

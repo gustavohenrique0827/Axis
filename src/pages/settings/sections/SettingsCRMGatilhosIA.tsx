@@ -1,108 +1,115 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
-import { Zap, Plus } from "lucide-react";
-import { useData } from "../../../contexts/DataContext";
+import { Zap, Plus, ArrowRight, ShieldCheck, Sparkles, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 
-import { NovaRegraIAAutomacaoModal } from "../../../components/ui/modals/marketing/NovaRegraIAAutomacaoModal";
+interface LeadScoreTrigger {
+  id: string;
+  condition: "greater" | "less";
+  scoreThreshold: number;
+  targetStageId: string;
+  autoMessage: boolean;
+}
+
+const DEFAULT_SDR_STAGES: Record<string, string> = {
+  "sdr-1": "Novos Leads (Inbound)",
+  "sdr-2": "Tentando Contato",
+  "sdr-3": "Contato Realizado / Qualificação",
+  "sdr-4": "Reunião Agendada",
+  "sdr-5": "Desqualificado / Sem Interesse",
+};
 
 export function ConfigCRMGatilhosIA() {
-  const { leadScoreTriggers, setLeadScoreTriggers } = useData();
+  const [leadScoreTriggers, setLeadScoreTriggers] = useState<LeadScoreTrigger[]>(() => {
+    const saved = localStorage.getItem("axis_crm_lead_score_triggers");
+    return saved
+      ? JSON.parse(saved)
+      : [
+          { id: "1", condition: "greater", scoreThreshold: 80, targetStageId: "sdr-3", autoMessage: true },
+          { id: "2", condition: "less", scoreThreshold: 30, targetStageId: "sdr-5", autoMessage: false },
+        ];
+  });
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [condition, setCondition] = useState<"greater" | "less">("greater");
+  const [scoreThreshold, setScoreThreshold] = useState<number>(75);
+  const [targetStageId, setTargetStageId] = useState<string>("sdr-1");
+  const [autoMessage, setAutoMessage] = useState(false);
 
-  const sdrStagesMap: Record<string, string> = {
-    s1: "Novo Lead",
-    s2: "IA Analisando",
-    s3: "Contato Iniciado",
-    s4: "Em Nutrição",
-    s5: "Qualificado",
-    s6: "Reunião Agendada",
-    s7: "Perdido",
-  };
+  const handleAddTrigger = () => {
+    if (!targetStageId) {
+      toast.error("Selecione a etapa de destino.");
+      return;
+    }
 
-  const newTriggerInitialValue = {
-    name: "",
-    scoreThreshold: 80,
-    condition: "greater" as const,
-    targetStageId: "s5",
-  };
+    const newTrigger: LeadScoreTrigger = {
+      id: Date.now().toString(),
+      condition,
+      scoreThreshold,
+      targetStageId,
+      autoMessage,
+    };
 
-  const [newTrigger, setNewTrigger] = useState(newTriggerInitialValue);
-
-  const handleSaveTriggers = () => {
-    toast.success("Gatilhos de Lead Score IA sincronizados com o motor da Master AI! 🤖✨");
+    const updated = [...leadScoreTriggers, newTrigger];
+    setLeadScoreTriggers(updated);
+    localStorage.setItem("axis_crm_lead_score_triggers", JSON.stringify(updated));
+    toast.success("Regra de gatilho adicionada!");
   };
 
   const handleDelete = (id: string) => {
-    setLeadScoreTriggers(leadScoreTriggers.filter(t => t.id !== id));
-    toast.success("Gatilho removido com sucesso!");
+    const updated = leadScoreTriggers.filter((t) => t.id !== id);
+    setLeadScoreTriggers(updated);
+    localStorage.setItem("axis_crm_lead_score_triggers", JSON.stringify(updated));
+    toast.info("Regra de gatilho removida.");
   };
 
-  const handleCreate = () => {
-    if (!newTrigger.name.trim()) {
-      toast.error("Por favor, digite um nome para o gatilho.");
-      return;
-    }
-    setLeadScoreTriggers([
-      ...leadScoreTriggers, 
-      { 
-        id: Date.now().toString(), 
-        scoreThreshold: Number(newTrigger.scoreThreshold), 
-        condition: newTrigger.condition as 'greater' | 'less', 
-        targetStageId: newTrigger.targetStageId,
-      }
-
-
-    ]);
-    setNewTrigger({ name: "", scoreThreshold: 80, condition: "greater", targetStageId: "s5" });
-    toast.success("Novo gatilho automático de Lead Score registrado!");
-  };
+  const sdrStagesMap = DEFAULT_SDR_STAGES;
 
   return (
-    <div className="max-w-4xl space-y-6 animate-in fade-in duration-350">
+    <div className="max-w-4xl space-y-6 animate-in fade-in duration-300">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-          Gatilhos de Lead Score IA <Zap className="w-5 h-5 text-yellow-500 fill-yellow-500/10" />
+        <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)] flex items-center gap-2">
+          Gatilhos de Lead Score IA <Zap className="w-5 h-5 text-amber-500 fill-amber-500/10" />
         </h1>
-        <p className="text-sm text-slate-400">
-          Configure regras automatizadas baseadas no Lead Score calculado pelo motor da Master AI para mover os leads imediatamente para etapas do funil SDR.
+        <p className="text-sm text-[var(--color-text-muted)]">
+          Configure regras automatizadas baseadas no Lead Score para mover os leads imediatamente para etapas do funil SDR.
         </p>
       </div>
 
       {/* Rules list */}
-      <Card className="bg-[var(--color-surface-elevated)]/80 border border-white/10 overflow-hidden shadow-xl">
-        <div className="p-5 border-b border-white/5 bg-white/[0.01] flex justify-between items-center">
-          <h3 className="text-xs font-black text-[#2563EB] uppercase tracking-widest font-mono">Gatilhos Ativos no SDR</h3>
-          <span className="text-[10px] bg-[#2563EB]/10 text-[#2563EB] border border-[#2563EB]/15 px-2.5 py-0.5 rounded-full font-bold">
-            Master AI Engine Operacional
+      <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)] flex justify-between items-center">
+          <h3 className="text-xs font-black text-[var(--color-primary-blue)] uppercase tracking-wider font-mono">Gatilhos Ativos no SDR</h3>
+          <span className="text-[10px] bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] border border-[var(--color-primary-blue)]/20 px-2.5 py-0.5 rounded-full font-bold">
+            Motor de IA Operacional
           </span>
         </div>
 
-        <div className="divide-y divide-white/5">
+        <div className="divide-y divide-[var(--color-border-subtle)]">
           {leadScoreTriggers.length === 0 ? (
-            <div className="p-8 text-center text-slate-500 text-sm italic">
+            <div className="p-8 text-center text-[var(--color-text-muted)] text-sm italic">
               Nenhuma regra de automação de lead score cadastrada. Crie uma abaixo.
             </div>
           ) : (
             leadScoreTriggers.map((trigger) => (
-              <div key={trigger.id} className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div key={trigger.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-white">Regra de Gatilho</h4>
-                  <p className="text-xs text-slate-400 flex items-center gap-1.5">
-                    Se <span className="font-mono text-yellow-400 bg-yellow-400/5 px-1 rounded border border-yellow-400/10">Lead Score</span> for <strong>{trigger.condition === 'greater' ? 'Maior ou Igual a' : 'Menor ou Igual a'}</strong> <strong className="text-white font-mono">{trigger.scoreThreshold}</strong>, 
-                    mover de forma autônoma para a coluna <strong className="text-blue-400">{sdrStagesMap[trigger.targetStageId] || trigger.targetStageId}</strong>.
+                  <h4 className="text-sm font-bold text-[var(--color-text-primary)]">Regra de Automação</h4>
+                  <p className="text-xs text-[var(--color-text-muted)] flex items-center gap-1.5 flex-wrap">
+                    Se <span className="font-mono text-amber-500 bg-amber-500/10 px-1 rounded border border-amber-500/20 font-bold">Lead Score</span> for <strong>{trigger.condition === 'greater' ? 'Maior ou Igual a' : 'Menor ou Igual a'}</strong> <strong className="text-[var(--color-text-primary)] font-mono">{trigger.scoreThreshold}</strong>, 
+                    mover de forma autônoma para a coluna <strong className="text-[var(--color-primary-blue)]">{sdrStagesMap[trigger.targetStageId] || trigger.targetStageId}</strong>.
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 self-end md:self-auto">
-                  <button 
+                <div className="flex items-center gap-2 self-end md:self-auto">
+                  <Button 
+                    variant="ghost"
+                    size="xs"
                     onClick={() => handleDelete(trigger.id)}
-                    className="p-1 px-2.5 text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-bold rounded-lg transition-colors cursor-pointer"
+                    className="text-rose-500 hover:bg-rose-500/10"
                   >
                     Remover
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))
@@ -111,72 +118,56 @@ export function ConfigCRMGatilhosIA() {
       </Card>
 
       {/* Add trigger form */}
-      <Card className="bg-[var(--color-surface-elevated)]/80 border border-white/10 p-5 shadow-xl space-y-4">
-        <h3 className="text-xs font-black text-white uppercase tracking-widest font-mono">Criar Novo Gatilho do Lead Score</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Nome do Gatilho</label>
-            <input 
-              type="text" 
-              placeholder="Ex: Leads Altamente Qualificados para Comercial" 
-              value={newTrigger.name}
-              onChange={(e) => setNewTrigger({ ...newTrigger, name: e.target.value })}
-              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500"
-            />
-          </div>
+      <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+        <h3 className="text-base font-bold text-[var(--color-text-primary)] mb-4 flex items-center gap-2">
+          <Plus className="w-4 h-4 text-[var(--color-primary-blue)]" /> Criar Novo Gatilho por Inteligência Artificial
+        </h3>
 
-          <div className="space-y-1">
-            <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Condição de Disparo (Condição Lógica)</label>
-            <select 
-              value={newTrigger.condition}
-              onChange={(e) => setNewTrigger({ ...newTrigger, condition: e.target.value as any })}
-              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1.5 block">Condição de Score</label>
+            <select
+              value={condition}
+              onChange={(e: any) => setCondition(e.target.value)}
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none"
             >
-              <option value="greater">Maior ou Igual a</option>
-              <option value="less">Menor ou Igual a</option>
+              <option value="greater">Maior ou Igual a (≥)</option>
+              <option value="less">Menor ou Igual a (≤)</option>
             </select>
           </div>
-        </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-1">
-            <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Score Alvo (0-100)</label>
-            <input 
-              type="number" 
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1.5 block">Pontuação (0 a 100)</label>
+            <input
+              type="number"
               min="0"
               max="100"
-              value={newTrigger.scoreThreshold}
-              onChange={(e) => setNewTrigger({ ...newTrigger, scoreThreshold: Number(e.target.value) })}
-              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-xs text-white font-mono focus:outline-none focus:border-blue-500"
+              value={scoreThreshold}
+              onChange={(e) => setScoreThreshold(Number(e.target.value))}
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none"
             />
           </div>
-          <div className="space-y-1">
-            <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Mover Automático para Coluna SDR</label>
-            <select 
-              value={newTrigger.targetStageId}
-              onChange={(e) => setNewTrigger({ ...newTrigger, targetStageId: e.target.value })}
-              className="w-full bg-[var(--color-surface)] border border-white/10 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-blue-500 font-medium"
+
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1.5 block">Mover para Coluna</label>
+            <select
+              value={targetStageId}
+              onChange={(e) => setTargetStageId(e.target.value)}
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none"
             >
-              {Object.entries(sdrStagesMap).map(([id, name]) => (
-                <option key={id} value={id}>{name}</option>
+              {Object.entries(DEFAULT_SDR_STAGES).map(([id, label]) => (
+                <option key={id} value={id}>
+                  {label}
+                </option>
               ))}
             </select>
           </div>
         </div>
 
-        <div className="pt-2 flex justify-end">
-          <Button onClick={handleCreate} className="gap-1 bg-[#2563EB] hover:bg-blue-600 font-medium text-xs">
-            <Plus className="w-3.5 h-3.5" /> Adicionar Regra Automática
-          </Button>
-        </div>
-      </Card>
-
-      <div className="flex justify-end gap-3 pt-2">
-        <Button onClick={handleSaveTriggers} className="bg-[#2563EB] hover:bg-blue-600 font-bold px-6 text-xs uppercase shadow-xl shadow-blue-500/10">
-          Sincronizar Gatilhos IA
+        <Button onClick={handleAddTrigger} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+          <Plus className="w-3.5 h-3.5" /> Adicionar Gatilho
         </Button>
-      </div>
+      </Card>
     </div>
   );
 }

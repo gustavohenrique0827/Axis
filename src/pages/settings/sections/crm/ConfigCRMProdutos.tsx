@@ -12,40 +12,53 @@ export function ConfigCRMProdutos() {
     <div className="max-w-4xl space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Catálogo de Produtos</h1>
-          <p className="text-sm text-slate-400">Personalize os dados de produtos e serviços.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--color-text-primary)]">Catálogo de Produtos</h1>
+          <p className="text-sm text-[var(--color-text-muted)]">Personalize os dados de produtos e serviços.</p>
         </div>
       </div>
 
-      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
-        <h3 className="font-bold text-lg mb-2">Acesso ao Catálogo</h3>
-        <p className="text-slate-400 mb-4 text-sm">O catálogo principal foi movido para o menu lateral. Acesse "Produtos" na barra de navegação esquerda.</p>
-        <Button onClick={() => window.location.href = '/app/produtos'} className="bg-[var(--color-surface)] border border-white/10 text-white hover:bg-white/5">
-          Ir para Produtos <ExternalLink className="w-4 h-4 ml-2" />
+      <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
+        <h3 className="font-bold text-base text-[var(--color-text-primary)] mb-2">Acesso ao Catálogo</h3>
+        <p className="text-[var(--color-text-muted)] mb-4 text-sm leading-relaxed">
+          O catálogo principal foi movido para o menu lateral. Acesse "Produtos" na barra de navegação esquerda.
+        </p>
+        <Button 
+          onClick={() => window.location.href = '/app/produtos'} 
+          variant="outline"
+          className="h-9 px-4 text-xs font-bold gap-2 text-[var(--color-text-primary)] border-[var(--color-border-default)] hover:bg-[var(--color-surface-sunken)]"
+        >
+          Ir para Produtos <ExternalLink className="w-3.5 h-3.5" />
         </Button>
       </Card>
 
-      <Card className="p-6 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl border border-white/10">
+      <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h3 className="font-bold text-lg">Campos Personalizados</h3>
-            <p className="text-sm text-slate-400">Adicione mais detalhes aos produtos (SKU, dimensões, atributos específicos).</p>
+            <h3 className="font-bold text-base text-[var(--color-text-primary)]">Campos Personalizados</h3>
+            <p className="text-sm text-[var(--color-text-muted)]">Adicione mais detalhes aos produtos (SKU, dimensões, atributos específicos).</p>
           </div>
-          <Button onClick={() => setIsModalOpen(true)} className="bg-white/10 hover:bg-white/20 text-white font-bold h-9 bg-transparent border border-white/10 shadow-none">
-            <Plus className="w-4 h-4 mr-2" /> Novo Campo
+          <Button 
+            onClick={() => setIsModalOpen(true)} 
+            className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
+          >
+            <Plus className="w-3.5 h-3.5" /> Novo Campo
           </Button>
         </div>
 
         <div className="space-y-3">
-          {customFields.map((field) => (
-            <div key={field.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-[var(--color-surface)] border border-white/5 rounded-xl group hover:border-white/10 transition-colors">
-              <div className="flex flex-col">
-                <span className="font-bold text-white">{field.name}</span>
-                <span className="text-xs text-slate-500 font-mono mt-0.5">Tipo: {field.type}</span>
+          {customFields.length === 0 ? (
+            <p className="text-xs text-[var(--color-text-faint)] italic">Nenhum campo personalizado cadastrado.</p>
+          ) : (
+            customFields.map((field) => (
+              <div key={field.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-[var(--radius-control)]">
+                <div className="flex flex-col">
+                  <span className="font-bold text-sm text-[var(--color-text-primary)]">{field.name}</span>
+                  <span className="text-xs text-[var(--color-text-faint)] font-mono mt-0.5">Tipo: {field.type}</span>
+                </div>
+                <Button variant="ghost" size="xs" className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">Editar</Button>
               </div>
-              <Button variant="ghost" size="sm" className="text-slate-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity">Editar Campo</Button>
-            </div>
-          ))}
+            ))
+          )}
         </div>
       </Card>
 
