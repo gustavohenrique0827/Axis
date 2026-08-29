@@ -25,7 +25,7 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export default function Repositorios() {
-  const { user } = useAuth();
+  const { user, activeTenantId } = useAuth();
   const { repos, addRepo, githubConn, setGithubConn, disconnectGitHub } = useDevRepositorios();
   const [search, setSearch] = useState('');
   const [filterVisibility, setFilterVisibility] = useState<'todos' | 'public' | 'private'>('todos');
@@ -244,7 +244,7 @@ export default function Repositorios() {
         isOpen={isGitHubModalOpen}
         onClose={() => setIsGitHubModalOpen(false)}
         onConnected={handleGitHubConnected}
-        tenantId={user?.tenantId}
+        tenantId={activeTenantId || user?.tenantId}
       />
     </PageContainer>
   );

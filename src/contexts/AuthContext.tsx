@@ -13,6 +13,9 @@ export interface UserSession {
   tenantName: string;
   tenantNiche: TenantNiche;
   isMaster: boolean;
+  /** Admin master do PRÓPRIO tenant (distinto de isMaster, que é global/plataforma) —
+   *  origem: public.users.is_tenant_admin. Controla quem pode trocar de filial. */
+  isTenantAdmin?: boolean;
   /** Preenchido só para usuários de organizações parceiras (G-Tech, Pluppex Holding,
    *  outras parceiras) — origem: public.users.partner_id / public.partners. */
   partnerId?: string;
@@ -37,6 +40,15 @@ interface AuthContextType {
   getTenantModules: (tenantName: string) => TenantModules;
   allTenantModules: Record<string, TenantModules>;
   tenantIdMap: Record<string, string>;
+  /** Tenant "ativo" na sessão — igual ao tenant do usuário logado, a menos que um
+   *  master tenha trocado de cliente via switchTenant(). */
+  activeTenantId?: string;
+  activeTenantName?: string;
+  switchTenant: (id: string, name: string) => void;
+  /** Filial ativa dentro do tenant ativo — null = "Todas as filiais" (sem filtro). */
+  activeFilialId: string | null;
+  activeFilialName: string | null;
+  switchFilial: (filial: { id: string; name: string } | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,6 +98,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [allTenantModules, setAllTenantModules] = useState<Record<string, TenantModules>>(DEFAULT_TENANT_MODULES);
   // tenantIdMap: name → UUID (ex: "PLUPPEX DIGITAL MACHINES LTDA" → "27ef95ee-...")
   const [tenantIdMap, setTenantIdMap] = useState<Record<string, string>>({});
+
+  // Override de tenant/filial "ativos" — só divergem do tenant/sem-filial do próprio
+  // usuário quando um master troca de cliente (switchTenant) ou um admin do tenant
+  // troca de filial (switchFilial). Resetados sempre que a sessão muda (login/logout).
+  const [tenantOverride, setTenantOverride] = useState<{ id: string; name: string } | null>(null);
+  const [filialOverride, setFilialOverride] = useState<{ id: string; name: string } | null>(null);
+
+  useEffect(() => {
+    setTenantOverride(null);
+    setFilialOverride(null);
+  }, [user?.id]);
+
+  const activeTenantId = tenantOverride?.id ?? user?.tenantId;
+  const activeTenantName = tenantOverride?.name ?? user?.tenantName;
+  const activeFilialId = filialOverride?.id ?? null;
+  const activeFilialName = filialOverride?.name ?? null;
+
+  const switchTenant = (id: string, name: string) => {
+    if (!user?.isMaster) return;
+    setTenantOverride(id === user.tenantId ? null : { id, name });
+    setFilialOverride(null);
+  };
+
+  const switchFilial = (filial: { id: string; name: string } | null) => {
+    if (!(user?.isMaster || user?.isTenantAdmin)) return;
+    setFilialOverride(filial);
+  };
 
   // Fonte de verdade da sessão: Supabase Auth (JWT real), não mais localStorage
   // próprio. O localStorage usado internamente pelo supabase-js já persiste a
@@ -203,8 +242,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // incondicional aqui, o que fazia o toggle de módulos em "Empresas Parceiras" nunca
     // refletir no próprio sidebar de quem está testando (sempre master). Acesso
     // administrativo (Painel G-Tech, Configurações) não depende de isModuleEnabled,
-    // então master não perde acesso a essas telas por causa disso.
-    const modules = getTenantModules(user.tenantName);
+    // então master não perde acesso a essas telas por causa disso. Usa o tenant ATIVO
+    // (activeTenantName) para respeitar os módulos do cliente que o master estiver
+    // visualizando no momento, não necessariamente o seu próprio tenant de login.
+    const modules = getTenantModules(activeTenantName || user.tenantName);
     return !!modules[moduleName];
   };
 
@@ -228,7 +269,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, authLoading, login, logout, refreshUser, updatePreferences, isModuleEnabled, updateTenantModules, getTenantModules, allTenantModules, tenantIdMap }}>
+    <AuthContext.Provider value={{ user, authLoading, login, logout, refreshUser, updatePreferences, isModuleEnabled, updateTenantModules, getTenantModules, allTenantModules, tenantIdMap, activeTenantId, activeTenantName, switchTenant, activeFilialId, activeFilialName, switchFilial }}>
       {children}
     </AuthContext.Provider>
   );

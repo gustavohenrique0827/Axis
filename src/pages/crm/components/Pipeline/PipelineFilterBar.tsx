@@ -1,4 +1,4 @@
-import { Search, Filter, Building2, Target, Briefcase, Zap } from "lucide-react";
+import { Search, Filter, Building2, Briefcase, Zap } from "lucide-react";
 
 interface PipelineFilterBarProps {
   comercialFunis: any[];
@@ -12,10 +12,6 @@ interface PipelineFilterBarProps {
   companyFilter: string;
   setCompanyFilter: (c: string) => void;
   companiesList: string[];
-  isMaster: boolean;
-  tenantFilter: string;
-  setTenantFilter: (t: string) => void;
-  tenantsList: any[];
   clientFilter: string;
   setClientFilter: (c: string) => void;
   clientsList: string[];
@@ -28,7 +24,6 @@ export function PipelineFilterBar({
   comercialFunis, sdrFunis, currentPipeline, setCurrentPipeline,
   selectedFunilId, setSelectedFunilId, searchQuery, setSearchQuery,
   companyFilter, setCompanyFilter, companiesList,
-  isMaster, tenantFilter, setTenantFilter, tenantsList,
   clientFilter, setClientFilter, clientsList,
   sellerFilter, setSellerFilter, sellers,
 }: PipelineFilterBarProps) {
@@ -101,20 +96,6 @@ export function PipelineFilterBar({
           {companiesList.map(c => <option key={c} value={c} className="bg-[var(--color-surface-elevated)]">{c === "Todos" ? "Todas as empresas" : c}</option>)}
         </select>
       </div>
-
-      {isMaster && (
-        <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] px-3 rounded-[var(--radius-control)] border border-[var(--color-border-default)] h-[38px]">
-          <Target className="w-3 h-3 text-[var(--color-primary-blue)] shrink-0" />
-          <select
-            className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-xs font-bold cursor-pointer"
-            value={tenantFilter}
-            onChange={(e) => setTenantFilter(e.target.value)}
-          >
-            <option value="" className="bg-[var(--color-surface-elevated)]">Todos os parceiros</option>
-            {(tenantsList as any[]).map(t => <option key={t.id} value={t.id} className="bg-[var(--color-surface-elevated)]">{t.name}</option>)}
-          </select>
-        </div>
-      )}
 
       {clientsList.length > 0 && (
         <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] px-3 rounded-[var(--radius-control)] border border-[var(--color-border-default)] h-[38px]">

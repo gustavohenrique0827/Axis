@@ -28,7 +28,7 @@ export default function RHColaboradores() {
   } = useRHColaboradores();
 
   const { addColaborador, updateColaborador, deleteColaborador } = useData();
-  const { user } = useAuth();
+  const { user, activeTenantId, activeTenantName } = useAuth();
   const [isMembroModalOpen, setIsMembroModalOpen] = useState(false);
   const [perfilColab, setPerfilColab] = useState<any | null>(null);
   const [menuOpenId, setMenuOpenId] = useState<string | null>(null);
@@ -48,12 +48,14 @@ export default function RHColaboradores() {
 
   const handleSaveMembro = async (data: any) => {
     const dataAdmissao = new Date().toLocaleDateString("pt-BR");
-    let tenantId = user?.tenantId || "tenant-default";
+    // Sempre o tenant ATIVO — se um master estiver "dentro" de outro cliente, o novo
+    // colaborador (e seu login) precisa ser criado nesse cliente, não no do master.
+    let tenantId = activeTenantId || user?.tenantId || "tenant-default";
     let userId: string | null = null;
 
     if (supabase) {
       try {
-        const { data: tenantRow } = await supabase.from("tenants").select("id").eq("name", user?.tenantName || "").maybeSingle();
+        const { data: tenantRow } = await supabase.from("tenants").select("id").eq("name", activeTenantName || user?.tenantName || "").maybeSingle();
         if (tenantRow?.id) tenantId = tenantRow.id;
 
         const created = await createUserWithProfile({

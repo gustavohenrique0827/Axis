@@ -60,7 +60,6 @@ export default function Pipeline() {
     webhookModalLead, setWebhookModalLead,
     webhookUrl, setWebhookUrl,
     leads, updateLead, tasks,
-    isMaster, tenantFilter, setTenantFilter,
     clientFilter, setClientFilter, clientsList,
     currentPipeline, switchPipeline,
     selectedFunilId, setSelectedFunilId,
@@ -68,7 +67,7 @@ export default function Pipeline() {
     firstComercialStageId, firstSdrStageId,
     draggedLeadId, setDraggedLeadId,
     draggedOverStageId, setDraggedOverStageId,
-    tenantsList, companiesList,
+    companiesList,
     activePipelineStages, sellers,
     filteredItemsList, analyticsData,
     formattedTotalValue, winRate,
@@ -165,9 +164,7 @@ export default function Pipeline() {
               selectedFunilId={selectedFunilId} setSelectedFunilId={setSelectedFunilId}
               searchQuery={searchQuery} setSearchQuery={setSearchQuery}
               companyFilter={companyFilter} setCompanyFilter={setCompanyFilter}
-              companiesList={companiesList} isMaster={!!isMaster}
-              tenantFilter={tenantFilter} setTenantFilter={setTenantFilter}
-              tenantsList={tenantsList} clientFilter={clientFilter}
+              companiesList={companiesList} clientFilter={clientFilter}
               setClientFilter={setClientFilter} clientsList={clientsList}
               sellerFilter={sellerFilter} setSellerFilter={setSellerFilter}
               sellers={sellers}

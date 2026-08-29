@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { Building2, MapPin } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 
@@ -29,8 +30,18 @@ export function Sidebar({
   setIsSDRWebhookOpen,
 }: SidebarProps) {
   const location = useLocation();
-  const { user, isModuleEnabled } = useAuth();
-  const { cargos } = useData();
+  const {
+    user, isModuleEnabled, tenantIdMap,
+    activeTenantId, activeTenantName, switchTenant,
+    activeFilialId, switchFilial,
+  } = useAuth();
+  const { cargos, empresaFiliais } = useData();
+
+  // Master vê e troca de cliente (tenant); admin do próprio tenant (ou master, dentro
+  // do cliente ativo) vê e troca de filial daquele cliente.
+  const tenantOptions = Object.entries(tenantIdMap).map(([name, id]) => ({ id, name }));
+  const canSwitchTenant = !!user?.isMaster && tenantOptions.length > 0;
+  const canSwitchFilial = !!(user?.isMaster || user?.isTenantAdmin);
   const userCargo = cargos.find(c => c.nome === user?.role);
   const cargoModulos: string[] | null = userCargo && Array.isArray(userCargo.modulos) && userCargo.modulos.length > 0
     ? userCargo.modulos
@@ -165,16 +176,55 @@ export function Sidebar({
         </div>
 
         {!isSidebarCollapsed && (
-          <div className="p-3 border-t border-[var(--color-border-default)] bg-[var(--color-surface-sunken)]/40 shrink-0">
-            <div className="flex items-center gap-2 mb-1">
+          <div className="p-3 border-t border-[var(--color-border-default)] bg-[var(--color-surface-sunken)]/40 shrink-0 space-y-2">
+            <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
               <span className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">
                 Sistema Operacional 100%
               </span>
             </div>
-            <div className="text-[10px] text-[var(--color-text-faint)] font-medium truncate">
-              {user?.tenantName || "Axis Gestão Corporativa"}
-            </div>
+
+            {canSwitchTenant ? (
+              <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2 py-1.5" title="Trocar de cliente (master)">
+                <Building2 className="w-3 h-3 text-[var(--color-primary-blue)] shrink-0" />
+                <select
+                  className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-[10px] font-bold cursor-pointer w-full truncate"
+                  value={activeTenantId || ""}
+                  onChange={(e) => {
+                    const opt = tenantOptions.find(t => t.id === e.target.value);
+                    if (opt) switchTenant(opt.id, opt.name);
+                  }}
+                >
+                  {tenantOptions.map(t => (
+                    <option key={t.id} value={t.id} className="bg-[var(--color-surface-elevated)]">{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div className="text-[10px] text-[var(--color-text-faint)] font-medium truncate flex items-center gap-1.5">
+                <Building2 className="w-3 h-3 shrink-0" />
+                {activeTenantName || user?.tenantName || "Axis Gestão Corporativa"}
+              </div>
+            )}
+
+            {canSwitchFilial && (
+              <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2 py-1.5" title="Trocar de filial">
+                <MapPin className="w-3 h-3 text-[var(--color-text-muted)] shrink-0" />
+                <select
+                  className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-[10px] font-bold cursor-pointer w-full truncate"
+                  value={activeFilialId || ""}
+                  onChange={(e) => {
+                    const filial = empresaFiliais.find((f: any) => f.id === e.target.value);
+                    switchFilial(filial ? { id: filial.id, name: filial.nome } : null);
+                  }}
+                >
+                  <option value="" className="bg-[var(--color-surface-elevated)]">Todas as filiais</option>
+                  {empresaFiliais.map((f: any) => (
+                    <option key={f.id} value={f.id} className="bg-[var(--color-surface-elevated)]">{f.nome}</option>
+                  ))}
+                </select>
+              </div>
+            )}
           </div>
         )}
       </aside>

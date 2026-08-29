@@ -119,6 +119,7 @@ export async function fetchUserProfile(userId: string): Promise<{ success: boole
       avatar_url,
       two_factor_enabled,
       preferences,
+      is_tenant_admin,
       tenants (
         id,
         name,
@@ -160,6 +161,7 @@ export async function fetchUserProfile(userId: string): Promise<{ success: boole
       avatarUrl: (data as any).avatar_url ?? undefined,
       twoFactorEnabled: (data as any).two_factor_enabled ?? false,
       preferences: (data as any).preferences ?? {},
+      isTenantAdmin: (data as any).is_tenant_admin ?? false,
     },
   };
 }
@@ -214,6 +216,7 @@ export async function createUserWithProfile(params: {
   tenantId: string;
   role: string;
   isMaster?: boolean;
+  isTenantAdmin?: boolean;
 }): Promise<{ success: boolean; error?: string; userId?: string; needsEmailConfirmation?: boolean }> {
   if (!supabase || !supabaseUrl || !supabaseAnonKey) {
     return { success: false, error: 'Supabase não configurado.' };
@@ -239,6 +242,7 @@ export async function createUserWithProfile(params: {
     email: params.email,
     role: params.role,
     is_master: params.isMaster ?? false,
+    is_tenant_admin: params.isTenantAdmin ?? false,
     active: true,
   });
 
@@ -302,6 +306,7 @@ export async function registerPartner(
       name: `Admin ${companyName}`,
       tenantId: tenantData.id,
       role: "Admin",
+      isTenantAdmin: true,
       isMaster: false,
     });
 

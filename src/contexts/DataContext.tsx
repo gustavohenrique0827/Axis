@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { sendPushNotification } from "../lib/notifications";
 import { isSupabaseReachable, supabase } from '../lib/supabase';
@@ -23,8 +23,16 @@ export { useData };
 export type { DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, Reuniao };
 
 export function DataProvider({ children }: { children: React.ReactNode }) {
-  const { user, authLoading, updatePreferences } = useAuth();
-  const tenantId = user?.tenantId;
+  const { user, authLoading, updatePreferences, activeTenantId, activeFilialId } = useAuth();
+  const tenantId = activeTenantId;
+
+  // Tabelas com segregação por filial: quando uma filial está ativa (activeFilialId),
+  // a lista exposta pelo contexto já vem filtrada — linhas sem filial_id (legado, ou
+  // nunca atribuídas) continuam visíveis em qualquer filial para não sumir dado antigo.
+  function filterByFilial<T>(list: T[]): T[] {
+    if (!activeFilialId) return list;
+    return list.filter((item: any) => !item.filial_id || item.filial_id === activeFilialId);
+  }
 
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
 
@@ -76,7 +84,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     syncSetting('leadScoreTriggers', triggers);
   };
 
-  const [financeEntries, setFinanceEntries] = useState<FinanceEntry[]>([]);
+  const [financeEntriesRaw, setFinanceEntries] = useState<FinanceEntry[]>([]);
+  const financeEntries = useMemo(() => filterByFilial(financeEntriesRaw), [financeEntriesRaw, activeFilialId]);
 
   // Mapa genérico key -> value de app_settings, para telas de configuração
   // que não precisam de um campo dedicado no contexto (ver saveAppSetting).
@@ -166,14 +175,19 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("axis_brand_changed", applyBrandColors);
   }, []);
 
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [leadsRaw, setLeads] = useState<Lead[]>([]);
+  const [tasksRaw, setTasks] = useState<Task[]>([]);
+  const [contractsRaw, setContracts] = useState<Contract[]>([]);
   const [leadActivities, setLeadActivities] = useState<LeadActivity[]>([]);
 
   const [evolutionWebhookUrl, setEvolutionWebhookUrl] = useState<string>("https://axis-crm.cloud/api/webhooks/whatsapp");
 
-  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [appointmentsRaw, setAppointments] = useState<Appointment[]>([]);
+
+  const leads = useMemo(() => filterByFilial(leadsRaw), [leadsRaw, activeFilialId]);
+  const tasks = useMemo(() => filterByFilial(tasksRaw), [tasksRaw, activeFilialId]);
+  const contracts = useMemo(() => filterByFilial(contractsRaw), [contractsRaw, activeFilialId]);
+  const appointments = useMemo(() => filterByFilial(appointmentsRaw), [appointmentsRaw, activeFilialId]);
 
   const [robotStatus, setRobotStatus] = useState<'executando' | 'pausado'>('executando');
 
@@ -307,23 +321,28 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [marketingContent, setMarketingContent] = useState<any[]>([]);
   const [marketingCampaigns, setMarketingCampaigns] = useState<any[]>([]);
   const [marketingLandingPages, setMarketingLandingPages] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [proposals, setProposals] = useState<any[]>([]);
+  const [productsRaw, setProducts] = useState<any[]>([]);
+  const [proposalsRaw, setProposals] = useState<any[]>([]);
   const [proposalItems, setProposalItems] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
   const [turmas, setTurmas] = useState<any[]>([]);
   const [reunioes, setReunioes] = useState<Reuniao[]>([]);
   const [students, setStudents] = useState<any[]>([]);
-  const [colaboradores, setColaboradores] = useState<any[]>([]);
+  const [colaboradoresRaw, setColaboradores] = useState<any[]>([]);
   const [squadMetas, setSquadMetas] = useState<any[]>([]);
   const [financialGoals, setFinancialGoals] = useState<any[]>([]);
   const [cargos, setCargos] = useState<any[]>([]);
   const [empresaFiliais, setEmpresaFiliais] = useState<any[]>([]);
-  const [financeCommissionEntries, setFinanceCommissionEntries] = useState<any[]>([]);
+  const [financeCommissionEntriesRaw, setFinanceCommissionEntries] = useState<any[]>([]);
   const [financeCategories, setFinanceCategories] = useState<any[]>([]);
   const [scheduledExports, setScheduledExports] = useState<any[]>([]);
   const [educationContent, setEducationContent] = useState<any[]>([]);
   const [clienteBase, setClienteBase] = useState<any[]>([]);
+
+  const products = useMemo(() => filterByFilial(productsRaw), [productsRaw, activeFilialId]);
+  const proposals = useMemo(() => filterByFilial(proposalsRaw), [proposalsRaw, activeFilialId]);
+  const colaboradores = useMemo(() => filterByFilial(colaboradoresRaw), [colaboradoresRaw, activeFilialId]);
+  const financeCommissionEntries = useMemo(() => filterByFilial(financeCommissionEntriesRaw), [financeCommissionEntriesRaw, activeFilialId]);
 
   const addStudent = async (student: any) => {
     const newStudent = { ...student, id: `st${Math.random().toString(36).substring(2, 9)}` };
@@ -742,6 +761,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           scoreIA: 50,
           // Vem da sessão autenticada, nunca do caller — nunca null (ver guarda no início da função).
           tenant_id: tenantId,
+          filial_id: activeFilialId,
           tenantName: lead.tenantName ?? '',
           lead_interesse_cliente: lead.lead_interesse_cliente ?? '',
           customFields: lead.customFields ?? {},
@@ -864,7 +884,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addTask = async (task: Omit<Task, 'id'>) => {
-    const newTask = { ...task, id: Math.random().toString(36).substr(2, 9) };
+    const newTask: any = { ...task, id: Math.random().toString(36).substr(2, 9) };
+    if (tenantId) newTask.tenant_id = tenantId;
+    newTask.filial_id = activeFilialId;
     setTasks(prev => [newTask, ...prev]);
     toast.success('Tarefa agendada!');
     addNotification({
@@ -906,7 +928,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addContract = async (contract: Omit<Contract, 'id'>) => {
-    const newContract = { ...contract, id: Math.random().toString(36).substr(2, 9) };
+    const newContract: any = { ...contract, id: Math.random().toString(36).substr(2, 9) };
+    if (tenantId) newContract.tenant_id = tenantId;
+    newContract.filial_id = activeFilialId;
     setContracts(prev => [...prev, newContract]);
     toast.success('Contrato registrado!');
     addNotification({
@@ -997,12 +1021,21 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const createCrudHelper = (tableName: string, stateSetter: React.Dispatch<React.SetStateAction<any[]>>) => {
+  const createCrudHelper = (tableName: string, stateSetter: React.Dispatch<React.SetStateAction<any[]>>, filialAware = false) => {
     return {
       add: async (item: any) => {
-        stateSetter(prev => [item, ...prev]);
+        // tenant_id sempre vem do tenant ATIVO (não do que o caller calculou) — garante
+        // que criar um registro enquanto um master estiver "dentro" de outro cliente
+        // grava nesse cliente, não no tenant de login do master. filial_id só é
+        // carimbado em tabelas que de fato têm essa coluna (filialAware).
+        const stamped = {
+          ...item,
+          ...(tenantId ? { tenant_id: tenantId } : {}),
+          ...(filialAware && activeFilialId && item.filial_id === undefined ? { filial_id: activeFilialId } : {}),
+        };
+        stateSetter(prev => [stamped, ...prev]);
         if (supabase) {
-          const { error } = await supabase.from(tableName).insert(item);
+          const { error } = await supabase.from(tableName).insert(stamped);
           if (error) {
             console.error(`[Supabase] insert ${tableName} error:`, error.message, error.details);
             toast.error(`Erro ao salvar: ${error.message}`);
@@ -1054,8 +1087,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
-  const productCrud = createCrudHelper('products', setProducts);
-  const proposalCrud = createCrudHelper('proposals', setProposals);
+  const productCrud = createCrudHelper('products', setProducts, true);
+  const proposalCrud = createCrudHelper('proposals', setProposals, true);
   const proposalItemCrud = createCrudHelper('proposal_items', setProposalItems);
 
   // Cria uma proposta e seus itens (produtos do catálogo ou avulsos) numa única chamada —
@@ -1096,7 +1129,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const turmaCrud = createCrudHelper('turmas', setTurmas);
   const reuniaoCrud = createCrudHelper('reunioes', setReunioes as any);
   const studentCrud = createCrudHelper('students', setStudents);
-  const colabCrud = createCrudHelper('colaboradores', setColaboradores);
+  const colabCrud = createCrudHelper('colaboradores', setColaboradores, true);
   const mktCampCrud = createCrudHelper('marketing_campaigns', setMarketingCampaigns);
   const mktContCrud = createCrudHelper('marketing_content', setMarketingContent);
   const mktLpCrud = createCrudHelper('marketing_landing_pages', setMarketingLandingPages);
@@ -1104,14 +1137,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const squadMetaCrud = createCrudHelper('squad_metas', setSquadMetas);
   const cargoCrud = createCrudHelper('cargos', setCargos);
   const empresaFilialCrud = createCrudHelper('empresa_filiais', setEmpresaFiliais);
-  const commissionEntryCrud = createCrudHelper('finance_commission_entries', setFinanceCommissionEntries);
+  const commissionEntryCrud = createCrudHelper('finance_commission_entries', setFinanceCommissionEntries, true);
   const financeCategoryCrud = createCrudHelper('finance_categories', setFinanceCategories);
   const scheduledExportCrud = createCrudHelper('scheduled_exports', setScheduledExports);
   const educationContentCrud = createCrudHelper('education_content', setEducationContent);
   const certCrud = createCrudHelper('certificates', setCertificates);
 
   const addFinanceEntry = async (entry: Omit<FinanceEntry, 'id'>) => {
-    const newEntry = { ...entry, id: `f${Math.random().toString(36).substring(2, 9)}` };
+    const newEntry: any = { ...entry, id: `f${Math.random().toString(36).substring(2, 9)}` };
+    if (tenantId) newEntry.tenant_id = tenantId;
+    newEntry.filial_id = activeFilialId;
     setFinanceEntries(prev => [newEntry, ...prev]);
     toast.success(`${entry.type === 'Pagar' ? 'Despesa' : 'Receita'} registrada!`);
     if (supabase) {
@@ -1147,14 +1182,17 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addAppointment = async (apt: Omit<Appointment, 'id'>) => {
-    const newApt = { ...apt, id: Math.random().toString(36).substr(2, 9) };
+    const newApt: any = { ...apt, id: Math.random().toString(36).substr(2, 9) };
+    if (tenantId) newApt.tenant_id = tenantId;
+    newApt.filial_id = activeFilialId;
     setAppointments(prev => [newApt, ...prev]);
     toast.success('Agendamento realizado!');
     if (supabase) {
       try {
         const { id, patient, phone, drId, drName, specialty, room, type, status, date, time } = newApt as any;
         await supabase.from('appointments').insert({
-          id, patient, phone, dr_id: drId, dr_name: drName, specialty, room, type, status, date, time
+          id, patient, phone, dr_id: drId, dr_name: drName, specialty, room, type, status, date, time,
+          tenant_id: newApt.tenant_id, filial_id: newApt.filial_id,
         });
       } catch (err) {
         console.error("Supabase add appointment failed:", err);

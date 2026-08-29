@@ -44,8 +44,8 @@ const MOCK_MESSAGES: Record<string, InternalMessage[]> = {
 };
 
 export function useInternalChat() {
-  const { user } = useAuth();
-  const tenantId = user?.tenantId;
+  const { user, activeTenantId } = useAuth();
+  const tenantId = activeTenantId || user?.tenantId;
   const senderName = user?.name || "Usuário";
 
   const [channels, setChannels] = useState<InternalChannel[]>([]);

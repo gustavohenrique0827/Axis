@@ -34,10 +34,7 @@ export function usePipeline() {
   const [webhookModalLead, setWebhookModalLead] = useState<any>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
   const { leads, updateLead, tasks, addTask, products, clienteBase, funis: dataFunis } = useData();
-  const { user, allTenantModules, tenantIdMap } = useAuth();
-
-  const isMaster = user?.isMaster || user?.tenantName?.includes("G-Tech");
-  const [tenantFilter, setTenantFilter] = useState("");
+  const { user } = useAuth();
 
   const [clientFilter, setClientFilter] = useState("Todos");
   const [clientsList, setClientsList] = useState<string[]>([]);
@@ -113,15 +110,17 @@ export function usePipeline() {
   }, [activeFunil]);
 
   // ─── Leads do pipeline atual (usado para montar os dropdowns de filtro) ──────
-  // Filtra apenas por pipeline+tenant — sem seller/company/client — para que os
+  // Filtra apenas por pipeline — sem seller/company/client — para que os
   // dropdowns mostrem só as opções relevantes ao pipeline que está sendo visto.
+  // `leads` já vem escopado ao tenant/filial ativos via DataContext — não há mais
+  // filtro de tenant aqui (era um combobox master-only quebrado, substituído pelo
+  // seletor de cliente na sidebar).
   const pipelineLeads = useMemo(() => leads.filter((item: any) => {
-    const matchesTenant = !tenantFilter || tenantFilter === "Todos" || item.tenantId === tenantFilter || !item.tenantId;
     const matchesPipeline = currentPipeline === "sdr"
       ? item.pipelineId === "sdr"
       : !item.pipelineId || item.pipelineId === "comercial";
-    return matchesTenant && matchesPipeline;
-  }), [leads, currentPipeline, tenantFilter]);
+    return matchesPipeline;
+  }), [leads, currentPipeline]);
 
   // Mapa clientName → clientId para filtrar leads que têm clientId mas não clientName
   const clientNameToId = useMemo(() => {
@@ -134,19 +133,6 @@ export function usePipeline() {
   }, [clienteBase]);
 
   // ─── Lists for dropdowns ──────────────────────────────────────────────────────
-  // tenantsList: { id: UUID, name: string }[] — used by Pipeline.tsx dropdown
-  const tenantsList = useMemo(() => {
-    if (!isMaster) {
-      return user?.tenantId ? [{ id: user.tenantId, name: user.tenantName }] : [];
-    }
-    // Build from tenantIdMap (DB source), falling back to allTenantModules names
-    const mapEntries = Object.entries(tenantIdMap).map(([name, id]) => ({ id, name }));
-    if (mapEntries.length > 0) return mapEntries;
-    return Object.keys(allTenantModules)
-      .filter(n => !n.includes("G-Tech"))
-      .map(name => ({ id: name, name }));
-  }, [isMaster, tenantIdMap, allTenantModules, user]);
-
   // Dropdowns mostram apenas vendedores/empresas do pipeline atual
   const sellers      = useMemo(() => ["Todos", ...Array.from(new Set(pipelineLeads.map((l: any) => l.seller).filter(Boolean)))], [pipelineLeads]);
   const companiesList = useMemo(() => [
@@ -157,7 +143,6 @@ export function usePipeline() {
   // ─── Filtered leads ───────────────────────────────────────────────────────────
   const filteredItemsList = useMemo(() => leads
     .filter((item: any) => {
-      const matchesTenant = !tenantFilter || tenantFilter === "Todos" || item.tenantId === tenantFilter || !item.tenantId;
       const matchesPipeline = currentPipeline === "sdr"
         ? item.pipelineId === "sdr"
         : !item.pipelineId || item.pipelineId === "comercial";
@@ -177,7 +162,7 @@ export function usePipeline() {
         (item.name   ?? "").toLowerCase().includes(q) ||
         (item.company ?? "").toLowerCase().includes(q) ||
         (item.title   ?? "").toLowerCase().includes(q);
-      return matchesTenant && matchesPipeline && matchesSeller && matchesCompany && matchesClient && matchesSearch;
+      return matchesPipeline && matchesSeller && matchesCompany && matchesClient && matchesSearch;
     })
     // Newest leads first — uses Supabase's auto-set created_at
     .sort((a: any, b: any) => {
@@ -188,7 +173,7 @@ export function usePipeline() {
       if (!db) return -1;
       return db > da ? 1 : db < da ? -1 : 0;
     }),
-  [leads, currentPipeline, sellerFilter, searchQuery, tenantFilter, isMaster, companyFilter, clientFilter, clientNameToId, products]);
+  [leads, currentPipeline, sellerFilter, searchQuery, companyFilter, clientFilter, clientNameToId, products]);
 
   // ─── Metrics ─────────────────────────────────────────────────────────────────
   const analyticsData = useMemo(() =>
@@ -357,7 +342,6 @@ export function usePipeline() {
     webhookModalLead, setWebhookModalLead,
     webhookUrl, setWebhookUrl,
     leads, updateLead, tasks, addTask,
-    isMaster, tenantFilter, setTenantFilter,
     clientFilter, setClientFilter, clientsList,
     currentPipeline, setCurrentPipeline, switchPipeline,
     selectedFunilId, setSelectedFunilId,
@@ -369,7 +353,6 @@ export function usePipeline() {
     draggedLeadId, setDraggedLeadId,
     draggedOverStageId, setDraggedOverStageId,
     draggedColumnId, setDraggedColumnId,
-    tenantsList,
     companiesList,
     activePipelineStages,
     sellers,
