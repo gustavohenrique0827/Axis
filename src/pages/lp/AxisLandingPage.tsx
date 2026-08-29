@@ -54,6 +54,14 @@ function useLandingPageSeo() {
     fontLink.href = GOOGLE_FONTS_HREF;
     document.head.appendChild(fontLink);
 
+    // A LP é uma página de marketing sempre escura, independente do tema claro/escuro do CRM
+    // (que fica em light por padrão para quem não está logado) — sem isso, o fundo claro do
+    // <html>/<body> aparece nas bordas/overscroll por trás do conteúdo da página.
+    const prevHtmlBg = document.documentElement.style.backgroundColor;
+    const prevBodyBg = document.body.style.backgroundColor;
+    document.documentElement.style.backgroundColor = "#050609";
+    document.body.style.backgroundColor = "#050609";
+
     return () => {
       document.title = prevTitle;
       touched.forEach(({ el, prev, created }) => {
@@ -61,6 +69,8 @@ function useLandingPageSeo() {
         else if (prev !== null) el.setAttribute("content", prev);
       });
       fontLink.remove();
+      document.documentElement.style.backgroundColor = prevHtmlBg;
+      document.body.style.backgroundColor = prevBodyBg;
     };
   }, []);
 }
