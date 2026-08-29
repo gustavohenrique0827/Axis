@@ -41,7 +41,7 @@ export function Sidebar({
   // do cliente ativo) vê e troca de filial daquele cliente.
   const tenantOptions = Object.entries(tenantIdMap).map(([name, id]) => ({ id, name }));
   const canSwitchTenant = !!user?.isMaster && tenantOptions.length > 0;
-  const canSwitchFilial = !!(user?.isMaster || user?.isTenantAdmin);
+  const canSwitchFilial = !!(user?.isMaster || user?.isTenantAdmin) && empresaFiliais.length > 0;
   const userCargo = cargos.find(c => c.nome === user?.role);
   const cargoModulos: string[] | null = userCargo && Array.isArray(userCargo.modulos) && userCargo.modulos.length > 0
     ? userCargo.modulos
@@ -97,12 +97,12 @@ export function Sidebar({
         </div>
 
         {!isSidebarCollapsed && (canSwitchTenant || canSwitchFilial) && (
-          <div className="px-3 pt-3 space-y-1.5 shrink-0">
+          <div className="px-2 pt-2 pb-1 space-y-0.5 shrink-0">
             {canSwitchTenant ? (
-              <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2 py-1.5" title="Trocar de cliente (master)">
-                <Building2 className="w-3 h-3 text-[var(--color-primary-blue)] shrink-0" />
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-control)] hover:bg-[var(--color-surface-sunken)] transition-colors" title="Trocar de cliente (master)">
+                <Building2 className="w-4 h-4 text-[var(--color-primary-blue)] shrink-0" />
                 <select
-                  className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-[10px] font-bold cursor-pointer w-full truncate"
+                  className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-xs font-bold cursor-pointer w-full truncate"
                   value={activeTenantId || ""}
                   onChange={(e) => {
                     const opt = tenantOptions.find(t => t.id === e.target.value);
@@ -110,31 +110,31 @@ export function Sidebar({
                   }}
                 >
                   {tenantOptions.map(t => (
-                    <option key={t.id} value={t.id} className="bg-[var(--color-surface-elevated)]">{t.name}</option>
+                    <option key={t.id} value={t.id} className="bg-[var(--color-surface)]">{t.name}</option>
                   ))}
                 </select>
               </div>
             ) : (
-              <div className="text-[10px] text-[var(--color-text-faint)] font-medium truncate flex items-center gap-1.5 px-1">
-                <Building2 className="w-3 h-3 shrink-0" />
+              <div className="text-xs text-[var(--color-text-muted)] font-bold truncate flex items-center gap-2.5 px-3 py-2">
+                <Building2 className="w-4 h-4 shrink-0 text-[var(--color-text-faint)]" />
                 {activeTenantName || user?.tenantName || "Axis Gestão Corporativa"}
               </div>
             )}
 
             {canSwitchFilial && (
-              <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2 py-1.5" title="Trocar de filial">
-                <MapPin className="w-3 h-3 text-[var(--color-text-muted)] shrink-0" />
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-control)] hover:bg-[var(--color-surface-sunken)] transition-colors" title="Trocar de filial">
+                <MapPin className="w-4 h-4 text-[var(--color-text-faint)] shrink-0" />
                 <select
-                  className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-[10px] font-bold cursor-pointer w-full truncate"
+                  className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-xs font-bold cursor-pointer w-full truncate"
                   value={activeFilialId || ""}
                   onChange={(e) => {
                     const filial = empresaFiliais.find((f: any) => f.id === e.target.value);
                     switchFilial(filial ? { id: filial.id, name: filial.nome } : null);
                   }}
                 >
-                  <option value="" className="bg-[var(--color-surface-elevated)]">Todas as filiais</option>
+                  <option value="" className="bg-[var(--color-surface)]">Todas as filiais</option>
                   {empresaFiliais.map((f: any) => (
-                    <option key={f.id} value={f.id} className="bg-[var(--color-surface-elevated)]">{f.nome}</option>
+                    <option key={f.id} value={f.id} className="bg-[var(--color-surface)]">{f.nome}</option>
                   ))}
                 </select>
               </div>
