@@ -1,7 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, lazy, Suspense } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { requestNotificationPermission } from "./lib/notifications";
 import LandingPage from "./pages/landing/LandingPage";
+// Lazy: página de marketing pública, sem nenhuma dependência do app autenticado — fica no
+// próprio chunk pra quem visita /lp não baixar o bundle inteiro do CRM.
+const AxisLandingPage = lazy(() => import("./pages/lp/AxisLandingPage"));
 import Dashboard from "./pages/dashboard/Dashboard";
 import PerformanceIA from "./pages/dashboard/PerformanceIA";
 import PainelGeral from "./pages/clinica/PainelGeral";
@@ -128,6 +131,14 @@ function AppContent() {
       <Routes>
         <Route path="/" element={<Navigate to="/app" replace />} />
         <Route path="/landing" element={<LandingPage />} />
+        <Route
+          path="/lp"
+          element={
+            <Suspense fallback={<div className="min-h-screen bg-[#050609]" />}>
+              <AxisLandingPage />
+            </Suspense>
+          }
+        />
         <Route path="/login" element={<Login />} />
         {/* Auto-cadastro público desativado: Axis não é mais um SaaS de self-signup —
             novos tenants passam a ser criados por quem já está autenticado (G-Tech/parceiros).

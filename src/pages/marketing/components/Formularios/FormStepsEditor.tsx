@@ -3,9 +3,6 @@ import { RefreshCw, Save, Plus, Trash2 } from "lucide-react";
 import { supabase } from "../../../../lib/supabase";
 import { toast } from "sonner";
 
-const TENANT_ID = "27ef95ee-84dd-499e-9f25-cd9baecb5fe4";
-const SITE_KEY  = "eempreenda";
-
 interface CardOption { value: string; label: string; sub?: string; icon?: string }
 interface StepConfig { indicator: string; label: string; options?: CardOption[]; description?: string; }
 interface FormStepsConfig {
@@ -39,30 +36,38 @@ const DEFAULT_STEPS: FormStepsConfig = {
   },
 };
 
-async function loadFormSteps(): Promise<{ data: FormStepsConfig; fromDB: boolean }> {
+async function loadFormSteps(tenantId: string, siteKey: string): Promise<{ data: FormStepsConfig; fromDB: boolean }> {
   if (!supabase) return { data: DEFAULT_STEPS, fromDB: false };
   const { data, error } = await supabase
     .from("landing_configs").select("content")
-    .eq("tenant_id", TENANT_ID).eq("site_key", SITE_KEY).eq("section", "form_steps").maybeSingle();
+    .eq("tenant_id", tenantId).eq("site_key", siteKey).eq("section", "form_steps").maybeSingle();
   if (error) console.error("[FormSteps] load error:", error.message);
   const content = data?.content as FormStepsConfig | undefined;
   return { data: content ?? DEFAULT_STEPS, fromDB: !!content };
 }
 
-async function saveFormSteps(steps: FormStepsConfig) {
+async function saveFormSteps(tenantId: string, siteKey: string, steps: FormStepsConfig) {
   if (!supabase) return { error: { message: "Supabase não configurado" } };
   return supabase.from("landing_configs").upsert(
-    { tenant_id: TENANT_ID, site_key: SITE_KEY, section: "form_steps", content: steps, updated_at: new Date().toISOString() },
+    { tenant_id: tenantId, site_key: siteKey, section: "form_steps", content: steps, updated_at: new Date().toISOString() },
     { onConflict: "tenant_id,site_key,section" }
   );
 }
 
-export function FormStepsEditor() {
+interface FormStepsEditorProps {
+  tenantId: string;
+  siteKey: string;
+}
+
+export function FormStepsEditor({ tenantId, siteKey }: FormStepsEditorProps) {
   const [steps,  setSteps]  = useState<FormStepsConfig>(DEFAULT_STEPS);
   const [saving, setSaving] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
-  useEffect(() => { loadFormSteps().then(({ data }) => { setSteps(data); setLoaded(true); }); }, []);
+  useEffect(() => {
+    setLoaded(false);
+    loadFormSteps(tenantId, siteKey).then(({ data }) => { setSteps(data); setLoaded(true); });
+  }, [tenantId, siteKey]);
 
   const updateStep = (key: keyof FormStepsConfig, field: keyof StepConfig, val: string) =>
     setSteps(p => ({ ...p, [key]: { ...p[key], [field]: val } }));
@@ -88,7 +93,7 @@ export function FormStepsEditor() {
 
   const handleSave = async () => {
     setSaving(true);
-    const { error } = await saveFormSteps(steps);
+    const { error } = await saveFormSteps(tenantId, siteKey, steps);
     setSaving(false);
     if (error) { toast.error("Erro ao salvar."); return; }
     toast.success("Perguntas salvas! Recarregue o formulário para ver.");

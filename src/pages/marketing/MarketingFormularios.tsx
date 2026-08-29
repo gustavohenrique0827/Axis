@@ -1,32 +1,63 @@
 import { useState } from "react";
 import { PageContainer } from "../../components/PageContainer";
-import { FileText, ChevronRight } from "lucide-react";
+import { FileText, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useData } from "../../contexts/DataContext";
+import { toast } from "sonner";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { FormDetail, type FormDefinition } from "./components/Formularios/FormDetail";
-
-const FORMS: FormDefinition[] = [
-  {
-    id:          "metodo_eplus",
-    name:        "Método E+ — O Despertar do Empreendedor",
-    description: "Formulário de inscrição da landing page E-EMPREENDA+.",
-    previewUrl:  import.meta.env.DEV
-                   ? "http://localhost:5175/inscricao"
-                   : "https://escolaempreendamais.pluppex.com.br/inscricao",
-    source:      "landing_empreenda",
-    active:      true,
-  },
-];
+import { NovoFormularioModal } from "./components/Formularios/NovoFormularioModal";
 
 export default function MarketingFormularios() {
-  const { user, tenantIdMap } = useAuth();
-  const tenantId = user?.tenantName ? tenantIdMap[user.tenantName] : undefined;
+  const { activeTenantId } = useAuth();
+  const { marketingForms, addMarketingForm, deleteMarketingForm } = useData();
   const [selected, setSelected] = useState<FormDefinition | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const forms: FormDefinition[] = marketingForms.map((f: any) => ({
+    id: f.id,
+    name: f.name,
+    description: f.description || "",
+    previewUrl: f.preview_url,
+    source: f.source,
+    active: f.active !== false,
+  }));
+
+  const handleCreate = async (data: { name: string; description: string; previewUrl: string; source: string }) => {
+    await addMarketingForm({
+      name: data.name,
+      description: data.description,
+      preview_url: data.previewUrl,
+      source: data.source,
+      active: true,
+    });
+    toast.success("Formulário cadastrado.");
+    setIsModalOpen(false);
+  };
+
+  const handleDelete = async (form: FormDefinition, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!(await confirmDialog({
+      title: "Excluir formulário",
+      description: `Excluir "${form.name}"? Essa ação não pode ser desfeita.`,
+    }))) return;
+    await deleteMarketingForm(form.id);
+    toast.success("Formulário removido.");
+  };
 
   return (
     <PageContainer
       title="Formulários"
       subtitle="Gerencie formulários de captação de leads conectados ao CRM."
+      actions={!selected && (
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 px-4 py-2.5 bg-orange-500/10 border border-orange-500/20 rounded-xl text-[11px] font-black text-orange-400 hover:bg-orange-500/20 uppercase tracking-widest transition-colors"
+        >
+          <Plus className="w-3.5 h-3.5" /> Novo Formulário
+        </button>
+      )}
     >
       <AnimatePresence mode="wait">
         {selected ? (
@@ -39,39 +70,56 @@ export default function MarketingFormularios() {
               <ChevronRight className="w-3.5 h-3.5 text-slate-600" />
               <span className="text-[11px] font-black text-white uppercase tracking-widest truncate">{selected.name}</span>
             </div>
-            {tenantId
-              ? <FormDetail form={selected} tenantId={tenantId} />
+            {activeTenantId
+              ? <FormDetail form={selected} tenantId={activeTenantId} />
               : <p className="text-sm text-slate-500">Carregando contexto do usuário...</p>
             }
           </motion.div>
         ) : (
           <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="grid gap-4">
-              {FORMS.map(form => (
-                <button key={form.id} onClick={() => setSelected(form)}
-                  className="group text-left w-full flex items-center gap-5 p-5 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl hover:border-white/15 hover:bg-white/[0.04] transition-all">
-                  <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
-                    <FileText className="w-5 h-5 text-orange-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-sm font-black text-white truncate">{form.name}</h3>
-                      {form.active && (
-                        <span className="text-[9px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase shrink-0">
-                          Ativo
-                        </span>
-                      )}
+            {forms.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-3 opacity-50">
+                <FileText className="w-10 h-10 text-slate-600" />
+                <p className="text-sm font-black text-slate-500 uppercase">Nenhum formulário cadastrado</p>
+                <p className="text-xs text-slate-600">Cadastre o formulário/landing page externa desta empresa para acompanhar leads e rodízio de SDR.</p>
+              </div>
+            ) : (
+              <div className="grid gap-4">
+                {forms.map(form => (
+                  <div key={form.id} onClick={() => setSelected(form)} role="button" tabIndex={0}
+                    className="group text-left w-full flex items-center gap-5 p-5 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl hover:border-white/15 hover:bg-white/[0.04] transition-all cursor-pointer">
+                    <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
+                      <FileText className="w-5 h-5 text-orange-400" />
                     </div>
-                    <p className="text-[11px] text-slate-500 font-medium">{form.description}</p>
-                    <p className="text-[10px] text-slate-600 mt-1">{form.previewUrl}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-sm font-black text-white truncate">{form.name}</h3>
+                        {form.active && (
+                          <span className="text-[9px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase shrink-0">
+                            Ativo
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 font-medium">{form.description}</p>
+                      <p className="text-[10px] text-slate-600 mt-1">{form.previewUrl}</p>
+                    </div>
+                    <button
+                      onClick={(e) => handleDelete(form, e)}
+                      title="Excluir formulário"
+                      className="p-2 rounded-lg text-slate-600 hover:text-danger hover:bg-danger/10 transition-colors shrink-0"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                    <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0" />
                   </div>
-                  <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 transition-colors shrink-0" />
-                </button>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
+
+      <NovoFormularioModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleCreate} />
     </PageContainer>
   );
 }

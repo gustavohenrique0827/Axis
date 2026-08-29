@@ -321,6 +321,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [marketingContent, setMarketingContent] = useState<any[]>([]);
   const [marketingCampaigns, setMarketingCampaigns] = useState<any[]>([]);
   const [marketingLandingPages, setMarketingLandingPages] = useState<any[]>([]);
+  const [marketingForms, setMarketingForms] = useState<any[]>([]);
   const [productsRaw, setProducts] = useState<any[]>([]);
   const [proposalsRaw, setProposals] = useState<any[]>([]);
   const [proposalItems, setProposalItems] = useState<any[]>([]);
@@ -428,7 +429,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
               productsRes, proposalsRes, proposalItemsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
               clienteBaseRes, reunioesRes, financialGoalsRes, funisRes, filiaisRes,
-              commissionEntriesRes, financeCategoriesRes, scheduledExportsRes, educationContentRes
+              commissionEntriesRes, financeCategoriesRes, scheduledExportsRes, educationContentRes,
+              marketingFormsRes
             ] = await Promise.all([
               supabase.from('leads').select('*').eq('tenant_id', tenantId),
               supabase.from('tasks').select('*').eq('tenant_id', tenantId),
@@ -461,6 +463,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('finance_categories').select('*').eq('tenant_id', tenantId),
               supabase.from('scheduled_exports').select('*').eq('tenant_id', tenantId),
               supabase.from('education_content').select('*').eq('tenant_id', tenantId),
+              supabase.from('marketing_forms').select('*').eq('tenant_id', tenantId),
             ]);
 
             if (!leadsRes.error && leadsRes.data && leadsRes.data.length > 0) setLeads(leadsRes.data as Lead[]);
@@ -502,6 +505,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!financeCategoriesRes.error && financeCategoriesRes.data) setFinanceCategories(financeCategoriesRes.data);
             if (!scheduledExportsRes.error && scheduledExportsRes.data) setScheduledExports(scheduledExportsRes.data);
             if (!educationContentRes.error && educationContentRes.data) setEducationContent(educationContentRes.data);
+            if (!marketingFormsRes.error && marketingFormsRes.data) setMarketingForms(marketingFormsRes.data);
 
             if (!settingsRes.error && settingsRes.data) {
               const settingsMap: Record<string, any> = {};
@@ -1139,6 +1143,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const mktCampCrud = createCrudHelper('marketing_campaigns', setMarketingCampaigns);
   const mktContCrud = createCrudHelper('marketing_content', setMarketingContent);
   const mktLpCrud = createCrudHelper('marketing_landing_pages', setMarketingLandingPages);
+  const mktFormsCrud = createCrudHelper('marketing_forms', setMarketingForms);
   const mktAutoCrud = createCrudHelper('marketing_automations', setMarketingAutomations);
   const squadMetaCrud = createCrudHelper('squad_metas', setSquadMetas);
   const cargoCrud = createCrudHelper('cargos', setCargos);
@@ -1315,6 +1320,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addMarketingLandingPage: mktLpCrud.add,
       updateMarketingLandingPage: mktLpCrud.update,
       deleteMarketingLandingPage: mktLpCrud.del,
+      marketingForms,
+      setMarketingForms,
+      addMarketingForm: mktFormsCrud.add,
+      updateMarketingForm: mktFormsCrud.update,
+      deleteMarketingForm: mktFormsCrud.del,
       products,
       setProducts,
       addProduct: productCrud.add,

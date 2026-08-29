@@ -180,6 +180,11 @@ export interface DataContextType {
   addMarketingLandingPage: (p: any) => void;
   updateMarketingLandingPage: (id: string, updates: any) => void;
   deleteMarketingLandingPage: (id: string) => void;
+  marketingForms: any[];
+  setMarketingForms: (v: any[]) => void;
+  addMarketingForm: (f: any) => void;
+  updateMarketingForm: (id: string, updates: any) => void;
+  deleteMarketingForm: (id: string) => void;
   products: any[];
   setProducts: (v: any[]) => void;
   addProduct: (p: any) => void;

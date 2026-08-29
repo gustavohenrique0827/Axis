@@ -90,9 +90,14 @@ export function FormDetail({ form, tenantId }: { form: FormDefinition; tenantId:
   const activeSDRs   = sdrs.filter(s => activeSdrIds.includes(s.id));
   const nextSdr      = activeSDRs[config.current_index % Math.max(activeSDRs.length, 1)];
 
+  // O editor de perguntas hoje só sabe editar o schema de 5 passos usado pela E-EMPREENDA+
+  // (tabela landing_configs); não é um form-builder genérico para qualquer URL cadastrada,
+  // então só aparece para o formulário que ele de fato suporta.
+  const supportsStepsEditor = form.source === "landing_empreenda";
+
   const TABS: { key: Tab; label: string; icon: ReactNode }[] = [
     { key: "visualizar", label: "Visualizar",      icon: <Eye        className="w-3.5 h-3.5" /> },
-    { key: "perguntas",  label: "Editar Perguntas", icon: <Pencil     className="w-3.5 h-3.5" /> },
+    ...(supportsStepsEditor ? [{ key: "perguntas" as Tab, label: "Editar Perguntas", icon: <Pencil className="w-3.5 h-3.5" /> }] : []),
     { key: "rodizio",    label: "Rodízio SDR",     icon: <Users      className="w-3.5 h-3.5" /> },
     { key: "leads",      label: "Leads",           icon: <TrendingUp className="w-3.5 h-3.5" /> },
   ];
@@ -155,18 +160,18 @@ export function FormDetail({ form, tenantId }: { form: FormDefinition; tenantId:
                   className="w-full" style={{ height: "540px", border: "none" }}
                   sandbox="allow-scripts allow-same-origin allow-forms" />
               </div>
-              <div className="flex items-start gap-2 p-3 bg-amber-500/5 border border-amber-500/15 rounded-xl">
-                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-amber-300/70 font-medium leading-relaxed">
-                  Para editar perguntas e opções, altere{" "}
-                  <code className="bg-white/10 px-1.5 py-0.5 rounded text-[10px]">src/pages/Inscricao/index.tsx</code>{" "}
-                  no projeto E-EMPREENDA+.
-                </p>
-              </div>
+              {!supportsStepsEditor && (
+                <div className="flex items-start gap-2 p-3 bg-amber-500/5 border border-amber-500/15 rounded-xl">
+                  <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <p className="text-[11px] text-amber-300/70 font-medium leading-relaxed">
+                    Este formulário é hospedado externamente. Para editar perguntas e campos, altere a página no projeto de origem — o Axis acompanha apenas os leads e o rodízio de SDR gerados por ela.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
-          {tab === "perguntas" && <FormStepsEditor />}
+          {tab === "perguntas" && supportsStepsEditor && <FormStepsEditor tenantId={tenantId} siteKey={form.source} />}
 
           {tab === "rodizio" && (
             <div className="space-y-5">
