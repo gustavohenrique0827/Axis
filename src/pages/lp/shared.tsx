@@ -18,7 +18,7 @@ export function Section({
   return (
     <section
       id={id}
-      className={`relative py-20 sm:py-28 lg:py-32 px-5 sm:px-8 ${bordered ? "border-t border-white/[0.06]" : ""} ${className}`}
+      className={`relative py-20 sm:py-28 lg:py-32 px-5 sm:px-8 ${bordered ? "border-t border-slate-200" : ""} ${className}`}
     >
       <div className="max-w-6xl mx-auto relative z-10">{children}</div>
     </section>
@@ -31,7 +31,7 @@ export function Kicker({ children }: { children: ReactNode }) {
       initial={{ opacity: 0, y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.25em] text-blue-400 mb-5"
+      className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.25em] text-blue-600 mb-5"
     >
       <span className="w-6 h-px bg-gradient-to-r from-blue-500 to-violet-500" />
       {children}
@@ -56,7 +56,7 @@ export function SectionTitle({
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
       style={{ fontFamily: FONT_DISPLAY }}
-      className={`font-bold tracking-tight text-white leading-[1.08] ${className}`}
+      className={`font-bold tracking-tight text-slate-900 leading-[1.08] ${className}`}
     >
       {children}
     </Comp>
@@ -70,7 +70,7 @@ export function Lede({ children, className = "" }: { children: ReactNode; classN
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ delay: 0.1, duration: 0.5 }}
-      className={`text-slate-400 leading-relaxed ${className}`}
+      className={`text-slate-500 leading-relaxed ${className}`}
     >
       {children}
     </motion.p>
@@ -88,8 +88,8 @@ export function GlassCard({
 }) {
   return (
     <div
-      className={`relative rounded-2xl border border-white/[0.08] bg-white/[0.025] backdrop-blur-sm ${
-        glow ? "shadow-[0_0_60px_-15px_rgba(59,130,246,0.25)]" : ""
+      className={`relative rounded-2xl border border-slate-200 bg-white ${
+        glow ? "shadow-[0_20px_60px_-15px_rgba(59,130,246,0.2)]" : "shadow-sm"
       } ${className}`}
     >
       {children}
@@ -121,7 +121,7 @@ export function FadeIn({
 
 export function BrandLine({ children }: { children: ReactNode }) {
   return (
-    <p className="text-xl sm:text-2xl font-medium text-slate-200 italic leading-snug" style={{ fontFamily: FONT_DISPLAY }}>
+    <p className="text-xl sm:text-2xl font-medium text-slate-700 italic leading-snug" style={{ fontFamily: FONT_DISPLAY }}>
       {children}
     </p>
   );

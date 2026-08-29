@@ -134,7 +134,7 @@ function AppContent() {
         <Route
           path="/lp"
           element={
-            <Suspense fallback={<div className="min-h-screen bg-[#050609]" />}>
+            <Suspense fallback={<div className="min-h-screen bg-white" />}>
               <AxisLandingPage />
             </Suspense>
           }

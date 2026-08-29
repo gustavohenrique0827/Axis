@@ -27,11 +27,11 @@ export function RadarOportunidadesSection() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
         {CARDS.map((c, i) => (
           <FadeIn key={c.label} delay={i * 0.06}>
-            <div className="flex items-center gap-4 p-5 rounded-xl bg-white/[0.03] border border-white/[0.07] hover:border-blue-400/25 hover:bg-blue-500/[0.04] transition-colors">
-              <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-400/20 flex items-center justify-center shrink-0">
-                <c.icon className="w-4.5 h-4.5 text-blue-300" />
+            <div className="flex items-center gap-4 p-5 rounded-xl bg-white border border-slate-200 shadow-sm hover:border-blue-300 hover:bg-blue-50/40 transition-colors">
+              <div className="w-10 h-10 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0">
+                <c.icon className="w-4.5 h-4.5 text-blue-600" />
               </div>
-              <span className="text-sm font-semibold text-slate-200">{c.label}</span>
+              <span className="text-sm font-semibold text-slate-700">{c.label}</span>
             </div>
           </FadeIn>
         ))}

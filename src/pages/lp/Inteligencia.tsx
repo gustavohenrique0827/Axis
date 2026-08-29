@@ -10,7 +10,7 @@ export function InteligenciaSection() {
           <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-6">
             Uma inteligência comercial<br />trabalhando 24 horas.
           </SectionTitle>
-          <div className="space-y-2 mb-7 text-slate-300 text-base sm:text-lg font-medium leading-relaxed">
+          <div className="space-y-2 mb-7 text-slate-700 text-base sm:text-lg font-medium leading-relaxed">
             <p>Enquanto sua equipe vende, o Axis observa.</p>
             <p>Enquanto sua equipe atende, o Axis analisa.</p>
             <p>Enquanto sua equipe descansa, ele continua trabalhando.</p>
@@ -24,8 +24,8 @@ export function InteligenciaSection() {
         <FadeIn delay={0.15} className="justify-self-center">
           <GlassCard className="p-10 sm:p-14 flex flex-col items-center gap-4">
             <AuroraCore mode="thinking" size={140} />
-            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-600">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Ativo agora
             </div>
           </GlassCard>

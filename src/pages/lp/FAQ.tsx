@@ -51,17 +51,17 @@ export function FAQSection() {
         {FAQS.map((f, i) => {
           const isOpen = open === i;
           return (
-            <div key={f.q} className="rounded-xl border border-white/[0.08] bg-white/[0.02] overflow-hidden">
+            <div key={f.q} className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
               <button
                 onClick={() => setOpen(isOpen ? null : i)}
                 className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
               >
-                <span className="text-sm sm:text-[15px] font-semibold text-white">{f.q}</span>
-                <ChevronDown className={`w-4 h-4 text-slate-500 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+                <span className="text-sm sm:text-[15px] font-semibold text-slate-900">{f.q}</span>
+                <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />
               </button>
               {isOpen && (
                 <div className="px-5 pb-4">
-                  <p className="text-sm text-slate-400 leading-relaxed">{f.a}</p>
+                  <p className="text-sm text-slate-500 leading-relaxed">{f.a}</p>
                 </div>
               )}
             </div>

@@ -22,9 +22,9 @@ export function CanaisSection() {
       <FadeIn>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 max-w-3xl mx-auto mb-8">
           {CHANNELS.map((c) => (
-            <div key={c.label} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.03] border border-white/[0.07]">
-              <c.icon className="w-5 h-5 text-blue-300" />
-              <span className="text-[10px] font-semibold text-slate-400 text-center">{c.label}</span>
+            <div key={c.label} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white border border-slate-200 shadow-sm">
+              <c.icon className="w-5 h-5 text-blue-600" />
+              <span className="text-[10px] font-semibold text-slate-500 text-center">{c.label}</span>
             </div>
           ))}
         </div>
@@ -48,18 +48,18 @@ export function BeneficiosSection() {
   ];
 
   return (
-    <Section id="beneficios" className="bg-white/[0.015]">
+    <Section id="beneficios" className="bg-slate-50/70">
       <div className="grid lg:grid-cols-2 gap-10">
         <FadeIn>
           <GlassCard className="p-7 sm:p-8 h-full">
-            <Inbox className="w-8 h-8 text-blue-300 mb-5" />
-            <h3 className="text-2xl font-bold text-white mb-2" style={{ fontFamily: FONT_DISPLAY }}>
+            <Inbox className="w-8 h-8 text-blue-600 mb-5" />
+            <h3 className="text-2xl font-bold text-slate-900 mb-2" style={{ fontFamily: FONT_DISPLAY }}>
               O vendedor deixa de procurar onde vender.
             </h3>
-            <p className="text-base font-semibold text-blue-300 mb-5 flex items-center gap-2">
+            <p className="text-base font-semibold text-blue-600 mb-5 flex items-center gap-2">
               <ArrowRight className="w-4 h-4" /> E passa a receber onde vender.
             </p>
-            <p className="text-sm text-slate-400 leading-relaxed">
+            <p className="text-sm text-slate-500 leading-relaxed">
               Cada vendedor pode receber contexto, prioridade, histórico, objeções identificadas e próxima
               ação recomendada.
             </p>
@@ -68,15 +68,15 @@ export function BeneficiosSection() {
 
         <FadeIn delay={0.1}>
           <GlassCard className="p-7 sm:p-8 h-full">
-            <h3 className="text-2xl font-bold text-white mb-1 leading-snug" style={{ fontFamily: FONT_DISPLAY }}>
+            <h3 className="text-2xl font-bold text-slate-900 mb-1 leading-snug" style={{ fontFamily: FONT_DISPLAY }}>
               Pare de administrar apenas atividades.
             </h3>
-            <p className="text-base font-semibold text-blue-300 mb-5">Comece a administrar oportunidades.</p>
+            <p className="text-base font-semibold text-blue-600 mb-5">Comece a administrar oportunidades.</p>
             <div className="space-y-2">
               {gestorQuestions.map((q) => (
                 <div key={q} className="flex items-start gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 shrink-0" />
-                  <span className="text-sm text-slate-300">{q}</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
+                  <span className="text-sm text-slate-600">{q}</span>
                 </div>
               ))}
             </div>

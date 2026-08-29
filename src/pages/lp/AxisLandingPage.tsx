@@ -54,13 +54,13 @@ function useLandingPageSeo() {
     fontLink.href = GOOGLE_FONTS_HREF;
     document.head.appendChild(fontLink);
 
-    // A LP é uma página de marketing sempre escura, independente do tema claro/escuro do CRM
-    // (que fica em light por padrão para quem não está logado) — sem isso, o fundo claro do
-    // <html>/<body> aparece nas bordas/overscroll por trás do conteúdo da página.
+    // A LP é sempre clara, independente do tema claro/escuro que o usuário logado tenha
+    // escolhido no CRM — sem isso, quem visita /lp já com o tema escuro salvo veria o
+    // <html>/<body> escuro atrás do conteúdo branco da página.
     const prevHtmlBg = document.documentElement.style.backgroundColor;
     const prevBodyBg = document.body.style.backgroundColor;
-    document.documentElement.style.backgroundColor = "#050609";
-    document.body.style.backgroundColor = "#050609";
+    document.documentElement.style.backgroundColor = "#FFFFFF";
+    document.body.style.backgroundColor = "#FFFFFF";
 
     return () => {
       document.title = prevTitle;
@@ -84,7 +84,7 @@ export default function AxisLandingPage() {
     document.querySelector("#como-funciona")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
-    <div className="min-h-screen bg-[#050609] text-white antialiased" style={{ fontFamily: FONT_BODY }}>
+    <div className="min-h-screen bg-white text-slate-900 antialiased" style={{ fontFamily: FONT_BODY }}>
       <Navbar onCtaClick={scrollToForm} />
       <main>
         <Hero onPrimaryCta={scrollToForm} onSecondaryCta={scrollToComoFunciona} />

@@ -41,12 +41,12 @@ export function ComoFuncionaSection() {
         {STEPS.map((s, i) => (
           <FadeIn key={s.n} delay={i * 0.1}>
             <div className="relative flex flex-col items-center text-center px-4">
-              <div className="relative z-10 w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500/15 to-violet-500/10 border border-blue-400/25 flex items-center justify-center mb-5">
-                <s.icon className="w-6 h-6 text-blue-300" />
+              <div className="relative z-10 w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-200 flex items-center justify-center mb-5 shadow-sm">
+                <s.icon className="w-6 h-6 text-blue-600" />
               </div>
-              <span className="text-[11px] font-black text-slate-600 tracking-[0.2em] mb-2">{s.n}</span>
-              <h3 className="text-lg font-bold text-white mb-2.5" style={{ fontFamily: FONT_DISPLAY }}>{s.title}</h3>
-              <p className="text-sm text-slate-400 leading-relaxed">{s.text}</p>
+              <span className="text-[11px] font-black text-slate-300 tracking-[0.2em] mb-2">{s.n}</span>
+              <h3 className="text-lg font-bold text-slate-900 mb-2.5" style={{ fontFamily: FONT_DISPLAY }}>{s.title}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">{s.text}</p>
             </div>
           </FadeIn>
         ))}

@@ -12,7 +12,7 @@ const METRICS = [
 
 export function DashboardMockupSection() {
   return (
-    <Section id="dashboard" className="bg-white/[0.015]">
+    <Section id="dashboard" className="bg-slate-50/70">
       <div className="text-center mb-14">
         <Kicker>Visão do gestor</Kicker>
         <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl">
@@ -44,7 +44,7 @@ export function DashboardMockupSection() {
             </div>
           </div>
         </div>
-        <p className="text-center text-[11px] text-slate-600 mt-5 uppercase tracking-wider font-bold">Exemplo de visualização</p>
+        <p className="text-center text-[11px] text-slate-400 mt-5 uppercase tracking-wider font-bold">Exemplo de visualização</p>
       </FadeIn>
     </Section>
   );

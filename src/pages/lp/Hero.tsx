@@ -24,15 +24,15 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
   return (
     <div id="top" className="relative pt-36 pb-20 sm:pt-44 sm:pb-28 px-5 sm:px-8 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-blue-600/[0.08] blur-[160px]" />
-        <div className="absolute top-[10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-violet-600/[0.08] blur-[140px]" />
+        <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-blue-500/[0.07] blur-[160px]" />
+        <div className="absolute top-[10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-violet-500/[0.07] blur-[140px]" />
       </div>
 
       <div className="max-w-5xl mx-auto text-center relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/[0.1] bg-white/[0.03] text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-8"
         >
           CRM + Inteligência Artificial + Agentes Autônomos
         </motion.div>
@@ -42,7 +42,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           style={{ fontFamily: FONT_DISPLAY }}
-          className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white leading-[1.05] mb-6"
+          className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 leading-[1.05] mb-6"
         >
           Seu próximo vendedor<br className="hidden sm:block" /> não precisa dormir.
         </motion.h1>
@@ -51,7 +51,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="text-lg sm:text-xl text-slate-300 font-medium max-w-2xl mx-auto mb-4"
+          className="text-lg sm:text-xl text-slate-700 font-medium max-w-2xl mx-auto mb-4"
         >
           O sistema operacional de oportunidades comerciais que encontra, entende e age sobre seus leads.
         </motion.p>
@@ -74,14 +74,14 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
         >
           <button
             onClick={onPrimaryCta}
-            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-white text-black text-sm font-bold hover:bg-slate-100 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.5)]"
+            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/15"
           >
             Quero conhecer o Axis
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
           </button>
           <button
             onClick={onSecondaryCta}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl border border-white/[0.12] text-white text-sm font-bold hover:bg-white/[0.05] transition-all"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl border border-slate-300 text-slate-900 text-sm font-bold hover:bg-slate-50 transition-all"
           >
             <PlayCircle className="w-4 h-4" />
             Ver como funciona
@@ -92,7 +92,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="text-[11px] text-slate-600 mb-16 sm:mb-20"
+          className="text-[11px] text-slate-400 mb-16 sm:mb-20"
         >
           Menos lead esquecido. Menos follow-up perdido. Mais oportunidades avançando.
         </motion.p>
@@ -138,7 +138,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.5 + i * 0.06 }}
-                className="absolute px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.08] text-[10px] sm:text-[11px] font-semibold text-slate-300 whitespace-nowrap backdrop-blur-sm"
+                className="absolute px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-[10px] sm:text-[11px] font-semibold text-slate-600 whitespace-nowrap"
                 style={{ left: `calc(50% + ${p.x}%)`, top: `calc(50% + ${p.y}%)`, transform: "translate(-50%, -50%)" }}
               >
                 {inp.label}
@@ -149,7 +149,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
           {/* núcleo */}
           <div className="relative z-10 flex flex-col items-center gap-3">
             <AuroraCore mode="analyzing" size={128} />
-            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-300">Axis Intelligence</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-600">Axis Intelligence</span>
           </div>
 
           {/* saídas abaixo */}
@@ -160,7 +160,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.1 + i * 0.1 }}
-                className="px-3 sm:px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-500/15 to-violet-500/15 border border-blue-400/20 text-[10px] sm:text-[11px] font-bold text-blue-200 uppercase tracking-wider"
+                className="px-3 sm:px-4 py-1.5 rounded-full bg-gradient-to-r from-blue-50 to-violet-50 border border-blue-200 text-[10px] sm:text-[11px] font-bold text-blue-700 uppercase tracking-wider"
               >
                 {out}
               </motion.div>

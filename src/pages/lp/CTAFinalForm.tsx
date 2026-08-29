@@ -2,9 +2,9 @@ import { forwardRef, useState } from "react";
 import { CheckCircle2, Loader2 } from "lucide-react";
 import { Section, Kicker, SectionTitle, FadeIn, FONT_DISPLAY } from "./shared";
 
-const labelClass = "text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-2";
+const labelClass = "text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2";
 const inputClass =
-  "w-full bg-white/[0.03] border border-white/[0.1] rounded-xl px-4 py-3 text-sm text-white placeholder-slate-600 focus:outline-none focus:border-blue-400/50 focus:bg-white/[0.05] transition-all";
+  "w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/15 transition-all";
 
 interface FormState {
   nome: string;
@@ -52,9 +52,9 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
           <SectionTitle as="h2" className="text-3xl sm:text-5xl lg:text-6xl mb-6">
             Pare de apenas administrar seus leads.
             <br />
-            <span className="text-slate-500">Comece a operar suas oportunidades.</span>
+            <span className="text-slate-400">Comece a operar suas oportunidades.</span>
           </SectionTitle>
-          <p className="text-slate-400 text-base sm:text-lg mb-2">
+          <p className="text-slate-500 text-base sm:text-lg mb-2">
             Descubra como o Axis pode trabalhar dentro da sua operação comercial.
           </p>
         </div>
@@ -62,54 +62,54 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
 
       <Section id="formulario" bordered={false} className="pt-0 pb-28 sm:pb-36">
         <FadeIn className="max-w-xl mx-auto">
-          <div className="rounded-2xl border border-white/[0.1] bg-white/[0.025] backdrop-blur-sm p-7 sm:p-10 shadow-[0_0_80px_-30px_rgba(59,130,246,0.3)]">
+          <div className="rounded-2xl border border-slate-200 bg-white p-7 sm:p-10 shadow-xl shadow-blue-500/5">
             {submitted ? (
               <div className="text-center py-8">
-                <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-400/30 flex items-center justify-center mx-auto mb-5">
-                  <CheckCircle2 className="w-7 h-7 text-emerald-400" />
+                <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto mb-5">
+                  <CheckCircle2 className="w-7 h-7 text-emerald-600" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2" style={{ fontFamily: FONT_DISPLAY }}>
+                <h3 className="text-xl font-bold text-slate-900 mb-2" style={{ fontFamily: FONT_DISPLAY }}>
                   Recebemos seu pedido.
                 </h3>
-                <p className="text-sm text-slate-400 leading-relaxed max-w-sm mx-auto">
+                <p className="text-sm text-slate-500 leading-relaxed max-w-sm mx-auto">
                   Agora queremos entender melhor sua operação para mostrar onde o Axis pode gerar mais valor.
                 </p>
               </div>
             ) : (
               <>
                 <Kicker>Vamos conversar</Kicker>
-                <h3 className="text-2xl font-bold text-white mb-6" style={{ fontFamily: FONT_DISPLAY }}>
+                <h3 className="text-2xl font-bold text-slate-900 mb-6" style={{ fontFamily: FONT_DISPLAY }}>
                   Vamos entender sua operação.
                 </h3>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label className={labelClass}>Nome *</label>
-                      <input value={data.nome} onChange={set("nome")} className={`${inputClass} ${errors.nome ? "border-rose-500/60" : ""}`} placeholder="Seu nome" />
+                      <input value={data.nome} onChange={set("nome")} className={`${inputClass} ${errors.nome ? "border-rose-400" : ""}`} placeholder="Seu nome" />
                     </div>
                     <div>
                       <label className={labelClass}>Empresa *</label>
-                      <input value={data.empresa} onChange={set("empresa")} className={`${inputClass} ${errors.empresa ? "border-rose-500/60" : ""}`} placeholder="Nome da empresa" />
+                      <input value={data.empresa} onChange={set("empresa")} className={`${inputClass} ${errors.empresa ? "border-rose-400" : ""}`} placeholder="Nome da empresa" />
                     </div>
                   </div>
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div>
                       <label className={labelClass}>WhatsApp *</label>
-                      <input value={data.whatsapp} onChange={set("whatsapp")} className={`${inputClass} ${errors.whatsapp ? "border-rose-500/60" : ""}`} placeholder="(00) 00000-0000" />
+                      <input value={data.whatsapp} onChange={set("whatsapp")} className={`${inputClass} ${errors.whatsapp ? "border-rose-400" : ""}`} placeholder="(00) 00000-0000" />
                     </div>
                     <div>
                       <label className={labelClass}>E-mail *</label>
-                      <input type="email" value={data.email} onChange={set("email")} className={`${inputClass} ${errors.email ? "border-rose-500/60" : ""}`} placeholder="voce@empresa.com" />
+                      <input type="email" value={data.email} onChange={set("email")} className={`${inputClass} ${errors.email ? "border-rose-400" : ""}`} placeholder="voce@empresa.com" />
                     </div>
                   </div>
                   <div>
                     <label className={labelClass}>Quantidade aproximada de leads por mês</label>
                     <select value={data.volumeLeads} onChange={set("volumeLeads")} className={inputClass}>
-                      <option value="" className="bg-[#0b0c10]">Selecione</option>
-                      <option value="ate_50" className="bg-[#0b0c10]">Até 50</option>
-                      <option value="50_200" className="bg-[#0b0c10]">50 a 200</option>
-                      <option value="200_500" className="bg-[#0b0c10]">200 a 500</option>
-                      <option value="500_mais" className="bg-[#0b0c10]">Mais de 500</option>
+                      <option value="">Selecione</option>
+                      <option value="ate_50">Até 50</option>
+                      <option value="50_200">50 a 200</option>
+                      <option value="200_500">200 a 500</option>
+                      <option value="500_mais">Mais de 500</option>
                     </select>
                   </div>
                   <div>
@@ -120,7 +120,7 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full mt-2 py-4 rounded-xl bg-white text-black text-sm font-bold hover:bg-slate-100 transition-all shadow-[0_0_40px_-10px_rgba(255,255,255,0.5)] disabled:opacity-70 flex items-center justify-center gap-2"
+                    className="w-full mt-2 py-4 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/15 disabled:opacity-70 flex items-center justify-center gap-2"
                   >
                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                     {submitting ? "Enviando..." : "Quero conhecer o Axis"}
