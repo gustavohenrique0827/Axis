@@ -96,6 +96,52 @@ export function Sidebar({
           </Link>
         </div>
 
+        {!isSidebarCollapsed && (canSwitchTenant || canSwitchFilial) && (
+          <div className="px-3 pt-3 space-y-1.5 shrink-0">
+            {canSwitchTenant ? (
+              <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2 py-1.5" title="Trocar de cliente (master)">
+                <Building2 className="w-3 h-3 text-[var(--color-primary-blue)] shrink-0" />
+                <select
+                  className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-[10px] font-bold cursor-pointer w-full truncate"
+                  value={activeTenantId || ""}
+                  onChange={(e) => {
+                    const opt = tenantOptions.find(t => t.id === e.target.value);
+                    if (opt) switchTenant(opt.id, opt.name);
+                  }}
+                >
+                  {tenantOptions.map(t => (
+                    <option key={t.id} value={t.id} className="bg-[var(--color-surface-elevated)]">{t.name}</option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div className="text-[10px] text-[var(--color-text-faint)] font-medium truncate flex items-center gap-1.5 px-1">
+                <Building2 className="w-3 h-3 shrink-0" />
+                {activeTenantName || user?.tenantName || "Axis Gestão Corporativa"}
+              </div>
+            )}
+
+            {canSwitchFilial && (
+              <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2 py-1.5" title="Trocar de filial">
+                <MapPin className="w-3 h-3 text-[var(--color-text-muted)] shrink-0" />
+                <select
+                  className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-[10px] font-bold cursor-pointer w-full truncate"
+                  value={activeFilialId || ""}
+                  onChange={(e) => {
+                    const filial = empresaFiliais.find((f: any) => f.id === e.target.value);
+                    switchFilial(filial ? { id: filial.id, name: filial.nome } : null);
+                  }}
+                >
+                  <option value="" className="bg-[var(--color-surface-elevated)]">Todas as filiais</option>
+                  {empresaFiliais.map((f: any) => (
+                    <option key={f.id} value={f.id} className="bg-[var(--color-surface-elevated)]">{f.nome}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex-1 overflow-y-auto py-4 px-3 space-y-6 scrollbar-thin">
           {navSections
             .map((section) => {
@@ -176,55 +222,13 @@ export function Sidebar({
         </div>
 
         {!isSidebarCollapsed && (
-          <div className="p-3 border-t border-[var(--color-border-default)] bg-[var(--color-surface-sunken)]/40 shrink-0 space-y-2">
+          <div className="p-3 border-t border-[var(--color-border-default)] bg-[var(--color-surface-sunken)]/40 shrink-0">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
               <span className="text-[10px] font-black text-[var(--color-text-muted)] uppercase tracking-wider">
                 Sistema Operacional 100%
               </span>
             </div>
-
-            {canSwitchTenant ? (
-              <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2 py-1.5" title="Trocar de cliente (master)">
-                <Building2 className="w-3 h-3 text-[var(--color-primary-blue)] shrink-0" />
-                <select
-                  className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-[10px] font-bold cursor-pointer w-full truncate"
-                  value={activeTenantId || ""}
-                  onChange={(e) => {
-                    const opt = tenantOptions.find(t => t.id === e.target.value);
-                    if (opt) switchTenant(opt.id, opt.name);
-                  }}
-                >
-                  {tenantOptions.map(t => (
-                    <option key={t.id} value={t.id} className="bg-[var(--color-surface-elevated)]">{t.name}</option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              <div className="text-[10px] text-[var(--color-text-faint)] font-medium truncate flex items-center gap-1.5">
-                <Building2 className="w-3 h-3 shrink-0" />
-                {activeTenantName || user?.tenantName || "Axis Gestão Corporativa"}
-              </div>
-            )}
-
-            {canSwitchFilial && (
-              <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2 py-1.5" title="Trocar de filial">
-                <MapPin className="w-3 h-3 text-[var(--color-text-muted)] shrink-0" />
-                <select
-                  className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-[10px] font-bold cursor-pointer w-full truncate"
-                  value={activeFilialId || ""}
-                  onChange={(e) => {
-                    const filial = empresaFiliais.find((f: any) => f.id === e.target.value);
-                    switchFilial(filial ? { id: filial.id, name: filial.nome } : null);
-                  }}
-                >
-                  <option value="" className="bg-[var(--color-surface-elevated)]">Todas as filiais</option>
-                  {empresaFiliais.map((f: any) => (
-                    <option key={f.id} value={f.id} className="bg-[var(--color-surface-elevated)]">{f.nome}</option>
-                  ))}
-                </select>
-              </div>
-            )}
           </div>
         )}
       </aside>
