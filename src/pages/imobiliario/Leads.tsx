@@ -10,6 +10,7 @@ import {
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 
 type Lead = {
   id: string;
@@ -417,6 +418,11 @@ export default function LeadsImobiliario() {
   };
 
   const handleDelete = async (id: string) => {
+    const alvo = leads.find(l => l.id === id);
+    if (!(await confirmDialog({
+      title: "Excluir lead",
+      description: `Excluir ${alvo?.nome || "este lead"}? Essa ação não pode ser desfeita.`,
+    }))) return;
     setLeads(prev => prev.filter(l => l.id !== id));
     toast.success("Lead removido.");
     if (supabase) await supabase.from("imobiliario_leads").delete().eq("id", id);

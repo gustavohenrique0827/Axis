@@ -9,6 +9,7 @@ import { NovoMembroModal } from "../../components/ui/modals/hr/NovoMembroModal";
 import { EditarColabModal } from "../../components/ui/modals/hr/EditarColabModal";
 import { supabase, createUserWithProfile } from "../../lib/supabase";
 import { toast } from "sonner";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { useAuth } from "../../contexts/AuthContext";
 import { MembrosSection } from "./components/RHColaboradores/MembrosSection";
 import { NewSquadModal } from "./components/RHColaboradores/NewSquadModal";
@@ -96,6 +97,11 @@ export default function RHColaboradores() {
 
   const handleDesligar = async (colab: any) => {
     setMenuOpenId(null);
+    if (!(await confirmDialog({
+      title: "Desligar colaborador",
+      description: `Remover ${colab.nome} da equipe? O registro será excluído do sistema e essa ação não pode ser desfeita.`,
+      confirmText: "Desligar",
+    }))) return;
     const ok = await deleteColaborador(colab.id);
     if (ok) toast.success(`${colab.nome} foi removido da equipe.`);
   };

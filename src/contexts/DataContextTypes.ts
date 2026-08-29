@@ -199,6 +199,9 @@ export interface DataContextType {
     status?: string;
     vendedor: string;
     leadId?: string | null;
+    tipo?: 'itens' | 'texto' | 'arquivo';
+    conteudoTexto?: string | null;
+    linkPdf?: string | null;
     itens?: Array<{ productId?: string | null; descricao: string; quantidade: number; precoUnitario: number }>;
   }) => Promise<string>;
   certificates: any[];

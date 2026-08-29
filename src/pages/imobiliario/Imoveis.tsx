@@ -9,6 +9,7 @@ import {
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 
 type Imovel = {
   id: string;
@@ -391,6 +392,11 @@ export default function Imoveis() {
   };
 
   const handleDelete = async (id: string) => {
+    const alvo = imoveis.find(i => i.id === id);
+    if (!(await confirmDialog({
+      title: "Excluir imóvel",
+      description: `Excluir ${alvo?.titulo || "este imóvel"}? Essa ação não pode ser desfeita.`,
+    }))) return;
     if (!supabase) { toast.error("Supabase não configurado."); return; }
     const { error } = await supabase.from("imobiliario_imoveis").delete().eq("id", id);
     if (error) { toast.error(`Erro ao remover imóvel: ${error.message}`); return; }

@@ -1,6 +1,7 @@
 import { X, ImagePlus } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { toast } from "sonner";
+import { useDepartamentoOptions } from "../../../../hooks/useDepartamentoOptions";
 
 const PRESET_COLORS = ["#2563EB", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#06B6D4", "#64748B"];
 
@@ -29,6 +30,7 @@ export function NewSquadModal({
   newSquadLeader, setNewSquadLeader,
   onSubmit, onClose,
 }: NewSquadModalProps) {
+  const departamentoOptions = useDepartamentoOptions();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150" onClick={onClose}>
       <div className="w-full max-w-xl bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
@@ -64,7 +66,7 @@ export function NewSquadModal({
               <label className={labelClass}>Departamento</label>
               <select value={newSquadDepartamento} onChange={e => setNewSquadDepartamento(e.target.value)} className={inputClass}>
                 <option value="">Selecione...</option>
-                {["Tecnologia","Vendas","Marketing","Sucesso do Cliente","Produto","Design","Financeiro","Administrativo","RH","Operações","Geral"].map(d => (
+                {departamentoOptions.map(d => (
                   <option key={d} value={d}>{d}</option>
                 ))}
               </select>

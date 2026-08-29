@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, GraduationCap, User, Mail, Phone, BookOpen, Loader2 } from "lucide-react";
 import { Button } from "../../button";
+import { useData } from "../../../../contexts/DataContext";
 
 interface NovaMatriculaModalProps {
   isOpen: boolean;
@@ -13,10 +14,11 @@ const inputClass =
   "w-full bg-white/[0.04] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition-all placeholder:text-slate-600";
 
 export function NovaMatriculaModal({ isOpen, onClose, onSubmit }: NovaMatriculaModalProps) {
+  const { turmas } = useData();
   const [form, setForm] = useState({ nome: "", email: "", telefone: "", curso: "" });
   const [loading, setLoading] = useState(false);
 
-  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) =>
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((prev) => ({ ...prev, [k]: e.target.value }));
 
   const reset = () => setForm({ nome: "", email: "", telefone: "", curso: "" });
@@ -119,13 +121,16 @@ export function NovaMatriculaModal({ isOpen, onClose, onSubmit }: NovaMatriculaM
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2 flex items-center gap-1.5">
                     <BookOpen className="w-3 h-3" /> Curso / Turma
                   </label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Turma A — 2025"
+                  <select
                     value={form.curso}
                     onChange={set("curso")}
                     className={inputClass}
-                  />
+                  >
+                    <option value="">Selecione a turma</option>
+                    {turmas.map((t: any) => (
+                      <option key={t.id} value={t.id}>{t.nome || t.name}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pencil, X } from "lucide-react";
 import { useData } from "../../../../contexts/DataContext";
+import { useDepartamentoOptions } from "../../../../hooks/useDepartamentoOptions";
 import { Button } from "../../../ui/button";
 
 type EditarColabModalProps = {
@@ -41,6 +42,7 @@ export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalPro
   }, [colab]);
 
   const { cargos, squads } = useData();
+  const departamentoOptions = useDepartamentoOptions();
 
   if (!colab) return null;
 
@@ -108,12 +110,9 @@ export function EditarColabModal({ colab, onClose, onSave }: EditarColabModalPro
               <label className={labelClass}>Departamento</label>
               <select value={form.departamento} onChange={e => set("departamento", e.target.value)} className={inputClass}>
                 <option value="">Selecione...</option>
-                <option value="Vendas">Vendas</option>
-                <option value="Marketing">Marketing</option>
-                <option value="Tecnologia">Tecnologia</option>
-                <option value="Sucesso do Cliente">Sucesso do Cliente</option>
-                <option value="Administrativo">Administrativo</option>
-                <option value="Operações">Operações</option>
+                {departamentoOptions.map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
               </select>
             </div>
             <div>

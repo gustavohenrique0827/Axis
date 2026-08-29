@@ -5,6 +5,7 @@ import { Zap, Plus, ArrowRight, ShieldCheck, Sparkles, AlertCircle } from "lucid
 import { toast } from "sonner";
 import { useData } from "../../../contexts/DataContext";
 import { LeadScoreTrigger } from "../../../types";
+import { confirmDialog } from "../../../components/ui/confirm-dialog";
 
 const DEFAULT_SDR_STAGES: Record<string, string> = {
   "sdr-1": "Novos Leads (Inbound)",
@@ -40,7 +41,11 @@ export function ConfigCRMGatilhosIA() {
     toast.success("Regra de gatilho adicionada!");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!(await confirmDialog({
+      title: "Excluir gatilho",
+      description: "Excluir esta regra de gatilho de lead score? Essa ação não pode ser desfeita.",
+    }))) return;
     setLeadScoreTriggers(leadScoreTriggers.filter((t) => t.id !== id));
     toast.info("Regra de gatilho removida.");
   };

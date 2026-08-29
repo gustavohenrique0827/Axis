@@ -1,6 +1,7 @@
 import { X, ImagePlus } from "lucide-react";
 import { Input } from "../../../../components/ui/input";
 import { Squad } from "../../../../types";
+import { useDepartamentoOptions } from "../../../../hooks/useDepartamentoOptions";
 
 interface SquadEditModalProps {
   editingSquad: Squad | null;
@@ -29,6 +30,7 @@ export function SquadEditModal({
   editFoco, setEditFoco, editCor, setEditCor, editLeader, setEditLeader,
   editLogo, setEditLogo, colaboradores, onClose, onSave, onLogoUpload,
 }: SquadEditModalProps) {
+  const departamentoOptions = useDepartamentoOptions();
   if (!editingSquad) return null;
 
   return (
@@ -57,7 +59,12 @@ export function SquadEditModal({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Departamento</label>
-              <Input value={editDepartamento} onChange={e => setEditDepartamento(e.target.value)} className="bg-white/5 border-white/10 rounded-xl text-sm text-white" placeholder="Ex: Comercial" />
+              <select value={editDepartamento} onChange={e => setEditDepartamento(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
+                <option value="">Selecione...</option>
+                {departamentoOptions.map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1.5">
               <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Gestor</label>

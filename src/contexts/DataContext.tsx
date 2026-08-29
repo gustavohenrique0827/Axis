@@ -1101,6 +1101,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     status?: string;
     vendedor: string;
     leadId?: string | null;
+    tipo?: 'itens' | 'texto' | 'arquivo';
+    conteudoTexto?: string | null;
+    linkPdf?: string | null;
     itens?: Array<{ productId?: string | null; descricao: string; quantidade: number; precoUnitario: number }>;
   }) => {
     const proposalId = Math.random().toString(36).substring(2, 9);
@@ -1113,6 +1116,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       status: payload.status || 'Enviada',
       vendedor: payload.vendedor,
       lead_id: payload.leadId || null,
+      tipo: payload.tipo || 'itens',
+      conteudo_texto: payload.conteudoTexto || null,
+      link_pdf: payload.linkPdf || null,
     });
     for (const item of payload.itens || []) {
       await proposalItemCrud.add({

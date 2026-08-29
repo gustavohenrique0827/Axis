@@ -5,6 +5,7 @@ import { Plus, Store, Trash2, MapPin, Building2 } from "lucide-react";
 import { NovaFilialModal } from "../../../../components/ui/modals/settings/NovaFilialModal";
 import { toast } from "sonner";
 import { useData } from "../../../../contexts/DataContext";
+import { confirmDialog } from "../../../../components/ui/confirm-dialog";
 
 interface Filial {
   id: string;
@@ -31,7 +32,11 @@ export function ConfigEmpresaFiliais() {
     setIsModalOpen(false);
   };
 
-  const handleDeleteFilial = (id: string, nome: string) => {
+  const handleDeleteFilial = async (id: string, nome: string) => {
+    if (!(await confirmDialog({
+      title: "Excluir filial",
+      description: `Excluir a filial "${nome}"? Essa ação não pode ser desfeita.`,
+    }))) return;
     deleteEmpresaFilial(id);
     toast.success(`Filial "${nome}" removida.`);
   };

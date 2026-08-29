@@ -9,6 +9,8 @@ export interface Proposta {
   validade?: string;
   status: "Aberta" | "Enviada" | "Aceita" | "Recusada" | "Expirada";
   vendedor: string;
+  tipo?: "itens" | "texto" | "arquivo";
+  conteudo_texto?: string | null;
 }
 
 export interface PropostaItemPdf {
@@ -77,7 +79,9 @@ export const handleDownloadPdf = (proposta: Proposta, itens: PropostaItemPdf[] =
   doc.text("ESCOPO E DIRETRIZES", 20, 120);
   doc.setFont("helvetica", "normal");
 
-  const contractText = `Pelo presente instrumento, acordam as partes a prestação de serviços referente a "${proposta.titulo}", conforme as diretrizes e cronogramas a serem definidos posteriormente em anexo. \n\nEste documento detalha o compromisso de ambas as partes. O cliente "${proposta.cliente}" concorda com as condições comerciais e operacionais estipuladas nesta proposta formal.\n\nO desenvolvimento dos trabalhos terá vigência descrita no cronograma operacional, que não excederá os termos acordados. Qualquer ajuste deve ser negociado mutuamente por escrito.`;
+  const contractText = proposta.tipo === "texto" && proposta.conteudo_texto?.trim()
+    ? proposta.conteudo_texto
+    : `Pelo presente instrumento, acordam as partes a prestação de serviços referente a "${proposta.titulo}", conforme as diretrizes e cronogramas a serem definidos posteriormente em anexo. \n\nEste documento detalha o compromisso de ambas as partes. O cliente "${proposta.cliente}" concorda com as condições comerciais e operacionais estipuladas nesta proposta formal.\n\nO desenvolvimento dos trabalhos terá vigência descrita no cronograma operacional, que não excederá os termos acordados. Qualquer ajuste deve ser negociado mutuamente por escrito.`;
 
   doc.text(contractText, 20, 130, {
     maxWidth: 170,

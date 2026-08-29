@@ -7,6 +7,7 @@ import { Button } from "../../components/ui/button";
 import React, { useMemo, useState } from "react";
 import { useData } from "../../contexts/DataContext";
 import { toast } from "sonner";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 
 interface GenericProps {
   title: string;
@@ -50,6 +51,15 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
     setNewCategory("");
     setNewValue("");
     setNewDate("");
+  };
+
+  const handleDelete = async (item: (typeof data)[number]) => {
+    if (!(await confirmDialog({
+      title: "Excluir lançamento",
+      description: `Excluir "${item.description}"? Essa ação não pode ser desfeita.`,
+    }))) return;
+    deleteFinanceEntry(item.id);
+    toast.success("Lançamento excluído.");
   };
 
   const getStatusIcon = (status: string) => {
@@ -147,12 +157,9 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
                       {type === 'Pagar' ? '-' : '+'} {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(item.value)}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button 
+                      <button
                         type="button"
-                        onClick={() => {
-                          deleteFinanceEntry(item.id);
-                          toast.success("Lançamento excluído.");
-                        }}
+                        onClick={() => handleDelete(item)}
                         className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                         title="Excluir lançamento"
                       >
@@ -178,12 +185,9 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
           <div className="md:hidden p-4 space-y-3">
             {data.map((item) => (
               <div key={item.id} className="bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] p-4 rounded-xl flex flex-col gap-3 relative">
-                <button 
+                <button
                   type="button"
-                  onClick={() => {
-                    deleteFinanceEntry(item.id);
-                    toast.success("Lançamento excluído.");
-                  }}
+                  onClick={() => handleDelete(item)}
                   className="absolute top-3 right-3 text-[var(--color-text-faint)] hover:text-rose-500 p-1"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

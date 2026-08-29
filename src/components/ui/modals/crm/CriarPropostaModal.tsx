@@ -1,10 +1,14 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { FileText, CheckCircle } from "lucide-react";
+import { FileText, List, PenLine, Upload, Loader2 } from "lucide-react";
 import { Modal } from "../../modal";
 import { Button } from "../../button";
 import { useData } from "../../../../contexts/DataContext";
+import { useAuth } from "../../../../contexts/AuthContext";
+import { supabase } from "../../../../lib/supabase";
+import { toast } from "sonner";
 
 type CriarPropostaItem = { productId?: string | null; descricao: string; quantidade: number; precoUnitario: number };
+type PropostaTipo = "itens" | "texto" | "arquivo";
 
 type CriarPropostaPayload = {
     titulo: string;
@@ -14,6 +18,9 @@ type CriarPropostaPayload = {
     dataValidade: string;
     condicoesPagamento: string;
     itens: CriarPropostaItem[];
+    tipo: PropostaTipo;
+    conteudoTexto: string;
+    linkPdf: string;
 };
 
 type CriarPropostaModalProps = {
@@ -26,6 +33,12 @@ type CriarPropostaModalProps = {
 };
 
 const ITEM_AVULSO = "__avulso__";
+
+const TIPO_OPTIONS: { value: PropostaTipo; label: string; icon: typeof List }[] = [
+    { value: "itens", label: "Modelo (itens)", icon: List },
+    { value: "texto", label: "Texto livre", icon: PenLine },
+    { value: "arquivo", label: "Arquivo", icon: Upload },
+];
 
 const labelClass = "text-[10px] font-bold text-slate-400 uppercase tracking-wider";
 const inputBaseClass =
@@ -48,8 +61,13 @@ export function CriarPropostaModal({
     const [itens, setItens] = useState<CriarPropostaItem[]>(
         initialValue?.itens || [{ productId: null, descricao: "", quantidade: 1, precoUnitario: 0 }]
     );
+    const [tipo, setTipo] = useState<PropostaTipo>((initialValue?.tipo as PropostaTipo) || "itens");
+    const [conteudoTexto, setConteudoTexto] = useState(initialValue?.conteudoTexto || "");
+    const [linkPdf, setLinkPdf] = useState(initialValue?.linkPdf || "");
+    const [uploading, setUploading] = useState(false);
     const [loading, setLoading] = useState(false);
-    const { products } = useData();
+    const { products, clienteBase } = useData();
+    const { activeTenantId } = useAuth();
     const activeProducts = useMemo(() => products.filter((p: any) => p.active !== false), [products]);
 
     useEffect(() => {
@@ -61,13 +79,38 @@ export function CriarPropostaModal({
         setDataValidade(initialValue?.dataValidade || "");
         setCondicoesPagamento(initialValue?.condicoesPagamento || "Boleto - 7 dias");
         setItens(initialValue?.itens || [{ productId: null, descricao: "", quantidade: 1, precoUnitario: 0 }]);
+        setTipo((initialValue?.tipo as PropostaTipo) || "itens");
+        setConteudoTexto(initialValue?.conteudoTexto || "");
+        setLinkPdf(initialValue?.linkPdf || "");
         setLoading(false);
+        setUploading(false);
     }, [isOpen, initialValue]);
 
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !supabase) return;
+        setUploading(true);
+        try {
+            const path = `${activeTenantId || "sem-tenant"}/${Date.now()}-${file.name}`;
+            const { error } = await supabase.storage.from("proposals").upload(path, file, { upsert: true });
+            if (error) throw error;
+            const { data } = supabase.storage.from("proposals").getPublicUrl(path);
+            setLinkPdf(data.publicUrl);
+            toast.success("Arquivo anexado com sucesso.");
+        } catch (err: any) {
+            toast.error(`Falha ao enviar arquivo: ${err.message || err}`);
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const canSubmit = useMemo(() => {
-        if (loading) return false;
-        return Boolean(titulo.trim() && cliente.trim() && dataValidade.trim());
-    }, [loading, titulo, cliente, dataValidade]);
+        if (loading || uploading) return false;
+        if (!titulo.trim() || !cliente.trim() || !dataValidade.trim()) return false;
+        if (tipo === "texto") return Boolean(conteudoTexto.trim());
+        if (tipo === "arquivo") return Boolean(linkPdf);
+        return true;
+    }, [loading, uploading, titulo, cliente, dataValidade, tipo, conteudoTexto, linkPdf]);
 
     const handleAddItem = () => {
         setItens([...itens, { productId: null, descricao: "", quantidade: 1, precoUnitario: 0 }]);
@@ -99,7 +142,8 @@ export function CriarPropostaModal({
         setItens(novoItens);
     };
 
-    const totalProposta = itens.reduce((acc, item) => acc + item.quantidade * item.precoUnitario, 0);
+    const itensTotal = itens.reduce((acc, item) => acc + item.quantidade * item.precoUnitario, 0);
+    const totalProposta = tipo === "itens" ? itensTotal : (parseFloat(valor.replace(",", ".")) || 0);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -114,7 +158,10 @@ export function CriarPropostaModal({
                 valor: totalProposta.toFixed(2),
                 dataValidade: dataValidade.trim(),
                 condicoesPagamento: condicoesPagamento.trim(),
-                itens,
+                itens: tipo === "itens" ? itens : [],
+                tipo,
+                conteudoTexto: conteudoTexto.trim(),
+                linkPdf,
             });
             onClose();
         } finally {
@@ -174,12 +221,18 @@ export function CriarPropostaModal({
                         <label className={labelClass}>Cliente *</label>
                         <input
                             type="text"
+                            list="criar-proposta-clientes"
                             value={cliente}
                             onChange={(e) => setCliente(e.target.value)}
-                            placeholder="Nome do cliente"
+                            placeholder="Busque ou digite o nome do cliente"
                             className={inputBaseClass}
                             required
                         />
+                        <datalist id="criar-proposta-clientes">
+                            {clienteBase.map((c: any) => (
+                                <option key={c.id} value={c.name} />
+                            ))}
+                        </datalist>
                     </div>
                 </div>
 
@@ -191,6 +244,26 @@ export function CriarPropostaModal({
                         placeholder="Contexto e detalhes da proposta..."
                         className={`${inputBaseClass} resize-none h-20`}
                     />
+                </div>
+
+                <div>
+                    <label className={labelClass}>Tipo de Proposta</label>
+                    <div className="grid grid-cols-3 gap-2 mt-1.5">
+                        {TIPO_OPTIONS.map((opt) => (
+                            <button
+                                key={opt.value}
+                                type="button"
+                                onClick={() => setTipo(opt.value)}
+                                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold border transition-all ${
+                                    tipo === opt.value
+                                        ? "bg-[#2563EB]/15 border-[#2563EB]/40 text-[#60A5FA]"
+                                        : "bg-[var(--color-surface)] border-white/10 text-slate-400 hover:text-white hover:border-white/20"
+                                }`}
+                            >
+                                <opt.icon className="w-3.5 h-3.5" /> {opt.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -222,6 +295,56 @@ export function CriarPropostaModal({
                     </div>
                 </div>
 
+                {tipo !== "itens" && (
+                    <div>
+                        <label className={labelClass}>Valor Total da Proposta (R$) *</label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={valor}
+                            onChange={(e) => setValor(e.target.value)}
+                            placeholder="0.00"
+                            className={inputBaseClass}
+                            required
+                        />
+                    </div>
+                )}
+
+                {tipo === "texto" && (
+                    <div>
+                        <label className={labelClass}>Conteúdo da Proposta *</label>
+                        <textarea
+                            value={conteudoTexto}
+                            onChange={(e) => setConteudoTexto(e.target.value)}
+                            placeholder="Escreva aqui o texto completo da proposta/contrato..."
+                            className={`${inputBaseClass} resize-none h-40`}
+                            required
+                        />
+                    </div>
+                )}
+
+                {tipo === "arquivo" && (
+                    <div>
+                        <label className={labelClass}>Arquivo da Proposta *</label>
+                        <div className="flex items-center gap-3">
+                            <input
+                                type="file"
+                                accept=".pdf,.doc,.docx"
+                                onChange={handleFileChange}
+                                disabled={uploading}
+                                className={`${inputBaseClass} file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-[#2563EB]/20 file:text-[#60A5FA] file:text-xs file:font-bold cursor-pointer`}
+                            />
+                            {uploading && <Loader2 className="w-4 h-4 text-blue-400 animate-spin shrink-0" />}
+                        </div>
+                        {linkPdf && !uploading && (
+                            <a href={linkPdf} target="_blank" rel="noopener noreferrer" className="text-[10px] text-emerald-400 font-bold mt-1.5 inline-block hover:underline">
+                                ✓ Arquivo anexado — ver
+                            </a>
+                        )}
+                    </div>
+                )}
+
+                {tipo === "itens" && (
                 <div className="space-y-3 border border-white/10 rounded-xl p-4 bg-[var(--color-surface)]/50">
                     <div className="flex items-center justify-between">
                         <label className={labelClass}>Itens da Proposta</label>
@@ -290,6 +413,7 @@ export function CriarPropostaModal({
                         </div>
                     ))}
                 </div>
+                )}
             </form>
         </Modal>
     );

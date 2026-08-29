@@ -5,6 +5,7 @@ import { Plus, Edit2, Trash2, Sliders } from "lucide-react";
 import { useData } from "../../../../contexts/DataContext";
 import { NovoCampoCRMModal } from "../../../../components/ui/modals/crm/NovoCampoCRMModal";
 import { toast } from "sonner";
+import { confirmDialog } from "../../../../components/ui/confirm-dialog";
 
 export function ConfigCRMCampos() {
   const { customLeadFields, setCustomLeadFields } = useData();
@@ -24,7 +25,11 @@ export function ConfigCRMCampos() {
     setEditingField(null);
   };
 
-  const handleDelete = (id: string, name: string) => {
+  const handleDelete = async (id: string, name: string) => {
+    if (!(await confirmDialog({
+      title: "Excluir campo personalizado",
+      description: `Excluir o campo "${name}"? Essa ação não pode ser desfeita.`,
+    }))) return;
     setCustomLeadFields(customLeadFields.filter(f => f.id !== id));
     toast.success(`Campo "${name}" removido.`);
   };

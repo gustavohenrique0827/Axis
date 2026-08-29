@@ -3,6 +3,7 @@ import { UserPlus, ShieldCheck, Eye, EyeOff } from "lucide-react";
 import { Modal } from "../../modal";
 import { Button } from "../../button";
 import { useData } from "../../../../contexts/DataContext";
+import { useDepartamentoOptions } from "../../../../hooks/useDepartamentoOptions";
 
 export type NovoMembroPayload = {
   nome: string;
@@ -45,6 +46,7 @@ export function NovoMembroModal({
   const [squad, setSquad] = useState("");
   const [loading, setLoading] = useState(false);
   const { cargos, squads } = useData();
+  const departamentoOptions = useDepartamentoOptions();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -180,12 +182,9 @@ export function NovoMembroModal({
               className={inputBaseClass}
             >
               <option value="">Selecione...</option>
-              <option value="Vendas">Vendas</option>
-              <option value="Marketing">Marketing</option>
-              <option value="Tecnologia">Tecnologia</option>
-              <option value="Sucesso do Cliente">Sucesso do Cliente</option>
-              <option value="Administrativo">Administrativo</option>
-              <option value="Operações">Operações</option>
+              {departamentoOptions.map((d) => (
+                <option key={d} value={d}>{d}</option>
+              ))}
             </select>
           </div>
 

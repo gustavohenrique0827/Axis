@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useData } from "../../../contexts/DataContext";
 import { Colaborador } from "../../../types";
 import { toast } from "sonner";
+import { confirmDialog } from "../../../components/ui/confirm-dialog";
 
 export const INITIAL_COLABORADORES: Colaborador[] = [];
 
@@ -52,7 +53,12 @@ export function useRHColaboradores() {
     setNewSquadLeader("");
   };
 
-  const handleDeleteSquad = (id: string) => {
+  const handleDeleteSquad = async (id: string) => {
+    const squad = squads.find(s => s.id === id);
+    if (!(await confirmDialog({
+      title: "Excluir squad",
+      description: `Excluir o squad "${squad?.nome || "selecionado"}"? Essa ação não pode ser desfeita.`,
+    }))) return;
     deleteSquad(id);
   };
 

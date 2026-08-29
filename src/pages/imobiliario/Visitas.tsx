@@ -9,6 +9,7 @@ import {
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 
 type Visita = {
   id: string;
@@ -329,6 +330,11 @@ export default function Visitas() {
   };
 
   const handleDelete = async (id: string) => {
+    const alvo = visitas.find(v => v.id === id);
+    if (!(await confirmDialog({
+      title: "Excluir visita",
+      description: alvo ? `Excluir a visita de ${alvo.cliente} ao imóvel ${alvo.imovel}? Essa ação não pode ser desfeita.` : "Excluir esta visita? Essa ação não pode ser desfeita.",
+    }))) return;
     setVisitas(prev => prev.filter(v => v.id !== id));
     toast.success("Visita removida.");
     if (supabase) await supabase.from("imobiliario_visitas").delete().eq("id", id);

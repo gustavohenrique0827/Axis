@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Funil, FUNIS_DEFAULT, ETAPA_CORES, initStageConfigs } from "./funisTypes";
 import { EtapaCard } from "./EtapaCard";
 import { FunilModal } from "./FunilModal";
+import { confirmDialog } from "../../../../components/ui/confirm-dialog";
 
 export function ConfigCRMFunis() {
   const { funis: dbFunis, addFunil, updateFunil, deleteFunil } = useData();
@@ -38,6 +39,11 @@ export function ConfigCRMFunis() {
   };
 
   const handleDelete = async (id: string) => {
+    const funil = funis.find(x => x.id === id);
+    if (!(await confirmDialog({
+      title: "Excluir funil",
+      description: `Excluir o funil "${funil?.nome || "selecionado"}"? Essa ação também remove as etapas configuradas e não pode ser desfeita.`,
+    }))) return;
     await deleteFunil(id);
     if (expandedId === id) setExpandedId(null);
     toast.success("Funil removido.");

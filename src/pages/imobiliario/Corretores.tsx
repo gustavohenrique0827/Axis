@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 
 type Corretor = {
   id: string;
@@ -351,6 +352,11 @@ export default function Corretores() {
   };
 
   const handleDelete = async (id: string) => {
+    const alvo = corretores.find(c => c.id === id);
+    if (!(await confirmDialog({
+      title: "Excluir corretor",
+      description: `Excluir ${alvo?.nome || "este corretor"}? Essa ação não pode ser desfeita.`,
+    }))) return;
     setCorretores(prev => prev.filter(c => c.id !== id));
     toast.success("Corretor removido.");
     if (supabase) await supabase.from("imobiliario_corretores").delete().eq("id", id);

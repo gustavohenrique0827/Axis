@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { X, Search, ChevronDown, Check, Calendar, UserPlus } from 'lucide-react';
 import { Button } from "../../../components/ui/button";
 import { toast } from "sonner";
+import { useData } from "../../../contexts/DataContext";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -12,14 +13,17 @@ interface BookingModalProps {
   addAppointment?: (apt: any) => void;
 }
 
-const doctors = [
-  { id: '1', name: 'Dr. Ricardo Silva', bio: 'Cardiologia Avançada', specialty: 'Cardiologia' },
-  { id: '2', name: 'Dra. Marina Costa', bio: 'Dermatologia Clínica', specialty: 'Dermatologia' },
-  { id: '3', name: 'Dr. Pedro Santos', bio: 'Ginecologia e Obstetrícia', specialty: 'Ginecologia' },
-  { id: '4', name: 'Dra. Elena Ramos', bio: 'Pediatria e Hebiatria', specialty: 'Pediatria' },
-];
-
 export function BookingModal({ isOpen, onClose, leads, addTask, addAppointment }: BookingModalProps) {
+  const { colaboradores } = useData();
+  const doctors = useMemo(() => {
+    return (colaboradores || [])
+      .filter((c: any) => c.status !== 'Inativo')
+      .map((c: any) => ({ id: c.id, name: c.nome, specialty: c.cargo || 'Clínica Geral' }));
+  }, [colaboradores]);
+  const specialties = useMemo(() => {
+    return Array.from(new Set(doctors.map(d => d.specialty).filter(Boolean)));
+  }, [doctors]);
+
   // Booking Form State
   const [searchPatient, setSearchPatient] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
@@ -69,7 +73,7 @@ export function BookingModal({ isOpen, onClose, leads, addTask, addAppointment }
         patient: patientName,
         phone: (selectedPatient as any)?.phone || '(11) 98888-0000',
         drId: doctor?.id || '1',
-        drName: doctor?.name || 'Dr. Ricardo Silva',
+        drName: doctor?.name || 'Médico',
         status: 'Confirmado',
         type: 'Consulta',
         room: 'Consultório 01',
@@ -214,10 +218,9 @@ export function BookingModal({ isOpen, onClose, leads, addTask, addAppointment }
                     className="w-full h-10 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 text-xs font-medium text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
                   >
                     <option value="">Selecione a Especialidade</option>
-                    <option value="Cardiologia">Cardiologia</option>
-                    <option value="Dermatologia">Dermatologia</option>
-                    <option value="Ginecologia">Ginecologia</option>
-                    <option value="Pediatria">Pediatria</option>
+                    {specialties.map(s => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
                   </select>
                 </div>
 

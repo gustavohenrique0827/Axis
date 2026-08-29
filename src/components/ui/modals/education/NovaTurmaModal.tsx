@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, GraduationCap, BookOpen, User, Users, Clock, Calendar, Loader2 } from "lucide-react";
 import { Button } from "../../button";
+import { useData } from "../../../../contexts/DataContext";
 
 interface NovaTurmaForm {
   nome: string;
@@ -24,6 +25,7 @@ const inputClass =
 const DEFAULT: NovaTurmaForm = { nome: "", curso: "", professor: "", vagas: "30", shift: "Manhã", data_inicio: "" };
 
 export function NovaTurmaModal({ isOpen, onClose, onSubmit }: NovaTurmaModalProps) {
+  const { colaboradores } = useData();
   const [form, setForm] = useState<NovaTurmaForm>(DEFAULT);
   const [loading, setLoading] = useState(false);
 
@@ -115,13 +117,16 @@ export function NovaTurmaModal({ isOpen, onClose, onSubmit }: NovaTurmaModalProp
                   <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2 flex items-center gap-1.5">
                     <User className="w-3 h-3" /> Professor
                   </label>
-                  <input
-                    type="text"
-                    placeholder="Nome do professor"
+                  <select
                     value={form.professor}
                     onChange={set("professor")}
                     className={inputClass}
-                  />
+                  >
+                    <option value="">Selecione o professor</option>
+                    {colaboradores.map((c: any) => (
+                      <option key={c.id} value={c.nome}>{c.nome}</option>
+                    ))}
+                  </select>
                 </div>
 
                 {/* Vagas */}

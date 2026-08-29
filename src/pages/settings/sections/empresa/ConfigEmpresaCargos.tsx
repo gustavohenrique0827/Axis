@@ -5,6 +5,7 @@ import { Plus, Briefcase, Pencil, Trash2 } from "lucide-react";
 import { useData } from "../../../../contexts/DataContext";
 import { toast } from "sonner";
 import { CargoModal } from "./CargoModal";
+import { confirmDialog } from "../../../../components/ui/confirm-dialog";
 
 const NIVEL_COLORS: Record<string, string> = {
   "Estratégico": "text-purple-500 bg-purple-500/10 border-purple-500/20",
@@ -89,7 +90,14 @@ export function ConfigEmpresaCargos() {
                   <Button 
                     variant="ghost" 
                     size="xs" 
-                    onClick={() => { deleteCargo(cargo.id); toast.success(`Cargo "${cargo.nome}" removido.`); }} 
+                    onClick={async () => {
+                      if (!(await confirmDialog({
+                        title: "Excluir cargo",
+                        description: `Excluir o cargo "${cargo.nome}"? Essa ação não pode ser desfeita.`,
+                      }))) return;
+                      deleteCargo(cargo.id);
+                      toast.success(`Cargo "${cargo.nome}" removido.`);
+                    }}
                     className="h-8 w-8 p-0 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10"
                     title="Excluir cargo"
                   >

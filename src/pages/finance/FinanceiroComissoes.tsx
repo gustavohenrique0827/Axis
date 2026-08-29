@@ -9,6 +9,7 @@ import { useOTEConfig } from './hooks/useOTEConfig';
 import { toast } from 'sonner';
 import { Link } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { confirmDialog } from '../../components/ui/confirm-dialog';
 
 type CargoTab = 'Closer' | 'SDR' | 'Gestor';
 
@@ -365,7 +366,14 @@ export default function FinanceiroComissoes() {
                     </td>
                     <td className="px-3 py-3.5">
                       <button
-                        onClick={() => { deleteFinanceCommissionEntry(row.id); toast.success('Removido.'); }}
+                        onClick={async () => {
+                          if (!(await confirmDialog({
+                            title: "Excluir lançamento",
+                            description: `Excluir o lançamento de comissão de ${row.nome}? Essa ação não pode ser desfeita.`,
+                          }))) return;
+                          deleteFinanceCommissionEntry(row.id);
+                          toast.success('Removido.');
+                        }}
                         className="p-1.5 opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all rounded-lg hover:bg-white/5"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

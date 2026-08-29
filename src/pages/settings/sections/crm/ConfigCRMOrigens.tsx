@@ -5,6 +5,7 @@ import { Plus, Target, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { NovaOrigemCRMModal } from "../../../../components/ui/modals/crm/NovaOrigemCRMModal";
 import { useData } from "../../../../contexts/DataContext";
+import { confirmDialog } from "../../../../components/ui/confirm-dialog";
 
 const SETTING_KEY = "crm_lead_origins";
 const DEFAULT_ORIGENS = ["Instagram", "WhatsApp", "Indicação", "Site / Orgânico", "Google Ads", "LinkedIn", "Outbound SDR"];
@@ -28,7 +29,11 @@ export function ConfigCRMOrigens() {
     setIsModalOpen(false);
   };
 
-  const handleDelete = (origem: string) => {
+  const handleDelete = async (origem: string) => {
+    if (!(await confirmDialog({
+      title: "Excluir origem",
+      description: `Excluir a origem "${origem}"? Essa ação não pode ser desfeita.`,
+    }))) return;
     const updated = origens.filter(o => o !== origem);
     saveAppSetting(SETTING_KEY, updated);
     toast.success(`Origem "${origem}" removida.`);

@@ -8,6 +8,7 @@ import { EmptyState } from "../../components/ui/empty-state";
 import { Settings, X, Zap, Send, Activity } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "../../contexts/DataContext";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 
 export function ConfigIntegracoesWebhooks() {
   const { globalWebhooks, addGlobalWebhook, deleteGlobalWebhook, toggleGlobalWebhook } = useData();
@@ -164,7 +165,13 @@ export function ConfigIntegracoesWebhooks() {
                         </Badge>
                       </button>
                       <button
-                        onClick={() => deleteGlobalWebhook(w.id)}
+                        onClick={async () => {
+                          if (!(await confirmDialog({
+                            title: "Excluir webhook",
+                            description: `Excluir o webhook "${w.event}"? Essa ação não pode ser desfeita.`,
+                          }))) return;
+                          deleteGlobalWebhook(w.id);
+                        }}
                         className="text-[var(--color-text-faint)] hover:text-danger p-1 transition-colors"
                         title="Remover Webhook"
                       >

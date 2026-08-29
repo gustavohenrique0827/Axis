@@ -5,6 +5,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { useData } from "../../contexts/DataContext";
 import { toast } from "sonner";
 import { exportToCSV } from "../../lib/exportCsv";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { NovaMatriculaModal } from "../../components/ui/modals/education/NovaMatriculaModal";
 import { AlunoGradesModal } from "../../components/ui/modals/education/AlunoGradesModal";
 import { AlunosKPIs } from "./components/Alunos/AlunosKPIs";
@@ -45,7 +46,12 @@ export default function Alunos() {
     { label: "Cursos Cadastrados", value: new Set(students.map(s => s.course).filter(Boolean)).size.toString(), icon: Star, color: "text-amber-500", bg: "bg-amber-500/10" },
   ], [students]);
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    const student = students.find(s => s.id === id);
+    if (!(await confirmDialog({
+      title: "Excluir aluno",
+      description: `Excluir o aluno ${student?.name || "selecionado"}? Essa ação não pode ser desfeita.`,
+    }))) return;
     deleteStudent(id);
     toast.success("Aluno removido da base.");
   };

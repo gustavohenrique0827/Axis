@@ -28,6 +28,9 @@ export default function Propostas() {
       status: "Enviada",
       vendedor: user?.name || "Sistema Axis",
       itens: data.itens?.filter((i: any) => i.descricao?.trim()) || [],
+      tipo: data.tipo,
+      conteudoTexto: data.conteudoTexto,
+      linkPdf: data.linkPdf,
     });
     toast.success("✨ Proposta criada com sucesso! Pronta para envio.");
     setIsPropostaModalOpen(false);

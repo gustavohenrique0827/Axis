@@ -2,6 +2,7 @@ import { X, ImagePlus } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { Input } from "../../../../components/ui/input";
 import { toast } from "sonner";
+import { useDepartamentoOptions } from "../../../../hooks/useDepartamentoOptions";
 
 interface NovoSquadFormModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ export function NovoSquadFormModal({
   newSquadLogo, setNewSquadLogo, newSquadLeader, setNewSquadLeader,
   colaboradores,
 }: NovoSquadFormModalProps) {
+  const departamentoOptions = useDepartamentoOptions();
   if (!isOpen) return null;
 
   return (
@@ -66,7 +68,7 @@ export function NovoSquadFormModal({
               <label className="text-[10px] font-black uppercase tracking-wider text-slate-400">Departamento</label>
               <select value={newSquadDepartamento} onChange={e => setNewSquadDepartamento(e.target.value)} className="w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 h-11 text-sm text-white focus:border-blue-500 focus:outline-none transition-all">
                 <option value="">Selecione...</option>
-                {["Tecnologia","Vendas","Marketing","Sucesso do Cliente","Produto","Design","Financeiro","Administrativo","RH","Operações","Geral"].map(d => (
+                {departamentoOptions.map(d => (
                   <option key={d} value={d}>{d}</option>
                 ))}
               </select>

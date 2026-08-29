@@ -3,6 +3,7 @@ import { Button } from "../../components/ui/button";
 import { Plus } from "lucide-react";
 import { NovoClienteModal } from "../../components/ui/modals/crm/NovoClienteModal";
 import { toast } from "sonner";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { PageContainer } from "../../components/PageContainer";
 import { supabase } from "../../lib/supabase";
 import { ClientesKPIs } from "./components/Clientes/ClientesKPIs";
@@ -54,6 +55,11 @@ export default function Clientes() {
 
   const handleDeleteCliente = async (id: string) => {
     if (!supabase) { toast.error("Supabase não configurado."); return; }
+    const alvo = clientes.find(c => c.id === id);
+    if (!(await confirmDialog({
+      title: "Excluir cliente",
+      description: `Excluir ${alvo?.name || "este cliente"} da base de clientes? Essa ação não pode ser desfeita.`,
+    }))) return;
     const { error } = await supabase.from("clientes").delete().eq("id", id);
     if (error) { toast.error(`Erro ao remover cliente: ${error.message}`); return; }
     setClientes(prev => prev.filter(c => c.id !== id));

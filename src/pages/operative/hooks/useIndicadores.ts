@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { Target, Activity, Zap, Users } from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
+import { confirmDialog } from "../../../components/ui/confirm-dialog";
 
 export function useIndicadores() {
   const { leads, financeEntries, contracts, financialGoals, scheduledExports, addScheduledExport, updateScheduledExport, deleteScheduledExport } = useData();
@@ -44,7 +45,12 @@ export function useIndicadores() {
     if (item) updateScheduledExport(id, { active: !item.active });
   };
 
-  const handleDeleteSchedule = (id: string) => {
+  const handleDeleteSchedule = async (id: string) => {
+    const item = schedules.find(s => s.id === id);
+    if (!(await confirmDialog({
+      title: "Excluir agendamento",
+      description: `Excluir o agendamento de exportação para ${item?.email || "este e-mail"}? Essa ação não pode ser desfeita.`,
+    }))) return;
     deleteScheduledExport(id);
     toast.success("Agendamento de e-mail removido.");
   };

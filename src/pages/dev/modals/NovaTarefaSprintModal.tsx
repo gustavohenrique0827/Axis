@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Kanban } from "lucide-react";
 import { Modal } from "../../../components/ui/modal";
 import { Button } from "../../../components/ui/button";
+import { useData } from "../../../contexts/DataContext";
 
 export type TarefaSprintPayload = {
   title: string;
@@ -39,6 +40,7 @@ const label = "text-[10px] font-bold text-slate-400 uppercase tracking-wider";
 const input = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all placeholder-slate-600";
 
 export function NovaTarefaSprintModal({ isOpen, onClose, onSave, defaultColumn = "Backlog" }: Props) {
+  const { colaboradores } = useData();
   const [title, setTitle] = useState("");
   const [type, setType] = useState<TarefaSprintPayload["type"]>("feature");
   const [priority, setPriority] = useState<TarefaSprintPayload["priority"]>("média");
@@ -140,7 +142,16 @@ export function NovaTarefaSprintModal({ isOpen, onClose, onSave, defaultColumn =
 
         <div className="space-y-2">
           <label className={label}>Responsável</label>
-          <input value={assignee} onChange={e => setAssignee(e.target.value)} className={input} placeholder="Nome ou sigla do dev (ex.: G.H.)" />
+          <input
+            list="nova-tarefa-sprint-assignee-options"
+            value={assignee}
+            onChange={e => setAssignee(e.target.value)}
+            className={input}
+            placeholder="Nome ou sigla do dev (ex.: G.H.)"
+          />
+          <datalist id="nova-tarefa-sprint-assignee-options">
+            {colaboradores.map((c: any) => <option key={c.id} value={c.nome} />)}
+          </datalist>
         </div>
       </form>
     </Modal>

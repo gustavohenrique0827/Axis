@@ -108,6 +108,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { DataProvider, useData } from "./contexts/DataContext";
 import { Toaster } from "sonner";
 import { InteractiveForm } from "./pages/common/InteractiveForm";
+import { ConfirmDialogHost } from "./components/ui/confirm-dialog";
 
 function AppContent() {
   const location = useLocation();
@@ -123,6 +124,7 @@ function AppContent() {
   return (
     <>
       {isAppRoute && <Toaster theme={theme} position="bottom-right" richColors closeButton />}
+      {isAppRoute && <ConfirmDialogHost />}
       <Routes>
         <Route path="/" element={<Navigate to="/app" replace />} />
         <Route path="/landing" element={<LandingPage />} />

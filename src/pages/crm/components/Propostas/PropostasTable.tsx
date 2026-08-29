@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { handleDownloadPdf } from "../../utils/proposalPdf";
+import { confirmDialog } from "../../../../components/ui/confirm-dialog";
 
 interface Proposta {
   id: string;
@@ -26,7 +27,12 @@ interface Proposta {
   validade?: string;
   status: "Aceita" | "Enviada" | "Aberta" | "Recusada" | string;
   vendedor: string;
+  tipo?: "itens" | "texto" | "arquivo";
+  conteudo_texto?: string | null;
+  link_pdf?: string | null;
 }
+
+const TIPO_LABEL: Record<string, string> = { itens: "Modelo", texto: "Texto", arquivo: "Arquivo" };
 
 interface PropostaItem {
   proposal_id: string;
@@ -115,7 +121,14 @@ export function PropostasTable({ propostas, proposalItems, search, onSearchChang
                         <FileText className="w-5 h-5" />
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-[var(--color-text-primary)] uppercase tracking-tight">{item.cliente}</div>
+                        <div className="flex items-center gap-1.5">
+                          <div className="text-sm font-bold text-[var(--color-text-primary)] uppercase tracking-tight">{item.cliente}</div>
+                          {item.tipo && item.tipo !== "itens" && (
+                            <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded bg-[var(--color-surface-sunken)] text-[var(--color-text-faint)]">
+                              {TIPO_LABEL[item.tipo]}
+                            </span>
+                          )}
+                        </div>
                         <div className="text-xs text-[var(--color-text-muted)] italic">{item.titulo}</div>
                         {itens.length > 0 && (
                           <div className="text-[10px] text-[var(--color-text-faint)] mt-0.5 truncate max-w-[220px]">
@@ -154,10 +167,27 @@ export function PropostasTable({ propostas, proposalItems, search, onSearchChang
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
-                      <button onClick={() => handleDownloadPdf(item as any, itens)} title="Baixar Contrato (PDF)" className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/10 rounded-lg transition-colors">
+                      <button
+                        onClick={() => item.tipo === "arquivo" && item.link_pdf
+                          ? window.open(item.link_pdf, "_blank", "noopener,noreferrer")
+                          : handleDownloadPdf(item as any, itens)}
+                        title={item.tipo === "arquivo" ? "Abrir Arquivo Anexado" : "Baixar Contrato (PDF)"}
+                        className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/10 rounded-lg transition-colors"
+                      >
                         <Download className="w-4 h-4" />
                       </button>
-                      <button onClick={() => onDelete(item.id)} title="Deletar Proposta" className="p-2 text-[var(--color-text-muted)] hover:text-danger hover:bg-danger/10 rounded-lg transition-colors">
+                      <button
+                        onClick={async () => {
+                          if (await confirmDialog({
+                            title: "Excluir proposta",
+                            description: `Excluir a proposta "${item.titulo}" (${item.cliente})? Essa ação não pode ser desfeita.`,
+                            confirmText: "Excluir",
+                          })) onDelete(item.id);
+                        }}
+                        title="Deletar Proposta"
+                        className="p-2 text-[var(--color-text-muted)] hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                      >
+
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>

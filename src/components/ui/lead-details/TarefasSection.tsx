@@ -8,6 +8,7 @@ import { Card } from "../card";
 import { Badge } from "../badge";
 import { Input } from "../input";
 import { FormField } from "../form-field";
+import { confirmDialog } from "../confirm-dialog";
 
 interface TarefasSectionProps {
   lead: any;
@@ -237,7 +238,14 @@ function TaskCard({ task, onToggle, onDelete, dimmed }: {
       </div>
 
       <button
-        onClick={() => { onDelete(task.id); toast.info("Tarefa removida."); }}
+        onClick={async () => {
+          if (!(await confirmDialog({
+            title: "Excluir tarefa",
+            description: `Excluir a tarefa "${task.title}"? Essa ação não pode ser desfeita.`,
+          }))) return;
+          onDelete(task.id);
+          toast.info("Tarefa removida.");
+        }}
         className="shrink-0 p-1 hover:bg-rose-500/10 rounded text-[var(--color-text-faint)] hover:text-rose-500 transition-all cursor-pointer"
         title="Remover Tarefa"
       >

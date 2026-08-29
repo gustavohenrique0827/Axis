@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { Bug, X } from "lucide-react";
 import { Modal } from "../../../components/ui/modal";
 import { Button } from "../../../components/ui/button";
+import { useDevProjects } from "../hooks/useDevProjects";
+import { useData } from "../../../contexts/DataContext";
 
 export type NovaIssuePayload = {
   title: string;
@@ -26,12 +28,13 @@ const SEVERITIES: { value: NovaIssuePayload["severity"]; label: string; color: s
 ];
 
 const LABEL_SUGGESTIONS = ["backend", "frontend", "mobile", "auth", "performance", "ui", "api", "banco de dados", "email", "exportação", "segurança"];
-const PROJECTS = ["Plataforma Axis CRM", "API Gateway v3", "App Mobile Alunos", "Dashboard Analytics BI", "Módulo Financeiro 2.0"];
 
 const lbl = "text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider";
 const inp = "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-4 py-2.5 text-xs text-[var(--color-text-primary)] focus:border-red-500/50 focus:outline-none focus:ring-1 focus:ring-red-500/20 transition-all placeholder-[var(--color-text-faint)]";
 
 export function NovaIssueDevModal({ isOpen, onClose, onSave }: Props) {
+  const { projects } = useDevProjects();
+  const { colaboradores } = useData();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [severity, setSeverity] = useState<NovaIssuePayload["severity"]>("médio");
@@ -124,12 +127,21 @@ export function NovaIssueDevModal({ isOpen, onClose, onSave }: Props) {
               <label className={lbl}>Projeto</label>
               <select value={project} onChange={e => setProject(e.target.value)} className={inp}>
                 <option value="">Selecione...</option>
-                {PROJECTS.map(p => <option key={p} value={p}>{p}</option>)}
+                {projects.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
               </select>
             </div>
             <div className="space-y-2">
               <label className={lbl}>Responsável</label>
-              <input value={assignee} onChange={e => setAssignee(e.target.value)} className={inp} placeholder="Sigla ou nome" />
+              <input
+                list="nova-issue-dev-assignee-options"
+                value={assignee}
+                onChange={e => setAssignee(e.target.value)}
+                className={inp}
+                placeholder="Sigla ou nome"
+              />
+              <datalist id="nova-issue-dev-assignee-options">
+                {colaboradores.map((c: any) => <option key={c.id} value={c.nome} />)}
+              </datalist>
             </div>
           </div>
         </div>

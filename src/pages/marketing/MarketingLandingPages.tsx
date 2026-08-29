@@ -7,6 +7,7 @@ import { Button } from "../../components/ui/button";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { useData } from "../../contexts/DataContext";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { LandingPageCard } from "./components/LandingPages/LandingPageCard";
 import { LandingPageCreateModal } from "./components/LandingPages/LandingPageCreateModal";
 import { LandingPageTrackingModal } from "./components/LandingPages/LandingPageTrackingModal";
@@ -56,7 +57,15 @@ export default function MarketingLandingPages() {
     setNewName(""); setNewSlug(""); setPixelId(""); setGtagId("");
   };
 
-  const handleDeletePage = (id: string) => { deleteMarketingLandingPage(id); toast.success("Página excluída com sucesso."); };
+  const handleDeletePage = async (id: string) => {
+    const page = pages.find((p: any) => p.id === id);
+    if (!(await confirmDialog({
+      title: "Excluir landing page",
+      description: `Excluir a página "${page?.name || "selecionada"}"? Essa ação não pode ser desfeita.`,
+    }))) return;
+    deleteMarketingLandingPage(id);
+    toast.success("Página excluída com sucesso.");
+  };
 
   const handleSaveTracking = () => {
     if (!selectedPage) return;

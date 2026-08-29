@@ -21,7 +21,7 @@ const inputClass =
   "w-full bg-white/[0.04] text-white border border-white/10 rounded-xl h-12 px-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/30 transition-all placeholder:text-slate-600";
 
 export function NovaPropostaRapidaModal({ isOpen, onClose, onSubmit }: NovaPropostaRapidaModalProps) {
-  const { colaboradores } = useData();
+  const { colaboradores, clienteBase } = useData();
   const { user } = useAuth();
   const vendedores = useMemo(() => {
     const nomes = colaboradores.filter((c: any) => c.status === "Ativo").map((c: any) => c.nome);
@@ -96,11 +96,17 @@ export function NovaPropostaRapidaModal({ isOpen, onClose, onSubmit }: NovaPropo
                 <input
                   type="text"
                   required
-                  placeholder="Ex: Grupo Pão de Açúcar, TechCorp"
+                  list="nova-proposta-rapida-clientes"
+                  placeholder="Busque ou digite o nome do cliente"
                   value={cliente}
                   onChange={(e) => setCliente(e.target.value)}
                   className={inputClass}
                 />
+                <datalist id="nova-proposta-rapida-clientes">
+                  {clienteBase.map((c: any) => (
+                    <option key={c.id} value={c.name} />
+                  ))}
+                </datalist>
               </div>
 
               {/* Título */}

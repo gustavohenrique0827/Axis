@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { AgendaSidebar } from "./components/AgendaMedica/AgendaSidebar";
 import { AgendaDetailPanel } from "./components/AgendaMedica/AgendaDetailPanel";
 import { BookingModal } from "./components/BookingModal";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 
 const hourlySlots = [
   '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
@@ -215,8 +216,12 @@ export default function AgendaClinica() {
             toast.success(`Status atualizado para ${status}!`);
           }
         }}
-        onDelete={() => {
+        onDelete={async () => {
           if (selectedAptId) {
+            if (!(await confirmDialog({
+              title: "Cancelar agendamento",
+              description: `Cancelar o atendimento de ${selectedApt?.patient || "este paciente"}? Essa ação não pode ser desfeita.`,
+            }))) return;
             deleteAppointment(selectedAptId);
             setSelectedAptId(null);
             toast.success("Agendamento cancelado com sucesso!");
