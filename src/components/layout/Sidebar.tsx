@@ -102,7 +102,7 @@ export function Sidebar({
               <div className="flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-control)] hover:bg-[var(--color-surface-sunken)] transition-colors" title="Trocar de cliente (master)">
                 <Building2 className="w-4 h-4 text-[var(--color-primary-blue)] shrink-0" />
                 <select
-                  className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-xs font-bold cursor-pointer w-full truncate"
+                  className="appearance-none bg-transparent border-none outline-none shadow-none ring-0 text-[var(--color-text-primary)] focus:outline-none focus:ring-0 focus:shadow-none text-xs font-bold cursor-pointer w-full truncate"
                   value={activeTenantId || ""}
                   onChange={(e) => {
                     const opt = tenantOptions.find(t => t.id === e.target.value);
@@ -125,7 +125,7 @@ export function Sidebar({
               <div className="flex items-center gap-2.5 px-3 py-2 rounded-[var(--radius-control)] hover:bg-[var(--color-surface-sunken)] transition-colors" title="Trocar de filial">
                 <MapPin className="w-4 h-4 text-[var(--color-text-faint)] shrink-0" />
                 <select
-                  className="bg-transparent border-none text-[var(--color-text-primary)] focus:outline-none text-xs font-bold cursor-pointer w-full truncate"
+                  className="appearance-none bg-transparent border-none outline-none shadow-none ring-0 text-[var(--color-text-primary)] focus:outline-none focus:ring-0 focus:shadow-none text-xs font-bold cursor-pointer w-full truncate"
                   value={activeFilialId || ""}
                   onChange={(e) => {
                     const filial = empresaFiliais.find((f: any) => f.id === e.target.value);
