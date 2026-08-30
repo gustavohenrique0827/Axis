@@ -14,7 +14,7 @@ const AGENTS = [
 
 export function AgentesSection() {
   return (
-    <Section id="agentes" className="bg-slate-50/70">
+    <Section id="agentes" className="bg-slate-50/70" glow>
       <div className="text-center mb-14">
         <Kicker>Agentes especializados</Kicker>
         <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl">
@@ -25,9 +25,9 @@ export function AgentesSection() {
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
         {AGENTS.map((a, i) => (
           <FadeIn key={a.name} delay={i * 0.05}>
-            <div className="h-full p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:border-blue-300 hover:shadow-md transition-all">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-200 flex items-center justify-center mb-4">
-                <a.icon className="w-4.5 h-4.5 text-blue-600" />
+            <div className="h-full p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg transition-all duration-300">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mb-4 shadow-sm shadow-blue-500/20">
+                <a.icon className="w-4.5 h-4.5 text-white" />
               </div>
               <h3 className="text-sm font-bold text-slate-900 mb-1.5 uppercase tracking-wide" style={{ fontFamily: FONT_DISPLAY }}>{a.name}</h3>
               <p className="text-[13px] text-slate-500 leading-relaxed">{a.text}</p>

@@ -25,7 +25,7 @@ export function AutonomiaSection() {
       <FadeIn>
         <div className="grid sm:grid-cols-2 gap-3 max-w-3xl mx-auto mb-12">
           {RULES.map((r) => (
-            <div key={r} className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-white border border-slate-200 shadow-sm">
+            <div key={r} className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-white border border-slate-200 shadow-sm hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md transition-all duration-300">
               <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
               <span className="text-sm font-medium text-slate-700">{r}</span>
             </div>

@@ -31,11 +31,11 @@ export function EquipeHumanaSection() {
 
       <div className="grid md:grid-cols-2 gap-6 mb-12">
         <FadeIn>
-          <div className="h-full rounded-2xl border border-blue-200 bg-blue-50/50 p-6 sm:p-7">
+          <div className="h-full rounded-2xl border border-blue-200 bg-gradient-to-b from-blue-50 to-blue-50/30 p-6 sm:p-7 shadow-sm shadow-blue-500/5">
             <p className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-600 mb-5" style={{ fontFamily: FONT_DISPLAY }}>AXIS</p>
             <div className="grid grid-cols-2 gap-3">
               {AXIS_TASKS.map((t) => (
-                <div key={t.label} className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-blue-100 shadow-sm">
+                <div key={t.label} className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-blue-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
                   <t.icon className="w-4 h-4 text-blue-600 shrink-0" />
                   <span className="text-sm font-semibold text-slate-700">{t.label}</span>
                 </div>
@@ -49,7 +49,7 @@ export function EquipeHumanaSection() {
             <p className="text-[11px] font-black uppercase tracking-[0.2em] text-slate-500 mb-5" style={{ fontFamily: FONT_DISPLAY }}>HUMANO</p>
             <div className="grid grid-cols-2 gap-3">
               {HUMAN_TASKS.map((t) => (
-                <div key={t.label} className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-slate-200 shadow-sm">
+                <div key={t.label} className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-slate-200 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
                   <t.icon className="w-4 h-4 text-slate-500 shrink-0" />
                   <span className="text-sm font-semibold text-slate-700">{t.label}</span>
                 </div>

@@ -30,7 +30,7 @@ const STEPS = [
 
 export function ComoFuncionaSection() {
   return (
-    <Section id="como-funciona">
+    <Section id="como-funciona" glow>
       <div className="text-center mb-16">
         <Kicker>Como funciona</Kicker>
         <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl">O Axis encontra, entende e age.</SectionTitle>
@@ -40,8 +40,8 @@ export function ComoFuncionaSection() {
         <div className="hidden lg:block absolute top-[52px] left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
         {STEPS.map((s, i) => (
           <FadeIn key={s.n} delay={i * 0.1}>
-            <div className="relative flex flex-col items-center text-center px-4">
-              <div className="relative z-10 w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-200 flex items-center justify-center mb-5 shadow-sm">
+            <div className="group relative flex flex-col items-center text-center px-4">
+              <div className="relative z-10 w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-200 flex items-center justify-center mb-5 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md group-hover:border-blue-300">
                 <s.icon className="w-6 h-6 text-blue-600" />
               </div>
               <span className="text-[11px] font-black text-slate-300 tracking-[0.2em] mb-2">{s.n}</span>

@@ -20,8 +20,9 @@ export function DashboardMockupSection() {
         </SectionTitle>
       </div>
 
-      <FadeIn>
-        <div className="rounded-2xl border border-white/[0.1] bg-[#07080c] overflow-hidden shadow-2xl max-w-4xl mx-auto">
+      <FadeIn className="relative">
+        <div className="absolute -inset-8 rounded-[40px] bg-gradient-to-br from-blue-500/10 via-violet-500/10 to-transparent blur-3xl max-w-4xl mx-auto" />
+        <div className="relative rounded-2xl border border-white/[0.1] bg-[#07080c] overflow-hidden shadow-2xl max-w-4xl mx-auto">
           <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/[0.06] bg-white/[0.02]">
             <div className="flex gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full bg-rose-500/50" />

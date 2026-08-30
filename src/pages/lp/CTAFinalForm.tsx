@@ -61,8 +61,9 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
       </Section>
 
       <Section id="formulario" bordered={false} className="pt-0 pb-28 sm:pb-36">
-        <FadeIn className="max-w-xl mx-auto">
-          <div className="rounded-2xl border border-slate-200 bg-white p-7 sm:p-10 shadow-xl shadow-blue-500/5">
+        <FadeIn className="relative max-w-xl mx-auto">
+          <div className="absolute -inset-6 rounded-[36px] bg-gradient-to-br from-blue-500/10 to-violet-500/10 blur-3xl" />
+          <div className="relative rounded-2xl border border-slate-200 bg-white p-7 sm:p-10 shadow-xl shadow-blue-500/5">
             {submitted ? (
               <div className="text-center py-8">
                 <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto mb-5">

@@ -28,7 +28,7 @@ export function Navbar({ onCtaClick }: { onCtaClick: () => void }) {
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
-        scrolled ? "bg-white/85 backdrop-blur-xl border-b border-slate-200" : "bg-transparent border-b border-transparent"
+        scrolled ? "bg-white/85 backdrop-blur-xl border-b border-slate-200 shadow-sm" : "bg-transparent border-b border-transparent"
       }`}
     >
       <nav className="max-w-6xl mx-auto flex items-center justify-between px-5 sm:px-8 h-16 sm:h-20">

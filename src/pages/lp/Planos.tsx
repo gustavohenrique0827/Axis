@@ -82,7 +82,7 @@ const CREDIT_TIERS = [
 
 export function PlanosSection({ onCta }: { onCta: () => void }) {
   return (
-    <Section id="planos" className="bg-slate-50/70">
+    <Section id="planos" className="bg-slate-50/70" glow>
       <div className="text-center mb-14">
         <Kicker>Planos</Kicker>
         <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl">Escolha o nível de autonomia da sua operação.</SectionTitle>
@@ -90,12 +90,12 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
 
       <div className="grid lg:grid-cols-3 gap-6 mb-16 items-stretch">
         {PLANS.map((plan, i) => (
-          <FadeIn key={plan.name} delay={i * 0.08} className="h-full">
+          <FadeIn key={plan.name} delay={i * 0.08} className={`h-full ${plan.highlight ? "lg:-mt-3" : ""}`}>
             <div
-              className={`relative h-full flex flex-col rounded-2xl p-6 sm:p-7 border ${
+              className={`relative h-full flex flex-col rounded-2xl p-6 sm:p-7 border transition-all duration-300 ${
                 plan.highlight
-                  ? "border-blue-300 bg-gradient-to-b from-blue-50 to-white shadow-xl shadow-blue-500/10"
-                  : "border-slate-200 bg-white shadow-sm"
+                  ? "border-blue-300 bg-gradient-to-b from-blue-50 to-white shadow-xl shadow-blue-500/15 lg:scale-[1.03] lg:hover:scale-[1.05]"
+                  : "border-slate-200 bg-white shadow-sm hover:-translate-y-1 hover:shadow-lg"
               }`}
             >
               {plan.badge && (

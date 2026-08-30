@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { ArrowRight, PlayCircle } from "lucide-react";
 import { AuroraCore } from "../../components/ui/auroraCore/AuroraCore";
-import { FONT_DISPLAY } from "./shared";
+import { AuroraStage, ACCENT_GRADIENT, FONT_DISPLAY } from "./shared";
 
 const INPUTS = [
   { label: "WhatsApp", angle: 200 },
@@ -24,6 +24,15 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
   return (
     <div id="top" className="relative pt-36 pb-20 sm:pt-44 sm:pb-28 px-5 sm:px-8 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
+        <div
+          className="absolute inset-0 opacity-[0.4]"
+          style={{
+            backgroundImage: "radial-gradient(circle, #CBD5E1 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+            maskImage: "radial-gradient(ellipse 60% 50% at 50% 20%, black 0%, transparent 75%)",
+            WebkitMaskImage: "radial-gradient(ellipse 60% 50% at 50% 20%, black 0%, transparent 75%)",
+          }}
+        />
         <div className="absolute top-[-20%] left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-blue-500/[0.07] blur-[160px]" />
         <div className="absolute top-[10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-violet-500/[0.07] blur-[140px]" />
       </div>
@@ -32,8 +41,9 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-200 bg-slate-50 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-8"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-8"
         >
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           CRM + Inteligência Artificial + Agentes Autônomos
         </motion.div>
 
@@ -44,7 +54,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
           style={{ fontFamily: FONT_DISPLAY }}
           className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 leading-[1.05] mb-6"
         >
-          Seu próximo vendedor<br className="hidden sm:block" /> não precisa dormir.
+          Seu próximo vendedor<br className="hidden sm:block" /> <span className={ACCENT_GRADIENT}>não precisa dormir.</span>
         </motion.h1>
 
         <motion.p
@@ -147,8 +157,10 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
           })}
 
           {/* núcleo */}
-          <div className="relative z-10 flex flex-col items-center gap-3">
-            <AuroraCore mode="analyzing" size={128} />
+          <div className="relative z-10 flex flex-col items-center gap-4">
+            <AuroraStage size={200}>
+              <AuroraCore mode="analyzing" size={128} />
+            </AuroraStage>
             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-600">Axis Intelligence</span>
           </div>
 

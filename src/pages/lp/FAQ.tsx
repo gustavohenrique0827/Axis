@@ -51,10 +51,10 @@ export function FAQSection() {
         {FAQS.map((f, i) => {
           const isOpen = open === i;
           return (
-            <div key={f.q} className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+            <div key={f.q} className={`rounded-xl border bg-white overflow-hidden transition-all duration-300 ${isOpen ? "border-blue-200 shadow-md" : "border-slate-200 shadow-sm"}`}>
               <button
                 onClick={() => setOpen(isOpen ? null : i)}
-                className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left"
+                className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-slate-50/70 transition-colors"
               >
                 <span className="text-sm sm:text-[15px] font-semibold text-slate-900">{f.q}</span>
                 <ChevronDown className={`w-4 h-4 text-slate-400 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`} />

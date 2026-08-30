@@ -22,7 +22,7 @@ export function CanaisSection() {
       <FadeIn>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 max-w-3xl mx-auto mb-8">
           {CHANNELS.map((c) => (
-            <div key={c.label} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white border border-slate-200 shadow-sm">
+            <div key={c.label} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:shadow-md hover:border-blue-200 transition-all duration-300">
               <c.icon className="w-5 h-5 text-blue-600" />
               <span className="text-[10px] font-semibold text-slate-500 text-center">{c.label}</span>
             </div>
@@ -51,7 +51,7 @@ export function BeneficiosSection() {
     <Section id="beneficios" className="bg-slate-50/70">
       <div className="grid lg:grid-cols-2 gap-10">
         <FadeIn>
-          <GlassCard className="p-7 sm:p-8 h-full">
+          <GlassCard className="p-7 sm:p-8 h-full" interactive>
             <Inbox className="w-8 h-8 text-blue-600 mb-5" />
             <h3 className="text-2xl font-bold text-slate-900 mb-2" style={{ fontFamily: FONT_DISPLAY }}>
               O vendedor deixa de procurar onde vender.
@@ -67,7 +67,7 @@ export function BeneficiosSection() {
         </FadeIn>
 
         <FadeIn delay={0.1}>
-          <GlassCard className="p-7 sm:p-8 h-full">
+          <GlassCard className="p-7 sm:p-8 h-full" interactive>
             <h3 className="text-2xl font-bold text-slate-900 mb-1 leading-snug" style={{ fontFamily: FONT_DISPLAY }}>
               Pare de administrar apenas atividades.
             </h3>

@@ -9,17 +9,26 @@ export function Section({
   children,
   className = "",
   bordered = true,
+  glow = false,
 }: {
   id?: string;
   children: ReactNode;
   className?: string;
   bordered?: boolean;
+  /** Renderiza dois blobs radiais desfocados e sutis para dar profundidade a seções de fundo sólido. */
+  glow?: boolean;
 }) {
   return (
     <section
       id={id}
-      className={`relative py-20 sm:py-28 lg:py-32 px-5 sm:px-8 ${bordered ? "border-t border-slate-200" : ""} ${className}`}
+      className={`relative overflow-hidden py-20 sm:py-28 lg:py-32 px-5 sm:px-8 ${bordered ? "border-t border-slate-200" : ""} ${className}`}
     >
+      {glow && (
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-[-10%] left-[-5%] w-[420px] h-[420px] rounded-full bg-blue-500/[0.06] blur-[120px]" />
+          <div className="absolute bottom-[-15%] right-[-5%] w-[380px] h-[380px] rounded-full bg-violet-500/[0.06] blur-[120px]" />
+        </div>
+      )}
       <div className="max-w-6xl mx-auto relative z-10">{children}</div>
     </section>
   );
@@ -81,17 +90,52 @@ export function GlassCard({
   children,
   className = "",
   glow = false,
+  interactive = false,
 }: {
   children: ReactNode;
   className?: string;
   glow?: boolean;
+  /** Levanta o card e intensifica a sombra no hover — usar em cards clicáveis/navegáveis. */
+  interactive?: boolean;
 }) {
   return (
     <div
-      className={`relative rounded-2xl border border-slate-200 bg-white ${
+      className={`relative rounded-2xl border border-slate-200 bg-white transition-all duration-300 ${
         glow ? "shadow-[0_20px_60px_-15px_rgba(59,130,246,0.2)]" : "shadow-sm"
-      } ${className}`}
+      } ${interactive ? "hover:-translate-y-1 hover:shadow-lg hover:border-blue-200" : ""} ${className}`}
     >
+      {children}
+    </div>
+  );
+}
+
+/**
+ * Palco escuro para o núcleo da Aurora — o canvas 2D desenha um "glow" radial que só lê como brilho
+ * de verdade contra um fundo escuro (contra branco, uma "luz" fica achatada, sem contraste pra
+ * clarear). Preserva a LP no modo claro mantendo esse elemento pontual como uma ilha escura, técnica
+ * comum em SaaS premium (ex: dashboards/mockups embutidos sobre fundo claro).
+ */
+export function AuroraStage({
+  children,
+  size = 220,
+  className = "",
+}: {
+  children: ReactNode;
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <div
+      className={`relative rounded-full flex items-center justify-center shrink-0 ${className}`}
+      style={{
+        width: size,
+        height: size,
+        background: "radial-gradient(circle at 50% 38%, #141a33 0%, #05060a 72%)",
+        boxShadow: "0 0 100px -12px rgba(99,102,241,0.4), 0 30px 60px -20px rgba(15,23,42,0.35)",
+      }}
+    >
+      <div className="absolute inset-0 rounded-full border border-white/[0.07]" />
+      <div className="absolute inset-[6px] rounded-full border border-white/[0.04]" />
       {children}
     </div>
   );

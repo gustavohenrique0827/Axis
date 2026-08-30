@@ -36,7 +36,7 @@ export function ProblemSection() {
               { icon: Snowflake, label: "O lead esfria e desaparece do radar", tone: "text-slate-500 border-slate-200 bg-white" },
             ].map((step, i, arr) => (
               <div key={i}>
-                <div className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border ${step.tone}`}>
+                <div className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm ${step.tone}`}>
                   <step.icon className="w-4 h-4 shrink-0" />
                   <span className="text-sm font-medium">{step.label}</span>
                 </div>
@@ -82,7 +82,7 @@ export function NovaLogicaSection() {
         </FadeIn>
 
         <FadeIn delay={0.1}>
-          <div className="rounded-2xl border border-blue-200 bg-gradient-to-b from-blue-50 to-white p-6 sm:p-8 h-full shadow-lg shadow-blue-500/10">
+          <div className="rounded-2xl border border-blue-200 bg-gradient-to-b from-blue-50 to-white p-6 sm:p-8 h-full shadow-lg shadow-blue-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/15">
             <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-600 mb-6" style={{ fontFamily: FONT_DISPLAY }}>AXIS</p>
             <div className="space-y-3">
               {axis.map((step, i, arr) => (

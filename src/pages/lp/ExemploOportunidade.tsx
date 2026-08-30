@@ -3,15 +3,16 @@ import { Section, Kicker, SectionTitle, FadeIn, BrandLine, GlassCard } from "./s
 
 export function ExemploOportunidadeSection() {
   return (
-    <Section id="exemplo" className="bg-slate-50/70">
+    <Section id="exemplo" className="bg-slate-50/70" glow>
       <div className="text-center mb-14">
         <Kicker>Na prática</Kicker>
         <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl">Uma conversa pode esconder uma oportunidade.</SectionTitle>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8 items-center">
-        <FadeIn>
-          <div className="rounded-2xl overflow-hidden border border-white/[0.1] bg-[#0b141a] max-w-md mx-auto shadow-2xl">
+        <FadeIn className="relative">
+          <div className="absolute -inset-6 rounded-[36px] bg-gradient-to-br from-emerald-500/10 to-blue-500/10 blur-3xl max-w-md mx-auto" />
+          <div className="relative rounded-2xl overflow-hidden border border-white/[0.1] bg-[#0b141a] max-w-md mx-auto shadow-2xl">
             <div className="bg-[#202c33] px-4 py-3 flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-[11px] font-bold text-white">CL</div>
               <div>
