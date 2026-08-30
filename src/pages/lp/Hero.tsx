@@ -44,7 +44,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
           className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-8"
         >
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          CRM + Inteligência Artificial + Agentes Autônomos
+          Não é apenas um CRM — é o cérebro operacional da sua empresa
         </motion.div>
 
         <motion.h1
@@ -63,7 +63,8 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
           transition={{ delay: 0.2 }}
           className="text-lg sm:text-xl text-slate-700 font-medium max-w-2xl mx-auto mb-4"
         >
-          O sistema operacional de oportunidades comerciais que encontra, entende e age sobre seus leads.
+          O Axis conecta CRM, vendas, atendimento, automação e inteligência artificial em uma única
+          operação — para você entender o que está acontecendo na sua empresa e o que fazer a seguir.
         </motion.p>
 
         <motion.p
@@ -72,8 +73,8 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
           transition={{ delay: 0.3 }}
           className="text-sm sm:text-base text-slate-500 max-w-xl mx-auto mb-10 leading-relaxed"
         >
-          O Axis conecta seus canais, dados e conversas a uma inteligência comercial capaz de identificar
-          oportunidades, tomar decisões e executar ações automaticamente.
+          Dados, conversas e processos deixam de estar espalhados em WhatsApp, planilhas e ferramentas
+          soltas — e passam a alimentar uma inteligência capaz de identificar oportunidades e agir.
         </motion.p>
 
         <motion.div
@@ -94,7 +95,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl border border-slate-300 text-slate-900 text-sm font-bold hover:bg-slate-50 transition-all"
           >
             <PlayCircle className="w-4 h-4" />
-            Ver como funciona
+            Ver o Axis funcionando
           </button>
         </motion.div>
 
@@ -161,7 +162,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
             <AuroraStage size={200}>
               <AuroraCore mode="analyzing" size={128} />
             </AuroraStage>
-            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-600">Axis Intelligence</span>
+            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-600">Aurora</span>
           </div>
 
           {/* saídas abaixo */}

@@ -1,10 +1,20 @@
-import { ArrowDown, MessageCircle, Clock, Snowflake } from "lucide-react";
+import { ArrowDown, ArrowRight, MessageCircle, Clock, Snowflake, X } from "lucide-react";
 import { Section, Kicker, SectionTitle, Lede, GlassCard, FadeIn, BrandLine, FONT_DISPLAY } from "./shared";
+
+const PAIN_POINTS = [
+  "WhatsApp separado",
+  "Planilhas soltas",
+  "CRM isolado",
+  "Leads esquecidos",
+  "Equipe sem contexto",
+  "Gestor sem visão da operação",
+  "Decisões no achismo",
+];
 
 export function ProblemSection() {
   return (
     <Section id="problema">
-      <div className="grid lg:grid-cols-2 gap-14 items-center">
+      <div className="grid lg:grid-cols-2 gap-14 items-center mb-12">
         <div>
           <Kicker>O problema real</Kicker>
           <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-6">
@@ -46,11 +56,22 @@ export function ProblemSection() {
           </div>
         </FadeIn>
       </div>
+
+      <FadeIn delay={0.2}>
+        <div className="flex flex-wrap items-center justify-center gap-2.5 max-w-3xl mx-auto">
+          {PAIN_POINTS.map((p) => (
+            <span key={p} className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-rose-50 border border-rose-100 text-[12.5px] font-medium text-rose-600">
+              <X className="w-3 h-3 shrink-0" />
+              {p}
+            </span>
+          ))}
+        </div>
+      </FadeIn>
     </Section>
   );
 }
 
-export function NovaLogicaSection() {
+export function NovaLogicaSection({ onCta }: { onCta: () => void }) {
   const tradicional = ["Lead", "Cadastro", "Vendedor", "Follow-up", "Venda"];
   const axis = ["Lead", "Inteligência", "Oportunidade", "Ação", "Resultado"];
 
@@ -96,6 +117,17 @@ export function NovaLogicaSection() {
             </div>
           </div>
         </FadeIn>
+      </div>
+
+      <div className="text-center max-w-xl mx-auto mt-12">
+        <BrandLine>"O CRM registra o que aconteceu.<br />O Axis ajuda você a entender o que está acontecendo e o que fazer depois."</BrandLine>
+        <button
+          onClick={onCta}
+          className="group inline-flex items-center justify-center gap-2 mt-7 px-6 py-3.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-bold hover:bg-slate-50 transition-all"
+        >
+          Falar com um especialista
+          <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+        </button>
       </div>
     </Section>
   );

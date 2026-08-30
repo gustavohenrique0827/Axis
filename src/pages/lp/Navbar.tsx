@@ -3,9 +3,9 @@ import { Menu, X } from "lucide-react";
 import { FONT_DISPLAY } from "./shared";
 
 const LINKS = [
-  { href: "#como-funciona", label: "Como funciona" },
-  { href: "#inteligencia", label: "Inteligência" },
-  { href: "#agentes", label: "Agentes" },
+  { href: "#produto", label: "Produto" },
+  { href: "#funcionalidades", label: "Funcionalidades" },
+  { href: "#inteligencia", label: "Aurora" },
   { href: "#planos", label: "Planos" },
   { href: "#faq", label: "FAQ" },
 ];

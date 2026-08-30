@@ -2,25 +2,29 @@ import { useEffect, useRef } from "react";
 import { Navbar } from "./Navbar";
 import { Hero } from "./Hero";
 import { ProblemSection, NovaLogicaSection } from "./ProblemAndLogic";
+import { ProductShowcaseSection } from "./ProductShowcase";
+import { FuncionalidadesSection } from "./Funcionalidades";
 import { ComoFuncionaSection } from "./ComoFunciona";
+import { ComoComecarSection } from "./ComoComecar";
 import { DataFlywheelSection } from "./DataFlywheel";
 import { InteligenciaSection } from "./Inteligencia";
 import { ExemploOportunidadeSection } from "./ExemploOportunidade";
 import { RadarOportunidadesSection } from "./RadarOportunidades";
 import { AgentesSection } from "./Agentes";
 import { EquipeHumanaSection } from "./EquipeHumana";
-import { DashboardMockupSection } from "./DashboardMockup";
 import { AutonomiaSection } from "./Autonomia";
+import { SegmentacaoSection } from "./Segmentacao";
 import { PlanosSection } from "./Planos";
+import { ProvaCredibilidadeSection } from "./ProvaCredibilidade";
 import { CanaisSection, BeneficiosSection } from "./CanaisEBeneficios";
 import { FAQSection } from "./FAQ";
 import { CTAFinalFormSection } from "./CTAFinalForm";
 import { FooterSection } from "./FooterSection";
 import { FONT_BODY } from "./shared";
 
-const SEO_TITLE = "Axis — Sistema Operacional de Oportunidades Comerciais";
+const SEO_TITLE = "Axis — O cérebro operacional da sua empresa";
 const SEO_DESCRIPTION =
-  "Axis é um sistema operacional de oportunidades comerciais que utiliza inteligência artificial e agentes autônomos para encontrar, entender e agir sobre oportunidades de vendas.";
+  "Axis conecta CRM, vendas, atendimento, automação e inteligência artificial em uma única operação. Não é apenas um CRM — é a camada inteligente que ajuda sua empresa a entender o que está acontecendo e o que fazer a seguir.";
 const GOOGLE_FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap";
 
@@ -80,26 +84,30 @@ export default function AxisLandingPage() {
   const formRef = useRef<HTMLDivElement>(null);
 
   const scrollToForm = () => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  const scrollToComoFunciona = () =>
-    document.querySelector("#como-funciona")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const scrollToProduto = () =>
+    document.querySelector("#produto")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
     <div className="min-h-screen bg-white text-slate-900 antialiased" style={{ fontFamily: FONT_BODY }}>
       <Navbar onCtaClick={scrollToForm} />
       <main>
-        <Hero onPrimaryCta={scrollToForm} onSecondaryCta={scrollToComoFunciona} />
+        <Hero onPrimaryCta={scrollToForm} onSecondaryCta={scrollToProduto} />
         <ProblemSection />
-        <NovaLogicaSection />
+        <ProductShowcaseSection onCta={scrollToForm} />
+        <NovaLogicaSection onCta={scrollToForm} />
+        <FuncionalidadesSection />
         <ComoFuncionaSection />
+        <ComoComecarSection />
         <DataFlywheelSection />
         <InteligenciaSection />
         <ExemploOportunidadeSection />
         <RadarOportunidadesSection />
         <AgentesSection />
         <EquipeHumanaSection />
-        <DashboardMockupSection />
         <AutonomiaSection />
+        <SegmentacaoSection />
         <PlanosSection onCta={scrollToForm} />
+        <ProvaCredibilidadeSection />
         <CanaisSection />
         <BeneficiosSection />
         <FAQSection />
