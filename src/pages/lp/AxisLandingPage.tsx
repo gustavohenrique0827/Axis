@@ -2,14 +2,17 @@ import { useEffect, useRef } from "react";
 import { Navbar } from "./Navbar";
 import { Hero } from "./Hero";
 import { ProblemSection, NovaLogicaSection } from "./ProblemAndLogic";
+import { EcossistemaSection } from "./Ecossistema";
 import { ProductShowcaseSection } from "./ProductShowcase";
 import { FuncionalidadesSection } from "./Funcionalidades";
+import { SinapseSection } from "./Sinapse";
 import { ComoFuncionaSection } from "./ComoFunciona";
 import { ComoComecarSection } from "./ComoComecar";
-import { DataFlywheelSection } from "./DataFlywheel";
 import { InteligenciaSection } from "./Inteligencia";
+import { AxisAoVivoSection } from "./AxisAoVivo";
 import { ExemploOportunidadeSection } from "./ExemploOportunidade";
 import { RadarOportunidadesSection } from "./RadarOportunidades";
+import { AutomacaoWorkflowSection } from "./AutomacaoWorkflow";
 import { AgentesSection } from "./Agentes";
 import { EquipeHumanaSection } from "./EquipeHumana";
 import { AutonomiaSection } from "./Autonomia";
@@ -24,7 +27,7 @@ import { FONT_BODY } from "./shared";
 
 const SEO_TITLE = "Axis — O cérebro operacional da sua empresa";
 const SEO_DESCRIPTION =
-  "Axis conecta CRM, vendas, atendimento, automação e inteligência artificial em uma única operação. Não é apenas um CRM — é a camada inteligente que ajuda sua empresa a entender o que está acontecendo e o que fazer a seguir.";
+  "Axis é o ecossistema operacional inteligente que conecta sua empresa: a Sinapse liga dados, canais e times; a Aurora entende o contexto e sugere a próxima ação. Não é apenas um CRM.";
 const GOOGLE_FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap";
 
@@ -93,15 +96,18 @@ export default function AxisLandingPage() {
       <main>
         <Hero onPrimaryCta={scrollToForm} onSecondaryCta={scrollToProduto} />
         <ProblemSection />
+        <EcossistemaSection />
         <ProductShowcaseSection onCta={scrollToForm} />
         <NovaLogicaSection onCta={scrollToForm} />
         <FuncionalidadesSection />
+        <SinapseSection />
         <ComoFuncionaSection />
         <ComoComecarSection />
-        <DataFlywheelSection />
         <InteligenciaSection />
+        <AxisAoVivoSection />
         <ExemploOportunidadeSection />
         <RadarOportunidadesSection />
+        <AutomacaoWorkflowSection />
         <AgentesSection />
         <EquipeHumanaSection />
         <AutonomiaSection />

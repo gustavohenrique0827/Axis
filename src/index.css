@@ -575,6 +575,20 @@ html:not(.dark) th {
   to { transform: rotate(360deg) translateX(10px) rotate(-360deg); }
 }
 
+/* Linhas do diagrama da Sinapse (landing page) — pontilhado "fluindo" em direção ao núcleo. */
+@keyframes sinapse-flow {
+  from { stroke-dashoffset: 18; }
+  to { stroke-dashoffset: 0; }
+}
+
+/* Ponto percorrendo os conectores do diagrama de automação (landing page). */
+@keyframes workflow-pulse {
+  0% { left: 0%; opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { left: 100%; opacity: 0; }
+}
+
 /* Unified and Standardized Button Styles for consistent sizes, colors, rounding and feedback */
 .btn-primary {
   @apply inline-flex items-center justify-center font-bold rounded-lg text-sm bg-[#2563EB] !text-white border border-blue-500/20 shadow-md shadow-blue-500/10 hover:bg-blue-600 active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;

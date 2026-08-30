@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { motion } from "motion/react";
 import { ArrowRight, PlayCircle } from "lucide-react";
 import { AuroraCore } from "../../components/ui/auroraCore/AuroraCore";
@@ -21,6 +22,8 @@ function polar(angleDeg: number, radius: number) {
 }
 
 export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => void; onSecondaryCta: () => void }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+
   return (
     <div id="top" className="relative pt-36 pb-20 sm:pt-44 sm:pb-28 px-5 sm:px-8 overflow-hidden">
       <div className="absolute inset-0 pointer-events-none">
@@ -125,10 +128,18 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
                 <motion.line
                   key={inp.label}
                   x1={p.x} y1={p.y * 0.6} x2={0} y2={0}
-                  stroke="url(#lp-line-grad)" strokeWidth="1"
-                  initial={{ pathLength: 0, opacity: 0 }}
-                  animate={{ pathLength: 1, opacity: 0.6 }}
-                  transition={{ delay: 0.6 + i * 0.08, duration: 1 }}
+                  stroke="url(#lp-line-grad)"
+                  initial={{ pathLength: 0, opacity: 0, strokeWidth: 1 }}
+                  animate={{
+                    pathLength: 1,
+                    opacity: hovered === i ? 1 : 0.6,
+                    strokeWidth: hovered === i ? 2 : 1,
+                  }}
+                  transition={{
+                    pathLength: { delay: 0.6 + i * 0.08, duration: 1 },
+                    opacity: { duration: 0.2 },
+                    strokeWidth: { duration: 0.2 },
+                  }}
                 />
               );
             })}
@@ -147,9 +158,13 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
               <motion.div
                 key={inp.label}
                 initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 + i * 0.06 }}
-                className="absolute px-3 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-[10px] sm:text-[11px] font-semibold text-slate-600 whitespace-nowrap"
+                animate={{ opacity: 1, scale: hovered === i ? 1.08 : 1 }}
+                transition={{ opacity: { delay: 0.5 + i * 0.06 }, scale: { duration: 0.2 } }}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+                className={`absolute px-3 py-1.5 rounded-full bg-white border shadow-sm text-[10px] sm:text-[11px] font-semibold whitespace-nowrap cursor-default transition-colors duration-200 ${
+                  hovered === i ? "border-blue-300 text-slate-900 shadow-md" : "border-slate-200 text-slate-600"
+                }`}
                 style={{ left: `calc(50% + ${p.x}%)`, top: `calc(50% + ${p.y}%)`, transform: "translate(-50%, -50%)" }}
               >
                 {inp.label}
@@ -160,7 +175,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
           {/* núcleo */}
           <div className="relative z-10 flex flex-col items-center gap-4">
             <AuroraStage size={200}>
-              <AuroraCore mode="analyzing" size={128} />
+              <AuroraCore mode={hovered !== null ? "executing" : "analyzing"} size={128} />
             </AuroraStage>
             <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-600">Aurora</span>
           </div>

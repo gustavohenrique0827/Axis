@@ -16,6 +16,14 @@ const REGULAR = [
 
 const BANNER = { icon: TrendingUp, label: "Sinais de expansão", text: "Clientes que já compraram costumam ser a fonte mais barata da próxima venda." };
 
+const PATTERNS = [
+  "Detectamos uma queda na conversão",
+  "Identificamos leads sem acompanhamento",
+  "Encontramos gargalos no processo comercial",
+  "Identificamos oportunidades de recuperação",
+  "Sugerimos próximas ações",
+];
+
 function ChipCard({ icon: Icon, label }: { icon: typeof MessageCircle; label: string }) {
   return (
     <div className="group flex items-center gap-4 p-5 rounded-xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:border-blue-300 hover:shadow-md transition-all duration-300">
@@ -35,10 +43,20 @@ export function RadarOportunidadesSection() {
         <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-5">
           Talvez sua próxima venda<br className="hidden sm:block" /> já esteja dentro da sua operação.
         </SectionTitle>
-        <Lede className="max-w-2xl mx-auto text-base sm:text-lg">
+        <Lede className="max-w-2xl mx-auto text-base sm:text-lg mb-7">
           Uma oportunidade pode estar escondida em uma conversa antiga, em um lead que parou de responder,
           em um cliente que já comprou, em uma proposta esquecida ou em uma reunião que nunca teve follow-up.
         </Lede>
+        <p className="text-base sm:text-lg font-bold text-slate-900 mb-6" style={{ fontFamily: FONT_DISPLAY }}>
+          O Axis não apenas mostra dados. Ele encontra padrões.
+        </p>
+        <FadeIn className="flex flex-wrap items-center justify-center gap-2">
+          {PATTERNS.map((p) => (
+            <span key={p} className="px-3.5 py-2 rounded-full bg-blue-50 border border-blue-100 text-[12px] font-medium text-blue-700">
+              {p}
+            </span>
+          ))}
+        </FadeIn>
       </div>
 
       <div className="space-y-4 mb-12">

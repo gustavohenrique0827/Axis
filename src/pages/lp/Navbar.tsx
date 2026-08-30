@@ -4,10 +4,10 @@ import { FONT_DISPLAY } from "./shared";
 
 const LINKS = [
   { href: "#produto", label: "Produto" },
-  { href: "#funcionalidades", label: "Funcionalidades" },
   { href: "#inteligencia", label: "Aurora" },
-  { href: "#planos", label: "Planos" },
-  { href: "#faq", label: "FAQ" },
+  { href: "#sinapse", label: "Sinapse" },
+  { href: "#funcionalidades", label: "Recursos" },
+  { href: "#segmentos", label: "Para empresas" },
 ];
 
 export function Navbar({ onCtaClick }: { onCtaClick: () => void }) {

@@ -1,5 +1,22 @@
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { motion } from "motion/react";
+
+/**
+ * Anima tickers/loops contínuos (setInterval) só quando o visitante não pediu menos movimento no SO.
+ * Motion (whileInView/initial→animate) já é leve o bastante pra manter mesmo com reduced-motion —
+ * isso aqui existe só pra loops artificiais e infinitos que rodam sozinhos na tela.
+ */
+export function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReduced(mq.matches);
+    const onChange = () => setReduced(mq.matches);
+    mq.addEventListener("change", onChange);
+    return () => mq.removeEventListener("change", onChange);
+  }, []);
+  return reduced;
+}
 
 export const FONT_DISPLAY = "'Sora', 'Inter', ui-sans-serif, system-ui, sans-serif";
 export const FONT_BODY = "'Inter', ui-sans-serif, system-ui, sans-serif";
@@ -172,3 +189,20 @@ export function BrandLine({ children }: { children: ReactNode }) {
 }
 
 export const ACCENT_GRADIENT = "bg-gradient-to-r from-blue-500 via-blue-400 to-violet-500 bg-clip-text text-transparent";
+
+/** Selo dos três pilares (Axis / Sinapse / Aurora) — usado no hero e no fechamento da página. */
+export function PillarBadge({ label, tone }: { label: string; tone: "blue" | "violet" | "emerald" }) {
+  const TONE = {
+    blue: "border-blue-200 bg-blue-50 text-blue-700",
+    violet: "border-violet-200 bg-violet-50 text-violet-700",
+    emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
+  }[tone];
+  return (
+    <span
+      className={`inline-flex items-center px-3.5 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-[0.15em] ${TONE}`}
+      style={{ fontFamily: FONT_DISPLAY }}
+    >
+      {label}
+    </span>
+  );
+}

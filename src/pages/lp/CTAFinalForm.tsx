@@ -1,6 +1,6 @@
 import { forwardRef, useState } from "react";
 import { CheckCircle2, Loader2, ShieldCheck, Clock, Sparkles } from "lucide-react";
-import { Section, Kicker, SectionTitle, FadeIn, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, FadeIn, PillarBadge, FONT_DISPLAY } from "./shared";
 
 const labelClass = "text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2";
 const inputClass =
@@ -56,14 +56,17 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
       <Section id="cta-final" bordered={false} className="pb-28 sm:pb-36 pt-24 sm:pt-32" glow>
         <div className="grid lg:grid-cols-[1.1fr_1fr] gap-14 items-center">
           <div className="text-center lg:text-left">
+            <div className="flex items-center justify-center lg:justify-start gap-2 mb-6">
+              <PillarBadge label="Axis" tone="blue" />
+              <PillarBadge label="Sinapse" tone="violet" />
+              <PillarBadge label="Aurora" tone="emerald" />
+            </div>
             <Kicker>Vamos conversar</Kicker>
             <SectionTitle as="h2" className="text-3xl sm:text-5xl lg:text-[3.4rem] mb-6">
-              Pare de apenas administrar seus leads.
-              <br />
-              <span className="text-slate-400">Comece a operar suas oportunidades.</span>
+              A próxima geração da<br />operação empresarial<br /><span className="text-slate-400">começa aqui.</span>
             </SectionTitle>
             <p className="text-slate-500 text-base sm:text-lg mb-8 max-w-md mx-auto lg:mx-0">
-              Descubra como o Axis pode trabalhar dentro da sua operação comercial.
+              Conecte sua empresa. Ative sua inteligência. Transforme operação em crescimento.
             </p>
             <div className="space-y-3 max-w-sm mx-auto lg:mx-0">
               {TRUST_POINTS.map((t) => (
