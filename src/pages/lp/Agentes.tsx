@@ -1,10 +1,13 @@
 import { Brain, Search, Headset, RefreshCcw, LifeBuoy, CalendarClock, LineChart, LayoutDashboard } from "lucide-react";
 import { Section, Kicker, SectionTitle, FadeIn, BrandLine, FONT_DISPLAY } from "./shared";
 
-const AGENTS = [
-  { icon: Brain, name: "Inteligência", text: "Analisa informações e identifica oportunidades." },
-  { icon: Search, name: "Prospecção", text: "Encontra e qualifica potenciais compradores." },
-  { icon: Headset, name: "Atendimento", text: "Responde e conduz conversas." },
+const CORE_AGENTS = [
+  { icon: Brain, name: "Inteligência", text: "Analisa informações, cruza sinais e identifica oportunidades em tempo real." },
+  { icon: Search, name: "Prospecção", text: "Encontra e qualifica potenciais compradores antes mesmo do primeiro contato." },
+  { icon: Headset, name: "Atendimento", text: "Responde, conduz conversas e mantém o cliente engajado no momento certo." },
+];
+
+const SUPPORT_AGENTS = [
   { icon: RefreshCcw, name: "Follow-up", text: "Acompanha oportunidades que ainda não avançaram." },
   { icon: LifeBuoy, name: "Recuperação", text: "Identifica oportunidades perdidas ou esquecidas." },
   { icon: CalendarClock, name: "Agendamento", text: "Conduz o cliente até o próximo compromisso." },
@@ -22,15 +25,31 @@ export function AgentesSection() {
         </SectionTitle>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-        {AGENTS.map((a, i) => (
-          <FadeIn key={a.name} delay={i * 0.05}>
-            <div className="h-full p-5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg transition-all duration-300">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mb-4 shadow-sm shadow-blue-500/20">
-                <a.icon className="w-4.5 h-4.5 text-white" />
+      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4 text-center sm:text-left">Núcleo do ciclo comercial</p>
+      <div className="grid sm:grid-cols-3 gap-4 mb-5">
+        {CORE_AGENTS.map((a, i) => (
+          <FadeIn key={a.name} delay={i * 0.06}>
+            <div className="h-full p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg transition-all duration-300">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mb-5 shadow-sm shadow-blue-500/20">
+                <a.icon className="w-5 h-5 text-white" />
               </div>
-              <h3 className="text-sm font-bold text-slate-900 mb-1.5 uppercase tracking-wide" style={{ fontFamily: FONT_DISPLAY }}>{a.name}</h3>
-              <p className="text-[13px] text-slate-500 leading-relaxed">{a.text}</p>
+              <h3 className="text-base font-bold text-slate-900 mb-2" style={{ fontFamily: FONT_DISPLAY }}>{a.name}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed">{a.text}</p>
+            </div>
+          </FadeIn>
+        ))}
+      </div>
+
+      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4 text-center sm:text-left">Agentes de suporte</p>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-12">
+        {SUPPORT_AGENTS.map((a, i) => (
+          <FadeIn key={a.name} delay={0.18 + i * 0.05}>
+            <div className="h-full p-4 rounded-xl bg-white border border-slate-200 shadow-sm hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-md transition-all duration-300">
+              <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center mb-3">
+                <a.icon className="w-3.5 h-3.5 text-blue-600" />
+              </div>
+              <h3 className="text-[13px] font-bold text-slate-900 mb-1" style={{ fontFamily: FONT_DISPLAY }}>{a.name}</h3>
+              <p className="text-[11px] text-slate-500 leading-snug">{a.text}</p>
             </div>
           </FadeIn>
         ))}

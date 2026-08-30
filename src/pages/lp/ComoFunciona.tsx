@@ -36,16 +36,17 @@ export function ComoFuncionaSection() {
         <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl">O Axis encontra, entende e age.</SectionTitle>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 relative">
-        <div className="hidden lg:block absolute top-[52px] left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {STEPS.map((s, i) => (
-          <FadeIn key={s.n} delay={i * 0.1}>
-            <div className="group relative flex flex-col items-center text-center px-4">
-              <div className="relative z-10 w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-200 flex items-center justify-center mb-5 shadow-sm transition-all duration-300 group-hover:scale-110 group-hover:shadow-md group-hover:border-blue-300">
-                <s.icon className="w-6 h-6 text-blue-600" />
+          <FadeIn key={s.n} delay={i * 0.1} className={i % 2 === 1 ? "lg:mt-9" : ""}>
+            <div className="group relative h-full flex flex-col p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg transition-all duration-300">
+              <div className="flex items-center justify-between mb-5">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-200 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:border-blue-300">
+                  <s.icon className="w-5 h-5 text-blue-600" />
+                </div>
+                <span className="text-[11px] font-black text-slate-300 tracking-[0.2em]">{s.n}</span>
               </div>
-              <span className="text-[11px] font-black text-slate-300 tracking-[0.2em] mb-2">{s.n}</span>
-              <h3 className="text-lg font-bold text-slate-900 mb-2.5" style={{ fontFamily: FONT_DISPLAY }}>{s.title}</h3>
+              <h3 className="text-lg font-bold text-slate-900 mb-2" style={{ fontFamily: FONT_DISPLAY }}>{s.title}</h3>
               <p className="text-sm text-slate-500 leading-relaxed">{s.text}</p>
             </div>
           </FadeIn>
