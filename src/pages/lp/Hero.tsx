@@ -7,7 +7,6 @@ import { AuroraStage, ACCENT_GRADIENT, FONT_DISPLAY } from "./shared";
 const INPUTS = [
   { label: "WhatsApp", angle: 200 },
   { label: "Marketing", angle: 160 },
-  { label: "CRM", angle: 120 },
   { label: "Reuniões", angle: 240 },
   { label: "Clientes", angle: 280 },
   { label: "Propostas", angle: 20 },
