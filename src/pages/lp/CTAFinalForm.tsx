@@ -1,8 +1,9 @@
 import { forwardRef, useState } from "react";
 import { CheckCircle2, Loader2, ShieldCheck, Clock, Sparkles } from "lucide-react";
-import { Section, Kicker, SectionTitle, FadeIn, PillarBadge, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, FadeIn, PillarBadge, FONT_DISPLAY, FONT_MONO } from "./shared";
 
-const labelClass = "text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-2";
+const labelStyle = { fontFamily: FONT_MONO };
+const labelClass = "text-[11px] font-medium text-slate-500 uppercase tracking-wider block mb-2";
 const inputClass =
   "w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/15 transition-all";
 
@@ -101,26 +102,26 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
-                        <label className={labelClass}>Nome *</label>
+                        <label className={labelClass} style={labelStyle}>Nome *</label>
                         <input value={data.nome} onChange={set("nome")} className={`${inputClass} ${errors.nome ? "border-rose-400" : ""}`} placeholder="Seu nome" />
                       </div>
                       <div>
-                        <label className={labelClass}>Empresa *</label>
+                        <label className={labelClass} style={labelStyle}>Empresa *</label>
                         <input value={data.empresa} onChange={set("empresa")} className={`${inputClass} ${errors.empresa ? "border-rose-400" : ""}`} placeholder="Nome da empresa" />
                       </div>
                     </div>
                     <div className="grid sm:grid-cols-2 gap-4">
                       <div>
-                        <label className={labelClass}>WhatsApp *</label>
+                        <label className={labelClass} style={labelStyle}>WhatsApp *</label>
                         <input value={data.whatsapp} onChange={set("whatsapp")} className={`${inputClass} ${errors.whatsapp ? "border-rose-400" : ""}`} placeholder="(00) 00000-0000" />
                       </div>
                       <div>
-                        <label className={labelClass}>E-mail *</label>
+                        <label className={labelClass} style={labelStyle}>E-mail *</label>
                         <input type="email" value={data.email} onChange={set("email")} className={`${inputClass} ${errors.email ? "border-rose-400" : ""}`} placeholder="voce@empresa.com" />
                       </div>
                     </div>
                     <div>
-                      <label className={labelClass}>Quantidade aproximada de leads por mês</label>
+                      <label className={labelClass} style={labelStyle}>Quantidade aproximada de leads por mês</label>
                       <select value={data.volumeLeads} onChange={set("volumeLeads")} className={inputClass}>
                         <option value="">Selecione</option>
                         <option value="ate_50">Até 50</option>
@@ -130,7 +131,7 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
                       </select>
                     </div>
                     <div>
-                      <label className={labelClass}>Principal desafio comercial</label>
+                      <label className={labelClass} style={labelStyle}>Principal desafio comercial</label>
                       <input value={data.desafio} onChange={set("desafio")} className={inputClass} placeholder="Ex: leads esfriando, follow-up manual..." />
                     </div>
 

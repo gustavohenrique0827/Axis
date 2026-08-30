@@ -1,5 +1,5 @@
 import { Brain, Search, Headset, RefreshCcw, LifeBuoy, CalendarClock, LineChart, LayoutDashboard } from "lucide-react";
-import { Section, Kicker, SectionTitle, FadeIn, BrandLine, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, FadeIn, BrandLine, FONT_DISPLAY, FONT_MONO } from "./shared";
 
 const CORE_AGENTS = [
   { icon: Brain, name: "Inteligência", text: "Analisa informações, cruza sinais e identifica oportunidades em tempo real." },
@@ -25,12 +25,12 @@ export function AgentesSection() {
         </SectionTitle>
       </div>
 
-      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4 text-center sm:text-left">Núcleo do ciclo comercial</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-4 text-center sm:text-left" style={{ fontFamily: FONT_MONO }}>Núcleo do ciclo comercial</p>
       <div className="grid sm:grid-cols-3 gap-4 mb-5">
         {CORE_AGENTS.map((a, i) => (
           <FadeIn key={a.name} delay={i * 0.06}>
             <div className="h-full p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:border-blue-300 hover:shadow-lg transition-all duration-300">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center mb-5 shadow-sm shadow-blue-500/20">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-teal-400 via-blue-500 to-violet-600 flex items-center justify-center mb-5 shadow-sm shadow-blue-500/20">
                 <a.icon className="w-5 h-5 text-white" />
               </div>
               <h3 className="text-base font-bold text-slate-900 mb-2" style={{ fontFamily: FONT_DISPLAY }}>{a.name}</h3>
@@ -40,7 +40,7 @@ export function AgentesSection() {
         ))}
       </div>
 
-      <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4 text-center sm:text-left">Agentes de suporte</p>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-4 text-center sm:text-left" style={{ fontFamily: FONT_MONO }}>Agentes de suporte</p>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-12">
         {SUPPORT_AGENTS.map((a, i) => (
           <FadeIn key={a.name} delay={0.18 + i * 0.05}>

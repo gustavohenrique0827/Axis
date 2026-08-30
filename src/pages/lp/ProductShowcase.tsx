@@ -4,7 +4,7 @@ import {
   Target, CalendarCheck, RefreshCcw, TrendingUp, Percent, Bot,
   Phone, Mail, MoreHorizontal, ArrowRight,
 } from "lucide-react";
-import { Section, Kicker, SectionTitle, Lede, FadeIn, AnimatedCounter, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, Lede, FadeIn, AnimatedCounter, FONT_DISPLAY, FONT_MONO } from "./shared";
 
 type TabId = "pipeline" | "leads" | "aurora" | "indicadores";
 
@@ -64,7 +64,7 @@ function ChromeWindow({ title, children }: { title: string; children: React.Reac
             <div className="w-2.5 h-2.5 rounded-full bg-amber-500/50" />
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/50" />
           </div>
-          <span className="ml-3 text-[11px] font-bold text-slate-500 uppercase tracking-widest" style={{ fontFamily: FONT_DISPLAY }}>
+          <span className="ml-3 text-[11px] font-medium text-slate-500 tracking-tight" style={{ fontFamily: FONT_MONO }}>
             {title}
           </span>
         </div>
@@ -111,7 +111,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {PIPELINE_COLUMNS.map((col) => (
                 <div key={col.name} className={`rounded-xl border ${col.tone} bg-white/[0.02] p-3`}>
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3 px-1">{col.name}</p>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-3 px-1" style={{ fontFamily: FONT_MONO }}>{col.name}</p>
                   <div className="space-y-2">
                     {col.cards.map((c) => (
                       <div key={c.name} className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-3">
@@ -131,7 +131,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
             <div className="space-y-2">
               {LEADS_ROWS.map((r) => (
                 <div key={r.name} className="flex items-center gap-3 sm:gap-4 rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 via-blue-500 to-violet-600 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
                     {r.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -162,7 +162,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
                     </div>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-teal-400 via-blue-500 to-violet-600 flex items-center justify-center shrink-0 mt-0.5">
                       <Sparkles className="w-3 h-3 text-white" />
                     </div>
                     <div className="max-w-[80%] bg-gradient-to-br from-blue-500/10 to-violet-500/10 border border-blue-500/20 rounded-2xl rounded-tl-sm px-4 py-2.5 text-[13px] text-slate-100 leading-relaxed">
@@ -184,7 +184,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
                   <div className="text-xl sm:text-2xl font-bold text-white mb-1" style={{ fontFamily: FONT_DISPLAY }}>
                     <AnimatedCounter value={m.value} prefix={m.prefix} suffix={m.suffix} decimals={m.decimals} />
                   </div>
-                  <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide leading-snug">{m.label}</div>
+                  <div className="text-[10px] font-medium text-slate-500 uppercase tracking-wide leading-snug" style={{ fontFamily: FONT_MONO }}>{m.label}</div>
                 </div>
               ))}
             </div>
@@ -192,7 +192,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
         )}
       </FadeIn>
 
-      <p className="text-center text-[11px] text-slate-400 mt-5 uppercase tracking-wider font-bold">Representação ilustrativa da interface</p>
+      <p className="text-center text-[11px] text-slate-400 mt-5 uppercase tracking-wider font-medium" style={{ fontFamily: FONT_MONO }}>Representação ilustrativa da interface</p>
 
       <div className="text-center mt-10">
         <button

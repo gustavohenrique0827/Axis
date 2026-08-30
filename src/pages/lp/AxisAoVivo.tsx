@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Inbox, ScanSearch, Tag, Workflow, BellRing, CalendarCheck2 } from "lucide-react";
-import { Section, Kicker, SectionTitle, Lede, FadeIn, usePrefersReducedMotion, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, Lede, FadeIn, usePrefersReducedMotion, FONT_MONO } from "./shared";
 
 const EVENTS = [
   { time: "09:42", icon: Inbox, text: "Novo lead recebido." },
@@ -43,7 +43,7 @@ export function AxisAoVivoSection() {
                   key={e.time + e.text}
                   className={`flex items-start gap-3.5 py-3 transition-opacity duration-500 ${shown ? "opacity-100" : "opacity-20"} ${i < EVENTS.length - 1 ? "border-b border-slate-100" : ""}`}
                 >
-                  <span className="text-[11px] font-black text-slate-300 tracking-wider pt-1.5 w-9 shrink-0" style={{ fontFamily: FONT_DISPLAY }}>{e.time}</span>
+                  <span className={`text-[11px] font-semibold tracking-tight pt-1.5 w-10 shrink-0 transition-colors duration-500 ${shown ? "text-slate-400" : "text-slate-300"}`} style={{ fontFamily: FONT_MONO }}>{e.time}</span>
                   <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-500 ${shown ? "bg-blue-50 border border-blue-200" : "bg-slate-50 border border-slate-200"}`}>
                     <e.icon className={`w-3.5 h-3.5 transition-colors duration-500 ${shown ? "text-blue-600" : "text-slate-300"}`} />
                   </div>
@@ -53,7 +53,7 @@ export function AxisAoVivoSection() {
             })}
           </div>
         </div>
-        <p className="text-center text-[11px] text-slate-400 mt-5 uppercase tracking-wider font-bold">Sequência ilustrativa</p>
+        <p className="text-center text-[11px] text-slate-400 mt-5 uppercase tracking-wider font-medium" style={{ fontFamily: FONT_MONO }}>Sequência ilustrativa</p>
       </FadeIn>
     </Section>
   );

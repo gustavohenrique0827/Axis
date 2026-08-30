@@ -29,7 +29,7 @@ const SEO_TITLE = "Axis — O cérebro operacional da sua empresa";
 const SEO_DESCRIPTION =
   "Axis é o ecossistema operacional inteligente que conecta sua empresa: a Sinapse liga dados, canais e times; a Aurora entende o contexto e sugere a próxima ação. Não é apenas um CRM.";
 const GOOGLE_FONTS_HREF =
-  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap";
+  "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Archivo:wght@600;700;800;900&family=JetBrains+Mono:wght@500;600&display=swap";
 
 function useLandingPageSeo() {
   useEffect(() => {

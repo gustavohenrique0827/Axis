@@ -1,5 +1,5 @@
 import { CheckCircle2, Settings2 } from "lucide-react";
-import { Section, Kicker, SectionTitle, Lede, FadeIn, BrandLine, GlassCard, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, Lede, FadeIn, BrandLine, GlassCard, FONT_MONO } from "./shared";
 
 const RULES = [
   "O que pode oferecer",
@@ -36,7 +36,7 @@ export function AutonomiaSection() {
               <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center shrink-0">
                 <Settings2 className="w-4 h-4 text-white" />
               </div>
-              <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400" style={{ fontFamily: FONT_DISPLAY }}>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400" style={{ fontFamily: FONT_MONO }}>
                 Configuração de regras
               </span>
             </div>

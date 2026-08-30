@@ -1,5 +1,5 @@
 import { Check, Star } from "lucide-react";
-import { Section, Kicker, SectionTitle, FadeIn, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, FadeIn, FONT_DISPLAY, FONT_MONO } from "./shared";
 
 interface Plan {
   name: string;
@@ -99,7 +99,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
               }`}
             >
               {plan.badge && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 rounded-full bg-blue-600 text-white text-[10px] font-black uppercase tracking-wider">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 rounded-full bg-blue-600 text-white text-[10px] font-semibold uppercase tracking-wider" style={{ fontFamily: FONT_MONO }}>
                   <Star className="w-3 h-3 fill-white" /> {plan.badge}
                 </span>
               )}
@@ -111,7 +111,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
               <div className="space-y-2.5 mb-8 flex-1">
                 {plan.features.map((f, fi) => (
                   f.endsWith(":") ? (
-                    <p key={fi} className="text-[11px] font-bold uppercase tracking-wider text-blue-600 pt-1">{f}</p>
+                    <p key={fi} className="text-[11px] font-medium uppercase tracking-wider text-blue-600 pt-1" style={{ fontFamily: FONT_MONO }}>{f}</p>
                   ) : (
                     <div key={fi} className="flex items-start gap-2.5">
                       <Check className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />

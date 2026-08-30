@@ -2,7 +2,7 @@ import { motion } from "motion/react";
 import {
   MessageSquare, Database, Users, UserCog, Wallet, FolderKanban, Workflow, Sparkles, Plug, Network,
 } from "lucide-react";
-import { Section, Kicker, SectionTitle, Lede, FadeIn, usePrefersReducedMotion, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, Lede, FadeIn, usePrefersReducedMotion, FONT_MONO } from "./shared";
 
 const NODES = [
   { icon: MessageSquare, label: "WhatsApp", angle: 270 },
@@ -86,7 +86,7 @@ export function SinapseSection() {
                 <Network className="w-8 h-8 text-white" />
               </div>
             </div>
-            <span className="text-[11px] font-black uppercase tracking-[0.2em] text-blue-600" style={{ fontFamily: FONT_DISPLAY }}>Sinapse</span>
+            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600" style={{ fontFamily: FONT_MONO }}>Sinapse</span>
           </div>
         </div>
       </FadeIn>

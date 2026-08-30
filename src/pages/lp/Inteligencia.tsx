@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { MessageCircleQuestion, Sparkles, ArrowRight } from "lucide-react";
 import { AuroraCore } from "../../components/ui/auroraCore/AuroraCore";
-import { Section, Kicker, SectionTitle, Lede, FadeIn, AuroraStage, BrandLine, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, Lede, FadeIn, AuroraStage, BrandLine, FONT_DISPLAY, FONT_MONO } from "./shared";
 
 const EXAMPLES = [
   {
@@ -64,7 +64,7 @@ export function InteligenciaSection() {
           <AuroraStage size={240}>
             <AuroraCore mode={current ? "analyzing" : "thinking"} size={140} />
           </AuroraStage>
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-600">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-600" style={{ fontFamily: FONT_MONO }}>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             Ativo agora
           </div>
@@ -73,7 +73,7 @@ export function InteligenciaSection() {
 
       <FadeIn delay={0.1}>
         <div className="max-w-2xl mx-auto">
-          <p className="flex items-center justify-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-4">
+          <p className="flex items-center justify-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-4" style={{ fontFamily: FONT_MONO }}>
             <MessageCircleQuestion className="w-3.5 h-3.5" /> Pergunte à Aurora
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2.5 mb-6">
@@ -97,7 +97,7 @@ export function InteligenciaSection() {
             <FadeIn key={active}>
               <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-5 sm:p-6 shadow-md shadow-blue-500/5">
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 via-blue-500 to-violet-600 flex items-center justify-center shrink-0 mt-0.5">
                     <Sparkles className="w-4 h-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -109,7 +109,7 @@ export function InteligenciaSection() {
                   </div>
                 </div>
               </div>
-              <p className="text-center text-[10px] text-slate-400 mt-3 uppercase tracking-wider font-bold">Resposta simulada, ilustrativa</p>
+              <p className="text-center text-[10px] text-slate-400 mt-3 uppercase tracking-wider font-medium" style={{ fontFamily: FONT_MONO }}>Resposta simulada, ilustrativa</p>
             </FadeIn>
           ) : (
             <p className="text-center text-sm text-slate-400">Clique em uma pergunta para ver a Aurora responder.</p>

@@ -18,8 +18,11 @@ export function usePrefersReducedMotion() {
   return reduced;
 }
 
-export const FONT_DISPLAY = "'Sora', 'Inter', ui-sans-serif, system-ui, sans-serif";
+export const FONT_DISPLAY = "'Archivo', 'Inter', ui-sans-serif, system-ui, sans-serif";
 export const FONT_BODY = "'Inter', ui-sans-serif, system-ui, sans-serif";
+/** Face utilitária para leituras/telemetria (kickers, timestamps, contadores de status) — reforça o
+ * registro de "instrumento operacional" do produto em vez de decorar com mais uma sans genérica. */
+export const FONT_MONO = "'JetBrains Mono', ui-monospace, 'SF Mono', 'Roboto Mono', monospace";
 
 export function Section({
   id,
@@ -57,9 +60,10 @@ export function Kicker({ children }: { children: ReactNode }) {
       initial={{ opacity: 0, y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.25em] text-blue-600 mb-5"
+      className="inline-flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-600 mb-5"
+      style={{ fontFamily: FONT_MONO }}
     >
-      <span className="w-6 h-px bg-gradient-to-r from-blue-500 to-violet-500" />
+      <span className="w-1.5 h-1.5 rotate-45 bg-gradient-to-br from-teal-400 to-violet-500 shrink-0" />
       {children}
     </motion.div>
   );
@@ -82,7 +86,7 @@ export function SectionTitle({
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
       style={{ fontFamily: FONT_DISPLAY }}
-      className={`font-bold tracking-tight text-slate-900 leading-[1.08] ${className}`}
+      className={`font-extrabold tracking-tight text-slate-900 leading-[1.08] ${className}`}
     >
       {children}
     </Comp>
@@ -188,7 +192,7 @@ export function BrandLine({ children }: { children: ReactNode }) {
   );
 }
 
-export const ACCENT_GRADIENT = "bg-gradient-to-r from-blue-500 via-blue-400 to-violet-500 bg-clip-text text-transparent";
+export const ACCENT_GRADIENT = "bg-gradient-to-r from-teal-400 via-blue-500 to-violet-500 bg-clip-text text-transparent";
 
 /** Número que conta de 0 até `value` quando entra na tela — só uma vez, via IntersectionObserver. */
 export function AnimatedCounter({

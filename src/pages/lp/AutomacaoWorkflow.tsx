@@ -1,5 +1,5 @@
 import { Inbox, Filter, Shuffle, MessageSquare, RefreshCcw, Database, ListChecks, BellRing } from "lucide-react";
-import { Section, Kicker, SectionTitle, Lede, FadeIn, usePrefersReducedMotion, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, Lede, FadeIn, usePrefersReducedMotion, FONT_MONO } from "./shared";
 
 const STEPS = [
   { icon: Inbox, label: "Lead recebido" },
@@ -55,7 +55,7 @@ export function AutomacaoWorkflowSection() {
         </div>
       </FadeIn>
 
-      <p className="text-center text-[11px] text-slate-400 mt-8 uppercase tracking-wider font-bold" style={{ fontFamily: FONT_DISPLAY }}>
+      <p className="text-center text-[11px] text-slate-400 mt-8 uppercase tracking-wider font-medium" style={{ fontFamily: FONT_MONO }}>
         Fluxo ilustrativo — as etapas variam conforme a configuração da sua operação
       </p>
     </Section>

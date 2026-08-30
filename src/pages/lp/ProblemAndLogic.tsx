@@ -1,5 +1,5 @@
 import { ArrowDown, ArrowRight, MessageCircle, Clock, Snowflake, X } from "lucide-react";
-import { Section, Kicker, SectionTitle, Lede, GlassCard, FadeIn, BrandLine, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, Lede, GlassCard, FadeIn, BrandLine, FONT_MONO } from "./shared";
 
 const PAIN_POINTS = [
   "WhatsApp separado",
@@ -88,7 +88,7 @@ export function NovaLogicaSection({ onCta }: { onCta: () => void }) {
       <div className="grid md:grid-cols-2 gap-6">
         <FadeIn>
           <div className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 h-full shadow-sm">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-6">Modelo tradicional</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400 mb-6" style={{ fontFamily: FONT_MONO }}>Modelo tradicional</p>
             <div className="space-y-3">
               {tradicional.map((step, i, arr) => (
                 <div key={step}>
@@ -104,7 +104,7 @@ export function NovaLogicaSection({ onCta }: { onCta: () => void }) {
 
         <FadeIn delay={0.1}>
           <div className="rounded-2xl border border-blue-200 bg-gradient-to-b from-blue-50 to-white p-6 sm:p-8 h-full shadow-lg shadow-blue-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/15">
-            <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-blue-600 mb-6" style={{ fontFamily: FONT_DISPLAY }}>AXIS</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 mb-6" style={{ fontFamily: FONT_MONO }}>AXIS</p>
             <div className="space-y-3">
               {axis.map((step, i, arr) => (
                 <div key={step}>

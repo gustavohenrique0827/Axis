@@ -1,5 +1,5 @@
 import { Boxes, Network, Sparkles, Workflow, Users2 } from "lucide-react";
-import { Section, Kicker, SectionTitle, Lede, FadeIn, AnimatedCounter, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, Lede, FadeIn, AnimatedCounter, FONT_DISPLAY, FONT_MONO } from "./shared";
 
 const STATS = [
   { value: 5, suffix: "", label: "Camadas conectadas" },
@@ -62,7 +62,7 @@ export function EcossistemaSection() {
       </FadeIn>
 
       <FadeIn delay={0.3}>
-        <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.15em] text-slate-400">
+        <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.15em] text-slate-400" style={{ fontFamily: FONT_MONO }}>
           <span>Dados</span><span className="text-blue-400">→</span>
           <span className="text-blue-600">Sinapse</span><span className="text-blue-400">→</span>
           <span className="text-violet-600">Aurora</span><span className="text-blue-400">→</span>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { ArrowRight, PlayCircle } from "lucide-react";
 import { AuroraCore } from "../../components/ui/auroraCore/AuroraCore";
-import { AuroraStage, ACCENT_GRADIENT, FONT_DISPLAY } from "./shared";
+import { AuroraStage, ACCENT_GRADIENT, FONT_DISPLAY, FONT_MONO } from "./shared";
 
 const INPUTS = [
   { label: "WhatsApp", angle: 200 },
@@ -43,7 +43,8 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-8"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-slate-200 bg-white/80 backdrop-blur-sm shadow-sm text-[10.5px] font-semibold uppercase tracking-[0.18em] text-slate-500 mb-8"
+          style={{ fontFamily: FONT_MONO }}
         >
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           Não é apenas um CRM — é o cérebro operacional da sua empresa
@@ -54,7 +55,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
           style={{ fontFamily: FONT_DISPLAY }}
-          className="text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 leading-[1.05] mb-6"
+          className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-slate-900 leading-[1.05] mb-6"
         >
           Seu próximo vendedor<br className="hidden sm:block" /> <span className={ACCENT_GRADIENT}>não precisa dormir.</span>
         </motion.h1>
@@ -144,8 +145,9 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
             })}
             <defs>
               <linearGradient id="lp-line-grad" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#60A5FA" stopOpacity="0" />
-                <stop offset="100%" stopColor="#818CF8" stopOpacity="0.8" />
+                <stop offset="0%" stopColor="#2DD4BF" stopOpacity="0" />
+                <stop offset="60%" stopColor="#60A5FA" stopOpacity="0.7" />
+                <stop offset="100%" stopColor="#8B5CF6" stopOpacity="0.85" />
               </linearGradient>
             </defs>
           </svg>
@@ -172,11 +174,15 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
           })}
 
           {/* núcleo */}
-          <div className="relative z-10 flex flex-col items-center gap-4">
+          <div className="relative z-10 flex flex-col items-center gap-3">
             <AuroraStage size={200}>
               <AuroraCore mode={hovered !== null ? "executing" : "analyzing"} size={128} />
             </AuroraStage>
-            <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-blue-600">Aurora</span>
+            <div className="flex items-center gap-1.5" style={{ fontFamily: FONT_MONO }}>
+              <span className="w-1 h-1 rounded-full bg-emerald-500" />
+              <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-600">Aurora</span>
+              <span className="text-[9px] text-slate-400 lowercase tracking-normal">· sempre ativa</span>
+            </div>
           </div>
 
           {/* saídas abaixo */}

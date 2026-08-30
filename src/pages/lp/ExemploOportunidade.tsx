@@ -1,5 +1,5 @@
 import { CheckCircle2, TrendingUp, Calendar, Target, Sparkles } from "lucide-react";
-import { Section, Kicker, SectionTitle, FadeIn, BrandLine, GlassCard } from "./shared";
+import { Section, Kicker, SectionTitle, FadeIn, BrandLine, GlassCard, FONT_MONO } from "./shared";
 
 export function ExemploOportunidadeSection() {
   return (
@@ -31,7 +31,7 @@ export function ExemploOportunidadeSection() {
 
         <FadeIn delay={0.15}>
           <GlassCard className="p-6 sm:p-7 space-y-4">
-            <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-600 mb-1">
+            <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600 mb-1" style={{ fontFamily: FONT_MONO }}>
               <Sparkles className="w-3.5 h-3.5" /> Análise do Axis
             </div>
 
@@ -44,7 +44,7 @@ export function ExemploOportunidadeSection() {
               <div key={row.label} className="flex items-start gap-3 py-2 border-b border-slate-100 last:border-0">
                 <row.icon className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">{row.label}</p>
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-0.5" style={{ fontFamily: FONT_MONO }}>{row.label}</p>
                   <p className={`text-sm font-semibold ${row.tone}`}>{row.value}</p>
                 </div>
               </div>
@@ -63,7 +63,7 @@ export function ExemploOportunidadeSection() {
         <BrandLine>
           "A conversa não precisa ficar perdida no histórico. Ela pode virar contexto, oportunidade e ação."
         </BrandLine>
-        <p className="text-[11px] text-slate-400 mt-4 uppercase tracking-wider font-bold">Exemplo ilustrativo</p>
+        <p className="text-[11px] text-slate-400 mt-4 uppercase tracking-wider font-medium" style={{ fontFamily: FONT_MONO }}>Exemplo ilustrativo</p>
       </div>
     </Section>
   );

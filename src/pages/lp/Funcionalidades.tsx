@@ -95,7 +95,7 @@ export function FuncionalidadesSection() {
           >
             <div
               className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 shadow-sm ${
-                mod.featured ? "bg-gradient-to-br from-blue-500 to-violet-600 shadow-blue-500/20" : "bg-blue-50 border border-blue-200"
+                mod.featured ? "bg-gradient-to-br from-teal-400 via-blue-500 to-violet-600 shadow-blue-500/20" : "bg-blue-50 border border-blue-200"
               }`}
             >
               <mod.icon className={`w-5.5 h-5.5 ${mod.featured ? "text-white" : "text-blue-600"}`} />
