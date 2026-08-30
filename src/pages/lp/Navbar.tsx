@@ -33,8 +33,8 @@ export function Navbar({ onCtaClick }: { onCtaClick: () => void }) {
     >
       <nav className="max-w-6xl mx-auto flex items-center justify-between px-5 sm:px-8 h-16 sm:h-20">
         <a href="#top" className="flex items-center gap-2.5 shrink-0" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-            <span className="text-white font-black text-sm" style={{ fontFamily: FONT_DISPLAY }}>A</span>
+          <div className="w-9 h-9 flex items-center justify-center">
+            <img src="/logo-icon.png" alt="Axis" className="w-full h-full object-contain" />
           </div>
           <span className="text-slate-900 font-bold text-lg tracking-tight" style={{ fontFamily: FONT_DISPLAY }}>AXIS</span>
         </a>

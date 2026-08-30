@@ -4,7 +4,7 @@ import {
   Target, CalendarCheck, RefreshCcw, TrendingUp, Percent, Bot,
   Phone, Mail, MoreHorizontal, ArrowRight,
 } from "lucide-react";
-import { Section, Kicker, SectionTitle, Lede, FadeIn, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, Lede, FadeIn, AnimatedCounter, FONT_DISPLAY } from "./shared";
 
 type TabId = "pipeline" | "leads" | "aurora" | "indicadores";
 
@@ -35,13 +35,22 @@ const AURORA_EXCHANGES = [
   { q: "Crie uma tarefa para o vendedor entrar em contato com a Studio Nova.", a: "Tarefa criada para Marcos, com prioridade alta e prazo para hoje às 17h." },
 ];
 
-const METRICS = [
-  { icon: Target, label: "Oportunidades identificadas", value: "—" },
-  { icon: CalendarCheck, label: "Reuniões agendadas", value: "—" },
-  { icon: RefreshCcw, label: "Follow-ups ativos", value: "—" },
-  { icon: TrendingUp, label: "Pipeline", value: "—" },
-  { icon: Percent, label: "Conversões", value: "—" },
-  { icon: Bot, label: "Atividades dos agentes", value: "—" },
+interface Metric {
+  icon: typeof Target;
+  label: string;
+  value: number;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+}
+
+const METRICS: Metric[] = [
+  { icon: Target, label: "Oportunidades identificadas", value: 247 },
+  { icon: CalendarCheck, label: "Reuniões agendadas", value: 38 },
+  { icon: RefreshCcw, label: "Follow-ups ativos", value: 62 },
+  { icon: TrendingUp, label: "Pipeline", value: 284500, prefix: "R$ " },
+  { icon: Percent, label: "Conversões", value: 18.4, suffix: "%", decimals: 1 },
+  { icon: Bot, label: "Atividades dos agentes", value: 1204 },
 ];
 
 function ChromeWindow({ title, children }: { title: string; children: React.ReactNode }) {
@@ -172,7 +181,9 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
               {METRICS.map((m) => (
                 <div key={m.label} className="p-4 sm:p-5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
                   <m.icon className="w-4 h-4 text-blue-300 mb-4" />
-                  <div className="text-xl sm:text-2xl font-bold text-white mb-1" style={{ fontFamily: FONT_DISPLAY }}>{m.value}</div>
+                  <div className="text-xl sm:text-2xl font-bold text-white mb-1" style={{ fontFamily: FONT_DISPLAY }}>
+                    <AnimatedCounter value={m.value} prefix={m.prefix} suffix={m.suffix} decimals={m.decimals} />
+                  </div>
                   <div className="text-[10px] font-semibold text-slate-500 uppercase tracking-wide leading-snug">{m.label}</div>
                 </div>
               ))}

@@ -1,5 +1,12 @@
 import { Boxes, Network, Sparkles, Workflow, Users2 } from "lucide-react";
-import { Section, Kicker, SectionTitle, Lede, FadeIn, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, Lede, FadeIn, AnimatedCounter, FONT_DISPLAY } from "./shared";
+
+const STATS = [
+  { value: 5, suffix: "", label: "Camadas conectadas" },
+  { value: 8, suffix: "", label: "Agentes especializados" },
+  { value: 24, suffix: "/7", label: "Operação contínua" },
+  { value: 1, suffix: "", label: "Lugar só para tudo" },
+];
 
 const PILLARS = [
   { icon: Boxes, name: "AXIS", text: "O centro da operação. Onde CRM, dados e processos vivem juntos.", tone: "from-slate-700 to-slate-900" },
@@ -41,8 +48,21 @@ export function EcossistemaSection() {
         ))}
       </div>
 
+      <FadeIn delay={0.25}>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl mx-auto mt-12 mb-10">
+          {STATS.map((s) => (
+            <div key={s.label} className="text-center">
+              <div className="text-2xl sm:text-3xl font-black text-slate-900" style={{ fontFamily: FONT_DISPLAY }}>
+                <AnimatedCounter value={s.value} suffix={s.suffix} duration={1} />
+              </div>
+              <p className="text-[11px] text-slate-500 font-medium mt-1">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </FadeIn>
+
       <FadeIn delay={0.3}>
-        <div className="flex flex-wrap items-center justify-center gap-2 mt-10 text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.15em] text-slate-400">
+        <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.15em] text-slate-400">
           <span>Dados</span><span className="text-blue-400">→</span>
           <span className="text-blue-600">Sinapse</span><span className="text-blue-400">→</span>
           <span className="text-violet-600">Aurora</span><span className="text-blue-400">→</span>

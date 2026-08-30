@@ -6,8 +6,8 @@ export function FooterSection() {
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="text-center sm:text-left">
           <div className="flex items-center justify-center sm:justify-start gap-2.5 mb-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-blue-500 to-violet-600 flex items-center justify-center">
-              <span className="text-white font-black text-xs" style={{ fontFamily: FONT_DISPLAY }}>A</span>
+            <div className="w-7 h-7 flex items-center justify-center">
+              <img src="/logo-icon.png" alt="Axis" className="w-full h-full object-contain" />
             </div>
             <span className="text-slate-900 font-bold" style={{ fontFamily: FONT_DISPLAY }}>AXIS</span>
           </div>

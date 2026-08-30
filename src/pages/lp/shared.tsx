@@ -190,6 +190,66 @@ export function BrandLine({ children }: { children: ReactNode }) {
 
 export const ACCENT_GRADIENT = "bg-gradient-to-r from-blue-500 via-blue-400 to-violet-500 bg-clip-text text-transparent";
 
+/** Número que conta de 0 até `value` quando entra na tela — só uma vez, via IntersectionObserver. */
+export function AnimatedCounter({
+  value,
+  duration = 1.4,
+  prefix = "",
+  suffix = "",
+  decimals = 0,
+  className = "",
+}: {
+  value: number;
+  duration?: number;
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+  className?: string;
+}) {
+  const [display, setDisplay] = useState(0);
+  const [ref, setRef] = useState<HTMLSpanElement | null>(null);
+  const reducedMotion = usePrefersReducedMotion();
+
+  useEffect(() => {
+    if (!ref) return;
+    if (reducedMotion) {
+      setDisplay(value);
+      return;
+    }
+    let raf = 0;
+    let started = false;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting || started) return;
+        started = true;
+        const start = performance.now();
+        const tick = (now: number) => {
+          const t = Math.min((now - start) / (duration * 1000), 1);
+          const eased = 1 - Math.pow(1 - t, 3);
+          setDisplay(value * eased);
+          if (t < 1) raf = requestAnimationFrame(tick);
+        };
+        raf = requestAnimationFrame(tick);
+        observer.disconnect();
+      },
+      { threshold: 0.4 }
+    );
+    observer.observe(ref);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(raf);
+    };
+  }, [ref, value, duration, reducedMotion]);
+
+  return (
+    <span ref={setRef} className={className}>
+      {prefix}
+      {display.toLocaleString("pt-BR", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}
+      {suffix}
+    </span>
+  );
+}
+
 /** Selo dos três pilares (Axis / Sinapse / Aurora) — usado no hero e no fechamento da página. */
 export function PillarBadge({ label, tone }: { label: string; tone: "blue" | "violet" | "emerald" }) {
   const TONE = {
