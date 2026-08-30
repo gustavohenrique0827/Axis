@@ -59,7 +59,6 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
           <div className="text-center lg:text-left">
             <div className="flex items-center justify-center lg:justify-start gap-2 mb-6">
               <PillarBadge label="Axis" tone="blue" />
-              <PillarBadge label="Sinapse" tone="violet" />
               <PillarBadge label="Aurora" tone="emerald" />
             </div>
             <Kicker>Vamos conversar</Kicker>

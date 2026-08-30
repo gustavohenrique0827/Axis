@@ -254,7 +254,7 @@ export function AnimatedCounter({
   );
 }
 
-/** Selo dos três pilares (Axis / Sinapse / Aurora) — usado no hero e no fechamento da página. */
+/** Selo dos pilares (Axis / Aurora) — usado no hero e no fechamento da página. */
 export function PillarBadge({ label, tone }: { label: string; tone: "blue" | "violet" | "emerald" }) {
   const TONE = {
     blue: "border-blue-200 bg-blue-50 text-blue-700",

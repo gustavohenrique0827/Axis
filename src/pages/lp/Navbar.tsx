@@ -5,7 +5,6 @@ import { FONT_DISPLAY } from "./shared";
 const LINKS = [
   { href: "#produto", label: "Produto" },
   { href: "#inteligencia", label: "Aurora" },
-  { href: "#sinapse", label: "Sinapse" },
   { href: "#funcionalidades", label: "Recursos" },
   { href: "#segmentos", label: "Para empresas" },
 ];

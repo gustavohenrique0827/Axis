@@ -5,7 +5,6 @@ import { ProblemSection, NovaLogicaSection } from "./ProblemAndLogic";
 import { EcossistemaSection } from "./Ecossistema";
 import { ProductShowcaseSection } from "./ProductShowcase";
 import { FuncionalidadesSection } from "./Funcionalidades";
-import { SinapseSection } from "./Sinapse";
 import { ComoFuncionaSection } from "./ComoFunciona";
 import { ComoComecarSection } from "./ComoComecar";
 import { InteligenciaSection } from "./Inteligencia";
@@ -27,7 +26,7 @@ import { FONT_BODY } from "./shared";
 
 const SEO_TITLE = "Axis — O cérebro operacional da sua empresa";
 const SEO_DESCRIPTION =
-  "Axis é o ecossistema operacional inteligente que conecta sua empresa: a Sinapse liga dados, canais e times; a Aurora entende o contexto e sugere a próxima ação. Não é apenas um CRM.";
+  "Axis é o ecossistema operacional inteligente que conecta sua empresa: a Aurora liga dados, canais e times, entende o contexto e sugere a próxima ação. Não é apenas um CRM.";
 const GOOGLE_FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Archivo:wght@600;700;800;900&family=JetBrains+Mono:wght@500;600&display=swap";
 
@@ -100,7 +99,6 @@ export default function AxisLandingPage() {
         <ProductShowcaseSection onCta={scrollToForm} />
         <NovaLogicaSection onCta={scrollToForm} />
         <FuncionalidadesSection />
-        <SinapseSection />
         <ComoFuncionaSection />
         <ComoComecarSection />
         <InteligenciaSection />

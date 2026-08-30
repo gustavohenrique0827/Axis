@@ -1,8 +1,8 @@
-import { Boxes, Network, Sparkles, Workflow, Users2 } from "lucide-react";
+import { Boxes, Sparkles, Workflow, Users2 } from "lucide-react";
 import { Section, Kicker, SectionTitle, Lede, FadeIn, AnimatedCounter, FONT_DISPLAY, FONT_MONO } from "./shared";
 
 const STATS = [
-  { value: 5, suffix: "", label: "Camadas conectadas" },
+  { value: 4, suffix: "", label: "Camadas conectadas" },
   { value: 8, suffix: "", label: "Agentes especializados" },
   { value: 24, suffix: "/7", label: "Operação contínua" },
   { value: 1, suffix: "", label: "Lugar só para tudo" },
@@ -18,8 +18,7 @@ interface Pillar {
 
 const PILLARS: Pillar[] = [
   { icon: Boxes, name: "AXIS", text: "O centro da operação. Onde CRM, dados e processos vivem juntos.", tone: "from-slate-700 to-slate-900" },
-  { icon: Network, name: "SINAPSE", text: "Conecta tudo. A camada que liga canais, times e sistemas ao Axis.", tone: "from-blue-500 to-blue-700" },
-  { icon: Sparkles, name: "AURORA", text: "O centro de tudo. Entende o contexto de toda a operação e decide o que fazer a seguir.", tone: "from-teal-400 via-blue-500 to-violet-600", featured: true },
+  { icon: Sparkles, name: "AURORA", text: "O centro de tudo. Conecta canais, dados e times, entende o contexto de toda a operação e decide o que fazer a seguir.", tone: "from-teal-400 via-blue-500 to-violet-600", featured: true },
   { icon: Workflow, name: "AUTOMAÇÕES", text: "Executam tudo. Processos que rodam sem depender de alguém lembrar.", tone: "from-emerald-500 to-emerald-700" },
   { icon: Users2, name: "EQUIPE", text: "Toma as decisões que importam, com contexto em vez de achismo.", tone: "from-amber-500 to-amber-700" },
 ];
@@ -33,12 +32,12 @@ export function EcossistemaSection() {
           Não é uma ferramenta. É um ecossistema operacional.
         </SectionTitle>
         <Lede className="max-w-2xl mx-auto text-base sm:text-lg">
-          Cinco camadas trabalhando juntas — dados entram, a Sinapse conecta, a Aurora entende, as
+          Quatro camadas trabalhando juntas — dados entram, a Aurora conecta e entende, as
           automações executam e a sua equipe decide o que só uma pessoa pode decidir.
         </Lede>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {PILLARS.map((p, i) => (
           <FadeIn key={p.name} delay={i * 0.08}>
             <div
@@ -80,7 +79,6 @@ export function EcossistemaSection() {
       <FadeIn delay={0.3}>
         <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.15em] text-slate-400" style={{ fontFamily: FONT_MONO }}>
           <span>Dados</span><span className="text-blue-400">→</span>
-          <span className="text-blue-600">Sinapse</span><span className="text-blue-400">→</span>
           <span className="text-violet-600">Aurora</span><span className="text-blue-400">→</span>
           <span>Decisão</span><span className="text-blue-400">→</span>
           <span>Ação</span><span className="text-blue-400">→</span>

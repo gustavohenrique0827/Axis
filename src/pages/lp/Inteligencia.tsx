@@ -54,8 +54,8 @@ export function InteligenciaSection() {
             <p>Enquanto sua equipe descansa, ela continua trabalhando.</p>
           </div>
           <Lede className="text-sm sm:text-base max-w-xl mb-5">
-            A Aurora não é simplesmente um chatbot. Ela entende o contexto da sua operação — leads,
-            conversas, pipeline e histórico — para transformar informação em ação.
+            A Aurora não é simplesmente um chatbot. Ela conecta os sinais da sua operação — leads,
+            conversas, pipeline e histórico — e entende o contexto para transformar informação em ação.
           </Lede>
           <BrandLine>"A Aurora entende o contexto da sua operação para transformar informação em ação."</BrandLine>
         </div>
