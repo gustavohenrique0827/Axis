@@ -45,7 +45,7 @@ export function Section({
     >
       {glow && (
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-5%] w-[420px] h-[420px] rounded-full bg-blue-500/[0.06] blur-[120px]" />
+          <div className="absolute top-[-10%] left-[-5%] w-[420px] h-[420px] rounded-full bg-teal-400/[0.05] blur-[120px]" />
           <div className="absolute bottom-[-15%] right-[-5%] w-[380px] h-[380px] rounded-full bg-violet-500/[0.06] blur-[120px]" />
         </div>
       )}

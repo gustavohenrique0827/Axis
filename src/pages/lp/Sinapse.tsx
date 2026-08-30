@@ -31,7 +31,8 @@ export function SinapseSection() {
         <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-5">Tudo conectado. Nada perdido.</SectionTitle>
         <Lede className="max-w-2xl mx-auto text-base sm:text-lg">
           A Sinapse é a camada de conexão do Axis — liga canais, times, sistemas e dados para que nada
-          fique isolado em uma ferramenta separada.
+          fique isolado em uma ferramenta separada. É essa conexão que dá à Aurora o que ela precisa
+          para entender o contexto e agir.
         </Lede>
       </div>
 
@@ -92,8 +93,7 @@ export function SinapseSection() {
       </FadeIn>
 
       <p className="text-center text-sm sm:text-base text-slate-500 max-w-lg mx-auto mt-10">
-        Tudo o que acontece na sua empresa passa a estar no mesmo lugar — visível, conectado e
-        disponível para a Aurora analisar.
+        A Sinapse conecta os pontos. <span className="font-semibold text-slate-700">A Aurora entende o que eles significam.</span>
       </p>
     </Section>
   );

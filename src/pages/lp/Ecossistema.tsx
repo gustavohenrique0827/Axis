@@ -8,10 +8,18 @@ const STATS = [
   { value: 1, suffix: "", label: "Lugar só para tudo" },
 ];
 
-const PILLARS = [
+interface Pillar {
+  icon: typeof Boxes;
+  name: string;
+  text: string;
+  tone: string;
+  featured?: boolean;
+}
+
+const PILLARS: Pillar[] = [
   { icon: Boxes, name: "AXIS", text: "O centro da operação. Onde CRM, dados e processos vivem juntos.", tone: "from-slate-700 to-slate-900" },
-  { icon: Network, name: "SINAPSE", text: "Conecta tudo. A camada que liga canais, times e sistemas ao Axis.", tone: "from-blue-500 to-blue-700", featured: true },
-  { icon: Sparkles, name: "AURORA", text: "Entende tudo. A inteligência que analisa contexto e sugere ação.", tone: "from-violet-500 to-violet-700", featured: true },
+  { icon: Network, name: "SINAPSE", text: "Conecta tudo. A camada que liga canais, times e sistemas ao Axis.", tone: "from-blue-500 to-blue-700" },
+  { icon: Sparkles, name: "AURORA", text: "O centro de tudo. Entende o contexto de toda a operação e decide o que fazer a seguir.", tone: "from-teal-400 via-blue-500 to-violet-600", featured: true },
   { icon: Workflow, name: "AUTOMAÇÕES", text: "Executam tudo. Processos que rodam sem depender de alguém lembrar.", tone: "from-emerald-500 to-emerald-700" },
   { icon: Users2, name: "EQUIPE", text: "Toma as decisões que importam, com contexto em vez de achismo.", tone: "from-amber-500 to-amber-700" },
 ];
@@ -34,10 +42,18 @@ export function EcossistemaSection() {
         {PILLARS.map((p, i) => (
           <FadeIn key={p.name} delay={i * 0.08}>
             <div
-              className={`h-full p-5 rounded-2xl border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-                p.featured ? "border-blue-200 bg-white hover:shadow-blue-500/10" : "border-slate-200 bg-white"
+              className={`relative h-full p-5 rounded-2xl border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
+                p.featured ? "border-violet-200 bg-white ring-1 ring-violet-100 shadow-md hover:shadow-violet-500/15 sm:scale-[1.03]" : "border-slate-200 bg-white"
               }`}
             >
+              {p.featured && (
+                <span
+                  className="absolute -top-2.5 left-5 px-2 py-0.5 rounded-full bg-gradient-to-r from-teal-400 via-blue-500 to-violet-600 text-white text-[9px] font-semibold uppercase tracking-[0.15em]"
+                  style={{ fontFamily: FONT_MONO }}
+                >
+                  Núcleo
+                </span>
+              )}
               <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${p.tone} flex items-center justify-center mb-4 shadow-sm`}>
                 <p.icon className="w-5 h-5 text-white" />
               </div>

@@ -4,7 +4,15 @@ import {
 } from "lucide-react";
 import { Section, Kicker, SectionTitle, FadeIn, FONT_DISPLAY } from "./shared";
 
-const MODULES = [
+interface Module {
+  icon: typeof Database;
+  name: string;
+  tagline: string;
+  highlights: string[];
+  featured?: boolean;
+}
+
+const MODULES: Module[] = [
   {
     icon: Database,
     name: "Comercial",

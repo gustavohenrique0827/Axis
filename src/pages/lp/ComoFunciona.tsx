@@ -1,5 +1,5 @@
 import { Radar, Brain, Target, Zap } from "lucide-react";
-import { Section, Kicker, SectionTitle, FadeIn, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, FadeIn, FONT_DISPLAY, FONT_MONO } from "./shared";
 
 const STEPS = [
   {
@@ -44,7 +44,7 @@ export function ComoFuncionaSection() {
                 <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-violet-50 border border-blue-200 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:border-blue-300">
                   <s.icon className="w-5 h-5 text-blue-600" />
                 </div>
-                <span className="text-[11px] font-black text-slate-300 tracking-[0.2em]">{s.n}</span>
+                <span className="text-[11px] font-semibold text-slate-300 tracking-[0.2em]" style={{ fontFamily: FONT_MONO }}>{s.n}</span>
               </div>
               <h3 className="text-lg font-bold text-slate-900 mb-2" style={{ fontFamily: FONT_DISPLAY }}>{s.title}</h3>
               <p className="text-sm text-slate-500 leading-relaxed">{s.text}</p>

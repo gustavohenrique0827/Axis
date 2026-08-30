@@ -1,5 +1,5 @@
 import { Link2, Database, Workflow, Sparkles, LineChart } from "lucide-react";
-import { Section, Kicker, SectionTitle, FadeIn, FONT_DISPLAY } from "./shared";
+import { Section, Kicker, SectionTitle, FadeIn, FONT_DISPLAY, FONT_MONO } from "./shared";
 
 const STEPS = [
   { icon: Link2, title: "Conecte sua operação", text: "WhatsApp, formulários, e-mail e as ferramentas que você já usa." },
@@ -25,7 +25,7 @@ export function ComoComecarSection() {
               <div className="relative z-10 w-12 h-12 rounded-full bg-white border-2 border-blue-200 flex items-center justify-center mb-4 shadow-sm">
                 <s.icon className="w-5 h-5 text-blue-600" />
               </div>
-              <span className="text-[10px] font-black text-blue-300 tracking-[0.2em] mb-1.5">PASSO {i + 1}</span>
+              <span className="text-[10px] font-semibold text-blue-300 tracking-[0.2em] mb-1.5" style={{ fontFamily: FONT_MONO }}>PASSO {i + 1}</span>
               <h3 className="text-sm font-bold text-slate-900 mb-1.5" style={{ fontFamily: FONT_DISPLAY }}>{s.title}</h3>
               <p className="text-[12.5px] text-slate-500 leading-relaxed">{s.text}</p>
             </div>
