@@ -4,7 +4,7 @@ import {
   Target, CalendarCheck, RefreshCcw, TrendingUp, Percent, Bot,
   Phone, Mail, MoreHorizontal, ArrowRight,
 } from "lucide-react";
-import { Section, Kicker, SectionTitle, Lede, FadeIn, AnimatedCounter, FONT_DISPLAY, FONT_MONO } from "./shared";
+import { Section, Kicker, SectionTitle, Lede, FadeIn, AnimatedCounter, FONT_MONO } from "./shared";
 
 type TabId = "pipeline" | "leads" | "aurora" | "indicadores";
 
@@ -16,17 +16,17 @@ const TABS: { id: TabId; label: string; icon: typeof Kanban }[] = [
 ];
 
 const PIPELINE_COLUMNS = [
-  { name: "Novo lead", tone: "border-slate-700", cards: [{ name: "Rafael Souza", value: "R$ 4.200" }, { name: "Bianca Alves", value: "R$ 1.900" }] },
-  { name: "Qualificando", tone: "border-blue-500/40", cards: [{ name: "Marcos Lima", value: "R$ 8.700" }, { name: "Studio Nova", value: "R$ 3.100" }] },
-  { name: "Proposta", tone: "border-violet-500/40", cards: [{ name: "Grupo Hexa", value: "R$ 15.400" }] },
-  { name: "Fechado", tone: "border-emerald-500/40", cards: [{ name: "Clínica Vitta", value: "R$ 6.800" }] },
+  { name: "Novo lead", dot: "bg-slate-400", cards: [{ name: "Rafael Souza", value: "R$ 4.200" }, { name: "Bianca Alves", value: "R$ 1.900" }] },
+  { name: "Qualificando", dot: "bg-info", cards: [{ name: "Marcos Lima", value: "R$ 8.700" }, { name: "Studio Nova", value: "R$ 3.100" }] },
+  { name: "Proposta", dot: "bg-violet-500", cards: [{ name: "Grupo Hexa", value: "R$ 15.400" }] },
+  { name: "Fechado", dot: "bg-success", cards: [{ name: "Clínica Vitta", value: "R$ 6.800" }] },
 ];
 
 const LEADS_ROWS = [
-  { name: "Rafael Souza", origem: "WhatsApp", status: "Quente", tone: "text-emerald-400 bg-emerald-500/10", valor: "R$ 4.200" },
-  { name: "Marcos Lima", origem: "Indicação", status: "Em negociação", tone: "text-blue-300 bg-blue-500/10", valor: "R$ 8.700" },
-  { name: "Studio Nova", origem: "Formulário", status: "Follow-up", tone: "text-amber-300 bg-amber-500/10", valor: "R$ 3.100" },
-  { name: "Grupo Hexa", origem: "Anúncio", status: "Proposta enviada", tone: "text-violet-300 bg-violet-500/10", valor: "R$ 15.400" },
+  { name: "Rafael Souza", origem: "WhatsApp", status: "Quente", tone: "bg-success/10 text-success border-success/25", valor: "R$ 4.200" },
+  { name: "Marcos Lima", origem: "Indicação", status: "Em negociação", tone: "bg-warning/10 text-warning border-warning/25", valor: "R$ 8.700" },
+  { name: "Studio Nova", origem: "Formulário", status: "Follow-up", tone: "bg-info/10 text-info border-info/25", valor: "R$ 3.100" },
+  { name: "Grupo Hexa", origem: "Anúncio", status: "Proposta enviada", tone: "bg-violet-500/10 text-violet-600 border-violet-500/25", valor: "R$ 15.400" },
 ];
 
 const AURORA_EXCHANGES = [
@@ -53,6 +53,9 @@ const METRICS: Metric[] = [
   { icon: Bot, label: "Atividades dos agentes", value: 1204 },
 ];
 
+/** Moldura de janela ao redor do conteúdo — o conteúdo em si usa as mesmas variáveis de tema
+ * (--color-surface-elevated, --color-border-default etc.) e a font-sans real do produto (Arial),
+ * já que isso precisa ser a interface real do Axis, não uma reinvenção estilizada em tema escuro. */
 function ChromeWindow({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="relative">
@@ -68,7 +71,7 @@ function ChromeWindow({ title, children }: { title: string; children: React.Reac
             {title}
           </span>
         </div>
-        <div className="p-5 sm:p-7 min-h-[340px] sm:min-h-[380px]">{children}</div>
+        <div className="font-sans p-5 sm:p-7 min-h-[340px] sm:min-h-[380px] bg-[var(--color-surface)]">{children}</div>
       </div>
     </div>
   );
@@ -110,13 +113,16 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
           <ChromeWindow title="Axis · Pipeline Comercial">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {PIPELINE_COLUMNS.map((col) => (
-                <div key={col.name} className={`rounded-xl border ${col.tone} bg-white/[0.02] p-3`}>
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-slate-400 mb-3 px-1" style={{ fontFamily: FONT_MONO }}>{col.name}</p>
+                <div key={col.name} className="rounded-[var(--radius-panel)] border border-[var(--color-border-default)] bg-[var(--color-surface-sunken)] p-3">
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-3 px-1">
+                    <span className={`w-1.5 h-1.5 rounded-full ${col.dot}`} />
+                    {col.name}
+                  </p>
                   <div className="space-y-2">
                     {col.cards.map((c) => (
-                      <div key={c.name} className="rounded-lg bg-white/[0.04] border border-white/[0.06] p-3">
-                        <p className="text-[12px] font-semibold text-slate-100 mb-1 truncate">{c.name}</p>
-                        <p className="text-[11px] text-emerald-400 font-bold">{c.value}</p>
+                      <div key={c.name} className="rounded-[var(--radius-control)] bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] p-3 shadow-[var(--shadow-panel)]">
+                        <p className="text-[12px] font-semibold text-[var(--color-text-primary)] mb-1 truncate">{c.name}</p>
+                        <p className="text-[11px] font-mono font-bold text-success">{c.value}</p>
                       </div>
                     ))}
                   </div>
@@ -130,17 +136,17 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
           <ChromeWindow title="Axis · Leads & Clientes">
             <div className="space-y-2">
               {LEADS_ROWS.map((r) => (
-                <div key={r.name} className="flex items-center gap-3 sm:gap-4 rounded-xl bg-white/[0.03] border border-white/[0.06] px-4 py-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 via-blue-500 to-violet-600 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                <div key={r.name} className="flex items-center gap-3 sm:gap-4 rounded-[var(--radius-panel)] bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] px-4 py-3 shadow-[var(--shadow-panel)]">
+                  <div className="w-8 h-8 rounded-full bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/20 flex items-center justify-center text-[10px] font-black text-[var(--color-primary-blue)] shrink-0">
                     {r.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-slate-100 truncate">{r.name}</p>
-                    <p className="text-[10px] text-slate-500">{r.origem}</p>
+                    <p className="text-[13px] font-semibold text-[var(--color-text-primary)] truncate">{r.name}</p>
+                    <p className="text-[10px] text-[var(--color-text-muted)]">{r.origem}</p>
                   </div>
-                  <span className={`hidden sm:inline-block text-[10px] font-bold px-2.5 py-1 rounded-full ${r.tone}`}>{r.status}</span>
-                  <span className="text-[12px] font-bold text-slate-200 shrink-0">{r.valor}</span>
-                  <div className="hidden sm:flex items-center gap-1.5 text-slate-500 shrink-0">
+                  <span className={`hidden sm:inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${r.tone}`}>{r.status}</span>
+                  <span className="text-[12px] font-mono font-bold text-success shrink-0">{r.valor}</span>
+                  <div className="hidden sm:flex items-center gap-1.5 text-[var(--color-text-faint)] shrink-0">
                     <Phone className="w-3.5 h-3.5" />
                     <Mail className="w-3.5 h-3.5" />
                     <MoreHorizontal className="w-3.5 h-3.5" />
@@ -157,7 +163,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
               {AURORA_EXCHANGES.map((ex) => (
                 <div key={ex.q}>
                   <div className="flex justify-end mb-2">
-                    <div className="max-w-[80%] bg-white/[0.06] border border-white/[0.08] rounded-2xl rounded-tr-sm px-4 py-2.5 text-[13px] text-slate-200">
+                    <div className="max-w-[80%] bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-2xl rounded-tr-sm px-4 py-2.5 text-[13px] text-[var(--color-text-primary)]">
                       {ex.q}
                     </div>
                   </div>
@@ -165,7 +171,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
                     <div className="w-6 h-6 rounded-full bg-gradient-to-br from-teal-400 via-blue-500 to-violet-600 flex items-center justify-center shrink-0 mt-0.5">
                       <Sparkles className="w-3 h-3 text-white" />
                     </div>
-                    <div className="max-w-[80%] bg-gradient-to-br from-blue-500/10 to-violet-500/10 border border-blue-500/20 rounded-2xl rounded-tl-sm px-4 py-2.5 text-[13px] text-slate-100 leading-relaxed">
+                    <div className="max-w-[80%] bg-[var(--color-primary-blue)]/5 border border-[var(--color-primary-blue)]/15 rounded-2xl rounded-tl-sm px-4 py-2.5 text-[13px] text-[var(--color-text-primary)] leading-relaxed">
                       {ex.a}
                     </div>
                   </div>
@@ -179,12 +185,12 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
           <ChromeWindow title="Axis · Painel Comercial">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {METRICS.map((m) => (
-                <div key={m.label} className="p-4 sm:p-5 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-                  <m.icon className="w-4 h-4 text-blue-300 mb-4" />
-                  <div className="text-xl sm:text-2xl font-bold text-white mb-1" style={{ fontFamily: FONT_DISPLAY }}>
+                <div key={m.label} className="p-4 sm:p-5 rounded-[var(--radius-panel)] bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-[var(--shadow-panel)]">
+                  <m.icon className="w-4 h-4 text-[var(--color-primary-blue)] mb-4" />
+                  <div className="text-xl sm:text-2xl font-bold text-[var(--color-text-primary)] mb-1">
                     <AnimatedCounter value={m.value} prefix={m.prefix} suffix={m.suffix} decimals={m.decimals} />
                   </div>
-                  <div className="text-[10px] font-medium text-slate-500 uppercase tracking-wide leading-snug" style={{ fontFamily: FONT_MONO }}>{m.label}</div>
+                  <div className="text-[10px] font-medium text-[var(--color-text-muted)] uppercase tracking-wide leading-snug">{m.label}</div>
                 </div>
               ))}
             </div>
