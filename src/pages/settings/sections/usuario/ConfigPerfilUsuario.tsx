@@ -5,7 +5,7 @@ import { Badge } from "../../../../components/ui/badge";
 import {
   User, Mail, Phone, Briefcase, Camera,
   ShieldCheck, KeyRound, Smartphone, LogOut,
-  Save, CheckCircle2, AlertCircle, Sparkles, Building
+  Save, CheckCircle2, AlertCircle, Sparkles, Building, Loader2
 } from "lucide-react";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { supabase } from "../../../../lib/supabase";
@@ -34,8 +34,9 @@ function profileFromSession(user: ReturnType<typeof useAuth>["user"]): UserProfi
 }
 
 export function ConfigPerfilUsuario() {
-  const { user, refreshUser } = useAuth();
+  const { user, refreshUser, activeTenantId } = useAuth();
   const [profile, setProfile] = useState<UserProfile>(() => profileFromSession(user));
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Reflete no formulário assim que o perfil real do Supabase chega/atualiza
   // (na primeira carga, ou depois de um refreshUser() nosso).
@@ -66,20 +67,28 @@ export function ConfigPerfilUsuario() {
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    e.target.value = "";
+    if (!file || !supabase) return;
     if (file.size > 2 * 1024 * 1024) {
       toast.error("A imagem deve ter no máximo 2MB.");
       return;
     }
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64 = reader.result as string;
-      setProfile(prev => ({ ...prev, avatar: base64 }));
-      if (await persistProfile({ avatar_url: base64 })) {
+    setUploadingAvatar(true);
+    try {
+      const ext = file.name.split(".").pop() || "jpg";
+      const path = `${activeTenantId || "sem-tenant"}/${user?.id}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      setProfile(prev => ({ ...prev, avatar: data.publicUrl }));
+      if (await persistProfile({ avatar_url: data.publicUrl })) {
         toast.success("Foto de perfil atualizada e salva!");
       }
-    };
-    reader.readAsDataURL(file);
+    } catch (err: any) {
+      toast.error(`Falha ao enviar imagem: ${err.message || err}`);
+    } finally {
+      setUploadingAvatar(false);
+    }
   };
 
   const handleSaveProfile = async (e?: React.FormEvent) => {
@@ -170,17 +179,18 @@ export function ConfigPerfilUsuario() {
                 profile.name.substring(0, 2).toUpperCase()
               )}
             </div>
-            <label 
+            <label
               htmlFor="avatar-upload"
-              className="absolute -bottom-1 -right-1 p-2 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] hover:text-[var(--color-primary-blue)] cursor-pointer shadow-md transition-transform hover:scale-105"
+              className={`absolute -bottom-1 -right-1 p-2 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] hover:text-[var(--color-primary-blue)] shadow-md transition-transform hover:scale-105 ${uploadingAvatar ? "pointer-events-none opacity-60" : "cursor-pointer"}`}
               title="Alterar foto"
             >
-              <Camera className="w-3.5 h-3.5" />
-              <input 
-                id="avatar-upload" 
-                type="file" 
-                accept="image/*" 
-                className="hidden" 
+              {uploadingAvatar ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Camera className="w-3.5 h-3.5" />}
+              <input
+                id="avatar-upload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                disabled={uploadingAvatar}
                 onChange={handleAvatarChange}
               />
             </label>

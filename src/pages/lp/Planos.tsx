@@ -125,7 +125,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
                 onClick={onCta}
                 className={`w-full py-3.5 rounded-xl text-sm font-bold transition-all ${
                   plan.highlight
-                    ? "bg-slate-900 text-white hover:bg-slate-800 shadow-lg shadow-slate-900/15"
+                    ? "bg-emerald-700 text-white hover:bg-emerald-800 shadow-lg shadow-emerald-900/20"
                     : "bg-slate-50 text-slate-900 border border-slate-200 hover:bg-slate-100"
                 }`}
               >

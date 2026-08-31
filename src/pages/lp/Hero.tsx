@@ -88,7 +88,7 @@ export function Hero({ onPrimaryCta, onSecondaryCta }: { onPrimaryCta: () => voi
         >
           <button
             onClick={onPrimaryCta}
-            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/15"
+            className="group w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 transition-all shadow-lg shadow-emerald-900/20"
           >
             Quero conhecer o Axis
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

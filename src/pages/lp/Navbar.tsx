@@ -56,7 +56,7 @@ export function Navbar({ onCtaClick }: { onCtaClick: () => void }) {
           </button>
           <button
             onClick={onCtaClick}
-            className="px-5 py-2.5 rounded-xl bg-slate-900 text-white text-[13px] font-bold hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/10"
+            className="px-5 py-2.5 rounded-xl bg-emerald-700 text-white text-[13px] font-bold hover:bg-emerald-800 transition-colors shadow-lg shadow-emerald-900/15"
           >
             Quero conhecer o Axis
           </button>
@@ -76,7 +76,7 @@ export function Navbar({ onCtaClick }: { onCtaClick: () => void }) {
           ))}
           <button
             onClick={() => { setMobileOpen(false); onCtaClick(); }}
-            className="w-full mt-3 px-5 py-3 rounded-xl bg-slate-900 text-white text-sm font-bold"
+            className="w-full mt-3 px-5 py-3 rounded-xl bg-emerald-700 text-white text-sm font-bold"
           >
             Quero conhecer o Axis
           </button>

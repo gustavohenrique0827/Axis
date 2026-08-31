@@ -137,7 +137,7 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="w-full mt-2 py-4 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/15 disabled:opacity-70 flex items-center justify-center gap-2"
+                      className="w-full mt-2 py-4 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 transition-all shadow-lg shadow-emerald-900/20 disabled:opacity-70 flex items-center justify-center gap-2"
                     >
                       {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                       {submitting ? "Enviando..." : "Quero conhecer o Axis"}
