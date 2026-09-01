@@ -83,18 +83,25 @@ export function PipelineKanbanBoard({
     setDraggedLeadId(null);
   };
 
+  const matchesStage = (l: any, stage: any) =>
+    l.stageId === stage.id || l.stage === stage.id || l.status === stage.id || l.status === stage.name;
+
+  // Leads cujo stageId não bate com NENHUMA coluna atual — acontece quando uma
+  // etapa é reordenada/excluída em Configurações > CRM > Funis (os ids das etapas
+  // são calculados pela posição no array, então leads que já estavam numa etapa
+  // seguinte ficam com um stageId "órfão"), ou quando o lead pertence a outro funil
+  // do mesmo tipo. Sem isso, esses leads desapareciam do Kanban mas continuavam
+  // aparecendo no modo Lista (que não valida stageId), sumindo silenciosamente.
+  const unmatchedLeads = filteredItemsList.filter(
+    (l: any) => !activePipelineStages.some((stage) => matchesStage(l, stage))
+  );
+
   return (
     <div className="flex gap-3 overflow-x-auto pb-4 h-[calc(100vh-250px)] min-h-[500px] scrollbar-none select-none items-stretch">
-      {activePipelineStages.map((stage) => {
+      {activePipelineStages.map((stage, stageIdx) => {
         const isMinimized = minimizedColumns.has(stage.id);
-        const stageLeads = filteredItemsList.filter((l: any) => {
-          return (
-            l.stageId === stage.id ||
-            l.stage === stage.id ||
-            l.status === stage.id ||
-            l.status === stage.name
-          );
-        });
+        const stageLeads = filteredItemsList.filter((l: any) => matchesStage(l, stage));
+        if (stageIdx === 0) stageLeads.push(...unmatchedLeads);
 
         return (
           <div
