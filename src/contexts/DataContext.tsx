@@ -285,8 +285,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   });
 
   const fetchFunis = async () => {
-    if (!supabase) return;
-    const { data } = await supabase.from('crm_funis').select('*');
+    if (!supabase || !tenantId) return;
+    const { data } = await supabase.from('crm_funis').select('*').eq('tenant_id', tenantId);
     if (data) setFunis(data.map(rowToFunil));
   };
 
@@ -362,9 +362,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   // Persistence & Supabase Synchronization
+  //
+  // Filtra por tenantId explicitamente aqui, além do que a RLS já garante —
+  // contas de parceiro (G-Tech, Nicolas Rocha, Pluppex Holding) têm
+  // has_tenant_access() verdadeiro para vários tenants ao mesmo tempo (fase 4
+  // de parceiros), então um select('*') sem esse filtro devolve linhas de
+  // todos os tenants que a conta pode acessar, não só o tenant ativo na tela.
   const fetchTableData = async (tableName: string, setter: React.Dispatch<React.SetStateAction<any[]>>) => {
-    if (!supabase) return;
-    const { data } = await supabase.from(tableName).select('*');
+    if (!supabase || !tenantId) return;
+    const { data } = await supabase.from(tableName).select('*').eq('tenant_id', tenantId);
     if (data) setter(data);
   };
 
@@ -372,13 +378,22 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     let channel: any = null;
 
     async function setupRealtime() {
-      if (!supabase) return;
+      // Sem tenantId ainda (sessão não resolveu) — não assina; o efeito reroda
+      // quando tenantId chega (está nas deps abaixo), e as closures capturadas
+      // aqui precisam do valor atual de tenantId, não de um valor congelado.
+      if (!supabase || !tenantId) return;
 
       channel = supabase.channel('global-db-changes')
         .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, (payload) => {
           if (payload.eventType === 'INSERT') {
-            setLeads(prev => [payload.new as Lead, ...prev]);
-            toast.info(`Novo lead: ${payload.new.name}`, { description: 'Recebido via Realtime' });
+            // Mesmo motivo do fetchTableData: o evento pode vir de outro
+            // tenant que esta conta de parceiro também acessa — só entra na
+            // lista se for do tenant ativo. payload.new é a linha crua do
+            // Postgres (snake_case), daí o acesso via `any`.
+            if (payload.new && (payload.new as any).tenant_id === tenantId) {
+              setLeads(prev => [payload.new as Lead, ...prev]);
+              toast.info(`Novo lead: ${payload.new.name}`, { description: 'Recebido via Realtime' });
+            }
           } else {
             fetchTableData('leads', setLeads);
           }
@@ -413,7 +428,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return () => {
       if (channel && supabase) supabase.removeChannel(channel);
     };
-  }, []);
+  }, [tenantId]);
 
   useEffect(() => {
     async function loadInitialData() {
