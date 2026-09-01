@@ -139,6 +139,10 @@ export interface DataContextType {
   addEmpresaFilial: (filial: any) => Promise<void>;
   updateEmpresaFilial: (id: string, updates: any) => Promise<void>;
   deleteEmpresaFilial: (id: string) => Promise<boolean>;
+  nichos: any[];
+  addNicho: (nicho: any) => Promise<void>;
+  updateNicho: (id: string, updates: any) => Promise<void>;
+  deleteNicho: (id: string) => Promise<boolean>;
   financeCommissionEntries: any[];
   addFinanceCommissionEntry: (entry: any) => Promise<void>;
   updateFinanceCommissionEntry: (id: string, updates: any) => Promise<void>;

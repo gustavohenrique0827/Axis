@@ -50,6 +50,7 @@ import {
   ConfigEmpresaEquipe,
   ConfigEmpresaPermissoes,
   ConfigEmpresaCargos,
+  ConfigNichos,
   ConfigCRMFunis,
   ConfigCRMOrigens,
   ConfigCRMProdutos,
@@ -227,6 +228,7 @@ function AppContent() {
             <Route path="empresa/dados" element={<ConfigEmpresaDados />} />
             <Route path="empresa/modulos" element={<ConfigModulosDemos />} />
             <Route path="empresa/filiais" element={<ConfigEmpresaFiliais />} />
+            <Route path="empresa/nichos" element={<ConfigNichos />} />
             <Route path="empresa/equipe" element={<ConfigEmpresaEquipe />} />
             <Route path="empresa/permissoes" element={<ConfigEmpresaPermissoes />} />
             <Route path="empresa/cargos" element={<ConfigEmpresaCargos />} />

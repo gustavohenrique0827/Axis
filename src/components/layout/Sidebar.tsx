@@ -7,8 +7,14 @@ import { navSections, type NavReqCondition } from "./navData";
 
 // Predicados para itens gated por `reqCondition` (não dá pra resolver
 // estaticamente em navData.ts porque dependem do usuário logado).
+//
+// NOTA: "master-or-gtech" ainda compara o nome do tenant — é um fix pontual
+// (match exato em vez de substring, que colidia com qualquer tenant cujo nome
+// contivesse "G-Tech", ex.: "G-Tech Consultoria"). O certo a prazo é uma
+// permissão real (ex.: users.is_platform_staff) em vez de string, mas isso é
+// uma decisão de modelagem de papel que ainda não foi tomada.
 const conditionCheckers: Record<NavReqCondition, (user: ReturnType<typeof useAuth>["user"]) => boolean> = {
-  "master-or-gtech": (user) => !!user?.isMaster || !!user?.tenantName?.includes("G-Tech"),
+  "master-or-gtech": (user) => !!user?.isMaster || user?.tenantName?.trim().toLowerCase() === "g-tech master",
   "master-or-partner": (user) => !!user?.isMaster || !!user?.partnerId,
 };
 

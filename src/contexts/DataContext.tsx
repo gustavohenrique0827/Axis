@@ -290,6 +290,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (data) setFunis(data.map(rowToFunil));
   };
 
+  // Inclui nichos globais (tenant_id null) + os do tenant ativo — não dá pra usar
+  // fetchTableData genérico aqui porque ele só filtra por .eq('tenant_id', tenantId).
+  const fetchNichos = async () => {
+    if (!supabase || !tenantId) return;
+    const { data } = await supabase.from('nichos').select('*').or(`tenant_id.eq.${tenantId},tenant_id.is.null`);
+    if (data) setNichos(data);
+  };
+
   const addFunil = async (f: any) => {
     const newFunil = { ...f, id: f.id || Math.random().toString(36).slice(2) };
     setFunis(prev => [...prev, newFunil]);
@@ -334,6 +342,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [financialGoals, setFinancialGoals] = useState<any[]>([]);
   const [cargos, setCargos] = useState<any[]>([]);
   const [empresaFiliais, setEmpresaFiliais] = useState<any[]>([]);
+  const [nichos, setNichos] = useState<any[]>([]);
   const [financeCommissionEntriesRaw, setFinanceCommissionEntries] = useState<any[]>([]);
   const [financeCategories, setFinanceCategories] = useState<any[]>([]);
   const [scheduledExports, setScheduledExports] = useState<any[]>([]);
@@ -416,6 +425,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'reunioes' }, () => fetchTableData('reunioes', setReunioes as any))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'crm_funis' }, () => fetchFunis())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'empresa_filiais' }, () => fetchTableData('empresa_filiais', setEmpresaFiliais))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'nichos' }, () => fetchNichos())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_commission_entries' }, () => fetchTableData('finance_commission_entries', setFinanceCommissionEntries))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_categories' }, () => fetchTableData('finance_categories', setFinanceCategories))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'scheduled_exports' }, () => fetchTableData('scheduled_exports', setScheduledExports))
@@ -445,7 +455,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               productsRes, proposalsRes, proposalItemsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
               clienteBaseRes, reunioesRes, financialGoalsRes, funisRes, filiaisRes,
               commissionEntriesRes, financeCategoriesRes, scheduledExportsRes, educationContentRes,
-              marketingFormsRes
+              marketingFormsRes, nichosRes
             ] = await Promise.all([
               supabase.from('leads').select('*').eq('tenant_id', tenantId),
               supabase.from('tasks').select('*').eq('tenant_id', tenantId),
@@ -458,8 +468,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('marketing_campaigns').select('*').eq('tenant_id', tenantId),
               supabase.from('marketing_content').select('*').eq('tenant_id', tenantId),
               supabase.from('marketing_landing_pages').select('*').eq('tenant_id', tenantId),
-              // app_settings inclui linhas globais (tenant_id IS NULL) por design — filtro fica só a cargo da RLS aqui.
-              supabase.from('app_settings').select('*'),
+              // Inclui linhas globais (tenant_id IS NULL) + as do tenant ativo, explicitamente —
+              // sem esse filtro, contas master/parceiro (has_tenant_access verdadeiro pra vários
+              // tenants) recebiam via RLS configurações de TODOS os tenants acessíveis misturadas
+              // num único mapa por key (ver merge abaixo), fazendo "configs grudarem" ao trocar de empresa.
+              supabase.from('app_settings').select('*').or(`tenant_id.eq.${tenantId},tenant_id.is.null`),
               supabase.from('products').select('*').eq('tenant_id', tenantId),
               supabase.from('proposals').select('*').eq('tenant_id', tenantId),
               supabase.from('proposal_items').select('*').eq('tenant_id', tenantId),
@@ -479,9 +492,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('scheduled_exports').select('*').eq('tenant_id', tenantId),
               supabase.from('education_content').select('*').eq('tenant_id', tenantId),
               supabase.from('marketing_forms').select('*').eq('tenant_id', tenantId),
+              // Nichos globais (tenant_id null) + os do tenant ativo, mesmo motivo do app_settings acima.
+              supabase.from('nichos').select('*').or(`tenant_id.eq.${tenantId},tenant_id.is.null`),
             ]);
 
-            if (!leadsRes.error && leadsRes.data && leadsRes.data.length > 0) setLeads(leadsRes.data as Lead[]);
+            if (!leadsRes.error && leadsRes.data) setLeads(leadsRes.data as Lead[]);
             if (!tasksRes.error && tasksRes.data) setTasks(tasksRes.data as Task[]);
             if (!actsRes.error && actsRes.data) setLeadActivities(actsRes.data as LeadActivity[]);
             if (!financeRes.error && financeRes.data) setFinanceEntries(financeRes.data as FinanceEntry[]);
@@ -516,6 +531,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!reunioesRes.error && reunioesRes.data) setReunioes(reunioesRes.data as Reuniao[]);
             if (!funisRes.error && funisRes.data) setFunis(funisRes.data.map(rowToFunil));
             if (!filiaisRes.error && filiaisRes.data) setEmpresaFiliais(filiaisRes.data);
+            if (!nichosRes.error && nichosRes.data) setNichos(nichosRes.data);
             if (!commissionEntriesRes.error && commissionEntriesRes.data) setFinanceCommissionEntries(commissionEntriesRes.data);
             if (!financeCategoriesRes.error && financeCategoriesRes.data) setFinanceCategories(financeCategoriesRes.data);
             if (!scheduledExportsRes.error && scheduledExportsRes.data) setScheduledExports(scheduledExportsRes.data);
@@ -524,7 +540,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
             if (!settingsRes.error && settingsRes.data) {
               const settingsMap: Record<string, any> = {};
-              settingsRes.data.forEach((setting: any) => {
+              // Processa as linhas globais (tenant_id null) primeiro, depois as do tenant ativo —
+              // assim, se a mesma key existir nos dois níveis, o valor específico do tenant sempre
+              // vence o default global, em vez de depender da ordem que o Postgres devolveu.
+              const orderedSettings = [...settingsRes.data].sort((a: any, b: any) =>
+                (a.tenant_id === null ? 0 : 1) - (b.tenant_id === null ? 0 : 1)
+              );
+              orderedSettings.forEach((setting: any) => {
                 settingsMap[setting.key] = setting.value;
                 switch (setting.key) {
                   case 'globalWebhooks': setGlobalWebhooks(setting.value); break;
@@ -1163,6 +1185,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const squadMetaCrud = createCrudHelper('squad_metas', setSquadMetas);
   const cargoCrud = createCrudHelper('cargos', setCargos);
   const empresaFilialCrud = createCrudHelper('empresa_filiais', setEmpresaFiliais);
+  const nichoCrud = createCrudHelper('nichos', setNichos);
   const commissionEntryCrud = createCrudHelper('finance_commission_entries', setFinanceCommissionEntries, true);
   const financeCategoryCrud = createCrudHelper('finance_categories', setFinanceCategories);
   const scheduledExportCrud = createCrudHelper('scheduled_exports', setScheduledExports);
@@ -1296,6 +1319,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addEmpresaFilial: empresaFilialCrud.add,
       updateEmpresaFilial: empresaFilialCrud.update,
       deleteEmpresaFilial: empresaFilialCrud.del,
+      nichos,
+      addNicho: nichoCrud.add,
+      updateNicho: nichoCrud.update,
+      deleteNicho: nichoCrud.del,
       financeCommissionEntries,
       addFinanceCommissionEntry: commissionEntryCrud.add,
       updateFinanceCommissionEntry: commissionEntryCrud.update,

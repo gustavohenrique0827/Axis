@@ -227,9 +227,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const getTenantModules = (tenant: string): TenantModules => {
-    // Normalize string matching
+    // Match exato (case-insensitive) apenas — um match por substring (.includes) permitia que
+    // tenants com nomes parecidos colidissem (ex.: "Solar" e "SolarCorp Engenharia" seriam
+    // tratados como o mesmo tenant), vazando módulos de um cliente para outro.
     const keys = Object.keys(allTenantModules);
-    const matchedKey = keys.find(k => k.toLowerCase() === tenant.toLowerCase() || tenant.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(tenant.toLowerCase()));
+    const matchedKey = keys.find(k => k.toLowerCase() === tenant.toLowerCase());
     if (matchedKey) {
       return allTenantModules[matchedKey];
     }
@@ -253,7 +255,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // 1. Atualiza o estado local para feedback imediato na UI
     setAllTenantModules(prev => {
       const keys = Object.keys(prev);
-      const matchedKey = keys.find(k => k.toLowerCase() === tenant.toLowerCase() || tenant.toLowerCase().includes(k.toLowerCase()) || k.toLowerCase().includes(tenant.toLowerCase())) || tenant;
+      const matchedKey = keys.find(k => k.toLowerCase() === tenant.toLowerCase()) || tenant;
       return {
         ...prev,
         [matchedKey]: modules

@@ -38,6 +38,7 @@ export default function SettingsLayout() {
         { title: "Dados da empresa", path: "/app/configuracoes/empresa/dados" },
         ...(user?.isMaster ? [{ title: "Módulos & Demos", path: "/app/configuracoes/empresa/modulos" }] : []),
         { title: "Filiais / Unidades", path: "/app/configuracoes/empresa/filiais" },
+        { title: "Nichos", path: "/app/configuracoes/empresa/nichos" },
         { title: "Equipe & convites", path: "/app/configuracoes/empresa/equipe" },
         { title: "Cargos", path: "/app/configuracoes/empresa/cargos" },
         { title: "Perfis & permissões", path: "/app/configuracoes/empresa/permissoes" },
