@@ -10,6 +10,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 import {
+  supabase,
   createTenantAdmin,
   fetchTenants,
   fetchTenantsDetailed,
@@ -20,7 +21,9 @@ import {
 } from "../../lib/supabase";
 import { ErrorBoundary } from "../../components/ErrorBoundary";
 
-const NICHES = [
+// Fallback só usado se o Supabase estiver inacessível — a lista real vem de
+// public.nichos (globais, tenant_id null) via fetchGlobalNiches().
+const NICHES_FALLBACK = [
   "Parceira",
   "Solar",
   "Imobiliária",
@@ -30,6 +33,18 @@ const NICHES = [
   "Agronegócio",
   "Varejo"
 ];
+
+async function fetchGlobalNiches(): Promise<string[]> {
+  if (!supabase) return NICHES_FALLBACK;
+  const { data, error } = await supabase
+    .from("nichos")
+    .select("nome")
+    .is("tenant_id", null)
+    .eq("ativo", true)
+    .order("nome");
+  if (error || !data || data.length === 0) return NICHES_FALLBACK;
+  return data.map((n: any) => n.nome);
+}
 
 // Preserva isolamento do DOM para evitar conflito com extensões de gerenciadores de senhas
 const CredentialFields = memo(function CredentialFields({
@@ -109,6 +124,7 @@ export default function ConfigModulosDemos() {
     aurora: true,
   };
 
+  const [niches, setNiches] = useState<string[]>(NICHES_FALLBACK);
   const [selectedTenant, setSelectedTenant] = useState<string>(() => user?.tenantName || "G-Tech Master");
   const [activeModules, setActiveModules] = useState<Record<string, boolean>>(DEFAULT_MODULES);
   const [tenantOptions, setTenantOptions] = useState<string[]>(Object.keys(allTenantModules));
@@ -155,6 +171,7 @@ export default function ConfigModulosDemos() {
     };
     loadDirect();
     loadTenantDetails();
+    fetchGlobalNiches().then(setNiches);
   }, []);
 
   useEffect(() => {
@@ -488,7 +505,7 @@ export default function ConfigModulosDemos() {
                         onChange={e => setNewTenantNiche(e.target.value)}
                         className="w-full appearance-none bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)] pr-8 cursor-pointer font-bold"
                       >
-                        {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
+                        {niches.map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-text-muted)] pointer-events-none" />
                     </div>
@@ -555,7 +572,7 @@ export default function ConfigModulosDemos() {
                         onChange={e => setEditTenantNiche(e.target.value)}
                         className="w-full appearance-none bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)] pr-8 cursor-pointer font-bold"
                       >
-                        {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
+                        {niches.map(n => <option key={n} value={n}>{n}</option>)}
                       </select>
                       <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[var(--color-text-muted)] pointer-events-none" />
                     </div>
