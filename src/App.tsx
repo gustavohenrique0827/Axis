@@ -94,8 +94,8 @@ import ReunioesList from "./pages/reunioes/index";
 import ReuniaoRoom from "./pages/reunioes/ReuniaoRoom";
 import ImobiliarioPainel from "./pages/imobiliario/PainelGeral";
 import ImobiliariosImoveis from "./pages/imobiliario/Imoveis";
+import ImobiliariosVeiculos from "./pages/imobiliario/Veiculos";
 import ImobiliariosCorretores from "./pages/imobiliario/Corretores";
-import ImobiliariosLeads from "./pages/imobiliario/Leads";
 import ImobiliariosVisitas from "./pages/imobiliario/Visitas";
 import ImobiliariosPipeline from "./pages/imobiliario/Pipeline";
 import PortfolioCorretor from "./pages/imobiliario/PortfolioCorretor";
@@ -271,12 +271,13 @@ function AppContent() {
 
           </Route>
 
-          {/* Módulo Imobiliário */}
+          {/* Módulo Imobiliário & Concessionárias */}
           <Route path="imobiliario">
             <Route index element={<Navigate to="painel" replace />} />
             <Route path="painel" element={<ImobiliarioPainel />} />
             <Route path="pipeline" element={<ImobiliariosPipeline />} />
             <Route path="imoveis" element={<ImobiliariosImoveis />} />
+            <Route path="veiculos" element={<ImobiliariosVeiculos />} />
             <Route path="corretores" element={<ImobiliariosCorretores />} />
             <Route path="leads" element={<Navigate to="/app/imobiliario/pipeline" replace />} />
             <Route path="visitas" element={<ImobiliariosVisitas />} />

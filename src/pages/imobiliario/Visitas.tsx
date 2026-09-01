@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
-  Plus, Calendar, MapPin, User, Clock, Check, X, Building2,
+  Plus, Calendar, MapPin, User, Clock, Check, X, Building2, Car,
   Search, CheckCircle2, XCircle, AlertCircle, Eye, TrendingUp,
   Phone, Edit2, Trash2, ChevronRight, MessageSquare, ExternalLink,
 } from "lucide-react";
@@ -22,7 +22,13 @@ type Visita = {
   hora: string;
   status: "Agendada" | "Confirmada" | "Realizada" | "Cancelada";
   obs: string;
+  imovelId: string | null;
+  veiculoId: string | null;
 };
+
+/** Imóvel ou veículo vinculado a esta visita/test-drive — opcional, alimenta
+ * o seletor do formulário. */
+interface AtivoOption { id: string; tipo: "imovel" | "veiculo"; label: string; }
 
 
 const STATUS_COLORS: Record<string, string> = {
@@ -44,11 +50,13 @@ const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-
 const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
 
 // ─── FORM MODAL ───────────────────────────────────────────────────────────────
-function VisitaFormModal({ onClose, onSave, initial }: {
+function VisitaFormModal({ onClose, onSave, initial, ativos }: {
   onClose: () => void;
   onSave: (d: any) => void;
   initial?: Partial<Visita>;
+  ativos: AtivoOption[];
 }) {
+  const initialAtivoKey = initial?.imovelId ? `imovel:${initial.imovelId}` : initial?.veiculoId ? `veiculo:${initial.veiculoId}` : "";
   const [form, setForm] = useState({
     imovel: initial?.imovel ?? "",
     bairro: initial?.bairro ?? "",
@@ -59,6 +67,7 @@ function VisitaFormModal({ onClose, onSave, initial }: {
     hora: initial?.hora ?? "10:00",
     status: initial?.status ?? "Agendada",
     obs: initial?.obs ?? "",
+    ativoKey: initialAtivoKey,
   });
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
   const isEdit = Boolean(initial?.id);
@@ -75,8 +84,28 @@ function VisitaFormModal({ onClose, onSave, initial }: {
         </div>
         <div className="p-6 space-y-4">
           <div>
-            <label className={LABEL}>Imóvel</label>
-            <input value={form.imovel} onChange={e => set("imovel", e.target.value)} placeholder="Nome ou endereço do imóvel" className={FIELD} />
+            <label className={LABEL}>Imóvel ou Veículo</label>
+            <input value={form.imovel} onChange={e => set("imovel", e.target.value)} placeholder="Nome/endereço do imóvel ou marca/modelo do veículo" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Vincular a um Cadastro (opcional)</label>
+            <select value={form.ativoKey} onChange={e => set("ativoKey", e.target.value)} className={SELECT}>
+              <option value="">Nenhum — apenas o texto acima</option>
+              {ativos.filter(a => a.tipo === "imovel").length > 0 && (
+                <optgroup label="Imóveis">
+                  {ativos.filter(a => a.tipo === "imovel").map(a => (
+                    <option key={a.id} value={`imovel:${a.id}`}>{a.label}</option>
+                  ))}
+                </optgroup>
+              )}
+              {ativos.filter(a => a.tipo === "veiculo").length > 0 && (
+                <optgroup label="Veículos">
+                  {ativos.filter(a => a.tipo === "veiculo").map(a => (
+                    <option key={a.id} value={`veiculo:${a.id}`}>{a.label}</option>
+                  ))}
+                </optgroup>
+              )}
+            </select>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -122,7 +151,13 @@ function VisitaFormModal({ onClose, onSave, initial }: {
           <Button
             onClick={() => {
               if (!form.imovel.trim() || !form.cliente.trim() || !form.data) { toast.error("Preencha os campos obrigatórios"); return; }
-              onSave(form);
+              const [ativoTipo, ativoId] = form.ativoKey ? form.ativoKey.split(":") : [null, null];
+              const { ativoKey, ...rest } = form;
+              onSave({
+                ...rest,
+                imovelId: ativoTipo === "imovel" ? ativoId : null,
+                veiculoId: ativoTipo === "veiculo" ? ativoId : null,
+              });
               onClose();
             }}
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6"
@@ -161,7 +196,7 @@ function VisitaDetailDrawer({ v, onClose, onEdit, onDelete, onUpdateStatus }: {
           </div>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-900/40 to-violet-900/30 flex items-center justify-center shrink-0">
-              <Building2 className="w-6 h-6 text-blue-400/60" />
+              {v.veiculoId ? <Car className="w-6 h-6 text-blue-400/60" /> : <Building2 className="w-6 h-6 text-blue-400/60" />}
             </div>
             <div>
               <h2 className="font-black text-white text-sm leading-tight">{v.imovel}</h2>
@@ -271,6 +306,7 @@ function VisitaDetailDrawer({ v, onClose, onEdit, onDelete, onUpdateStatus }: {
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 export default function Visitas() {
   const [visitas, setVisitas] = useState<Visita[]>([]);
+  const [ativos, setAtivos] = useState<AtivoOption[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todas");
   const [showForm, setShowForm] = useState(false);
@@ -285,8 +321,22 @@ export default function Visitas() {
           id: r.id, imovel: r.imovel, bairro: r.bairro ?? "",
           cliente: r.cliente, telefone: r.telefone ?? "", corretor: r.corretor ?? "",
           data: r.data, hora: r.hora ?? "10:00", status: r.status, obs: r.obs ?? "",
+          imovelId: r.imovel_id ?? null, veiculoId: r.veiculo_id ?? null,
         })));
       }
+    });
+
+    Promise.all([
+      supabase.from("imobiliario_imoveis").select("id, titulo, bairro"),
+      supabase.from("imobiliario_veiculos").select("id, marca, modelo"),
+    ]).then(([imoveisRes, veiculosRes]) => {
+      const imoveis: AtivoOption[] = (imoveisRes.data ?? []).map(i => ({
+        id: i.id, tipo: "imovel", label: `${i.titulo}${i.bairro ? ` — ${i.bairro}` : ""}`,
+      }));
+      const veiculos: AtivoOption[] = (veiculosRes.data ?? []).map(v => ({
+        id: v.id, tipo: "veiculo", label: `${v.marca} ${v.modelo}`,
+      }));
+      setAtivos([...imoveis, ...veiculos]);
     });
   }, []);
 
@@ -303,7 +353,10 @@ export default function Visitas() {
     setVisitas(prev => [nova, ...prev]);
     toast.success("Visita agendada!");
     if (supabase) {
-      const { error } = await supabase.from("imobiliario_visitas").insert({ ...form, id: nova.id });
+      const { imovelId, veiculoId, ...rest } = form;
+      const { error } = await supabase.from("imobiliario_visitas").insert({
+        ...rest, id: nova.id, imovel_id: imovelId, veiculo_id: veiculoId,
+      });
       if (error) console.error("[Supabase]", error.message);
     }
   };
@@ -315,7 +368,10 @@ export default function Visitas() {
     if (selectedVisita?.id === editVisita.id) setSelectedVisita(updated);
     toast.success("Visita atualizada!");
     if (supabase) {
-      const { error } = await supabase.from("imobiliario_visitas").update(form).eq("id", editVisita.id);
+      const { imovelId, veiculoId, ...rest } = form;
+      const { error } = await supabase.from("imobiliario_visitas")
+        .update({ ...rest, imovel_id: imovelId, veiculo_id: veiculoId })
+        .eq("id", editVisita.id);
       if (error) console.error("[Supabase]", error.message);
     }
     setEditVisita(null);
@@ -359,7 +415,7 @@ export default function Visitas() {
         className="flex items-start gap-4 p-4 bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-xl hover:border-blue-500/20 transition-all cursor-pointer group"
       >
         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-900/30 to-violet-900/20 flex items-center justify-center shrink-0">
-          <Building2 className="w-5 h-5 text-blue-400/60" />
+          {v.veiculoId ? <Car className="w-5 h-5 text-blue-400/60" /> : <Building2 className="w-5 h-5 text-blue-400/60" />}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -411,16 +467,16 @@ export default function Visitas() {
 
   return (
     <PageContainer
-      title="Visitas"
-      description="Controle e organize todas as visitas de imóveis com clientes."
+      title="Visitas & Test-Drives"
+      description="Controle e organize todas as visitas de imóveis e test-drives de veículos com clientes."
       actions={
         <Button onClick={() => setShowForm(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
           <Plus className="w-3.5 h-3.5" /> Agendar Visita
         </Button>
       }
     >
-      {showForm && <VisitaFormModal onClose={() => setShowForm(false)} onSave={handleSave} />}
-      {editVisita && <VisitaFormModal onClose={() => setEditVisita(null)} onSave={handleEdit} initial={editVisita} />}
+      {showForm && <VisitaFormModal onClose={() => setShowForm(false)} onSave={handleSave} ativos={ativos} />}
+      {editVisita && <VisitaFormModal onClose={() => setEditVisita(null)} onSave={handleEdit} initial={editVisita} ativos={ativos} />}
       {selectedVisita && (
         <VisitaDetailDrawer
           v={selectedVisita}

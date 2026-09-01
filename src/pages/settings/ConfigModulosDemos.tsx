@@ -203,7 +203,7 @@ export default function ConfigModulosDemos() {
         break;
       case "IMOBILIARIO":
         preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: true, dev: false, imobiliario: true, aurora: true };
-        toast.success("Preset Aplicado: Imobiliário & Vendas");
+        toast.success("Preset Aplicado: Imobiliário & Concessionárias");
         break;
       default:
         return;
@@ -782,8 +782,8 @@ export default function ConfigModulosDemos() {
                   className="flex flex-col items-center justify-center p-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/25 rounded-xl transition-all cursor-pointer shadow-2xs group"
                 >
                   <span className="text-lg mb-1 group-hover:scale-110 transition-transform">🏢</span>
-                  <span className="text-[11px] font-bold">Imobiliário</span>
-                  <span className="text-[9px] opacity-80">Imóveis & Vendas</span>
+                  <span className="text-[11px] font-bold">Imob. & Concess.</span>
+                  <span className="text-[9px] opacity-80">Imóveis & Veículos</span>
                 </button>
               </div>
             </div>
@@ -802,7 +802,7 @@ export default function ConfigModulosDemos() {
                 { id: 'clinica', title: "Clínica Médica & Saúde", desc: "Prontuários EHR, telemedicina e consultas", icon: Activity, color: "text-teal-500 bg-teal-500/10 border-teal-500/20" },
                 { id: 'rh', title: "RH & Colaboradores", desc: "Equipe interna, comissões e organograma", icon: Users, color: "text-blue-500 bg-blue-500/10 border-blue-500/20" },
                 { id: 'bi', title: "BI & Inteligência de Dados", desc: "Dashboards analíticos, OTE e métricas avançadas", icon: Columns3, color: "text-indigo-500 bg-indigo-500/10 border-indigo-500/20" },
-                { id: 'imobiliario', title: "Imobiliário & Corretores", desc: "Portfólio de imóveis, visitas e corretores", icon: Home, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" },
+                { id: 'imobiliario', title: "Imobiliário & Concessionárias", desc: "Portfólio de imóveis e veículos, visitas, test-drives e equipe", icon: Home, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" },
                 { id: 'dev', title: "Engenharia & Sprint Dev", desc: "Quadro de sprints, releases e demandas tech", icon: Code2, color: "text-slate-500 bg-slate-500/10 border-slate-500/20" },
               ].map((mod) => {
                 const isEnabled = activeModules[mod.id] ?? true;

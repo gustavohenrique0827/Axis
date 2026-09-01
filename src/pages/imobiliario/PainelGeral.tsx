@@ -6,7 +6,7 @@ import {
   PieChart, Pie, Cell, AreaChart, Area, CartesianGrid,
 } from "recharts";
 import {
-  Building2, Eye, DollarSign, TrendingUp, MapPin, Star,
+  Building2, Eye, DollarSign, TrendingUp, MapPin, Star, Car,
   Calendar, ArrowUpRight, Target, Columns3,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
@@ -16,6 +16,7 @@ type ImovelRow = {
   valor: number; bairro: string; cidade: string;
   visitas: number; created_at: string; operacao: string;
 };
+type VeiculoRow = { id: string; marca: string; modelo: string; status: string; valor: number; };
 type CorretorRow = {
   nome: string; vendas_mes: number; vgv_mes: number; meta: number; avaliacao: number;
 };
@@ -73,6 +74,7 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function ImobiliarioPainel() {
   const [imoveis, setImoveis] = useState<ImovelRow[]>([]);
+  const [veiculos, setVeiculos] = useState<VeiculoRow[]>([]);
   const [corretores, setCorretores] = useState<CorretorRow[]>([]);
   const [visitas, setVisitas] = useState<VisitaRow[]>([]);
   const [leads, setLeads] = useState<LeadRow[]>([]);
@@ -83,11 +85,13 @@ export default function ImobiliarioPainel() {
     const today = new Date().toISOString().split("T")[0];
     Promise.all([
       supabase.from("imobiliario_imoveis").select("id,titulo,tipo,status,valor,bairro,cidade,visitas,created_at,operacao"),
+      supabase.from("imobiliario_veiculos").select("id,marca,modelo,status,valor"),
       supabase.from("imobiliario_corretores").select("nome,vendas_mes,vgv_mes,meta,avaliacao").order("vendas_mes", { ascending: false }),
       supabase.from("imobiliario_visitas").select("data,hora,imovel,cliente,corretor,status").gte("data", today).order("data").limit(5),
       supabase.from("imobiliario_leads").select("etapa,orcamento,status"),
-    ]).then(([im, cor, vis, lea]) => {
+    ]).then(([im, vei, cor, vis, lea]) => {
       setImoveis(im.data ?? []);
+      setVeiculos(vei.data ?? []);
       setCorretores(cor.data ?? []);
       setVisitas(vis.data ?? []);
       setLeads(lea.data ?? []);
@@ -115,6 +119,12 @@ export default function ImobiliarioPainel() {
   const leadsAtivos = leads.filter(l => l.status === "Ativo").length;
   const leadsGanhos = leads.filter(l => l.status === "Ganho").length;
   const conversao = leads.length > 0 ? ((leadsGanhos / leads.length) * 100).toFixed(1) : "0.0";
+
+  // Segmento: imóveis vs veículos — visão combinada exigida pelo módulo unificado
+  const imoveisDisponiveisVgv = imoveis.filter(i => i.status === "Disponível").reduce((s, i) => s + i.valor, 0);
+  const veiculosDisponiveis = veiculos.filter(v => v.status === "Disponível").length;
+  const veiculosDisponiveisValor = veiculos.filter(v => v.status === "Disponível").reduce((s, v) => s + v.valor, 0);
+  const veiculosVendidos = veiculos.filter(v => v.status === "Vendido").length;
 
   // VGV por mês (últimos 6 meses)
   const vgvMensal = Array.from({ length: 6 }, (_, i) => {
@@ -181,8 +191,8 @@ export default function ImobiliarioPainel() {
 
   return (
     <PageContainer
-      title="Painel Imobiliário"
-      description="Visão 360° do portfólio, performance de corretores e funil de vendas."
+      title="Painel Geral"
+      description="Visão 360° do portfólio de imóveis e veículos, performance da equipe e funil de vendas."
     >
       <div className="space-y-6 max-w-[1700px] mx-auto pb-10">
 
@@ -194,6 +204,28 @@ export default function ImobiliarioPainel() {
           <KPICard icon={Columns3} label="Leads Ativos" value={String(leadsAtivos)} sub="no funil de vendas" color="text-cyan-500" />
           <KPICard icon={Eye} label="Próximas Visitas" value={String(visitas.length)} sub="agendadas" color="text-amber-500" />
           <KPICard icon={Target} label="Conversão" value={`${conversao}%`} sub="leads → fechamento" color="text-purple-500" />
+        </div>
+
+        {/* Por Segmento: Imóveis vs Veículos */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center shrink-0">
+              <Building2 className="w-6 h-6 text-blue-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-black text-white uppercase tracking-widest">Imóveis</p>
+              <p className="text-[10px] text-slate-500">{disponiveis} disponíveis · {fmtVgv(imoveisDisponiveisVgv)} em estoque</p>
+            </div>
+          </div>
+          <div className="bg-[var(--color-surface-elevated)]/80 border border-white/5 rounded-2xl p-5 flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0">
+              <Car className="w-6 h-6 text-violet-400" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-black text-white uppercase tracking-widest">Veículos</p>
+              <p className="text-[10px] text-slate-500">{veiculosDisponiveis} disponíveis · {fmtVgv(veiculosDisponiveisValor)} em estoque · {veiculosVendidos} vendidos</p>
+            </div>
+          </div>
         </div>
 
         {/* Charts Row 1 */}

@@ -33,6 +33,7 @@ import {
   MonitorCheck,
   Building2,
   KeySquare,
+  Car,
   Server,
   Handshake,
   CalendarDays,
@@ -132,14 +133,15 @@ export const navSections = [
     ],
   },
   {
-    title: "Imobiliário",
+    title: "Imobiliário & Concessionárias",
     reqModule: "imobiliario",
     items: [
-      { name: "Painel Imobiliário", path: "/app/imobiliario/painel", icon: Building2 },
+      { name: "Painel Geral", path: "/app/imobiliario/painel", icon: Building2 },
       { name: "Leads & Pipeline", path: "/app/imobiliario/pipeline", icon: Columns3 },
       { name: "Imóveis", path: "/app/imobiliario/imoveis", icon: KeySquare },
-      { name: "Corretores", path: "/app/imobiliario/corretores", icon: Users },
-      { name: "Visitas", path: "/app/imobiliario/visitas", icon: Calendar },
+      { name: "Veículos", path: "/app/imobiliario/veiculos", icon: Car },
+      { name: "Corretores & Vendedores", path: "/app/imobiliario/corretores", icon: Users },
+      { name: "Visitas & Test-Drives", path: "/app/imobiliario/visitas", icon: Calendar },
     ],
   },
   {

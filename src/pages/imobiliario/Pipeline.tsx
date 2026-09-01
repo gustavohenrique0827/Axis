@@ -35,7 +35,14 @@ interface Lead {
   tags: string[];
   status: Status;
   criadoEm: string;
+  imovelId: string | null;
+  veiculoId: string | null;
 }
+
+/** Imóvel ou veículo disponível pra vincular a um lead — alimenta o seletor
+ * "Ativo relacionado" do formulário. Um lead pode não estar ligado a nenhum
+ * ainda (ainda em prospecção genérica) ou a exatamente um dos dois. */
+interface AtivoOption { id: string; tipo: "imovel" | "veiculo"; label: string; }
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const ETAPAS: Etapa[] = ["Prospecção", "Qualificação", "Apresentação", "Negociação", "Fechamento"];
@@ -89,12 +96,14 @@ function fmtBRLFull(v: number) {
 }
 
 // ─── LEAD FORM MODAL ──────────────────────────────────────────────────────────
-function LeadFormModal({ onClose, onSave, initial }: {
+function LeadFormModal({ onClose, onSave, initial, ativos }: {
   onClose: () => void;
   onSave: (d: Partial<Lead>) => void;
   initial?: Partial<Lead>;
+  ativos: AtivoOption[];
 }) {
   const isEdit = Boolean(initial?.id);
+  const initialAtivoKey = initial?.imovelId ? `imovel:${initial.imovelId}` : initial?.veiculoId ? `veiculo:${initial.veiculoId}` : "";
   const [form, setForm] = useState({
     cliente:   initial?.cliente   ?? "",
     telefone:  initial?.telefone  ?? "",
@@ -107,6 +116,7 @@ function LeadFormModal({ onClose, onSave, initial }: {
     prioridade:initial?.prioridade ?? "Média" as Prioridade,
     etapa:     initial?.etapa     ?? "Prospecção" as Etapa,
     obs:       initial?.obs       ?? "",
+    ativoKey:  initialAtivoKey,
   });
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
@@ -138,6 +148,26 @@ function LeadFormModal({ onClose, onSave, initial }: {
               <label className={LABEL}>Interesse</label>
               <select value={form.interesse} onChange={e => set("interesse", e.target.value)} className={SELECT}>
                 {["Apartamento","Apartamento 2q","Apartamento 3q","Casa","Cobertura","Cobertura Duplex","Kitnet","Sala Comercial","Terreno"].map(t => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className={LABEL}>Ativo Relacionado (opcional)</label>
+              <select value={form.ativoKey} onChange={e => set("ativoKey", e.target.value)} className={SELECT}>
+                <option value="">Nenhum ainda — lead genérico</option>
+                {ativos.filter(a => a.tipo === "imovel").length > 0 && (
+                  <optgroup label="Imóveis">
+                    {ativos.filter(a => a.tipo === "imovel").map(a => (
+                      <option key={a.id} value={`imovel:${a.id}`}>{a.label}</option>
+                    ))}
+                  </optgroup>
+                )}
+                {ativos.filter(a => a.tipo === "veiculo").length > 0 && (
+                  <optgroup label="Veículos">
+                    {ativos.filter(a => a.tipo === "veiculo").map(a => (
+                      <option key={a.id} value={`veiculo:${a.id}`}>{a.label}</option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
             </div>
             <div>
@@ -183,7 +213,14 @@ function LeadFormModal({ onClose, onSave, initial }: {
           <Button
             onClick={() => {
               if (!form.cliente.trim()) { toast.error("Nome é obrigatório"); return; }
-              onSave({ ...form, orcamento: Number(form.orcamento) || 0 });
+              const [ativoTipo, ativoId] = form.ativoKey ? form.ativoKey.split(":") : [null, null];
+              const { ativoKey, ...rest } = form;
+              onSave({
+                ...rest,
+                orcamento: Number(form.orcamento) || 0,
+                imovelId: ativoTipo === "imovel" ? ativoId : null,
+                veiculoId: ativoTipo === "veiculo" ? ativoId : null,
+              });
               onClose();
             }}
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6"
@@ -826,6 +863,7 @@ function LeadRow({ lead, onSelect }: { lead: Lead; onSelect: (l: Lead) => void }
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 export default function PipelineImobiliario() {
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [ativos, setAtivos] = useState<AtivoOption[]>([]);
   const [view, setView] = useState<"kanban" | "lista">("kanban");
   const [showForm, setShowForm] = useState(false);
   const [editLead, setEditLead] = useState<Lead | null>(null);
@@ -862,8 +900,24 @@ export default function PipelineImobiliario() {
           tags: r.tags ?? [],
           status: (r.status ?? "Ativo") as Status,
           criadoEm: r.criado_em ?? r.created_at?.split("T")[0] ?? "",
+          imovelId: r.imovel_id ?? null,
+          veiculoId: r.veiculo_id ?? null,
         })));
       });
+
+    // Alimenta o seletor "Ativo Relacionado" do formulário com imóveis + veículos do tenant.
+    Promise.all([
+      supabase.from("imobiliario_imoveis").select("id, titulo, bairro"),
+      supabase.from("imobiliario_veiculos").select("id, marca, modelo"),
+    ]).then(([imoveisRes, veiculosRes]) => {
+      const imoveis: AtivoOption[] = (imoveisRes.data ?? []).map(i => ({
+        id: i.id, tipo: "imovel", label: `${i.titulo}${i.bairro ? ` — ${i.bairro}` : ""}`,
+      }));
+      const veiculos: AtivoOption[] = (veiculosRes.data ?? []).map(v => ({
+        id: v.id, tipo: "veiculo", label: `${v.marca} ${v.modelo}`,
+      }));
+      setAtivos([...imoveis, ...veiculos]);
+    });
   }, []);
 
   // Async save to Supabase
@@ -875,7 +929,7 @@ export default function PipelineImobiliario() {
       interesse: rest.interesse, bairro: rest.bairro, orcamento: rest.orcamento,
       corretor: rest.corretor, origem: rest.origem, etapa: rest.etapa,
       dias_etapa: rest.diasEtapa, prioridade: rest.prioridade, obs: rest.obs,
-      status: rest.status,
+      status: rest.status, imovel_id: rest.imovelId, veiculo_id: rest.veiculoId,
     };
     await supabase.from("imobiliario_leads").update(row).eq("id", id);
   };
@@ -908,6 +962,7 @@ export default function PipelineImobiliario() {
         corretor: novo.corretor, origem: novo.origem, etapa: novo.etapa,
         dias_etapa: novo.diasEtapa, prioridade: novo.prioridade, obs: novo.obs,
         status: novo.status, tags: novo.tags,
+        imovel_id: novo.imovelId, veiculo_id: novo.veiculoId,
       }).select("id").single();
       if (data?.id) setLeads(prev => prev.map(l => l.id === novo.id ? { ...l, id: data.id } : l));
     }
@@ -942,7 +997,7 @@ export default function PipelineImobiliario() {
   // KPIs
   const totalVGV = leads.reduce((s, l) => s + l.orcamento, 0);
   const ganhos = leads.filter(l => l.status === "Ganho").length;
-  const ativos = leads.filter(l => l.status === "Ativo").length;
+  const ativosCount = leads.filter(l => l.status === "Ativo").length;
   const perdidos = leads.filter(l => l.status === "Perdido").length;
 
   return (
@@ -965,8 +1020,8 @@ export default function PipelineImobiliario() {
         </div>
       }
     >
-      {showForm && <LeadFormModal onClose={() => setShowForm(false)} onSave={handleSave} />}
-      {editLead && <LeadFormModal onClose={() => setEditLead(null)} onSave={handleEdit} initial={editLead} />}
+      {showForm && <LeadFormModal onClose={() => setShowForm(false)} onSave={handleSave} ativos={ativos} />}
+      {editLead && <LeadFormModal onClose={() => setEditLead(null)} onSave={handleEdit} initial={editLead} ativos={ativos} />}
       {selectedLead && (
         <LeadDetailDrawer
           lead={selectedLead}
@@ -984,7 +1039,7 @@ export default function PipelineImobiliario() {
       <div className="flex gap-3 mb-6 flex-wrap">
         {[
           { label: "VGV Potencial",  value: fmtBRL(totalVGV),  color: "text-blue-400",    dot: "bg-blue-400" },
-          { label: "Ativos",         value: `${ativos}`,        color: "text-white",       dot: "bg-slate-400" },
+          { label: "Ativos",         value: `${ativosCount}`,   color: "text-white",       dot: "bg-slate-400" },
           { label: "Fechados (Ganho)",value: `${ganhos}`,       color: "text-emerald-400", dot: "bg-emerald-400" },
           { label: "Perdidos",       value: `${perdidos}`,      color: "text-rose-400",    dot: "bg-rose-400" },
           { label: "Conversão",      value: leads.length > 0 ? `${((ganhos / leads.length) * 100).toFixed(0)}%` : "0%", color: "text-cyan-400", dot: "bg-cyan-400" },
