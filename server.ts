@@ -63,25 +63,42 @@ let instances: WhatsAppInstance[] = [
 let contacts: ChatContact[] = [];
 let messages: Record<string, ChatMessage[]> = {};
 
-let sources: any[] = [
+// Fallback in-memory de /api/settings/:category para quando não há tabela
+// crm_<categoria> no banco (sources/custom-fields/task-categories/templates
+// nunca tiveram tabela própria). Isolado por tenant abaixo — antes disso eram
+// arrays únicos no processo, então tenant A criando um campo customizado
+// aparecia instantaneamente pra tenant B (todo mundo lia/escrevia o mesmo
+// array). Cada tenant recebe sua própria cópia, semeada a partir do exemplo
+// padrão na primeira vez que é acessado.
+const DEFAULT_SOURCES = [
   { id: "1", name: "Instagram" },
   { id: "2", name: "WhatsApp" },
   { id: "3", name: "Indicação" },
   { id: "4", name: "Site" },
   { id: "5", name: "Google Ads" }
 ];
-let customFields: any[] = [
+const DEFAULT_CUSTOM_FIELDS = [
   { id: "1", label: "CPF/CNPJ", type: "text", required: true },
   { id: "2", label: "Setor", type: "select", options: ["Varejo", "Serviços", "Indústria"] }
 ];
-let taskCategories: any[] = [
+const DEFAULT_TASK_CATEGORIES = [
   { id: "1", name: "Follow-up", color: "bg-blue-500" },
   { id: "2", name: "Reunião", color: "purple" },
   { id: "3", name: "Proposta", color: "emerald" }
 ];
-let templates = [
+const DEFAULT_TEMPLATES = [
   { id: "1", name: "Saudação Inicial", content: "Olá {{name}}, como posso ajudar?", category: "Vendas" }
 ];
+
+const sourcesByTenant: Record<string, any[]> = {};
+const customFieldsByTenant: Record<string, any[]> = {};
+const taskCategoriesByTenant: Record<string, any[]> = {};
+const templatesByTenant: Record<string, any[]> = {};
+
+function tenantBucket<T>(store: Record<string, T[]>, tenantId: string, seed: T[]): T[] {
+  if (!store[tenantId]) store[tenantId] = structuredClone(seed);
+  return store[tenantId];
+}
 
 // ── Singletons ─────────────────────────────────────────────────────────────
 
@@ -607,61 +624,85 @@ app.post("/api/ai/settings-audit", requireUser, async (req, res) => {
   }
 });
 
-app.get("/api/settings/:category", requireUser, async (req, res) => {
+app.get("/api/settings/:category", requireUser, async (req: any, res) => {
   const { category } = req.params;
   if (supabase) {
+    // req.supabase (escopado com o JWT do chamador) em vez do client de
+    // módulo com a anon key, para respeitar RLS caso a categoria algum dia
+    // vire uma tabela real de verdade.
     const tableName = `crm_${category.replace("-", "_")}`;
-    const { data, error } = await supabase.from(tableName).select("*");
+    const { data, error } = await req.supabase.from(tableName).select("*");
     if (!error && data) return res.json(data);
   }
+  // Nenhuma das categorias abaixo tem tabela própria no banco — fallback
+  // em memória, isolado por tenant (ver tenantBucket): sem isso, tenant A
+  // criando uma origem/campo customizado aparecia pra todo mundo na
+  // plataforma, porque era um único array compartilhado pelo processo.
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  if (!tenantId) return res.status(401).json({ error: "Tenant não identificado." });
   switch (category) {
-    case "sources": return res.json(sources);
-    case "fields": case "custom-fields": case "custom_lead_fields": return res.json(customFields);
-    case "task-categories": case "categories": return res.json(taskCategories);
-    case "templates": return res.json(templates);
+    case "sources": return res.json(tenantBucket(sourcesByTenant, tenantId, DEFAULT_SOURCES));
+    case "fields": case "custom-fields": case "custom_lead_fields":
+      return res.json(tenantBucket(customFieldsByTenant, tenantId, DEFAULT_CUSTOM_FIELDS));
+    case "task-categories": case "categories":
+      return res.json(tenantBucket(taskCategoriesByTenant, tenantId, DEFAULT_TASK_CATEGORIES));
+    case "templates": return res.json(tenantBucket(templatesByTenant, tenantId, DEFAULT_TEMPLATES));
     default: return res.status(404).json({ error: "Categoria não encontrada" });
   }
 });
 
-app.post("/api/settings/:category", requireUser, async (req, res) => {
+app.post("/api/settings/:category", requireUser, async (req: any, res) => {
   const { category } = req.params;
   const item = req.body;
   const id = Math.random().toString(36).substring(2, 9);
   const newItem = { id, ...item };
   if (supabase) {
     const tableName = `crm_${category.replace("-", "_")}`;
-    const { data, error } = await supabase.from(tableName).insert([newItem]).select();
+    const { data, error } = await req.supabase.from(tableName).insert([newItem]).select();
     if (!error && data) return res.json(data[0]);
   }
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  if (!tenantId) return res.status(401).json({ error: "Tenant não identificado." });
   switch (category) {
-    case "sources":
+    case "sources": {
       const newSource = { id, name: item.name || item.nome };
-      sources.push(newSource);
+      tenantBucket(sourcesByTenant, tenantId, DEFAULT_SOURCES).push(newSource);
       return res.json(newSource);
+    }
     case "fields": case "custom-fields": case "custom_lead_fields":
-      customFields.push(newItem);
+      tenantBucket(customFieldsByTenant, tenantId, DEFAULT_CUSTOM_FIELDS).push(newItem);
       return res.json(newItem);
     case "task-categories":
-      taskCategories.push(newItem);
+      tenantBucket(taskCategoriesByTenant, tenantId, DEFAULT_TASK_CATEGORIES).push(newItem);
       return res.json(newItem);
     case "templates":
-      templates.push(newItem);
+      tenantBucket(templatesByTenant, tenantId, DEFAULT_TEMPLATES).push(newItem);
       return res.json(newItem);
     default: return res.status(404).json({ error: "Categoria inválida" });
   }
 });
 
-app.delete("/api/settings/:category/:id", requireUser, async (req, res) => {
+app.delete("/api/settings/:category/:id", requireUser, async (req: any, res) => {
   const { category, id } = req.params;
   if (supabase) {
     const tableName = `crm_${category.replace("-", "_")}`;
-    await supabase.from(tableName).delete().eq("id", id);
+    await req.supabase.from(tableName).delete().eq("id", id);
   }
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  if (!tenantId) return res.status(401).json({ error: "Tenant não identificado." });
   switch (category) {
-    case "sources": sources = sources.filter((s) => s.id !== id); break;
-    case "fields": case "custom-fields": case "custom_lead_fields": customFields = customFields.filter((f) => f.id !== id); break;
-    case "task-categories": case "categories": taskCategories = taskCategories.filter((c) => c.id !== id); break;
-    case "templates": templates = templates.filter((t) => t.id !== id); break;
+    case "sources":
+      sourcesByTenant[tenantId] = tenantBucket(sourcesByTenant, tenantId, DEFAULT_SOURCES).filter((s) => s.id !== id);
+      break;
+    case "fields": case "custom-fields": case "custom_lead_fields":
+      customFieldsByTenant[tenantId] = tenantBucket(customFieldsByTenant, tenantId, DEFAULT_CUSTOM_FIELDS).filter((f) => f.id !== id);
+      break;
+    case "task-categories": case "categories":
+      taskCategoriesByTenant[tenantId] = tenantBucket(taskCategoriesByTenant, tenantId, DEFAULT_TASK_CATEGORIES).filter((c) => c.id !== id);
+      break;
+    case "templates":
+      templatesByTenant[tenantId] = tenantBucket(templatesByTenant, tenantId, DEFAULT_TEMPLATES).filter((t) => t.id !== id);
+      break;
   }
   res.json({ success: true });
 });
