@@ -552,7 +552,7 @@ export default function ConfigModulosDemos() {
                     <div className="relative">
                       <select
                         value={editTenantNiche}
-                        onChange={e => setNewTenantNiche(e.target.value)}
+                        onChange={e => setEditTenantNiche(e.target.value)}
                         className="w-full appearance-none bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)] pr-8 cursor-pointer font-bold"
                       >
                         {NICHES.map(n => <option key={n} value={n}>{n}</option>)}
