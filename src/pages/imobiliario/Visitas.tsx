@@ -80,7 +80,7 @@ function VisitaFormModal({ onClose, onSave, initial, ativos }: {
             <h2 className="text-base font-black text-white">{isEdit ? "Editar Visita" : "Agendar Visita"}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações da visita" : "Cadastre uma nova visita"}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
         </div>
         <div className="p-6 space-y-4">
           <div>
@@ -192,7 +192,7 @@ function VisitaDetailDrawer({ v, onClose, onEdit, onDelete, onUpdateStatus }: {
             <span className={`text-[10px] font-black px-2.5 py-1 rounded-full border flex items-center gap-1 ${STATUS_COLORS[v.status]}`}>
               <StatusIcon className="w-2.5 h-2.5" />{v.status}
             </span>
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
+            <button onClick={onClose} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
           </div>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-900/40 to-violet-900/30 flex items-center justify-center shrink-0">

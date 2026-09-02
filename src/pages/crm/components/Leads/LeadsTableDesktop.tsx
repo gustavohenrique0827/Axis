@@ -115,7 +115,7 @@ export function LeadsTableDesktop(props: {
                   )}
                 </TableCell>
                 <TableCell className="text-right">
-                  <button className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-surface-sunken)] transition-colors">
+                  <button className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] rounded-lg hover:bg-[var(--color-surface-elevated)] hover:border-[var(--color-border-default)] transition-colors">
                     <MoreHorizontal className="w-4 h-4" />
                   </button>
                 </TableCell>

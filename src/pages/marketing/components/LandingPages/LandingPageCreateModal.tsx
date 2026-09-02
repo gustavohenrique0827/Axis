@@ -30,7 +30,7 @@ export function LandingPageCreateModal({
             </h3>
             <p className="text-xs text-slate-400 mt-1">Configure o título e os dados da sua nova página de captura.</p>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 rounded-xl text-slate-400 hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>

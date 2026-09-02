@@ -246,7 +246,7 @@ function TaskCard({ task, onToggle, onDelete, dimmed }: {
           onDelete(task.id);
           toast.info("Tarefa removida.");
         }}
-        className="shrink-0 p-1 hover:bg-rose-500/10 rounded text-[var(--color-text-faint)] hover:text-rose-500 transition-all cursor-pointer"
+        className="shrink-0 p-1 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] hover:bg-rose-500/10 rounded text-[var(--color-text-faint)] hover:text-rose-500 transition-all cursor-pointer"
         title="Remover Tarefa"
       >
         <Trash2 className="w-3.5 h-3.5" />

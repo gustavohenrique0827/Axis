@@ -161,7 +161,7 @@ function PillarsEditor() {
           <div className="flex items-center justify-between mb-1">
             <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest">Pilar {item.num}</span>
             {items.length > 1 && (
-              <button onClick={() => remove(i)} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-slate-600 hover:text-rose-400 transition-colors">
+              <button onClick={() => remove(i)} className="p-1.5 rounded-lg bg-rose-500/5 hover:bg-rose-500/10 text-slate-600 hover:text-rose-400 transition-colors">
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             )}
@@ -209,7 +209,7 @@ function BenefitsEditor() {
           <div className="flex items-center justify-between mb-1">
             <span className="text-[10px] font-black text-orange-400 uppercase tracking-widest">Benefício {item.step}</span>
             {items.length > 1 && (
-              <button onClick={() => remove(i)} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-slate-600 hover:text-rose-400 transition-colors">
+              <button onClick={() => remove(i)} className="p-1.5 rounded-lg bg-rose-500/5 hover:bg-rose-500/10 text-slate-600 hover:text-rose-400 transition-colors">
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
             )}
@@ -258,7 +258,7 @@ function TestimonialsEditor() {
             <div className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-[10px] font-black text-white">
               {item.name ? item.name.charAt(0) : String(i + 1)}
             </div>
-            <button onClick={() => remove(i)} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-slate-600 hover:text-rose-400 transition-colors">
+            <button onClick={() => remove(i)} className="p-1.5 rounded-lg bg-rose-500/5 hover:bg-rose-500/10 text-slate-600 hover:text-rose-400 transition-colors">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -310,7 +310,7 @@ function FAQEditor() {
         <div key={i} className="bg-[var(--color-surface-elevated)]/60 border border-white/5 rounded-2xl p-5 space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Pergunta {i + 1}</span>
-            <button onClick={() => remove(i)} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-slate-600 hover:text-rose-400 transition-colors">
+            <button onClick={() => remove(i)} className="p-1.5 rounded-lg bg-rose-500/5 hover:bg-rose-500/10 text-slate-600 hover:text-rose-400 transition-colors">
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>

@@ -53,7 +53,7 @@ export function RightControlDrawer({
           <button 
             type="button"
             onClick={() => setRightPanel("none")} 
-            className="p-1.5 hover:bg-[var(--color-surface)] rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+            className="p-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)] hover:bg-[var(--color-surface)] rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>

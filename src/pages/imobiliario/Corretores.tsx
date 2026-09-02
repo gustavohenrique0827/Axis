@@ -83,7 +83,7 @@ function CorretorFormModal({ onClose, onSave, initial }: {
             <h2 className="text-base font-black text-white">{isEdit ? "Editar Corretor" : "Novo Corretor"}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize os dados do corretor" : "Cadastre um novo membro da equipe"}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
         </div>
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -164,7 +164,7 @@ function CorretorDetailDrawer({ c, idx, onClose, onEdit, onDelete }: {
         {/* Header */}
         <div className="p-6 border-b border-white/5 bg-gradient-to-br from-blue-900/20 to-violet-900/10">
           <div className="flex items-start justify-between mb-4">
-            <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500 ml-auto"><X className="w-4 h-4" /></button>
+            <button onClick={onClose} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 text-slate-500 ml-auto"><X className="w-4 h-4" /></button>
           </div>
           <div className="flex items-center gap-4">
             <div className="relative">

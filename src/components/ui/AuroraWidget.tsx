@@ -136,7 +136,7 @@ export function AuroraWidget() {
             </div>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-1.5 hover:bg-white/5 rounded-lg text-slate-500 hover:text-white transition-all"
+              className="p-1.5 bg-white/[0.03] hover:bg-white/5 rounded-lg text-slate-500 hover:text-white transition-all"
             >
               <X className="w-3.5 h-3.5" />
             </button>

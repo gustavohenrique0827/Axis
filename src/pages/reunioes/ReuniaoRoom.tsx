@@ -277,7 +277,7 @@ export default function ReuniaoRoom() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/app/reunioes")}
-            className="p-2 hover:bg-white/5 rounded-lg text-slate-500 hover:text-white transition-all"
+            className="p-2 bg-white/[0.03] hover:bg-white/5 rounded-lg text-slate-500 hover:text-white transition-all"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>

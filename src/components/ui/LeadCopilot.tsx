@@ -136,7 +136,7 @@ export function LeadCopilot({ leadContext, onClose }: LeadCopilotProps) {
         {onClose && (
           <button
             onClick={onClose}
-            className="p-1.5 hover:bg-white/5 rounded-lg text-slate-500 hover:text-white transition-all"
+            className="p-1.5 bg-white/[0.03] hover:bg-white/5 rounded-lg text-slate-500 hover:text-white transition-all"
           >
             <X className="w-3.5 h-3.5" />
           </button>

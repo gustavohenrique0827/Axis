@@ -160,7 +160,7 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
                       <button
                         type="button"
                         onClick={() => handleDelete(item)}
-                        className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                        className="p-1.5 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                         title="Excluir lançamento"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

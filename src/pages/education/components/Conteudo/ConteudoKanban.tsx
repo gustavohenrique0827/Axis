@@ -76,7 +76,7 @@ export function ConteudoKanban({ columns, items, onDragEnd, onEdit }: ConteudoKa
                                 <Clock className="w-3 h-3" />
                                 <span className="text-[9px] font-bold font-mono">{item.lastUpdate}</span>
                               </div>
-                              <button onClick={() => onEdit(item)} className="p-1.5 hover:bg-white/5 rounded text-slate-500 hover:text-blue-400">
+                              <button onClick={() => onEdit(item)} className="p-1.5 bg-white/[0.03] hover:bg-white/5 rounded text-slate-500 hover:text-blue-400">
                                 <ChevronRight className="w-4 h-4" />
                               </button>
                             </div>

@@ -15,7 +15,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const variants = {
       default: "bg-[var(--color-primary-blue)] !text-white font-bold border border-[var(--color-primary-blue)]/25 hover:brightness-110 shadow-[var(--shadow-control)] active:scale-[0.98]",
       outline: "border border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-primary)] active:scale-[0.98]",
-      ghost: "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-primary)] active:scale-[0.98]",
+      // Antes sem fundo por padrão (só aparecia com bg no hover) — muitos botões de
+      // ícone (editar/excluir/fechar) usam essa variante e ficavam praticamente
+      // invisíveis até o usuário passar o mouse. Agora tem fundo sutil sempre visível.
+      ghost: "bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-elevated)] hover:border-[var(--color-border-default)] hover:text-[var(--color-text-primary)] active:scale-[0.98]",
       success: "bg-success/10 border border-success/25 text-success hover:bg-success/20 active:scale-[0.98]",
       danger: "bg-danger/10 border border-danger/25 text-danger hover:bg-danger/20 active:scale-[0.98]",
       secondary: "bg-accent/10 border border-accent/25 text-accent hover:bg-accent/20 active:scale-[0.98]",

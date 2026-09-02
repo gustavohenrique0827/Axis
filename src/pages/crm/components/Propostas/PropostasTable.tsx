@@ -172,7 +172,7 @@ export function PropostasTable({ propostas, proposalItems, search, onSearchChang
                           ? window.open(item.link_pdf, "_blank", "noopener,noreferrer")
                           : handleDownloadPdf(item as any, itens)}
                         title={item.tipo === "arquivo" ? "Abrir Arquivo Anexado" : "Baixar Contrato (PDF)"}
-                        className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/10 rounded-lg transition-colors"
+                        className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:text-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/10 rounded-lg transition-colors"
                       >
                         <Download className="w-4 h-4" />
                       </button>
@@ -185,7 +185,7 @@ export function PropostasTable({ propostas, proposalItems, search, onSearchChang
                           })) onDelete(item.id);
                         }}
                         title="Deletar Proposta"
-                        className="p-2 text-[var(--color-text-muted)] hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                        className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
                       >
 
                         <Trash2 className="w-4 h-4" />

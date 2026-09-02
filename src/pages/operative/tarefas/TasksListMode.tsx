@@ -142,7 +142,7 @@ export function TasksListMode({
                 <button 
                   type="button"
                   onClick={() => openEditTaskModal(t)}
-                  className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-elevated)] hover:border-[var(--color-border-default)] rounded-lg transition-colors cursor-pointer"
                   title="Editar tarefa"
                 >
                   <Edit className="w-3.5 h-3.5" />
@@ -150,7 +150,7 @@ export function TasksListMode({
                 <button 
                   type="button"
                   onClick={() => handleDeleteTask(t.id)}
-                  className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                   title="Excluir tarefa"
                 >
                   <Trash2 className="w-3.5 h-3.5" />

@@ -46,7 +46,7 @@ export function DetalharTarefaSprintModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 hover:bg-white/10 rounded-xl text-slate-500 hover:text-white transition-colors shrink-0"
+            className="p-2 bg-white/5 hover:bg-white/10 rounded-xl text-slate-500 hover:text-white transition-colors shrink-0"
             aria-label="Fechar"
           >
             <X className="w-4 h-4" />

@@ -106,7 +106,7 @@ export default function MarketingFormularios() {
                     <button
                       onClick={(e) => handleDelete(form, e)}
                       title="Excluir formulário"
-                      className="p-2 rounded-lg text-slate-600 hover:text-danger hover:bg-danger/10 transition-colors shrink-0"
+                      className="p-2 rounded-lg bg-danger/5 text-slate-600 hover:text-danger hover:bg-danger/10 transition-colors shrink-0"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>

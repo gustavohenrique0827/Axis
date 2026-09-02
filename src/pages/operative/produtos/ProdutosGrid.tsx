@@ -55,7 +55,7 @@ export function ProdutosGrid({
 
               <button 
                 onClick={(e) => handleOpenEditModal(p, e)}
-                className="p-1.5 hover:bg-white/10 text-slate-400 hover:text-white rounded-md transition-colors"
+                className="p-1.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-md transition-colors"
                 title="Editar produto"
               >
                 <Edit className="w-3.5 h-3.5" />
@@ -63,7 +63,7 @@ export function ProdutosGrid({
 
               <button 
                 onClick={(e) => duplicateProduct(p, e)}
-                className="p-1.5 hover:bg-white/10 text-slate-400 hover:text-white rounded-md transition-colors"
+                className="p-1.5 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-md transition-colors"
                 title="Duplicar Produto"
               >
                 <Copy className="w-3.5 h-3.5" />
@@ -71,7 +71,7 @@ export function ProdutosGrid({
 
               <button 
                 onClick={(e) => deleteProduct(p.id, e)}
-                className="p-1.5 hover:bg-white/10 text-rose-400 hover:text-rose-500 rounded-md transition-colors"
+                className="p-1.5 bg-white/5 hover:bg-white/10 text-rose-400 hover:text-rose-500 rounded-md transition-colors"
                 title="Remover"
               >
                 <Trash2 className="w-3.5 h-3.5" />

@@ -295,13 +295,13 @@ export default function ReunioesList() {
             <div className="space-y-5">
               <Card className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5">
                 <div className="flex items-center justify-between mb-6">
-                  <button onClick={prevMonth} className="p-2 hover:bg-white/5 rounded-xl text-slate-400 hover:text-white transition-all">
+                  <button onClick={prevMonth} className="p-2 bg-white/[0.03] hover:bg-white/5 rounded-xl text-slate-400 hover:text-white transition-all">
                     <ChevronLeft className="w-4 h-4" />
                   </button>
                   <h3 className="text-sm font-black text-white uppercase tracking-widest">
                     {MONTH_NAMES[calMonth]} {calYear}
                   </h3>
-                  <button onClick={nextMonth} className="p-2 hover:bg-white/5 rounded-xl text-slate-400 hover:text-white transition-all">
+                  <button onClick={nextMonth} className="p-2 bg-white/[0.03] hover:bg-white/5 rounded-xl text-slate-400 hover:text-white transition-all">
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>

@@ -94,7 +94,7 @@ function VeiculoFormModal({ onClose, onSave, initial }: {
             <h2 className="text-base font-black text-white">{isEdit ? "Editar Veículo" : "Novo Veículo"}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações do veículo" : "Cadastre um novo veículo ao estoque"}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
         </div>
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">

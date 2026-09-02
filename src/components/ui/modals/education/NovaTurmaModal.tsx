@@ -73,7 +73,7 @@ export function NovaTurmaModal({ isOpen, onClose, onSubmit }: NovaTurmaModalProp
               </div>
               <button
                 onClick={handleClose}
-                className="absolute right-4 top-4 p-2 hover:bg-white/10 rounded-xl text-slate-500 hover:text-white transition-colors"
+                className="absolute right-4 top-4 p-2 bg-white/5 hover:bg-white/10 rounded-xl text-slate-500 hover:text-white transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>

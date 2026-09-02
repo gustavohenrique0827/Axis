@@ -261,7 +261,7 @@ export function FormDetail({ form, tenantId }: { form: FormDefinition; tenantId:
                     <h3 className="text-[11px] font-black text-white uppercase tracking-widest">Últimas Inscrições</h3>
                     <p className="text-[10px] text-slate-500 mt-0.5">source = {form.source}</p>
                   </div>
-                  <button onClick={loadAll} disabled={loading} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                  <button onClick={loadAll} disabled={loading} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 transition-colors">
                     <RefreshCw className={`w-4 h-4 text-slate-500 ${loading ? "animate-spin" : ""}`} />
                   </button>
                 </div>

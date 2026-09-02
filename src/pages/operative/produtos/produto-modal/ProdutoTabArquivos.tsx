@@ -71,7 +71,7 @@ export function ProdutoTabArquivos({ attachments, setAttachments }: ProdutoTabAr
                     </div>
                   </div>
                   <button type="button" onClick={() => removeAttachment(idx)}
-                    className="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 p-1.5 rounded-lg transition-all" title="Remover arquivo">
+                    className="text-slate-500 hover:text-rose-400 bg-rose-500/5 hover:bg-rose-500/10 p-1.5 rounded-lg transition-all" title="Remover arquivo">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>

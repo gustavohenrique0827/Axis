@@ -98,7 +98,7 @@ export function Modal({
             <button
               type="button"
               onClick={onClose}
-              className="p-2 hover:bg-[var(--color-surface-sunken)] rounded-xl text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors shrink-0"
+              className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] hover:bg-[var(--color-surface-elevated)] hover:border-[var(--color-border-default)] rounded-xl text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors shrink-0"
               aria-label="Fechar"
             >
               <X className="w-4 h-4" />

@@ -115,28 +115,28 @@ export function ProdutosTable({
                     <div className="flex gap-1 justify-end">
                       <button
                         onClick={(e) => handleVender(p, e)}
-                        className="p-1 hover:bg-emerald-500/10 text-emerald-400 rounded transition-colors"
+                        className="p-1 bg-emerald-500/5 hover:bg-emerald-500/10 text-emerald-400 rounded transition-colors"
                         title="Vender"
                       >
                         <ShoppingCart className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={(e) => handleOpenEditModal(p, e)}
-                        className="p-1 hover:bg-white/10 text-slate-400 hover:text-white rounded transition-colors"
+                        className="p-1 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded transition-colors"
                         title="Editar"
                       >
                         <Edit className="w-3.5 h-3.5" />
                       </button>
                       <button 
                         onClick={(e) => duplicateProduct(p, e)}
-                        className="p-1 hover:bg-white/10 text-slate-400 hover:text-white rounded transition-colors"
+                        className="p-1 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded transition-colors"
                         title="Duplicar"
                       >
                         <Copy className="w-3.5 h-3.5" />
                       </button>
                       <button 
                         onClick={(e) => deleteProduct(p.id, e)}
-                        className="p-1 hover:bg-white/10 text-rose-400 hover:text-rose-500 rounded transition-colors"
+                        className="p-1 bg-white/5 hover:bg-white/10 text-rose-400 hover:text-rose-500 rounded transition-colors"
                         title="Remover"
                       >
                         <Trash2 className="w-3.5 h-3.5" />

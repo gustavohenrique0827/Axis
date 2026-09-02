@@ -116,7 +116,7 @@ export function PipelineListaView({
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+                    <button className="p-2 bg-white/[0.03] text-slate-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
                       <MoreHorizontal className="w-4 h-4" />
                     </button>
                   </td>

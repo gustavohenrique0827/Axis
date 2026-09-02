@@ -97,7 +97,7 @@ function ImovelFormModal({ onClose, onSave, initial }: {
             <h2 className="text-base font-black text-white">{isEdit ? "Editar Imóvel" : "Novo Imóvel"}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações do imóvel" : "Cadastre um novo imóvel ao portfólio"}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
         </div>
         <div className="p-6 space-y-4">
           <div>

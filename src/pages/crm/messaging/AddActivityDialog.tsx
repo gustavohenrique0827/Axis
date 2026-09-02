@@ -33,7 +33,7 @@ export function AddActivityDialog({
       <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl relative animate-in zoom-in-95 duration-200">
         <button 
           onClick={() => setShowAddActivityModal(false)}
-          className="absolute top-4 right-4 p-1.5 hover:bg-white/15 rounded-full text-slate-400 transition-colors"
+          className="absolute top-4 right-4 p-1.5 bg-white/[0.07] hover:bg-white/15 rounded-full text-slate-400 transition-colors"
         >
           <X className="w-5 h-5" />
         </button>

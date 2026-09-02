@@ -84,7 +84,7 @@ export function ProdutoModal(props: ProdutoModalProps) {
             </p>
           </div>
           <button type="button" onClick={props.onClose}
-            className="text-slate-400 hover:text-white p-1.5 hover:bg-white/5 rounded-lg transition-colors ml-4 shrink-0">
+            className="text-slate-400 hover:text-white p-1.5 bg-white/[0.03] hover:bg-white/5 rounded-lg transition-colors ml-4 shrink-0">
             <X className="w-4 h-4" />
           </button>
         </div>

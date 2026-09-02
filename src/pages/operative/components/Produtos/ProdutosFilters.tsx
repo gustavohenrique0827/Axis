@@ -174,7 +174,7 @@ export function ProdutosFilters({
                 </button>
                 <button
                   onClick={onBulkDelete}
-                  className="p-1 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 rounded"
+                  className="p-1 bg-rose-500/10 text-rose-400 hover:text-rose-500 hover:bg-rose-500/20 rounded"
                   title="Excluir Selecionados"
                 >
                   <Trash2 className="w-4 h-4" />

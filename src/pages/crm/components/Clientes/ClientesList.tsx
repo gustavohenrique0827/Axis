@@ -151,7 +151,7 @@ export function ClientesList({
                     <button
                       onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
                       title="Remover Cliente"
-                      className="p-2 text-[var(--color-text-faint)] hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                      className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-faint)] hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
@@ -178,7 +178,7 @@ export function ClientesList({
                 <Badge variant={statusBadgeVariant(c.status)}>{c.status}</Badge>
                 <button
                   onClick={(e) => { e.stopPropagation(); onDelete(c.id); }}
-                  className="p-1 text-[var(--color-text-faint)] hover:text-danger hover:bg-danger/10 rounded transition-colors"
+                  className="p-1 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-faint)] hover:text-danger hover:bg-danger/10 rounded transition-colors"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>

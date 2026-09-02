@@ -159,8 +159,8 @@ export function ActiveChatArea({
             <Sparkles className={`w-4 h-4 ${rightPanel === "ai" ? 'animate-pulse' : ''}`} />
           </button>
           <div className="w-[1px] h-5 bg-[var(--color-border-subtle)] mx-1"></div>
-          <button type="button" className="p-2 hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-primary)] rounded-lg cursor-pointer transition-colors hidden sm:flex"><Search className="w-4 h-4" /></button>
-          <button type="button" className="p-2 hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-primary)] rounded-lg cursor-pointer transition-colors"><Phone className="w-4 h-4" /></button>
+          <button type="button" className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] hover:bg-[var(--color-surface-elevated)] hover:border-[var(--color-border-default)] hover:text-[var(--color-text-primary)] rounded-lg cursor-pointer transition-colors hidden sm:flex"><Search className="w-4 h-4" /></button>
+          <button type="button" className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] hover:bg-[var(--color-surface-elevated)] hover:border-[var(--color-border-default)] hover:text-[var(--color-text-primary)] rounded-lg cursor-pointer transition-colors"><Phone className="w-4 h-4" /></button>
           <button 
             type="button"
             onClick={() => setRightPanel(p => p === "info" ? "none" : "info")}

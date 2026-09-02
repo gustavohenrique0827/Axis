@@ -148,7 +148,7 @@ export function FormStepsEditor({ tenantId, siteKey }: FormStepsEditorProps) {
                             className="flex-1 bg-[var(--color-surface-elevated)] text-white border border-white/10 rounded-xl h-9 px-3 text-sm focus:outline-none focus:border-orange-500/50 transition-colors" />
                         )}
                         <button onClick={() => removeOption(key, i)} disabled={(step.options?.length ?? 0) <= 1}
-                          className="p-2 rounded-lg hover:bg-rose-500/10 text-slate-600 hover:text-rose-400 disabled:opacity-30 transition-colors">
+                          className="p-2 rounded-lg bg-rose-500/5 hover:bg-rose-500/10 text-slate-600 hover:text-rose-400 disabled:opacity-30 transition-colors">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>

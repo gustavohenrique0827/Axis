@@ -237,7 +237,7 @@ export default function FinanceiroConfiguracoes() {
                           </td>
                           <td className="px-5 py-3 text-right">
                             <button onClick={() => { removeProfile(p.id); toast.success('Perfil removido.'); }}
-                              className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer">
+                              className="p-1.5 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </td>
@@ -316,7 +316,7 @@ export default function FinanceiroConfiguracoes() {
                           </td>
                           <td className="px-5 py-3 text-right">
                             <button onClick={() => { removeCommRule(r.id); toast.success('Regra removida.'); }}
-                              className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer">
+                              className="p-1.5 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </td>
@@ -384,7 +384,7 @@ export default function FinanceiroConfiguracoes() {
                           <td className="px-5 py-3 font-bold text-purple-500">{r.percentSplit}%</td>
                           <td className="px-5 py-3 text-right">
                             <button onClick={() => { removePartRule(r.id); toast.success('Regra removida.'); }}
-                              className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer">
+                              className="p-1.5 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </td>
@@ -448,7 +448,7 @@ export default function FinanceiroConfiguracoes() {
                           </td>
                           <td className="px-5 py-3 text-right">
                             <button onClick={() => { removeTaxRate(t.id); toast.success('Taxa removida.'); }}
-                              className="p-1.5 text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer">
+                              className="p-1.5 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-faint)] hover:text-rose-500 hover:bg-rose-500/10 transition-all rounded-lg cursor-pointer">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </td>

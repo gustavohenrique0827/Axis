@@ -91,10 +91,10 @@ function InternalSidebar({ channels, activeChannelId, onSelectChannel, onNewDM }
       <div className="shrink-0 h-[72px] px-5 flex items-center justify-between border-b border-white/5">
         <h1 className="text-xl font-bold text-white tracking-tight">Chat Interno</h1>
         <div className="flex items-center gap-3 text-slate-400">
-          <button onClick={onNewDM} title="Nova mensagem direta" className="p-2 hover:bg-white/5 rounded-full transition-colors">
+          <button onClick={onNewDM} title="Nova mensagem direta" className="p-2 bg-white/[0.03] hover:bg-white/5 rounded-full transition-colors">
             <Plus className="w-5 h-5" />
           </button>
-          <button className="p-2 hover:bg-white/5 rounded-full transition-colors">
+          <button className="p-2 bg-white/[0.03] hover:bg-white/5 rounded-full transition-colors">
             <MoreVertical className="w-5 h-5" />
           </button>
         </div>
@@ -269,10 +269,10 @@ function InternalChatArea({ channel, messages, inputText, setInputText, sendMess
         </div>
 
         <div className="flex items-center gap-1 text-slate-400 shrink-0">
-          <button className="p-2 hover:bg-white/10 hover:text-white rounded-full transition-colors hidden sm:flex">
+          <button className="p-2 bg-white/5 hover:bg-white/10 hover:text-white rounded-full transition-colors hidden sm:flex">
             <Search className="w-5 h-5" />
           </button>
-          <button className="p-2 hover:bg-white/10 hover:text-white rounded-full transition-colors">
+          <button className="p-2 bg-white/5 hover:bg-white/10 hover:text-white rounded-full transition-colors">
             <MoreVertical className="w-5 h-5" />
           </button>
         </div>

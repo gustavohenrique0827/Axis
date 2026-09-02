@@ -128,7 +128,7 @@ function LeadFormModal({ onClose, onSave, initial, ativos }: {
             <h2 className="text-base font-black text-white">{isEdit ? "Editar Lead" : "Novo Lead"}</h2>
             <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações" : "Adicione ao funil imobiliário"}</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
         </div>
         <div className="p-6 space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -342,7 +342,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
               >
                 <Brain className="w-4 h-4" />
               </button>
-              <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-white transition-colors">
+              <button onClick={onClose} className="p-1.5 bg-white/5 hover:bg-white/10 rounded-lg text-slate-500 hover:text-white transition-colors">
                 <X className="w-4 h-4" />
               </button>
             </div>

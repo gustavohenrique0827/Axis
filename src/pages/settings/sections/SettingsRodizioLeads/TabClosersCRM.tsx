@@ -197,7 +197,7 @@ export function TabClosersCRM() {
                     </div>
                     <div className="flex items-center gap-3 shrink-0">
                       {global.blockOnMultipleClients && (
-                        <button type="button" onClick={() => toggleBlocked(closer.id, closer.name)} className="p-1.5 rounded-lg hover:bg-[var(--color-surface-sunken)] transition-colors cursor-pointer">
+                        <button type="button" onClick={() => toggleBlocked(closer.id, closer.name)} className="p-1.5 rounded-lg bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] hover:bg-[var(--color-surface-elevated)] hover:border-[var(--color-border-default)] transition-colors cursor-pointer">
                           {closer.blocked ? <Lock className="w-4 h-4 text-rose-500" /> : <Unlock className="w-4 h-4 text-[var(--color-text-muted)]" />}
                         </button>
                       )}

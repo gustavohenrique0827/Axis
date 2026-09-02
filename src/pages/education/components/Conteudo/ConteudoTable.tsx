@@ -76,7 +76,7 @@ export function ConteudoTable({ items, onEdit }: ConteudoTableProps) {
                     }`}>
                       {item.status}
                     </span>
-                    <button className="p-2 hover:bg-white/5 rounded-lg text-slate-600 hover:text-white transition-colors">
+                    <button className="p-2 bg-white/[0.03] hover:bg-white/5 rounded-lg text-slate-600 hover:text-white transition-colors">
                       <MoreVertical className="w-4 h-4" />
                     </button>
                   </div>
