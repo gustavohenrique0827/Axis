@@ -24,6 +24,14 @@ type NovoMembroModalProps = {
   initialValue?: Partial<NovoMembroPayload> | null;
 };
 
+// Gera uma senha temporária forte quando o admin deixa o campo em branco —
+// substitui o antigo fallback fixo "123456" (previsível/fraco, mesma senha
+// pra toda conta criada sem senha explícita).
+function generateTempPassword(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(12));
+  return btoa(String.fromCharCode(...bytes)).replace(/[+/=]/g, "").slice(0, 14) + "!A1";
+}
+
 const labelClass = "text-xs font-bold text-[var(--color-text-muted)] mb-1 block";
 const inputBaseClass =
   "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] transition-all";
@@ -76,7 +84,7 @@ export function NovoMembroModal({
         nome: nome.trim(),
         email: email.trim(),
         phone: phone.trim(),
-        senha: senha || "123456",
+        senha: senha || generateTempPassword(),
         cargo: cargo.trim() || "Colaborador",
         departamento: departamento.trim() || "Geral",
         squad: squad.trim(),
@@ -137,7 +145,7 @@ export function NovoMembroModal({
             <div className="relative">
               <input
                 type={showSenha ? "text" : "password"}
-                placeholder="Padrão: 123456"
+                placeholder="Deixe em branco para gerar uma senha temporária"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
                 className={inputBaseClass}

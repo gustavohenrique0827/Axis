@@ -17,6 +17,7 @@ import Exames from "./pages/clinica/Exames";
 import EstatisticasClinicas from "./pages/clinica/Estatisticas";
 import Pacientes from "./pages/clinica/Pacientes";
 import Login from "./pages/auth/Login";
+import ResetPassword from "./pages/auth/ResetPassword";
 import Layout from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import Pipeline from "./pages/crm/Pipeline";
@@ -141,6 +142,7 @@ function AppContent() {
           }
         />
         <Route path="/login" element={<Login />} />
+        <Route path="/redefinir-senha" element={<ResetPassword />} />
         {/* Auto-cadastro público desativado: Axis não é mais um SaaS de self-signup —
             novos tenants passam a ser criados por quem já está autenticado (G-Tech/parceiros).
             Rota removida em vez de deixá-la quebrar silenciosamente contra o RLS da Fase 1. */}
@@ -290,7 +292,7 @@ function AppContent() {
             <Route path=":id" element={<ReuniaoRoom />} />
           </Route>
 
-          <Route path="admin" element={<AdminSaaS />} />
+          <Route path="admin" element={<ProtectedRoute requireMaster><AdminSaaS /></ProtectedRoute>} />
           <Route path="parceiros" element={<PartnersOverview />} />
         </Route>
 

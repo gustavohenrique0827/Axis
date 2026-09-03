@@ -48,6 +48,14 @@ export default function RHColaboradores() {
   }, []);
 
   const handleSaveMembro = async (data: any) => {
+    // Só master/admin do tenant pode criar contas reais de login — checagem de UI
+    // (o botão "Novo Registro" já fica escondido pra quem não tem essa permissão),
+    // repetida aqui como defesa em profundidade caso o modal seja aberto por outro caminho.
+    if (!(user?.isMaster || user?.isTenantAdmin)) {
+      toast.error("Você não tem permissão para criar novos usuários.");
+      return;
+    }
+
     const dataAdmissao = new Date().toLocaleDateString("pt-BR");
     // Sempre o tenant ATIVO — se um master estiver "dentro" de outro cliente, o novo
     // colaborador (e seu login) precisa ser criado nesse cliente, não no do master.
@@ -60,7 +68,7 @@ export default function RHColaboradores() {
         if (tenantRow?.id) tenantId = tenantRow.id;
 
         const created = await createUserWithProfile({
-          email: data.email, password: data.senha || "123456", name: data.nome,
+          email: data.email, password: data.senha, name: data.nome,
           tenantId, role: data.cargo, isMaster: false,
         });
         if (created?.success) {
@@ -86,6 +94,12 @@ export default function RHColaboradores() {
       user_id: userId,
     });
     toast.success(`${data.nome} adicionado à equipe com sucesso!`);
+    if (userId) {
+      toast.info(`Senha de acesso de ${data.nome}: ${data.senha}`, {
+        description: "Compartilhe com o colaborador por um canal seguro — essa senha não fica salva em nenhum outro lugar.",
+        duration: 20000,
+      });
+    }
     setIsMembroModalOpen(false);
   };
 
@@ -116,11 +130,11 @@ export default function RHColaboradores() {
             <Button onClick={() => setIsNewSquadOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
               <PlusCircle className="w-3.5 h-3.5" /> Criar Squad
             </Button>
-          ) : (
+          ) : (user?.isMaster || user?.isTenantAdmin) ? (
             <Button onClick={() => setIsMembroModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
               <UserPlus className="w-3.5 h-3.5" /> Novo Registro
             </Button>
-          )}
+          ) : null}
         </div>
       }
     >

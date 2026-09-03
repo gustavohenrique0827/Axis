@@ -202,6 +202,33 @@ export async function signIn(
 }
 
 /**
+ * Envia o e-mail de recuperação de senha do Supabase Auth. O link do e-mail
+ * leva o usuário de volta pra /redefinir-senha, onde updatePassword() é chamado.
+ */
+export async function requestPasswordReset(email: string): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: 'Supabase não configurado.' };
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/redefinir-senha`,
+  });
+  // Nunca revela se o e-mail existe ou não (evita enumeração de contas) — o
+  // Supabase já se comporta assim por padrão, mas mantemos a mensagem genérica
+  // mesmo em erro de rede para não vazar esse detalhe por um caminho diferente.
+  if (error) return { success: false, error: 'Não foi possível enviar o e-mail agora. Tente novamente em instantes.' };
+  return { success: true };
+}
+
+/**
+ * Define uma nova senha para a sessão de recuperação ativa (o clique no link
+ * do e-mail já autentica temporariamente o usuário via Supabase Auth).
+ */
+export async function updatePassword(newPassword: string): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: 'Supabase não configurado.' };
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) return { success: false, error: error.message };
+  return { success: true };
+}
+
+/**
  * Cria uma conta no Supabase Auth + o perfil correspondente em public.users.
  *
  * Usa um client Supabase secundário e isolado (sem persistir sessão) para o
@@ -251,100 +278,6 @@ export async function createUserWithProfile(params: {
   }
 
   return { success: true, userId: authData.user.id, needsEmailConfirmation: !authData.session };
-}
-
-/**
- * Register a new partner company and admin user
- */
-export async function registerPartner(
-  companyName: string,
-  email: string,
-  password: string,
-  _phone: string,
-  niche: string
-): Promise<{ success: boolean; error?: string; userId?: string; tenantId?: string; needsEmailConfirmation?: boolean; user?: any }> {
-  if (!supabase) {
-    const errorMsg = 'Supabase não está configurado. Variáveis VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY faltam. Reinicie o servidor (npm run dev) após configurar .env';
-    console.error('[Register] ' + errorMsg);
-    console.error('[Env Debug] URL:', import.meta.env.VITE_SUPABASE_URL);
-    console.error('[Env Debug] KEY:', import.meta.env.VITE_SUPABASE_ANON_KEY);
-    return { success: false, error: errorMsg };
-  }
-
-  try {
-    // 0. Verificar se o e-mail já existe (via RPC: com RLS habilitado em
-    // `users`, um SELECT direto como anon não retorna nenhuma linha)
-    const { data: emailExists } = await supabase.rpc("email_taken", { check_email: email });
-
-    if (emailExists) {
-      return { success: false, error: "Este e-mail já está cadastrado no sistema." };
-    }
-
-    // 1. Create tenant (company)
-    const { data: tenantData, error: tenantError } = await supabase
-      .from("tenants")
-      .insert({
-        name: companyName,
-        niche: niche || "Parceira",
-        plan: "Standard",
-        status: "Active",
-        timezone: "America/Sao_Paulo"
-      })
-      .select()
-      .maybeSingle();
-
-    if (tenantError || !tenantData) {
-      const errMsg = `Erro ao criar empresa: ${tenantError?.message || "Unknown error"}`;
-      console.error('[Register] ' + errMsg, tenantError);
-      return { success: false, error: errMsg };
-    }
-
-    // 2. Create admin user (Supabase Auth + perfil) for tenant
-    const created = await createUserWithProfile({
-      email,
-      password,
-      name: `Admin ${companyName}`,
-      tenantId: tenantData.id,
-      role: "Admin",
-      isTenantAdmin: true,
-      isMaster: false,
-    });
-
-    if (!created.success) {
-      // Rollback tenant if user creation fails
-      await supabase.from("tenants").delete().eq("id", tenantData.id);
-      const errMsg = `Erro ao criar usuário: ${created.error || "Unknown error"}`;
-      console.error('[Register] ' + errMsg);
-      return { success: false, error: errMsg };
-    }
-
-    console.log('[Register] ✅ Parceiro registrado com sucesso', { tenantId: tenantData.id, userId: created.userId });
-
-    // 3. A conta foi criada via client isolado (para não roubar a sessão de quem
-    //    já estiver logado neste navegador) — agora autentica de verdade no
-    //    client principal, exceto se o projeto exigir confirmação de e-mail.
-    if (created.needsEmailConfirmation) {
-      return {
-        success: true,
-        userId: created.userId,
-        tenantId: tenantData.id,
-        needsEmailConfirmation: true,
-      };
-    }
-
-    const signInResult = await signIn(email, password);
-    return {
-      success: true,
-      userId: created.userId,
-      tenantId: tenantData.id,
-      needsEmailConfirmation: false,
-      user: signInResult.user,
-    };
-  } catch (err) {
-    const errMsg = err instanceof Error ? err.message : "Erro desconhecido no registro";
-    console.error('[Register] ' + errMsg, err);
-    return { success: false, error: errMsg };
-  }
 }
 
 /**
@@ -411,73 +344,6 @@ export async function fetchTenantIdMap(): Promise<Record<string, string>> {
     return Object.fromEntries(data.map((t: any) => [t.name, t.id]));
   } catch {
     return {};
-  }
-}
-
-/**
- * Cria (ou atualiza) o usuário master G-Tech (admin@gthec.com / gthec@2025).
- * Chamado automaticamente pelo painel admin ao detectar ausência do usuário master.
- */
-export async function setupMasterUser(): Promise<{ success: boolean; error?: string; alreadyExists?: boolean }> {
-  if (!supabase) return { success: false, error: 'Supabase não configurado.' };
-
-  try {
-    const MASTER_EMAIL = 'admin@gthec.com';
-    const MASTER_PASSWORD = 'gthec@2025';
-    const TENANT_NAME = 'G-Tech Master';
-
-    // 1. Garantir que o tenant G-Tech Master existe
-    const allModules = {
-      crm: true, sdr: true, advDashboard: true, financeiro: true, marketing: true,
-      educacao: true, clinica: true, produtividade: true, rh: true, bi: true, engajamento: true
-    };
-
-    let { data: tenant } = await supabase
-      .from('tenants')
-      .select('id')
-      .eq('name', TENANT_NAME)
-      .maybeSingle();
-
-    if (!tenant) {
-      const { data: newTenant, error: tenantErr } = await supabase
-        .from('tenants')
-        .insert({ name: TENANT_NAME, niche: 'Master', plan: 'Enterprise', status: 'Active', timezone: 'America/Sao_Paulo', modules: allModules })
-        .select('id')
-        .maybeSingle();
-      if (tenantErr || !newTenant) return { success: false, error: `Erro ao criar tenant: ${tenantErr?.message}` };
-      tenant = newTenant;
-    } else {
-      await supabase.from('tenants').update({ modules: allModules }).eq('id', tenant.id);
-    }
-
-    // 2. Verificar se o usuário master já existe
-    const { data: existing } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', MASTER_EMAIL)
-      .maybeSingle();
-
-    if (existing) {
-      await supabase.from('users').update({ is_master: true, active: true, role: 'Super Admin' }).eq('id', existing.id);
-      return { success: true, alreadyExists: true };
-    }
-
-    // 3. Criar usuário master (Supabase Auth + perfil)
-    const created = await createUserWithProfile({
-      email: MASTER_EMAIL,
-      password: MASTER_PASSWORD,
-      name: 'G-Tech Administrador',
-      tenantId: tenant.id,
-      role: 'Super Admin',
-      isMaster: true,
-    });
-
-    if (!created.success) return { success: false, error: `Erro ao criar usuário: ${created.error}` };
-
-    console.log('[Setup] ✅ Usuário master gthec criado com sucesso');
-    return { success: true };
-  } catch (err) {
-    return { success: false, error: err instanceof Error ? err.message : 'Erro desconhecido' };
   }
 }
 

@@ -4,12 +4,24 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const CORS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+// Antes "*" — qualquer site podia ler a resposta desta função se conseguisse
+// um JWT válido por outro caminho. ALLOWED_ORIGINS: lista separada por vírgula
+// (variável de ambiente da função, configurável via `supabase secrets set`).
+const ALLOWED_ORIGINS = (Deno.env.get("ALLOWED_ORIGINS") || "https://axis-crm.pluppex.com.br")
+  .split(",").map((o) => o.trim()).filter(Boolean);
+
+function corsHeaders(req: Request): Record<string, string> {
+  const origin = req.headers.get("origin") || "";
+  const headers: Record<string, string> = {
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    Vary: "Origin",
+  };
+  if (ALLOWED_ORIGINS.includes(origin)) headers["Access-Control-Allow-Origin"] = origin;
+  return headers;
+}
 
 serve(async (req) => {
+  const CORS = corsHeaders(req);
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
 
   try {

@@ -4,6 +4,7 @@
 // chegam injetadas de verdade no processo.
 import "dotenv/config";
 import express from "express";
+import rateLimit from "express-rate-limit";
 import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
@@ -47,8 +48,15 @@ interface ChatMessage {
 }
 
 // ── In-Memory State ────────────────────────────────────────────────────────
+//
+// instances/contacts/messages do simulador de WhatsApp eram arrays únicos e
+// globais no processo — sem tenant_id, qualquer usuário autenticado de
+// QUALQUER tenant via essas mesmas instâncias/contatos/mensagens simuladas de
+// outro tenant. Agora seguem o mesmo padrão já usado logo abaixo pra
+// sources/customFields/etc. (tenantBucket): um bucket por tenant, resolvido
+// via current_tenant_id() (RPC, roda com a sessão real do chamador).
 
-let instances: WhatsAppInstance[] = [
+const DEFAULT_INSTANCES: WhatsAppInstance[] = [
   {
     id: "evo_inst_1",
     name: "Axis Produção",
@@ -60,8 +68,14 @@ let instances: WhatsAppInstance[] = [
   }
 ];
 
-let contacts: ChatContact[] = [];
-let messages: Record<string, ChatMessage[]> = {};
+const instancesByTenant: Record<string, WhatsAppInstance[]> = {};
+const contactsByTenant: Record<string, ChatContact[]> = {};
+const messagesByTenant: Record<string, Record<string, ChatMessage[]>> = {};
+
+function tenantMessages(tenantId: string): Record<string, ChatMessage[]> {
+  if (!messagesByTenant[tenantId]) messagesByTenant[tenantId] = {};
+  return messagesByTenant[tenantId];
+}
 
 // Fallback in-memory de /api/settings/:category para quando não há tabela
 // crm_<categoria> no banco (sources/custom-fields/task-categories/templates
@@ -231,14 +245,35 @@ app.use((req: any, res, next) => {
   express.json({ limit: "5mb" })(req, res, next);
 });
 
-const allowedOrigin = process.env.AXIS_CORS_ORIGIN || "*";
+// AXIS_CORS_ORIGIN: lista separada por vírgula (ex.: "https://axis-crm.pluppex.com.br,http://localhost:5173").
+// Antes era "*" por padrão — qualquer site podia ler resposta de rotas autenticadas
+// (Authorization: Bearer) se conseguisse um token válido por outro caminho (XSS em
+// outro lugar, extensão maliciosa). Sem AXIS_CORS_ORIGIN configurada, não reflete
+// nenhuma origem (mais seguro que abrir geral por omissão).
+const allowedOrigins = (process.env.AXIS_CORS_ORIGIN || "").split(",").map(o => o.trim()).filter(Boolean);
 app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", allowedOrigin);
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+  }
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, x-api-key, Authorization");
   if (req.method === "OPTIONS") return res.sendStatus(204);
   next();
 });
+
+// Rate limiting — nada disso existia antes. Cobre: a API pública por chave (contra
+// força-bruta de x-api-key e abuso volumétrico), as rotas de IA (custo real por
+// chamada a Gemini/Groq) e o simulador de WhatsApp. Login/cadastro/reset de senha
+// não passam por aqui — dependem do rate limit nativo do próprio Supabase Auth.
+const apiKeyLimiter = rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: true, legacyHeaders: false });
+const aiLimiter = rateLimit({ windowMs: 60_000, limit: 20, standardHeaders: true, legacyHeaders: false });
+const whatsappLimiter = rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: true, legacyHeaders: false });
+app.use("/api/v1/leads", apiKeyLimiter);
+app.use("/api/leads", aiLimiter);
+app.use("/api/ai", aiLimiter);
+app.use("/api/whatsapp", whatsappLimiter);
 
 function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
   if (apiKeyTenantMap.size === 0) {
@@ -317,7 +352,7 @@ app.post("/api/v1/leads", requireApiKey, async (req, res) => {
   const { data, error } = await supabaseService.from("leads").insert(newLead).select().maybeSingle();
   if (error) {
     console.error("[API v1] Erro ao criar lead:", error.message);
-    return res.status(500).json({ error: "Falha ao salvar lead no banco.", details: error.message });
+    return res.status(500).json({ error: "Falha ao salvar lead no banco." });
   }
   return res.status(201).json({ success: true, lead: data ?? newLead });
 });
@@ -336,7 +371,10 @@ app.get("/api/v1/leads", requireApiKey, async (req, res) => {
   if (status) query = query.eq("status", status);
 
   const { data, error } = await query;
-  if (error) return res.status(500).json({ error: "Falha ao buscar leads.", details: error.message });
+  if (error) {
+    console.error("[API v1] Erro ao buscar leads:", error.message);
+    return res.status(500).json({ error: "Falha ao buscar leads." });
+  }
   return res.json({ success: true, count: data?.length ?? 0, leads: data ?? [] });
 });
 
@@ -956,7 +994,8 @@ app.post("/api/admin/tenant-user/:userId/credentials", requireUser, requireMaste
 
     const { error: authError } = await supabaseService.auth.admin.updateUserById(userId, authUpdates);
     if (authError) {
-      return res.status(500).json({ error: `Falha ao atualizar credenciais: ${authError.message}` });
+      console.error("[tenant-user-credentials] Falha ao atualizar credenciais:", authError.message);
+      return res.status(500).json({ error: "Falha ao atualizar credenciais." });
     }
 
     if (email) {
@@ -1003,7 +1042,8 @@ app.post("/api/admin/tenant", requireUser, requireMaster, async (req: any, res) 
       .select()
       .maybeSingle();
     if (tenantError || !tenantData) {
-      return res.status(500).json({ error: tenantError?.message || "Erro ao criar empresa." });
+      console.error("[tenant-create] Falha ao criar tenant:", tenantError?.message);
+      return res.status(500).json({ error: "Erro ao criar empresa." });
     }
 
     const { data: authData, error: authError } = await supabaseService.auth.admin.createUser({
@@ -1012,8 +1052,9 @@ app.post("/api/admin/tenant", requireUser, requireMaster, async (req: any, res) 
       email_confirm: true,
     });
     if (authError || !authData.user) {
+      console.error("[tenant-create] Falha ao criar conta de acesso:", authError?.message);
       await supabaseService.from("tenants").delete().eq("id", tenantData.id);
-      return res.status(500).json({ error: authError?.message || "Erro ao criar conta de acesso do administrador." });
+      return res.status(500).json({ error: "Erro ao criar conta de acesso do administrador." });
     }
 
     const { error: profileError } = await supabaseService.from("users").insert({
@@ -1026,9 +1067,10 @@ app.post("/api/admin/tenant", requireUser, requireMaster, async (req: any, res) 
       active: true,
     });
     if (profileError) {
+      console.error("[tenant-create] Falha ao criar perfil do admin:", profileError.message);
       await supabaseService.from("tenants").delete().eq("id", tenantData.id);
       await supabaseService.auth.admin.deleteUser(authData.user.id);
-      return res.status(500).json({ error: profileError.message });
+      return res.status(500).json({ error: "Erro ao criar o perfil do administrador." });
     }
 
     res.json({ success: true });
@@ -1045,12 +1087,14 @@ function bodyWithFallback(req: any) { return req.body || {}; }
 app.get("/api/whatsapp/instances", requireUser, async (req: any, res) => {
   const { data, error } = await req.supabase.from("whatsapp_instances").select("*").order("created_at", { ascending: false });
   if (!error && data && data.length > 0) return res.json(data);
-  res.json(instances);
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  res.json(tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES));
 });
 
-app.post("/api/whatsapp/instances", requireUser, (req, res) => {
+app.post("/api/whatsapp/instances", requireUser, async (req: any, res) => {
   const { name, phone = "-", webhookUrl = "" } = req.body;
   if (!name) return res.status(400).json({ error: "Nome da instância é obrigatório" });
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
   const newInst: WhatsAppInstance = {
     id: "evo_inst_" + Math.random().toString(36).substring(2, 9),
     name, phone, status: "DISCONNECTED",
@@ -1058,23 +1102,25 @@ app.post("/api/whatsapp/instances", requireUser, (req, res) => {
     webhookUrl: webhookUrl || "https://axis-crm.cloud/api/webhooks/whatsapp",
     qrcode: "", createdAt: new Date().toISOString()
   };
-  instances.push(newInst);
+  tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES).push(newInst);
   res.json(newInst);
 });
 
-app.post("/api/whatsapp/instances/:id/qrcode", requireUser, (req, res) => {
+app.post("/api/whatsapp/instances/:id/qrcode", requireUser, async (req: any, res) => {
   const { id } = req.params;
-  const inst = instances.find((i) => i.id === id);
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  const inst = tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES).find((i) => i.id === id);
   if (!inst) return res.status(404).json({ error: "Instância não encontrada" });
   inst.status = "CONNECTING";
   inst.qrcode = `00020101021226450014br.gov.bcb.pix2523evo-wa-connection-token-key-${inst.id}`;
   res.json({ status: "CONNECTING", qrcode: inst.qrcode });
 });
 
-app.post("/api/whatsapp/instances/:id/connect", requireUser, (req, res) => {
+app.post("/api/whatsapp/instances/:id/connect", requireUser, async (req: any, res) => {
   const { id } = req.params;
   const { phone } = bodyWithFallback(req);
-  const inst = instances.find((i) => i.id === id);
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  const inst = tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES).find((i) => i.id === id);
   if (!inst) return res.status(404).json({ error: "Instância não encontrada" });
   inst.status = "CONNECTED";
   inst.phone = phone || "+55 11 9" + Math.floor(1000 + Math.random() * 9000) + "-" + Math.floor(1000 + Math.random() * 9000);
@@ -1082,16 +1128,18 @@ app.post("/api/whatsapp/instances/:id/connect", requireUser, (req, res) => {
   res.json({ status: "CONNECTED", instance: inst });
 });
 
-app.delete("/api/whatsapp/instances/:id", requireUser, (req, res) => {
+app.delete("/api/whatsapp/instances/:id", requireUser, async (req: any, res) => {
   const { id } = req.params;
-  instances = instances.filter((i) => i.id !== id);
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  instancesByTenant[tenantId] = tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES).filter((i) => i.id !== id);
   res.json({ success: true, message: `Instância ${id} removida` });
 });
 
-app.put("/api/whatsapp/instances/:id", requireUser, (req, res) => {
+app.put("/api/whatsapp/instances/:id", requireUser, async (req: any, res) => {
   const { id } = req.params;
   const { webhookUrl, name, phone, status } = req.body;
-  const inst = instances.find((i) => i.id === id);
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  const inst = tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES).find((i) => i.id === id);
   if (!inst) return res.status(404).json({ error: "Instância não encontrada" });
   if (webhookUrl !== undefined) inst.webhookUrl = webhookUrl;
   if (name !== undefined) inst.name = name;
@@ -1100,11 +1148,16 @@ app.put("/api/whatsapp/instances/:id", requireUser, (req, res) => {
   res.json(inst);
 });
 
-app.get("/api/whatsapp/contacts", requireUser, (req, res) => res.json(contacts));
+app.get("/api/whatsapp/contacts", requireUser, async (req: any, res) => {
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  res.json(tenantBucket(contactsByTenant, tenantId, []));
+});
 
-app.post("/api/whatsapp/contacts", requireUser, (req, res) => {
+app.post("/api/whatsapp/contacts", requireUser, async (req: any, res) => {
   const { name, phone, email, tags = ["lead"] } = req.body;
   if (!name || !phone) return res.status(400).json({ error: "Nome e Telefone são obrigatórios" });
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  const contacts = tenantBucket(contactsByTenant, tenantId, []);
   const cleanPhone = phone.startsWith("+") ? phone : `+55 ${phone}`;
   const existing = contacts.find((c) => c.phone === cleanPhone);
   if (existing) return res.json(existing);
@@ -1118,65 +1171,68 @@ app.post("/api/whatsapp/contacts", requireUser, (req, res) => {
     phone: cleanPhone, email, tags, slaStatus: "Dentro do Prazo"
   };
   contacts.unshift(newContact);
-  if (!messages[newContact.id]) messages[newContact.id] = [];
+  tenantMessages(tenantId)[newContact.id] = [];
   res.json(newContact);
 });
 
-app.get("/api/whatsapp/messages/:contactId", requireUser, async (req, res) => {
+app.get("/api/whatsapp/messages/:contactId", requireUser, async (req: any, res) => {
   const { contactId } = req.params;
-  if (supabase) {
-    const { data, error } = await supabase.from("chat_messages").select("*").eq("contact_id", contactId).order("timestamp", { ascending: true });
-    if (!error && data) return res.json(data);
-  }
-  res.json(messages[contactId] || []);
+  const { data, error } = await req.supabase.from("chat_messages").select("*").eq("contact_id", contactId).order("timestamp", { ascending: true });
+  if (!error && data) return res.json(data);
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  res.json(tenantMessages(tenantId)[contactId] || []);
 });
 
-app.post("/api/whatsapp/messages/send", requireUser, async (req, res) => {
+app.post("/api/whatsapp/messages/send", requireUser, async (req: any, res) => {
   const { contactId, text } = req.body;
   if (!contactId || !text) return res.status(400).json({ error: "ID do contato e texto são obrigatórios" });
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
   const timeString = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const userMsg: ChatMessage = {
     id: "msg_" + Math.random().toString(36).substring(2, 9),
     text, sender: "me", time: timeString, status: "sent", timestamp: Date.now()
   };
-  if (!messages[contactId]) messages[contactId] = [];
-  messages[contactId].push(userMsg);
-  if (supabase) {
-    await supabase.from("chat_messages").insert([{ id: userMsg.id, text: userMsg.text, sender: userMsg.sender, time: userMsg.time, status: userMsg.status, timestamp: userMsg.timestamp, contact_id: contactId }]);
-    await supabase.from("chat_contacts").update({ lastMessage: text, time: timeString }).eq("id", contactId);
-  }
-  const contact = contacts.find((c) => c.id === contactId);
+  const msgsByContact = tenantMessages(tenantId);
+  if (!msgsByContact[contactId]) msgsByContact[contactId] = [];
+  msgsByContact[contactId].push(userMsg);
+  // req.supabase (escopado pela sessão do chamador, respeita RLS) em vez do client
+  // anon module-level — essas tabelas não existem hoje (ver SECURITY_AUDIT.md item
+  // A9), então isso é um no-op silencioso, mas já fica correto pra quando existirem.
+  await req.supabase.from("chat_messages").insert([{ id: userMsg.id, text: userMsg.text, sender: userMsg.sender, time: userMsg.time, status: userMsg.status, timestamp: userMsg.timestamp, contact_id: contactId, tenant_id: tenantId }]);
+  await req.supabase.from("chat_contacts").update({ lastMessage: text, time: timeString }).eq("id", contactId);
+  const contact = tenantBucket(contactsByTenant, tenantId, []).find((c) => c.id === contactId);
   if (contact) { contact.lastMessage = text; contact.time = timeString; }
   res.json({ success: true, message: userMsg });
 });
 
-app.post("/api/whatsapp/simulate-incoming", requireUser, async (req, res) => {
+app.post("/api/whatsapp/simulate-incoming", requireUser, async (req: any, res) => {
   const { contactId, text } = req.body;
   if (!contactId || !text) return res.status(400).json({ error: "contactId e texto são obrigatórios" });
-  const contact = contacts.find((c) => c.id === contactId);
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  const contact = tenantBucket(contactsByTenant, tenantId, []).find((c) => c.id === contactId);
   if (!contact) return res.status(404).json({ error: "Contato não encontrado" });
   const timeString = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const inMsg: ChatMessage = {
     id: "msg_sim_" + Math.random().toString(36).substring(2, 9),
     text, sender: "them", time: timeString, timestamp: Date.now()
   };
-  if (!messages[contactId]) messages[contactId] = [];
-  messages[contactId].push(inMsg);
+  const msgsByContact = tenantMessages(tenantId);
+  if (!msgsByContact[contactId]) msgsByContact[contactId] = [];
+  msgsByContact[contactId].push(inMsg);
   contact.lastMessage = text;
   contact.time = timeString;
   contact.unread += 1;
-  if (supabase) {
-    await supabase.from("chat_messages").insert([{ id: inMsg.id, text: inMsg.text, sender: inMsg.sender, time: inMsg.time, timestamp: inMsg.timestamp, contact_id: contactId }]);
-    await supabase.from("chat_contacts").update({ lastMessage: text, time: timeString, unread: contact.unread }).eq("id", contactId);
-  }
+  await req.supabase.from("chat_messages").insert([{ id: inMsg.id, text: inMsg.text, sender: inMsg.sender, time: inMsg.time, timestamp: inMsg.timestamp, contact_id: contactId, tenant_id: tenantId }]);
+  await req.supabase.from("chat_contacts").update({ lastMessage: text, time: timeString, unread: contact.unread }).eq("id", contactId);
   res.json({ message: inMsg, contact });
 });
 
-app.post("/api/whatsapp/copilot/analyze", requireUser, async (req, res) => {
+app.post("/api/whatsapp/copilot/analyze", requireUser, async (req: any, res) => {
   const { contactId } = req.body;
   if (!contactId) return res.status(400).json({ error: "contactId é obrigatório" });
-  const chatHistory = messages[contactId] || [];
-  const contact = contacts.find((c) => c.id === contactId);
+  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+  const chatHistory = tenantMessages(tenantId)[contactId] || [];
+  const contact = tenantBucket(contactsByTenant, tenantId, []).find((c) => c.id === contactId);
   if (chatHistory.length === 0) {
     return res.json({
       suggestion: "Ainda não há mensagens registradas com este contato para analisar. Tente fazer uma saudação cortês, introduzindo o Axis CRM e perguntando como pode auxiliá-lo.",
@@ -1223,11 +1279,13 @@ app.post("/api/whatsapp/copilot/analyze", requireUser, async (req, res) => {
   }
 });
 
-// Global error handler — catches any unhandled throws in async routes
+// Global error handler — catches any unhandled throws in async routes. Nunca
+// devolve err.message pro cliente (pode conter detalhe de tabela/coluna/constraint
+// do Postgres) — detalhe completo só no log do servidor.
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error("[Axis] Unhandled error:", err?.message || err);
   if (!res.headersSent) {
-    res.status(500).json({ error: err?.message || "Internal Server Error" });
+    res.status(500).json({ error: "Erro interno do servidor." });
   }
 });
 

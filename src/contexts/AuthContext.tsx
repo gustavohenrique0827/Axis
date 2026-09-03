@@ -140,9 +140,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const applySession = async (userId: string | undefined) => {
       if (!userId) {
-        // Sem sessão real do Supabase Auth — pode ser uma sessão demo, que só
-        // existe no localStorage local (ver login()/AXIS_SESSION_KEY).
-        if (active) setUser(readSavedSession());
+        // Sem sessão real do Supabase Auth (JWT) — NUNCA cair pro objeto salvo em
+        // sessionStorage aqui: esse objeto é só um cache de conveniência (ver
+        // login()) e não tem verificação nenhuma por trás. Confiar nele sem uma
+        // sessão real permitiria a qualquer um escrever
+        // sessionStorage.setItem('axis_user_session', '{"isMaster":true,...}')
+        // no console do navegador e a UI passar a tratar como admin (RLS ainda
+        // bloquearia o acesso a dado real, mas nenhuma tela/ação client-side
+        // deveria confiar nisso).
+        if (active) setUser(null);
         return;
       }
       const profile = await fetchUserProfile(userId);

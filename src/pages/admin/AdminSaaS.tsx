@@ -1,10 +1,9 @@
 import React, { useState, useMemo } from "react";
-import { Activity, Server, DollarSign, TerminalSquare, Bell, Plus, Shield } from "lucide-react";
+import { Activity, Server, DollarSign, TerminalSquare, Bell, Plus } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
-import { setupMasterUser } from "../../lib/supabase";
 import { toast } from "sonner";
 import { ModuleConfigModal } from "./components/ModuleConfigModal";
 import { AdminOverviewTab } from "./components/AdminOverviewTab";
@@ -33,7 +32,6 @@ export const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function AdminSaaS() {
   const [activeTab, setActiveTab] = useState("overview");
-  const [settingUpMaster, setSettingUpMaster] = useState(false);
   const [selectedTenant, setSelectedTenant] = useState<any | null>(null);
   const [crmEnabled, setCrmEnabled] = useState(true);
   const [sdrEnabled, setSdrEnabled] = useState(false);
@@ -60,17 +58,6 @@ export default function AdminSaaS() {
 
   const globalMrr = revenueData.reduce((acc, curr) => acc + curr.mrr, 0);
 
-  const handleSetupMaster = async () => {
-    setSettingUpMaster(true);
-    const result = await setupMasterUser();
-    setSettingUpMaster(false);
-    if (result.success) {
-      toast.success(result.alreadyExists ? "Usuário master gthec já existe — permissões verificadas." : "Usuário master admin@gthec.com criado! Senha: gthec@2025");
-    } else {
-      toast.error(`Erro: ${result.error}`);
-    }
-  };
-
   const handleOpenModules = (tenantName: string) => {
     setSelectedTenant(tenantName);
     const mods = getTenantModules(tenantName);
@@ -93,10 +80,6 @@ export default function AdminSaaS() {
       description="Controle centralizado de instâncias, faturamento e saúde global da plataforma."
       actions={
         <div className="flex gap-2">
-          <Button onClick={handleSetupMaster} disabled={settingUpMaster} variant="outline" className="h-10 px-4">
-            <Shield className="w-4 h-4 mr-2" />
-            {settingUpMaster ? "Configurando..." : "Setup Master gthec"}
-          </Button>
           <Button variant="outline" className="h-10 px-4" disabled>
             <Bell className="w-4 h-4 mr-2" /> Alertas
           </Button>
