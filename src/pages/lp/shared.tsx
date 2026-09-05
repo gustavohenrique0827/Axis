@@ -121,12 +121,14 @@ export function GlassCard({
   className = "",
   glow = false,
   interactive = false,
+  style,
 }: {
   children: ReactNode;
   className?: string;
   glow?: boolean;
   /** Levanta o card e intensifica a sombra no hover — usar em cards clicáveis/navegáveis. */
   interactive?: boolean;
+  style?: import("react").CSSProperties;
 }) {
   const { glow: themeGlow } = useLpTheme();
   return (
@@ -134,7 +136,10 @@ export function GlassCard({
       className={`relative rounded-2xl border border-slate-200 bg-white transition-all duration-300 ${
         glow ? "shadow-md" : "shadow-sm"
       } ${interactive ? "hover:-translate-y-1 hover:shadow-lg hover:border-slate-300" : ""} ${className}`}
-      style={glow ? { boxShadow: `0 20px 60px -15px ${themeGlow(0.2)}` } : undefined}
+      style={{
+        ...(glow ? { boxShadow: `0 20px 60px -15px ${themeGlow(0.2)}` } : {}),
+        ...style,
+      }}
     >
       {children}
     </div>
