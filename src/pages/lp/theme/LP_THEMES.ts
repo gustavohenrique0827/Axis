@@ -136,4 +136,4 @@ export const LP_THEMES: Record<LpTheme["id"], LpTheme> = {
   },
 };
 
-export const DEFAULT_LP_THEME_ID: LpTheme["id"] = "blue";
+export const DEFAULT_LP_THEME_ID: LpTheme["id"] = "green";

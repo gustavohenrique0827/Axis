@@ -1,10 +1,12 @@
-import { Check, Star } from "lucide-react";
-import { Section, Kicker, SectionTitle, FadeIn, FONT_DISPLAY, FONT_MONO } from "./shared";
+import { useState } from "react";
+import { Check, Star, Zap, ArrowRight, ShieldCheck, HelpCircle } from "lucide-react";
+import { Section, Kicker, SectionTitle, FadeIn, ThemedCTAButton, ThemedOutlineButton, FONT_DISPLAY, FONT_MONO } from "./shared";
 import { useLpTheme } from "./theme/LpThemeContext";
 
 interface Plan {
   name: string;
-  price: string;
+  monthlyPrice: number;
+  annualPrice: number;
   setup: string;
   description: string;
   features: string[];
@@ -16,189 +18,206 @@ interface Plan {
 const PLANS: Plan[] = [
   {
     name: "Start",
-    price: "R$ 997/mês",
-    setup: "Implantação: R$ 2.997",
-    description: "Para empresas que querem organizar e enxergar melhor sua operação comercial.",
+    monthlyPrice: 997,
+    annualPrice: 797,
+    setup: "Implantação assistida inclusa",
+    description: "Para empresas que querem organizar e enxergar a operação comercial sem planilhas soltas.",
     features: [
-      "CRM",
-      "Gestão de leads",
-      "Pipeline comercial",
-      "Gestão de clientes",
-      "Histórico de interações",
-      "Integração WhatsApp",
-      "Inteligência sobre leads",
-      "Identificação de oportunidades",
-      "Análise de conversas",
-      "Score de oportunidade",
-      "Próxima melhor ação",
+      "CRM & Pipeline Comercial visual ilimitado",
+      "Conexão oficial com WhatsApp",
+      "Histórico completo de conversas por lead",
+      "Gestão de contatos, tarefas e notas internas",
+      "Transcrição automática de áudios com IA",
+      "Painel de métricas e conversão em tempo real",
+      "Suporte técnico via chamados e base de conhecimento",
     ],
-    cta: "Começar agora",
+    cta: "Começar com o Start",
   },
   {
     name: "Autopilot",
-    price: "R$ 1.997/mês",
-    setup: "Implantação: R$ 4.997",
-    description: "Para empresas que querem que a inteligência comece a trabalhar as oportunidades.",
+    monthlyPrice: 1997,
+    annualPrice: 1597,
+    setup: "Implantação e treinamento ao vivo inclusos",
+    description: "Para operações que querem a Aurora IA qualificando e distribuindo leads 24 horas por dia.",
     features: [
-      "Tudo do Start, mais:",
-      "Agentes de IA",
-      "Qualificação automática",
-      "Follow-up automático",
-      "Recuperação de oportunidades",
-      "Agendamento automático",
-      "Distribuição de leads",
-      "Ações comerciais automatizadas",
+      "Tudo do plano Start, mais:",
+      "Aurora IA integrada 24/7 sem fila",
+      "Qualificação automática de leads em etapas",
+      "Rodízio inteligente de SDRs e Closers",
+      "Follow-up automático de leads que esfriaram",
+      "Agendamento direto no Google Calendar & Google Meet",
+      "Radar de Oportunidades & Análise de Sentimento",
+      "Lembretes automáticos via WhatsApp anti-no-show",
+      "Suporte prioritário via WhatsApp corporativo",
     ],
     cta: "Quero o Autopilot",
-    badge: "Mais escolhido",
+    badge: "Mais Escolhido",
     highlight: true,
   },
   {
     name: "Autonomous",
-    price: "R$ 3.997/mês",
-    setup: "Implantação: R$ 9.997",
-    description: "Para empresas que querem transformar o Axis em parte ativa da sua operação comercial.",
+    monthlyPrice: 3997,
+    annualPrice: 3197,
+    setup: "Consultoria de implantação personalizada",
+    description: "Para empresas de alta performance que buscam automação ponta a ponta e escala comercial.",
     features: [
-      "Tudo do Autopilot, mais:",
-      "Múltiplos agentes especializados",
-      "Propostas comerciais",
-      "Negociação com regras",
-      "Reativação de clientes",
-      "Expansão de carteira",
-      "Operação comercial autônoma",
-      "Maior capacidade de processamento",
-      "Configurações avançadas",
+      "Tudo do plano Autopilot, mais:",
+      "Múltiplos agentes com regras e instruções customizadas",
+      "Geração de contratos com assinatura digital em 1 clique",
+      "Módulo Financeiro completo: DRE, contas e fluxo de caixa",
+      "Cálculo automático de comissões por vendedor e squad",
+      "Multi-tenant & White-Label com marca e cores da empresa",
+      "Construtor de Formulários e Landing Pages ilimitadas",
+      "API aberta e webhooks para integração com ERPs",
+      "Gerente de conta dedicado e reuniões mensais de alinhamento",
     ],
-    cta: "Quero conhecer",
+    cta: "Contratar o Autonomous",
   },
-];
-
-const CREDIT_TIERS = [
-  { credits: "10.000 créditos",  price: "R$ 199"   },
-  { credits: "30.000 créditos",  price: "R$ 497"   },
-  { credits: "75.000 créditos",  price: "R$ 997"   },
-  { credits: "150.000 créditos", price: "R$ 1.797" },
-  { credits: "300.000 créditos", price: "R$ 2.997" },
 ];
 
 export function PlanosSection({ onCta }: { onCta: () => void }) {
   const { theme, glow } = useLpTheme();
+  const [isAnnual, setIsAnnual] = useState(true);
+
+  const formatPrice = (val: number) =>
+    val.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
   return (
-    <Section id="planos" className="bg-slate-50/70" glow>
-      <div className="text-center mb-14">
-        <Kicker>Planos</Kicker>
-        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl">
+    <Section id="planos" className="bg-slate-50/70 relative" glow>
+      <div className="text-center mb-10">
+        <Kicker>Investimento Transparente</Kicker>
+        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-4">
           Escolha o nível de autonomia da sua operação.
         </SectionTitle>
-      </div>
+        <p className="text-base text-slate-600 max-w-2xl mx-auto">
+          Sem taxas ocultas. Escolha o plano ideal para a sua equipe e comece a recuperar oportunidades perdidas.
+        </p>
 
-      <div className="grid lg:grid-cols-3 gap-6 mb-16 items-stretch">
-        {PLANS.map((plan, i) => (
-          <FadeIn key={plan.name} delay={i * 0.08} className={`h-full ${plan.highlight ? "lg:-mt-3" : ""}`}>
-            <div
-              className={`relative h-full flex flex-col rounded-2xl p-6 sm:p-7 border transition-all duration-300 ${
-                plan.highlight
-                  ? `${theme.highlightPlanBorder} ${theme.highlightPlanBg} ${theme.highlightPlanShadow} lg:scale-[1.03] lg:hover:scale-[1.05]`
-                  : "border-slate-200 bg-white shadow-sm hover:-translate-y-1 hover:shadow-lg"
-              }`}
+        {/* Toggle Mensal / Anual */}
+        <div className="mt-8 inline-flex items-center gap-3 p-1.5 rounded-full bg-white border border-slate-200 shadow-sm">
+          <button
+            onClick={() => setIsAnnual(false)}
+            className={`px-5 py-2 rounded-full text-xs font-bold transition-all duration-200 ${
+              !isAnnual ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Faturamento Mensal
+          </button>
+          <button
+            onClick={() => setIsAnnual(true)}
+            className={`px-5 py-2 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
+              isAnnual ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
+            }`}
+          >
+            Faturamento Anual
+            <span
+              className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
+              style={{ background: glow(0.2), color: theme.primaryDark }}
             >
-              {/* Badge "Mais escolhido" */}
-              {plan.badge && (
-                <span
-                  className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 rounded-full text-white text-[10px] font-semibold uppercase tracking-wider"
-                  style={{ background: theme.primary, fontFamily: FONT_MONO }}
-                >
-                  <Star className="w-3 h-3 fill-white" /> {plan.badge}
-                </span>
-              )}
-
-              <h3 className="text-lg font-bold text-slate-900 mb-1" style={{ fontFamily: FONT_DISPLAY }}>
-                {plan.name}
-              </h3>
-              <div className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1" style={{ fontFamily: FONT_DISPLAY }}>
-                {plan.price}
-              </div>
-              <p className="text-[11px] text-slate-400 mb-4">{plan.setup}</p>
-              <p className="text-sm text-slate-500 leading-relaxed mb-6">{plan.description}</p>
-
-              <div className="space-y-2.5 mb-8 flex-1">
-                {plan.features.map((f, fi) =>
-                  f.endsWith(":") ? (
-                    <p
-                      key={fi}
-                      className="text-[11px] font-medium uppercase tracking-wider pt-1 transition-colors duration-700"
-                      style={{ color: theme.primary, fontFamily: FONT_MONO }}
-                    >
-                      {f}
-                    </p>
-                  ) : (
-                    <div key={fi} className="flex items-start gap-2.5">
-                      <Check
-                        className="w-4 h-4 mt-0.5 shrink-0 transition-colors duration-700"
-                        style={{ color: theme.primary }}
-                      />
-                      <span className="text-sm text-slate-600">{f}</span>
-                    </div>
-                  )
-                )}
-              </div>
-
-              <button
-                onClick={onCta}
-                className={`w-full py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ${
-                  plan.highlight
-                    ? theme.ctaClass
-                    : "bg-slate-50 text-slate-900 border border-slate-200 hover:bg-slate-100"
-                }`}
-                style={plan.highlight ? { boxShadow: `0 4px 16px ${glow(0.3)}` } : undefined}
-              >
-                {plan.cta}
-              </button>
-            </div>
-          </FadeIn>
-        ))}
-      </div>
-
-      <p className="text-center text-[11px] text-slate-400 mb-20 max-w-xl mx-auto">
-        Uso de inteligência e canais segue franquia/consumo conforme configuração.
-      </p>
-
-      {/* Consumo de inteligência */}
-      <div className="text-center mb-10">
-        <Kicker>Consumo de inteligência</Kicker>
-        <SectionTitle className="text-2xl sm:text-3xl lg:text-4xl mb-5">
-          Você controla o consumo de inteligência.
-        </SectionTitle>
-        <p className="text-slate-500 max-w-2xl mx-auto leading-relaxed text-sm sm:text-base">
-          O Axis utiliza modelos de inteligência artificial para analisar dados, conversas e executar ações.
-          Cada operação pode utilizar sua própria API de inteligência ou uma estrutura disponibilizada pelo
-          Axis, conforme a configuração contratada.
-        </p>
-      </div>
-
-      <FadeIn>
-        <div className="max-w-3xl mx-auto rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
-          <div className="grid grid-cols-2 sm:grid-cols-5 divide-x divide-slate-200">
-            {CREDIT_TIERS.map((t) => (
-              <div key={t.credits} className="p-4 sm:p-5 text-center group">
-                <div
-                  className="text-sm sm:text-base font-bold text-slate-900 mb-1 group-hover:transition-colors group-hover:duration-200"
-                  style={{ fontFamily: FONT_DISPLAY }}
-                >
-                  {t.price}
-                </div>
-                <div className="text-[10px] text-slate-400 font-medium leading-snug">{t.credits}</div>
-              </div>
-            ))}
-          </div>
+              20% OFF
+            </span>
+          </button>
         </div>
-        <p className="text-center text-[11px] text-slate-400 mt-5">Consumo adicional conforme utilização.</p>
-        <p className="text-center text-[10px] text-slate-400 mt-2 max-w-xl mx-auto">
-          Os créditos representam uma unidade comercial de consumo de inteligência. O processamento real
-          pode utilizar diferentes modelos e provedores.
-        </p>
-      </FadeIn>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6 mb-12 items-stretch max-w-6xl mx-auto">
+        {PLANS.map((plan, i) => {
+          const price = isAnnual ? plan.annualPrice : plan.monthlyPrice;
+          return (
+            <FadeIn key={plan.name} delay={i * 0.08} className={`h-full ${plan.highlight ? "lg:-mt-3" : ""}`}>
+              <div
+                className={`relative h-full flex flex-col justify-between rounded-3xl p-7 sm:p-8 bg-white border transition-all duration-300 ${
+                  plan.highlight
+                    ? "border-2 shadow-xl ring-4 ring-emerald-500/10"
+                    : "border-slate-200 shadow-sm hover:shadow-md"
+                }`}
+                style={{
+                  borderColor: plan.highlight ? theme.primary : undefined,
+                }}
+              >
+                {/* Badge destaque */}
+                {plan.badge && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                    <span
+                      className="inline-flex items-center gap-1 px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-slate-900 shadow-md"
+                      style={{ background: theme.primary }}
+                    >
+                      <Star className="w-3 h-3 fill-current" />
+                      {plan.badge}
+                    </span>
+                  </div>
+                )}
+
+                <div>
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-xl font-black text-slate-900" style={{ fontFamily: FONT_DISPLAY }}>
+                      {plan.name}
+                    </h3>
+                  </div>
+
+                  <p className="text-xs text-slate-500 leading-relaxed mb-6 min-h-[36px]">
+                    {plan.description}
+                  </p>
+
+                  {/* Preço */}
+                  <div className="mb-4 pb-4 border-b border-slate-100">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight" style={{ fontFamily: FONT_DISPLAY }}>
+                        {formatPrice(price)}
+                      </span>
+                      <span className="text-xs font-bold text-slate-400">/mês</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1 font-mono">{plan.setup}</p>
+                  </div>
+
+                  {/* Lista de Recursos */}
+                  <div className="space-y-3 mb-8">
+                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
+                      O que está incluso:
+                    </p>
+                    {plan.features.map((f) => (
+                      <div key={f} className="flex items-start gap-2.5 text-xs text-slate-700">
+                        <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                        <span className="leading-snug">{f}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  {plan.highlight ? (
+                    <ThemedCTAButton onClick={onCta} className="w-full py-3.5 text-sm font-bold shadow-md">
+                      {plan.cta} <ArrowRight className="w-4 h-4 ml-1" />
+                    </ThemedCTAButton>
+                  ) : (
+                    <ThemedOutlineButton onClick={onCta} className="w-full py-3.5 text-sm font-bold">
+                      {plan.cta}
+                    </ThemedOutlineButton>
+                  )}
+                </div>
+              </div>
+            </FadeIn>
+          );
+        })}
+      </div>
+
+      {/* Garantia incondicional */}
+      <div className="max-w-3xl mx-auto text-center p-6 rounded-2xl bg-white border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-center gap-4">
+        <div
+          className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: glow(0.15) }}
+        >
+          <ShieldCheck className="w-6 h-6" style={{ color: theme.primaryDark }} />
+        </div>
+        <div className="text-left flex-1">
+          <h4 className="text-sm font-bold text-slate-900" style={{ fontFamily: FONT_DISPLAY }}>
+            Garantia Incondicional de 14 Dias
+          </h4>
+          <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
+            Se a sua equipe não constatar um aumento perceptível na velocidade de atendimento e recuperação de leads nos primeiros 14 dias, cancelamos sua assinatura sem complicações.
+          </p>
+        </div>
+      </div>
     </Section>
   );
 }

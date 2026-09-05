@@ -5,6 +5,7 @@ import { ProblemSection, NovaLogicaSection } from "./ProblemAndLogic";
 import { EcossistemaSection } from "./Ecossistema";
 import { ProductShowcaseSection } from "./ProductShowcase";
 import { FuncionalidadesSection } from "./Funcionalidades";
+import { CalculadoraROISection } from "./CalculadoraROI";
 import { ComoFuncionaSection } from "./ComoFunciona";
 import { ComoComecarSection } from "./ComoComecar";
 import { InteligenciaSection } from "./Inteligencia";
@@ -110,6 +111,7 @@ function LpContent({ initialTheme }: { initialTheme?: LpTheme["id"] }) {
         <ProductShowcaseSection onCta={scrollToForm} />
         <NovaLogicaSection onCta={scrollToForm} />
         <FuncionalidadesSection />
+        <CalculadoraROISection onCta={scrollToForm} />
         <ComoFuncionaSection />
         <ComoComecarSection />
         <InteligenciaSection />
