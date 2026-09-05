@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <!-- Fundo circular escuro -->
+  <circle cx="50" cy="50" r="50" fill="#0B1120"/>
+  <!-- Mira: círculo externo -->
+  <circle cx="50" cy="50" r="38" stroke="#2563EB" stroke-width="5" fill="none"/>
+  <!-- Mira: linhas cruzadas -->
+  <line x1="50" y1="6"  x2="50" y2="18" stroke="#2563EB" stroke-width="5" stroke-linecap="round"/>
+  <line x1="50" y1="82" x2="50" y2="94" stroke="#2563EB" stroke-width="5" stroke-linecap="round"/>
+  <line x1="6"  y1="50" x2="18" y2="50" stroke="#2563EB" stroke-width="5" stroke-linecap="round"/>
+  <line x1="82" y1="50" x2="94" y2="50" stroke="#2563EB" stroke-width="5" stroke-linecap="round"/>
+  <!-- Chapéu de espião -->
+  <path d="M27 47c0-13 10-23 23-23s23 10 23 23c8 1 13 5 13 9H14c0-4 5-8 13-9Z" fill="#2563EB"/>
+  <!-- Aba do chapéu -->
+  <rect x="17" y="53" width="66" height="8" rx="4" fill="#2563EB"/>
+  <!-- Óculos: lente esquerda -->
+  <rect x="29" y="58" width="17" height="10" rx="5" fill="#0B1120"/>
+  <!-- Óculos: lente direita -->
+  <rect x="54" y="58" width="17" height="10" rx="5" fill="#0B1120"/>
+  <!-- Óculos: ponte -->
+  <rect x="46" y="61" width="8" height="3" rx="1.5" fill="#0B1120"/>
+</svg>
