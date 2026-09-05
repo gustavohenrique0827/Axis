@@ -1,24 +1,83 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "../../../components/ui/button";
-import { Card } from "../../../components/ui/card";
-import { Lock, Mail, ArrowRight } from "lucide-react";
+import { Lock, Mail, ArrowRight, Eye, EyeOff, Loader2, KeyRound } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 import { signIn, requestPasswordReset } from "../../../lib/supabase";
 import { toast } from "sonner";
 
+const inputClass = `
+  w-full rounded-xl pl-10 pr-4 py-3 text-sm transition-all duration-200 outline-none
+  placeholder:text-[#334155]
+  focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/60
+`.trim();
+
+const inputStyle = {
+  background: "rgba(255,255,255,0.05)",
+  border: "1px solid rgba(255,255,255,0.1)",
+  color: "#E2E8F0",
+};
+
+const inputFocusStyle = {
+  background: "rgba(37,99,235,0.08)",
+  borderColor: "rgba(37,99,235,0.5)",
+};
+
+function FieldInput({
+  id,
+  type,
+  value,
+  onChange,
+  placeholder,
+  icon: Icon,
+  rightSlot,
+}: {
+  id: string;
+  type: string;
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+  icon: React.ElementType;
+  rightSlot?: React.ReactNode;
+}) {
+  const [focused, setFocused] = useState(false);
+  return (
+    <div className="relative">
+      <Icon
+        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+        style={{ color: focused ? "#60A5FA" : "#475569", transition: "color 0.2s" }}
+      />
+      <input
+        id={id}
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoComplete={type === "password" ? "current-password" : "email"}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        className={inputClass}
+        style={focused ? { ...inputStyle, ...inputFocusStyle } : inputStyle}
+      />
+      {rightSlot}
+    </div>
+  );
+}
+
 export function LoginForm() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
-  const [sendingReset, setSendingReset] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [email, setEmail]                   = useState("");
+  const [password, setPassword]             = useState("");
+  const [showPassword, setShowPassword]     = useState(false);
+  const [loading, setLoading]               = useState(false);
+  const [error, setError]                   = useState("");
+  const [showForgotPassword, setShowForgot] = useState(false);
+  const [resetEmail, setResetEmail]         = useState("");
+  const [sendingReset, setSendingReset]     = useState(false);
+
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const { login } = useAuth();
-  const from = location.state?.from?.pathname || "/app/dashboard";
+  const from      = location.state?.from?.pathname || "/app/dashboard";
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,9 +85,8 @@ export function LoginForm() {
     setSendingReset(true);
     await requestPasswordReset(resetEmail);
     setSendingReset(false);
-    // Mensagem sempre igual, exista ou não a conta — evita enumeração de e-mails.
     toast.success("Se esse e-mail estiver cadastrado, enviamos um link para redefinir a senha.");
-    setShowForgotPassword(false);
+    setShowForgot(false);
     setResetEmail("");
   };
 
@@ -50,78 +108,174 @@ export function LoginForm() {
     }
   };
 
+  /* ── Tela de recuperação de senha ── */
   if (showForgotPassword) {
     return (
-      <Card className="p-8 bg-[var(--color-surface-elevated)] border-[var(--color-border-default)] text-[var(--color-text-primary)] shadow-sm">
-        <form onSubmit={handleForgotPassword} className="space-y-6">
-          <div className="space-y-1">
-            <h2 className="text-sm font-bold">Redefinir senha</h2>
-            <p className="text-xs text-[var(--color-text-muted)]">Informe seu e-mail e enviaremos um link para redefinir sua senha.</p>
+      <form onSubmit={handleForgotPassword} className="space-y-5">
+        <div className="flex items-center gap-2 mb-2">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+            style={{ background: "rgba(37,99,235,0.2)", border: "1px solid rgba(37,99,235,0.3)" }}
+          >
+            <KeyRound className="w-4 h-4" style={{ color: "#60A5FA" }} />
           </div>
-          <div className="space-y-2">
-            <label className="text-xs font-semibold text-[var(--color-text-muted)]">E-mail Corporativo</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-faint)]" />
-              <input
-                type="email"
-                value={resetEmail}
-                onChange={(e) => setResetEmail(e.target.value)}
-                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors"
-                placeholder="admin@g-tech.com"
-              />
-            </div>
+          <div>
+            <h3 className="text-sm font-bold" style={{ color: "#F8FAFC" }}>Redefinir senha</h3>
+            <p className="text-[11px]" style={{ color: "#64748B" }}>
+              Enviaremos um link para seu e-mail.
+            </p>
           </div>
-          <Button type="submit" disabled={sendingReset || !resetEmail} className="w-full py-6 bg-[#2563EB] hover:bg-blue-600 text-white rounded-lg text-md font-semibold group">
-            {sendingReset ? "Enviando..." : "Enviar link de redefinição"}
-          </Button>
-          <button type="button" onClick={() => setShowForgotPassword(false)} className="text-xs text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] block mx-auto cursor-pointer">
-            Voltar para o login
-          </button>
-        </form>
-      </Card>
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="reset-email" className="text-xs font-semibold" style={{ color: "#94A3B8" }}>
+            E-mail Corporativo
+          </label>
+          <FieldInput
+            id="reset-email"
+            type="email"
+            value={resetEmail}
+            onChange={setResetEmail}
+            placeholder="admin@empresa.com"
+            icon={Mail}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={sendingReset || !resetEmail}
+          className="w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-50"
+          style={{
+            background: "linear-gradient(135deg, #2563EB, #1D4ED8)",
+            color: "#fff",
+            boxShadow: "0 4px 20px rgba(37,99,235,0.4)",
+          }}
+        >
+          {sendingReset ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Enviando...</>
+          ) : (
+            "Enviar link de redefinição"
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowForgot(false)}
+          className="w-full text-xs text-center transition-colors duration-200 py-1"
+          style={{ color: "#475569" }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#94A3B8")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#475569")}
+        >
+          ← Voltar para o login
+        </button>
+      </form>
     );
   }
 
+  /* ── Formulário principal ── */
   return (
-    <Card className="p-8 bg-[var(--color-surface-elevated)] border-[var(--color-border-default)] text-[var(--color-text-primary)] shadow-sm">
-      <form onSubmit={handleLogin} className="space-y-6">
-        <div className="space-y-2">
-          <label className="text-xs font-semibold text-[var(--color-text-muted)]">E-mail Corporativo</label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-faint)]" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors"
-              placeholder="admin@g-tech.com"
-            />
-          </div>
+    <form onSubmit={handleLogin} className="space-y-5">
+
+      {/* E-mail */}
+      <div className="space-y-1.5">
+        <label htmlFor="login-email" className="text-xs font-semibold" style={{ color: "#94A3B8" }}>
+          E-mail Corporativo
+        </label>
+        <FieldInput
+          id="login-email"
+          type="email"
+          value={email}
+          onChange={setEmail}
+          placeholder="admin@empresa.com"
+          icon={Mail}
+        />
+      </div>
+
+      {/* Senha */}
+      <div className="space-y-1.5">
+        <div className="flex justify-between items-center">
+          <label htmlFor="login-password" className="text-xs font-semibold" style={{ color: "#94A3B8" }}>
+            Senha
+          </label>
+          <button
+            type="button"
+            onClick={() => { setShowForgot(true); setResetEmail(email); }}
+            className="text-xs transition-colors duration-200"
+            style={{ color: "#2563EB" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "#60A5FA")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "#2563EB")}
+          >
+            Esqueci a senha
+          </button>
         </div>
+        <FieldInput
+          id="login-password"
+          type={showPassword ? "text" : "password"}
+          value={password}
+          onChange={setPassword}
+          placeholder="••••••••"
+          icon={Lock}
+          rightSlot={
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 rounded transition-colors duration-200"
+              style={{ color: "#475569" }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#94A3B8")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#475569")}
+              tabIndex={-1}
+              aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          }
+        />
+      </div>
 
-        <div className="space-y-2">
-          <div className="flex justify-between items-center">
-            <label className="text-xs font-semibold text-[var(--color-text-muted)]">Senha</label>
-            <button type="button" onClick={() => { setShowForgotPassword(true); setResetEmail(email); }} className="text-xs text-[#2563EB] hover:text-blue-500 cursor-pointer">Esqueci a senha</button>
-          </div>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-faint)]" />
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] rounded-lg pl-10 pr-4 py-3 text-sm focus:outline-none focus:border-[#2563EB] focus:ring-1 focus:ring-[#2563EB] transition-colors"
-              placeholder="••••••••"
-            />
-          </div>
+      {/* Mensagem de erro */}
+      {error && (
+        <div
+          className="text-xs rounded-xl px-4 py-3 flex items-start gap-2"
+          style={{
+            background: "rgba(244,63,94,0.1)",
+            border: "1px solid rgba(244,63,94,0.2)",
+            color: "#FB7185",
+          }}
+        >
+          <span className="mt-0.5 flex-shrink-0">⚠</span>
+          <span>{error}</span>
         </div>
+      )}
 
-        {error && <div className="text-sm text-rose-600 bg-rose-500/10 border border-rose-500/20 rounded-lg px-4 py-3">{error}</div>}
-
-        <Button type="submit" disabled={loading} className="w-full py-6 bg-[#2563EB] hover:bg-blue-600 text-white rounded-lg text-md font-semibold group">
-          {loading ? "Entrando..." : "Entrar"} <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-        </Button>
-      </form>
-    </Card>
+      {/* Botão de login */}
+      <button
+        id="login-submit"
+        type="submit"
+        disabled={loading}
+        className="w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 group disabled:opacity-60"
+        style={{
+          background: loading
+            ? "rgba(37,99,235,0.5)"
+            : "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
+          color: "#fff",
+          boxShadow: loading ? "none" : "0 4px 24px rgba(37,99,235,0.45)",
+        }}
+        onMouseEnter={(e) => {
+          if (!loading) e.currentTarget.style.boxShadow = "0 6px 32px rgba(37,99,235,0.6)";
+        }}
+        onMouseLeave={(e) => {
+          if (!loading) e.currentTarget.style.boxShadow = "0 4px 24px rgba(37,99,235,0.45)";
+        }}
+      >
+        {loading ? (
+          <><Loader2 className="w-4 h-4 animate-spin" /> Entrando...</>
+        ) : (
+          <>
+            Entrar
+            <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </>
+        )}
+      </button>
+    </form>
   );
 }
