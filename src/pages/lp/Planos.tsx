@@ -1,5 +1,6 @@
 import { Check, Star } from "lucide-react";
 import { Section, Kicker, SectionTitle, FadeIn, FONT_DISPLAY, FONT_MONO } from "./shared";
+import { useLpTheme } from "./theme/LpThemeContext";
 
 interface Plan {
   name: string;
@@ -73,19 +74,23 @@ const PLANS: Plan[] = [
 ];
 
 const CREDIT_TIERS = [
-  { credits: "10.000 créditos", price: "R$ 199" },
-  { credits: "30.000 créditos", price: "R$ 497" },
-  { credits: "75.000 créditos", price: "R$ 997" },
+  { credits: "10.000 créditos",  price: "R$ 199"   },
+  { credits: "30.000 créditos",  price: "R$ 497"   },
+  { credits: "75.000 créditos",  price: "R$ 997"   },
   { credits: "150.000 créditos", price: "R$ 1.797" },
   { credits: "300.000 créditos", price: "R$ 2.997" },
 ];
 
 export function PlanosSection({ onCta }: { onCta: () => void }) {
+  const { theme, glow } = useLpTheme();
+
   return (
     <Section id="planos" className="bg-slate-50/70" glow>
       <div className="text-center mb-14">
         <Kicker>Planos</Kicker>
-        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl">Escolha o nível de autonomia da sua operação.</SectionTitle>
+        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl">
+          Escolha o nível de autonomia da sua operação.
+        </SectionTitle>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6 mb-16 items-stretch">
@@ -94,40 +99,59 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
             <div
               className={`relative h-full flex flex-col rounded-2xl p-6 sm:p-7 border transition-all duration-300 ${
                 plan.highlight
-                  ? "border-blue-300 bg-gradient-to-b from-blue-50 to-white shadow-xl shadow-blue-500/15 lg:scale-[1.03] lg:hover:scale-[1.05]"
+                  ? `${theme.highlightPlanBorder} ${theme.highlightPlanBg} ${theme.highlightPlanShadow} lg:scale-[1.03] lg:hover:scale-[1.05]`
                   : "border-slate-200 bg-white shadow-sm hover:-translate-y-1 hover:shadow-lg"
               }`}
             >
+              {/* Badge "Mais escolhido" */}
               {plan.badge && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 rounded-full bg-blue-600 text-white text-[10px] font-semibold uppercase tracking-wider" style={{ fontFamily: FONT_MONO }}>
+                <span
+                  className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center gap-1 px-3 py-1 rounded-full text-white text-[10px] font-semibold uppercase tracking-wider"
+                  style={{ background: theme.primary, fontFamily: FONT_MONO }}
+                >
                   <Star className="w-3 h-3 fill-white" /> {plan.badge}
                 </span>
               )}
-              <h3 className="text-lg font-bold text-slate-900 mb-1" style={{ fontFamily: FONT_DISPLAY }}>{plan.name}</h3>
-              <div className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1" style={{ fontFamily: FONT_DISPLAY }}>{plan.price}</div>
+
+              <h3 className="text-lg font-bold text-slate-900 mb-1" style={{ fontFamily: FONT_DISPLAY }}>
+                {plan.name}
+              </h3>
+              <div className="text-2xl sm:text-3xl font-bold text-slate-900 mb-1" style={{ fontFamily: FONT_DISPLAY }}>
+                {plan.price}
+              </div>
               <p className="text-[11px] text-slate-400 mb-4">{plan.setup}</p>
               <p className="text-sm text-slate-500 leading-relaxed mb-6">{plan.description}</p>
 
               <div className="space-y-2.5 mb-8 flex-1">
-                {plan.features.map((f, fi) => (
+                {plan.features.map((f, fi) =>
                   f.endsWith(":") ? (
-                    <p key={fi} className="text-[11px] font-medium uppercase tracking-wider text-blue-600 pt-1" style={{ fontFamily: FONT_MONO }}>{f}</p>
+                    <p
+                      key={fi}
+                      className="text-[11px] font-medium uppercase tracking-wider pt-1 transition-colors duration-700"
+                      style={{ color: theme.primary, fontFamily: FONT_MONO }}
+                    >
+                      {f}
+                    </p>
                   ) : (
                     <div key={fi} className="flex items-start gap-2.5">
-                      <Check className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                      <Check
+                        className="w-4 h-4 mt-0.5 shrink-0 transition-colors duration-700"
+                        style={{ color: theme.primary }}
+                      />
                       <span className="text-sm text-slate-600">{f}</span>
                     </div>
                   )
-                ))}
+                )}
               </div>
 
               <button
                 onClick={onCta}
-                className={`w-full py-3.5 rounded-xl text-sm font-bold transition-all ${
+                className={`w-full py-3.5 rounded-xl text-sm font-bold transition-all duration-200 ${
                   plan.highlight
-                    ? "bg-emerald-700 text-white hover:bg-emerald-800 shadow-lg shadow-emerald-900/20"
+                    ? theme.ctaClass
                     : "bg-slate-50 text-slate-900 border border-slate-200 hover:bg-slate-100"
                 }`}
+                style={plan.highlight ? { boxShadow: `0 4px 16px ${glow(0.3)}` } : undefined}
               >
                 {plan.cta}
               </button>
@@ -143,7 +167,9 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
       {/* Consumo de inteligência */}
       <div className="text-center mb-10">
         <Kicker>Consumo de inteligência</Kicker>
-        <SectionTitle className="text-2xl sm:text-3xl lg:text-4xl mb-5">Você controla o consumo de inteligência.</SectionTitle>
+        <SectionTitle className="text-2xl sm:text-3xl lg:text-4xl mb-5">
+          Você controla o consumo de inteligência.
+        </SectionTitle>
         <p className="text-slate-500 max-w-2xl mx-auto leading-relaxed text-sm sm:text-base">
           O Axis utiliza modelos de inteligência artificial para analisar dados, conversas e executar ações.
           Cada operação pode utilizar sua própria API de inteligência ou uma estrutura disponibilizada pelo
@@ -155,8 +181,13 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
         <div className="max-w-3xl mx-auto rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
           <div className="grid grid-cols-2 sm:grid-cols-5 divide-x divide-slate-200">
             {CREDIT_TIERS.map((t) => (
-              <div key={t.credits} className="p-4 sm:p-5 text-center">
-                <div className="text-sm sm:text-base font-bold text-slate-900 mb-1" style={{ fontFamily: FONT_DISPLAY }}>{t.price}</div>
+              <div key={t.credits} className="p-4 sm:p-5 text-center group">
+                <div
+                  className="text-sm sm:text-base font-bold text-slate-900 mb-1 group-hover:transition-colors group-hover:duration-200"
+                  style={{ fontFamily: FONT_DISPLAY }}
+                >
+                  {t.price}
+                </div>
                 <div className="text-[10px] text-slate-400 font-medium leading-snug">{t.credits}</div>
               </div>
             ))}

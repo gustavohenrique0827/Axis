@@ -23,12 +23,16 @@ import { FAQSection } from "./FAQ";
 import { CTAFinalFormSection } from "./CTAFinalForm";
 import { FooterSection } from "./FooterSection";
 import { FONT_BODY } from "./shared";
+import { LpThemeProvider } from "./theme/LpThemeContext";
+import type { LpTheme } from "./theme/LP_THEMES";
 
-const SEO_TITLE = "Axis — O cérebro operacional da sua empresa";
+const SEO_TITLE       = "Axis — O cérebro operacional da sua empresa";
 const SEO_DESCRIPTION =
   "Axis é o ecossistema operacional inteligente que conecta sua empresa: a Aurora liga dados, canais e times, entende o contexto e sugere a próxima ação. Não é apenas um CRM.";
 const GOOGLE_FONTS_HREF =
   "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Archivo:wght@600;700;800;900&family=JetBrains+Mono:wght@500;600&display=swap";
+
+const VALID_THEMES: LpTheme["id"][] = ["blue", "purple", "orange", "green"];
 
 function useLandingPageSeo() {
   useEffect(() => {
@@ -49,24 +53,21 @@ function useLandingPageSeo() {
     };
 
     const touched = [
-      upsertMeta("name", "description", SEO_DESCRIPTION),
-      upsertMeta("property", "og:title", SEO_TITLE),
-      upsertMeta("property", "og:description", SEO_DESCRIPTION),
-      upsertMeta("property", "og:type", "website"),
+      upsertMeta("name",     "description",    SEO_DESCRIPTION),
+      upsertMeta("property", "og:title",        SEO_TITLE),
+      upsertMeta("property", "og:description",  SEO_DESCRIPTION),
+      upsertMeta("property", "og:type",         "website"),
     ];
 
     const fontLink = document.createElement("link");
-    fontLink.rel = "stylesheet";
+    fontLink.rel  = "stylesheet";
     fontLink.href = GOOGLE_FONTS_HREF;
     document.head.appendChild(fontLink);
 
-    // A LP é sempre clara, independente do tema claro/escuro que o usuário logado tenha
-    // escolhido no CRM — sem isso, quem visita /lp já com o tema escuro salvo veria o
-    // <html>/<body> escuro atrás do conteúdo branco da página.
     const prevHtmlBg = document.documentElement.style.backgroundColor;
     const prevBodyBg = document.body.style.backgroundColor;
     document.documentElement.style.backgroundColor = "#FFFFFF";
-    document.body.style.backgroundColor = "#FFFFFF";
+    document.body.style.backgroundColor            = "#FFFFFF";
 
     return () => {
       document.title = prevTitle;
@@ -76,16 +77,26 @@ function useLandingPageSeo() {
       });
       fontLink.remove();
       document.documentElement.style.backgroundColor = prevHtmlBg;
-      document.body.style.backgroundColor = prevBodyBg;
+      document.body.style.backgroundColor            = prevBodyBg;
     };
   }, []);
 }
 
-export default function AxisLandingPage() {
-  useLandingPageSeo();
+/** Lê ?theme=purple da URL e retorna o ID se válido, senão null */
+function getUrlTheme(): LpTheme["id"] | null {
+  try {
+    const p = new URLSearchParams(window.location.search).get("theme");
+    return p && VALID_THEMES.includes(p as LpTheme["id"]) ? (p as LpTheme["id"]) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Wrapper interno que pode receber o themeId inicial da URL */
+function LpContent({ initialTheme }: { initialTheme?: LpTheme["id"] }) {
   const formRef = useRef<HTMLDivElement>(null);
 
-  const scrollToForm = () => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const scrollToForm    = () => formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   const scrollToProduto = () =>
     document.querySelector("#produto")?.scrollIntoView({ behavior: "smooth", block: "start" });
 
@@ -119,5 +130,16 @@ export default function AxisLandingPage() {
       </main>
       <FooterSection />
     </div>
+  );
+}
+
+export default function AxisLandingPage() {
+  useLandingPageSeo();
+  const urlTheme = getUrlTheme();
+
+  return (
+    <LpThemeProvider initialTheme={urlTheme ?? undefined}>
+      <LpContent />
+    </LpThemeProvider>
   );
 }

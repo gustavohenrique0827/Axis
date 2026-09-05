@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { motion } from "motion/react";
+import { useLpTheme } from "./theme/LpThemeContext";
 
 /**
  * Anima tickers/loops contínuos (setInterval) só quando o visitante não pediu menos movimento no SO.
@@ -193,6 +194,75 @@ export function BrandLine({ children }: { children: ReactNode }) {
 }
 
 export const ACCENT_GRADIENT = "bg-gradient-to-r from-teal-400 via-blue-500 to-violet-500 bg-clip-text text-transparent";
+
+/** Versão temática do Kicker — usa a cor primária do LpTheme ativo. */
+export function ThemedKicker({ children }: { children: ReactNode }) {
+  const { theme } = useLpTheme();
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      className={`inline-flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.22em] mb-5 ${theme.kickerTextClass}`}
+      style={{ fontFamily: FONT_MONO }}
+    >
+      <span className={`w-1.5 h-1.5 rotate-45 bg-gradient-to-br ${theme.kickerGradient} shrink-0`} />
+      {children}
+    </motion.div>
+  );
+}
+
+/** Botão CTA primário temático. */
+export function ThemedCTAButton({
+  onClick,
+  children,
+  className = "",
+}: {
+  onClick?: () => void;
+  children: ReactNode;
+  className?: string;
+}) {
+  const { theme } = useLpTheme();
+  return (
+    <button
+      onClick={onClick}
+      className={`group inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-sm font-bold transition-all duration-200 ${theme.ctaClass} ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Botão CTA outline temático. */
+export function ThemedOutlineButton({
+  onClick,
+  children,
+  className = "",
+}: {
+  onClick?: () => void;
+  children: ReactNode;
+  className?: string;
+}) {
+  const { theme } = useLpTheme();
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center justify-center gap-2 px-7 py-4 rounded-xl text-sm font-bold transition-all duration-200 ${theme.ctaOutlineClass} ${className}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Badge/pill temático. */
+export function ThemedBadge({ children, className = "" }: { children: ReactNode; className?: string }) {
+  const { theme } = useLpTheme();
+  return (
+    <span className={`inline-flex items-center px-3.5 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-[0.15em] ${theme.badgeClass} ${className}`} style={{ fontFamily: FONT_DISPLAY }}>
+      {children}
+    </span>
+  );
+}
 
 /** Número que conta de 0 até `value` quando entra na tela — só uma vez, via IntersectionObserver. */
 export function AnimatedCounter({

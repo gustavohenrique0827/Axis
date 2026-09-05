@@ -1,12 +1,12 @@
 import * as React from "react";
 
-export type LogoColorId = "blue" | "purple" | "orange" | "teal";
+export type LogoColorId = "blue" | "purple" | "orange" | "green";
 
 export const LOGO_COLORS: Record<LogoColorId, string> = {
   blue: "#2563EB",
   purple: "#7C3AED",
   orange: "#F97316",
-  teal: "#06B6D4",
+  green: "#4ADE80",
 };
 
 export interface LogoProps {
