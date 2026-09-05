@@ -585,7 +585,11 @@ html:not(.dark) th {
 
 /* Unified and Standardized Button Styles for consistent sizes, colors, rounding and feedback */
 .btn-primary {
-  @apply inline-flex items-center justify-center font-bold rounded-lg text-sm bg-[#2563EB] !text-white border border-blue-500/20 shadow-md shadow-blue-500/10 hover:bg-blue-600 active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;
+  @apply inline-flex items-center justify-center font-bold rounded-lg text-sm !text-white border border-white/15 shadow-md active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;
+  background-color: var(--color-primary-blue) !important;
+}
+.btn-primary:hover {
+  filter: brightness(1.1);
 }
 
 .btn-outline {
@@ -604,7 +608,28 @@ html:not(.dark) th {
   @apply inline-flex items-center justify-center font-medium rounded-lg text-sm bg-rose-500/10 border border-rose-500/25 text-rose-400 hover:bg-rose-500/20 active:scale-[0.98] transition-all duration-150 disabled:pointer-events-none disabled:opacity-50 select-none cursor-pointer h-10 px-4 py-2;
 }
 
-/* Ensure all solid blue background buttons and toggles always have pure white text */
+/* Todos os botões primários e ações de formulário devem respeitar o tema dinâmico */
+button.bg-\[\#2563EB\],
+button.bg-blue-600,
+button[class*="bg-[#2563EB]"]:not([class*="/"]):not([class*="bg-[#2563EB]/"]):not([class*="text-"]):not([class*="hover:"]),
+button[class*="bg-blue-600"]:not([class*="/"]):not([class*="bg-blue-600/"]):not([class*="text-"]):not([class*="hover:"]),
+a.bg-\[\#2563EB\],
+a.bg-blue-600,
+a[class*="bg-[#2563EB]"]:not([class*="/"]):not([class*="bg-[#2563EB]/"]):not([class*="text-"]):not([class*="hover:"]),
+a[class*="bg-blue-600"]:not([class*="/"]):not([class*="bg-blue-600/"]):not([class*="text-"]):not([class*="hover:"]) {
+  background-color: var(--color-primary-blue) !important;
+}
+
+button[class*="hover:bg-blue-600"]:hover,
+button[class*="hover:bg-blue-500"]:hover,
+button[class*="hover:bg-[#1d4ed8]"]:hover,
+a[class*="hover:bg-blue-600"]:hover,
+a[class*="hover:bg-blue-500"]:hover,
+a[class*="hover:bg-[#1d4ed8]"]:hover {
+  filter: brightness(1.1);
+}
+
+/* Ensure all solid theme background buttons and toggles always have pure white text */
 button[class*="bg-[#2563EB]"]:not([class*="/"]):not([class*="bg-[#2563EB]/"]),
 button[class*="bg-[var(--color-primary-blue)]"]:not([class*="/"]):not([class*="bg-[var(--color-primary-blue)]/"]),
 button[class*="bg-blue-600"]:not([class*="/"]):not([class*="bg-blue-600/"]),

@@ -1,18 +1,33 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { ClipboardList, Layers, Users } from "lucide-react";
+import {
+  ClipboardList, Layers, Users, Calendar, Clock,
+  Mail, X, Plus, CalendarCheck, Loader2, CheckCircle2, AlertCircle,
+} from "lucide-react";
 import { Modal } from "../../modal";
 import { Button } from "../../button";
 import { useData } from "../../../../contexts/DataContext";
+import { googleSignIn, getAccessToken } from "../../../../lib/google-auth";
+import { createCalendarEvent } from "../../../../lib/google-calendar";
+import { toast } from "sonner";
 
-type NovaTarefaPayload = {
+export type NovaTarefaPayload = {
   nome: string;
   tipo: string;
   prioridade: string;
-  data: string;
+  /** ISO datetime — início */
+  dataInicio: string;
+  /** ISO datetime — fim */
+  dataFim: string;
+  /** Compatibilidade legado (recebe dataInicio) */
+  data?: string;
   relacionado: string;
   vendedor: string;
   produtos: string[];
   tags: string;
+  /** E-mails dos convidados */
+  convidados: string[];
+  bloquearAgenda: boolean;
+  calendarLink?: string;
 };
 
 type NovaTarefaModalProps = {
@@ -24,19 +39,43 @@ type NovaTarefaModalProps = {
   submitText?: string;
 };
 
-const labelClass = "text-[10px] font-bold text-slate-400 uppercase tracking-widest";
-const fieldClass = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[#2563EB] focus:outline-none focus:ring-2 focus:ring-[#2563EB]/30 transition-all";
+const labelClass =
+  "text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5";
+const fieldClass =
+  "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-[var(--color-primary-blue)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]/30 transition-all placeholder:text-slate-600";
 
-const taskTypes = [
+const TASK_TYPES = [
   "Reunião Presencial",
   "Call Online",
   "Acompanhamento (Follow-up)",
   "Demonstração",
   "Envio Docs",
-  "Ligação"
+  "Ligação",
+  "Visita Comercial",
+  "Proposta",
 ];
 
-const priorities = ["Alta", "Média", "Baixa"];
+const PRIORITIES = ["Alta", "Média", "Baixa"];
+
+/** Retorna today no formato YYYY-MM-DD */
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+/** HH:MM daqui a 1 hora */
+function oneHourFromNow() {
+  const d = new Date();
+  d.setHours(d.getHours() + 1, 0, 0, 0);
+  return d.toTimeString().slice(0, 5);
+}
+function twoHoursFromNow() {
+  const d = new Date();
+  d.setHours(d.getHours() + 2, 0, 0, 0);
+  return d.toTimeString().slice(0, 5);
+}
+function buildISO(date: string, time: string) {
+  if (!date || !time) return "";
+  return `${date}T${time}:00`;
+}
 
 export function NovaTarefaModal({
   isOpen,
@@ -48,56 +87,183 @@ export function NovaTarefaModal({
 }: NovaTarefaModalProps) {
   const { colaboradores, products } = useData();
 
-  const sellerOptions = useMemo(
-    () => (colaboradores as any[]).filter(c => c.status !== "Desligado" && c.departamento === "Vendas").map(c => c.nome as string).filter(Boolean),
+  /* ─── Colaboradores disponíveis ────────────────────────────── */
+  const collaboratorOptions = useMemo(
+    () =>
+      (colaboradores as any[])
+        .filter((c) => c.status !== "Desligado")
+        .map((c) => ({ name: (c.nome || c.name || "") as string, email: (c.email || "") as string }))
+        .filter((c) => c.name),
     [colaboradores]
   );
+  const sellerOptions = collaboratorOptions.filter(
+    (c) => !c.name || true // todos os colaboradores podem ser vendedor responsável
+  );
 
+  /* ─── Campos principais ─────────────────────────────────────── */
   const [nome, setNome] = useState(initialValue?.nome || "");
-  const [tipo, setTipo] = useState(initialValue?.tipo || taskTypes[0]);
+  const [tipo, setTipo] = useState(initialValue?.tipo || TASK_TYPES[0]);
   const [prioridade, setPrioridade] = useState(initialValue?.prioridade || "Média");
-  const [data, setData] = useState(initialValue?.data || new Date().toISOString().substring(0, 16));
   const [relacionado, setRelacionado] = useState(initialValue?.relacionado || "");
   const [vendedor, setVendedor] = useState(initialValue?.vendedor || "");
   const [produtos, setProdutos] = useState<string[]>(initialValue?.produtos || []);
   const [tags, setTags] = useState(initialValue?.tags || "");
 
+  /* ─── Data / Hora ───────────────────────────────────────────── */
+  const [dataDate, setDataDate] = useState(todayStr());
+  const [horaInicio, setHoraInicio] = useState(oneHourFromNow());
+  const [horaFim, setHoraFim] = useState(twoHoursFromNow());
+
+  /* ─── Convidados ────────────────────────────────────────────── */
+  const [convidados, setConvidados] = useState<string[]>(initialValue?.convidados || []);
+  const [emailAvulso, setEmailAvulso] = useState("");
+  const [bloquearAgenda, setBloquearAgenda] = useState(initialValue?.bloquearAgenda || false);
+
+  /* ─── Google Calendar ───────────────────────────────────────── */
+  const [googleEmail, setGoogleEmail] = useState<string | null>(null);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleError, setGoogleError] = useState<string | null>(null);
+
+  /* ─── Reset ao abrir ────────────────────────────────────────── */
   useEffect(() => {
     if (!isOpen) return;
     setNome(initialValue?.nome || "");
-    setTipo(initialValue?.tipo || taskTypes[0]);
+    setTipo(initialValue?.tipo || TASK_TYPES[0]);
     setPrioridade(initialValue?.prioridade || "Média");
-    setData(initialValue?.data || new Date().toISOString().substring(0, 16));
+    if (initialValue?.dataInicio) {
+      const [d, t] = initialValue.dataInicio.split("T");
+      if (d) setDataDate(d);
+      if (t) setHoraInicio(t.slice(0, 5));
+    } else if (initialValue?.data) {
+      const [d, t] = initialValue.data.split("T");
+      if (d) setDataDate(d);
+      if (t) setHoraInicio(t.slice(0, 5));
+    } else {
+      setDataDate(todayStr());
+      setHoraInicio(oneHourFromNow());
+    }
+    if (initialValue?.dataFim) {
+      const [, t] = initialValue.dataFim.split("T");
+      if (t) setHoraFim(t.slice(0, 5));
+    } else {
+      setHoraFim(twoHoursFromNow());
+    }
     setRelacionado(initialValue?.relacionado || "");
     setVendedor(initialValue?.vendedor || "");
     setProdutos(initialValue?.produtos || []);
     setTags(initialValue?.tags || "");
-  }, [isOpen, initialValue]);
+    setConvidados(initialValue?.convidados || []);
+    setBloquearAgenda(initialValue?.bloquearAgenda || false);
+    setEmailAvulso("");
+    setGoogleError(null);
+    // Checar se já está conectado
+    getAccessToken().then((token) => {
+      if (token) setGoogleEmail("Conectado");
+    });
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const toggleProduto = (id: string) => {
-    setProdutos(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]);
+  /* ─── Convidados helpers ─────────────────────────────────────── */
+  const addConvidadoByEmail = (email: string) => {
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed || convidados.includes(trimmed)) return;
+    setConvidados((prev) => [...prev, trimmed]);
+    setEmailAvulso("");
   };
 
-  const canSubmit = useMemo(() => {
-    return Boolean(nome.trim() && relacionado.trim() && data.trim());
-  }, [nome, relacionado, data]);
+  const addCollaboratorAsGuest = (collab: { name: string; email: string }) => {
+    if (!collab.email) { toast.error(`${collab.name} não tem e-mail cadastrado.`); return; }
+    addConvidadoByEmail(collab.email);
+  };
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const removeConvidado = (email: string) =>
+    setConvidados((prev) => prev.filter((c) => c !== email));
+
+  const toggleProduto = (id: string) =>
+    setProdutos((prev) =>
+      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]
+    );
+
+  /* ─── Google Connect ─────────────────────────────────────────── */
+  const handleConnectGoogle = async () => {
+    try {
+      setGoogleLoading(true);
+      setGoogleError(null);
+      const result = await googleSignIn();
+      if (result) {
+        setGoogleEmail(result.user.email || "Conectado");
+        toast.success("Google Calendar conectado!");
+      }
+    } catch (err: any) {
+      const msg = err.message || "Erro ao conectar com Google";
+      setGoogleError(msg);
+      toast.error(msg, { duration: 8000 });
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  /* ─── Submit ─────────────────────────────────────────────────── */
+  const canSubmit = useMemo(
+    () => Boolean(nome.trim() && relacionado.trim() && dataDate && horaInicio),
+    [nome, relacionado, dataDate, horaInicio]
+  );
+
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!canSubmit) return;
+
+    const dataInicio = buildISO(dataDate, horaInicio);
+    const dataFim    = buildISO(dataDate, horaFim || horaInicio);
+
+    let calendarLink: string | undefined;
+
+    if (bloquearAgenda && convidados.length > 0) {
+      try {
+        let token = await getAccessToken();
+        if (!token) {
+          const r = await googleSignIn();
+          if (r) { token = r.accessToken; setGoogleEmail(r.user.email || "Conectado"); }
+        }
+        if (!token) throw new Error("Não autenticado no Google.");
+
+        const event = await createCalendarEvent(token, {
+          title: `${tipo} — ${nome}`,
+          description: [
+            `📋 Tarefa: ${nome}`,
+            `🏢 Relacionado: ${relacionado}`,
+            vendedor ? `👤 Responsável: ${vendedor}` : "",
+            tags ? `🏷️ Tags: ${tags}` : "",
+          ].filter(Boolean).join("\n"),
+          startISO: dataInicio,
+          endISO: dataFim,
+          attendeeEmails: convidados,
+          skipConferenceData: true,
+        });
+        calendarLink = event.htmlLink;
+        toast.success(`Evento criado no Google Calendar! ${convidados.length} convidado(s) notificado(s).`);
+      } catch (err: any) {
+        toast.warning("Tarefa salva, mas não foi possível criar o evento no Calendar: " + (err.message || ""));
+      }
+    }
 
     onSave({
       nome: nome.trim(),
       tipo,
       prioridade,
-      data,
+      dataInicio,
+      dataFim,
+      data: dataInicio,
       relacionado: relacionado.trim(),
       vendedor,
       produtos,
       tags: tags.trim(),
+      convidados,
+      bloquearAgenda,
+      calendarLink,
     });
   };
 
+  /* ─── Render ─────────────────────────────────────────────────── */
   return (
     <Modal
       isOpen={isOpen}
@@ -105,12 +271,14 @@ export function NovaTarefaModal({
       maxWidth="max-w-2xl"
       title={
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center">
-            <Layers className="w-5 h-5 text-[#60A5FA]" />
+          <div className="w-10 h-10 rounded-2xl bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/20 flex items-center justify-center">
+            <Layers className="w-5 h-5 text-[var(--color-primary-blue)]" />
           </div>
           <div>
             <div className="text-base font-black text-white">{title}</div>
-            <div className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mt-1">Planeje compromissos e organize follow-ups comerciais</div>
+            <div className="text-[10px] uppercase tracking-widest font-bold text-slate-400 mt-1">
+              Planeje compromissos e organize follow-ups comerciais
+            </div>
           </div>
         </div>
       }
@@ -119,16 +287,24 @@ export function NovaTarefaModal({
           <Button type="button" variant="ghost" onClick={onClose} className="text-slate-400 hover:text-white">
             Cancelar
           </Button>
-          <Button type="submit" form="nova-tarefa-form" className="bg-[#2563EB] hover:bg-blue-600 text-white font-bold px-6" disabled={!canSubmit}>
+          <Button
+            type="submit"
+            form="nova-tarefa-form"
+            className="bg-[var(--color-primary-blue)] hover:brightness-110 text-white font-bold px-6"
+            disabled={!canSubmit}
+          >
             {submitText}
           </Button>
         </>
       }
     >
       <form id="nova-tarefa-form" onSubmit={handleSubmit} className="space-y-5 text-left">
+        {/* Linha 1: Nome + Relacionado */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className={labelClass}>Título do Compromisso</label>
+            <label className={labelClass}>
+              <ClipboardList className="w-3 h-3" /> Título do Compromisso
+            </label>
             <input
               value={nome}
               onChange={(e) => setNome(e.target.value)}
@@ -138,7 +314,9 @@ export function NovaTarefaModal({
             />
           </div>
           <div className="space-y-2">
-            <label className={labelClass}>Lead / Empresa Associado</label>
+            <label className={labelClass}>
+              <Users className="w-3 h-3" /> Lead / Empresa Associado
+            </label>
             <input
               value={relacionado}
               onChange={(e) => setRelacionado(e.target.value)}
@@ -149,11 +327,14 @@ export function NovaTarefaModal({
           </div>
         </div>
 
+        {/* Linha 2: Tipo + Prioridade */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className={labelClass}>Tipo do Canal</label>
+            <label className={labelClass}>
+              <Layers className="w-3 h-3" /> Tipo do Compromisso
+            </label>
             <select value={tipo} onChange={(e) => setTipo(e.target.value)} className={fieldClass}>
-              {taskTypes.map((option) => (
+              {TASK_TYPES.map((option) => (
                 <option key={option} value={option}>{option}</option>
               ))}
             </select>
@@ -161,38 +342,208 @@ export function NovaTarefaModal({
           <div className="space-y-2">
             <label className={labelClass}>Prioridade Comercial</label>
             <select value={prioridade} onChange={(e) => setPrioridade(e.target.value)} className={fieldClass}>
-              {priorities.map((option) => (
+              {PRIORITIES.map((option) => (
                 <option key={option} value={option}>{option}</option>
               ))}
             </select>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Linha 3: Data + Hora início + Hora fim */}
+        <div className="grid grid-cols-3 gap-3">
           <div className="space-y-2">
-            <label className={labelClass}>Data & Hora Limite</label>
+            <label className={labelClass}>
+              <Calendar className="w-3 h-3" /> Data
+            </label>
             <input
-              type="datetime-local"
-              value={data}
-              onChange={(e) => setData(e.target.value)}
+              type="date"
+              value={dataDate}
+              min={todayStr()}
+              onChange={(e) => setDataDate(e.target.value)}
               className={fieldClass}
               required
             />
           </div>
           <div className="space-y-2">
-            <label className={labelClass}>Vendedor Responsável</label>
-            <select value={vendedor} onChange={(e) => setVendedor(e.target.value)} className={fieldClass}>
-              <option value="">Não Atribuído</option>
-              {sellerOptions.map((option) => (
-                <option key={option} value={option}>{option}</option>
-              ))}
-              {sellerOptions.length === 0 && (
-                <option value="" disabled>Nenhum colaborador cadastrado</option>
-              )}
-            </select>
+            <label className={labelClass}>
+              <Clock className="w-3 h-3" /> Hora início
+            </label>
+            <input
+              type="time"
+              value={horaInicio}
+              onChange={(e) => setHoraInicio(e.target.value)}
+              className={fieldClass}
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <label className={labelClass}>
+              <Clock className="w-3 h-3" /> Hora fim
+            </label>
+            <input
+              type="time"
+              value={horaFim}
+              onChange={(e) => setHoraFim(e.target.value)}
+              className={fieldClass}
+            />
           </div>
         </div>
 
+        {/* Linha 4: Vendedor responsável */}
+        <div className="space-y-2">
+          <label className={labelClass}>
+            <Users className="w-3 h-3" /> Vendedor Responsável
+          </label>
+          <select value={vendedor} onChange={(e) => setVendedor(e.target.value)} className={fieldClass}>
+            <option value="">Não Atribuído</option>
+            {sellerOptions.map((c) => (
+              <option key={c.name} value={c.name}>{c.name}{c.email ? ` — ${c.email}` : ""}</option>
+            ))}
+            {sellerOptions.length === 0 && (
+              <option value="" disabled>Nenhum colaborador cadastrado</option>
+            )}
+          </select>
+        </div>
+
+        {/* Linha 5: Convidados */}
+        <div className="space-y-2">
+          <label className={labelClass}>
+            <Mail className="w-3 h-3" /> Convidados
+            <span className="text-[9px] text-slate-500 normal-case tracking-normal ml-1">
+              (receberão convite no Google Calendar se "Bloquear agenda" estiver ativo)
+            </span>
+          </label>
+
+          {/* Tags de convidados já adicionados */}
+          {convidados.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {convidados.map((email) => (
+                <span
+                  key={email}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/25 text-[11px] font-semibold text-white"
+                >
+                  {email}
+                  <button
+                    type="button"
+                    onClick={() => removeConvidado(email)}
+                    className="ml-0.5 text-slate-400 hover:text-white transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Adicionar colaborador do sistema */}
+          {collaboratorOptions.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-2">
+              {collaboratorOptions.map((c) => (
+                <button
+                  key={c.name}
+                  type="button"
+                  disabled={convidados.includes(c.email.toLowerCase())}
+                  onClick={() => addCollaboratorAsGuest(c)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-[11px] font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed
+                    bg-[var(--color-surface)] border-white/10 text-slate-400 hover:border-[var(--color-primary-blue)]/40 hover:text-white"
+                >
+                  <Plus className="w-2.5 h-2.5" /> {c.name}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Input e-mail avulso (cliente externo) */}
+          <div className="flex gap-2">
+            <input
+              type="email"
+              value={emailAvulso}
+              onChange={(e) => setEmailAvulso(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") { e.preventDefault(); addConvidadoByEmail(emailAvulso); }
+              }}
+              className={fieldClass + " flex-1"}
+              placeholder="email@cliente.com — pressione Enter para adicionar"
+            />
+            <button
+              type="button"
+              onClick={() => addConvidadoByEmail(emailAvulso)}
+              className="px-4 py-3 rounded-xl bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/25 text-[var(--color-primary-blue)] text-sm font-bold hover:bg-[var(--color-primary-blue)]/20 transition-all"
+            >
+              <Plus className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Linha 6: Bloquear agenda (Google Calendar) */}
+        <div className="rounded-xl border border-white/10 bg-[var(--color-surface)]/50 p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <CalendarCheck className="w-4 h-4 text-[var(--color-primary-blue)]" />
+              <div>
+                <div className="text-sm font-bold text-white">Bloquear na agenda dos convidados</div>
+                <div className="text-[10px] text-slate-500">
+                  Cria um evento no Google Calendar e envia convite para todos os convidados
+                </div>
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={bloquearAgenda}
+              onClick={() => setBloquearAgenda((v) => !v)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                bloquearAgenda ? "bg-[var(--color-primary-blue)]" : "bg-white/10"
+              }`}
+            >
+              <span
+                className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                  bloquearAgenda ? "translate-x-6" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Status Google */}
+          {bloquearAgenda && (
+            <div className={`rounded-lg border p-3 flex items-center justify-between gap-3 ${
+              googleEmail
+                ? "bg-emerald-500/[0.07] border-emerald-500/20"
+                : googleError
+                ? "bg-rose-500/[0.07] border-rose-500/20"
+                : "bg-amber-500/[0.05] border-amber-500/20"
+            }`}>
+              <div className="flex items-center gap-2 min-w-0">
+                {googleEmail
+                  ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  : <AlertCircle className={`w-4 h-4 shrink-0 ${googleError ? "text-rose-400" : "text-amber-400"}`} />}
+                <div className="min-w-0">
+                  <div className={`text-xs font-bold ${googleEmail ? "text-emerald-400" : googleError ? "text-rose-400" : "text-amber-400"}`}>
+                    {googleEmail ? `Google conectado${googleEmail !== "Conectado" ? ` (${googleEmail})` : ""}` : googleError ? "Erro na autenticação Google" : "Google não conectado"}
+                  </div>
+                  {!googleEmail && (
+                    <div className="text-[10px] text-slate-500">
+                      {googleError || "Conecte sua conta Google para enviar convites de calendário"}
+                    </div>
+                  )}
+                </div>
+              </div>
+              {!googleEmail && (
+                <button
+                  type="button"
+                  onClick={handleConnectGoogle}
+                  disabled={googleLoading}
+                  className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white text-gray-800 text-xs font-bold hover:bg-gray-100 transition-all disabled:opacity-60"
+                >
+                  {googleLoading ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                  Conectar Google
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Linha 7: Produtos + Tags */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className={labelClass}>Produtos / Serviços Relacionados</label>
@@ -206,7 +557,9 @@ export function NovaTarefaModal({
                     type="button"
                     onClick={() => toggleProduto(p.id)}
                     className={`px-2.5 py-1 text-[10px] font-bold rounded-full transition-colors ${
-                      produtos.includes(p.id) ? "bg-[#2563EB] text-white" : "bg-[var(--color-surface-sunken)] text-slate-400 hover:bg-white/10"
+                      produtos.includes(p.id)
+                        ? "bg-[var(--color-primary-blue)] text-white"
+                        : "bg-[var(--color-surface-sunken)] text-slate-400 hover:bg-white/10"
                     }`}
                   >
                     {p.name}
@@ -223,17 +576,6 @@ export function NovaTarefaModal({
               className={fieldClass}
               placeholder="Ex: prioridade alta, follow-up"
             />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-          <div className="flex items-center gap-2 text-slate-400 text-xs">
-            <Users className="w-4 h-4" />
-            Informe o responsável e o cliente para cadastrar a tarefa corretamente.
-          </div>
-          <div className="flex items-center gap-2 text-slate-400 text-xs">
-            <ClipboardList className="w-4 h-4" />
-            As tags ajudam a filtrar a tarefa no quadro Kanban.
           </div>
         </div>
       </form>

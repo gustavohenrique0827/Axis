@@ -5,7 +5,7 @@ import {
   Calendar, Clock, User, FileText, Video,
   Copy, ExternalLink, Loader2, CheckCircle2, AlertCircle, MessageCircle, Phone,
 } from "lucide-react";
-import { googleSignIn, getAccessToken } from "../../../../lib/google-auth";
+import { googleSignIn, getAccessToken, getGoogleUserEmail } from "../../../../lib/google-auth";
 import { createMeetSpace } from "../../../../lib/meet";
 import { createCalendarEvent } from "../../../../lib/google-calendar";
 import { generateJitsiLink } from "../../JitsiEmbed";
@@ -70,6 +70,13 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       setLeadEmail(lead.email || "");
       setLeadPhone(lead.phone || "");
       setPauta("");
+      setGoogleAuthError(null);
+      getAccessToken().then((token) => {
+        if (token) {
+          const email = getGoogleUserEmail();
+          setGoogleEmail(email || "Conectado");
+        }
+      });
     }
   }, [isOpen, lead.seller, lead.email]);
 
@@ -80,7 +87,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       const result = await googleSignIn();
       if (result) {
         setGoogleEmail(result.user.email || "Conectado");
-        toast.success("Google conectado!");
+        toast.success("Google conectado com sucesso!");
       }
     } catch (err: any) {
       const msg: string = err.message || "Tente novamente";
@@ -262,12 +269,12 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
             <Button
               onClick={handleCreateMeeting}
               disabled={loading}
-              className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-5 h-9 text-sm disabled:opacity-50"
+              className="bg-[var(--color-primary-blue)] hover:brightness-110 text-white font-bold px-5 h-9 text-sm disabled:opacity-50"
             >
               {loading
                 ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
                 : <Video className="w-3.5 h-3.5 mr-1.5" />}
-              {loading ? "Criando..." : "Criar Reunião no Google Meet"}
+              {loading ? "Criando..." : "Agendar Reunião"}
             </Button>
           )}
         </div>
@@ -318,43 +325,43 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
           </div>
         </div>
 
-        {/* Google Connect — só aparece quando provider = google */}
-        {videoProvider === "google" && (
-          <div className={cn(
-            "rounded-xl border p-3 space-y-2",
-            googleEmail
-              ? "bg-emerald-500/[0.07] border-emerald-500/20"
-              : googleAuthError
-              ? "bg-rose-500/[0.07] border-rose-500/20"
-              : "bg-amber-500/[0.05] border-amber-500/20"
-          )}>
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                {googleEmail
-                  ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                  : <AlertCircle className={cn("w-4 h-4 shrink-0", googleAuthError ? "text-rose-400" : "text-amber-400")} />}
-                <div className="min-w-0">
-                  <div className={cn("text-xs font-bold", googleEmail ? "text-emerald-400" : googleAuthError ? "text-rose-400" : "text-amber-400")}>
-                    {googleEmail ? "Google Conectado" : googleAuthError ? "Erro de autenticação" : "Google não conectado"}
-                  </div>
-                  <div className="text-[10px] text-slate-500 truncate">
-                    {googleEmail || "Conecte para criar sala Meet automaticamente"}
-                  </div>
+        {/* Google Connect */}
+        <div className={cn(
+          "rounded-xl border p-3 space-y-2",
+          googleEmail
+            ? "bg-emerald-500/[0.07] border-emerald-500/20"
+            : googleAuthError
+            ? "bg-rose-500/[0.07] border-rose-500/20"
+            : "bg-white/[0.02] border-white/[0.08]"
+        )}>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              {googleEmail
+                ? <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                : <AlertCircle className={cn("w-4 h-4 shrink-0", googleAuthError ? "text-rose-400" : "text-amber-400")} />}
+              <div className="min-w-0">
+                <div className={cn("text-xs font-bold", googleEmail ? "text-emerald-400" : googleAuthError ? "text-rose-400" : "text-slate-200")}>
+                  {googleEmail ? `Google Conectado (${googleEmail})` : googleAuthError ? "Falha na conexão Google" : "Google Agenda"}
+                </div>
+                <div className="text-[10px] text-slate-400 truncate">
+                  {googleEmail ? "Convites e bloqueio de agenda sincronizados automaticamente" : "Conecte para enviar convites por e-mail e bloquear horários"}
                 </div>
               </div>
-              {!googleEmail && (
-                <Button
-                  onClick={handleConnectGoogle}
-                  disabled={loading}
-                  className="bg-white text-gray-800 hover:bg-gray-100 font-bold px-3 h-7 text-xs shrink-0"
-                >
-                  Conectar
-                </Button>
-              )}
             </div>
-            {googleAuthError && (
-              <div className="space-y-1.5 pt-1">
-                <p className="text-[10px] text-rose-300 leading-relaxed">{googleAuthError}</p>
+            {!googleEmail && (
+              <Button
+                onClick={handleConnectGoogle}
+                disabled={loading}
+                className="bg-white text-gray-800 hover:bg-gray-100 font-bold px-3 h-7 text-xs shrink-0"
+              >
+                Conectar
+              </Button>
+            )}
+          </div>
+          {googleAuthError && (
+            <div className="space-y-1.5 pt-1">
+              <p className="text-[10px] text-rose-300 leading-relaxed">{googleAuthError}</p>
+              {videoProvider === "google" && (
                 <div>
                   <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 block">
                     <Video className="w-3 h-3 inline mr-1" />Link manual do Google Meet
@@ -367,10 +374,10 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
                     className="w-full bg-[var(--color-surface)] border border-white/[0.08] rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500/50 transition-all placeholder:text-slate-600"
                   />
                 </div>
-              </div>
-            )}
-          </div>
-        )}
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Form */}
         <div className="grid grid-cols-2 gap-3">
