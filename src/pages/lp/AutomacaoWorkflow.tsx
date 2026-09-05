@@ -1,5 +1,6 @@
 import { Inbox, Filter, Shuffle, MessageSquare, RefreshCcw, Database, ListChecks, BellRing } from "lucide-react";
 import { Section, Kicker, SectionTitle, Lede, FadeIn, usePrefersReducedMotion, FONT_MONO } from "./shared";
+import { useLpTheme } from "./theme/LpThemeContext";
 
 const STEPS = [
   { icon: Inbox, label: "Lead recebido" },
@@ -13,6 +14,7 @@ const STEPS = [
 ];
 
 export function AutomacaoWorkflowSection() {
+  const { theme } = useLpTheme();
   const reducedMotion = usePrefersReducedMotion();
 
   return (
@@ -34,8 +36,8 @@ export function AutomacaoWorkflowSection() {
             {STEPS.map((s, i) => (
               <div key={s.label} className="flex items-center">
                 <div className="flex flex-col items-center gap-2 shrink-0 w-[84px]">
-                  <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:border-blue-300 hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
-                    <s.icon className="w-5 h-5 text-blue-600" />
+                  <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 shadow-sm flex items-center justify-center hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
+                    <s.icon className="w-5 h-5" style={{ color: theme.primaryDark }} />
                   </div>
                   <span className="text-[10.5px] font-semibold text-slate-600 text-center leading-tight">{s.label}</span>
                 </div>
@@ -43,8 +45,11 @@ export function AutomacaoWorkflowSection() {
                   <div className="relative w-8 sm:w-6 h-px bg-slate-200 shrink-0 mb-6 overflow-visible">
                     {!reducedMotion && (
                       <span
-                        className="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-blue-500"
-                        style={{ animation: `workflow-pulse 1.6s ${i * 0.2}s linear infinite` }}
+                        className="absolute top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full"
+                        style={{
+                          background: theme.primary,
+                          animation: `workflow-pulse 1.6s ${i * 0.2}s linear infinite`,
+                        }}
                       />
                     )}
                   </div>

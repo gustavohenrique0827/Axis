@@ -150,16 +150,21 @@ export function FuncionalidadesSection() {
               <button
                 key={m.name}
                 onClick={() => setActive(i)}
+                style={
+                  isSelected
+                    ? { background: theme.primary, color: "#0F172A", borderColor: theme.primary }
+                    : undefined
+                }
                 className={`flex items-center justify-between gap-3 px-4 py-3.5 rounded-xl text-left transition-all duration-200 border ${
                   isSelected
-                    ? "bg-emerald-700 text-white shadow-md border-emerald-700"
+                    ? "shadow-md"
                     : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <m.icon
                     className={`w-4 h-4 shrink-0 transition-colors ${
-                      isSelected ? "text-emerald-200" : "text-slate-500"
+                      isSelected ? "text-slate-900" : "text-slate-500"
                     }`}
                   />
                   <span className="text-[13px] font-bold truncate" style={{ fontFamily: FONT_DISPLAY }}>
@@ -169,7 +174,7 @@ export function FuncionalidadesSection() {
                 <span
                   className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full shrink-0 hidden sm:inline-block ${
                     isSelected
-                      ? "bg-white/15 text-emerald-300 border border-white/10"
+                      ? "bg-black/10 text-slate-900 border border-black/10"
                       : "bg-slate-100 text-slate-500"
                   }`}
                 >
@@ -229,7 +234,7 @@ export function FuncionalidadesSection() {
                     key={h}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700"
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                    <CheckCircle2 className="w-3.5 h-3.5" style={{ color: theme.primaryDark }} />
                     {h}
                   </span>
                 ))}

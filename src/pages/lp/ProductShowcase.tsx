@@ -58,9 +58,13 @@ const METRICS: Metric[] = [
  * (--color-surface-elevated, --color-border-default etc.) e a font-sans real do produto (Arial),
  * já que isso precisa ser a interface real do Axis, não uma reinvenção estilizada em tema escuro. */
 function ChromeWindow({ title, children }: { title: string; children: React.ReactNode }) {
+  const { glow } = useLpTheme();
   return (
     <div className="relative">
-      <div className="absolute -inset-8 rounded-[40px] bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-transparent blur-3xl" />
+      <div
+        className="absolute -inset-8 rounded-[40px] blur-3xl pointer-events-none"
+        style={{ background: `radial-gradient(circle, ${glow(0.15)} 0%, transparent 70%)` }}
+      />
       <div className="relative rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xl">
         <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-200 bg-slate-100/90">
           <div className="flex gap-1.5">
@@ -80,7 +84,7 @@ function ChromeWindow({ title, children }: { title: string; children: React.Reac
 
 export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
   const [tab, setTab] = useState<TabId>("pipeline");
-  const { theme } = useLpTheme();
+  const { theme, glow } = useLpTheme();
 
   return (
     <Section id="produto" glow>
@@ -98,9 +102,14 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
           <button
             key={t.id}
             onClick={() => setTab(t.id)}
+            style={
+              tab === t.id
+                ? { background: theme.primary, color: "#0F172A", borderColor: theme.primary }
+                : undefined
+            }
             className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold transition-all duration-200 ${
               tab === t.id
-                ? "bg-emerald-600 text-white shadow-md shadow-emerald-900/10"
+                ? "shadow-md border"
                 : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300 hover:text-slate-900"
             }`}
           >
@@ -217,7 +226,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
       <div className="text-center mt-10">
         <button
           onClick={onCta}
-          className="group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 transition-all shadow-lg shadow-emerald-900/20"
+          className={`group inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold transition-all shadow-lg ${theme.ctaClass}`}
         >
           Solicitar demonstração
           <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

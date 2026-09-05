@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowRight, MessageCircle, Clock, Snowflake, X } from "lucide-react";
 import { Section, Kicker, SectionTitle, Lede, GlassCard, FadeIn, BrandLine, FONT_MONO } from "./shared";
+import { useLpTheme } from "./theme/LpThemeContext";
 
 const PAIN_POINTS = [
   "WhatsApp separado",
@@ -12,6 +13,8 @@ const PAIN_POINTS = [
 ];
 
 export function ProblemSection() {
+  const { theme } = useLpTheme();
+
   return (
     <Section id="problema">
       <div className="grid lg:grid-cols-2 gap-14 items-center mb-12">
@@ -28,7 +31,13 @@ export function ProblemSection() {
             virar receita simplesmente desaparece.
           </Lede>
           <FadeIn delay={0.15}>
-            <GlassCard className="p-5 sm:p-6 border-blue-200 bg-blue-50/60">
+            <GlassCard
+              className="p-5 sm:p-6"
+              style={{
+                borderColor: `${theme.primary}40`,
+                background: `${theme.primary}12`,
+              }}
+            >
               <BrandLine>
                 "O problema não é necessariamente falta de leads.
                 <br />É falta de operação sobre eles."
@@ -40,13 +49,34 @@ export function ProblemSection() {
         <FadeIn delay={0.1}>
           <div className="relative rounded-2xl border border-slate-200 bg-slate-50/60 p-6 sm:p-8 space-y-4">
             {[
-              { icon: MessageCircle, label: "Lead chega pelo WhatsApp", tone: "text-blue-600 border-blue-200 bg-blue-50" },
-              { icon: MessageCircle, label: "Alguém responde, interesse real aparece", tone: "text-blue-600 border-blue-200 bg-blue-50" },
-              { icon: Clock, label: "A conversa para. O follow-up não acontece.", tone: "text-amber-600 border-amber-200 bg-amber-50" },
-              { icon: Snowflake, label: "O lead esfria e desaparece do radar", tone: "text-slate-500 border-slate-200 bg-white" },
+              {
+                icon: MessageCircle,
+                label: "Lead chega pelo WhatsApp",
+                className: "border font-medium text-slate-800",
+                style: {
+                  borderColor: `${theme.primary}40`,
+                  background: `${theme.primary}10`,
+                  color: theme.primaryDark,
+                },
+              },
+              {
+                icon: MessageCircle,
+                label: "Alguém responde, interesse real aparece",
+                className: "border font-medium text-slate-800",
+                style: {
+                  borderColor: `${theme.primary}40`,
+                  background: `${theme.primary}10`,
+                  color: theme.primaryDark,
+                },
+              },
+              { icon: Clock, label: "A conversa para. O follow-up não acontece.", className: "text-amber-600 border-amber-200 bg-amber-50" },
+              { icon: Snowflake, label: "O lead esfria e desaparece do radar", className: "text-slate-500 border-slate-200 bg-white" },
             ].map((step, i, arr) => (
               <div key={i}>
-                <div className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm ${step.tone}`}>
+                <div
+                  className={`flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all duration-300 hover:-translate-y-0.5 hover:shadow-sm ${step.className}`}
+                  style={step.style}
+                >
                   <step.icon className="w-4 h-4 shrink-0" />
                   <span className="text-sm font-medium">{step.label}</span>
                 </div>
@@ -72,6 +102,7 @@ export function ProblemSection() {
 }
 
 export function NovaLogicaSection({ onCta }: { onCta: () => void }) {
+  const { theme, glow } = useLpTheme();
   const tradicional = ["Lead", "Cadastro", "Vendedor", "Follow-up", "Venda"];
   const spy = ["Lead", "Inteligência", "Oportunidade", "Ação", "Resultado"];
 
@@ -103,15 +134,35 @@ export function NovaLogicaSection({ onCta }: { onCta: () => void }) {
         </FadeIn>
 
         <FadeIn delay={0.1}>
-          <div className="rounded-2xl border border-blue-200 bg-gradient-to-b from-blue-50 to-white p-6 sm:p-8 h-full shadow-lg shadow-blue-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/15">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 mb-6" style={{ fontFamily: FONT_MONO }}>S.P.Y.</p>
+          <div
+            className="rounded-2xl border p-6 sm:p-8 h-full shadow-lg transition-all duration-300 hover:shadow-xl"
+            style={{
+              borderColor: `${theme.primary}40`,
+              background: `linear-gradient(to bottom, ${theme.primaryLight}, #ffffff)`,
+              boxShadow: `0 10px 30px -8px ${glow(0.12)}`,
+            }}
+          >
+            <p
+              className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-6"
+              style={{ fontFamily: FONT_MONO, color: theme.primaryDark }}
+            >
+              S.P.Y.
+            </p>
             <div className="space-y-3">
               {spy.map((step, i, arr) => (
                 <div key={step}>
-                  <div className="px-4 py-3 rounded-xl bg-white border border-blue-200 shadow-sm text-sm font-bold text-slate-900">
+                  <div
+                    className="px-4 py-3 rounded-xl bg-white border shadow-sm text-sm font-bold text-slate-900"
+                    style={{ borderColor: `${theme.primary}35` }}
+                  >
                     {step}
                   </div>
-                  {i < arr.length - 1 && <ArrowDown className="w-3.5 h-3.5 text-blue-300 mx-auto my-1.5" />}
+                  {i < arr.length - 1 && (
+                    <ArrowDown
+                      className="w-3.5 h-3.5 mx-auto my-1.5 opacity-60"
+                      style={{ color: theme.primary }}
+                    />
+                  )}
                 </div>
               ))}
             </div>

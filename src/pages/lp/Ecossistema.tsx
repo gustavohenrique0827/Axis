@@ -100,11 +100,11 @@ export function EcossistemaSection() {
 
       <FadeIn delay={0.3}>
         <div className="flex flex-wrap items-center justify-center gap-2 text-[11px] sm:text-[12px] font-semibold uppercase tracking-[0.15em] text-slate-400" style={{ fontFamily: FONT_MONO }}>
-          <span>Dados</span><span className="text-blue-400">→</span>
-          <span className="text-violet-600">Aurora</span><span className="text-blue-400">→</span>
-          <span>Decisão</span><span className="text-blue-400">→</span>
-          <span>Ação</span><span className="text-blue-400">→</span>
-          <span className="text-emerald-600">Resultado</span>
+          <span>Dados</span><span style={{ color: theme.primary }}>→</span>
+          <span className="text-violet-600">Aurora</span><span style={{ color: theme.primary }}>→</span>
+          <span>Decisão</span><span style={{ color: theme.primary }}>→</span>
+          <span>Ação</span><span style={{ color: theme.primary }}>→</span>
+          <span style={{ color: theme.primaryDark }}>Resultado</span>
         </div>
       </FadeIn>
     </Section>

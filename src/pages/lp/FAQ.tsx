@@ -78,11 +78,12 @@ export function FAQSection() {
               key={f.q}
               className={`rounded-2xl border bg-white overflow-hidden transition-all duration-300 ${
                 isOpen
-                  ? "shadow-md border-slate-300 ring-2 ring-emerald-500/10"
+                  ? "shadow-md"
                   : "border-slate-200/80 shadow-2xs hover:border-slate-300"
               }`}
               style={{
                 borderColor: isOpen ? theme.primary : undefined,
+                boxShadow: isOpen ? `0 4px 20px -2px ${glow(0.12)}` : undefined,
               }}
             >
               <button

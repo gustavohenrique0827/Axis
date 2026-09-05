@@ -1,5 +1,6 @@
 import { Eye, Brain, Filter, RefreshCcw, LifeBuoy, CalendarClock, Handshake, Scale, Users, CircleCheck } from "lucide-react";
 import { Section, Kicker, SectionTitle, Lede, FadeIn, BrandLine, FONT_MONO } from "./shared";
+import { useLpTheme } from "./theme/LpThemeContext";
 
 const SPY_TASKS = [
   { icon: Eye, label: "Observa" },
@@ -18,6 +19,8 @@ const HUMAN_TASKS = [
 ];
 
 export function EquipeHumanaSection() {
+  const { theme, glow } = useLpTheme();
+
   return (
     <Section id="equipe">
       <div className="text-center mb-14">
@@ -31,12 +34,28 @@ export function EquipeHumanaSection() {
 
       <div className="grid md:grid-cols-[1.4fr_1fr] gap-6 mb-12 items-stretch">
         <FadeIn>
-          <div className="h-full rounded-2xl border border-blue-200 bg-gradient-to-b from-blue-50 to-blue-50/30 p-6 sm:p-7 shadow-sm shadow-blue-500/5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 mb-5" style={{ fontFamily: FONT_MONO }}>S.P.Y.</p>
+          <div
+            className="h-full rounded-2xl border p-6 sm:p-7 shadow-sm"
+            style={{
+              borderColor: `${theme.primary}40`,
+              background: `linear-gradient(to bottom, ${theme.primaryLight}, rgba(255,255,255,0.4))`,
+              boxShadow: `0 4px 20px -4px ${glow(0.08)}`,
+            }}
+          >
+            <p
+              className="text-[11px] font-semibold uppercase tracking-[0.2em] mb-5"
+              style={{ fontFamily: FONT_MONO, color: theme.primaryDark }}
+            >
+              S.P.Y.
+            </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {SPY_TASKS.map((t) => (
-                <div key={t.label} className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-blue-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
-                  <t.icon className="w-4 h-4 text-blue-600 shrink-0" />
+                <div
+                  key={t.label}
+                  className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white border shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300"
+                  style={{ borderColor: `${theme.primary}25` }}
+                >
+                  <t.icon className="w-4 h-4 shrink-0" style={{ color: theme.primaryDark }} />
                   <span className="text-sm font-semibold text-slate-700">{t.label}</span>
                 </div>
               ))}

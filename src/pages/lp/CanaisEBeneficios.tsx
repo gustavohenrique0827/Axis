@@ -1,5 +1,6 @@
 import { MessageSquare, Database, FileText, Megaphone, CalendarCheck, Link2, ArrowRight, Inbox } from "lucide-react";
 import { Section, Kicker, SectionTitle, Lede, FadeIn, GlassCard, FONT_DISPLAY } from "./shared";
+import { useLpTheme } from "./theme/LpThemeContext";
 
 const CHANNELS = [
   { icon: MessageSquare, label: "WhatsApp" },
@@ -11,6 +12,8 @@ const CHANNELS = [
 ];
 
 export function CanaisSection() {
+  const { theme } = useLpTheme();
+
   return (
     <Section id="canais">
       <div className="text-center mb-10">
@@ -22,8 +25,11 @@ export function CanaisSection() {
       <FadeIn>
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 max-w-3xl mx-auto mb-8">
           {CHANNELS.map((c) => (
-            <div key={c.label} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:shadow-md hover:border-blue-200 transition-all duration-300">
-              <c.icon className="w-5 h-5 text-blue-600" />
+            <div
+              key={c.label}
+              className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300"
+            >
+              <c.icon className="w-5 h-5" style={{ color: theme.primaryDark }} />
               <span className="text-[10px] font-semibold text-slate-500 text-center">{c.label}</span>
             </div>
           ))}
@@ -37,6 +43,7 @@ export function CanaisSection() {
 }
 
 export function BeneficiosSection() {
+  const { theme } = useLpTheme();
   const gestorQuestions = [
     "Quais oportunidades estão quentes?",
     "Quais leads estão parados?",
@@ -52,11 +59,11 @@ export function BeneficiosSection() {
       <div className="grid lg:grid-cols-2 gap-10">
         <FadeIn>
           <GlassCard className="p-7 sm:p-8 h-full" interactive>
-            <Inbox className="w-8 h-8 text-blue-600 mb-5" />
+            <Inbox className="w-8 h-8 mb-5" style={{ color: theme.primaryDark }} />
             <h3 className="text-2xl font-bold text-slate-900 mb-2" style={{ fontFamily: FONT_DISPLAY }}>
               O vendedor deixa de procurar onde vender.
             </h3>
-            <p className="text-base font-semibold text-blue-600 mb-5 flex items-center gap-2">
+            <p className="text-base font-semibold mb-5 flex items-center gap-2" style={{ color: theme.primaryDark }}>
               <ArrowRight className="w-4 h-4" /> E passa a receber onde vender.
             </p>
             <p className="text-sm text-slate-500 leading-relaxed">
@@ -71,11 +78,11 @@ export function BeneficiosSection() {
             <h3 className="text-2xl font-bold text-slate-900 mb-1 leading-snug" style={{ fontFamily: FONT_DISPLAY }}>
               Pare de administrar apenas atividades.
             </h3>
-            <p className="text-base font-semibold text-blue-600 mb-5">Comece a administrar oportunidades.</p>
+            <p className="text-base font-semibold mb-5" style={{ color: theme.primaryDark }}>Comece a administrar oportunidades.</p>
             <div className="space-y-2">
               {gestorQuestions.map((q) => (
                 <div key={q} className="flex items-start gap-2.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 shrink-0" />
+                  <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ background: theme.primary }} />
                   <span className="text-sm text-slate-600">{q}</span>
                 </div>
               ))}

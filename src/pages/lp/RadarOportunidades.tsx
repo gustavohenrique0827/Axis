@@ -1,5 +1,6 @@
 import { MessageCircle, PauseCircle, Users2, FileX, CalendarX, TrendingUp, ArrowUpRight } from "lucide-react";
 import { Section, Kicker, SectionTitle, Lede, FadeIn, BrandLine, FONT_DISPLAY } from "./shared";
+import { useLpTheme } from "./theme/LpThemeContext";
 
 const LEAD = {
   icon: MessageCircle,
@@ -25,10 +26,14 @@ const PATTERNS = [
 ];
 
 function ChipCard({ icon: Icon, label }: { icon: typeof MessageCircle; label: string }) {
+  const { theme } = useLpTheme();
   return (
-    <div className="group flex items-center gap-4 p-5 rounded-xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:border-blue-300 hover:shadow-md transition-all duration-300">
-      <div className="w-10 h-10 rounded-lg bg-blue-50 border border-blue-200 flex items-center justify-center shrink-0 group-hover:bg-blue-600 group-hover:border-blue-600 transition-colors duration-300">
-        <Icon className="w-4.5 h-4.5 text-blue-600 group-hover:text-white transition-colors duration-300" />
+    <div className="group flex items-center gap-4 p-5 rounded-xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300">
+      <div
+        className="w-10 h-10 rounded-lg border flex items-center justify-center shrink-0 transition-colors duration-300"
+        style={{ background: `${theme.primary}18`, borderColor: `${theme.primary}35` }}
+      >
+        <Icon className="w-4.5 h-4.5 transition-colors duration-300" style={{ color: theme.primaryDark }} />
       </div>
       <span className="text-sm font-semibold text-slate-700">{label}</span>
     </div>
@@ -36,6 +41,8 @@ function ChipCard({ icon: Icon, label }: { icon: typeof MessageCircle; label: st
 }
 
 export function RadarOportunidadesSection() {
+  const { theme } = useLpTheme();
+
   return (
     <Section id="radar" glow>
       <div className="text-center mb-14">
@@ -52,7 +59,7 @@ export function RadarOportunidadesSection() {
         </p>
         <FadeIn className="flex flex-wrap items-center justify-center gap-2">
           {PATTERNS.map((p) => (
-            <span key={p} className="px-3.5 py-2 rounded-full bg-blue-50 border border-blue-100 text-[12px] font-medium text-blue-700">
+            <span key={p} className={`px-3.5 py-2 rounded-full text-[12px] font-medium ${theme.badgeClass}`}>
               {p}
             </span>
           ))}
@@ -62,9 +69,18 @@ export function RadarOportunidadesSection() {
       <div className="space-y-4 mb-12">
         <div className="grid sm:grid-cols-3 gap-4">
           <FadeIn className="sm:col-span-2">
-            <div className="group h-full flex flex-col justify-center gap-3 p-6 sm:p-7 rounded-xl bg-gradient-to-br from-blue-50 to-white border border-blue-200 shadow-sm hover:shadow-md transition-all duration-300">
-              <div className="w-11 h-11 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 shadow-sm shadow-blue-500/30">
-                <LEAD.icon className="w-5 h-5 text-white" />
+            <div
+              className="group h-full flex flex-col justify-center gap-3 p-6 sm:p-7 rounded-xl border shadow-sm hover:shadow-md transition-all duration-300"
+              style={{
+                background: `linear-gradient(135deg, ${theme.primaryLight}, #ffffff)`,
+                borderColor: `${theme.primary}40`,
+              }}
+            >
+              <div
+                className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
+                style={{ background: theme.primary, color: "#0F172A" }}
+              >
+                <LEAD.icon className="w-5 h-5" />
               </div>
               <h3 className="text-base font-bold text-slate-900" style={{ fontFamily: FONT_DISPLAY }}>{LEAD.label}</h3>
               <p className="text-sm text-slate-500 leading-relaxed max-w-md">{LEAD.text}</p>
@@ -84,17 +100,29 @@ export function RadarOportunidadesSection() {
         </div>
 
         <FadeIn delay={0.3}>
-          <div className="group flex items-center justify-between gap-4 p-6 rounded-xl bg-emerald-50/70 border border-emerald-200/80 shadow-sm hover:shadow-md transition-all duration-300">
+          <div
+            className="group flex items-center justify-between gap-4 p-6 rounded-xl border shadow-sm hover:shadow-md transition-all duration-300"
+            style={{
+              background: `${theme.primary}12`,
+              borderColor: `${theme.primary}35`,
+            }}
+          >
             <div className="flex items-center gap-4">
-              <div className="w-11 h-11 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-                <BANNER.icon className="w-5 h-5 text-white" />
+              <div
+                className="w-11 h-11 rounded-lg flex items-center justify-center shrink-0 shadow-sm"
+                style={{ background: theme.primary, color: "#0F172A" }}
+              >
+                <BANNER.icon className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-slate-900 mb-0.5" style={{ fontFamily: FONT_DISPLAY }}>{BANNER.label}</h3>
                 <p className="text-[13px] text-slate-600 leading-snug hidden sm:block">{BANNER.text}</p>
               </div>
             </div>
-            <ArrowUpRight className="w-5 h-5 text-slate-400 group-hover:text-emerald-700 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 shrink-0" />
+            <ArrowUpRight
+              className="w-5 h-5 text-slate-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 shrink-0"
+              style={{ color: theme.primaryDark }}
+            />
           </div>
         </FadeIn>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Inbox, ScanSearch, Tag, Workflow, BellRing, CalendarCheck2 } from "lucide-react";
 import { Section, Kicker, SectionTitle, Lede, FadeIn, usePrefersReducedMotion, FONT_MONO } from "./shared";
+import { useLpTheme } from "./theme/LpThemeContext";
 
 const EVENTS = [
   { time: "09:42", icon: Inbox, text: "Novo lead recebido." },
@@ -12,6 +13,7 @@ const EVENTS = [
 ];
 
 export function AxisAoVivoSection() {
+  const { theme } = useLpTheme();
   const reducedMotion = usePrefersReducedMotion();
   const [active, setActive] = useState(0);
 
@@ -44,8 +46,14 @@ export function AxisAoVivoSection() {
                   className={`flex items-start gap-3.5 py-3 transition-opacity duration-500 ${shown ? "opacity-100" : "opacity-20"} ${i < EVENTS.length - 1 ? "border-b border-slate-100" : ""}`}
                 >
                   <span className={`text-[11px] font-semibold tracking-tight pt-1.5 w-10 shrink-0 transition-colors duration-500 ${shown ? "text-slate-400" : "text-slate-300"}`} style={{ fontFamily: FONT_MONO }}>{e.time}</span>
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-500 ${shown ? "bg-blue-50 border border-blue-200" : "bg-slate-50 border border-slate-200"}`}>
-                    <e.icon className={`w-3.5 h-3.5 transition-colors duration-500 ${shown ? "text-blue-600" : "text-slate-300"}`} />
+                  <div
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors duration-500 border ${shown ? "" : "bg-slate-50 border-slate-200"}`}
+                    style={shown ? { background: `${theme.primary}18`, borderColor: `${theme.primary}40` } : undefined}
+                  >
+                    <e.icon
+                      className="w-3.5 h-3.5 transition-colors duration-500"
+                      style={{ color: shown ? theme.primaryDark : "#94A3B8" }}
+                    />
                   </div>
                   <span className={`text-sm pt-1 transition-colors duration-500 ${shown ? "text-slate-700 font-medium" : "text-slate-400"}`}>{e.text}</span>
                 </div>

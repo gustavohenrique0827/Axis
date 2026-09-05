@@ -86,14 +86,16 @@ export function InteligenciaSection() {
               <button
                 key={ex.q}
                 onClick={() => setActive(active === i ? null : i)}
+                style={{
+                  background: active === i ? theme.primary : "#ffffff",
+                  color: active === i ? "#0F172A" : undefined,
+                  borderColor: active === i ? theme.primary : `${theme.primary}33`,
+                }}
                 className={`px-4 py-2.5 rounded-full border text-[13px] font-medium transition-all duration-300 hover:-translate-y-0.5 ${
                   active === i
-                    ? "bg-emerald-600 border-emerald-600 text-white shadow-md"
-                    : "bg-white border-slate-200 text-slate-600 shadow-sm hover:text-slate-900 hover:shadow-md"
+                    ? "shadow-md"
+                    : "text-slate-600 shadow-sm hover:text-slate-900 hover:shadow-md"
                 }`}
-                style={{
-                  borderColor: active === i ? undefined : `${theme.primary}33`,
-                }}
               >
                 "{ex.q}"
               </button>

@@ -1,11 +1,12 @@
 import { forwardRef, useState } from "react";
 import { CheckCircle2, Loader2, ShieldCheck, Clock, Sparkles } from "lucide-react";
 import { Section, Kicker, SectionTitle, FadeIn, PillarBadge, FONT_DISPLAY, FONT_MONO } from "./shared";
+import { useLpTheme } from "./theme/LpThemeContext";
 
 const labelStyle = { fontFamily: FONT_MONO };
 const labelClass = "text-[11px] font-medium text-slate-500 uppercase tracking-wider block mb-2";
 const inputClass =
-  "w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/15 transition-all";
+  "w-full bg-white border border-slate-300 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-slate-500 focus:ring-2 focus:ring-slate-400/20 transition-all";
 
 interface FormState {
   nome: string;
@@ -25,6 +26,7 @@ const TRUST_POINTS = [
 ];
 
 export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalFormSection(_props, ref) {
+  const { theme, glow } = useLpTheme();
   const [data, setData] = useState<FormState>(EMPTY);
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, boolean>>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -49,19 +51,15 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
     setTimeout(() => {
       setSubmitting(false);
       setSubmitted(true);
-    }, 600);
+    }, 900);
   };
 
   return (
     <div ref={ref}>
-      <Section id="cta-final" bordered={false} className="pb-28 sm:pb-36 pt-24 sm:pt-32" glow>
-        <div className="grid lg:grid-cols-[1.1fr_1fr] gap-14 items-center">
+      <Section id="contato" className="border-t border-slate-200">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           <div className="text-center lg:text-left">
-            <div className="flex items-center justify-center lg:justify-start gap-2 mb-6">
-              <PillarBadge label="S.P.Y." tone="blue" />
-              <PillarBadge label="Aurora" tone="emerald" />
-            </div>
-            <Kicker>Vamos conversar</Kicker>
+            <Kicker>Próximo passo</Kicker>
             <SectionTitle as="h2" className="text-3xl sm:text-5xl lg:text-[3.4rem] mb-6">
               A próxima geração da<br />operação empresarial<br /><span className="text-slate-400">começa aqui.</span>
             </SectionTitle>
@@ -71,7 +69,7 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
             <div className="space-y-3 max-w-sm mx-auto lg:mx-0">
               {TRUST_POINTS.map((t) => (
                 <div key={t.text} className="flex items-start gap-3 text-left">
-                  <t.icon className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                  <t.icon className="w-4 h-4 mt-0.5 shrink-0" style={{ color: theme.primaryDark }} />
                   <span className="text-sm text-slate-500">{t.text}</span>
                 </div>
               ))}
@@ -79,12 +77,21 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
           </div>
 
           <FadeIn delay={0.1} className="relative">
-            <div className="absolute -inset-6 rounded-[36px] bg-gradient-to-br from-blue-500/10 to-violet-500/10 blur-3xl" />
-            <div className="relative rounded-2xl border border-slate-200 bg-white p-7 sm:p-9 shadow-xl shadow-blue-500/5">
+            <div
+              className="absolute -inset-6 rounded-[36px] blur-3xl pointer-events-none"
+              style={{ background: `radial-gradient(circle, ${glow(0.18)} 0%, transparent 70%)` }}
+            />
+            <div
+              className="relative rounded-2xl border border-slate-200 bg-white p-7 sm:p-9 shadow-xl"
+              style={{ boxShadow: `0 20px 50px -10px ${glow(0.1)}` }}
+            >
               {submitted ? (
                 <div className="text-center py-8">
-                  <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center mx-auto mb-5">
-                    <CheckCircle2 className="w-7 h-7 text-emerald-600" />
+                  <div
+                    className="w-14 h-14 rounded-full border flex items-center justify-center mx-auto mb-5"
+                    style={{ background: `${theme.primary}15`, borderColor: `${theme.primary}40`, color: theme.primaryDark }}
+                  >
+                    <CheckCircle2 className="w-7 h-7" />
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 mb-2" style={{ fontFamily: FONT_DISPLAY }}>
                     Recebemos seu pedido.
@@ -137,7 +144,7 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="w-full mt-2 py-4 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 transition-all shadow-lg shadow-emerald-900/20 disabled:opacity-70 flex items-center justify-center gap-2"
+                      className={`w-full mt-2 py-4 rounded-xl text-sm font-bold transition-all shadow-lg disabled:opacity-70 flex items-center justify-center gap-2 ${theme.ctaClass}`}
                     >
                       {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                       {submitting ? "Enviando..." : "Quero conhecer o S.P.Y."}

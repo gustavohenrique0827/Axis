@@ -128,11 +128,13 @@ export function GlassCard({
   /** Levanta o card e intensifica a sombra no hover — usar em cards clicáveis/navegáveis. */
   interactive?: boolean;
 }) {
+  const { glow: themeGlow } = useLpTheme();
   return (
     <div
       className={`relative rounded-2xl border border-slate-200 bg-white transition-all duration-300 ${
-        glow ? "shadow-[0_20px_60px_-15px_rgba(59,130,246,0.2)]" : "shadow-sm"
-      } ${interactive ? "hover:-translate-y-1 hover:shadow-lg hover:border-blue-200" : ""} ${className}`}
+        glow ? "shadow-md" : "shadow-sm"
+      } ${interactive ? "hover:-translate-y-1 hover:shadow-lg hover:border-slate-300" : ""} ${className}`}
+      style={glow ? { boxShadow: `0 20px 60px -15px ${themeGlow(0.2)}` } : undefined}
     >
       {children}
     </div>
@@ -333,12 +335,13 @@ export function AnimatedCounter({
 }
 
 /** Selo dos pilares (Axis / Aurora) — usado no hero e no fechamento da página. */
-export function PillarBadge({ label, tone }: { label: string; tone: "blue" | "violet" | "emerald" }) {
-  const TONE = {
-    blue: "border-blue-200 bg-blue-50 text-blue-700",
+export function PillarBadge({ label, tone }: { label: string; tone?: "blue" | "violet" | "emerald" }) {
+  const { theme } = useLpTheme();
+  const TONE = tone && tone !== "blue" ? {
     violet: "border-violet-200 bg-violet-50 text-violet-700",
     emerald: "border-emerald-200 bg-emerald-50 text-emerald-700",
-  }[tone];
+  }[tone] : theme.badgeClass;
+
   return (
     <span
       className={`inline-flex items-center px-3.5 py-1.5 rounded-full border text-[11px] font-black uppercase tracking-[0.15em] ${TONE}`}

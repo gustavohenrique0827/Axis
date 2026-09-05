@@ -116,15 +116,20 @@ export function SegmentacaoSection() {
             <button
               key={s.label}
               onClick={() => setSelectedIdx(i)}
+              style={
+                isSelected
+                  ? { background: theme.primary, color: "#0F172A", borderColor: theme.primary }
+                  : undefined
+              }
               className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border text-center transition-all duration-200 ${
                 isSelected
-                  ? "bg-emerald-600 text-white border-emerald-600 shadow-md -translate-y-1"
+                  ? "shadow-md -translate-y-1"
                   : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"
               }`}
             >
               <s.icon
                 className={`w-5 h-5 transition-colors ${
-                  isSelected ? "text-white" : "text-slate-500"
+                  isSelected ? "text-slate-900" : "text-slate-500"
                 }`}
               />
               <span className="text-[11px] font-bold leading-tight" style={{ fontFamily: FONT_DISPLAY }}>

@@ -32,7 +32,7 @@ export function AgentesSection() {
       <div className="grid sm:grid-cols-3 gap-4 mb-5">
         {CORE_AGENTS.map((a, i) => (
           <FadeIn key={a.name} delay={i * 0.06}>
-            <div className="h-full p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:border-emerald-300 hover:shadow-lg transition-all duration-300">
+            <div className="h-full p-6 rounded-2xl bg-white border border-slate-200 shadow-sm hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg transition-all duration-300">
               <div
                 className="w-11 h-11 rounded-xl flex items-center justify-center mb-5 shadow-sm text-white"
                 style={{
@@ -55,7 +55,7 @@ export function AgentesSection() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-12">
         {SUPPORT_AGENTS.map((a, i) => (
           <FadeIn key={a.name} delay={0.18 + i * 0.05}>
-            <div className="h-full p-4 rounded-xl bg-white border border-slate-200 shadow-sm hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-md transition-all duration-300">
+            <div className="h-full p-4 rounded-xl bg-white border border-slate-200 shadow-sm hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md transition-all duration-300">
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center mb-3 border"
                 style={{

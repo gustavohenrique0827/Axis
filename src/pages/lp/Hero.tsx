@@ -68,7 +68,7 @@ export function Hero({
           className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border bg-white/80 backdrop-blur-sm shadow-sm text-[10.5px] font-semibold uppercase tracking-[0.18em] mb-8 ${theme.badgeClass}`}
           style={{ fontFamily: FONT_MONO }}
         >
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: theme.primary }} />
           Não é apenas um CRM — é o cérebro operacional da sua empresa
         </motion.div>
 
@@ -208,7 +208,7 @@ export function Hero({
               <AuroraCore mode={hovered !== null ? "executing" : "analyzing"} size={128} />
             </AuroraStage>
             <div className="flex items-center gap-1.5" style={{ fontFamily: FONT_MONO }}>
-              <span className="w-1 h-1 rounded-full bg-emerald-500" />
+              <span className="w-1 h-1 rounded-full" style={{ background: theme.primary }} />
               <span className="text-[10px] font-semibold uppercase tracking-[0.2em] transition-colors duration-700" style={{ color: theme.primary }}>
                 Aurora
               </span>

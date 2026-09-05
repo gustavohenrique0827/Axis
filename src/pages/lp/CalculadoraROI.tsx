@@ -70,7 +70,8 @@ export function CalculadoraROISection({ onCta }: { onCta: () => void }) {
                 step="10"
                 value={leads}
                 onChange={(e) => setLeads(Number(e.target.value))}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                style={{ accentColor: theme.primary }}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
                 <span>30 leads</span>
@@ -99,7 +100,8 @@ export function CalculadoraROISection({ onCta }: { onCta: () => void }) {
                 step="100"
                 value={ticket}
                 onChange={(e) => setTicket(Number(e.target.value))}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                style={{ accentColor: theme.primary }}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
                 <span>R$ 200</span>
@@ -128,7 +130,8 @@ export function CalculadoraROISection({ onCta }: { onCta: () => void }) {
                 step="1"
                 value={conversionRate}
                 onChange={(e) => setConversionRate(Number(e.target.value))}
-                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                style={{ accentColor: theme.primary }}
+                className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-slate-400 mt-1 font-mono">
                 <span>2% (baixa)</span>
@@ -179,15 +182,15 @@ export function CalculadoraROISection({ onCta }: { onCta: () => void }) {
 
               <div className="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-700">
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <Check className="w-4 h-4 shrink-0" style={{ color: theme.primaryDark }} />
                   <span>Primeiro contato com o lead em menos de 20 segundos</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <Check className="w-4 h-4 shrink-0" style={{ color: theme.primaryDark }} />
                   <span>Rodízio inteligente direto para os vendedores disponíveis</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <Check className="w-4 h-4 shrink-0" style={{ color: theme.primaryDark }} />
                   <span>Follow-up automatizado de leads que pararam de responder</span>
                 </div>
               </div>
