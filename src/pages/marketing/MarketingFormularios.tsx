@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { PageContainer } from "../../components/PageContainer";
-import { FileText, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { FileText, ChevronRight, Plus, Trash2, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -9,20 +9,47 @@ import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { FormDetail, type FormDefinition } from "./components/Formularios/FormDetail";
 import { NovoFormularioModal } from "./components/Formularios/NovoFormularioModal";
 
+const EMPREENDA_PREVIEW_URL = import.meta.env.DEV
+  ? "http://localhost:5175/inscricao"
+  : "https://escolaempreendamais.pluppex.com.br/inscricao";
+
+export const DEFAULT_EMPREENDA_FORM: FormDefinition = {
+  id: "empreenda",
+  name: "Inscrição — E-EMPREENDA+",
+  description: "Formulário oficial de qualificação com 5 passos interativos, rodízio de SDRs e captação direta de leads no CRM.",
+  previewUrl: EMPREENDA_PREVIEW_URL,
+  source: "landing_empreenda",
+  active: true,
+};
+
 export default function MarketingFormularios() {
   const { activeTenantId } = useAuth();
   const { marketingForms, addMarketingForm, deleteMarketingForm } = useData();
   const [selected, setSelected] = useState<FormDefinition | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const forms: FormDefinition[] = marketingForms.map((f: any) => ({
-    id: f.id,
-    name: f.name,
-    description: f.description || "",
-    previewUrl: f.preview_url,
-    source: f.source,
-    active: f.active !== false,
-  }));
+  const forms: FormDefinition[] = useMemo(() => {
+    const list: FormDefinition[] = (marketingForms || []).map((f: any) => ({
+      id: f.id,
+      name: f.name,
+      description: f.description || "",
+      previewUrl: f.preview_url,
+      source: f.source,
+      active: f.active !== false,
+    }));
+
+    const hasEmpreenda = list.some(
+      (f) =>
+        f.source === "landing_empreenda" ||
+        f.id === "empreenda" ||
+        f.name.toLowerCase().includes("empreenda")
+    );
+
+    if (!hasEmpreenda) {
+      return [DEFAULT_EMPREENDA_FORM, ...list];
+    }
+    return list;
+  }, [marketingForms]);
 
   const handleCreate = async (data: { name: string; description: string; previewUrl: string; source: string }) => {
     await addMarketingForm({
@@ -38,6 +65,10 @@ export default function MarketingFormularios() {
 
   const handleDelete = async (form: FormDefinition, e: React.MouseEvent) => {
     e.stopPropagation();
+    if (form.id === "empreenda" && !(marketingForms || []).some((f: any) => f.id === "empreenda")) {
+      toast.info("O formulário E-EMPREENDA+ é o formulário nativo do sistema e não pode ser excluído.");
+      return;
+    }
     if (!(await confirmDialog({
       title: "Excluir formulário",
       description: `Excluir "${form.name}"? Essa ação não pode ser desfeita.`,
@@ -92,11 +123,16 @@ export default function MarketingFormularios() {
                       <FileText className="w-5 h-5 text-orange-400" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <h3 className="text-sm font-black text-white truncate">{form.name}</h3>
                         {form.active && (
                           <span className="text-[9px] font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full uppercase shrink-0">
                             Ativo
+                          </span>
+                        )}
+                        {(form.id === "empreenda" || form.source === "landing_empreenda") && (
+                          <span className="text-[9px] font-black text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full uppercase shrink-0 flex items-center gap-1">
+                            <Sparkles className="w-2.5 h-2.5" /> Oficial E-EMPREENDA+
                           </span>
                         )}
                       </div>

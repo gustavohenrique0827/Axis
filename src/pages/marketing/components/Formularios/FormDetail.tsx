@@ -171,7 +171,9 @@ export function FormDetail({ form, tenantId }: { form: FormDefinition; tenantId:
             </div>
           )}
 
-          {tab === "perguntas" && supportsStepsEditor && <FormStepsEditor tenantId={tenantId} siteKey={form.source} />}
+          {tab === "perguntas" && supportsStepsEditor && (
+            <FormStepsEditor tenantId={tenantId} siteKey={form.source === "landing_empreenda" ? "eempreenda" : form.source} />
+          )}
 
           {tab === "rodizio" && (
             <div className="space-y-5">

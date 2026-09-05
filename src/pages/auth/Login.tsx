@@ -19,7 +19,7 @@ function hexAlpha(hex: string, alpha: number): string {
 }
 
 export default function Login() {
-  const { primaryColor, resolveFromEmail } = useLoginTheme();
+  const { primaryColor, tenantName, resolveFromEmail, tenants, selectTenant } = useLoginTheme();
 
   return (
     <div className="min-h-screen flex overflow-hidden" style={{ background: "#070D1A" }}>
@@ -77,24 +77,40 @@ export default function Login() {
         <div className="relative z-10 flex flex-col h-full px-14 py-12">
 
           {/* Logo topo */}
-          <div className="flex items-center gap-3">
-            <div
-              className="rounded-xl p-2.5 shadow-lg transition-all duration-700"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                backdropFilter: "blur(12px)",
-                border: "1px solid rgba(255,255,255,0.1)",
-                boxShadow: `0 0 32px ${hexAlpha(primaryColor, 0.3)}`,
-              }}
-            >
-              <Logo variant="icon" size={32} color={primaryColor} />
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div
+                className="rounded-xl p-2.5 shadow-lg transition-all duration-700"
+                style={{
+                  background: "rgba(255,255,255,0.06)",
+                  backdropFilter: "blur(12px)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  boxShadow: `0 0 32px ${hexAlpha(primaryColor, 0.3)}`,
+                }}
+              >
+                <Logo variant="icon" size={32} color={primaryColor} />
+              </div>
+              <span
+                className="font-black tracking-[0.14em] text-xl transition-colors duration-700"
+                style={{ color: primaryColor, textShadow: `0 0 20px ${hexAlpha(primaryColor, 0.5)}` }}
+              >
+                S.P.Y.
+              </span>
             </div>
-            <span
-              className="font-black tracking-[0.14em] text-xl transition-colors duration-700"
-              style={{ color: primaryColor, textShadow: `0 0 20px ${hexAlpha(primaryColor, 0.5)}` }}
-            >
-              S.P.Y.
-            </span>
+
+            {tenantName && (
+              <div
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-700 shadow-sm"
+                style={{
+                  background: hexAlpha(primaryColor, 0.12),
+                  border: `1px solid ${hexAlpha(primaryColor, 0.3)}`,
+                  color: primaryColor,
+                }}
+              >
+                <span className="w-2 h-2 rounded-full animate-pulse" style={{ background: primaryColor }} />
+                {tenantName}
+              </div>
+            )}
           </div>
 
           {/* Headline */}
@@ -190,24 +206,82 @@ export default function Login() {
         <div className="w-full max-w-sm relative z-10">
 
           {/* Logo mobile */}
-          <div className="flex lg:hidden items-center gap-3 mb-10">
-            <Logo variant="icon" size={28} color={primaryColor} />
-            <span
-              className="font-black tracking-[0.14em] text-lg transition-colors duration-700"
-              style={{ color: primaryColor }}
-            >
-              S.P.Y.
-            </span>
+          <div className="flex lg:hidden items-center justify-between gap-3 mb-10">
+            <div className="flex items-center gap-3">
+              <Logo variant="icon" size={28} color={primaryColor} />
+              <span
+                className="font-black tracking-[0.14em] text-lg transition-colors duration-700"
+                style={{ color: primaryColor }}
+              >
+                S.P.Y.
+              </span>
+            </div>
+            {tenantName && (
+              <span
+                className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full"
+                style={{
+                  background: hexAlpha(primaryColor, 0.15),
+                  color: primaryColor,
+                  border: `1px solid ${hexAlpha(primaryColor, 0.3)}`,
+                }}
+              >
+                {tenantName}
+              </span>
+            )}
           </div>
 
           {/* Cabeçalho do form */}
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-1.5" style={{ color: "#F8FAFC" }}>
-              Bem-vindo de volta
-            </h2>
+            <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+              <h2 className="text-2xl font-bold" style={{ color: "#F8FAFC" }}>
+                Bem-vindo de volta
+              </h2>
+              {tenantName && (
+                <div
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider transition-all duration-500 shadow-sm"
+                  style={{
+                    background: hexAlpha(primaryColor, 0.15),
+                    border: `1px solid ${hexAlpha(primaryColor, 0.35)}`,
+                    color: primaryColor,
+                  }}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: primaryColor }} />
+                  {tenantName}
+                </div>
+              )}
+            </div>
             <p className="text-sm" style={{ color: "#64748B" }}>
-              Acesse a plataforma com sua conta corporativa.
+              {tenantName
+                ? `Acesse o ambiente corporativo de ${tenantName}.`
+                : "Acesse a plataforma com sua conta corporativa."}
             </p>
+
+            {/* Seletor rápido de ambiente caso existam empresas cadastradas */}
+            {tenants.length > 1 && (
+              <div className="mt-3 flex items-center gap-1.5 flex-wrap">
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Empresa:</span>
+                {tenants.map((t) => {
+                  const isSelected = tenantName === t.name || (!tenantName && t.primaryColor === primaryColor);
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => selectTenant(t)}
+                      className="text-[10px] font-bold px-2 py-0.5 rounded-md transition-all flex items-center gap-1 hover:brightness-110"
+                      style={{
+                        background: isSelected ? hexAlpha(t.primaryColor, 0.25) : "rgba(255,255,255,0.05)",
+                        border: `1px solid ${isSelected ? hexAlpha(t.primaryColor, 0.5) : "rgba(255,255,255,0.08)"}`,
+                        color: isSelected ? t.primaryColor : "#94A3B8",
+                      }}
+                      title={`Selecionar tema de ${t.name}`}
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full" style={{ background: t.primaryColor }} />
+                      {t.name.split(" ")[0]}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Form com glass card */}

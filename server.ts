@@ -379,6 +379,108 @@ app.get("/api/v1/leads", requireApiKey, async (req, res) => {
   return res.json({ success: true, count: data?.length ?? 0, leads: data ?? [] });
 });
 
+// ── Tenant Theme Discovery (Público para tela de login) ──────────────────────
+app.get("/api/auth/tenant-theme", async (req, res) => {
+  const { email, host, tenant } = req.query as Record<string, string>;
+  const client = supabaseService || supabase;
+  if (!client) {
+    return res.status(503).json({ error: "Supabase client indisponível." });
+  }
+
+  try {
+    // 1. Se informou e-mail, busca primeiro na tabela users
+    if (email && email.trim()) {
+      const cleanEmail = email.trim().toLowerCase();
+      const { data: user } = await client
+        .from("users")
+        .select("tenant_id, tenants(id, name, primary_color, status)")
+        .eq("email", cleanEmail)
+        .maybeSingle();
+
+      if (user?.tenants && (user.tenants as any).status !== "Inactive") {
+        const t = user.tenants as any;
+        return res.json({
+          primaryColor: t.primary_color || null,
+          tenantName: t.name || "",
+          tenantId: t.id || "",
+          matchedBy: "email_exact",
+        });
+      }
+
+      // Se não achou na tabela users, analisa partes do e-mail
+      const parts = cleanEmail.split("@");
+      const userPrefix = parts[0]?.replace(/[^a-zA-Z0-9]/g, " ").trim();
+      const domainPart = parts[1]?.split(".")[0]?.trim();
+      const tokens = [userPrefix, domainPart].filter(
+        (t) => t && t.length > 2 && !["gmail", "hotmail", "outlook", "yahoo"].includes(t.toLowerCase())
+      );
+
+      for (const token of tokens) {
+        const { data: matchedTenant } = await client
+          .from("tenants")
+          .select("id, name, primary_color")
+          .ilike("name", `%${token}%`)
+          .eq("status", "Active")
+          .maybeSingle();
+
+        if (matchedTenant) {
+          return res.json({
+            primaryColor: matchedTenant.primary_color || null,
+            tenantName: matchedTenant.name || "",
+            tenantId: matchedTenant.id || "",
+            matchedBy: "email_token",
+          });
+        }
+      }
+    }
+
+    // 2. Se informou host ou tenant específico
+    const searchTarget = tenant || host || "";
+    if (searchTarget.trim()) {
+      const cleanTarget = searchTarget.trim().toLowerCase();
+      const hostClean = cleanTarget.replace(/^https?:\/\//, "").split(":")[0];
+      const hostParts = hostClean
+        .split(".")
+        .filter((p) => p.length > 2 && !["com", "br", "app", "io", "net", "crm", "axis-crm", "localhost"].includes(p));
+
+      const { data: activeTenants } = await client
+        .from("tenants")
+        .select("id, name, primary_color")
+        .eq("status", "Active");
+
+      if (activeTenants && activeTenants.length > 0) {
+        for (const t of activeTenants) {
+          const tName = t.name.toLowerCase();
+          if (hostParts.some((hp) => tName.includes(hp)) || tName.includes(cleanTarget)) {
+            return res.json({
+              primaryColor: t.primary_color || null,
+              tenantName: t.name,
+              tenantId: t.id,
+              matchedBy: "host_or_tenant",
+            });
+          }
+        }
+      }
+    }
+
+    // 3. Fallback: retorna lista de tenants ativos
+    const { data: list } = await client
+      .from("tenants")
+      .select("id, name, primary_color")
+      .eq("status", "Active")
+      .order("name");
+
+    return res.json({
+      primaryColor: null,
+      tenantName: "",
+      tenantId: "",
+      tenants: list || [],
+    });
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ── AI Routes ──────────────────────────────────────────────────────────────
 
 app.post("/api/leads/suggest-tags", requireUser, async (req, res) => {

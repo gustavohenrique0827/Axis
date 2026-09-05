@@ -1,35 +1,16 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../../../lib/supabase";
-import { DEFAULT_BRAND_COLOR, applyThemeColor, LAST_TENANT_COLOR_KEY, LAST_TENANT_NAME_KEY } from "../../../lib/theme";
+import {
+  DEFAULT_BRAND_COLOR,
+  applyThemeColor,
+  LAST_TENANT_COLOR_KEY,
+  LAST_TENANT_NAME_KEY,
+} from "../../../lib/theme";
 
-/** Busca o primary_color de um tenant pelo nome (match case-insensitive parcial). */
-async function fetchColorByTenantName(name: string): Promise<string | null> {
-  if (!supabase || !name.trim()) return null;
-  try {
-    const { data } = await supabase
-      .from("tenants")
-      .select("primary_color, name")
-      .ilike("name", `%${name.trim()}%`)
-      .eq("status", "Active")
-      .maybeSingle();
-    return data?.primary_color ?? null;
-  } catch {
-    return null;
-  }
-}
-
-/** Tenta inferir o nome do tenant a partir do domínio do e-mail.
- *  Ex: "maria@solarcorp.com.br" → "solarcorp" */
-function domainFromEmail(email: string): string {
-  const match = email.match(/@([^@]+)$/);
-  if (!match) return "";
-  const parts = match[1].split(".");
-  // Remove TLDs comuns (com, com.br, io, app, etc.) e pega a parte principal
-  const tld = ["com", "org", "net", "io", "app", "br"];
-  const meaningful = parts.filter(
-    (p) => p.length > 2 && !tld.includes(p.toLowerCase())
-  );
-  return meaningful[0] ?? "";
+export interface TenantOption {
+  id: string;
+  name: string;
+  primaryColor: string;
 }
 
 interface LoginTheme {
@@ -37,56 +18,218 @@ interface LoginTheme {
   primaryColor: string;
   /** Nome do tenant identificado (ou vazio) */
   tenantName: string;
-  /** true enquanto busca a cor no Supabase */
+  /** true enquanto busca a cor */
   resolving: boolean;
   /** Chama quando o e-mail muda para re-resolver a cor */
   resolveFromEmail: (email: string) => void;
+  /** Lista de empresas ativas para seleção */
+  tenants: TenantOption[];
+  /** Seleciona manualmente uma empresa */
+  selectTenant: (tenant: TenantOption) => void;
 }
 
-/**
- * Hook que resolve a cor de marca do tenant *antes* do login,
- * usando duas estratégias em cascata:
- *   1. última cor salva em localStorage (sessão anterior)
- *   2. inferência pelo domínio do e-mail digitado → busca no Supabase
- *
- * Aplica a cor como CSS custom property em :root automaticamente.
- */
+/** Tenta extrair palavras-chave do e-mail (username e domínio) */
+function extractEmailTokens(email: string): string[] {
+  const clean = email.trim().toLowerCase();
+  const [userPart, domainPart] = clean.split("@");
+  if (!userPart) return [];
+
+  const genericTokens = new Set([
+    "gmail", "hotmail", "outlook", "yahoo", "icloud", "live", "admin", "contato",
+    "com", "br", "net", "org", "io", "app", "dev", "vendas", "mkt", "financeiro"
+  ]);
+
+  const userTokens = userPart.split(/[^a-z0-9]/).filter((t) => t.length >= 3 && !genericTokens.has(t));
+  const domainTokens = domainPart ? domainPart.split(".").filter((t) => t.length >= 3 && !genericTokens.has(t)) : [];
+
+  return Array.from(new Set([...userTokens, ...domainTokens]));
+}
+
+/** Tenta inferir palavras do hostname */
+function extractHostTokens(host: string): string[] {
+  const clean = host.toLowerCase().replace(/^https?:\/\//, "").split(":")[0];
+  const parts = clean.split(".");
+  const ignore = new Set(["axis", "crm", "axis-crm", "app", "dashboard", "localhost", "com", "br", "io", "net"]);
+  return parts.filter((p) => p.length >= 3 && !ignore.has(p));
+}
+
 export function useLoginTheme(): LoginTheme {
-  const savedColor = typeof window !== "undefined"
-    ? localStorage.getItem(LAST_TENANT_COLOR_KEY) ?? DEFAULT_BRAND_COLOR
-    : DEFAULT_BRAND_COLOR;
+  const [primaryColor, setPrimaryColor] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(LAST_TENANT_COLOR_KEY) || DEFAULT_BRAND_COLOR;
+    }
+    return DEFAULT_BRAND_COLOR;
+  });
 
-  const savedName = typeof window !== "undefined"
-    ? localStorage.getItem(LAST_TENANT_NAME_KEY) ?? ""
-    : "";
+  const [tenantName, setTenantName] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(LAST_TENANT_NAME_KEY) || "";
+    }
+    return "";
+  });
 
-  const [primaryColor, setPrimaryColor] = useState<string>(savedColor);
-  const [tenantName, setTenantName]     = useState<string>(savedName);
-  const [resolving, setResolving]       = useState(false);
+  const [tenants, setTenants] = useState<TenantOption[]>([]);
+  const [resolving, setResolving] = useState(false);
+  const activeTenantsRef = useRef<TenantOption[]>([]);
 
-  // Aplica a cor como CSS var e no Favicon sempre que muda
+  // Aplica cor nas variáveis CSS e no Favicon
   useEffect(() => {
     applyThemeColor(primaryColor, tenantName);
   }, [primaryColor, tenantName]);
 
-  // Debounce: espera 600ms após o usuário parar de digitar para buscar
+  // Carrega tenants ativos e tenta detectar automaticamente por host ou query string
+  useEffect(() => {
+    let cancelled = false;
+
+    async function initThemeDiscovery() {
+      try {
+        // 1. Busca todos os tenants ativos no Supabase
+        const { data } = await supabase
+          .from("tenants")
+          .select("id, name, primary_color")
+          .eq("status", "Active")
+          .order("name");
+
+        if (cancelled) return;
+
+        const loadedTenants: TenantOption[] = (data || []).map((t: any) => ({
+          id: t.id,
+          name: t.name,
+          primaryColor: t.primary_color || DEFAULT_BRAND_COLOR,
+        }));
+
+        setTenants(loadedTenants);
+        activeTenantsRef.current = loadedTenants;
+
+        if (typeof window === "undefined") return;
+
+        // 2. Verifica se há parâmetro na URL (?tenant=... ou ?empresa=... ou ?cor=...)
+        const params = new URLSearchParams(window.location.search);
+        const queryTarget = (
+          params.get("tenant") ||
+          params.get("client") ||
+          params.get("empresa") ||
+          ""
+        ).toLowerCase().trim();
+
+        const queryColor = params.get("cor") || params.get("color");
+        if (queryColor && /^#[0-9a-fA-F]{6}$/.test(queryColor)) {
+          setPrimaryColor(queryColor);
+          applyThemeColor(queryColor, queryTarget || undefined);
+          return;
+        }
+
+        if (queryTarget && loadedTenants.length > 0) {
+          const match = loadedTenants.find(
+            (t) =>
+              t.name.toLowerCase().includes(queryTarget) ||
+              t.id.toLowerCase() === queryTarget
+          );
+          if (match) {
+            setPrimaryColor(match.primaryColor);
+            setTenantName(match.name);
+            applyThemeColor(match.primaryColor, match.name);
+            return;
+          }
+        }
+
+        // 3. Verifica se o hostname atual corresponde a algum tenant (ex: axis-crm.pluppex.com.br -> pluppex)
+        const hostTokens = extractHostTokens(window.location.hostname);
+        if (hostTokens.length > 0 && loadedTenants.length > 0) {
+          for (const token of hostTokens) {
+            const match = loadedTenants.find((t) =>
+              t.name.toLowerCase().includes(token)
+            );
+            if (match) {
+              setPrimaryColor(match.primaryColor);
+              setTenantName(match.name);
+              applyThemeColor(match.primaryColor, match.name);
+              return;
+            }
+          }
+        }
+
+        // 4. Se havia salvo no localStorage, preserva
+        const savedColor = localStorage.getItem(LAST_TENANT_COLOR_KEY);
+        const savedName = localStorage.getItem(LAST_TENANT_NAME_KEY);
+        if (savedColor && savedName) {
+          setPrimaryColor(savedColor);
+          setTenantName(savedName);
+          applyThemeColor(savedColor, savedName);
+        }
+      } catch (err) {
+        console.warn("[useLoginTheme] Falha ao carregar tenants:", err);
+      }
+    }
+
+    initThemeDiscovery();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Seleção manual de empresa
+  const selectTenant = useCallback((t: TenantOption) => {
+    setPrimaryColor(t.primaryColor);
+    setTenantName(t.name);
+    applyThemeColor(t.primaryColor, t.name);
+  }, []);
+
+  // Resolução dinâmica por e-mail com debounce de 350ms
   const resolveFromEmail = useCallback((email: string) => {
-    const domain = domainFromEmail(email);
-    if (!domain) return;
+    const clean = email.trim().toLowerCase();
+    if (!clean || !clean.includes("@")) return;
 
     let cancelled = false;
     setResolving(true);
 
     const timer = setTimeout(async () => {
-      const color = await fetchColorByTenantName(domain);
-      if (cancelled) return;
-      if (color) {
-        setPrimaryColor(color);
-        setTenantName(domain);
-        applyThemeColor(color, domain);
+      try {
+        // A) Tenta endpoint do servidor (com service_role para consultar tabela users)
+        try {
+          const res = await fetch(`/api/auth/tenant-theme?email=${encodeURIComponent(clean)}`);
+          if (res.ok) {
+            const json = await res.json();
+            if (cancelled) return;
+            if (json?.primaryColor) {
+              setPrimaryColor(json.primaryColor);
+              setTenantName(json.tenantName || "");
+              applyThemeColor(json.primaryColor, json.tenantName);
+              setResolving(false);
+              return;
+            }
+          }
+        } catch {
+          // Fallback se /api não estiver respondendo
+        }
+
+        if (cancelled) return;
+
+        // B) Match local por tokens do e-mail contra os tenants carregados
+        const tokens = extractEmailTokens(clean);
+        const currentTenants = activeTenantsRef.current;
+
+        for (const token of tokens) {
+          // Match específico para casos conhecidos (ex: gthec -> G-Tech)
+          const normalized = token === "gthec" ? "g-tech" : token;
+          const match = currentTenants.find((t) => {
+            const nameLower = t.name.toLowerCase();
+            return nameLower.includes(normalized) || normalized.includes(nameLower);
+          });
+
+          if (match) {
+            setPrimaryColor(match.primaryColor);
+            setTenantName(match.name);
+            applyThemeColor(match.primaryColor, match.name);
+            setResolving(false);
+            return;
+          }
+        }
+      } finally {
+        if (!cancelled) setResolving(false);
       }
-      setResolving(false);
-    }, 600);
+    }, 350);
 
     return () => {
       cancelled = true;
@@ -94,13 +237,16 @@ export function useLoginTheme(): LoginTheme {
     };
   }, []);
 
-  return { primaryColor, tenantName, resolving, resolveFromEmail };
+  return {
+    primaryColor,
+    tenantName,
+    resolving,
+    resolveFromEmail,
+    tenants,
+    selectTenant,
+  };
 }
 
-/**
- * Persiste a cor do tenant *após* o login bem-sucedido,
- * para que na próxima vez já apareça na tela de login e no favicon.
- */
 export function persistTenantTheme(color: string, name: string) {
   if (!color) return;
   applyThemeColor(color, name);

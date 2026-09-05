@@ -71,6 +71,25 @@ export function NovoFormularioModal({ isOpen, onClose, onSave }: NovoFormularioM
       }
     >
       <form id="novo-formulario-form" onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex items-center justify-between pb-1">
+          <span className="text-[10px] text-slate-500">Ou use um modelo padrão:</span>
+          <button
+            type="button"
+            onClick={() => {
+              setName("Inscrição — E-EMPREENDA+");
+              setDescription("Formulário oficial de qualificação com 5 passos interativos, rodízio de SDRs e captação direta de leads no CRM.");
+              setPreviewUrl(
+                import.meta.env.DEV
+                  ? "http://localhost:5175/inscricao"
+                  : "https://escolaempreendamais.pluppex.com.br/inscricao"
+              );
+              setSource("landing_empreenda");
+            }}
+            className="text-[10px] font-black text-orange-400 hover:text-orange-300 hover:underline uppercase tracking-wider"
+          >
+            Preencher com E-EMPREENDA+
+          </button>
+        </div>
         <div>
           <label className={labelClass}>Nome *</label>
           <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Inscrição — Curso de Vendas" className={inputClass} required />
