@@ -123,7 +123,8 @@ export async function fetchUserProfile(userId: string): Promise<{ success: boole
       tenants (
         id,
         name,
-        niche
+        niche,
+        primary_color
       )
     `)
     .eq("id", userId)
@@ -162,6 +163,7 @@ export async function fetchUserProfile(userId: string): Promise<{ success: boole
       twoFactorEnabled: (data as any).two_factor_enabled ?? false,
       preferences: (data as any).preferences ?? {},
       isTenantAdmin: (data as any).is_tenant_admin ?? false,
+      tenantPrimaryColor: tenant.primary_color ?? undefined,
     },
   };
 }

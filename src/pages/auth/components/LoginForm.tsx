@@ -114,9 +114,10 @@ export function LoginForm({ primaryColor = DEFAULT_BRAND_COLOR, onEmailChange }:
       const result = await signIn(email, password);
       if (!result.success) { setError(result.error || "Falha no login"); return; }
       login(result.user);
-      // Persiste a cor do tenant para a próxima vez que o usuário abrir a tela de login
-      if (primaryColor && primaryColor !== DEFAULT_BRAND_COLOR) {
-        persistTenantTheme(primaryColor, result.user.tenantName);
+      // Persiste a cor do tenant para o favicon e para a tela de login
+      const chosenColor = (result.user as any)?.tenantPrimaryColor || primaryColor;
+      if (chosenColor) {
+        persistTenantTheme(chosenColor, result.user.tenantName);
       }
       toast.success(`Bem-vindo, ${result.user.name}!`);
       navigate(from, { replace: true });

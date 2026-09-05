@@ -1,9 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "../../../lib/supabase";
-import { DEFAULT_BRAND_COLOR } from "../../../lib/theme";
-
-const LAST_TENANT_COLOR_KEY = "spy_last_tenant_color";
-const LAST_TENANT_NAME_KEY  = "spy_last_tenant_name";
+import { DEFAULT_BRAND_COLOR, applyThemeColor, LAST_TENANT_COLOR_KEY, LAST_TENANT_NAME_KEY } from "../../../lib/theme";
 
 /** Busca o primary_color de um tenant pelo nome (match case-insensitive parcial). */
 async function fetchColorByTenantName(name: string): Promise<string | null> {
@@ -67,11 +64,10 @@ export function useLoginTheme(): LoginTheme {
   const [tenantName, setTenantName]     = useState<string>(savedName);
   const [resolving, setResolving]       = useState(false);
 
-  // Aplica a cor como CSS var sempre que muda
+  // Aplica a cor como CSS var e no Favicon sempre que muda
   useEffect(() => {
-    document.documentElement.style.setProperty("--color-primary-blue", primaryColor);
-    document.documentElement.style.setProperty("--primary", primaryColor);
-  }, [primaryColor]);
+    applyThemeColor(primaryColor, tenantName);
+  }, [primaryColor, tenantName]);
 
   // Debounce: espera 600ms após o usuário parar de digitar para buscar
   const resolveFromEmail = useCallback((email: string) => {
@@ -87,8 +83,7 @@ export function useLoginTheme(): LoginTheme {
       if (color) {
         setPrimaryColor(color);
         setTenantName(domain);
-        localStorage.setItem(LAST_TENANT_COLOR_KEY, color);
-        localStorage.setItem(LAST_TENANT_NAME_KEY, domain);
+        applyThemeColor(color, domain);
       }
       setResolving(false);
     }, 600);
@@ -104,10 +99,9 @@ export function useLoginTheme(): LoginTheme {
 
 /**
  * Persiste a cor do tenant *após* o login bem-sucedido,
- * para que na próxima vez já apareça na tela de login.
+ * para que na próxima vez já apareça na tela de login e no favicon.
  */
 export function persistTenantTheme(color: string, name: string) {
   if (!color) return;
-  localStorage.setItem(LAST_TENANT_COLOR_KEY, color);
-  localStorage.setItem(LAST_TENANT_NAME_KEY, name);
+  applyThemeColor(color, name);
 }

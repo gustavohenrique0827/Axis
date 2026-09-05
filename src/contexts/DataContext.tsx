@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { sendPushNotification } from "../lib/notifications";
 import { isSupabaseReachable, supabase, fetchTenantPrimaryColor, updateTenantTheme } from '../lib/supabase';
-import { DEFAULT_BRAND_COLOR } from '../lib/theme';
+import { DEFAULT_BRAND_COLOR, applyThemeColor } from '../lib/theme';
 import { useAuth } from './AuthContext';
 import { Lead, Task, Contract, CustomField, LeadScoreTrigger, Squad } from '../types';
 import {
@@ -165,21 +165,27 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let cancelled = false;
     async function loadTenantColor() {
-      if (!tenantId) { setTenantPrimaryColorState(DEFAULT_BRAND_COLOR); return; }
+      if (!tenantId) {
+        setTenantPrimaryColorState(DEFAULT_BRAND_COLOR);
+        return;
+      }
       const hex = await fetchTenantPrimaryColor(tenantId);
-      if (!cancelled) setTenantPrimaryColorState(hex || DEFAULT_BRAND_COLOR);
+      if (!cancelled && hex) {
+        setTenantPrimaryColorState(hex);
+        applyThemeColor(hex);
+      }
     }
     loadTenantColor();
     return () => { cancelled = true; };
   }, [tenantId]);
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--color-primary-blue', tenantPrimaryColor);
-    document.documentElement.style.setProperty('--primary', tenantPrimaryColor);
+    applyThemeColor(tenantPrimaryColor);
   }, [tenantPrimaryColor]);
 
   const updateTenantPrimaryColor = async (hex: string) => {
     setTenantPrimaryColorState(hex);
+    applyThemeColor(hex);
     if (!tenantId) return { success: false, error: 'Nenhum tenant ativo' };
     const result = await updateTenantTheme(tenantId, hex);
     if (!result.success) toast.error(result.error || 'Erro ao salvar tema.');

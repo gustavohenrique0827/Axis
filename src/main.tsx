@@ -2,6 +2,10 @@ import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import { applyThemeColor, getSavedThemeColor } from './lib/theme';
+
+// Aplica a cor do tema e o favicon customizado imediatamente no carregamento da aplicação
+applyThemeColor(getSavedThemeColor());
 
 // Extensões de navegador (gerenciadores de senha, tradutores) mutam o DOM
 // fora do controle do React — envolvem/movem <input>s para outro elemento
