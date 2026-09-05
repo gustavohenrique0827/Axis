@@ -1,5 +1,6 @@
 import { Boxes, Sparkles, Workflow, Users2 } from "lucide-react";
 import { Section, Kicker, SectionTitle, Lede, FadeIn, AnimatedCounter, FONT_DISPLAY, FONT_MONO } from "./shared";
+import { useLpTheme } from "./theme/LpThemeContext";
 
 const STATS = [
   { value: 4, suffix: "", label: "Camadas conectadas" },
@@ -16,14 +17,24 @@ interface Pillar {
   featured?: boolean;
 }
 
-const PILLARS: Pillar[] = [
-  { icon: Boxes, name: "AXIS", text: "O centro da operação. Onde CRM, dados e processos vivem juntos.", tone: "from-slate-700 to-slate-900" },
-  { icon: Sparkles, name: "AURORA", text: "O centro de tudo. Conecta canais, dados e times, entende o contexto de toda a operação e decide o que fazer a seguir.", tone: "from-teal-400 via-blue-500 to-violet-600", featured: true },
-  { icon: Workflow, name: "AUTOMAÇÕES", text: "Executam tudo. Processos que rodam sem depender de alguém lembrar.", tone: "from-emerald-500 to-emerald-700" },
-  { icon: Users2, name: "EQUIPE", text: "Toma as decisões que importam, com contexto em vez de achismo.", tone: "from-amber-500 to-amber-700" },
-];
-
 export function EcossistemaSection() {
+  const { theme, glow } = useLpTheme();
+
+  const PILLARS: Pillar[] = [
+    { icon: Boxes, name: "AXIS", text: "O centro da operação. Onde CRM, dados e processos vivem juntos.", tone: "from-slate-700 to-slate-900" },
+    {
+      icon: Sparkles,
+      name: "AURORA",
+      text: "O centro de tudo. Conecta canais, dados e times, entende o contexto de toda a operação e decide o que fazer a seguir.",
+      tone: theme.id === "green"
+        ? "from-emerald-400 via-green-500 to-teal-600"
+        : "from-indigo-500 via-purple-500 to-pink-500",
+      featured: true,
+    },
+    { icon: Workflow, name: "AUTOMAÇÕES", text: "Executam tudo. Processos que rodam sem depender de alguém lembrar.", tone: "from-emerald-500 to-emerald-700" },
+    { icon: Users2, name: "EQUIPE", text: "Toma as decisões que importam, com contexto em vez de achismo.", tone: "from-amber-500 to-amber-700" },
+  ];
+
   return (
     <Section id="ecossistema" className="bg-slate-50/70" glow>
       <div className="text-center mb-14">
@@ -42,13 +53,24 @@ export function EcossistemaSection() {
           <FadeIn key={p.name} delay={i * 0.08}>
             <div
               className={`relative h-full p-5 rounded-2xl border shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${
-                p.featured ? "border-violet-200 bg-white ring-1 ring-violet-100 shadow-md hover:shadow-violet-500/15 sm:scale-[1.03]" : "border-slate-200 bg-white"
+                p.featured
+                  ? "bg-white shadow-md sm:scale-[1.03]"
+                  : "border-slate-200 bg-white"
               }`}
+              style={{
+                borderColor: p.featured ? theme.primary : undefined,
+                boxShadow: p.featured ? `0 10px 30px -10px ${glow(0.25)}` : undefined,
+              }}
             >
               {p.featured && (
                 <span
-                  className="absolute -top-2.5 left-5 px-2 py-0.5 rounded-full bg-gradient-to-r from-teal-400 via-blue-500 to-violet-600 text-white text-[9px] font-semibold uppercase tracking-[0.15em]"
-                  style={{ fontFamily: FONT_MONO }}
+                  className="absolute -top-2.5 left-5 px-2.5 py-0.5 rounded-full text-white text-[9px] font-semibold uppercase tracking-[0.15em] shadow-sm"
+                  style={{
+                    fontFamily: FONT_MONO,
+                    background: theme.id === "green"
+                      ? "linear-gradient(135deg, #15803D 0%, #22C55E 100%)"
+                      : "linear-gradient(135deg, #6366F1 0%, #7C3AED 100%)",
+                  }}
                 >
                   Núcleo
                 </span>

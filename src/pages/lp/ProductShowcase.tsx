@@ -5,6 +5,7 @@ import {
   Phone, Mail, MoreHorizontal, ArrowRight,
 } from "lucide-react";
 import { Section, Kicker, SectionTitle, Lede, FadeIn, AnimatedCounter, FONT_MONO } from "./shared";
+import { useLpTheme } from "./theme/LpThemeContext";
 
 type TabId = "pipeline" | "leads" | "aurora" | "indicadores";
 
@@ -79,6 +80,7 @@ function ChromeWindow({ title, children }: { title: string; children: React.Reac
 
 export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
   const [tab, setTab] = useState<TabId>("pipeline");
+  const { theme } = useLpTheme();
 
   return (
     <Section id="produto" glow>
@@ -113,16 +115,17 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
           <ChromeWindow title="Axis · Pipeline Comercial">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {PIPELINE_COLUMNS.map((col) => (
-                <div key={col.name} className="rounded-[var(--radius-panel)] border border-[var(--color-border-default)] bg-[var(--color-surface-sunken)] p-3">
-                  <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] mb-3 px-1">
-                    <span className={`w-1.5 h-1.5 rounded-full ${col.dot}`} />
-                    {col.name}
-                  </p>
+                <div key={col.name} className="bg-[var(--color-surface-sunken)] rounded-[var(--radius-panel)] p-3 border border-[var(--color-border-default)]">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className={`w-2 h-2 rounded-full ${col.dot}`} />
+                    <span className="text-xs font-semibold text-[var(--color-text-secondary)]">{col.name}</span>
+                    <span className="text-[11px] text-[var(--color-text-muted)] ml-auto" style={{ fontFamily: FONT_MONO }}>{col.cards.length}</span>
+                  </div>
                   <div className="space-y-2">
                     {col.cards.map((c) => (
-                      <div key={c.name} className="rounded-[var(--radius-control)] bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] p-3 shadow-[var(--shadow-panel)]">
-                        <p className="text-[12px] font-semibold text-[var(--color-text-primary)] mb-1 truncate">{c.name}</p>
-                        <p className="text-[11px] font-mono font-bold text-success">{c.value}</p>
+                      <div key={c.name} className="p-3 rounded-[var(--radius-panel)] bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-[var(--shadow-panel)]">
+                        <p className="text-[13px] font-bold text-[var(--color-text-primary)] mb-1">{c.name}</p>
+                        <p className="text-xs font-mono font-bold text-[var(--color-primary-blue)]">{c.value}</p>
                       </div>
                     ))}
                   </div>
@@ -134,19 +137,23 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
 
         {tab === "leads" && (
           <ChromeWindow title="Axis · Leads & Clientes">
-            <div className="space-y-2">
-              {LEADS_ROWS.map((r) => (
-                <div key={r.name} className="flex items-center gap-3 sm:gap-4 rounded-[var(--radius-panel)] bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] px-4 py-3 shadow-[var(--shadow-panel)]">
-                  <div className="w-8 h-8 rounded-full bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/20 flex items-center justify-center text-[10px] font-black text-[var(--color-primary-blue)] shrink-0">
-                    {r.name.split(" ").map((n) => n[0]).join("").slice(0, 2)}
+            <div className="divide-y divide-[var(--color-border-default)]">
+              {LEADS_ROWS.map((l) => (
+                <div key={l.name} className="py-3 px-2 flex items-center justify-between text-[13px] hover:bg-[var(--color-surface-sunken)] transition-colors rounded-[var(--radius-panel)]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] font-bold text-xs flex items-center justify-center">
+                      {l.name[0]}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-[var(--color-text-primary)]">{l.name}</p>
+                      <p className="text-[11px] text-[var(--color-text-muted)]">{l.origem}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-[var(--color-text-primary)] truncate">{r.name}</p>
-                    <p className="text-[10px] text-[var(--color-text-muted)]">{r.origem}</p>
-                  </div>
-                  <span className={`hidden sm:inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold border ${r.tone}`}>{r.status}</span>
-                  <span className="text-[12px] font-mono font-bold text-success shrink-0">{r.valor}</span>
-                  <div className="hidden sm:flex items-center gap-1.5 text-[var(--color-text-faint)] shrink-0">
+                  <div className="flex items-center gap-4">
+                    <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border ${l.tone}`}>
+                      {l.status}
+                    </span>
+                    <span className="text-xs font-mono font-bold text-[var(--color-text-primary)]">{l.valor}</span>
                     <Phone className="w-3.5 h-3.5" />
                     <Mail className="w-3.5 h-3.5" />
                     <MoreHorizontal className="w-3.5 h-3.5" />
@@ -168,7 +175,14 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
                     </div>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-teal-400 via-blue-500 to-violet-600 flex items-center justify-center shrink-0 mt-0.5">
+                    <div
+                      className="w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-white"
+                      style={{
+                        background: theme.id === "green"
+                          ? "linear-gradient(135deg, #15803D 0%, #22C55E 50%, #4ADE80 100%)"
+                          : theme.heroGradient,
+                      }}
+                    >
                       <Sparkles className="w-3 h-3 text-white" />
                     </div>
                     <div className="max-w-[80%] bg-[var(--color-primary-blue)]/5 border border-[var(--color-primary-blue)]/15 rounded-2xl rounded-tl-sm px-4 py-2.5 text-[13px] text-[var(--color-text-primary)] leading-relaxed">

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { MessageCircleQuestion, Sparkles, ArrowRight } from "lucide-react";
 import { AuroraCore } from "../../components/ui/auroraCore/AuroraCore";
 import { Section, Kicker, SectionTitle, Lede, FadeIn, AuroraStage, BrandLine, FONT_DISPLAY, FONT_MONO } from "./shared";
+import { useLpTheme } from "./theme/LpThemeContext";
 
 const EXAMPLES = [
   {
@@ -37,7 +38,8 @@ const EXAMPLES = [
 ];
 
 export function InteligenciaSection() {
-  const [active, setActive] = useState<number | null>(null);
+  const [active, setActive] = useState<number | null>(0);
+  const { theme, glow } = useLpTheme();
   const current = active !== null ? EXAMPLES[active] : null;
 
   return (
@@ -64,8 +66,11 @@ export function InteligenciaSection() {
           <AuroraStage size={240}>
             <AuroraCore mode={current ? "analyzing" : "thinking"} size={140} />
           </AuroraStage>
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-[10px] font-semibold uppercase tracking-[0.2em] text-emerald-600" style={{ fontFamily: FONT_MONO }}>
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <div
+            className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border shadow-sm text-[10px] font-semibold uppercase tracking-[0.2em]"
+            style={{ fontFamily: FONT_MONO, borderColor: `${theme.primary}44`, color: theme.primaryDark }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: theme.primary }} />
             Ativo agora
           </div>
         </FadeIn>
@@ -84,9 +89,11 @@ export function InteligenciaSection() {
                 className={`px-4 py-2.5 rounded-full border text-[13px] font-medium transition-all duration-300 hover:-translate-y-0.5 ${
                   active === i
                     ? "bg-slate-900 border-slate-900 text-white shadow-md"
-                    : "bg-white border-slate-200 text-slate-600 shadow-sm hover:border-blue-300 hover:text-slate-900 hover:shadow-md"
+                    : "bg-white border-slate-200 text-slate-600 shadow-sm hover:text-slate-900 hover:shadow-md"
                 }`}
-                style={{ fontFamily: FONT_DISPLAY }}
+                style={{
+                  borderColor: active === i ? undefined : `${theme.primary}33`,
+                }}
               >
                 "{ex.q}"
               </button>
@@ -95,14 +102,32 @@ export function InteligenciaSection() {
 
           {current ? (
             <FadeIn key={active}>
-              <div className="rounded-2xl border border-blue-200 bg-gradient-to-br from-blue-50 to-white p-5 sm:p-6 shadow-md shadow-blue-500/5">
+              <div
+                className="rounded-2xl border p-5 sm:p-6 shadow-md"
+                style={{
+                  background: `${theme.primary}0D`,
+                  borderColor: `${theme.primary}33`,
+                  boxShadow: `0 8px 24px ${glow(0.1)}`,
+                }}
+              >
                 <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 via-blue-500 to-violet-600 flex items-center justify-center shrink-0 mt-0.5">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5 text-white"
+                    style={{
+                      background: theme.id === "green"
+                        ? "linear-gradient(135deg, #15803D 0%, #22C55E 50%, #4ADE80 100%)"
+                        : theme.heroGradient,
+                      boxShadow: `0 4px 10px ${theme.glowColor}33`,
+                    }}
+                  >
                     <Sparkles className="w-4 h-4 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm sm:text-[15px] text-slate-800 leading-relaxed mb-4">{current.a}</p>
-                    <button className="group inline-flex items-center gap-1.5 text-[13px] font-bold text-blue-600 hover:text-blue-700 transition-colors">
+                    <button
+                      className="group inline-flex items-center gap-1.5 text-[13px] font-bold transition-colors"
+                      style={{ color: theme.primaryDark }}
+                    >
                       {current.cta}
                       <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                     </button>

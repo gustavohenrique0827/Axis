@@ -1,223 +1,570 @@
-import { useState } from "react";
-import { Check, Star, Zap, ArrowRight, ShieldCheck, HelpCircle } from "lucide-react";
-import { Section, Kicker, SectionTitle, FadeIn, ThemedCTAButton, ThemedOutlineButton, FONT_DISPLAY, FONT_MONO } from "./shared";
+import {
+  Terminal,
+  Send,
+  Zap,
+  Check,
+  Star,
+  Coins,
+  SlidersHorizontal,
+  Info,
+  Infinity as InfinityIcon,
+  ShieldCheck,
+  Headphones,
+  RefreshCw,
+  Key,
+  Scale,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
+import { FONT_DISPLAY, FONT_MONO } from "./shared";
 import { useLpTheme } from "./theme/LpThemeContext";
 
-interface Plan {
+interface PlanFeature {
+  text: string;
+}
+
+interface PlanItem {
+  id: string;
   name: string;
-  monthlyPrice: number;
-  annualPrice: number;
-  setup: string;
+  badgeTop?: string;
   description: string;
+  originalMonthly: string;
+  founderMonthly: string;
+  originalSetup: string;
+  founderSetup: string;
+  featuresHeader: string;
   features: string[];
-  cta: string;
-  badge?: string;
+  ctaText: string;
+  ctaVariant: "outline-blue" | "primary-violet" | "solid-cyan";
+  icon: typeof Terminal;
+  accentColor: "blue" | "violet" | "cyan";
   highlight?: boolean;
 }
 
-const PLANS: Plan[] = [
+const PLANS: PlanItem[] = [
   {
-    name: "Start",
-    monthlyPrice: 997,
-    annualPrice: 797,
-    setup: "Implantação assistida inclusa",
-    description: "Para empresas que querem organizar e enxergar a operação comercial sem planilhas soltas.",
+    id: "start",
+    name: "START",
+    description: "Para empresas que querem organizar e enxergar melhor sua operação comercial.",
+    originalMonthly: "De R$ 997/mês",
+    founderMonthly: "498,50",
+    originalSetup: "R$ 2.997",
+    founderSetup: "R$ 1.498,50",
+    featuresHeader: "INCLUI:",
     features: [
-      "CRM & Pipeline Comercial visual ilimitado",
-      "Conexão oficial com WhatsApp",
-      "Histórico completo de conversas por lead",
-      "Gestão de contatos, tarefas e notas internas",
-      "Transcrição automática de áudios com IA",
-      "Painel de métricas e conversão em tempo real",
-      "Suporte técnico via chamados e base de conhecimento",
+      "CRM comercial integrado",
+      "Gestão de leads & clientes",
+      "Pipeline comercial unificado",
+      "Histórico de interações",
+      "Integração nativa WhatsApp",
+      "Inteligência sobre leads",
+      "Identificação de oportunidades",
+      "Análise de conversas e score",
+      "Próxima melhor ação sugerida",
     ],
-    cta: "Começar com o Start",
+    ctaText: "COMEÇAR AGORA",
+    ctaVariant: "outline-blue",
+    icon: Terminal,
+    accentColor: "blue",
   },
   {
-    name: "Autopilot",
-    monthlyPrice: 1997,
-    annualPrice: 1597,
-    setup: "Implantação e treinamento ao vivo inclusos",
-    description: "Para operações que querem a Aurora IA qualificando e distribuindo leads 24 horas por dia.",
+    id: "autopilot",
+    name: "AUTOPILOT",
+    badgeTop: "★ MAIS ESCOLHIDO",
+    description: "Para empresas que querem que a inteligência comece a trabalhar as oportunidades.",
+    originalMonthly: "De R$ 1.997/mês",
+    founderMonthly: "998,50",
+    originalSetup: "R$ 4.997",
+    founderSetup: "R$ 2.498,50",
+    featuresHeader: "TUDO DO START +",
     features: [
-      "Tudo do plano Start, mais:",
-      "Aurora IA integrada 24/7 sem fila",
-      "Qualificação automática de leads em etapas",
-      "Rodízio inteligente de SDRs e Closers",
-      "Follow-up automático de leads que esfriaram",
-      "Agendamento direto no Google Calendar & Google Meet",
-      "Radar de Oportunidades & Análise de Sentimento",
-      "Lembretes automáticos via WhatsApp anti-no-show",
-      "Suporte prioritário via WhatsApp corporativo",
+      "Agentes autônomos de IA",
+      "Qualificação automática 24/7",
+      "Follow-up automático humanizado",
+      "Recuperação de oportunidades",
+      "Agendamento automático",
+      "Distribuição inteligente de leads",
+      "Ações comerciais automatizadas",
     ],
-    cta: "Quero o Autopilot",
-    badge: "Mais Escolhido",
+    ctaText: "QUERO O AUTOPILOT",
+    ctaVariant: "primary-violet",
+    icon: Send,
+    accentColor: "violet",
     highlight: true,
   },
   {
-    name: "Autonomous",
-    monthlyPrice: 3997,
-    annualPrice: 3197,
-    setup: "Consultoria de implantação personalizada",
-    description: "Para empresas de alta performance que buscam automação ponta a ponta e escala comercial.",
+    id: "autonomous",
+    name: "AUTONOMOUS",
+    description: "Para empresas que querem transformar o Axis em parte ativa da sua operação.",
+    originalMonthly: "De R$ 3.997/mês",
+    founderMonthly: "1.998,50",
+    originalSetup: "R$ 9.997",
+    founderSetup: "R$ 4.998,50",
+    featuresHeader: "TUDO DO AUTOPILOT +",
     features: [
-      "Tudo do plano Autopilot, mais:",
-      "Múltiplos agentes com regras e instruções customizadas",
-      "Geração de contratos com assinatura digital em 1 clique",
-      "Módulo Financeiro completo: DRE, contas e fluxo de caixa",
-      "Cálculo automático de comissões por vendedor e squad",
-      "Multi-tenant & White-Label com marca e cores da empresa",
-      "Construtor de Formulários e Landing Pages ilimitadas",
-      "API aberta e webhooks para integração com ERPs",
-      "Gerente de conta dedicado e reuniões mensais de alinhamento",
+      "Múltiplos agentes especializados",
+      "Envio autônomo de propostas",
+      "Negociação guiada com regras",
+      "Reativação proativa de clientes",
+      "Expansão de carteira (Upsell)",
+      "Operação comercial autônoma",
+      "Alta capacidade de processamento",
+      "Configurações & regras avançadas",
     ],
-    cta: "Contratar o Autonomous",
+    ctaText: "QUERO CONHECER",
+    ctaVariant: "solid-cyan",
+    icon: Zap,
+    accentColor: "cyan",
   },
+];
+
+const TOKEN_TIERS = [
+  { credits: "10.000 créditos", price: "R$ 199" },
+  { credits: "30.000 créditos", price: "R$ 497" },
+  { credits: "75.000 créditos", price: "R$ 997" },
+  { credits: "150.000 créditos", price: "R$ 1.797" },
+  { credits: "300.000 créditos", price: "R$ 2.997" },
 ];
 
 export function PlanosSection({ onCta }: { onCta: () => void }) {
   const { theme, glow } = useLpTheme();
-  const [isAnnual, setIsAnnual] = useState(true);
-
-  const formatPrice = (val: number) =>
-    val.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
   return (
-    <Section id="planos" className="bg-slate-50/70 relative" glow>
-      <div className="text-center mb-10">
-        <Kicker>Investimento Transparente</Kicker>
-        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-4">
-          Escolha o nível de autonomia da sua operação.
-        </SectionTitle>
-        <p className="text-base text-slate-600 max-w-2xl mx-auto">
-          Sem taxas ocultas. Escolha o plano ideal para a sua equipe e comece a recuperar oportunidades perdidas.
-        </p>
-
-        {/* Toggle Mensal / Anual */}
-        <div className="mt-8 inline-flex items-center gap-3 p-1.5 rounded-full bg-white border border-slate-200 shadow-sm">
-          <button
-            onClick={() => setIsAnnual(false)}
-            className={`px-5 py-2 rounded-full text-xs font-bold transition-all duration-200 ${
-              !isAnnual ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Faturamento Mensal
-          </button>
-          <button
-            onClick={() => setIsAnnual(true)}
-            className={`px-5 py-2 rounded-full text-xs font-bold transition-all duration-200 flex items-center gap-1.5 ${
-              isAnnual ? "bg-slate-900 text-white shadow-sm" : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            Faturamento Anual
-            <span
-              className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
-              style={{ background: glow(0.2), color: theme.primaryDark }}
-            >
-              20% OFF
-            </span>
-          </button>
-        </div>
+    <section
+      id="planos"
+      className="relative overflow-hidden py-16 sm:py-24 px-4 sm:px-6 lg:px-8 bg-[#060A14] text-white"
+    >
+      {/* Background glow radiais com cores vivas e dinâmicas */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div
+          className="absolute top-[15%] left-[20%] w-[500px] h-[500px] rounded-full blur-[140px] opacity-20 transition-all duration-700"
+          style={{ background: theme.glowColor }}
+        />
+        <div
+          className="absolute top-[35%] right-[15%] w-[450px] h-[450px] rounded-full blur-[140px] opacity-15 transition-all duration-700"
+          style={{ background: theme.glowColorAlt }}
+        />
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6 mb-12 items-stretch max-w-6xl mx-auto">
-        {PLANS.map((plan, i) => {
-          const price = isAnnual ? plan.annualPrice : plan.monthlyPrice;
-          return (
-            <FadeIn key={plan.name} delay={i * 0.08} className={`h-full ${plan.highlight ? "lg:-mt-3" : ""}`}>
+      <div className="max-w-[1360px] mx-auto relative z-10">
+        {/* Header superior idêntico ao design original */}
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-6 mb-12 pb-6 border-b border-white/[0.08]">
+          {/* Logo Axis à esquerda */}
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-600 to-purple-600 flex items-center justify-center font-black text-white text-xl shadow-md shadow-indigo-950/50">
+              A
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-black tracking-wider text-white" style={{ fontFamily: FONT_DISPLAY }}>
+                  AXIS
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 font-medium">
+                Sistema Operacional de Oportunidades Comerciais
+              </p>
+            </div>
+          </div>
+
+          {/* Título e Subtítulo central */}
+          <div className="text-center max-w-2xl">
+            <h2
+              className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight"
+              style={{ fontFamily: FONT_DISPLAY }}
+            >
+              Escolha o nível de autonomia da sua operação.
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400 mt-1.5 font-normal">
+              Tecnologia que encontra, entende e age sobre oportunidades de vendas.
+            </p>
+          </div>
+
+          {/* Badge Cliente Fundador — 50% OFF à direita */}
+          <div className="shrink-0">
+            <div
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider shadow-sm transition-all"
+              style={{
+                borderColor: `${theme.primary}66`,
+                background: `${theme.primary}1A`,
+                color: theme.id === "green" ? "#86EFAC" : theme.primaryLight,
+              }}
+            >
+              <span className="text-base">🤝</span>
+              <span>CLIENTE FUNDADOR — 50% OFF</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Grid de 4 Colunas (3 Planos + 1 Créditos de Inteligência) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 items-stretch">
+          {PLANS.map((p) => {
+            const isHighlight = p.highlight;
+
+            return (
               <div
-                className={`relative h-full flex flex-col justify-between rounded-3xl p-7 sm:p-8 bg-white border transition-all duration-300 ${
-                  plan.highlight
-                    ? "border-2 shadow-xl ring-4 ring-emerald-500/10"
-                    : "border-slate-200 shadow-sm hover:shadow-md"
+                key={p.id}
+                className={`relative rounded-2xl flex flex-col justify-between p-6 sm:p-7 transition-all duration-300 ${
+                  isHighlight
+                    ? "bg-[#0B1226]/95 border-2 shadow-2xl backdrop-blur-md"
+                    : "bg-[#090F1C]/90 border border-white/[0.08] hover:border-white/20 shadow-lg backdrop-blur-sm"
                 }`}
                 style={{
-                  borderColor: plan.highlight ? theme.primary : undefined,
+                  borderColor: isHighlight
+                    ? theme.id === "green"
+                      ? theme.primary
+                      : "#8B5CF6"
+                    : undefined,
+                  boxShadow: isHighlight
+                    ? `0 20px 50px -15px ${theme.id === "green" ? `${theme.primary}33` : "rgba(139, 92, 246, 0.25)"}`
+                    : undefined,
                 }}
               >
-                {/* Badge destaque */}
-                {plan.badge && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2">
+                {/* Badge Topo se destacado */}
+                {p.badgeTop && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20">
                     <span
-                      className="inline-flex items-center gap-1 px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-slate-900 shadow-md"
-                      style={{ background: theme.primary }}
+                      className="inline-flex items-center gap-1 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-lg"
+                      style={{
+                        background:
+                          theme.id === "green"
+                            ? "linear-gradient(135deg, #15803D 0%, #16A34A 50%, #22C55E 100%)"
+                            : "linear-gradient(135deg, #6366F1 0%, #7C3AED 100%)",
+                      }}
                     >
                       <Star className="w-3 h-3 fill-current" />
-                      {plan.badge}
+                      {p.badgeTop}
                     </span>
                   </div>
                 )}
 
                 <div>
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="text-xl font-black text-slate-900" style={{ fontFamily: FONT_DISPLAY }}>
-                      {plan.name}
+                  {/* Ícone e Nome do Plano */}
+                  <div className="flex items-center gap-3 mb-3">
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center border shrink-0"
+                      style={{
+                        background:
+                          p.accentColor === "violet"
+                            ? `${theme.primary}22`
+                            : p.accentColor === "cyan"
+                            ? "rgba(6, 182, 212, 0.15)"
+                            : "rgba(59, 130, 246, 0.15)",
+                        borderColor:
+                          p.accentColor === "violet"
+                            ? `${theme.primary}44`
+                            : p.accentColor === "cyan"
+                            ? "rgba(6, 182, 212, 0.3)"
+                            : "rgba(59, 130, 246, 0.3)",
+                        color:
+                          p.accentColor === "violet"
+                            ? theme.primary
+                            : p.accentColor === "cyan"
+                            ? "#22D3EE"
+                            : "#60A5FA",
+                      }}
+                    >
+                      <p.icon className="w-4 h-4" />
+                    </div>
+                    <h3
+                      className="text-lg font-black text-white tracking-wider uppercase"
+                      style={{ fontFamily: FONT_DISPLAY }}
+                    >
+                      {p.name}
                     </h3>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed mb-6 min-h-[36px]">
-                    {plan.description}
+                  <p className="text-xs text-slate-400 leading-relaxed min-h-[38px] mb-5">
+                    {p.description}
                   </p>
 
-                  {/* Preço */}
-                  <div className="mb-4 pb-4 border-b border-slate-100">
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-4xl sm:text-5xl font-extrabold text-slate-900 tracking-tight" style={{ fontFamily: FONT_DISPLAY }}>
-                        {formatPrice(price)}
+                  {/* Bloco de Preços */}
+                  <div className="mb-4 pb-4 border-b border-white/[0.08]">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="text-xs text-slate-500 line-through font-medium">
+                        {p.originalMonthly}
                       </span>
-                      <span className="text-xs font-bold text-slate-400">/mês</span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                        50% OFF FUNDADOR
+                      </span>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-1 font-mono">{plan.setup}</p>
+
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-xs font-bold text-slate-400">R$</span>
+                      <span
+                        className="text-3xl sm:text-4xl font-black text-white tracking-tight"
+                        style={{ fontFamily: FONT_DISPLAY }}
+                      >
+                        {p.founderMonthly}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-400">/mês</span>
+                    </div>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2 font-mono">
+                      <span>
+                        Implantação:{" "}
+                        <span className="line-through text-slate-500">{p.originalSetup}</span>
+                      </span>
+                      <span
+                        className="font-bold ml-1"
+                        style={{
+                          color:
+                            p.accentColor === "violet"
+                              ? theme.primary
+                              : p.accentColor === "cyan"
+                              ? "#22D3EE"
+                              : "#60A5FA",
+                        }}
+                      >
+                        {p.founderSetup}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Lista de Recursos */}
-                  <div className="space-y-3 mb-8">
-                    <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">
-                      O que está incluso:
+                  <div className="space-y-2.5 mb-6">
+                    <p
+                      className="text-[10px] font-black uppercase tracking-widest mb-3"
+                      style={{
+                        color:
+                          p.accentColor === "violet"
+                            ? theme.primary
+                            : p.accentColor === "cyan"
+                            ? "#22D3EE"
+                            : "#94A3B8",
+                      }}
+                    >
+                      {p.featuresHeader}
                     </p>
-                    {plan.features.map((f) => (
-                      <div key={f} className="flex items-start gap-2.5 text-xs text-slate-700">
-                        <Check className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-                        <span className="leading-snug">{f}</span>
+                    {p.features.map((feat) => (
+                      <div key={feat} className="flex items-start gap-2.5 text-xs text-slate-300">
+                        <div
+                          className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                          style={{
+                            background:
+                              p.accentColor === "violet"
+                                ? `${theme.primary}22`
+                                : p.accentColor === "cyan"
+                                ? "rgba(6, 182, 212, 0.15)"
+                                : "rgba(59, 130, 246, 0.15)",
+                            color:
+                              p.accentColor === "violet"
+                                ? theme.primary
+                                : p.accentColor === "cyan"
+                                ? "#22D3EE"
+                                : "#60A5FA",
+                          }}
+                        >
+                          <Check className="w-2.5 h-2.5 stroke-[3]" />
+                        </div>
+                        <span className="leading-tight">{feat}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div>
-                  {plan.highlight ? (
-                    <ThemedCTAButton onClick={onCta} className="w-full py-3.5 text-sm font-bold shadow-md">
-                      {plan.cta} <ArrowRight className="w-4 h-4 ml-1" />
-                    </ThemedCTAButton>
+                {/* Botão CTA do Card */}
+                <div className="mt-4 pt-2">
+                  {p.ctaVariant === "primary-violet" ? (
+                    <button
+                      onClick={onCta}
+                      className="w-full py-3.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 shadow-lg flex items-center justify-center gap-2"
+                      style={{
+                        background:
+                          theme.id === "green"
+                            ? theme.primary
+                            : "linear-gradient(135deg, #7C3AED 0%, #6366F1 100%)",
+                        color: theme.id === "green" ? "#061A0C" : "#FFFFFF",
+                        boxShadow: `0 10px 25px -5px ${theme.id === "green" ? `${theme.primary}55` : "rgba(124, 58, 237, 0.5)"}`,
+                      }}
+                    >
+                      <span>{p.ctaText}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  ) : p.ctaVariant === "solid-cyan" ? (
+                    <button
+                      onClick={onCta}
+                      className="w-full py-3.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 shadow-md flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-cyan-500/20"
+                    >
+                      <span>{p.ctaText}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
                   ) : (
-                    <ThemedOutlineButton onClick={onCta} className="w-full py-3.5 text-sm font-bold">
-                      {plan.cta}
-                    </ThemedOutlineButton>
+                    <button
+                      onClick={onCta}
+                      className="w-full py-3.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 border border-blue-500/40 hover:border-blue-400 bg-blue-950/40 hover:bg-blue-900/50 text-blue-300 flex items-center justify-center gap-2"
+                    >
+                      <span>{p.ctaText}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
                   )}
                 </div>
               </div>
-            </FadeIn>
-          );
-        })}
-      </div>
+            );
+          })}
 
-      {/* Garantia incondicional */}
-      <div className="max-w-3xl mx-auto text-center p-6 rounded-2xl bg-white border border-slate-200/80 shadow-2xs flex flex-col sm:flex-row items-center gap-4">
-        <div
-          className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0"
-          style={{ background: glow(0.15) }}
-        >
-          <ShieldCheck className="w-6 h-6" style={{ color: theme.primaryDark }} />
+          {/* CARD 4: CRÉDITOS DE INTELIGÊNCIA & CONTROLE TOTAL */}
+          <div className="relative rounded-2xl flex flex-col justify-between p-6 sm:p-7 bg-[#090F1C]/90 border border-white/[0.08] hover:border-white/20 shadow-lg backdrop-blur-sm">
+            <div>
+              {/* Header do Card */}
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400">
+                  <Coins className="w-4 h-4" />
+                </div>
+                <h3
+                  className="text-xs sm:text-sm font-black text-cyan-400 tracking-wider uppercase"
+                  style={{ fontFamily: FONT_DISPLAY }}
+                >
+                  CRÉDITOS DE INTELIGÊNCIA
+                </h3>
+              </div>
+
+              <p className="text-xs text-slate-400 mb-4">
+                Consumo utilizado pelos agentes do Axis.
+              </p>
+
+              {/* Tabela de Valores de Créditos */}
+              <div className="space-y-2 mb-4 bg-black/40 p-3.5 rounded-xl border border-white/[0.05]">
+                {TOKEN_TIERS.map((tier) => (
+                  <div
+                    key={tier.credits}
+                    className="flex items-center justify-between text-xs py-1 border-b border-white/[0.04] last:border-0"
+                  >
+                    <span className="text-slate-300 font-medium">{tier.credits}</span>
+                    <span className="font-bold text-white font-mono">{tier.price}</span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Subtexto explicativo */}
+              <div className="flex items-start gap-2 text-[11px] text-slate-400 leading-relaxed mb-6">
+                <Info className="w-3.5 h-3.5 text-cyan-400 shrink-0 mt-0.5" />
+                <span>
+                  Consumo adicional conforme uso. Conecte sua chave ou recarregue quando precisar.
+                </span>
+              </div>
+
+              {/* Linha Divisória */}
+              <div className="border-t border-white/[0.08] pt-5 mb-5">
+                <div className="flex items-center gap-2 text-xs font-black uppercase tracking-wider text-white mb-4">
+                  <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
+                  <span>VOCÊ TEM CONTROLE TOTAL</span>
+                </div>
+
+                <div className="space-y-3.5 text-xs">
+                  {/* Item 1 */}
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-5 h-5 rounded-md bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0 mt-0.5">
+                      <Key className="w-3 h-3" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-200 leading-snug">Use sua própria API</h4>
+                      <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                        Conecte sua conta OpenAI, Gemini ou outro provedor compatível.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Item 2 */}
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-5 h-5 rounded-md bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+                      <Scale className="w-3 h-3" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-200 leading-snug">Defina suas regras</h4>
+                      <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                        Decida como e quando a IA age na sua operação.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Item 3 */}
+                  <div className="flex items-start gap-2.5">
+                    <div className="w-5 h-5 rounded-md bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 shrink-0 mt-0.5">
+                      <Sparkles className="w-3 h-3" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-slate-200 leading-snug">Pague pelo que utiliza</h4>
+                      <p className="text-[11px] text-slate-400 mt-0.5 leading-relaxed">
+                        Mais previsibilidade, transparência e controle de custos.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Ação final do card 4 */}
+            <div className="mt-4 pt-2">
+              <button
+                onClick={onCta}
+                className="w-full py-3 px-4 rounded-xl text-xs font-bold transition-all duration-200 border border-white/10 hover:border-cyan-500/40 bg-white/[0.03] hover:bg-white/[0.08] text-slate-300 hover:text-white flex items-center justify-center gap-2"
+              >
+                <span>Falar com especialista</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="text-left flex-1">
-          <h4 className="text-sm font-bold text-slate-900" style={{ fontFamily: FONT_DISPLAY }}>
-            Garantia Incondicional de 14 Dias
-          </h4>
-          <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-            Se a sua equipe não constatar um aumento perceptível na velocidade de atendimento e recuperação de leads nos primeiros 14 dias, cancelamos sua assinatura sem complicações.
-          </p>
+
+        {/* Barra Inferior com Garantias e Slogan Oficial */}
+        <div className="mt-12 pt-8 border-t border-white/[0.08] flex flex-col lg:flex-row items-center justify-between gap-6">
+          {/* 4 Pilares de Garantia */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 sm:gap-8 w-full lg:w-auto">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-slate-300 shrink-0">
+                <InfinityIcon className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white">Sem fidelidade</h4>
+                <p className="text-[11px] text-slate-400">Cancele quando quiser</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-slate-300 shrink-0">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white">Segurança & privacidade</h4>
+                <p className="text-[11px] text-slate-400">Dados criptografados</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-slate-300 shrink-0">
+                <Headphones className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white">Suporte especializado</h4>
+                <p className="text-[11px] text-slate-400">Acompanhamento próximo</p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center text-slate-300 shrink-0">
+                <RefreshCw className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-white">Evolução constante</h4>
+                <p className="text-[11px] text-slate-400">Novos agentes contínuos</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Slogan à direita */}
+          <div className="text-center lg:text-right shrink-0">
+            <p
+              className="text-xs sm:text-sm font-black tracking-widest text-slate-200 uppercase"
+              style={{ fontFamily: FONT_MONO }}
+            >
+              ENCONTRA. ENTENDE. AGE. CONVERTE.
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5">
+              AXIS: O sistema operacional de oportunidades comerciais.
+            </p>
+          </div>
         </div>
       </div>
-    </Section>
+    </section>
   );
 }

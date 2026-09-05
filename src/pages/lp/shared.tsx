@@ -39,6 +39,7 @@ export function Section({
   /** Renderiza dois blobs radiais desfocados e sutis para dar profundidade a seções de fundo sólido. */
   glow?: boolean;
 }) {
+  const { theme } = useLpTheme();
   return (
     <section
       id={id}
@@ -46,8 +47,14 @@ export function Section({
     >
       {glow && (
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-[-10%] left-[-5%] w-[420px] h-[420px] rounded-full bg-teal-400/[0.05] blur-[120px]" />
-          <div className="absolute bottom-[-15%] right-[-5%] w-[380px] h-[380px] rounded-full bg-violet-500/[0.06] blur-[120px]" />
+          <div
+            className="absolute top-[-10%] left-[-5%] w-[420px] h-[420px] rounded-full blur-[120px]"
+            style={{ background: theme.glowColor, opacity: 0.07 }}
+          />
+          <div
+            className="absolute bottom-[-15%] right-[-5%] w-[380px] h-[380px] rounded-full blur-[120px]"
+            style={{ background: theme.glowColorAlt, opacity: 0.07 }}
+          />
         </div>
       )}
       <div className="max-w-6xl mx-auto relative z-10">{children}</div>
@@ -56,15 +63,16 @@ export function Section({
 }
 
 export function Kicker({ children }: { children: ReactNode }) {
+  const { theme } = useLpTheme();
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      className="inline-flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.22em] text-blue-600 mb-5"
+      className={`inline-flex items-center gap-2.5 text-[11px] font-semibold uppercase tracking-[0.22em] mb-5 ${theme.kickerTextClass}`}
       style={{ fontFamily: FONT_MONO }}
     >
-      <span className="w-1.5 h-1.5 rotate-45 bg-gradient-to-br from-teal-400 to-violet-500 shrink-0" />
+      <span className={`w-1.5 h-1.5 rotate-45 bg-gradient-to-br ${theme.kickerGradient} shrink-0`} />
       {children}
     </motion.div>
   );
@@ -193,7 +201,7 @@ export function BrandLine({ children }: { children: ReactNode }) {
   );
 }
 
-export const ACCENT_GRADIENT = "bg-gradient-to-r from-teal-400 via-blue-500 to-violet-500 bg-clip-text text-transparent";
+export const ACCENT_GRADIENT = "bg-gradient-to-r from-emerald-400 via-green-500 to-teal-400 bg-clip-text text-transparent";
 
 /** Versão temática do Kicker — usa a cor primária do LpTheme ativo. */
 export function ThemedKicker({ children }: { children: ReactNode }) {
