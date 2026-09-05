@@ -49,6 +49,35 @@ export function ConfigPreferenciasSistema() {
     updatePreferences({ [PREF_KEY]: updated, theme: updated.theme === "system" ? "dark" : updated.theme });
   };
 
+  const handleLanguageChange = (lang: string) => {
+    const updated = { ...prefs, language: lang };
+    persist(updated);
+    try {
+      localStorage.setItem("spy_platform_lang", lang);
+      document.documentElement.lang = lang;
+    } catch {}
+    const labels: Record<string, string> = {
+      "pt-BR": "Português (Brasil)",
+      "en-US": "English (United States)",
+      "es-ES": "Español",
+    };
+    toast.success(`Idioma da plataforma definido para ${labels[lang] || lang}`);
+  };
+
+  const handleCurrencyChange = (curr: string) => {
+    const updated = { ...prefs, currency: curr };
+    persist(updated);
+    try {
+      localStorage.setItem("spy_default_currency", curr);
+    } catch {}
+    const labels: Record<string, string> = {
+      BRL: "Real Brasileiro (R$ - BRL)",
+      USD: "Dólar Americano ($ - USD)",
+      EUR: "Euro (€ - EUR)",
+    };
+    toast.success(`Moeda padrão definida para ${labels[curr] || curr}`);
+  };
+
   const applyTheme = (newTheme: "light" | "dark" | "system") => {
     persist({ ...prefs, theme: newTheme });
 
@@ -66,6 +95,10 @@ export function ConfigPreferenciasSistema() {
 
   const handleSave = () => {
     persist(prefs);
+    try {
+      localStorage.setItem("spy_platform_lang", prefs.language);
+      localStorage.setItem("spy_default_currency", prefs.currency);
+    } catch {}
     toast.success("Preferências do sistema salvas com sucesso!");
   };
 
@@ -187,7 +220,7 @@ export function ConfigPreferenciasSistema() {
             <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1.5 block">Idioma da Plataforma</label>
             <select
               value={prefs.language}
-              onChange={(e) => persist({ ...prefs, language: e.target.value })}
+              onChange={(e) => handleLanguageChange(e.target.value)}
               className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
             >
               <option value="pt-BR">Português (Brasil)</option>
@@ -200,7 +233,7 @@ export function ConfigPreferenciasSistema() {
             <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1.5 block">Moeda Padrão</label>
             <select
               value={prefs.currency}
-              onChange={(e) => persist({ ...prefs, currency: e.target.value })}
+              onChange={(e) => handleCurrencyChange(e.target.value)}
               className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
             >
               <option value="BRL">Real Brasileiro (R$ - BRL)</option>
