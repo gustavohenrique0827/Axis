@@ -22,7 +22,7 @@ export const supabase = createClient(
   isValidKey ? key : SAFE_JWT
 )
 
-export const AXIS = {
+export const SPY = {
   TENANT_ID:   '27ef95ee-84dd-499e-9f25-cd9baecb5fe4',
   PIPELINE_ID: 'edb44aee-8569-48e1-a52c-61e0a31317e2', // SDR (pré-venda)
   STAGE_ID:    '7542d9bc-5322-403c-9eab-89f0047ea631', // Novo Lead

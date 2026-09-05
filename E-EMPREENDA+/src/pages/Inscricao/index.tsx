@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import Logo from '../../components/Logo'
 import styles from './Inscricao.module.css'
-import { supabase, AXIS } from '../../lib/supabase'
+import { supabase, SPY } from '../../lib/supabase'
 import { useLandingSection } from '../../lib/useLandingConfig'
 
 interface FormData {
@@ -143,20 +143,20 @@ export default function Inscricao() {
     const perfilLabel  = (formSteps.step2.options ?? []).find((o: CardOption) => o.value === formData.perfil)?.label  ?? formData.perfil
     const desafioLabel = (formSteps.step3.options ?? []).find((o: CardOption) => o.value === formData.desafio)?.label ?? formData.desafio
 
-    // Rodízio: busca o próximo SDR disponível no Axis CRM
+    // Rodízio: busca o próximo SDR disponível no S.P.Y. CRM
     const { data: sdrRows } = await supabase.rpc('claim_next_form_sdr', {
-      p_tenant_id: AXIS.TENANT_ID,
+      p_tenant_id: SPY.TENANT_ID,
     })
     const sdr = sdrRows?.[0]
-    const sellerId = sdr?.user_id ?? AXIS.SELLER_ID
+    const sellerId = sdr?.user_id ?? SPY.SELLER_ID
 
     const { error: dbError } = await supabase.from('leads').insert({
-      tenant_id:              AXIS.TENANT_ID,
-      pipeline_id:            AXIS.PIPELINE_ID,
-      stage_id:               AXIS.STAGE_ID,
+      tenant_id:              SPY.TENANT_ID,
+      pipeline_id:            SPY.PIPELINE_ID,
+      stage_id:               SPY.STAGE_ID,
       seller_id:              sellerId,
-      pipelineId:             AXIS.PIPELINE_SLUG,
-      stageId:                AXIS.STAGE_SLUG,
+      pipelineId:             SPY.PIPELINE_SLUG,
+      stageId:                SPY.STAGE_SLUG,
       name:                   formData.nome,
       email:                  formData.email,
       mobile_wa:              formData.telefone,

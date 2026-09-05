@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase, AXIS } from './supabase'
+import { supabase, SPY } from './supabase'
 
 const SITE_KEY = 'eempreenda'
 
@@ -11,7 +11,7 @@ export function useLandingSection<T>(section: string, fallback: T): [T, boolean]
     supabase
       .from('landing_configs')
       .select('content')
-      .eq('tenant_id', AXIS.TENANT_ID)
+      .eq('tenant_id', SPY.TENANT_ID)
       .eq('site_key', SITE_KEY)
       .eq('section', section)
       .maybeSingle()
@@ -27,7 +27,7 @@ export function useLandingSection<T>(section: string, fallback: T): [T, boolean]
 export async function saveLandingSection(section: string, content: unknown) {
   return supabase.from('landing_configs').upsert(
     {
-      tenant_id:  AXIS.TENANT_ID,
+      tenant_id:  SPY.TENANT_ID,
       site_key:   SITE_KEY,
       section,
       content,
