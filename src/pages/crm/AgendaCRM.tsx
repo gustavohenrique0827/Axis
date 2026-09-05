@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
 import { PageContainer } from "../../components/PageContainer";
@@ -32,9 +32,20 @@ import {
   Filter,
   Sparkles,
   ArrowUpRight,
+  LogOut,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Reuniao } from "../../contexts/DataContextTypes";
+import {
+  googleSignIn,
+  getAccessToken,
+  getGoogleUserEmail,
+  logout as googleLogout,
+} from "../../lib/google-auth";
+import {
+  listGoogleCalendarEvents,
+  mapGoogleEventToReuniao,
+} from "../../lib/google-calendar";
 
 type ViewMode = "mes" | "semana" | "dia" | "lista";
 type StatusFilter = "Todos" | "Agendada" | "Em Andamento" | "Concluída" | "Cancelada";
@@ -46,7 +57,7 @@ const MONTH_NAMES = [
 const DOW = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export default function AgendaCRM() {
-  const { reunioes, deleteReuniao, updateReuniao, leads, colaboradores } = useData();
+  const { reunioes, deleteReuniao, updateReuniao, addReuniao, leads, colaboradores } = useData();
   const navigate = useNavigate();
 
   const [view, setView] = useState<ViewMode>("mes");
@@ -59,7 +70,10 @@ export default function AgendaCRM() {
   const [showNovaReuniao, setShowNovaReuniao] = useState(false);
   const [reuniaoToDelete, setReuniaoToDelete] = useState<string | null>(null);
   const [selectedLeadForDetails, setSelectedLeadForDetails] = useState<any | null>(null);
+  
+  // Google Calendar Integration State
   const [isSyncing, setIsSyncing] = useState(false);
+  const [googleUserEmail, setGoogleUserEmail] = useState<string | null>(null);
 
   const all = reunioes as Reuniao[];
 
@@ -136,13 +150,112 @@ export default function AgendaCRM() {
     setSelectedDayDate(new Date());
   };
 
-  const handleSyncGoogle = () => {
+  // Google Sync implementation
+  const handleSyncGoogle = async (forceAuth = false) => {
     setIsSyncing(true);
-    setTimeout(() => {
+    try {
+      let token = await getAccessToken();
+
+      if (!token || forceAuth) {
+        const authResult = await googleSignIn();
+        if (authResult) {
+          token = authResult.accessToken;
+          setGoogleUserEmail(authResult.user.email || "Conectado");
+          toast.success("Conta Google conectada com sucesso!");
+        }
+      }
+
+      if (!token) {
+        toast.error("Conexão com o Google necessária para sincronizar a agenda.");
+        return;
+      }
+
+      // Janela de busca: do início do mês anterior até o fim de 3 meses adiante
+      const minDate = new Date(year, month - 1, 1).toISOString();
+      const maxDate = new Date(year, month + 4, 0).toISOString();
+
+      const events = await listGoogleCalendarEvents(token, {
+        timeMin: minDate,
+        timeMax: maxDate,
+        maxResults: 250,
+      });
+
+      if (!events || events.length === 0) {
+        toast.info("Nenhum evento encontrado no seu Google Calendar para o período.");
+        return;
+      }
+
+      let importedCount = 0;
+      let updatedCount = 0;
+
+      const existingMap = new Map<string, Reuniao>();
+      (reunioes as Reuniao[]).forEach((r) => {
+        if (r.googleEventId) existingMap.set(r.googleEventId, r);
+        if (r.id) existingMap.set(r.id, r);
+      });
+
+      for (const ev of events) {
+        // Ignora eventos que são cancelados se nunca foram importados
+        if (ev.status === "cancelled" && !existingMap.has(ev.id) && !existingMap.has(`gcal-${ev.id}`)) {
+          continue;
+        }
+
+        const mapped = mapGoogleEventToReuniao(ev, googleUserEmail || "Google Calendar");
+        const existing = existingMap.get(ev.id) || existingMap.get(`gcal-${ev.id}`);
+
+        if (existing) {
+          // Atualiza se houver alteração
+          updateReuniao(existing.id, {
+            leadName: mapped.leadName,
+            companyName: mapped.companyName,
+            scheduledAt: mapped.scheduledAt,
+            durationMinutes: mapped.durationMinutes,
+            meetLink: mapped.meetLink,
+            status: mapped.status,
+            pauta: mapped.pauta,
+          });
+          updatedCount++;
+        } else {
+          // Novo evento importado
+          (addReuniao as any)(mapped);
+          existingMap.set(ev.id, mapped as any);
+          existingMap.set(`gcal-${ev.id}`, mapped as any);
+          importedCount++;
+        }
+      }
+
+      if (importedCount > 0 || updatedCount > 0) {
+        toast.success(
+          `Google Calendar sincronizado! ${importedCount} eventos importados, ${updatedCount} atualizados.`
+        );
+      } else {
+        toast.success("Agenda Google já sincronizada com o sistema!");
+      }
+    } catch (err: any) {
+      console.error("Erro na sincronização com Google Calendar:", err);
+      toast.error(err?.message || "Erro ao sincronizar com Google Calendar.");
+    } finally {
       setIsSyncing(false);
-      toast.success("Agenda sincronizada com o Google Calendar!");
-    }, 1200);
+    }
   };
+
+  const handleDisconnectGoogle = async () => {
+    await googleLogout();
+    setGoogleUserEmail(null);
+    toast.success("Conta Google desconectada.");
+  };
+
+  // Auto-detect Google auth on mount and auto-sync if token already exists
+  useEffect(() => {
+    getAccessToken().then((token) => {
+      if (token) {
+        const email = getGoogleUserEmail();
+        setGoogleUserEmail(email || "Conectado");
+        // Sincronização automática em background se já tiver token ativo
+        handleSyncGoogle(false);
+      }
+    });
+  }, []);
 
   const handleCopyLink = (link?: string) => {
     if (!link) return;
@@ -171,15 +284,51 @@ export default function AgendaCRM() {
       description="Controle de compromissos, reuniões de fechamento, follow-ups e demonstrações de vendas."
       actions={
         <div className="flex items-center gap-3 flex-wrap">
-          <Button
-            variant="outline"
-            onClick={handleSyncGoogle}
-            disabled={isSyncing}
-            className="text-xs font-bold gap-1.5 h-9"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-[var(--color-primary-blue)]" : ""}`} />
-            Sincronizar Google
-          </Button>
+          {/* Botão de Conexão / Sincronização do Google */}
+          {googleUserEmail ? (
+            <div className="flex items-center gap-2 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] p-1 rounded-xl shadow-xs">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span className="truncate max-w-[140px] text-[11px]">{googleUserEmail}</span>
+              </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleSyncGoogle(false)}
+                disabled={isSyncing}
+                className="text-xs font-bold gap-1.5 h-8 px-2.5 hover:bg-[var(--color-surface-sunken)]"
+                title="Sincronizar eventos do Google Calendar agora"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? "animate-spin text-[var(--color-primary-blue)]" : ""}`} />
+                <span>{isSyncing ? "Sincronizando..." : "Sincronizar"}</span>
+              </Button>
+
+              <button
+                type="button"
+                onClick={handleDisconnectGoogle}
+                className="text-[var(--color-text-muted)] hover:text-rose-500 p-1.5 rounded-md hover:bg-rose-500/10 transition-colors border-none bg-transparent cursor-pointer"
+                title="Desconectar conta Google"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => handleSyncGoogle(true)}
+              disabled={isSyncing}
+              className="text-xs font-bold gap-2 h-9 bg-white dark:bg-slate-900 border-slate-200 shadow-xs hover:border-blue-400 hover:bg-blue-50/50"
+            >
+              <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
+              </svg>
+              <span>{isSyncing ? "Conectando..." : "Conectar Google Calendar"}</span>
+            </Button>
+          )}
 
           <Button
             onClick={() => setShowNovaReuniao(true)}
@@ -322,7 +471,7 @@ export default function AgendaCRM() {
                 <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-faint)]" />
                 <Input
                   type="text"
-                  placeholder="Buscar lead ou closer..."
+                  placeholder="Buscar compromisso ou lead..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   className="pl-8 h-9 text-xs"
@@ -346,7 +495,7 @@ export default function AgendaCRM() {
                 onChange={(e) => setSelectedCloser(e.target.value)}
                 className="h-9 px-3 rounded-[var(--radius-control)] bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
               >
-                <option value="Todos">Closer: Todos</option>
+                <option value="Todos">Responsável: Todos</option>
                 {closerList.map((c) => (
                   <option key={c} value={c}>{c}</option>
                 ))}
@@ -404,15 +553,25 @@ export default function AgendaCRM() {
                     </div>
 
                     <div className="space-y-1 mt-1 flex-1 overflow-hidden">
-                      {dayMeetings.slice(0, 2).map((r) => (
-                        <div
-                          key={r.id}
-                          className="px-1.5 py-0.5 rounded bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] border border-[var(--color-primary-blue)]/20 text-[10px] font-bold truncate"
-                          title={`${r.leadName || r.companyName} (${new Date(r.scheduledAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })})`}
-                        >
-                          {new Date(r.scheduledAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} • {r.leadName || r.companyName}
-                        </div>
-                      ))}
+                      {dayMeetings.slice(0, 2).map((r) => {
+                        const isGoogle = !!r.googleEventId || r.companyName === "Google Calendar";
+                        return (
+                          <div
+                            key={r.id}
+                            className={`px-1.5 py-0.5 rounded border text-[10px] font-bold truncate flex items-center gap-1 ${
+                              isGoogle
+                                ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20"
+                                : "bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] border-[var(--color-primary-blue)]/20"
+                            }`}
+                            title={`${r.leadName || r.companyName} (${new Date(r.scheduledAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })})`}
+                          >
+                            {isGoogle && <span className="text-[9px]">📅</span>}
+                            <span>
+                              {new Date(r.scheduledAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })} • {r.leadName || r.companyName}
+                            </span>
+                          </div>
+                        );
+                      })}
                       {dayMeetings.length > 2 && (
                         <span className="text-[9px] text-[var(--color-text-faint)] font-bold block pl-1">
                           +{dayMeetings.length - 2} mais
@@ -454,7 +613,7 @@ export default function AgendaCRM() {
                     <EmptyState
                       icon={CalendarDays}
                       title="Nenhum compromisso neste dia"
-                      description="Clique em 'Novo Agendamento' para marcar uma reunião com o lead."
+                      description="Clique em 'Novo Agendamento' ou sincronize com o Google Calendar para carregar seus eventos."
                       className="py-12"
                     />
                   );
@@ -462,61 +621,85 @@ export default function AgendaCRM() {
 
                 return (
                   <div className="space-y-3">
-                    {dayMeetings.map((r) => (
-                      <div
-                        key={r.id}
-                        className="p-4 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-panel)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[var(--color-primary-blue)]/40 transition-all shadow-xs"
-                      >
-                        <div className="flex items-start gap-3.5 min-w-0">
-                          <div className="w-10 h-10 rounded-xl bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/20 text-[var(--color-primary-blue)] flex items-center justify-center shrink-0">
-                            <Video className="w-5 h-5" />
-                          </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="text-xs font-bold text-[var(--color-text-primary)] truncate">
-                                {r.leadName || r.companyName || "Reunião Comercial"}
-                              </h4>
-                              {getStatusBadge(r.status)}
+                    {dayMeetings.map((r) => {
+                      const isGoogle = !!r.googleEventId || r.companyName === "Google Calendar";
+                      const isMeet = r.meetLink && r.meetLink.includes("meet.google.com");
+
+                      return (
+                        <div
+                          key={r.id}
+                          className="p-4 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-panel)] flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:border-[var(--color-primary-blue)]/40 transition-all shadow-xs"
+                        >
+                          <div className="flex items-start gap-3.5 min-w-0">
+                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${
+                              isGoogle
+                                ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                                : "bg-[var(--color-primary-blue)]/10 border-[var(--color-primary-blue)]/20 text-[var(--color-primary-blue)]"
+                            }`}>
+                              <Video className="w-5 h-5" />
                             </div>
-                            <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
-                              {r.companyName && <span>{r.companyName} • </span>}
-                              Closer: <strong className="text-[var(--color-text-primary)]">{r.closerName || "Não atribuído"}</strong>
-                            </p>
-                            {r.pauta && (
-                              <p className="text-[11px] text-[var(--color-text-faint)] italic mt-1 line-clamp-1">
-                                Pauta: {r.pauta}
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h4 className="text-xs font-bold text-[var(--color-text-primary)] truncate">
+                                  {r.leadName || r.companyName || "Reunião Comercial"}
+                                </h4>
+                                {getStatusBadge(r.status)}
+                                {isGoogle && (
+                                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                                    Google Calendar
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
+                                {r.companyName && <span>{r.companyName} • </span>}
+                                Responsável: <strong className="text-[var(--color-text-primary)]">{r.closerName || "Não atribuído"}</strong>
                               </p>
+                              {r.pauta && (
+                                <p className="text-[11px] text-[var(--color-text-faint)] italic mt-1 line-clamp-1">
+                                  Pauta: {r.pauta}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+                            <span className="font-mono text-xs font-bold text-[var(--color-text-primary)] bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)] px-2.5 py-1 rounded-md">
+                              {new Date(r.scheduledAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+
+                            {r.meetLink && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleCopyLink(r.meetLink)}
+                                title="Copiar Link da Reunião"
+                                className="h-8 w-8 p-0"
+                              >
+                                <Copy className="w-3.5 h-3.5" />
+                              </Button>
+                            )}
+
+                            {isMeet && r.meetLink ? (
+                              <Button
+                                size="sm"
+                                onClick={() => window.open(r.meetLink, "_blank")}
+                                className="gap-1.5 h-8 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" /> Google Meet
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                onClick={() => navigate(`/app/reuniao/${r.id}`)}
+                                className="gap-1.5 h-8 text-xs font-bold"
+                              >
+                                <Video className="w-3.5 h-3.5" /> Entrar
+                              </Button>
                             )}
                           </div>
                         </div>
-
-                        <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
-                          <span className="font-mono text-xs font-bold text-[var(--color-text-primary)] bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)] px-2.5 py-1 rounded-md">
-                            {new Date(r.scheduledAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                          </span>
-
-                          {r.meetLink && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleCopyLink(r.meetLink)}
-                              title="Copiar Link da Reunião"
-                              className="h-8 w-8 p-0"
-                            >
-                              <Copy className="w-3.5 h-3.5" />
-                            </Button>
-                          )}
-
-                          <Button
-                            size="sm"
-                            onClick={() => navigate(`/app/reuniao/${r.id}`)}
-                            className="gap-1.5 h-8 text-xs font-bold"
-                          >
-                            <Video className="w-3.5 h-3.5" /> Entrar
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 );
               })()}
@@ -530,8 +713,10 @@ export default function AgendaCRM() {
 
               <div className="space-y-3 text-xs text-[var(--color-text-muted)] leading-relaxed">
                 <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-[var(--radius-control)]">
-                  <p className="font-bold text-emerald-600 dark:text-emerald-400 text-xs mb-1">Dica de Conversão</p>
-                  <p className="text-[11px]">Envie a pauta prévia e lembrete pelo WhatsApp 30 minutos antes para reduzir a taxa de no-show para menos de 5%.</p>
+                  <p className="font-bold text-emerald-600 dark:text-emerald-400 text-xs mb-1">Sincronização Ativa</p>
+                  <p className="text-[11px]">
+                    Os eventos marcados no Google Calendar refletem diretamente na agenda e vice-versa. Links do Google Meet são preservados automaticamente.
+                  </p>
                 </div>
 
                 <div className="space-y-2 pt-2">
@@ -561,69 +746,93 @@ export default function AgendaCRM() {
               <EmptyState
                 icon={CalendarDays}
                 title="Nenhum agendamento encontrado"
-                description="Ajuste os filtros de pesquisa ou crie um novo agendamento."
+                description="Ajuste os filtros de pesquisa, crie um novo agendamento ou sincronize com o Google Calendar."
                 className="py-12"
               />
             ) : (
               <div className="space-y-2.5">
-                {filteredReunioes.map((r) => (
-                  <div
-                    key={r.id}
-                    className="p-3.5 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] hover:border-[var(--color-primary-blue)]/40 rounded-[var(--radius-control)] flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all shadow-xs"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-lg bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] flex items-center justify-center shrink-0">
-                        <Video className="w-4 h-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className="text-xs font-bold text-[var(--color-text-primary)] truncate">
-                            {r.leadName || r.companyName}
-                          </span>
-                          {getStatusBadge(r.status)}
+                {filteredReunioes.map((r) => {
+                  const isGoogle = !!r.googleEventId || r.companyName === "Google Calendar";
+                  const isMeet = r.meetLink && r.meetLink.includes("meet.google.com");
+
+                  return (
+                    <div
+                      key={r.id}
+                      className="p-3.5 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] hover:border-[var(--color-primary-blue)]/40 rounded-[var(--radius-control)] flex flex-col md:flex-row md:items-center justify-between gap-3 transition-all shadow-xs"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                          isGoogle
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            : "bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)]"
+                        }`}>
+                          <Video className="w-4 h-4" />
                         </div>
-                        <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
-                          {r.companyName && <span>{r.companyName} • </span>}
-                          Responsável: <strong className="text-[var(--color-text-primary)]">{r.closerName || "Não atribuído"}</strong>
-                        </p>
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-bold text-[var(--color-text-primary)] truncate">
+                              {r.leadName || r.companyName}
+                            </span>
+                            {getStatusBadge(r.status)}
+                            {isGoogle && (
+                              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                                Google Calendar
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
+                            {r.companyName && <span>{r.companyName} • </span>}
+                            Responsável: <strong className="text-[var(--color-text-primary)]">{r.closerName || "Não atribuído"}</strong>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                        <span className="font-mono text-xs font-bold text-[var(--color-text-muted)]">
+                          {new Date(r.scheduledAt).toLocaleDateString("pt-BR", { day: "numeric", month: "short" })} às {new Date(r.scheduledAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+
+                        {r.meetLink && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCopyLink(r.meetLink)}
+                            className="h-8 text-xs font-bold gap-1"
+                          >
+                            <Copy className="w-3 h-3" /> Link
+                          </Button>
+                        )}
+
+                        {isMeet && r.meetLink ? (
+                          <Button
+                            size="sm"
+                            onClick={() => window.open(r.meetLink, "_blank")}
+                            className="h-8 text-xs font-bold gap-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" /> Meet
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => navigate(`/app/reuniao/${r.id}`)}
+                            className="h-8 text-xs font-bold gap-1"
+                          >
+                            <Video className="w-3.5 h-3.5" /> Abrir Sala
+                          </Button>
+                        )}
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setReuniaoToDelete(r.id)}
+                          className="h-8 w-8 p-0 text-[var(--color-text-faint)] hover:text-rose-500"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-2 self-end md:self-center shrink-0">
-                      <span className="font-mono text-xs font-bold text-[var(--color-text-muted)]">
-                        {new Date(r.scheduledAt).toLocaleDateString("pt-BR", { day: "numeric", month: "short" })} às {new Date(r.scheduledAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                      </span>
-
-                      {r.meetLink && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleCopyLink(r.meetLink)}
-                          className="h-8 text-xs font-bold gap-1"
-                        >
-                          <Copy className="w-3 h-3" /> Link
-                        </Button>
-                      )}
-
-                      <Button
-                        size="sm"
-                        onClick={() => navigate(`/app/reuniao/${r.id}`)}
-                        className="h-8 text-xs font-bold gap-1"
-                      >
-                        <Video className="w-3.5 h-3.5" /> Abrir Sala
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setReuniaoToDelete(r.id)}
-                        className="h-8 w-8 p-0 text-[var(--color-text-faint)] hover:text-rose-500"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </Card>
@@ -660,4 +869,3 @@ export default function AgendaCRM() {
     </PageContainer>
   );
 }
-
