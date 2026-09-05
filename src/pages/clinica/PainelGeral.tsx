@@ -60,7 +60,7 @@ export default function ClinicasDashboard() {
 
   return (
     <PageContainer
-      title="Gestão de Clínicas Axis"
+      title="Gestão de Clínicas S.P.Y."
       description="Monitoramento clínico, eficiência operacional e jornada do paciente em tempo real."
       actions={
         <div className="flex items-center gap-4">

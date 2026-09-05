@@ -355,7 +355,7 @@ export async function fetchTenantIdMap(): Promise<Record<string, string>> {
  * confirmada via Admin API, o que exige a service role key (nunca exposta
  * no client). Isso também evita depender do e-mail de confirmação do
  * Supabase, que saía apontando para a Site URL configurada lá, não para o
- * domínio do Axis.
+ * domínio do S.P.Y..
  */
 export async function createTenantAdmin(
   tenantName: string,
@@ -386,16 +386,16 @@ export async function createTenantAdmin(
  * empresas parceiras (editar/excluir), que precisa do id (não só do nome
  * usado por fetchTenants) e do nicho para pré-preencher o formulário de edição.
  */
-export async function fetchTenantsDetailed(): Promise<{ id: string; name: string; niche: string }[]> {
+export async function fetchTenantsDetailed(): Promise<{ id: string; name: string; niche: string; primary_color: string | null }[]> {
   if (!supabase) return [];
   try {
     const { data, error } = await supabase
       .from('tenants')
-      .select('id, name, niche')
+      .select('id, name, niche, primary_color')
       .eq('status', 'Active')
       .order('name', { ascending: true });
     if (error || !data) return [];
-    return data as { id: string; name: string; niche: string }[];
+    return data as { id: string; name: string; niche: string; primary_color: string | null }[];
   } catch {
     return [];
   }
@@ -411,6 +411,43 @@ export async function updateTenantInfo(
   if (!supabase) return { success: false, error: 'Supabase não configurado' };
   try {
     const { error } = await supabase.from('tenants').update(updates).eq('id', tenantId);
+    if (error) throw error;
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err?.message || 'Erro desconhecido' };
+  }
+}
+
+/**
+ * Busca só a cor de marca (primary_color) de um tenant — usado pra aplicar o
+ * tema visual assim que a sessão troca de tenant ativo (DataContext).
+ */
+export async function fetchTenantPrimaryColor(tenantId: string): Promise<string | null> {
+  if (!supabase || !tenantId) return null;
+  try {
+    const { data, error } = await supabase
+      .from('tenants')
+      .select('primary_color')
+      .eq('id', tenantId)
+      .maybeSingle();
+    if (error || !data) return null;
+    return data.primary_color ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Atualiza a cor de marca (tema) de um tenant — uma das 4 cores do S.P.Y.
+ * (ver src/lib/theme.ts) ou qualquer hex customizado.
+ */
+export async function updateTenantTheme(
+  tenantId: string,
+  hex: string
+): Promise<{ success: boolean; error?: string }> {
+  if (!supabase) return { success: false, error: 'Supabase não configurado' };
+  try {
+    const { error } = await supabase.from('tenants').update({ primary_color: hex }).eq('id', tenantId);
     if (error) throw error;
     return { success: true };
   } catch (err: any) {

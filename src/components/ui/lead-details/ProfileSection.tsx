@@ -137,7 +137,7 @@ export function ProfileSection({
       icon: Phone,
       color: "text-[var(--color-primary-blue)]",
       action: () => {
-        addActivityCtx(lead.id, "Ligação", "Ligação VoIP", "Discagem virtual executada pelo sistema Axis.", seller || "Sistema");
+        addActivityCtx(lead.id, "Ligação", "Ligação VoIP", "Discagem virtual executada pelo sistema S.P.Y..", seller || "Sistema");
         toast.success("Ligação VoIP registrada no histórico!");
       },
     },
@@ -250,7 +250,7 @@ export function ProfileSection({
               <Brain className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" />
             </div>
             <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-primary)]">
-              Recomendação Axis Copilot
+              Recomendação S.P.Y. Copilot
             </span>
           </div>
           <Badge variant="purple" dot dotPulse>IA</Badge>

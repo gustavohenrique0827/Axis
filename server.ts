@@ -59,11 +59,11 @@ interface ChatMessage {
 const DEFAULT_INSTANCES: WhatsAppInstance[] = [
   {
     id: "evo_inst_1",
-    name: "Axis Produção",
+    name: "S.P.Y. Produção",
     phone: "+55 11 98888-7777",
     status: "CONNECTED",
-    apiKey: "4dfg23-evoapikey-99e2-axis",
-    webhookUrl: "https://axis-crm.cloud/api/webhooks/whatsapp",
+    apiKey: "4dfg23-evoapikey-99e2-spy",
+    webhookUrl: "https://spy-crm.cloud/api/webhooks/whatsapp",
     createdAt: "2026-05-10T12:00:00Z"
   }
 ];
@@ -137,7 +137,7 @@ function safeCreateClient(url: string, key: string) {
 const supabase = safeCreateClient(supabaseUrl, supabaseKey);
 
 // Client privilegiado (bypassa RLS) — uso restrito à rota /api/v1/leads, que é
-// chamada por integrações externas (não por um usuário logado no Axis) e por
+// chamada por integrações externas (não por um usuário logado no S.P.Y.) e por
 // isso não tem um JWT de sessão para respeitar a RLS normalmente. O tenant_id
 // usado nessas chamadas vem só do mapeamento de API key (apiKeyTenantMap),
 // nunca do corpo da requisição — é isso que mantém o isolamento aqui.
@@ -159,7 +159,7 @@ try {
 // exatamente um tenant. Uma chave nunca pode ler/gravar leads de outro tenant,
 // mesmo que o chamador informe um tenantId diferente no corpo da requisição.
 const apiKeyTenantMap = new Map(
-  (process.env.AXIS_API_KEYS || "")
+  (process.env.SPY_API_KEYS || process.env.AXIS_API_KEYS || "")
     .split(",")
     .map((pair) => pair.trim())
     .filter(Boolean)
@@ -170,7 +170,7 @@ const apiKeyTenantMap = new Map(
     .filter(([key, tenantId]) => key && tenantId)
 );
 
-const FORM_CLIENT_ID = process.env.AXIS_FORM_CLIENT_ID || "";
+const FORM_CLIENT_ID = process.env.SPY_FORM_CLIENT_ID || process.env.AXIS_FORM_CLIENT_ID || "";
 
 // ── AI Helpers: Gemini → Groq fallback ────────────────────────────────────
 
@@ -245,12 +245,13 @@ app.use((req: any, res, next) => {
   express.json({ limit: "5mb" })(req, res, next);
 });
 
-// AXIS_CORS_ORIGIN: lista separada por vírgula (ex.: "https://axis-crm.pluppex.com.br,http://localhost:5173").
+// SPY_CORS_ORIGIN: lista separada por vírgula (ex.: "https://axis-crm.pluppex.com.br,http://localhost:5173").
 // Antes era "*" por padrão — qualquer site podia ler resposta de rotas autenticadas
 // (Authorization: Bearer) se conseguisse um token válido por outro caminho (XSS em
-// outro lugar, extensão maliciosa). Sem AXIS_CORS_ORIGIN configurada, não reflete
-// nenhuma origem (mais seguro que abrir geral por omissão).
-const allowedOrigins = (process.env.AXIS_CORS_ORIGIN || "").split(",").map(o => o.trim()).filter(Boolean);
+// outro lugar, extensão maliciosa). Sem SPY_CORS_ORIGIN configurada, não reflete
+// nenhuma origem (mais seguro que abrir geral por omissão). Fallback pro nome antigo
+// AXIS_CORS_ORIGIN — produção na Vercel ainda só tem a variável antiga configurada.
+const allowedOrigins = (process.env.SPY_CORS_ORIGIN || process.env.AXIS_CORS_ORIGIN || "").split(",").map(o => o.trim()).filter(Boolean);
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {
@@ -277,7 +278,7 @@ app.use("/api/whatsapp", whatsappLimiter);
 
 function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
   if (apiKeyTenantMap.size === 0) {
-    return res.status(503).json({ error: "Nenhuma API Key configurada. Defina AXIS_API_KEYS no formato chave:tenantId no .env." });
+    return res.status(503).json({ error: "Nenhuma API Key configurada. Defina SPY_API_KEYS no formato chave:tenantId no .env." });
   }
   const key = req.headers["x-api-key"] as string | undefined;
   const tenantId = key ? apiKeyTenantMap.get(key) : undefined;
@@ -553,7 +554,7 @@ app.post("/api/ai/performance-audit", requireUser, async (req, res) => {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: `Você é o Master IA do Axis CRM. Analise estes indicadores:
+      contents: `Você é o Master IA do S.P.Y. CRM. Analise estes indicadores:
       MRR: ${mrr}, CAC: ${cac}, LTV: ${ltv}, Leads: ${leadsCount}, Fechamentos: ${dealsCount}.
       Gere 3 recomendações estratégicas baseadas em dados para otimizar o ROI.
       Retorne estritamente um JSON array de objetos: [{"title": string, "desc": string, "impact": string, "color": "text-blue-400" | "text-emerald-400" | "text-purple-400"}].`,
@@ -640,7 +641,7 @@ app.post("/api/ai/settings-audit", requireUser, async (req, res) => {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: `Você é o Auditor Master do Axis CRM. Analise esta configuração de ${type}:
+      contents: `Você é o Auditor Master do S.P.Y. CRM. Analise esta configuração de ${type}:
       ${JSON.stringify(config)}
       Identifique possíveis gargalos, regras redundantes ou melhorias na lógica.
       Retorne estritamente um JSON: {"audit": string, "suggestions": string[]}.`,
@@ -774,7 +775,7 @@ app.post("/api/ai/generic-insight", requireUser, async (req, res) => {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
-      contents: `Você é o cérebro analítico do Axis CRM.
+      contents: `Você é o cérebro analítico do S.P.Y. CRM.
       Contexto da solicitação: ${context}.
       Dados brutos para análise: ${JSON.stringify(data)}.
       Sua tarefa: Forneça um insight estratégico curto, direto e acionável em português (máximo 3 frases).
@@ -792,7 +793,7 @@ app.post("/api/ai/generic-insight", requireUser, async (req, res) => {
 // foi removido: a própria Aurora agora cobre esse papel dentro da sala, ver
 // useAuroraMeetingPresence.ts + AuroraJitsiVoice.tsx.)
 
-// ── Aurora (chat com o G-TECH AI OS, embutido no Axis) ─────────────────────
+// ── Aurora (chat com o G-TECH AI OS, embutido no S.P.Y.) ─────────────────────
 // Proxy autenticado para o webhook do Chat Trigger da Aurora no n8n (workflow AURORA CORE).
 // A URL do webhook nunca chega ao navegador — só este backend a conhece (AURORA_WEBHOOK_URL).
 app.post("/api/ai/aurora-chat", requireUser, async (req: any, res: any) => {
@@ -846,7 +847,7 @@ app.post("/api/ai/lead-copilot", requireUser, async (req: any, res: any) => {
   if (!leadContext) return res.status(400).json({ error: "Contexto do lead ausente." });
 
   try {
-    const prompt = `Você é o Copilot de CRM do Axis. Analise o perfil do lead e retorne SOMENTE o JSON, sem markdown, sem texto extra.
+    const prompt = `Você é o Copilot de CRM do S.P.Y.. Analise o perfil do lead e retorne SOMENTE o JSON, sem markdown, sem texto extra.
 
 PERFIL DO LEAD:
 Nome: ${leadContext.name ?? "Não informado"}
@@ -886,7 +887,7 @@ app.post("/api/ai/reuniao-relatorio", requireUser, async (req: any, res: any) =>
   if (!hasAI) return res.json({ relatorio: "Relatório não disponível — configure uma chave de IA." });
 
   try {
-    const relatorio = await generateAI(`Você é o analista de vendas do Axis CRM. Gere um relatório completo desta reunião.
+    const relatorio = await generateAI(`Você é o analista de vendas do S.P.Y. CRM. Gere um relatório completo desta reunião.
 
 LEAD: ${leadContext?.name ?? "N/A"} | ${leadContext?.company ?? "N/A"}
 Score IA: ${leadContext?.scoreIA ?? "N/A"} | Temperatura: ${leadContext?.temperature ?? "N/A"}
@@ -1015,7 +1016,7 @@ app.post("/api/admin/tenant-user/:userId/credentials", requireUser, requireMaste
  * empresa se auto-cadastrando). Por isso usamos a Admin API com
  * email_confirm: true — a conta já nasce confirmada, sem depender de e-mail
  * de confirmação (que além de desnecessário aqui, saía com o link apontando
- * para a Site URL configurada no Supabase, não para o domínio do Axis).
+ * para a Site URL configurada no Supabase, não para o domínio do S.P.Y.).
  */
 app.post("/api/admin/tenant", requireUser, requireMaster, async (req: any, res) => {
   if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
@@ -1099,7 +1100,7 @@ app.post("/api/whatsapp/instances", requireUser, async (req: any, res) => {
     id: "evo_inst_" + Math.random().toString(36).substring(2, 9),
     name, phone, status: "DISCONNECTED",
     apiKey: "evo_apikey_" + Math.random().toString(36).substring(2, 12),
-    webhookUrl: webhookUrl || "https://axis-crm.cloud/api/webhooks/whatsapp",
+    webhookUrl: webhookUrl || "https://spy-crm.cloud/api/webhooks/whatsapp",
     qrcode: "", createdAt: new Date().toISOString()
   };
   tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES).push(newInst);
@@ -1235,12 +1236,12 @@ app.post("/api/whatsapp/copilot/analyze", requireUser, async (req: any, res) => 
   const contact = tenantBucket(contactsByTenant, tenantId, []).find((c) => c.id === contactId);
   if (chatHistory.length === 0) {
     return res.json({
-      suggestion: "Ainda não há mensagens registradas com este contato para analisar. Tente fazer uma saudação cortês, introduzindo o Axis CRM e perguntando como pode auxiliá-lo.",
+      suggestion: "Ainda não há mensagens registradas com este contato para analisar. Tente fazer uma saudação cortês, introduzindo o S.P.Y. CRM e perguntando como pode auxiliá-lo.",
       sentiment: "Neutro"
     });
   }
   const conversationText = chatHistory.map((m) => `${m.sender === "me" ? "Vendedor/Atendente" : "Cliente"}: ${m.text}`).join("\n");
-  const promptContext = `Você é o Axis Copilot, um assistente especializado em CRM, Vendas e Atendimento via WhatsApp.
+  const promptContext = `Você é o S.P.Y. Copilot, um assistente especializado em CRM, Vendas e Atendimento via WhatsApp.
   O cliente se chama: ${contact ? contact.name : "Cliente"}.
   O histórico de mensagens é este:
   ${conversationText}
@@ -1283,7 +1284,7 @@ app.post("/api/whatsapp/copilot/analyze", requireUser, async (req: any, res) => 
 // devolve err.message pro cliente (pode conter detalhe de tabela/coluna/constraint
 // do Postgres) — detalhe completo só no log do servidor.
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
-  console.error("[Axis] Unhandled error:", err?.message || err);
+  console.error("[S.P.Y.] Unhandled error:", err?.message || err);
   if (!res.headersSent) {
     res.status(500).json({ error: "Erro interno do servidor." });
   }

@@ -1,4 +1,4 @@
-export { ConfigEmpresaFiliais, ConfigEmpresaEquipe, ConfigEmpresaPermissoes, ConfigEmpresaCargos, ConfigNichos } from "./sections/SettingsEmpresa";
+export { ConfigEmpresaFiliais, ConfigEmpresaEquipe, ConfigEmpresaPermissoes, ConfigEmpresaCargos, ConfigNichos, ConfigTema } from "./sections/SettingsEmpresa";
 export { ConfigCRMCampos, ConfigCRMFunis, ConfigCRMOrigens, ConfigCRMProdutos } from "./sections/SettingsCRM";
 export { ConfigCRMSLA } from "./sections/SettingsCRMSLA";
 export { ConfigCRMGatilhosIA } from "./sections/SettingsCRMGatilhosIA";

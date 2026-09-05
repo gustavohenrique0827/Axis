@@ -3,9 +3,9 @@
  * (src/state/slices/sphereSlice.ts + src/components/sphere/sphereMoods.ts), portado aqui pra
  * manter a identidade visual consistente entre os dois apps.
  *
- * O Axis hoje só tem chat de texto (sem voz, sem execução de ferramenta visível separada do
+ * O S.P.Y. hoje só tem chat de texto (sem voz, sem execução de ferramenta visível separada do
  * "pensando") — por isso só "idle" | "thinking" | "speaking" | "error" são realmente usados por
- * AuroraWidget.tsx agora. Os demais ficam definidos aqui pra quando o Axis ganhar voz/execução
+ * AuroraWidget.tsx agora. Os demais ficam definidos aqui pra quando o S.P.Y. ganhar voz/execução
  * de verdade, sem fingir que já existe.
  */
 export type AuroraCoreMode =

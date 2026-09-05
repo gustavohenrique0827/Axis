@@ -50,7 +50,7 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
  * sem câmera, e publica a fala dela (audioBase64 vindo do /api/ai/aurora-chat) como a própria
  * faixa de áudio dessa participante — todo mundo na call ouve, como se fosse mais uma pessoa.
  *
- * Primeira vez que este projeto usa lib-jitsi-meet (o resto do Axis usa só o external_api.js,
+ * Primeira vez que este projeto usa lib-jitsi-meet (o resto do S.P.Y. usa só o external_api.js,
  * que não expõe injeção de áudio sintético) — precisa de teste ao vivo numa sala real antes de
  * considerar validado; a política de autoplay do navegador também depende de já ter havido um
  * gesto do usuário na página (o clique que abre a sala já cobre isso).

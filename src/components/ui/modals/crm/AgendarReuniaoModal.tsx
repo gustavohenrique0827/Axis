@@ -111,7 +111,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       status: "Agendada" as const, pauta: pauta || undefined,
     };
 
-    // ── Sala Axis com Jitsi embutido ──────────────────────────────────────
+    // ── Sala S.P.Y. com Jitsi embutido ──────────────────────────────────────
     if (videoProvider === "axis") {
       setLoading(true);
       try {
@@ -131,7 +131,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
             const calEvent = await createCalendarEvent(token, {
               title: `Reunião — ${lead.company || lead.name}`,
               description: [
-                "🖥️ Sala de vídeo Axis (Jitsi)",
+                "🖥️ Sala de vídeo S.P.Y. (Jitsi)",
                 `🔗 Acesse: ${jitsiLink}`,
                 "Nenhum app necessário — funciona direto no navegador.",
                 pauta ? `\n📋 Pauta:\n${pauta}` : "",
@@ -150,8 +150,8 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
         (addReuniao as any)({ id: reuniaoId, ...baseReuniao, meetLink: jitsiLink });
         setCreatedMeeting({ id: reuniaoId, meetLink: jitsiLink, calendarLink });
         toast.success(calendarLink
-          ? "Sala Axis criada! Convite enviado pelo Google Calendar."
-          : "Sala Axis criada! O vídeo abre direto no sistema."
+          ? "Sala S.P.Y. criada! Convite enviado pelo Google Calendar."
+          : "Sala S.P.Y. criada! O vídeo abre direto no sistema."
         );
       } catch (err: any) {
         toast.error("Erro ao criar sala: " + (err.message || "Tente novamente"));
@@ -209,7 +209,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
     const msg = [
       `Olá, ${lead.name}! 👋`,
       "",
-      `Sua reunião com *${lead.company || "a Axis"}* foi confirmada. 🎯`,
+      `Sua reunião com *${lead.company || "a S.P.Y."}* foi confirmada. 🎯`,
       "",
       `📅 *Data:* ${dateStr} às ${time}`,
       `⏱️ *Duração:* ${duration} minutos`,
@@ -299,7 +299,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
                   : "bg-white/[0.03] border-white/[0.08] text-slate-400 hover:border-white/20"
               )}
             >
-              <span className="text-xs font-black">🖥️ Sala Axis</span>
+              <span className="text-xs font-black">🖥️ Sala S.P.Y.</span>
               <span className="text-[10px] leading-tight opacity-70">Vídeo embutido no CRM — sem sair do sistema</span>
             </button>
             <button

@@ -1,7 +1,7 @@
 import { supabase } from './supabase';
 
 /**
- * fetch() para as rotas internas do Axis (/api/ai/*, /api/whatsapp/*,
+ * fetch() para as rotas internas do S.P.Y. (/api/ai/*, /api/whatsapp/*,
  * /api/settings/*, /api/leads/*) — todas exigem uma sessão real do Supabase
  * Auth (ver requireUser em server.ts). Anexa automaticamente o header
  * Authorization com o access_token da sessão atual.

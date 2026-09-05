@@ -217,7 +217,7 @@ export function ConfigIntegracoesApps() {
     setMetaConfig((prev: any) => {
       const next = !prev.connected;
       toast[next ? "success" : "info"](
-        next ? "Conta Meta Ads conectada ao Axis!" : "Conta Meta Ads desconectada."
+        next ? "Conta Meta Ads conectada ao S.P.Y.!" : "Conta Meta Ads desconectada."
       );
       return { ...prev, connected: next };
     });
@@ -373,7 +373,7 @@ export function ConfigIntegracoesApps() {
         icon: Wallet,
         iconBg: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
         description:
-          "Recebimento de pagamentos via PIX instantâneo, Cartão de Crédito e Boleto Bancário com baixa automática no fluxo financeiro do Axis.",
+          "Recebimento de pagamentos via PIX instantâneo, Cartão de Crédito e Boleto Bancário com baixa automática no fluxo financeiro do S.P.Y..",
         connected: paymentConfig.mercadoPago.connected,
         statusText: paymentConfig.mercadoPago.connected ? "Conectado" : "Não Conectado",
         statusVariant: (paymentConfig.mercadoPago.connected ? "success" : "neutral") as any,
@@ -521,7 +521,7 @@ export function ConfigIntegracoesApps() {
             <span className="w-2 h-2 rounded-full bg-[var(--color-primary-blue)] animate-pulse hidden sm:inline-block"></span>
           </h1>
           <p className="text-sm text-[var(--color-text-muted)] mt-1">
-            Conecte canais de anúncios, mensageria, gateways de pagamento, APIs e webhooks para potencializar o Axis.
+            Conecte canais de anúncios, mensageria, gateways de pagamento, APIs e webhooks para potencializar o S.P.Y..
           </p>
         </div>
         <div className="flex items-center gap-2.5">

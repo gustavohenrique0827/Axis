@@ -5,6 +5,7 @@ import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { updatePassword } from "../../lib/supabase";
 import { toast } from "sonner";
+import { Logo } from "../../components/ui/Logo";
 
 export default function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -12,7 +13,6 @@ export default function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const logoDarkFull = "/logo-full.png";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,14 +37,8 @@ export default function ResetPassword() {
     <div className="min-h-screen bg-[var(--color-surface)] text-[var(--color-text-primary)] font-sans flex items-center justify-center relative overflow-hidden">
       <div className="w-full max-w-xl p-6 relative z-10">
         <div className="text-center mb-8">
-          <div className="relative inline-block bg-[#0B1120] rounded-2xl overflow-hidden p-4 shadow-lg shadow-blue-500/10 mb-6">
-            <img
-              src={logoDarkFull}
-              alt="Axis CRM Logo"
-              title="Axis CRM"
-              className="logo-container mx-auto h-auto w-64 max-w-full mix-blend-screen"
-              referrerPolicy="no-referrer"
-            />
+          <div className="relative inline-block bg-[#0B1120] rounded-2xl overflow-hidden p-6 shadow-lg shadow-blue-500/10 mb-6">
+            <Logo variant="full" size={48} className="mx-auto justify-center" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-2 text-[var(--color-text-primary)]">Redefinir senha</h1>
           <p className="text-[var(--color-text-muted)] text-sm">Escolha uma nova senha para sua conta.</p>

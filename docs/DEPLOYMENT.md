@@ -30,7 +30,7 @@ Aplicados a toda rota (`"source": "/(.*)"`), adicionados nesta auditoria (B1):
 
 ## Variáveis de ambiente em produção
 
-Configuradas no painel da Vercel (Project Settings → Environment Variables), nunca no `vercel.json` nem commitadas. Ver [ENVIRONMENT.md](ENVIRONMENT.md) pra lista completa e o que cada uma faz — atenção especial a `SUPABASE_SERVICE_ROLE_KEY` (nunca com prefixo `VITE_`) e `AXIS_CORS_ORIGIN` (nunca `"*"`).
+Configuradas no painel da Vercel (Project Settings → Environment Variables), nunca no `vercel.json` nem commitadas. Ver [ENVIRONMENT.md](ENVIRONMENT.md) pra lista completa e o que cada uma faz — atenção especial a `SUPABASE_SERVICE_ROLE_KEY` (nunca com prefixo `VITE_`) e `SPY_CORS_ORIGIN` (nunca `"*"`).
 
 ## CI (`.github/workflows/ci.yml`)
 

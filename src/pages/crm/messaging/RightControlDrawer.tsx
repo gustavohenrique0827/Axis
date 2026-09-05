@@ -48,7 +48,7 @@ export function RightControlDrawer({
         <div className="shrink-0 h-[64px] px-5 flex items-center justify-between border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]">
           <h2 className="text-sm text-[var(--color-text-primary)] font-bold flex items-center gap-2">
             {(rightPanel === "info" || (rightPanel === "none" && previousPanel === "info")) ? <Info className="w-4 h-4 text-[var(--color-text-muted)]"/> : <Sparkles className="w-4 h-4 text-[var(--color-primary-blue)]"/>}
-            {(rightPanel === "info" || (rightPanel === "none" && previousPanel === "info")) ? "Dados do Contato" : "Axis Copilot"}
+            {(rightPanel === "info" || (rightPanel === "none" && previousPanel === "info")) ? "Dados do Contato" : "S.P.Y. Copilot"}
           </h2>
           <button 
             type="button"
@@ -152,7 +152,7 @@ export function RightControlDrawer({
                   <Zap className="w-3.5 h-3.5"/> Análise da Conversa (Master AI)
                 </h4>
                 <p className="text-[var(--color-text-primary)] text-xs leading-relaxed">
-                  {aiAnalysis || "O Axis Copilot está analisando as interações da conversa para sintetizar insights comerciais em tempo real..."}
+                  {aiAnalysis || "O S.P.Y. Copilot está analisando as interações da conversa para sintetizar insights comerciais em tempo real..."}
                 </p>
                 {aiSuggestion && (
                   <div className="mt-3 p-2.5 bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-lg text-xs text-[var(--color-text-primary)] leading-relaxed">
@@ -209,7 +209,7 @@ export function RightControlDrawer({
               <textarea 
                 value={aiPrompt}
                 onChange={(e) => setAiPrompt(e.target.value)}
-                placeholder="Pergunte ao Axis Copilot..." 
+                placeholder="Pergunte ao S.P.Y. Copilot..." 
                 rows={1}
                 className="flex-1 bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] resize-none max-h-[100px] overflow-y-auto w-full min-w-0 placeholder:text-[var(--color-text-muted)]" 
                 onKeyDown={(e) => {

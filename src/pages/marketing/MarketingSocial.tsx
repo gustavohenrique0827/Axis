@@ -140,7 +140,7 @@ export default function MarketingSocial() {
           <Card className="p-6 bg-gradient-to-br from-indigo-500/20 to-[var(--color-surface-elevated)] border-indigo-500/20">
              <h3 className="text-sm font-black text-white uppercase tracking-wider mb-2">Insight Analítico IA</h3>
              <p className="text-xs text-slate-300 leading-relaxed mb-4">
-               A ferramenta de IA do Axis CRM detectou que postagens com a palavra-chave <span className="text-indigo-400 font-bold">"Kanban"</span> geram 45% mais engajamento esta semana. Recomendamos aumentar a frequência deste tópico.
+               A ferramenta de IA do S.P.Y. CRM detectou que postagens com a palavra-chave <span className="text-indigo-400 font-bold">"Kanban"</span> geram 45% mais engajamento esta semana. Recomendamos aumentar a frequência deste tópico.
              </p>
              <Button className="w-full bg-indigo-500 hover:bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-lg shadow-indigo-500/30">Gerar Novas Ideias</Button>
           </Card>

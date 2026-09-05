@@ -68,7 +68,7 @@ export default function Clientes() {
 
   return (
     <PageContainer
-      title="Base de Clientes Axis"
+      title="Base de Clientes S.P.Y."
       description="Gerencie a carteira de clientes ativos e em implantação de forma inteligente."
       actions={
         <Button 

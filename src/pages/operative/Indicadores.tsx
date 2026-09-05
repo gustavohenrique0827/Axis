@@ -16,7 +16,7 @@ export default function Indicadores() {
 
   return (
     <PageContainer
-      title="BI & Analytics Axis"
+      title="BI & Analytics S.P.Y."
       description="Deep dive nos KPIs corporativos, projeção de faturamento e governança de dados estratégica."
       actions={
         <div className="flex gap-2">

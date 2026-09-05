@@ -82,7 +82,7 @@ export function CommandPalette() {
                   onChange={(e) => setSearch(e.target.value)}
                 />
                 <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest bg-white/5 px-2 py-1 rounded-md border border-white/5">
-                  Axis Command Center
+                  S.P.Y. Command Center
                 </div>
               </div>
 

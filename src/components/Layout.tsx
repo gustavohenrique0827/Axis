@@ -28,17 +28,12 @@ export default function Layout() {
     if (!user) navigate("/login");
   }, [user, navigate]);
 
-  const logoDarkFull = "/logo-full.png";
-  const logoDarkIcon = "/logo-icon.png";
-
   return (
     <div className="h-screen overflow-hidden bg-[var(--color-surface)] text-[var(--color-text-primary)] font-sans flex transition-all">
       <Sidebar
         isSidebarCollapsed={isSidebarCollapsed}
         isMobileSidebarOpen={isMobileSidebarOpen}
         setIsMobileSidebarOpen={setIsMobileSidebarOpen}
-        logoDarkIcon={logoDarkIcon}
-        logoDarkFull={logoDarkFull}
         setIsSDRWebhookOpen={setIsSDRWebhookOpen}
       />
 
@@ -50,7 +45,6 @@ export default function Layout() {
           setIsSidebarCollapsed={setIsSidebarCollapsed}
           isMobileSidebarOpen={isMobileSidebarOpen}
           setIsMobileSidebarOpen={setIsMobileSidebarOpen}
-          logoDarkIcon={logoDarkIcon}
         />
 
         <div className={`flex-1 min-h-0 relative ${location.pathname.includes("/messaging") || location.pathname.includes("/mensageria") ? "overflow-hidden p-1 pb-20 sm:p-2 sm:pb-2.5" : "overflow-y-auto p-4 md:p-8 pb-24 sm:pb-8"}`}>
@@ -67,7 +61,7 @@ export default function Layout() {
 
       {/* Aurora só aparece para usuários master (G-TECH) — ela tem ferramentas de escrita
           reais escopadas ao tenant da G-TECH e não faz sentido/não é seguro para outros
-          tenants do Axis (Target AgroTech, Pluppex, etc.) verem esse chat. Além disso, agora
+          tenants do S.P.Y. (Target AgroTech, Pluppex, etc.) verem esse chat. Além disso, agora
           é um módulo de verdade (Configurações → Módulos) — dá pra desligar sem mexer em código. */}
       {user?.isMaster && isModuleEnabled("aurora") && <AuroraWidget />}
 

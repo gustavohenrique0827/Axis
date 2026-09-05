@@ -6,6 +6,7 @@ import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { CommandPalette } from "../CommandPalette";
+import { Logo } from "../ui/Logo";
 import {
   Menu,
   Sun,
@@ -29,7 +30,6 @@ interface TopbarProps {
   setIsSidebarCollapsed: (val: boolean) => void;
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (val: boolean) => void;
-  logoDarkIcon: string;
 }
 
 type NotificationTab = "todas" | "unread" | "CRM" | "Financeiro" | "Sistema";
@@ -39,7 +39,6 @@ export function Topbar({
   setIsSidebarCollapsed,
   isMobileSidebarOpen,
   setIsMobileSidebarOpen,
-  logoDarkIcon,
 }: TopbarProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -50,6 +49,7 @@ export function Topbar({
     theme,
     toggleTheme,
     appSettings,
+    tenantPrimaryColor,
   } = useData();
 
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
@@ -60,7 +60,7 @@ export function Topbar({
   // AuthContext, app_settings via DataContext) — reativos automaticamente,
   // sem localStorage nem eventos customizados.
   const liveProfile = { name: user?.name || "Gustavo Portilho", avatar: user?.avatarUrl || null };
-  const liveEmpresaName = appSettings?.empresa_dados?.nomeFantasia || user?.tenantName || "Axis Corp";
+  const liveEmpresaName = appSettings?.empresa_dados?.nomeFantasia || user?.tenantName || "S.P.Y. Corp";
 
   const unreadNotifications = notifications.filter((n) => !n.read).length;
   const userInitials = liveProfile.name ? liveProfile.name.substring(0, 2).toUpperCase() : "GT";
@@ -114,16 +114,11 @@ export function Topbar({
 
         {/* Mobile Branding Pill */}
         <div className="flex sm:hidden items-center gap-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] px-3 py-1.5 rounded-xl">
-          <div className="w-5 h-5 rounded bg-transparent dark:bg-[var(--color-primary-blue)]/15 p-0.5">
-            <img
-              src={logoDarkIcon}
-              alt="Axis Logo"
-              className="w-full h-full object-contain dark:mix-blend-screen"
-              referrerPolicy="no-referrer"
-            />
+          <div className="w-5 h-5 rounded bg-transparent dark:bg-[var(--color-primary-blue)]/15 p-0.5 flex items-center justify-center">
+            <Logo variant="icon" size={16} color={tenantPrimaryColor} />
           </div>
           <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-primary)]">
-            Axis
+            S.P.Y.
           </span>
         </div>
 

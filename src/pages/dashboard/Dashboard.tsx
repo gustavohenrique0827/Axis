@@ -31,7 +31,7 @@ export default function Dashboard() {
   return (
 
     <PageContainer
-      title="Inteligência Axis"
+      title="Inteligência S.P.Y."
       description="Painel de comando estratégico para decisões baseadas em dados."
       actions={
         <DashboardActionsTabs activeTab={activeTab as any} onTabChange={setActiveTab as any} />

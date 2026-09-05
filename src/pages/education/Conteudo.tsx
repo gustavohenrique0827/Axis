@@ -93,7 +93,7 @@ export default function Conteudo() {
 
   return (
     <PageContainer
-      title="Repositório de Conteúdo Axis"
+      title="Repositório de Conteúdo S.P.Y."
       description="Gestão centralizada de ativos educacionais e trilhas de aprendizagem de alta performance."
       actions={
         <div className="flex items-center gap-3">

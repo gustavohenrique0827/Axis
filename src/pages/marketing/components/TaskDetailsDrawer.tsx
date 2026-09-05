@@ -284,7 +284,7 @@ export function TaskDetailsDrawer({
                   <Sparkles className="w-3 h-3 text-yellow-500" /> Hashtags sugeridas
                </h5>
                <p className="text-[11px] text-slate-400 font-mono leading-relaxed">
-                  #MarketingDigital #Growth #CRM #AxisCloud #VendasOnLine
+                  #MarketingDigital #Growth #CRM #SPYCloud #VendasOnLine
                </p>
             </Card>
           </div>

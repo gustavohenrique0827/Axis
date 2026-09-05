@@ -58,10 +58,10 @@ Um único arquivo Express, buildado com esbuild pra `dist/server.cjs` e servido 
 
 Peças centrais:
 - `requireUser` — valida um JWT real do Supabase Auth, anexa `req.user` e `req.supabase` (client escopado pela sessão do chamador).
-- `requireApiKey` — valida `x-api-key` contra `AXIS_API_KEYS`, resolve o tenant a partir da própria chave (nunca do corpo da requisição).
+- `requireApiKey` — valida `x-api-key` contra `SPY_API_KEYS`, resolve o tenant a partir da própria chave (nunca do corpo da requisição).
 - `requireMaster` — usado depois de `requireUser`, confirma `users.is_master` no banco antes de liberar rotas administrativas.
 - Rate limiting (`express-rate-limit`) nas rotas de IA, na API pública e no simulador de WhatsApp.
-- CORS restrito por allowlist (`AXIS_CORS_ORIGIN`).
+- CORS restrito por allowlist (`SPY_CORS_ORIGIN`).
 
 ## Banco de dados
 

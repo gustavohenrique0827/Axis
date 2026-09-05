@@ -24,7 +24,7 @@ function safeJsonParse<T>(raw: string): T {
 }
 
 function buildPrompt(input: { productName: string; description: string }) {
-  return `Você é o AXIS Dev Planner.
+  return `Você é o SPY Dev Planner.
 
 Objetivo: gerar um backlog de desenvolvimento (Kanban) para um projeto.
 

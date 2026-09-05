@@ -56,7 +56,7 @@ export function CertificadosGrid({ certs }: CertificadosGridProps) {
           </div>
           <div className="relative z-10 flex items-center justify-between border-t border-white/5 pt-6">
             <div className="flex flex-col gap-1">
-              <div className="text-[8px] font-black text-slate-700 uppercase tracking-[0.4em]">AXIS_AUTH_HASH</div>
+              <div className="text-[8px] font-black text-slate-700 uppercase tracking-[0.4em]">SPY_AUTH_HASH</div>
               <code className="text-[10px] font-mono text-amber-500 font-black tracking-widest">{cert.code}</code>
             </div>
             <div className="flex gap-2">

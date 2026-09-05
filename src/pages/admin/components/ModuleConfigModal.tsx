@@ -69,7 +69,7 @@ export function ModuleConfigModal({
             </div>
 
             <p className="text-xs text-[var(--color-text-muted)] mb-6 leading-relaxed">
-                Apenas administradores da G-Tech podem conceder ou revogar o acesso a módulos inteligentes e integrados do Axis CRM para este tenant.
+                Apenas administradores da G-Tech podem conceder ou revogar o acesso a módulos inteligentes e integrados do S.P.Y. CRM para este tenant.
             </p>
 
             <div className="space-y-4 mb-8">

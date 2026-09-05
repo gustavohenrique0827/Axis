@@ -58,8 +58,8 @@ export default function Certificados() {
 
   return (
     <PageContainer
-      title="Certificados & Credenciais Axis"
-      description="Emissão de diplomas, validação de competências e registro de histórico acadêmico com criptografia Axis."
+      title="Certificados & Credenciais S.P.Y."
+      description="Emissão de diplomas, validação de competências e registro de histórico acadêmico com criptografia S.P.Y.."
       actions={
         <div className="flex items-center gap-3">
           <Button variant="outline" className="h-11 px-6 rounded-2xl border-white/10 text-white text-[10px] font-black uppercase tracking-widest">
@@ -84,7 +84,7 @@ export default function Certificados() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
             <div className="p-8 border-b border-white/5 bg-gradient-to-br from-amber-500/10 to-transparent">
-              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">🎓 Nova Autenticação Axis</h3>
+              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">🎓 Nova Autenticação S.P.Y.</h3>
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Crie e valide uma nova credencial acadêmica irrevogável.</p>
             </div>
             <form onSubmit={handleSaveCertificate} className="p-8 space-y-5">

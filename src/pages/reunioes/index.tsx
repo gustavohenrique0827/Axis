@@ -467,13 +467,13 @@ export default function ReunioesList() {
             )}
           </Card>
 
-          {/* Axis Insights — matching Telemedicina MIA card style */}
+          {/* S.P.Y. Insights — matching Telemedicina MIA card style */}
           <Card className="p-6 bg-gradient-to-br from-violet-600/10 to-transparent border-violet-500/20 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-[0.05]">
               <Zap className="w-20 h-20 text-violet-400" />
             </div>
             <h4 className="text-[10px] font-black text-violet-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Zap className="w-4 h-4" /> Axis Insights
+              <Zap className="w-4 h-4" /> S.P.Y. Insights
             </h4>
             <p className="text-xs text-slate-400 italic leading-relaxed mb-4">
               {kpis.emAndamento > 0

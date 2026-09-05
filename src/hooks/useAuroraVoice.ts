@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 
 /**
- * Voz real pro widget da Aurora no Axis: entrada por microfone (push-to-talk, Web Speech API)
+ * Voz real pro widget da Aurora no S.P.Y.: entrada por microfone (push-to-talk, Web Speech API)
  * e saída de áudio (toca o audioBase64 que a Aurora já manda de volta). Versão enxuta do
  * useVoiceEngine.ts do jarvis-os — sem wake word e sem medidor de volume, que não fazem
  * sentido num widget de CRM que fica sempre aberto numa aba.

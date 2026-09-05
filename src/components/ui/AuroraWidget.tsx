@@ -15,14 +15,14 @@ interface AuroraMessage {
 const GREETING: AuroraMessage = {
   id: "greeting",
   role: "aurora",
-  text: "Olá, Senhor Gustavo. Sou a Aurora. Pode falar ou digitar — pergunte sobre a diretoria, agenda, Spotify, WhatsApp ou o Axis.",
+  text: "Olá, Senhor Gustavo. Sou a Aurora. Pode falar ou digitar — pergunte sobre a diretoria, agenda, Spotify, WhatsApp ou o S.P.Y..",
 };
 
 /**
- * Balão de chat flutuante global com a Aurora (assistente do G-TECH AI OS), embutido no Axis.
+ * Balão de chat flutuante global com a Aurora (assistente do G-TECH AI OS), embutido no S.P.Y..
  * Só renderizado para usuários master (ver Layout.tsx) — a Aurora atende só Gustavo/G-TECH,
  * com ferramentas de escrita reais escopadas ao tenant da G-TECH, então não faz sentido (e não
- * é seguro) mostrá-la para usuários de outros tenants do Axis.
+ * é seguro) mostrá-la para usuários de outros tenants do S.P.Y..
  *
  * Fala com POST /api/ai/aurora-chat (server.ts), que faz o proxy autenticado até o webhook do
  * Chat Trigger da Aurora no n8n — a URL do webhook nunca chega até este componente.

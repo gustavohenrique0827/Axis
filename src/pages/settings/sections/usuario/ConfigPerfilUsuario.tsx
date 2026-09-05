@@ -207,7 +207,7 @@ export function ConfigPerfilUsuario() {
               <Mail className="w-3.5 h-3.5 text-[var(--color-text-faint)]" /> {profile.email}
             </p>
             <p className="text-xs text-[var(--color-text-muted)] flex items-center justify-center sm:justify-start gap-1.5">
-              <Building className="w-3.5 h-3.5 text-[var(--color-text-faint)]" /> {user?.tenantName || "Axis Gestão Corporativa"}
+              <Building className="w-3.5 h-3.5 text-[var(--color-text-faint)]" /> {user?.tenantName || "S.P.Y. Gestão Corporativa"}
             </p>
           </div>
 

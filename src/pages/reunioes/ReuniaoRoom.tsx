@@ -204,7 +204,7 @@ export default function ReuniaoRoom() {
     // Autorização explícita do Gustavo pra esta ação específica (clicar neste botão É a
     // confirmação) — por isso, diferente de uma conversa normal, aqui ela pode de fato criar/
     // atualizar o lead e as tarefas, não só sugerir em texto.
-    const message = `Aurora, esta é uma reunião que acabei de ter — analise e já registre o que for relevante no Axis.\n\n${contextoLead}${reuniao.pauta ? `Pauta: ${reuniao.pauta}\n` : ""}\nTranscrição da reunião:\n"""\n${transcript}\n"""\n\nMe dê um resumo objetivo, os problemas ou erros que você identificou, e as soluções que recomenda. Além disso, você está autorizada a agir diretamente a partir desta reunião — sem precisar de outra confirmação minha nesta conversa: se o lead ainda não existe, cadastre-o; se existir, atualize status/próxima ação; e crie as tarefas e atividades que fizerem sentido a partir do que foi discutido. Se você identificar que falta uma funcionalidade/ferramenta pra atender isso, registre um projeto real no módulo Dev do Axis (com uma estimativa de valor quando o escopo permitir) e as tarefas de sprint que fizerem sentido. Me diga no final exatamente o que você registrou de verdade.`;
+    const message = `Aurora, esta é uma reunião que acabei de ter — analise e já registre o que for relevante no S.P.Y..\n\n${contextoLead}${reuniao.pauta ? `Pauta: ${reuniao.pauta}\n` : ""}\nTranscrição da reunião:\n"""\n${transcript}\n"""\n\nMe dê um resumo objetivo, os problemas ou erros que você identificou, e as soluções que recomenda. Além disso, você está autorizada a agir diretamente a partir desta reunião — sem precisar de outra confirmação minha nesta conversa: se o lead ainda não existe, cadastre-o; se existir, atualize status/próxima ação; e crie as tarefas e atividades que fizerem sentido a partir do que foi discutido. Se você identificar que falta uma funcionalidade/ferramenta pra atender isso, registre um projeto real no módulo Dev do S.P.Y. (com uma estimativa de valor quando o escopo permitir) e as tarefas de sprint que fizerem sentido. Me diga no final exatamente o que você registrou de verdade.`;
 
     try {
       const res = await apiFetch("/api/ai/aurora-chat", {
@@ -217,7 +217,7 @@ export default function ReuniaoRoom() {
       setAuroraOutput(data.output ?? "");
       if (data.audioBase64) {
         // Esse áudio narra a análise PRIVADA (pontuação do lead, problemas identificados, o
-        // que foi registrado no Axis) — toca só localmente pra você, nunca dentro da call.
+        // que foi registrado no S.P.Y.) — toca só localmente pra você, nunca dentro da call.
         auroraVoice.playAudioBase64(data.audioBase64, () => setAuroraSpeaking(true), () => setAuroraSpeaking(false));
       }
 
@@ -388,7 +388,7 @@ export default function ReuniaoRoom() {
                   <div>
                     <p className="font-black text-white text-sm">Google Meet — abre em nova aba</p>
                     <p className="text-xs text-slate-500 mt-1 leading-relaxed max-w-xs">
-                      Reuniões criadas como "Sala Axis" ficam embutidas aqui. Para novos agendamentos, escolha "Sala Axis" no modal.
+                      Reuniões criadas como "Sala S.P.Y." ficam embutidas aqui. Para novos agendamentos, escolha "Sala S.P.Y." no modal.
                     </p>
                   </div>
                   <a href={reuniao.meetLink} target="_blank" rel="noopener noreferrer">

@@ -111,7 +111,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
           const calEvent = await createCalendarEvent(token, {
             title: displayTitle,
             description: [
-              "🖥️ Sala de vídeo Axis (Jitsi)",
+              "🖥️ Sala de vídeo S.P.Y. (Jitsi)",
               `🔗 Acesse: ${meetLink}`,
               "Nenhum app necessário — funciona direto no navegador.",
               pauta ? `\n📋 Pauta:\n${pauta}` : "",
@@ -232,7 +232,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
           <div>
             <p className="text-base font-black text-white">Reunião Criada!</p>
             <p className="text-xs text-slate-500 mt-1">
-              {created.calendarLink ? "Convite enviado pelo Google Calendar." : "Sala Axis pronta para uso"}
+              {created.calendarLink ? "Convite enviado pelo Google Calendar." : "Sala S.P.Y. pronta para uso"}
             </p>
           </div>
           <div className="w-full px-4 py-3 bg-[var(--color-surface)] border border-white/[0.08] rounded-xl text-left space-y-3">
@@ -422,11 +422,11 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
             />
           </div>
 
-          {/* Info sala Axis */}
+          {/* Info sala S.P.Y. */}
           <div className="flex items-center gap-3 p-3 bg-blue-500/[0.06] border border-blue-500/15 rounded-xl">
             <Video className="w-4 h-4 text-blue-400 shrink-0" />
             <p className="text-[10px] text-slate-400 leading-relaxed">
-              Será criada uma <strong className="text-blue-300">Sala Axis (Jitsi)</strong> exclusiva. Compartilhe o link com os participantes — nenhum app necessário.
+              Será criada uma <strong className="text-blue-300">Sala S.P.Y. (Jitsi)</strong> exclusiva. Compartilhe o link com os participantes — nenhum app necessário.
             </p>
           </div>
         </div>

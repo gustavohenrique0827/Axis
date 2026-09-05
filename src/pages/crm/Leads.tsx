@@ -47,7 +47,7 @@ export default function Leads() {
 
   return (
     <PageContainer
-      title="Gestão de Leads Axis"
+      title="Gestão de Leads S.P.Y."
       description="Centralize, qualifique e converta oportunidades em clientes de forma inteligente."
       actions={
         <Button onClick={() => setIsModalOpen(true)} className="gap-2">

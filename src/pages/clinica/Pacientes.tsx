@@ -87,7 +87,7 @@ export default function Pacientes() {
           <Button 
             onClick={() => {
               if (filteredPatients.length === 0) return toast.error("Nenhum dado para exportar");
-              exportToCSV(filteredPatients, "Pacientes_Axis");
+              exportToCSV(filteredPatients, "Pacientes_SPY");
               toast.success("Download iniciado!");
             }}
             variant="outline" 

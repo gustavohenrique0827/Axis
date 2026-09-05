@@ -26,7 +26,7 @@ export function FunilModal({ funil, onClose, onSave, availableClients }: FunilMo
   const [sdrEtapaHandoff, setSdrEtapaHandoff] = useState(funil?.sdrEtapaHandoff ?? "");
   const [sdrScoreMinimo, setSdrScoreMinimo] = useState(funil?.sdrScoreMinimo ?? 65);
   const [sdrDelayResposta, setSdrDelayResposta] = useState(funil?.sdrDelayResposta ?? 2);
-  const [sdrMsgBoasVindas, setSdrMsgBoasVindas] = useState(funil?.sdrMsgBoasVindas ?? "Olá! Sou a MIA, assistente comercial da Axis. Poderia me contar um pouco sobre o seu desafio atual?");
+  const [sdrMsgBoasVindas, setSdrMsgBoasVindas] = useState(funil?.sdrMsgBoasVindas ?? "Olá! Sou a MIA, assistente comercial da S.P.Y.. Poderia me contar um pouco sobre o seu desafio atual?");
   const [sdrCriterioDesqualificacao, setSdrCriterioDesqualificacao] = useState(funil?.sdrCriterioDesqualificacao ?? "sem_interesse");
   const [saving, setSaving] = useState(false);
 

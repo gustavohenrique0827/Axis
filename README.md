@@ -1,4 +1,4 @@
-# Axis
+# S.P.Y.
 
 CRM/ERP multi-tenant (React + Vite no frontend, Express no backend, Supabase/Postgres como banco). Um único deploy atende vários tenants (empresas) isolados por Row Level Security.
 

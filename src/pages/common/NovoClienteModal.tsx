@@ -20,7 +20,7 @@ interface Field {
 }
 
 const fields: Field[] = [
-    { name: "nome", label: "Nome do Cliente/Empresa", type: "text", required: true, placeholder: "Ex: Axis Innovations" },
+    { name: "nome", label: "Nome do Cliente/Empresa", type: "text", required: true, placeholder: "Ex: Vértice Innovations" },
     { name: "documento", label: "CPF/CNPJ (Opcional)", type: "text", placeholder: "Ex: 00.000.000/0000-00" },
     { name: "industry", label: "Setor / Indústria", type: "select", options: ["Tecnologia", "Engenharia", "Saúde", "Varejo", "Indústria"], required: true },
     { name: "email", label: "E-mail Principal", type: "email", required: true, placeholder: "contato@empresa.com" },

@@ -1,4 +1,4 @@
-import { FONT_DISPLAY } from "./shared";
+import { Logo } from "../../components/ui/Logo";
 
 export function FooterSection() {
   return (
@@ -6,10 +6,7 @@ export function FooterSection() {
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="text-center sm:text-left">
           <div className="flex items-center justify-center sm:justify-start gap-2.5 mb-2">
-            <div className="w-7 h-7 flex items-center justify-center">
-              <img src="/logo-icon.png" alt="Axis" className="w-full h-full object-contain" />
-            </div>
-            <span className="text-slate-900 font-bold" style={{ fontFamily: FONT_DISPLAY }}>AXIS</span>
+            <Logo variant="full" size={22} className="justify-center sm:justify-start" />
           </div>
           <p className="text-[11px] text-slate-500">Sistema Operacional de Oportunidades Comerciais.</p>
           <p className="text-[11px] text-slate-400 italic mt-0.5">Encontra. Entende. Age. Converte.</p>

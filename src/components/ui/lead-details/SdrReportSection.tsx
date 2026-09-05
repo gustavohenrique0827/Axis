@@ -56,7 +56,7 @@ export function SdrReportSection({
     primaryAim: getField('objetivo', 'Não detalhado.'),
     playbook: getField('playbook', 'Coletar mais informações sobre o lead e engajamento nas aulas.'),
     nextStep: getField('proximo passo', 'Agendar ligação de boas vindas.'),
-    template: `Olá, ${leadName}! Aqui é o consultor de admissão da Axis. Nossa IA mapeou seu interesse. Podemos conversar?`
+    template: `Olá, ${leadName}! Aqui é o consultor de admissão da S.P.Y.. Nossa IA mapeou seu interesse. Podemos conversar?`
   };
 
   const csData = {
@@ -94,7 +94,7 @@ export function SdrReportSection({
                 Relatório de Qualificação SDR
               </h4>
               <span className="text-[10px] text-[var(--color-text-faint)] font-medium block">
-                Motor de Inteligência Axis MIA-6
+                Motor de Inteligência S.P.Y. MIA-6
               </span>
             </div>
           </div>

@@ -82,7 +82,7 @@ export default function TelemedicinaDashboard() {
 
   return (
     <PageContainer 
-      title="Telemedicina Axis" 
+      title="Telemedicina S.P.Y." 
       description="Consultas virtuais criptografadas, monitoramento de sinais e integração Google Meet."
       actions={
         <div className="flex items-center gap-3 flex-wrap">

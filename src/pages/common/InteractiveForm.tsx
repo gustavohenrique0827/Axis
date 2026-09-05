@@ -6,15 +6,15 @@ import { MascotMIA6 } from '../../components/MascotMIA6';
 
 const niches: Record<string, any> = {
   "mia-6": {
-    name: "Axis Core Systems",
-    title: "Implante o Axis na Sua Empresa",
+    name: "S.P.Y. Core Systems",
+    title: "Implante o S.P.Y. na Sua Empresa",
     subtitle: "Automatize processos, integre o MIA-6 e escale a sua operação de vendas de ponta a ponta.",
     icon: Rocket,
     color: "blue",
     bgGradient: "from-blue-900 to-slate-900",
     questions: [
       { id: 'q1', type: 'input', subtype: 'text', title: "Qual o seu nome completo?", placeholder: "João da Silva" },
-      { id: 'q2', type: 'input', subtype: 'text', title: "Qual é o nome da sua empresa?", placeholder: "Ex: Axis Innovations" },
+      { id: 'q2', type: 'input', subtype: 'text', title: "Qual é o nome da sua empresa?", placeholder: "Ex: Vértice Innovations" },
       { id: 'q3', type: 'input', subtype: 'text', title: "Qual o CNPJ da empresa?", placeholder: "00.000.000/0000-00" },
       { id: 'q4', type: 'choice', title: "Qual o tamanho atual da sua equipe de vendas?", options: ["Sou sozinho", "2 a 5 vendedores", "6 a 15 vendedores", "Mais de 15"] },
       { id: 'q5', type: 'choice', title: "Qual o seu faturamento médio mensal?", options: ["Até R$ 50 mil", "R$ 50k a R$ 200k", "R$ 200k a 1 Milhão", "Mais de 1 Milhão"] },
@@ -136,7 +136,7 @@ export function InteractiveForm() {
       setCurrentStep(prev => prev + 1);
     } else {
       setIsCompleted(true);
-      // Aqui faria a requisição para enviar o Lead para o Axis CRM backend
+      // Aqui faria a requisição para enviar o Lead para o S.P.Y. CRM backend
       console.log('Lead Capturado:', { nicho: formConfig.name, answers });
     }
   };
@@ -312,7 +312,7 @@ export function InteractiveForm() {
 
         {/* Footer info */}
         <div className="mt-8 text-center text-xs text-white/40 font-mono tracking-wide">
-          <p>Powered by Axis CRM ✦ Captação Segura e Inteligente</p>
+          <p>Powered by S.P.Y. CRM ✦ Captação Segura e Inteligente</p>
         </div>
 
       </div>

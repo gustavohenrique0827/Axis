@@ -71,7 +71,7 @@ export function ConfigPreferenciasSistema() {
           Preferências do Sistema <Sliders className="w-5 h-5 text-[var(--color-primary-blue)]" />
         </h1>
         <p className="text-sm text-[var(--color-text-muted)]">
-          Personalize a interface, modos de visualização, idioma, moeda e alertas visuais do Axis.
+          Personalize a interface, modos de visualização, idioma, moeda e alertas visuais do S.P.Y..
         </p>
       </div>
 

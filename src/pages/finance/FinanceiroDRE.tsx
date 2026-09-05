@@ -129,7 +129,7 @@ export default function FinanceiroDRE() {
 
   return (
     <PageContainer
-      title="DRE Gerencial Axis"
+      title="DRE Gerencial S.P.Y."
       description="Demonstrativo de Resultados do Exercício gerado em tempo real com apuração de fluxo de caixa e filtros inteligentes."
       actions={
         <div className="flex gap-2 flex-wrap items-center">

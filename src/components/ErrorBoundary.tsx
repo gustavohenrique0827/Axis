@@ -48,7 +48,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       if (this.autoRetryCount < MAX_AUTO_RETRIES) {
         this.autoRetryCount += 1;
         this.lastRetryAt = now;
-        console.warn("[Axis] DOM alterado por extensão do navegador — remontando automaticamente:", error.message);
+        console.warn("[S.P.Y.] DOM alterado por extensão do navegador — remontando automaticamente:", error.message);
         // Resetar em uma nova macrotask (não sincronamente aqui dentro do
         // componentDidCatch) é essencial: se o retry acontece na mesma pilha
         // síncrona, o navegador nunca chega a terminar de desmontar o nó
@@ -60,7 +60,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       }
     }
 
-    console.error("[Axis] Erro de renderização capturado:", error, info.componentStack);
+    console.error("[S.P.Y.] Erro de renderização capturado:", error, info.componentStack);
   }
 
   componentWillUnmount() {

@@ -496,7 +496,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
                     <div className="w-6 h-6 rounded-lg bg-violet-500/20 flex items-center justify-center">
                       <Brain className="w-3.5 h-3.5 text-violet-400" />
                     </div>
-                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Recomendação Axis Copilot</p>
+                    <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">Recomendação S.P.Y. Copilot</p>
                   </div>
                   <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400">IA</span>
                 </div>
@@ -679,7 +679,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
               <div className="bg-gradient-to-br from-violet-500/10 to-blue-500/10 border border-violet-500/20 rounded-xl p-5">
                 <div className="flex items-center gap-2 mb-4">
                   <Brain className="w-5 h-5 text-violet-400" />
-                  <h3 className="text-sm font-black text-white">Análise Axis Copilot</h3>
+                  <h3 className="text-sm font-black text-white">Análise S.P.Y. Copilot</h3>
                 </div>
 
                 {/* Score meter */}

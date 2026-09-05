@@ -15,8 +15,8 @@ export function MessagingSection({ leadName, companyName, seller }: MessagingSec
   const [chatChannel, setChatChannel] = useState<'whatsapp' | 'email' | 'instagram'>('whatsapp');
   const [quickMessageText, setQuickMessageText] = useState("");
   const [chatLog, setChatLog] = useState<Array<{ id: string; sender: 'me' | 'client' | 'ai'; text: string; time: string; channel: string }>>([
-    { id: '1', sender: 'client', text: "Olá! Gostaria de entender melhor como funciona a implementação do Axis.", time: "Hoje, 10:25", channel: "whatsapp" },
-    { id: '2', sender: 'ai', text: "Olá! Seja bem-vindo à Axis. Nossa equipe comercial já está pronta para atendê-lo.", time: "Hoje, 10:26", channel: "whatsapp" }
+    { id: '1', sender: 'client', text: "Olá! Gostaria de entender melhor como funciona a implementação do S.P.Y..", time: "Hoje, 10:25", channel: "whatsapp" },
+    { id: '2', sender: 'ai', text: "Olá! Seja bem-vindo à S.P.Y.. Nossa equipe comercial já está pronta para atendê-lo.", time: "Hoje, 10:26", channel: "whatsapp" }
   ]);
 
   const handleSendQuickMessage = () => {

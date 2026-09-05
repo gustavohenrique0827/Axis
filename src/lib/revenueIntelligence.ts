@@ -91,7 +91,7 @@ export interface PromptData {
   transcript: string;
 }
 
-const SYSTEM_PROMPT = `Você é o AXIS Revenue Intelligence Engine.
+const SYSTEM_PROMPT = `Você é o SPY Revenue Intelligence Engine.
 Você é um Diretor Comercial virtual. Analise a transcrição e retorne APENAS JSON válido, sem markdown, sem código, sem texto fora do JSON.
 
 REGRAS ABSOLUTAS:

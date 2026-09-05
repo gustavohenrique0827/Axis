@@ -17,7 +17,7 @@ Causado por `stageId` do lead não bater com nenhuma coluna atual do funil (drif
 
 ## "Erro 503: Nenhuma API Key configurada" / "Banco de dados não configurado no servidor"
 
-`AXIS_API_KEYS` ou as variáveis do Supabase (`VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`) não estão setadas no ambiente que está rodando `server.ts`. Ver [ENVIRONMENT.md](ENVIRONMENT.md).
+`SPY_API_KEYS` ou as variáveis do Supabase (`VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY`) não estão setadas no ambiente que está rodando `server.ts`. Ver [ENVIRONMENT.md](ENVIRONMENT.md).
 
 ## "Um usuário master vê dado de um tenant que não devia"
 

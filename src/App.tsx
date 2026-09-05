@@ -49,6 +49,7 @@ import {
   ConfigEmpresaPermissoes,
   ConfigEmpresaCargos,
   ConfigNichos,
+  ConfigTema,
   ConfigCRMFunis,
   ConfigCRMOrigens,
   ConfigCRMProdutos,
@@ -140,7 +141,7 @@ function AppContent() {
         />
         <Route path="/login" element={<Login />} />
         <Route path="/redefinir-senha" element={<ResetPassword />} />
-        {/* Auto-cadastro público desativado: Axis não é mais um SaaS de self-signup —
+        {/* Auto-cadastro público desativado: S.P.Y. não é mais um SaaS de self-signup —
             novos tenants passam a ser criados por quem já está autenticado (G-Tech/parceiros).
             Rota removida em vez de deixá-la quebrar silenciosamente contra o RLS da Fase 1. */}
         <Route path="/register" element={<Navigate to="/login" replace />} />
@@ -224,6 +225,7 @@ function AppContent() {
             <Route path="empresa/modulos" element={<ConfigModulosDemos />} />
             <Route path="empresa/filiais" element={<ConfigEmpresaFiliais />} />
             <Route path="empresa/nichos" element={<ConfigNichos />} />
+            <Route path="empresa/tema" element={<ConfigTema />} />
             <Route path="empresa/equipe" element={<ConfigEmpresaEquipe />} />
             <Route path="empresa/permissoes" element={<ConfigEmpresaPermissoes />} />
             <Route path="empresa/cargos" element={<ConfigEmpresaCargos />} />

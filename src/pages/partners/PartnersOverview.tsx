@@ -77,7 +77,7 @@ export default function PartnersOverview() {
     return (
       <PageContainer
         title="Visão de Parceiros"
-        description="Acesso restrito a organizações parceiras da plataforma Axis."
+        description="Acesso restrito a organizações parceiras da plataforma S.P.Y.."
       >
         <Card className="p-10 flex flex-col items-center justify-center gap-4 opacity-60">
           <Handshake className="w-12 h-12 text-slate-500" />
@@ -90,12 +90,12 @@ export default function PartnersOverview() {
   return (
     <PageContainer
       title="Visão de Parceiros"
-      description="Clientes atribuídos à sua organização (acesso operacional completo) e números agregados de toda a plataforma Axis."
+      description="Clientes atribuídos à sua organização (acesso operacional completo) e números agregados de toda a plataforma S.P.Y.."
     >
       <div className="space-y-6">
         <div>
           <h3 className="text-sm font-bold uppercase tracking-widest text-slate-400 mb-3">
-            Plataforma Axis — agregado de todos os tenants
+            Plataforma S.P.Y. — agregado de todos os tenants
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <Card className="p-5 border-[#06B6D4]/20 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden group">

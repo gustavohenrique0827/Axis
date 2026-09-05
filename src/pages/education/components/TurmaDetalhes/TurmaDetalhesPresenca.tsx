@@ -86,7 +86,7 @@ export function TurmaDetalhesPresenca({
                       </div>
                       <div>
                         <div className="text-sm font-bold text-white">{student.name}</div>
-                        <div className="text-[9px] text-slate-600 font-black uppercase tracking-widest">Matrícula: Axis-{student.id}92</div>
+                        <div className="text-[9px] text-slate-600 font-black uppercase tracking-widest">Matrícula: SPY-{student.id}92</div>
                       </div>
                     </div>
                   </td>

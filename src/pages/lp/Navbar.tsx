@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
-import { FONT_DISPLAY } from "./shared";
+import { Logo } from "../../components/ui/Logo";
 
 const LINKS = [
   { href: "#produto", label: "Produto" },
@@ -32,10 +32,7 @@ export function Navbar({ onCtaClick }: { onCtaClick: () => void }) {
     >
       <nav className="max-w-6xl mx-auto flex items-center justify-between px-5 sm:px-8 h-16 sm:h-20">
         <a href="#top" className="flex items-center gap-2.5 shrink-0" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
-          <div className="w-9 h-9 flex items-center justify-center">
-            <img src="/logo-icon.png" alt="Axis" className="w-full h-full object-contain" />
-          </div>
-          <span className="text-slate-900 font-bold text-lg tracking-tight" style={{ fontFamily: FONT_DISPLAY }}>AXIS</span>
+          <Logo variant="full" size={28} />
         </a>
 
         <div className="hidden lg:flex items-center gap-8">
@@ -58,7 +55,7 @@ export function Navbar({ onCtaClick }: { onCtaClick: () => void }) {
             onClick={onCtaClick}
             className="px-5 py-2.5 rounded-xl bg-emerald-700 text-white text-[13px] font-bold hover:bg-emerald-800 transition-colors shadow-lg shadow-emerald-900/15"
           >
-            Quero conhecer o Axis
+            Quero conhecer o S.P.Y.
           </button>
         </div>
 
@@ -78,7 +75,7 @@ export function Navbar({ onCtaClick }: { onCtaClick: () => void }) {
             onClick={() => { setMobileOpen(false); onCtaClick(); }}
             className="w-full mt-3 px-5 py-3 rounded-xl bg-emerald-700 text-white text-sm font-bold"
           >
-            Quero conhecer o Axis
+            Quero conhecer o S.P.Y.
           </button>
         </div>
       )}

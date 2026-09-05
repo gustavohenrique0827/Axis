@@ -52,7 +52,7 @@ export function JitsiEmbed({ roomName, displayName, email, onLeave, className }:
           parentNode: containerRef.current,
           lang: "ptBR",
           userInfo: {
-            displayName: displayName ?? "Usuário Axis",
+            displayName: displayName ?? "Usuário S.P.Y.",
             email: email ?? "",
           },
           configOverwrite: {
@@ -78,8 +78,8 @@ export function JitsiEmbed({ roomName, displayName, email, onLeave, className }:
             BRAND_WATERMARK_LINK: "",
             HIDE_INVITE_MORE_HEADER: false,
             NATIVE_APP_SCHEME: "",
-            APP_NAME: "Axis CRM — Sala de Reunião",
-            PROVIDER_NAME: "Axis CRM",
+            APP_NAME: "S.P.Y. CRM — Sala de Reunião",
+            PROVIDER_NAME: "S.P.Y. CRM",
           },
         });
 

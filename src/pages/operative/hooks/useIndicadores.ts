@@ -79,7 +79,7 @@ export function useIndicadores() {
 
     return [
        { label: "Ticket Médio", value: closedLeads.length > 0 ? fmt(ticketMedio) : "—", trend: "+5.2%", icon: Target, color: "text-[#06B6D4]" },
-       // Ciclo de Vendas e Retention Rate ainda não são medidos de verdade em nenhum lugar do Axis —
+       // Ciclo de Vendas e Retention Rate ainda não são medidos de verdade em nenhum lugar do S.P.Y. —
        // mostrar "—" em vez de um número de exemplo até existir uma fonte real (ex.: datas de estágio do funil).
        { label: "Ciclo de Vendas", value: "—", trend: "—", icon: Activity, color: "text-[#06B6D4]" },
        { label: "LTV Projetado", value: ltv > 0 ? fmt(ltv) : "—", trend: "+12.4%", icon: Zap, color: "text-[#06B6D4]" },

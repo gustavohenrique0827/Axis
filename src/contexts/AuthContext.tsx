@@ -58,11 +58,11 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 // aqui como fallback (sessionStorage, não localStorage: some ao fechar a aba)
 // para essas sessões, e como rede de segurança caso o client do Supabase não
 // esteja configurado no ambiente.
-const AXIS_SESSION_KEY = "axis_user_session";
+const SPY_SESSION_KEY = "spy_user_session";
 
 function readSavedSession(): UserSession | null {
   try {
-    const raw = sessionStorage.getItem(AXIS_SESSION_KEY);
+    const raw = sessionStorage.getItem(SPY_SESSION_KEY);
     return raw ? (JSON.parse(raw) as UserSession) : null;
   } catch {
     return null;
@@ -144,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // sessionStorage aqui: esse objeto é só um cache de conveniência (ver
         // login()) e não tem verificação nenhuma por trás. Confiar nele sem uma
         // sessão real permitiria a qualquer um escrever
-        // sessionStorage.setItem('axis_user_session', '{"isMaster":true,...}')
+        // sessionStorage.setItem('spy_user_session', '{"isMaster":true,...}')
         // no console do navegador e a UI passar a tratar como admin (RLS ainda
         // bloquearia o acesso a dado real, mas nenhuma tela/ação client-side
         // deveria confiar nisso).
@@ -202,12 +202,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // o perfil resolvido no estado local; onAuthStateChange mantém a sessão
     // sincronizada em refreshes futuros. Também guardamos localmente para que
     // sessões demo (sem JWT real do Supabase) sobrevivam a um reload da página.
-    sessionStorage.setItem(AXIS_SESSION_KEY, JSON.stringify(session));
+    sessionStorage.setItem(SPY_SESSION_KEY, JSON.stringify(session));
     setUser(session);
   };
 
   const logout = () => {
-    sessionStorage.removeItem(AXIS_SESSION_KEY);
+    sessionStorage.removeItem(SPY_SESSION_KEY);
     setUser(null);
     supabase?.auth.signOut();
   };

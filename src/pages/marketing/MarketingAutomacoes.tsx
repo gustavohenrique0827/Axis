@@ -75,7 +75,7 @@ export default function MarketingAutomacoes() {
 
   return (
     <PageContainer
-      title="Automações Axis"
+      title="Automações S.P.Y."
       description="Orquestração de jornadas inteligentes e réguas de relacionamento preditivas via MIA-6."
       actions={
         <div className="flex items-center gap-3">

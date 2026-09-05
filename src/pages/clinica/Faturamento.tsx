@@ -78,7 +78,7 @@ export default function FaturamentoClinico() {
             variant="outline" 
             onClick={() => {
               if (receivables.length === 0) return toast.error("Nenhum lançamento para exportar");
-              exportToCSV(receivables, "Faturamento_Clinico_Axis");
+              exportToCSV(receivables, "Faturamento_Clinico_SPY");
               toast.success("Download do relatório iniciado!");
             }}
             className="h-9 px-4 text-xs font-bold gap-1.5"

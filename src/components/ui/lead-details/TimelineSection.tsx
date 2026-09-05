@@ -130,7 +130,7 @@ export function TimelineSection({
           className="border border-dashed border-[var(--color-border-default)] hover:border-[var(--color-primary-blue)]/50 rounded-[var(--radius-control)] bg-[var(--color-surface-sunken)] p-3 text-center cursor-pointer transition-colors"
           onClick={() => {
             const demoDocs = [
-              { name: "Proposta_Plano_AxisEnterprise.pdf", size: "380 KB" },
+              { name: "Proposta_Plano_SPYEnterprise.pdf", size: "380 KB" },
               { name: "Orcamento_GTech.xlsx", size: "120 KB" },
               { name: "Cronograma_Execucao.docx", size: "450 KB" }
             ];

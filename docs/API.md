@@ -4,7 +4,7 @@ Todas as rotas vivem em `server.ts` (Express), servidas via `api/index.ts` na Ve
 
 **Autenticação** (ver [AUTHENTICATION.md](AUTHENTICATION.md)/[AUTHORIZATION.md](AUTHORIZATION.md) para detalhe):
 - `requireUser` — header `Authorization: Bearer <jwt-do-supabase-auth>`. Anexa `req.user` e `req.supabase` (client escopado pela sessão — toda query subsequente respeita RLS automaticamente).
-- `requireApiKey` — header `x-api-key: <chave>`. O tenant vem do mapeamento `AXIS_API_KEYS` (`chave:tenantId`), nunca do corpo da requisição.
+- `requireApiKey` — header `x-api-key: <chave>`. O tenant vem do mapeamento `SPY_API_KEYS` (`chave:tenantId`), nunca do corpo da requisição.
 - `requireMaster` — usado depois de `requireUser`; confirma `users.is_master=true` no banco.
 
 **Rate limiting**: `/api/v1/leads` e `/api/leads/*` e `/api/ai/*`: 20-60 req/min por IP. `/api/whatsapp/*`: 60/min. Ver `server.ts` pros valores exatos.

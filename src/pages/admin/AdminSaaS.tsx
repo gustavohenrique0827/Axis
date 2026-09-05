@@ -76,7 +76,7 @@ export default function AdminSaaS() {
 
   return (
     <PageContainer
-      title="Gestão de Infraestrutura Axis"
+      title="Gestão de Infraestrutura S.P.Y."
       description="Controle centralizado de instâncias, faturamento e saúde global da plataforma."
       actions={
         <div className="flex gap-2">

@@ -5,7 +5,7 @@ import type { AuroraCoreMode } from "./auroraCoreStates";
 import { useAuth } from "../../../contexts/AuthContext";
 
 // Three.js + @react-three/fiber só entram no bundle quando alguém de fato troca pro núcleo 3D —
-// sem isso, o Three.js (~1MB+) carregava no chunk principal do Axis pra TODA página, mesmo pra
+// sem isso, o Three.js (~1MB+) carregava no chunk principal do S.P.Y. pra TODA página, mesmo pra
 // quem nunca abre a Aurora ou nunca troca de variante. Confirmado com `npm run build`: o chunk
 // principal foi de bem menos que 500kB pra 4.36MB antes deste lazy() entrar.
 const AuroraCore3D = lazy(() => import("./AuroraCore3D").then((m) => ({ default: m.AuroraCore3D })));

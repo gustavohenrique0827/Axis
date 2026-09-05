@@ -4,6 +4,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
 
 import { navSections, type NavReqCondition } from "./navData";
+import { Logo } from "../ui/Logo";
 
 // Predicados para itens gated por `reqCondition` (não dá pra resolver
 // estaticamente em navData.ts porque dependem do usuário logado).
@@ -22,8 +23,6 @@ interface SidebarProps {
   isSidebarCollapsed: boolean;
   isMobileSidebarOpen: boolean;
   setIsMobileSidebarOpen: (isOpen: boolean) => void;
-  logoDarkIcon: string;
-  logoDarkFull: string;
   setIsSDRWebhookOpen: (isOpen: boolean) => void;
 }
 
@@ -31,8 +30,6 @@ export function Sidebar({
   isSidebarCollapsed,
   isMobileSidebarOpen,
   setIsMobileSidebarOpen,
-  logoDarkIcon,
-  logoDarkFull,
   setIsSDRWebhookOpen,
 }: SidebarProps) {
   const location = useLocation();
@@ -41,7 +38,7 @@ export function Sidebar({
     activeTenantId, activeTenantName, switchTenant,
     activeFilialId, switchFilial,
   } = useAuth();
-  const { cargos, empresaFiliais } = useData();
+  const { cargos, empresaFiliais, tenantPrimaryColor } = useData();
 
   // Master vê e troca de cliente (tenant); admin do próprio tenant (ou master, dentro
   // do cliente ativo) vê e troca de filial daquele cliente.
@@ -82,21 +79,11 @@ export function Sidebar({
           >
             {isSidebarCollapsed ? (
               <div className="w-9 h-9 rounded-lg flex items-center justify-center p-0.5">
-                <img
-                  src={logoDarkIcon}
-                  alt="Axis"
-                  className="w-full h-full object-contain dark:mix-blend-screen"
-                  referrerPolicy="no-referrer"
-                />
+                <Logo variant="icon" size={30} color={tenantPrimaryColor} />
               </div>
             ) : (
               <div className="relative w-full h-full flex items-center justify-center overflow-hidden px-2">
-                <img
-                  src={logoDarkFull}
-                  alt="Axis"
-                  className="logo-container max-h-10.5 w-auto object-contain dark:mix-blend-screen"
-                  referrerPolicy="no-referrer"
-                />
+                <Logo variant="full" size={26} color={tenantPrimaryColor} />
               </div>
             )}
           </Link>
@@ -123,7 +110,7 @@ export function Sidebar({
             ) : (
               <div className="text-xs text-[var(--color-text-muted)] font-bold truncate flex items-center gap-2.5 px-3 py-2">
                 <Building2 className="w-4 h-4 shrink-0 text-[var(--color-text-faint)]" />
-                {activeTenantName || user?.tenantName || "Axis Gestão Corporativa"}
+                {activeTenantName || user?.tenantName || "S.P.Y. Gestão Corporativa"}
               </div>
             )}
 

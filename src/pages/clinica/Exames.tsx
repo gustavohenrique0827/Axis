@@ -20,7 +20,7 @@ export default function Exames() {
   // Form state
   const [patientName, setPatientName] = useState('');
   const [examName, setExamName] = useState('');
-  const [labName, setLabName] = useState('Lab Axis Central');
+  const [labName, setLabName] = useState('Lab Vértice Central');
   const [examDate, setExamDate] = useState(new Date().toLocaleDateString('pt-BR'));
 
   const filteredExames = examList.filter(e => 
@@ -256,7 +256,7 @@ export default function Exames() {
                       onChange={(e) => setLabName(e.target.value)}
                       className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2.5 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
                     >
-                      <option value="Lab Axis Central">Lab Axis Central</option>
+                      <option value="Lab Vértice Central">Lab Vértice Central</option>
                       <option value="Imobiliz Imagem">Imobiliz Imagem</option>
                       <option value="CardioClin">CardioClin</option>
                       <option value="Fleury / Conveniado">Fleury / Conveniado</option>

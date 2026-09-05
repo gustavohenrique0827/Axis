@@ -32,7 +32,7 @@ export function SDRWebhookModal({ isOpen, onClose }: SDRWebhookModalProps) {
         timestamp: new Date().toISOString(),
         robot: "MIA-6",
         data: {
-          message: "AXIS_CORE_SYSTEMS_PING",
+          message: "SPY_CORE_SYSTEMS_PING",
         }
       };
 

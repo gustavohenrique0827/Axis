@@ -28,7 +28,7 @@ Cada tenant (empresa) só acessa seus próprios dados, com duas exceções delib
 
 ## CORS
 
-Allowlist explícita via `AXIS_CORS_ORIGIN` (`server.ts`) — origem só é liberada se está na lista; sem a variável, nenhuma origem passa. Substituiu um wildcard `"*"` usado como default anterior.
+Allowlist explícita via `SPY_CORS_ORIGIN` (`server.ts`) — origem só é liberada se está na lista; sem a variável, nenhuma origem passa. Substituiu um wildcard `"*"` usado como default anterior.
 
 ## Tratamento de erro
 

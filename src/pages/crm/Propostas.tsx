@@ -26,7 +26,7 @@ export default function Propostas() {
       valor: parseFloat(data.valor) || 0,
       validade: data.dataValidade || null,
       status: "Enviada",
-      vendedor: user?.name || "Sistema Axis",
+      vendedor: user?.name || "Sistema S.P.Y.",
       itens: data.itens?.filter((i: any) => i.descricao?.trim()) || [],
       tipo: data.tipo,
       conteudoTexto: data.conteudoTexto,
@@ -43,7 +43,7 @@ export default function Propostas() {
 
   return (
     <PageContainer
-      title="Propostas Axis"
+      title="Propostas S.P.Y."
       description="Gestão de orçamentos, contratos e follow-up de vendas de alta conversão."
       actions={
         <div className="flex items-center gap-3">
@@ -98,7 +98,7 @@ export default function Propostas() {
         isOpen={isPropostaModalOpen}
         onClose={() => setIsPropostaModalOpen(false)}
         onSave={handleCreatePropostaNew}
-        title="Criar Proposta Axis"
+        title="Criar Proposta S.P.Y."
         submitText="Gerar Proposta"
       />
     </PageContainer>

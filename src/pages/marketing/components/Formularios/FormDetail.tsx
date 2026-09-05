@@ -164,7 +164,7 @@ export function FormDetail({ form, tenantId }: { form: FormDefinition; tenantId:
                 <div className="flex items-start gap-2 p-3 bg-amber-500/5 border border-amber-500/15 rounded-xl">
                   <AlertCircle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
                   <p className="text-[11px] text-amber-300/70 font-medium leading-relaxed">
-                    Este formulário é hospedado externamente. Para editar perguntas e campos, altere a página no projeto de origem — o Axis acompanha apenas os leads e o rodízio de SDR gerados por ela.
+                    Este formulário é hospedado externamente. Para editar perguntas e campos, altere a página no projeto de origem — o S.P.Y. acompanha apenas os leads e o rodízio de SDR gerados por ela.
                   </p>
                 </div>
               )}

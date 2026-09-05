@@ -1,6 +1,6 @@
 {
-  "name": "Axis CRM",
-  "description": "Plataforma empresarial SaaS premium focada em automação comercial e inteligência de leads.",
+  "name": "S.P.Y. CRM",
+  "description": "Seu espião comercial: plataforma empresarial SaaS premium que acompanha conversas, atualiza o CRM sozinho e encontra oportunidades de vendas.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

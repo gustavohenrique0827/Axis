@@ -44,7 +44,7 @@ export const FUNIS_DEFAULT: Funil[] = [
     sdrEtapaHandoff: "Promovido Closer",
     sdrScoreMinimo: 65,
     sdrDelayResposta: 2,
-    sdrMsgBoasVindas: "Olá! Sou a MIA, assistente comercial da Axis. Poderia me contar um pouco sobre o seu desafio atual?",
+    sdrMsgBoasVindas: "Olá! Sou a MIA, assistente comercial da S.P.Y.. Poderia me contar um pouco sobre o seu desafio atual?",
     sdrCriterioDesqualificacao: "sem_interesse",
   },
 ];

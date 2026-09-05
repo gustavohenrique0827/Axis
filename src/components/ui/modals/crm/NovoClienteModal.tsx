@@ -141,7 +141,7 @@ export function NovoClienteModal({ isOpen, onClose, onAction }: NovoClienteModal
           <div>
             <div className="text-base font-black text-white">Novo Cliente</div>
             <div className="text-[10px] font-black uppercase tracking-widest text-slate-400 mt-0.5">
-              Cadastro de conta no CRM Axis
+              Cadastro de conta no CRM S.P.Y.
             </div>
           </div>
         </div>
@@ -192,7 +192,7 @@ export function NovoClienteModal({ isOpen, onClose, onAction }: NovoClienteModal
               required
               value={form.nome}
               onChange={set("nome")}
-              placeholder="Ex: Axis Innovations Ltda"
+              placeholder="Ex: Vértice Innovations Ltda"
               className={inputClass}
             />
           </div>

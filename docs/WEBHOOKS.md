@@ -9,7 +9,7 @@
 Automação externa (n8n) que lê/escreve em `julia_interaction_log`/`julia_round_robin_state` usando `service_role` (não passa pelo `server.ts`, não é uma rota HTTP deste repo). RLS dessas tabelas não afeta `service_role` (que sempre ignora RLS) — o isolamento por tenant nelas existe pra proteger contra acesso via `anon`/`authenticated`, não contra a própria automação. Ver [DATABASE_SECURITY.md](DATABASE_SECURITY.md).
 
 ### WhatsApp (simulador)
-As instâncias simuladas de WhatsApp têm um campo `webhookUrl` (ex.: `https://axis-crm.cloud/api/webhooks/whatsapp`), mas isso é **dado de configuração simulado** — o simulador (`server.ts`, seção WhatsApp) não faz nenhuma chamada HTTP real de saída para essa URL hoje. Ver [API.md](API.md#whatsapp-simulador--requireuser).
+As instâncias simuladas de WhatsApp têm um campo `webhookUrl` (ex.: `https://spy-crm.cloud/api/webhooks/whatsapp`), mas isso é **dado de configuração simulado** — o simulador (`server.ts`, seção WhatsApp) não faz nenhuma chamada HTTP real de saída para essa URL hoje. Ver [API.md](API.md#whatsapp-simulador--requireuser).
 
 ## RPC pública chamada pelo formulário do E-EMPREENDA+
 

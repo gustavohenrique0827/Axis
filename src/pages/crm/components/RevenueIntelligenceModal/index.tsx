@@ -38,8 +38,8 @@ export function RevenueIntelligenceModal({ lead, stageName, pipelineName, onClos
     try {
       const data: PromptData = {
         today: new Date().toLocaleDateString('pt-BR'),
-        tenantName: lead.tenantName ?? 'AXIS',
-        clientName: lead.tenantName ?? 'AXIS',
+        tenantName: lead.tenantName ?? 'SPY',
+        clientName: lead.tenantName ?? 'SPY',
         pipelineName, stageName,
         leadName: lead.name, companyName: lead.company,
         sellerName: lead.seller ?? 'Não atribuído',

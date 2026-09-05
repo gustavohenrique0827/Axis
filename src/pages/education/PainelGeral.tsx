@@ -18,7 +18,7 @@ import { PageContainer } from "../../components/PageContainer";
 export default function PainelGeralEducation() {
   return (
     <PageContainer 
-      title="BI Educacional & Dashboard Axis" 
+      title="BI Educacional & Dashboard S.P.Y." 
       description="Visão 360º da operação pedagógica, métricas de engajamento e performance de tutores."
       actions={
         <div className="flex items-center gap-3">

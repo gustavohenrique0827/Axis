@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from 'sonner';
 import { sendPushNotification } from "../lib/notifications";
-import { isSupabaseReachable, supabase } from '../lib/supabase';
+import { isSupabaseReachable, supabase, fetchTenantPrimaryColor, updateTenantTheme } from '../lib/supabase';
+import { DEFAULT_BRAND_COLOR } from '../lib/theme';
 import { useAuth } from './AuthContext';
 import { Lead, Task, Contract, CustomField, LeadScoreTrigger, Squad } from '../types';
 import {
@@ -102,7 +103,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (!supabase || !tenantId) return;
     try {
       // Escopado por tenant explicitamente — sem isso, duas empresas usando a
-      // mesma "key" (ex.: "axis_sidebar_modules") acabariam lendo/sobrescrevendo
+      // mesma "key" (ex.: "spy_sidebar_modules") acabariam lendo/sobrescrevendo
       // a configuração uma da outra.
       const { data } = await supabase.from('app_settings').select('id').eq('key', key).eq('tenant_id', tenantId).maybeSingle();
       if (data) {
@@ -123,9 +124,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
   const setSidebarModules = async (modules: Record<string, boolean>) => {
     setSidebarModulesState(modules);
-    await saveAppSetting('axis_sidebar_modules', modules);
+    await saveAppSetting('spy_sidebar_modules', modules);
     if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('axis_modules_changed', { detail: modules }));
+      window.dispatchEvent(new CustomEvent('spy_modules_changed', { detail: modules }));
     }
   };
 
@@ -155,32 +156,42 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     syncSetting('globalWebhooks', newVal);
   };
 
+  // Tema de cor por tenant: uma das 4 cores de marca do S.P.Y. (ou hex custom),
+  // escolhida em Configurações → Empresa → Tema e persistida em tenants.primary_color.
+  // Só o token de destaque principal muda por tenant — o resto da paleta (fundo,
+  // accent cyan) é identidade fixa do produto, não do cliente.
+  const [tenantPrimaryColor, setTenantPrimaryColorState] = useState<string>(DEFAULT_BRAND_COLOR);
+
   useEffect(() => {
-    const applyBrandColors = () => {
-      const primary = "#2563EB";
-      const secondary = "#0F172A";
-      const accent = "#06B6D4";
+    let cancelled = false;
+    async function loadTenantColor() {
+      if (!tenantId) { setTenantPrimaryColorState(DEFAULT_BRAND_COLOR); return; }
+      const hex = await fetchTenantPrimaryColor(tenantId);
+      if (!cancelled) setTenantPrimaryColorState(hex || DEFAULT_BRAND_COLOR);
+    }
+    loadTenantColor();
+    return () => { cancelled = true; };
+  }, [tenantId]);
 
-      document.documentElement.style.setProperty('--color-primary-blue', primary);
-      document.documentElement.style.setProperty('--primary', primary);
-      document.documentElement.style.setProperty('--color-tech-cyan', accent);
-      document.documentElement.style.setProperty('--accent', accent);
-      document.documentElement.style.setProperty('--secondary', secondary);
-      document.documentElement.style.setProperty('--color-dark-bg', secondary);
-    };
+  useEffect(() => {
+    document.documentElement.style.setProperty('--color-primary-blue', tenantPrimaryColor);
+    document.documentElement.style.setProperty('--primary', tenantPrimaryColor);
+  }, [tenantPrimaryColor]);
 
-    applyBrandColors();
-
-    window.addEventListener("axis_brand_changed", applyBrandColors);
-    return () => window.removeEventListener("axis_brand_changed", applyBrandColors);
-  }, []);
+  const updateTenantPrimaryColor = async (hex: string) => {
+    setTenantPrimaryColorState(hex);
+    if (!tenantId) return { success: false, error: 'Nenhum tenant ativo' };
+    const result = await updateTenantTheme(tenantId, hex);
+    if (!result.success) toast.error(result.error || 'Erro ao salvar tema.');
+    return result;
+  };
 
   const [leadsRaw, setLeads] = useState<Lead[]>([]);
   const [tasksRaw, setTasks] = useState<Task[]>([]);
   const [contractsRaw, setContracts] = useState<Contract[]>([]);
   const [leadActivities, setLeadActivities] = useState<LeadActivity[]>([]);
 
-  const [evolutionWebhookUrl, setEvolutionWebhookUrl] = useState<string>("https://axis-crm.cloud/api/webhooks/whatsapp");
+  const [evolutionWebhookUrl, setEvolutionWebhookUrl] = useState<string>("https://spy-crm.cloud/api/webhooks/whatsapp");
 
   const [appointmentsRaw, setAppointments] = useState<Appointment[]>([]);
 
@@ -547,9 +558,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
                   case 'globalWebhooks': setGlobalWebhooks(setting.value); break;
                   case 'customLeadFields': setCustomLeadFields(setting.value); break;
                   case 'leadScoreTriggers': setLeadScoreTriggers(setting.value); break;
-                  case 'axis_sidebar_modules': setSidebarModulesState(setting.value); break;
                 }
               });
+              // Lê a chave nova; se o tenant ainda não tem nada salvo nela (rename
+              // Axis → S.P.Y.), cai pra chave antiga em vez de perder a preferência
+              // de sidebar já salva.
+              const sidebarModules = settingsMap['spy_sidebar_modules'] ?? settingsMap['axis_sidebar_modules'];
+              if (sidebarModules !== undefined) setSidebarModulesState(sidebarModules);
               setAppSettings(settingsMap);
               setAppSettingsLoaded(true);
             }
@@ -580,7 +595,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
 
           if (diffMins >= 28 && diffMins <= 32 && !notifiedRemindersRef.current[apt.id]) {
             notifiedRemindersRef.current[apt.id] = true;
-            const message = `Olá ${apt.patient}, aqui é da Axis Telemedicina. Lembramos que sua teleconsulta com ${apt.drName} inicia em 30 minutos. Prepare sua conexão!`;
+            const message = `Olá ${apt.patient}, aqui é da S.P.Y. Telemedicina. Lembramos que sua teleconsulta com ${apt.drName} inicia em 30 minutos. Prepare sua conexão!`;
             console.log(`[WHATSAPP AUTOMÁTICO] Enviando para ${apt.phone || 'N/A'}: ${message}`);
 
             toast.info(`Lembrete WhatsApp enviado para ${apt.patient}`, {
@@ -1293,6 +1308,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setLeadScoreTriggers: updateLeadScoreTriggers,
       sidebarModules,
       setSidebarModules,
+      tenantPrimaryColor,
+      updateTenantPrimaryColor,
       saveAppSetting,
       appSettings,
       appSettingsLoaded,

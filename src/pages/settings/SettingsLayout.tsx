@@ -17,8 +17,8 @@ export default function SettingsLayout() {
       const customEvent = e as CustomEvent;
       if (customEvent?.detail) setActiveModules(customEvent.detail);
     };
-    window.addEventListener("axis_modules_changed", handleChanged);
-    return () => window.removeEventListener("axis_modules_changed", handleChanged);
+    window.addEventListener("spy_modules_changed", handleChanged);
+    return () => window.removeEventListener("spy_modules_changed", handleChanged);
   }, []);
 
   const groups: SectionNavGroup[] = [
@@ -39,6 +39,7 @@ export default function SettingsLayout() {
         ...(user?.isMaster ? [{ title: "Módulos & Demos", path: "/app/configuracoes/empresa/modulos" }] : []),
         { title: "Filiais / Unidades", path: "/app/configuracoes/empresa/filiais" },
         { title: "Nichos", path: "/app/configuracoes/empresa/nichos" },
+        { title: "Tema", path: "/app/configuracoes/empresa/tema" },
         { title: "Equipe & convites", path: "/app/configuracoes/empresa/equipe" },
         { title: "Cargos", path: "/app/configuracoes/empresa/cargos" },
         { title: "Perfis & permissões", path: "/app/configuracoes/empresa/permissoes" },

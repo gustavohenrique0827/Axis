@@ -78,14 +78,14 @@ export default function Alunos() {
 
   return (
     <PageContainer
-      title="Gestão de Alunos Axis"
+      title="Gestão de Alunos S.P.Y."
       description="Base centralizada de matrículas, desempenho acadêmico e engajamento."
       actions={
         <div className="flex items-center gap-2">
           <Button
             onClick={() => {
               if (filteredAlunos.length === 0) return toast.error("Nenhum dado para exportar");
-              exportToCSV(filteredAlunos, "Alunos_Axis");
+              exportToCSV(filteredAlunos, "Alunos_SPY");
               toast.success("Download iniciado!");
             }}
             variant="outline"

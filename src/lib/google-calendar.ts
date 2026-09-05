@@ -12,7 +12,7 @@ export async function createCalendarEvent(
     startISO: string;
     endISO: string;
     attendeeEmails: string[];
-    /** true = Sala Axis (Jitsi link na descrição, sem criar Google Meet) */
+    /** true = Sala S.P.Y. (Jitsi link na descrição, sem criar Google Meet) */
     skipConferenceData?: boolean;
   }
 ): Promise<CalendarEvent> {

@@ -14,7 +14,7 @@ const CORRETORES_DB: Record<string, {
 }> = {
   "ana-lima": {
     id: "1", nome: "Ana Lima", creci: "CRECI-SP 123456", telefone: "(11) 98765-4321",
-    email: "ana@imobiliaria.com", especialidade: "Alto Padrão", empresa: "Axis Imóveis",
+    email: "ana@imobiliaria.com", especialidade: "Alto Padrão", empresa: "Vértice Imóveis",
     bio: "Especialista em imóveis de alto padrão em São Paulo há mais de 10 anos. Atendo clientes que buscam exclusividade, qualidade e localização privilegiada. Minha missão é transformar o sonho da casa própria em realidade com segurança e transparência.",
     avaliacao: 4.9, totalVendas: 87,
     imoveis: [
@@ -24,7 +24,7 @@ const CORRETORES_DB: Record<string, {
   },
   "carlos-matos": {
     id: "2", nome: "Carlos Matos", creci: "CRECI-SP 234567", telefone: "(11) 97654-3210",
-    email: "carlos@imobiliaria.com", especialidade: "Residencial", empresa: "Axis Imóveis",
+    email: "carlos@imobiliaria.com", especialidade: "Residencial", empresa: "Vértice Imóveis",
     bio: "Corretor residencial com foco em famílias que buscam qualidade de vida. Especializado em condomínios fechados e bairros planejados na Grande São Paulo.",
     avaliacao: 4.7, totalVendas: 54,
     imoveis: [
@@ -34,7 +34,7 @@ const CORRETORES_DB: Record<string, {
   },
   "fernanda-rocha": {
     id: "3", nome: "Fernanda Rocha", creci: "CRECI-SP 345678", telefone: "(11) 96543-2109",
-    email: "fernanda@imobiliaria.com", especialidade: "Comercial", empresa: "Axis Imóveis",
+    email: "fernanda@imobiliaria.com", especialidade: "Comercial", empresa: "Vértice Imóveis",
     bio: "Especialista em imóveis comerciais e salas de escritório. Atendo empresas que buscam o espaço ideal para seus negócios com custo-benefício e excelente localização.",
     avaliacao: 4.8, totalVendas: 31,
     imoveis: [
@@ -209,7 +209,7 @@ export default function PortfolioCorretor() {
       {/* Footer */}
       <footer className="border-t border-white/5 py-6">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-slate-600">
-          <span>Portfólio gerado por <span className="text-blue-500 font-bold">Axis CRM</span></span>
+          <span>Portfólio gerado por <span className="text-blue-500 font-bold">S.P.Y. CRM</span></span>
           <span>{corretor.creci} · {corretor.empresa}</span>
         </div>
       </footer>
