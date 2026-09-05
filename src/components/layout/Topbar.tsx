@@ -114,8 +114,8 @@ export function Topbar({
 
         {/* Mobile Branding Pill */}
         <div className="flex sm:hidden items-center gap-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] px-3 py-1.5 rounded-xl">
-          <div className="w-5 h-5 rounded bg-transparent dark:bg-[var(--color-primary-blue)]/15 p-0.5 flex items-center justify-center">
-            <Logo variant="icon" size={16} color={tenantPrimaryColor} />
+          <div className="w-6 h-6 rounded bg-transparent dark:bg-[var(--color-primary-blue)]/15 flex items-center justify-center">
+            <Logo variant="icon" size={18} color={tenantPrimaryColor} />
           </div>
           <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-primary)]">
             S.P.Y.

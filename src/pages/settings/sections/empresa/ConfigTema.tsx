@@ -73,9 +73,12 @@ export function ConfigTema() {
         <h3 className="text-sm font-bold text-[var(--color-text-primary)] flex items-center gap-2 pb-2 border-b border-[var(--color-border-subtle)]">
           Pré-visualização
         </h3>
-        <div className="flex items-center gap-4 p-4 rounded-xl bg-[#0B1120]">
-          <Logo variant="full" color={tenantPrimaryColor} size={36} />
+        <div className="flex items-center gap-4 p-5 rounded-xl bg-[#0B1120] shadow-[0_0_28px_-8px_var(--color-primary-blue)]">
+          <Logo variant="full" color={tenantPrimaryColor} size={40} />
         </div>
+        <p className="text-[11px] text-[var(--color-text-faint)]">
+          É assim que sua marca aparece no modo escuro — o brilho acompanha a cor escolhida.
+        </p>
       </Card>
     </div>
   );

@@ -24,22 +24,24 @@ function resolveColor(color: LogoProps["color"]): string {
   return color;
 }
 
-/** Ícone de marca: chapéu de espião dentro de uma mira circular. */
+/** Ícone de marca: chapéu de espião + óculos escuros dentro de uma mira circular. */
 function LogoMark({ color, size = 32 }: { color: string; size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 100" fill="none" role="img" aria-label="S.P.Y.">
-      <circle cx="50" cy="50" r="42" stroke={color} strokeWidth="5" />
-      <line x1="50" y1="2" x2="50" y2="16" stroke={color} strokeWidth="5" strokeLinecap="round" />
-      <line x1="50" y1="84" x2="50" y2="98" stroke={color} strokeWidth="5" strokeLinecap="round" />
-      <line x1="2" y1="50" x2="16" y2="50" stroke={color} strokeWidth="5" strokeLinecap="round" />
-      <line x1="84" y1="50" x2="98" y2="50" stroke={color} strokeWidth="5" strokeLinecap="round" />
+      <circle cx="50" cy="50" r="42" stroke={color} strokeWidth="6" />
+      <line x1="50" y1="1" x2="50" y2="16" stroke={color} strokeWidth="6" strokeLinecap="round" />
+      <line x1="50" y1="84" x2="50" y2="99" stroke={color} strokeWidth="6" strokeLinecap="round" />
+      <line x1="1" y1="50" x2="16" y2="50" stroke={color} strokeWidth="6" strokeLinecap="round" />
+      <line x1="84" y1="50" x2="99" y2="50" stroke={color} strokeWidth="6" strokeLinecap="round" />
       <path
         d="M27 47c0-13 10-23 23-23s23 10 23 23c8 1 13 5 13 9H14c0-4 5-8 13-9Z"
         fill={color}
       />
-      <rect x="18" y="54" width="64" height="7" rx="3.5" fill={color} />
-      <ellipse cx="38" cy="64" rx="7" ry="5" fill="#0B1120" />
-      <ellipse cx="62" cy="64" rx="7" ry="5" fill="#0B1120" />
+      <rect x="17" y="53" width="66" height="8" rx="4" fill={color} />
+      {/* Óculos escuros — lentes em pílula, não elipses genéricas, pra reforçar a leitura "espião" mesmo em tamanhos pequenos */}
+      <rect x="29" y="58" width="17" height="10" rx="5" fill="#0B1120" />
+      <rect x="54" y="58" width="17" height="10" rx="5" fill="#0B1120" />
+      <rect x="46" y="61" width="8" height="3" rx="1.5" fill="#0B1120" />
     </svg>
   );
 }
@@ -58,8 +60,8 @@ export function Logo({ variant = "full", color, size = 32, className }: LogoProp
     <span className={`inline-flex items-center gap-2 ${className ?? ""}`}>
       <LogoMark color={hex} size={size} />
       <span
-        className="font-bold tracking-[0.15em] leading-none"
-        style={{ fontSize: size * 0.5, color: hex }}
+        className="font-black tracking-[0.14em] leading-none"
+        style={{ fontSize: size * 0.55, color: hex }}
       >
         S.P.Y.
       </span>

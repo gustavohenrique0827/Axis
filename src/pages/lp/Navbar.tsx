@@ -32,7 +32,7 @@ export function Navbar({ onCtaClick }: { onCtaClick: () => void }) {
     >
       <nav className="max-w-6xl mx-auto flex items-center justify-between px-5 sm:px-8 h-16 sm:h-20">
         <a href="#top" className="flex items-center gap-2.5 shrink-0" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); }}>
-          <Logo variant="full" size={28} />
+          <Logo variant="full" size={32} />
         </a>
 
         <div className="hidden lg:flex items-center gap-8">

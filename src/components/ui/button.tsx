@@ -13,7 +13,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = "default", size = "default", asChild = false, loading = false, disabled, children, ...props }, ref) => {
     const Comp = asChild ? Slot : "button"
     const variants = {
-      default: "bg-[var(--color-primary-blue)] !text-white font-bold border border-[var(--color-primary-blue)]/25 hover:brightness-110 shadow-[var(--shadow-control)] active:scale-[0.98]",
+      default: "bg-[var(--color-primary-blue)] !text-white font-bold border border-[var(--color-primary-blue)]/25 hover:brightness-110 shadow-[var(--shadow-control)] dark:shadow-[0_0_16px_-4px_var(--color-primary-blue)] active:scale-[0.98]",
       outline: "border border-[var(--color-border-default)] text-[var(--color-text-muted)] hover:bg-[var(--color-surface-sunken)] hover:text-[var(--color-text-primary)] active:scale-[0.98]",
       // Antes sem fundo por padrão (só aparecia com bg no hover) — muitos botões de
       // ícone (editar/excluir/fechar) usam essa variante e ficavam praticamente

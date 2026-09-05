@@ -75,15 +75,15 @@ export function Sidebar({
         <div className="h-20 flex items-center justify-center px-3 py-2.5 shrink-0 border-b border-[var(--color-border-subtle)]">
           <Link
             to="/app"
-            className={`logo-image-container sidebar-logo-header flex items-center justify-center w-full h-full rounded-xl bg-transparent dark:bg-[var(--color-primary-blue)]/15 dark:border dark:border-[var(--color-primary-blue)]/25 transition-all ${isSidebarCollapsed ? "mx-auto" : ""}`}
+            className={`logo-image-container sidebar-logo-header flex items-center justify-center w-full h-full rounded-xl bg-transparent dark:bg-[var(--color-primary-blue)]/15 dark:border dark:border-[var(--color-primary-blue)]/25 dark:shadow-[0_0_20px_-6px_var(--color-primary-blue)] transition-all ${isSidebarCollapsed ? "mx-auto" : ""}`}
           >
             {isSidebarCollapsed ? (
-              <div className="w-9 h-9 rounded-lg flex items-center justify-center p-0.5">
-                <Logo variant="icon" size={30} color={tenantPrimaryColor} />
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+                <Logo variant="icon" size={34} color={tenantPrimaryColor} />
               </div>
             ) : (
               <div className="relative w-full h-full flex items-center justify-center overflow-hidden px-2">
-                <Logo variant="full" size={26} color={tenantPrimaryColor} />
+                <Logo variant="full" size={30} color={tenantPrimaryColor} />
               </div>
             )}
           </Link>
@@ -171,7 +171,7 @@ export function Sidebar({
                       type="button"
                       className={`w-full flex items-center ${isSidebarCollapsed ? "justify-center p-2.5" : "gap-2.5 px-3 py-2"} text-xs font-bold rounded-[var(--radius-control)] transition-all cursor-pointer border-none text-left ${
                         isActive
-                          ? "bg-[var(--color-primary-blue)] !text-white font-bold shadow-md shadow-blue-500/20"
+                          ? "bg-[var(--color-primary-blue)] !text-white font-bold shadow-md shadow-[var(--color-primary-blue)]/25"
                           : "text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)]"
                       }`}
                     >
