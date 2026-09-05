@@ -1,9 +1,20 @@
+export type ProductType = "Serviço" | "Assinatura" | "Digital" | "Físico" | "Imóvel" | "Curso/Turma";
+
+export interface ProductAttachment {
+    name: string;
+    size: string;
+    date: string;
+    type: string;
+    url: string;
+    path: string;
+}
+
 export interface Product {
     id: string;
     sku: string;
     name: string;
     category: string;
-    type: "Serviço" | "Assinatura" | "Digital" | "Físico";
+    type: ProductType;
     price: number;
     cost: number;
     margin: number;
@@ -19,6 +30,10 @@ export interface Product {
     provider: string;
     isBestSeller?: boolean;
     tags: string[];
+    attachments?: ProductAttachment[];
+    /** Campos que variam por `type` (ex.: endereço/área pra Imóvel, ciclo de
+     * cobrança pra Assinatura) — ver src/pages/operative/produtos/produto-modal/ProdutoTabInfo.tsx. */
+    typeAttributes?: Record<string, string | number | boolean>;
 }
 
 export interface CustomField {

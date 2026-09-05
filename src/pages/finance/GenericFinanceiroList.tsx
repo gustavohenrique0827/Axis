@@ -8,6 +8,7 @@ import React, { useMemo, useState } from "react";
 import { useData } from "../../contexts/DataContext";
 import { toast } from "sonner";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
+import { downloadCsv } from "../../lib/csvExport";
 
 interface GenericProps {
   title: string;
@@ -53,6 +54,14 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
     setNewDate("");
   };
 
+  const handleExport = () => {
+    downloadCsv(
+      `${type === 'Pagar' ? 'contas_a_pagar' : 'contas_a_receber'}_${Date.now()}.csv`,
+      ["Descrição", "Categoria", "Vencimento", "Status", "Valor"],
+      data.map(item => [item.description, item.category, item.date, item.status, item.value])
+    );
+  };
+
   const handleDelete = async (item: (typeof data)[number]) => {
     if (!(await confirmDialog({
       title: "Excluir lançamento",
@@ -93,9 +102,9 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
           >
             <Plus className="w-3.5 h-3.5" /> Novo Lançamento
           </Button>
-          <Button 
-            variant="outline" 
-            onClick={() => toast.info("Exportação de relatório em formato XLSX gerada.")}
+          <Button
+            variant="outline"
+            onClick={handleExport}
             className="h-9 px-4 text-xs font-bold gap-1.5 border-[var(--color-border-default)]"
           >
             <Download className="w-3.5 h-3.5" /> Exportar

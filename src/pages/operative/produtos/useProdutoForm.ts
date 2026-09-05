@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Product } from "../../../types";
+import { Product, ProductType, ProductAttachment } from "../../../types";
 import { toast } from "sonner";
 import { useData } from "../../../contexts/DataContext";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -20,7 +20,11 @@ export function useProdutoForm() {
   // Tab and Interactive state inside modal
   const [activeTab, setActiveTab] = useState<"info" | "comercial" | "estoque" | "arquivos">("info");
   const [simulateTax, setSimulateTax] = useState(false);
-  const [attachments, setAttachments] = useState<{name: string, size: string, date: string, type: string}[]>([]);
+  const [attachments, setAttachments] = useState<ProductAttachment[]>([]);
+  // Id gerado assim que o modal de "novo produto" abre — usado como pasta de
+  // upload no Storage antes do produto existir de fato, pra não precisar de
+  // path temporário/rename depois que ele for salvo.
+  const [draftProductId, setDraftProductId] = useState("");
 
   // Client association state
   const [clientSearch, setClientSearch] = useState("");
@@ -32,7 +36,8 @@ export function useProdutoForm() {
   const [formName, setFormName] = useState("");
   const [formSKU, setFormSKU] = useState("");
   const [formCategory, setFormCategory] = useState("Software");
-  const [formType, setFormType] = useState<"Serviço" | "Assinatura" | "Digital" | "Físico">("Software" as any);
+  const [formType, setFormType] = useState<ProductType>("Digital");
+  const [formTypeAttributes, setFormTypeAttributes] = useState<Record<string, string | number | boolean>>({});
   const [formPrice, setFormPrice] = useState("");
   const [formCost, setFormCost] = useState("");
   const [formCommission, setFormCommission] = useState("5");
@@ -48,10 +53,10 @@ export function useProdutoForm() {
   const [formCurrentStock, setFormCurrentStock] = useState("0");
 
   const { products, addProduct, updateProduct, deleteProduct, setProducts, clienteBase } = useData();
-  const { user } = useAuth();
+  const { user, activeTenantId } = useAuth();
 
   const categories = ["Todas", "Software", "Serviços", "Implantação", "Mentoria", "Físico"];
-  const types = ["Todos", "Serviço", "Assinatura", "Digital", "Físico"];
+  const types = ["Todos", "Serviço", "Assinatura", "Digital", "Físico", "Imóvel", "Curso/Turma"];
 
   const filteredClients = useMemo(() => {
     if (!clienteBase) return [];
@@ -77,10 +82,12 @@ export function useProdutoForm() {
 
   const handleOpenAddModal = () => {
     setEditingProduct(null);
+    setDraftProductId(crypto.randomUUID());
     setFormName("");
     setFormSKU("PROD-" + Math.floor(1000 + Math.random() * 9000));
     setFormCategory("Software");
-    setFormType("Digital" as any);
+    setFormType("Digital");
+    setFormTypeAttributes({});
     setFormPrice("");
     setFormCost("");
     setFormCommission("5");
@@ -109,7 +116,8 @@ export function useProdutoForm() {
     setFormName(p.name);
     setFormSKU(p.sku);
     setFormCategory(p.category);
-    setFormType(p.type as any);
+    setFormType(p.type);
+    setFormTypeAttributes(p.typeAttributes || {});
     setFormPrice(p.price.toString());
     setFormCost(p.cost.toString());
     setFormCommission(p.commission.toString());
@@ -125,7 +133,7 @@ export function useProdutoForm() {
     setFormCurrentStock(p.currentStock.toString());
     setActiveTab("info");
     setSimulateTax(false);
-    setAttachments([]);
+    setAttachments(p.attachments || []);
     setClientId((p as any).clientId || "");
     setClientName((p as any).clientName || "");
     setClientSearch((p as any).clientName || "");
@@ -134,18 +142,6 @@ export function useProdutoForm() {
 
   const handleSaveProduct = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('[Produtos] handleSaveProduct submit', {
-      editing: !!editingProduct,
-      formName,
-      formSKU,
-      formPrice,
-      formCategory,
-      formType,
-      formCommission,
-      formTags,
-      formIsBestSeller,
-      clientId,
-    });
 
     if (!formName.trim() || !formSKU.trim() || !formPrice) {
       toast.error("Por favor, preencha todos os campos obrigatórios (Nome, SKU e Preço Venda)");
@@ -167,7 +163,8 @@ export function useProdutoForm() {
         sku: formSKU,
         name: formName,
         category: formCategory,
-        type: formType as any,
+        type: formType,
+        typeAttributes: formTypeAttributes,
         price: priceNum,
         cost: costNum,
         margin: marginRatio,
@@ -182,6 +179,7 @@ export function useProdutoForm() {
         weight: parseFloat(formWeight) || 0,
         material: formMaterial,
         description: formDescription,
+        attachments,
         clientId: clientId || undefined,
         clientName: clientName || undefined,
         tenantName,
@@ -189,11 +187,12 @@ export function useProdutoForm() {
       toast.success("Produto atualizado com sucesso!");
     } else {
       const nProd: Product = {
-        id: crypto.randomUUID(),
+        id: draftProductId || crypto.randomUUID(),
         sku: formSKU,
         name: formName,
         category: formCategory,
-        type: formType as any,
+        type: formType,
+        typeAttributes: formTypeAttributes,
         price: priceNum,
         cost: costNum,
         margin: marginRatio,
@@ -209,6 +208,7 @@ export function useProdutoForm() {
         weight: parseFloat(formWeight) || 0,
         material: formMaterial,
         description: formDescription,
+        attachments,
         clientId: clientId || undefined,
         clientName: clientName || undefined,
         tenantName,
@@ -297,6 +297,8 @@ export function useProdutoForm() {
     activeTab, setActiveTab,
     simulateTax, setSimulateTax,
     attachments, setAttachments,
+    draftProductId,
+    activeTenantId,
     // client
     clientSearch, setClientSearch,
     clientId, setClientId,
@@ -310,6 +312,7 @@ export function useProdutoForm() {
     formSKU, setFormSKU,
     formCategory, setFormCategory,
     formType, setFormType,
+    formTypeAttributes, setFormTypeAttributes,
     formPrice, setFormPrice,
     formCost, setFormCost,
     formCommission, setFormCommission,

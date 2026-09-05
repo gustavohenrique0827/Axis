@@ -3,7 +3,7 @@ import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Package, DollarSign, Layers, FileSpreadsheet, X, Check, ArrowLeft, ArrowRight } from "lucide-react";
 import { motion } from "motion/react";
-import { Product } from "../../../types";
+import { Product, ProductType, ProductAttachment } from "../../../types";
 import { ProdutoTabInfo } from "./produto-modal/ProdutoTabInfo";
 import { ProdutoTabComercial } from "./produto-modal/ProdutoTabComercial";
 import { ProdutoTabEstoque } from "./produto-modal/ProdutoTabEstoque";
@@ -18,6 +18,13 @@ const TABS = [
 
 type TabId = typeof TABS[number]["id"];
 
+const STEP_NAMES: Record<TabId, string> = {
+  info: "Geral",
+  comercial: "Preços",
+  estoque: "Estoque",
+  arquivos: "Mídia",
+};
+
 export interface ProdutoModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -26,8 +33,10 @@ export interface ProdutoModalProps {
   setActiveTab: (tab: TabId) => void;
   simulateTax: boolean;
   setSimulateTax: (val: boolean) => void;
-  attachments: { name: string; size: string; date: string; type: string }[];
-  setAttachments: React.Dispatch<React.SetStateAction<{ name: string; size: string; date: string; type: string }[]>>;
+  attachments: ProductAttachment[];
+  setAttachments: React.Dispatch<React.SetStateAction<ProductAttachment[]>>;
+  draftProductId: string;
+  activeTenantId?: string;
   clientSearch: string;
   setClientSearch: (v: string) => void;
   clientId: string;
@@ -40,7 +49,9 @@ export interface ProdutoModalProps {
   formName: string; setFormName: (v: string) => void;
   formSKU: string; setFormSKU: (v: string) => void;
   formCategory: string; setFormCategory: (v: string) => void;
-  formType: "Serviço" | "Assinatura" | "Digital" | "Físico"; setFormType: (v: any) => void;
+  formType: ProductType; setFormType: (v: ProductType) => void;
+  formTypeAttributes: Record<string, string | number | boolean>;
+  setFormTypeAttributes: React.Dispatch<React.SetStateAction<Record<string, string | number | boolean>>>;
   formPrice: string; setFormPrice: (v: string) => void;
   formCost: string; setFormCost: (v: string) => void;
   formCommission: string; setFormCommission: (v: string) => void;
@@ -61,7 +72,10 @@ export interface ProdutoModalProps {
 export function ProdutoModal(props: ProdutoModalProps) {
   if (!props.isOpen) return null;
 
-  const tabIds = TABS.map(t => t.id);
+  // Estoque só faz sentido pra um produto Físico — Assinatura/Curso/Imóvel
+  // etc. não têm o que controlar em "estoque mínimo/máximo".
+  const visibleTabs = TABS.filter(t => t.id !== "estoque" || props.formType === "Físico");
+  const tabIds = visibleTabs.map(t => t.id);
   const curIdx = tabIds.indexOf(props.activeTab);
 
   return (
@@ -91,7 +105,7 @@ export function ProdutoModal(props: ProdutoModalProps) {
 
         {/* Tabs */}
         <div className="px-5 py-2 border-b border-white/5 bg-[var(--color-surface)] flex gap-1 overflow-x-auto scrollbar-none shrink-0">
-          {TABS.map(t => {
+          {visibleTabs.map(t => {
             const IconComp = t.icon;
             const isActive = props.activeTab === t.id;
             return (
@@ -135,7 +149,12 @@ export function ProdutoModal(props: ProdutoModalProps) {
               />
             )}
             {props.activeTab === "arquivos" && (
-              <ProdutoTabArquivos attachments={props.attachments} setAttachments={props.setAttachments} />
+              <ProdutoTabArquivos
+                attachments={props.attachments}
+                setAttachments={props.setAttachments}
+                productId={props.editingProduct?.id || props.draftProductId}
+                tenantId={props.activeTenantId}
+              />
             )}
           </motion.div>
         </form>
@@ -143,15 +162,15 @@ export function ProdutoModal(props: ProdutoModalProps) {
         {/* Footer */}
         <div className="p-5 border-t border-white/10 flex flex-col sm:flex-row justify-between items-center bg-white/[0.01] gap-3 shrink-0">
           <div className="flex items-center gap-2">
-            {TABS.map((step, index) => {
+            {visibleTabs.map((step, index) => {
               const isCurrent = props.activeTab === step.id;
               const isCompleted = curIdx > index;
-              const stepNames = ["Geral", "Preços", "Estoque", "Mídia"];
+              const stepName = STEP_NAMES[step.id];
               return (
-                <button key={step.id} type="button" onClick={() => props.setActiveTab(step.id)} title={stepNames[index]}>
+                <button key={step.id} type="button" onClick={() => props.setActiveTab(step.id)} title={stepName}>
                   <div className="flex items-center gap-1.5">
                     <div className={`h-1.5 rounded-full transition-all ${isCurrent ? "w-6 bg-[#2563EB]" : isCompleted ? "w-4 bg-emerald-500" : "w-2 bg-slate-700 hover:bg-slate-600"}`} />
-                    {isCurrent && <span className="text-[9px] text-slate-400 font-extrabold uppercase mr-1">{stepNames[index]}</span>}
+                    {isCurrent && <span className="text-[9px] text-slate-400 font-extrabold uppercase mr-1">{stepName}</span>}
                   </div>
                 </button>
               );

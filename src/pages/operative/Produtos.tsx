@@ -15,6 +15,7 @@ import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "sonner";
 import type { Product } from "../../types";
+import { downloadCsv } from "../../lib/csvExport";
 
 export default function Catalog() {
   const f = useProdutoForm();
@@ -35,22 +36,11 @@ export default function Catalog() {
       valor: parseFloat(data.valor) || 0,
       validade: data.dataValidade || null,
       status: "Enviada",
-      vendedor: user?.name || "Sistema Axis",
+      vendedor: user?.name || "Sistema S.P.Y.",
       itens: data.itens?.filter((i: any) => i.descricao?.trim()) || [],
     });
     toast.success("✨ Proposta criada com sucesso a partir do produto!");
     setSellingProduct(null);
-  };
-
-  const exportToExcelSimulator = () => {
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 1500)),
-      {
-        loading: 'Compilando base de produtos ERP e mapeando margens...',
-        success: 'Catálogo exportado! Nome do Arquivo: "CRM_CATALOGO_PRODUTOS.xlsx"',
-        error: 'Erro ao compilar exportação'
-      }
-    );
   };
 
   const filteredProducts = useMemo(() => {
@@ -87,15 +77,23 @@ export default function Catalog() {
   }, [f.products]);
   const bestSellerCount = f.products.filter(p => p.isBestSeller).length;
 
+  const exportProductsToCSV = () => {
+    downloadCsv(
+      `catalogo_produtos_${Date.now()}.csv`,
+      ["SKU", "Nome", "Categoria", "Tipo", "Preço", "Custo", "Margem", "Estoque Atual"],
+      filteredProducts.map(p => [p.sku, p.name, p.category, p.type, p.price, p.cost, p.margin, p.currentStock])
+    );
+  };
+
   return (
     <PageContainer
-      title="Produtos & SKUs Axis"
+      title="Produtos & SKUs S.P.Y."
       description="Painel Central de Gestão de Preços, Margem de Lucro, SKU e Comissionamento Comercial."
       actions={
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
-            onClick={exportToExcelSimulator}
+            onClick={exportProductsToCSV}
             className="h-9 px-4 text-xs font-bold gap-1.5 border-[var(--color-border-default)]"
           >
             <FileSpreadsheet className="w-3.5 h-3.5" /> Exportar Planilha
@@ -200,6 +198,8 @@ export default function Catalog() {
           setSimulateTax={f.setSimulateTax}
           attachments={f.attachments}
           setAttachments={f.setAttachments}
+          draftProductId={f.draftProductId}
+          activeTenantId={f.activeTenantId}
           clientSearch={f.clientSearch}
           setClientSearch={f.setClientSearch}
           clientId={f.clientId}
@@ -217,6 +217,8 @@ export default function Catalog() {
           setFormCategory={f.setFormCategory}
           formType={f.formType}
           setFormType={f.setFormType}
+          formTypeAttributes={f.formTypeAttributes}
+          setFormTypeAttributes={f.setFormTypeAttributes}
           formPrice={f.formPrice}
           setFormPrice={f.setFormPrice}
           formCost={f.formCost}

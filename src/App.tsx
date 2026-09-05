@@ -38,10 +38,7 @@ import FinanceiroLayout from "./pages/finance/FinanceiroLayout";
 import FinanceiroVisaoGeral from "./pages/finance/FinanceiroVisaoGeral";
 import FinanceiroReceber from "./pages/finance/FinanceiroReceber";
 import FinanceiroPagar from "./pages/finance/FinanceiroPagar";
-import FinanceiroComissoes from "./pages/finance/FinanceiroComissoes";
 import FinanceiroDRE from "./pages/finance/FinanceiroDRE";
-import FinanceiroMetas from "./pages/finance/FinanceiroMetas";
-import FinanceiroConfiguracoes from "./pages/finance/FinanceiroConfiguracoes";
 
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import ConfigEmpresaDados from "./pages/settings/ConfigEmpresaDados";
@@ -212,12 +209,8 @@ function AppContent() {
             <Route path="faturas" element={<Contracts />} /> {/* Resuing contracts view for demo */}
             <Route path="receber" element={<FinanceiroReceber />} />
             <Route path="pagar" element={<FinanceiroPagar />} />
-            <Route path="comissoes" element={<FinanceiroComissoes />} />
             <Route path="dre" element={<FinanceiroDRE />} />
-            <Route path="metas" element={<FinanceiroMetas />} />
             <Route path="categorias" element={<SettingsGenericForm />} />
-            <Route path="configuracoes" element={<FinanceiroConfiguracoes />} />
-            <Route path="configuracoes/:section" element={<FinanceiroConfiguracoes />} />
             <Route path="*" element={<GenericPlaceholder />} />
           </Route>
 

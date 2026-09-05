@@ -66,7 +66,7 @@ export default function Tarefas() {
 
   return (
     <PageContainer
-      title="Tarefas Axis"
+      title="Tarefas S.P.Y."
       description="Organize suas demandas comerciais, reuniões de diagnóstico e follow-ups de vendas."
       actions={
         <div className="flex flex-wrap items-center gap-2 shrink-0">
@@ -116,6 +116,7 @@ export default function Tarefas() {
         <WorkloadBento
           tasks={tasks}
           highPriorityCount={highPriorityCount}
+          onExpandTask={openEditTaskModal}
         />
 
         {/* Statistics Widgets */}
@@ -189,7 +190,7 @@ export default function Tarefas() {
           data: convertReadableDateToDatetimeLocal(editingTask.date),
           relacionado: editingTask.related,
           vendedor: editingTask.seller || "Carlos Eduardo Mendes",
-          produtos: (editingTask.relatedProductIds || []).join(", "),
+          produtos: editingTask.relatedProductIds || [],
           tags: (editingTask.tags || []).join(", ")
         } : undefined}
       />
@@ -210,8 +211,26 @@ export default function Tarefas() {
         isOpen={isPautaModalOpen}
         onClose={() => setIsPautaModalOpen(false)}
         onSave={(data) => {
-          console.log("Nova Pauta criada:", data);
-          // Integrar com DataContext se necessário
+          let formattedDate = "Hoje";
+          if (data.data) {
+            const combined = new Date(`${data.data}T${data.hora || "00:00"}`);
+            if (!isNaN(combined.getTime())) {
+              formattedDate = combined.toLocaleString('pt-BR', {
+                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
+              });
+            }
+          }
+          addTask({
+            title: data.titulo,
+            description: data.descricao,
+            type: "Reunião / Pauta",
+            priority: "Média",
+            date: formattedDate,
+            related: "Interno",
+            status: "Em Aberto",
+            responsible: data.responsavel,
+            tags: data.participantes ? data.participantes.split(',').map((p) => p.trim()).filter(Boolean) : [],
+          });
         }}
       />
     </PageContainer>

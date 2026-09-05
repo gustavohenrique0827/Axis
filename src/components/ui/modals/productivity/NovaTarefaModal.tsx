@@ -11,7 +11,7 @@ type NovaTarefaPayload = {
   data: string;
   relacionado: string;
   vendedor: string;
-  produtos: string;
+  produtos: string[];
   tags: string;
 };
 
@@ -46,7 +46,7 @@ export function NovaTarefaModal({
   title = "Nova Tarefa / Compromisso",
   submitText = "Agendar Tarefa",
 }: NovaTarefaModalProps) {
-  const { colaboradores } = useData();
+  const { colaboradores, products } = useData();
 
   const sellerOptions = useMemo(
     () => (colaboradores as any[]).filter(c => c.status !== "Desligado" && c.departamento === "Vendas").map(c => c.nome as string).filter(Boolean),
@@ -59,7 +59,7 @@ export function NovaTarefaModal({
   const [data, setData] = useState(initialValue?.data || new Date().toISOString().substring(0, 16));
   const [relacionado, setRelacionado] = useState(initialValue?.relacionado || "");
   const [vendedor, setVendedor] = useState(initialValue?.vendedor || "");
-  const [produtos, setProdutos] = useState(initialValue?.produtos || "");
+  const [produtos, setProdutos] = useState<string[]>(initialValue?.produtos || []);
   const [tags, setTags] = useState(initialValue?.tags || "");
 
   useEffect(() => {
@@ -70,9 +70,13 @@ export function NovaTarefaModal({
     setData(initialValue?.data || new Date().toISOString().substring(0, 16));
     setRelacionado(initialValue?.relacionado || "");
     setVendedor(initialValue?.vendedor || "");
-    setProdutos(initialValue?.produtos || "");
+    setProdutos(initialValue?.produtos || []);
     setTags(initialValue?.tags || "");
   }, [isOpen, initialValue]);
+
+  const toggleProduto = (id: string) => {
+    setProdutos(prev => prev.includes(id) ? prev.filter(p => p !== id) : [...prev, id]);
+  };
 
   const canSubmit = useMemo(() => {
     return Boolean(nome.trim() && relacionado.trim() && data.trim());
@@ -89,7 +93,7 @@ export function NovaTarefaModal({
       data,
       relacionado: relacionado.trim(),
       vendedor,
-      produtos: produtos.trim(),
+      produtos,
       tags: tags.trim(),
     });
   };
@@ -129,7 +133,7 @@ export function NovaTarefaModal({
               value={nome}
               onChange={(e) => setNome(e.target.value)}
               className={fieldClass}
-              placeholder="Ex: Reunião com Cliente Axis"
+              placeholder="Ex: Reunião com Cliente Vértice"
               required
             />
           </div>
@@ -139,7 +143,7 @@ export function NovaTarefaModal({
               value={relacionado}
               onChange={(e) => setRelacionado(e.target.value)}
               className={fieldClass}
-              placeholder="Ex: Axis Innovations"
+              placeholder="Ex: Vértice Innovations"
               required
             />
           </div>
@@ -192,12 +196,24 @@ export function NovaTarefaModal({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className={labelClass}>Produtos / Serviços Relacionados</label>
-            <input
-              value={produtos}
-              onChange={(e) => setProdutos(e.target.value)}
-              className={fieldClass}
-              placeholder="Ex: Setup PRO, Licença SaaS"
-            />
+            {products.length === 0 ? (
+              <p className="text-xs text-slate-500 italic px-1">Nenhum produto cadastrado no catálogo.</p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto p-2 bg-[var(--color-surface)] border border-white/10 rounded-xl">
+                {products.map((p) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => toggleProduto(p.id)}
+                    className={`px-2.5 py-1 text-[10px] font-bold rounded-full transition-colors ${
+                      produtos.includes(p.id) ? "bg-[#2563EB] text-white" : "bg-[var(--color-surface-sunken)] text-slate-400 hover:bg-white/10"
+                    }`}
+                  >
+                    {p.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <label className={labelClass}>Tags</label>

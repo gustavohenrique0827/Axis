@@ -249,7 +249,7 @@ export function useTarefas() {
         date: formattedDate,
         related: data.relacionado || "Interno",
         seller: data.vendedor || "",
-        relatedProductIds: data.produtos || [],
+        relatedProductIds: data.produtos,
         tags: data.tags ? data.tags.split(',').map((t: string) => t.trim()) : []
       });
       toast.success("Tarefa editada com sucesso!");
@@ -262,7 +262,7 @@ export function useTarefas() {
         related: data.relacionado || "Interno",
         status: "Em Aberto",
         seller: data.vendedor || "",
-        relatedProductIds: data.produtos || [],
+        relatedProductIds: data.produtos,
         tags: data.tags ? data.tags.split(',').map((t: string) => t.trim()) : []
       };
       addTask(newTask);

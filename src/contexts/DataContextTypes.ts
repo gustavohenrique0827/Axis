@@ -102,6 +102,8 @@ export interface DataContextType {
   addLeadActivity: (leadId: string, type: 'Ligação' | 'E-mail' | 'Reunião' | 'Outro', title: string, description: string, seller: string, customDate?: string, files?: { name: string; size: string; }[]) => void;
   sidebarModules: Record<string, boolean>;
   setSidebarModules: (modules: Record<string, boolean>) => void;
+  tenantPrimaryColor: string;
+  updateTenantPrimaryColor: (hex: string) => Promise<{ success: boolean; error?: string }>;
   saveAppSetting: (key: string, value: any) => Promise<void>;
   appSettings: Record<string, any>;
   appSettingsLoaded: boolean;
@@ -143,10 +145,6 @@ export interface DataContextType {
   addNicho: (nicho: any) => Promise<void>;
   updateNicho: (id: string, updates: any) => Promise<void>;
   deleteNicho: (id: string) => Promise<boolean>;
-  financeCommissionEntries: any[];
-  addFinanceCommissionEntry: (entry: any) => Promise<void>;
-  updateFinanceCommissionEntry: (id: string, updates: any) => Promise<void>;
-  deleteFinanceCommissionEntry: (id: string) => Promise<boolean>;
   financeCategories: any[];
   addFinanceCategory: (category: any) => Promise<void>;
   updateFinanceCategory: (id: string, updates: any) => Promise<void>;

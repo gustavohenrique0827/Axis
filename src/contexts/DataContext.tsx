@@ -343,7 +343,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [cargos, setCargos] = useState<any[]>([]);
   const [empresaFiliais, setEmpresaFiliais] = useState<any[]>([]);
   const [nichos, setNichos] = useState<any[]>([]);
-  const [financeCommissionEntriesRaw, setFinanceCommissionEntries] = useState<any[]>([]);
   const [financeCategories, setFinanceCategories] = useState<any[]>([]);
   const [scheduledExports, setScheduledExports] = useState<any[]>([]);
   const [educationContent, setEducationContent] = useState<any[]>([]);
@@ -352,7 +351,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const products = useMemo(() => filterByFilial(productsRaw), [productsRaw, activeFilialId]);
   const proposals = useMemo(() => filterByFilial(proposalsRaw), [proposalsRaw, activeFilialId]);
   const colaboradores = useMemo(() => filterByFilial(colaboradoresRaw), [colaboradoresRaw, activeFilialId]);
-  const financeCommissionEntries = useMemo(() => filterByFilial(financeCommissionEntriesRaw), [financeCommissionEntriesRaw, activeFilialId]);
 
   const addStudent = async (student: any) => {
     const newStudent = { ...student, id: `st${Math.random().toString(36).substring(2, 9)}` };
@@ -426,7 +424,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'crm_funis' }, () => fetchFunis())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'empresa_filiais' }, () => fetchTableData('empresa_filiais', setEmpresaFiliais))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'nichos' }, () => fetchNichos())
-        .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_commission_entries' }, () => fetchTableData('finance_commission_entries', setFinanceCommissionEntries))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_categories' }, () => fetchTableData('finance_categories', setFinanceCategories))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'scheduled_exports' }, () => fetchTableData('scheduled_exports', setScheduledExports))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'education_content' }, () => fetchTableData('education_content', setEducationContent))
@@ -454,7 +451,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               notifRes, mktCampRes, mktContRes, mktLpRes, settingsRes,
               productsRes, proposalsRes, proposalItemsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
               clienteBaseRes, reunioesRes, financialGoalsRes, funisRes, filiaisRes,
-              commissionEntriesRes, financeCategoriesRes, scheduledExportsRes, educationContentRes,
+              financeCategoriesRes, scheduledExportsRes, educationContentRes,
               marketingFormsRes, nichosRes
             ] = await Promise.all([
               supabase.from('leads').select('*').eq('tenant_id', tenantId),
@@ -487,7 +484,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('financial_goals').select('*').eq('tenant_id', tenantId),
               supabase.from('crm_funis').select('*').eq('tenant_id', tenantId),
               supabase.from('empresa_filiais').select('*').eq('tenant_id', tenantId),
-              supabase.from('finance_commission_entries').select('*').eq('tenant_id', tenantId),
               supabase.from('finance_categories').select('*').eq('tenant_id', tenantId),
               supabase.from('scheduled_exports').select('*').eq('tenant_id', tenantId),
               supabase.from('education_content').select('*').eq('tenant_id', tenantId),
@@ -532,7 +528,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!funisRes.error && funisRes.data) setFunis(funisRes.data.map(rowToFunil));
             if (!filiaisRes.error && filiaisRes.data) setEmpresaFiliais(filiaisRes.data);
             if (!nichosRes.error && nichosRes.data) setNichos(nichosRes.data);
-            if (!commissionEntriesRes.error && commissionEntriesRes.data) setFinanceCommissionEntries(commissionEntriesRes.data);
             if (!financeCategoriesRes.error && financeCategoriesRes.data) setFinanceCategories(financeCategoriesRes.data);
             if (!scheduledExportsRes.error && scheduledExportsRes.data) setScheduledExports(scheduledExportsRes.data);
             if (!educationContentRes.error && educationContentRes.data) setEducationContent(educationContentRes.data);
@@ -1186,7 +1181,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const cargoCrud = createCrudHelper('cargos', setCargos);
   const empresaFilialCrud = createCrudHelper('empresa_filiais', setEmpresaFiliais);
   const nichoCrud = createCrudHelper('nichos', setNichos);
-  const commissionEntryCrud = createCrudHelper('finance_commission_entries', setFinanceCommissionEntries, true);
   const financeCategoryCrud = createCrudHelper('finance_categories', setFinanceCategories);
   const scheduledExportCrud = createCrudHelper('scheduled_exports', setScheduledExports);
   const educationContentCrud = createCrudHelper('education_content', setEducationContent);
@@ -1323,10 +1317,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addNicho: nichoCrud.add,
       updateNicho: nichoCrud.update,
       deleteNicho: nichoCrud.del,
-      financeCommissionEntries,
-      addFinanceCommissionEntry: commissionEntryCrud.add,
-      updateFinanceCommissionEntry: commissionEntryCrud.update,
-      deleteFinanceCommissionEntry: commissionEntryCrud.del,
       financeCategories,
       addFinanceCategory: financeCategoryCrud.add,
       updateFinanceCategory: financeCategoryCrud.update,

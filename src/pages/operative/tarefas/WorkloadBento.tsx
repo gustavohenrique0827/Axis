@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Card } from "../../../components/ui/card";
 import { Button } from "../../../components/ui/button";
 import { Badge } from "../../../components/ui/badge";
@@ -6,16 +6,53 @@ import { Target, Zap, TrendingUp, CheckCircle2, Clock } from "lucide-react";
 import { BarChart, Bar, ResponsiveContainer, XAxis, Tooltip, Cell } from 'recharts';
 import { motion, AnimatePresence } from "motion/react";
 import { Task } from "../../../types";
+import { useData } from "../../../contexts/DataContext";
 
-const WORKLOAD_DATA: any[] = [];
+const PRIORITY_COLORS: Record<string, string> = {
+  Alta: "#f43f5e",
+  Média: "#f59e0b",
+  Baixa: "#10b981",
+};
 
 interface WorkloadBentoProps {
   tasks: Task[];
   highPriorityCount: number;
+  onExpandTask: (task: Task) => void;
 }
 
-export function WorkloadBento({ tasks, highPriorityCount }: WorkloadBentoProps) {
+export function WorkloadBento({ tasks, highPriorityCount, onExpandTask }: WorkloadBentoProps) {
+  const { leads } = useData();
   const activeUrgentTask = tasks.find(t => t.priority === 'Alta' && t.status !== 'Concluída');
+
+  const workloadData = useMemo(() => {
+    const active = tasks.filter(t => t.status !== 'Concluída');
+    return (["Alta", "Média", "Baixa"] as const).map(priority => ({
+      name: priority,
+      tasks: active.filter(t => t.priority === priority).length,
+      color: PRIORITY_COLORS[priority],
+    }));
+  }, [tasks]);
+
+  const leadConversion = useMemo(() => {
+    if (leads.length === 0) return 0;
+    const fechados = leads.filter(l => l.status === "Fechado").length;
+    return Math.round((fechados / leads.length) * 1000) / 10;
+  }, [leads]);
+
+  // Aproximação: não existe `closedAt` no schema de leads, então o "tempo até
+  // fechar" real não é rastreável hoje — usamos a idade (createdAt até agora)
+  // dos leads já fechados como uma métrica honesta, não a duração exata do ciclo.
+  const avgTimeToClose = useMemo(() => {
+    const fechados = leads.filter(l => l.status === "Fechado" && l.createdAt);
+    if (fechados.length === 0) return 0;
+    const now = Date.now();
+    const totalDays = fechados.reduce((sum, l) => {
+      const created = new Date(l.createdAt as string).getTime();
+      if (isNaN(created)) return sum;
+      return sum + Math.max(0, (now - created) / (1000 * 60 * 60 * 24));
+    }, 0);
+    return Math.round(totalDays / fechados.length);
+  }, [leads]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -54,10 +91,15 @@ export function WorkloadBento({ tasks, highPriorityCount }: WorkloadBentoProps) 
                          </h4>
                          <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                               <div className="w-6 h-6 rounded-full bg-blue-500/20 border border-white/10 flex items-center justify-center text-[8px] font-black">AX</div>
+                               <div className="w-6 h-6 rounded-full bg-blue-500/20 border border-white/10 flex items-center justify-center text-[8px] font-black">SP</div>
                                <span className="text-[10px] font-black text-slate-400 uppercase">{activeUrgentTask.related}</span>
                             </div>
-                            <Button className="h-10 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-[9px] uppercase tracking-widest group-hover/task:translate-x-2 transition-transform">Expand Task</Button>
+                            <Button
+                              onClick={() => onExpandTask(activeUrgentTask)}
+                              className="h-10 px-6 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-[9px] uppercase tracking-widest group-hover/task:translate-x-2 transition-transform"
+                            >
+                              Expand Task
+                            </Button>
                          </div>
                       </motion.div>
                    ) : (
@@ -73,14 +115,14 @@ export function WorkloadBento({ tasks, highPriorityCount }: WorkloadBentoProps) 
                 <h5 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 text-center md:text-left">Workload Balance</h5>
                 <div className="h-48 w-full">
                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={WORKLOAD_DATA} layout="vertical" margin={{ left: -30 }}>
+                      <BarChart data={workloadData} layout="vertical" margin={{ left: -30 }}>
                          <XAxis type="number" hide />
                          <Tooltip cursor={false} content={({payload}) => {
                             if (!payload || !payload.length) return null;
                             return <div className="bg-black/90 border border-white/10 p-2 rounded-xl text-[9px] font-black uppercase text-white">{payload[0].payload.name}: {payload[0].value} Tasks</div>
                          }} />
                          <Bar dataKey="tasks" radius={[0, 4, 4, 0]} barSize={12}>
-                            {WORKLOAD_DATA.map((entry, index) => (
+                            {workloadData.map((entry, index) => (
                                <Cell key={`cell-${index}`} fill={entry.color} opacity={0.6} />
                             ))}
                          </Bar>
@@ -113,7 +155,7 @@ export function WorkloadBento({ tasks, highPriorityCount }: WorkloadBentoProps) 
                       </div>
                       <span className="text-[10px] font-black text-white uppercase tracking-tight">Lead Conversion</span>
                    </div>
-                   <span className="text-xs font-black text-emerald-400 font-mono">0.0%</span>
+                   <span className="text-xs font-black text-emerald-400 font-mono">{leadConversion.toFixed(1)}%</span>
                 </div>
                 <div className="flex items-center justify-between">
                    <div className="flex items-center gap-3">
@@ -121,8 +163,8 @@ export function WorkloadBento({ tasks, highPriorityCount }: WorkloadBentoProps) 
                          <Clock className="w-4 h-4" />
                       </div>
                       <span className="text-[10px] font-black text-white uppercase tracking-tight">Avg Time to Close</span>
-                      <span className="text-xs font-black text-blue-400 font-mono">0d</span>
                    </div>
+                   <span className="text-xs font-black text-blue-400 font-mono">{avgTimeToClose}d</span>
                 </div>
              </div>
           </div>

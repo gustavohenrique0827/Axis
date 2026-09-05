@@ -1,5 +1,6 @@
 import { Wand2, Building2, Search, ChevronDown, CheckCircle2, Building } from "lucide-react";
 import { toast } from "sonner";
+import { ProductType } from "../../../../types";
 
 interface ProdutoTabInfoProps {
   clientSearch: string;
@@ -17,8 +18,10 @@ interface ProdutoTabInfoProps {
   setFormSKU: (v: string) => void;
   formCategory: string;
   setFormCategory: (v: string) => void;
-  formType: "Serviço" | "Assinatura" | "Digital" | "Físico";
-  setFormType: (v: any) => void;
+  formType: ProductType;
+  setFormType: (v: ProductType) => void;
+  formTypeAttributes: Record<string, string | number | boolean>;
+  setFormTypeAttributes: React.Dispatch<React.SetStateAction<Record<string, string | number | boolean>>>;
   formIsBestSeller: boolean;
   setFormIsBestSeller: (v: boolean) => void;
   formDescription: string;
@@ -32,10 +35,16 @@ export function ProdutoTabInfo({
   clientSearch, setClientSearch, clientId, clientName, showClientDropdown, setShowClientDropdown,
   filteredClients, handleSelectClient, clearClient,
   formName, setFormName, formSKU, setFormSKU, formCategory, setFormCategory,
-  formType, setFormType, formIsBestSeller, setFormIsBestSeller,
+  formType, setFormType, formTypeAttributes, setFormTypeAttributes, formIsBestSeller, setFormIsBestSeller,
   formDescription, setFormDescription, formTags, setFormTags, categories,
 }: ProdutoTabInfoProps) {
   const inputCls = "w-full bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-[#2563EB]/40 font-medium transition-all";
+  const labelCls = "text-[10px] text-slate-400 font-extrabold uppercase block tracking-wider";
+
+  const setAttr = (key: string, value: string | number | boolean) => {
+    setFormTypeAttributes(prev => ({ ...prev, [key]: value }));
+  };
+  const attr = (key: string) => formTypeAttributes[key];
 
   return (
     <div className="space-y-4">
@@ -123,15 +132,125 @@ export function ProdutoTabInfo({
           </select>
         </div>
         <div className="space-y-1.5">
-          <label className="text-[10px] text-slate-400 font-extrabold uppercase block tracking-wider">Tipo de Item</label>
-          <select value={formType} onChange={(e) => setFormType(e.target.value as any)} className={inputCls}>
+          <label className={labelCls}>Tipo de Item</label>
+          <select value={formType} onChange={(e) => setFormType(e.target.value as ProductType)} className={inputCls}>
             <option value="Serviço">Serviço</option>
             <option value="Assinatura">Assinatura</option>
             <option value="Digital">Digital</option>
             <option value="Físico">Físico</option>
+            <option value="Imóvel">Imóvel</option>
+            <option value="Curso/Turma">Curso/Turma</option>
           </select>
         </div>
       </div>
+
+      {/* Campos que variam conforme o tipo de item escolhido acima */}
+      {formType === "Serviço" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className={labelCls}>Duração estimada</label>
+            <input type="text" value={(attr("duracao") as string) || ""} onChange={(e) => setAttr("duracao", e.target.value)}
+              placeholder="Ex: 1h, 3 sessões" className={inputCls} />
+          </div>
+          <div className="space-y-1.5">
+            <label className={labelCls}>Modalidade de atendimento</label>
+            <select value={(attr("modalidadeAtendimento") as string) || "Presencial"} onChange={(e) => setAttr("modalidadeAtendimento", e.target.value)} className={inputCls}>
+              <option value="Presencial">Presencial</option>
+              <option value="Remoto">Remoto</option>
+              <option value="Híbrido">Híbrido</option>
+            </select>
+          </div>
+        </div>
+      )}
+
+      {formType === "Assinatura" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className={labelCls}>Ciclo de cobrança</label>
+            <select value={(attr("cicloCobranca") as string) || "Mensal"} onChange={(e) => setAttr("cicloCobranca", e.target.value)} className={inputCls}>
+              <option value="Mensal">Mensal</option>
+              <option value="Trimestral">Trimestral</option>
+              <option value="Anual">Anual</option>
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className={labelCls}>Dias de trial</label>
+            <input type="number" value={(attr("diasTrial") as number) ?? ""} onChange={(e) => setAttr("diasTrial", parseInt(e.target.value) || 0)}
+              placeholder="Ex: 7" className={inputCls} />
+          </div>
+        </div>
+      )}
+
+      {formType === "Digital" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className={labelCls}>Tipo de entrega</label>
+            <select value={(attr("tipoEntrega") as string) || "Download"} onChange={(e) => setAttr("tipoEntrega", e.target.value)} className={inputCls}>
+              <option value="Download">Download</option>
+              <option value="Chave de Licença">Chave de Licença</option>
+              <option value="Acesso por Login">Acesso por Login</option>
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className={labelCls}>Link de entrega</label>
+            <input type="text" value={(attr("linkEntrega") as string) || ""} onChange={(e) => setAttr("linkEntrega", e.target.value)}
+              placeholder="https://..." className={inputCls} />
+          </div>
+        </div>
+      )}
+
+      {formType === "Imóvel" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="sm:col-span-2 space-y-1.5">
+            <label className={labelCls}>Endereço</label>
+            <input type="text" value={(attr("endereco") as string) || ""} onChange={(e) => setAttr("endereco", e.target.value)}
+              placeholder="Rua, número, bairro, cidade" className={inputCls} />
+          </div>
+          <div className="space-y-1.5">
+            <label className={labelCls}>Área (m²)</label>
+            <input type="number" value={(attr("areaM2") as number) ?? ""} onChange={(e) => setAttr("areaM2", parseFloat(e.target.value) || 0)}
+              className={inputCls} />
+          </div>
+          <div className="space-y-1.5">
+            <label className={labelCls}>Quartos</label>
+            <input type="number" value={(attr("quartos") as number) ?? ""} onChange={(e) => setAttr("quartos", parseInt(e.target.value) || 0)}
+              className={inputCls} />
+          </div>
+          <div className="sm:col-span-2 space-y-1.5">
+            <label className={labelCls}>Tipo de imóvel</label>
+            <select value={(attr("tipoImovel") as string) || "Apartamento"} onChange={(e) => setAttr("tipoImovel", e.target.value)} className={inputCls}>
+              <option value="Apartamento">Apartamento</option>
+              <option value="Casa">Casa</option>
+              <option value="Comercial">Comercial</option>
+              <option value="Terreno">Terreno</option>
+            </select>
+          </div>
+        </div>
+      )}
+
+      {formType === "Curso/Turma" && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className={labelCls}>Carga horária (horas)</label>
+            <input type="number" value={(attr("cargaHoraria") as number) ?? ""} onChange={(e) => setAttr("cargaHoraria", parseInt(e.target.value) || 0)}
+              className={inputCls} />
+          </div>
+          <div className="space-y-1.5">
+            <label className={labelCls}>Modalidade</label>
+            <select value={(attr("modalidadeCurso") as string) || "Presencial"} onChange={(e) => setAttr("modalidadeCurso", e.target.value)} className={inputCls}>
+              <option value="Presencial">Presencial</option>
+              <option value="EAD">EAD</option>
+              <option value="Híbrido">Híbrido</option>
+            </select>
+          </div>
+          <div className="sm:col-span-2 flex items-center gap-2.5 pt-1">
+            <input type="checkbox" id="checkboxCertificado" checked={!!attr("certificadoIncluso")}
+              onChange={(e) => setAttr("certificadoIncluso", e.target.checked)}
+              className="w-4 h-4 rounded border-white/20 bg-slate-900 focus:ring-[#2563EB] cursor-pointer" />
+            <label htmlFor="checkboxCertificado" className="text-xs font-bold text-white cursor-pointer select-none">Inclui certificado</label>
+          </div>
+        </div>
+      )}
 
       <div className="p-4 bg-[var(--color-surface-elevated)]/30 border border-white/5 rounded-xl flex items-center justify-between">
         <div className="space-y-0.5">

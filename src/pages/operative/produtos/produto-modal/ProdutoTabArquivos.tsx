@@ -1,33 +1,64 @@
-import { Download, FileText, Image, FileSpreadsheet, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { Download, FileText, Image, FileSpreadsheet, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
-interface Attachment {
-  name: string;
-  size: string;
-  date: string;
-  type: string;
-}
+import { supabase } from "../../../../lib/supabase";
+import { ProductAttachment } from "../../../../types";
 
 interface ProdutoTabArquivosProps {
-  attachments: Attachment[];
-  setAttachments: React.Dispatch<React.SetStateAction<Attachment[]>>;
+  attachments: ProductAttachment[];
+  setAttachments: React.Dispatch<React.SetStateAction<ProductAttachment[]>>;
+  productId: string;
+  tenantId?: string;
 }
 
-export function ProdutoTabArquivos({ attachments, setAttachments }: ProdutoTabArquivosProps) {
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files || e.target.files.length === 0) return;
-    const filesArray = (Array.from(e.target.files) as File[]).map(file => ({
-      name: file.name,
-      size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
-      date: new Date().toLocaleDateString("pt-BR"),
-      type: file.name.split('.').pop() || "unknown",
-    }));
-    setAttachments(prev => [...prev, ...filesArray]);
-    toast.success("Arquivo(s) adicionados com sucesso!");
+export function ProdutoTabArquivos({ attachments, setAttachments, productId, tenantId }: ProdutoTabArquivosProps) {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    e.target.value = "";
+    if (!files || files.length === 0 || !supabase) return;
+    if (!tenantId || !productId) {
+      toast.error("Não foi possível identificar o tenant/produto para o upload.");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const uploaded: ProductAttachment[] = [];
+      for (const file of Array.from(files)) {
+        const path = `${tenantId}/${productId}/${Date.now()}-${file.name}`;
+        const { error: uploadError } = await supabase.storage.from("products").upload(path, file, { upsert: true });
+        if (uploadError) throw uploadError;
+        const { data } = supabase.storage.from("products").getPublicUrl(path);
+        uploaded.push({
+          name: file.name,
+          size: (file.size / (1024 * 1024)).toFixed(2) + " MB",
+          date: new Date().toLocaleDateString("pt-BR"),
+          type: file.name.split('.').pop() || "unknown",
+          url: data.publicUrl,
+          path,
+        });
+      }
+      setAttachments(prev => [...prev, ...uploaded]);
+      toast.success("Arquivo(s) adicionados com sucesso!");
+    } catch (err: any) {
+      toast.error(`Falha ao enviar arquivo: ${err.message || err}`);
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const removeAttachment = (idx: number) => {
+  const removeAttachment = async (idx: number) => {
+    const file = attachments[idx];
     setAttachments(prev => prev.filter((_, i) => i !== idx));
+    if (supabase && file.path) {
+      try {
+        await supabase.storage.from("products").remove([file.path]);
+      } catch (err) {
+        console.error("Falha ao remover arquivo do Storage:", err);
+      }
+    }
     toast.info("Anexo removido.");
   };
 
@@ -42,11 +73,11 @@ export function ProdutoTabArquivos({ attachments, setAttachments }: ProdutoTabAr
       </div>
 
       <div className="relative border border-dashed border-[#2563EB]/20 bg-[var(--color-surface-elevated)]/30 hover:bg-[var(--color-surface-elevated)]/50 rounded-2xl p-6 flex flex-col items-center justify-center text-center transition-all cursor-pointer group">
-        <input type="file" multiple onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
+        <input type="file" multiple onChange={handleFileChange} disabled={uploading} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-wait" />
         <div className="w-12 h-12 rounded-full bg-[#2563EB]/10 flex items-center justify-center text-[#2563EB] mb-3 group-hover:scale-110 transition-transform">
-          <Download className="w-6 h-6" />
+          {uploading ? <Loader2 className="w-6 h-6 animate-spin" /> : <Download className="w-6 h-6" />}
         </div>
-        <span className="text-slate-200 text-xs font-bold block">Arraste arquivos ou clique para pesquisar</span>
+        <span className="text-slate-200 text-xs font-bold block">{uploading ? "Enviando..." : "Arraste arquivos ou clique para pesquisar"}</span>
         <span className="text-[10px] text-slate-500 mt-1.5 block max-w-sm">Suporta PDF, PNG, JPG, DOCX ou XLSX de até 25MB.</span>
       </div>
 
@@ -61,7 +92,7 @@ export function ProdutoTabArquivos({ attachments, setAttachments }: ProdutoTabAr
               const isImage = ["png", "jpg", "jpeg", "gif"].includes(file.type);
               return (
                 <div key={idx} className="flex items-center justify-between p-3 bg-[var(--color-surface-elevated)] border border-white/5 rounded-xl hover:border-[#2563EB]/25 transition-all">
-                  <div className="flex items-center gap-3">
+                  <a href={file.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 min-w-0 flex-1">
                     <div className={`p-2 rounded-lg ${isPDF ? "bg-rose-500/10 text-rose-400" : isImage ? "bg-amber-500/10 text-amber-400" : "bg-blue-500/10 text-blue-400"}`}>
                       {isPDF ? <FileText className="w-4 h-4" /> : isImage ? <Image className="w-4 h-4" /> : <FileSpreadsheet className="w-4 h-4" />}
                     </div>
@@ -69,9 +100,9 @@ export function ProdutoTabArquivos({ attachments, setAttachments }: ProdutoTabAr
                       <span className="block text-xs font-bold text-white truncate max-w-[280px]">{file.name}</span>
                       <span className="text-[9px] font-mono text-slate-500 block">Tamanho: {file.size} • Adicionado em {file.date}</span>
                     </div>
-                  </div>
+                  </a>
                   <button type="button" onClick={() => removeAttachment(idx)}
-                    className="text-slate-500 hover:text-rose-400 bg-rose-500/5 hover:bg-rose-500/10 p-1.5 rounded-lg transition-all" title="Remover arquivo">
+                    className="text-slate-500 hover:text-rose-400 bg-rose-500/5 hover:bg-rose-500/10 p-1.5 rounded-lg transition-all shrink-0" title="Remover arquivo">
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
