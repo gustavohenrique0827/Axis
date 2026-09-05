@@ -60,19 +60,19 @@ const METRICS: Metric[] = [
 function ChromeWindow({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="relative">
-      <div className="absolute -inset-8 rounded-[40px] bg-gradient-to-br from-blue-500/10 via-violet-500/10 to-transparent blur-3xl" />
-      <div className="relative rounded-2xl border border-white/[0.1] bg-[#07080c] overflow-hidden shadow-2xl">
-        <div className="flex items-center gap-2 px-5 py-3.5 border-b border-white/[0.06] bg-white/[0.02]">
+      <div className="absolute -inset-8 rounded-[40px] bg-gradient-to-br from-emerald-500/10 via-teal-500/10 to-transparent blur-3xl" />
+      <div className="relative rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xl">
+        <div className="flex items-center gap-2 px-5 py-3 border-b border-slate-200 bg-slate-100/90">
           <div className="flex gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-rose-500/50" />
-            <div className="w-2.5 h-2.5 rounded-full bg-amber-500/50" />
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/50" />
+            <div className="w-2.5 h-2.5 rounded-full bg-rose-400" />
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-400" />
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
           </div>
-          <span className="ml-3 text-[11px] font-medium text-slate-500 tracking-tight" style={{ fontFamily: FONT_MONO }}>
+          <span className="ml-3 text-[11px] font-semibold text-slate-600 tracking-tight" style={{ fontFamily: FONT_MONO }}>
             {title}
           </span>
         </div>
-        <div className="font-sans p-5 sm:p-7 min-h-[340px] sm:min-h-[380px] bg-[var(--color-surface)]">{children}</div>
+        <div className="font-sans p-5 sm:p-7 min-h-[340px] sm:min-h-[380px] bg-white">{children}</div>
       </div>
     </div>
   );
@@ -100,7 +100,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
             onClick={() => setTab(t.id)}
             className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-[13px] font-bold transition-all duration-200 ${
               tab === t.id
-                ? "bg-slate-900 text-white shadow-md shadow-slate-900/20"
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-900/10"
                 : "bg-white text-slate-500 border border-slate-200 hover:border-slate-300 hover:text-slate-900"
             }`}
           >

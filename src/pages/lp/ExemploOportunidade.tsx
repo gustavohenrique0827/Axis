@@ -12,19 +12,19 @@ export function ExemploOportunidadeSection() {
       <div className="grid lg:grid-cols-2 gap-8 items-center">
         <FadeIn className="relative">
           <div className="absolute -inset-6 rounded-[36px] bg-gradient-to-br from-emerald-500/10 to-blue-500/10 blur-3xl max-w-md mx-auto" />
-          <div className="relative rounded-2xl overflow-hidden border border-white/[0.1] bg-[#0b141a] max-w-md mx-auto shadow-2xl">
-            <div className="bg-[#202c33] px-4 py-3 flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-[11px] font-bold text-white">CL</div>
+          <div className="relative rounded-2xl overflow-hidden border border-slate-200 bg-[#EFEAE2] max-w-md mx-auto shadow-lg">
+            <div className="bg-[#075E54] px-4 py-3 flex items-center gap-3 text-white">
+              <div className="w-8 h-8 rounded-full bg-emerald-800 flex items-center justify-center text-[11px] font-bold text-white">CL</div>
               <div>
-                <p className="text-sm font-semibold text-slate-100">Cliente em potencial</p>
-                <p className="text-[10px] text-slate-400">online</p>
+                <p className="text-sm font-semibold text-white">Cliente em potencial</p>
+                <p className="text-[10px] text-emerald-100">online</p>
               </div>
             </div>
-            <div className="p-4 min-h-[180px] flex flex-col justify-end gap-2" style={{ backgroundColor: "#0b141a" }}>
-              <div className="self-start max-w-[85%] bg-[#202c33] text-slate-100 text-sm rounded-xl rounded-tl-sm px-3.5 py-2.5 leading-relaxed">
+            <div className="p-4 min-h-[180px] flex flex-col justify-end gap-2 bg-[#EFEAE2]">
+              <div className="self-start max-w-[85%] bg-white text-slate-800 text-sm rounded-xl rounded-tl-sm px-3.5 py-2.5 leading-relaxed shadow-sm border border-slate-200/60">
                 Estou pensando em trocar o sistema da empresa ainda este mês. Quanto custa?
               </div>
-              <span className="self-start text-[10px] text-slate-500 pl-1">agora</span>
+              <span className="self-start text-[10px] text-slate-400 pl-1">agora</span>
             </div>
           </div>
         </FadeIn>

@@ -152,14 +152,14 @@ export function FuncionalidadesSection() {
                 onClick={() => setActive(i)}
                 className={`flex items-center justify-between gap-3 px-4 py-3.5 rounded-xl text-left transition-all duration-200 border ${
                   isSelected
-                    ? "bg-slate-900 text-white shadow-md border-slate-900"
+                    ? "bg-emerald-700 text-white shadow-md border-emerald-700"
                     : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
                 }`}
               >
                 <div className="flex items-center gap-3 min-w-0">
                   <m.icon
                     className={`w-4 h-4 shrink-0 transition-colors ${
-                      isSelected ? "text-emerald-400" : "text-slate-500"
+                      isSelected ? "text-emerald-200" : "text-slate-500"
                     }`}
                   />
                   <span className="text-[13px] font-bold truncate" style={{ fontFamily: FONT_DISPLAY }}>

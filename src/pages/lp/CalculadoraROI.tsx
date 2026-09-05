@@ -138,46 +138,56 @@ export function CalculadoraROISection({ onCta }: { onCta: () => void }) {
             </div>
           </div>
 
-          {/* Resultado do Cálculo */}
-          <div className="lg:col-span-5 flex flex-col h-full justify-between p-7 sm:p-9 rounded-3xl bg-slate-900 text-white shadow-xl relative overflow-hidden border border-slate-800">
+          {/* Resultado do Cálculo em Modo Claro */}
+          <div
+            className="lg:col-span-5 flex flex-col h-full justify-between p-7 sm:p-9 rounded-3xl bg-white text-slate-900 shadow-xl relative overflow-hidden border-2"
+            style={{ borderColor: `${theme.primary}55` }}
+          >
             {/* Glow sutil */}
             <div
-              className="absolute -top-12 -right-12 w-56 h-56 rounded-full blur-3xl opacity-30 pointer-events-none"
+              className="absolute -top-12 -right-12 w-56 h-56 rounded-full blur-3xl opacity-20 pointer-events-none"
               style={{ background: theme.primary }}
             />
 
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/10 text-slate-200 border border-white/15 mb-6">
-                <Sparkles className="w-3 h-3 text-amber-300" />
+              <div
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border mb-6"
+                style={{
+                  background: `${theme.primary}18`,
+                  borderColor: `${theme.primary}40`,
+                  color: theme.primaryDark,
+                }}
+              >
+                <Sparkles className="w-3 h-3" style={{ color: theme.primaryDark }} />
                 Receita Adicional Estimada
               </div>
 
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">
+              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
                 Potencial de recuperação mensal:
               </p>
               <div
                 className="text-4xl sm:text-5xl font-extrabold tracking-tight mb-2"
-                style={{ color: theme.primary, fontFamily: FONT_DISPLAY }}
+                style={{ color: theme.primaryDark, fontFamily: FONT_DISPLAY }}
               >
                 +{formatBRL(recoveredMonthly)}
-                <span className="text-base text-slate-400 font-medium">/mês</span>
+                <span className="text-base text-slate-500 font-medium">/mês</span>
               </div>
 
-              <p className="text-xs text-slate-400 mb-6 font-mono">
-                Ou <strong className="text-white font-bold">+{formatBRL(recoveredAnnual)}</strong> em faturamento novo ao ano com +{additionalDeals} clientes fechados todo mês.
+              <p className="text-xs text-slate-600 mb-6 font-mono">
+                Ou <strong className="text-slate-900 font-bold">+{formatBRL(recoveredAnnual)}</strong> em faturamento novo ao ano com +{additionalDeals} clientes fechados todo mês.
               </p>
 
-              <div className="space-y-2.5 pt-4 border-t border-white/10 text-xs text-slate-300">
+              <div className="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-700">
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>Primeiro contato com o lead em menos de 20 segundos</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>Rodízio inteligente direto para os vendedores disponíveis</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>Follow-up automatizado de leads que pararam de responder</span>
                 </div>
               </div>
@@ -190,7 +200,7 @@ export function CalculadoraROISection({ onCta }: { onCta: () => void }) {
               >
                 Recuperar Essa Receita Agora <ArrowRight className="w-4 h-4 ml-1" />
               </ThemedCTAButton>
-              <p className="text-[10px] text-center text-slate-400 mt-2.5">
+              <p className="text-[10px] text-center text-slate-500 mt-2.5">
                 Implantação assistida pela equipe técnica sem interromper sua operação.
               </p>
             </div>

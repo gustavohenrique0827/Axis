@@ -84,17 +84,17 @@ export function RadarOportunidadesSection() {
         </div>
 
         <FadeIn delay={0.3}>
-          <div className="group flex items-center justify-between gap-4 p-6 rounded-xl bg-slate-900 border border-slate-800 shadow-sm hover:shadow-lg transition-all duration-300">
+          <div className="group flex items-center justify-between gap-4 p-6 rounded-xl bg-emerald-50/70 border border-emerald-200/80 shadow-sm hover:shadow-md transition-all duration-300">
             <div className="flex items-center gap-4">
-              <div className="w-11 h-11 rounded-lg bg-white/10 border border-white/10 flex items-center justify-center shrink-0">
-                <BANNER.icon className="w-5 h-5 text-emerald-400" />
+              <div className="w-11 h-11 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <BANNER.icon className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white mb-0.5" style={{ fontFamily: FONT_DISPLAY }}>{BANNER.label}</h3>
-                <p className="text-[13px] text-slate-400 leading-snug hidden sm:block">{BANNER.text}</p>
+                <h3 className="text-sm font-bold text-slate-900 mb-0.5" style={{ fontFamily: FONT_DISPLAY }}>{BANNER.label}</h3>
+                <p className="text-[13px] text-slate-600 leading-snug hidden sm:block">{BANNER.text}</p>
               </div>
             </div>
-            <ArrowUpRight className="w-5 h-5 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 shrink-0" />
+            <ArrowUpRight className="w-5 h-5 text-slate-400 group-hover:text-emerald-700 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-300 shrink-0" />
           </div>
         </FadeIn>
       </div>

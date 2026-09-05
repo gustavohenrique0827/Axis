@@ -24,7 +24,7 @@ export function AxisAoVivoSection() {
   const visibleCount = reducedMotion ? EVENTS.length : active;
 
   return (
-    <Section id="axis-ao-vivo" className="bg-slate-50/70">
+    <Section id="spy-ao-vivo" className="bg-slate-50/70">
       <div className="text-center mb-14">
         <Kicker>Em operação agora</Kicker>
         <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-5">O S.P.Y. está vivo.</SectionTitle>

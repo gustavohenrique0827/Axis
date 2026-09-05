@@ -33,8 +33,8 @@ export function AutonomiaSection() {
         <FadeIn delay={0.1}>
           <GlassCard className="p-6 sm:p-7">
             <div className="flex items-center gap-2.5 mb-5 pb-5 border-b border-slate-100">
-              <div className="w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center shrink-0">
-                <Settings2 className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 border border-emerald-300 flex items-center justify-center shrink-0">
+                <Settings2 className="w-4 h-4 text-emerald-700" />
               </div>
               <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400" style={{ fontFamily: FONT_MONO }}>
                 Configuração de regras

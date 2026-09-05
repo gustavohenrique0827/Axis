@@ -88,7 +88,7 @@ export function InteligenciaSection() {
                 onClick={() => setActive(active === i ? null : i)}
                 className={`px-4 py-2.5 rounded-full border text-[13px] font-medium transition-all duration-300 hover:-translate-y-0.5 ${
                   active === i
-                    ? "bg-slate-900 border-slate-900 text-white shadow-md"
+                    ? "bg-emerald-600 border-emerald-600 text-white shadow-md"
                     : "bg-white border-slate-200 text-slate-600 shadow-sm hover:text-slate-900 hover:shadow-md"
                 }`}
                 style={{

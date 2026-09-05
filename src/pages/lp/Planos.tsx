@@ -1,5 +1,5 @@
 import {
-  Terminal,
+  Rocket,
   Send,
   Zap,
   Check,
@@ -16,7 +16,7 @@ import {
   Sparkles,
   ArrowRight,
 } from "lucide-react";
-import { Section, Kicker, FONT_DISPLAY, FONT_MONO } from "./shared";
+import { Section, FONT_DISPLAY, FONT_MONO } from "./shared";
 import { useLpTheme } from "./theme/LpThemeContext";
 
 interface PlanItem {
@@ -24,15 +24,12 @@ interface PlanItem {
   name: string;
   badgeTop?: string;
   description: string;
-  originalMonthly: string;
-  founderMonthly: string;
-  originalSetup: string;
-  founderSetup: string;
+  monthlyPrice: string;
+  setupPrice: string;
   featuresHeader: string;
   features: string[];
   ctaText: string;
-  ctaVariant: "outline" | "highlight" | "solid";
-  icon: typeof Terminal;
+  icon: typeof Rocket;
   highlight?: boolean;
 }
 
@@ -41,71 +38,64 @@ const PLANS: PlanItem[] = [
     id: "start",
     name: "START",
     description: "Para empresas que querem organizar e enxergar melhor sua operação comercial.",
-    originalMonthly: "De R$ 997/mês",
-    founderMonthly: "498,50",
-    originalSetup: "R$ 2.997",
-    founderSetup: "R$ 1.498,50",
-    featuresHeader: "INCLUI:",
+    monthlyPrice: "997",
+    setupPrice: "R$ 2.997",
+    featuresHeader: "Inclui:",
     features: [
-      "CRM comercial integrado",
-      "Gestão de leads & clientes",
-      "Pipeline comercial unificado",
+      "CRM",
+      "Gestão de leads",
+      "Pipeline comercial",
+      "Gestão de clientes",
       "Histórico de interações",
-      "Integração nativa WhatsApp",
+      "Integração WhatsApp",
       "Inteligência sobre leads",
       "Identificação de oportunidades",
-      "Análise de conversas e score",
-      "Próxima melhor ação sugerida",
+      "Análise de conversas",
+      "Score de oportunidade",
+      "Próxima melhor ação",
     ],
     ctaText: "COMEÇAR AGORA",
-    ctaVariant: "outline",
-    icon: Terminal,
+    icon: Rocket,
   },
   {
     id: "autopilot",
     name: "AUTOPILOT",
-    badgeTop: "★ MAIS ESCOLHIDO",
+    badgeTop: "☆ MAIS ESCOLHIDO",
     description: "Para empresas que querem que a inteligência comece a trabalhar as oportunidades.",
-    originalMonthly: "De R$ 1.997/mês",
-    founderMonthly: "998,50",
-    originalSetup: "R$ 4.997",
-    founderSetup: "R$ 2.498,50",
-    featuresHeader: "TUDO DO START +",
+    monthlyPrice: "1.997",
+    setupPrice: "R$ 4.997",
+    featuresHeader: "Tudo do START +",
     features: [
-      "Agentes autônomos de IA",
-      "Qualificação automática 24/7",
-      "Follow-up automático humanizado",
+      "Agentes de IA",
+      "Qualificação automática",
+      "Follow-up automático",
       "Recuperação de oportunidades",
       "Agendamento automático",
-      "Distribuição inteligente de leads",
+      "Distribuição de leads",
       "Ações comerciais automatizadas",
     ],
     ctaText: "QUERO O AUTOPILOT",
-    ctaVariant: "highlight",
     icon: Send,
     highlight: true,
   },
   {
     id: "autonomous",
     name: "AUTONOMOUS",
-    description: "Para empresas que querem transformar o S.P.Y. em parte ativa da sua operação.",
-    originalMonthly: "De R$ 3.997/mês",
-    founderMonthly: "1.998,50",
-    originalSetup: "R$ 9.997",
-    founderSetup: "R$ 4.998,50",
-    featuresHeader: "TUDO DO AUTOPILOT +",
+    description: "Para empresas que querem transformar o S.P.Y. em parte ativa da sua operação comercial.",
+    monthlyPrice: "3.997",
+    setupPrice: "R$ 9.997",
+    featuresHeader: "Tudo do AUTOPILOT +",
     features: [
       "Múltiplos agentes especializados",
-      "Envio autônomo de propostas",
-      "Negociação guiada com regras",
-      "Reativação proativa de clientes",
-      "Expansão de carteira (Upsell)",
+      "Propostas comerciais",
+      "Negociação com regras",
+      "Reativação de clientes",
+      "Expansão de carteira",
       "Operação comercial autônoma",
-      "Alta capacidade de processamento",
-      "Configurações & regras avançadas",
+      "Maior capacidade de processamento",
+      "Configurações avançadas",
     ],
     ctaText: "QUERO CONHECER",
-    ctaVariant: "solid",
     icon: Zap,
   },
 ];
@@ -122,21 +112,15 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
   const { theme, glow } = useLpTheme();
 
   return (
-    <Section id="planos" className="bg-slate-50/70" glow>
+    <Section id="planos" className="bg-slate-50/70 border-t border-slate-200" glow>
       <div className="max-w-[1360px] mx-auto relative z-10">
-        {/* Header superior com fundo claro harmonizado */}
+        {/* Header superior 100% Claro */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 mb-12 pb-6 border-b border-slate-200">
-          {/* Logo S.P.Y. à esquerda */}
+          {/* Logo S.P.Y. */}
           <div className="flex items-center gap-3">
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white text-xl shadow-md"
-              style={{
-                background:
-                  theme.id === "green"
-                    ? "linear-gradient(135deg, #15803D 0%, #22C55E 100%)"
-                    : "linear-gradient(135deg, #6366F1 0%, #7C3AED 100%)",
-                boxShadow: `0 4px 15px ${glow(0.35)}`,
-              }}
+              className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-slate-900 text-xl shadow-sm border border-slate-200"
+              style={{ background: theme.primaryLight }}
             >
               S
             </div>
@@ -150,38 +134,36 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium">
-                Sistema Operacional de Oportunidades Comerciais
+                Sistema Operacional de Oportunidades Comerciais.
               </p>
             </div>
           </div>
 
-          {/* Título e Subtítulo central */}
+          {/* Título e Subtítulo */}
           <div className="text-center max-w-2xl">
             <h2
               className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight leading-tight"
               style={{ fontFamily: FONT_DISPLAY }}
             >
-              Escolha o nível de autonomia da sua operação.
+              Escolha o nível de{" "}
+              <span
+                className="bg-clip-text text-transparent"
+                style={{ backgroundImage: theme.heroGradient }}
+              >
+                autonomia
+              </span>{" "}
+              da sua operação.
             </h2>
             <p className="text-xs sm:text-sm text-slate-600 mt-1.5 font-normal">
-              Tecnologia que encontra, entende e age sobre oportunidades de vendas.
+              Tecnologia que{" "}
+              <strong className="font-semibold text-slate-900">encontra</strong>,{" "}
+              <strong className="font-semibold text-slate-900">entende</strong> e{" "}
+              <strong className="font-semibold text-slate-900">age</strong> sobre oportunidades de vendas.
             </p>
           </div>
 
-          {/* Badge Cliente Fundador — 50% OFF à direita */}
-          <div className="shrink-0">
-            <div
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border text-xs font-bold uppercase tracking-wider shadow-sm transition-all"
-              style={{
-                borderColor: `${theme.primary}66`,
-                background: `${theme.primary}18`,
-                color: theme.primaryDark,
-              }}
-            >
-              <span className="text-base">🤝</span>
-              <span>CLIENTE FUNDADOR — 50% OFF</span>
-            </div>
-          </div>
+          {/* Espaço de equilíbrio à direita */}
+          <div className="hidden lg:block w-36" />
         </div>
 
         {/* Grid de 4 Colunas (3 Planos + 1 Créditos de Inteligência) */}
@@ -200,7 +182,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
                 style={{
                   borderColor: isHighlight ? theme.primary : undefined,
                   boxShadow: isHighlight
-                    ? `0 20px 45px -15px ${glow(0.25)}`
+                    ? `0 20px 45px -15px ${glow(0.3)}`
                     : undefined,
                 }}
               >
@@ -208,13 +190,8 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
                 {p.badgeTop && (
                   <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 z-20">
                     <span
-                      className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-md"
-                      style={{
-                        background:
-                          theme.id === "green"
-                            ? "linear-gradient(135deg, #15803D 0%, #16A34A 50%, #22C55E 100%)"
-                            : "linear-gradient(135deg, #6366F1 0%, #7C3AED 100%)",
-                      }}
+                      className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest text-slate-950 shadow-md"
+                      style={{ background: theme.primary }}
                     >
                       <Star className="w-3 h-3 fill-current" />
                       {p.badgeTop}
@@ -226,14 +203,14 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
                   {/* Ícone e Nome do Plano */}
                   <div className="flex items-center gap-3 mb-3">
                     <div
-                      className="w-9 h-9 rounded-xl flex items-center justify-center border shrink-0"
+                      className="w-10 h-10 rounded-xl flex items-center justify-center border shrink-0"
                       style={{
                         background: `${theme.primary}18`,
                         borderColor: `${theme.primary}33`,
                         color: theme.primaryDark,
                       }}
                     >
-                      <p.icon className="w-4 h-4" />
+                      <p.icon className="w-5 h-5" />
                     </div>
                     <h3
                       className="text-lg font-black text-slate-900 tracking-wider uppercase"
@@ -249,48 +226,27 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
 
                   {/* Bloco de Preços */}
                   <div className="mb-4 pb-4 border-b border-slate-100">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="text-xs text-slate-400 line-through font-medium">
-                        {p.originalMonthly}
-                      </span>
-                      <span
-                        className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border"
-                        style={{
-                          background: `${theme.primary}18`,
-                          borderColor: `${theme.primary}40`,
-                          color: theme.primaryDark,
-                        }}
-                      >
-                        50% OFF FUNDADOR
-                      </span>
-                    </div>
-
                     <div className="flex items-baseline gap-1.5">
                       <span className="text-xs font-bold text-slate-400">R$</span>
                       <span
-                        className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight"
+                        className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight"
                         style={{ fontFamily: FONT_DISPLAY }}
                       >
-                        {p.founderMonthly}
+                        {p.monthlyPrice}
                       </span>
                       <span className="text-xs font-semibold text-slate-400">/mês</span>
                     </div>
 
-                    <div className="flex items-center justify-between text-[11px] text-slate-500 mt-2 font-mono">
-                      <span>
-                        Implantação:{" "}
-                        <span className="line-through text-slate-400">{p.originalSetup}</span>
-                      </span>
-                      <span className="font-bold ml-1" style={{ color: theme.primaryDark }}>
-                        {p.founderSetup}
-                      </span>
+                    <div className="text-[11px] text-slate-500 mt-2 font-mono">
+                      <span>Implantação: </span>
+                      <span className="font-bold text-slate-900">{p.setupPrice}</span>
                     </div>
                   </div>
 
                   {/* Lista de Recursos */}
                   <div className="space-y-2.5 mb-6">
                     <p
-                      className="text-[10px] font-black uppercase tracking-widest mb-3"
+                      className="text-[11px] font-black uppercase tracking-widest mb-3"
                       style={{ color: theme.primaryDark }}
                     >
                       {p.featuresHeader}
@@ -300,47 +256,37 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
                         <div
                           className="w-4 h-4 rounded-full flex items-center justify-center shrink-0 mt-0.5"
                           style={{
-                            background: `${theme.primary}20`,
+                            background: `${theme.primary}25`,
                             color: theme.primaryDark,
                           }}
                         >
                           <Check className="w-2.5 h-2.5 stroke-[3]" />
                         </div>
-                        <span className="leading-tight">{feat}</span>
+                        <span className="leading-tight font-medium">{feat}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Botão CTA do Card */}
+                {/* Botão CTA */}
                 <div className="mt-4 pt-2">
-                  {isHighlight ? (
-                    <button
-                      onClick={onCta}
-                      className="w-full py-3.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 shadow-md hover:shadow-lg flex items-center justify-center gap-2 text-slate-950"
-                      style={{
-                        background: theme.primary,
-                        boxShadow: `0 8px 20px -4px ${glow(0.4)}`,
-                      }}
-                    >
-                      <span>{p.ctaText}</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  ) : (
-                    <button
-                      onClick={onCta}
-                      className="w-full py-3.5 px-4 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 border border-slate-300 hover:border-slate-400 bg-slate-50 hover:bg-slate-100 text-slate-800 flex items-center justify-center gap-2"
-                    >
-                      <span>{p.ctaText}</span>
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  )}
+                  <button
+                    onClick={onCta}
+                    className="w-full py-3.5 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center gap-2"
+                    style={{
+                      background: isHighlight ? theme.primary : "#0F172A",
+                      color: isHighlight ? "#0F172A" : "#FFFFFF",
+                    }}
+                  >
+                    <span>{p.ctaText}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
             );
           })}
 
-          {/* CARD 4: CRÉDITOS DE INTELIGÊNCIA & CONTROLE TOTAL */}
+          {/* CARD 4: CRÉDITOS DE INTELIGÊNCIA S.P.Y. */}
           <div className="relative rounded-3xl flex flex-col justify-between p-6 sm:p-7 bg-white border border-slate-200/90 shadow-sm hover:shadow-md transition-all">
             <div>
               {/* Header do Card */}
@@ -359,12 +305,12 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
                   className="text-xs sm:text-sm font-black text-slate-900 tracking-wider uppercase"
                   style={{ fontFamily: FONT_DISPLAY }}
                 >
-                  CRÉDITOS DE INTELIGÊNCIA
+                  CRÉDITOS DE INTELIGÊNCIA S.P.Y.
                 </h3>
               </div>
 
-              <p className="text-xs text-slate-500 mb-4">
-                Consumo utilizado pelos agentes do S.P.Y.
+              <p className="text-xs text-slate-500 mb-4 leading-relaxed">
+                Unidade comercial de consumo de inteligência utilizada pelos agentes do S.P.Y.
               </p>
 
               {/* Tabela de Valores de Créditos */}
@@ -381,11 +327,16 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
               </div>
 
               {/* Subtexto explicativo */}
-              <div className="flex items-start gap-2 text-[11px] text-slate-500 leading-relaxed mb-6">
-                <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: theme.primaryDark }} />
-                <span>
-                  Consumo adicional conforme uso. Conecte sua chave ou recarregue quando precisar.
-                </span>
+              <div className="space-y-1 text-[11px] text-slate-500 leading-relaxed mb-6">
+                <div className="flex items-start gap-1.5">
+                  <Info className="w-3.5 h-3.5 shrink-0 mt-0.5" style={{ color: theme.primaryDark }} />
+                  <span className="font-semibold text-slate-700">
+                    Consumo adicional conforme utilização.
+                  </span>
+                </div>
+                <p className="pl-5 text-[10px] text-slate-400">
+                  Os créditos representam uma unidade comercial de consumo de inteligência. O processamento real pode utilizar diferentes modelos e provedores.
+                </p>
               </div>
 
               {/* Linha Divisória */}
@@ -407,7 +358,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
                     <div>
                       <h4 className="font-bold text-slate-800 leading-snug">Use sua própria API</h4>
                       <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                        Conecte sua conta OpenAI, Gemini ou outro provedor compatível.
+                        Conecte sua conta da OpenAI, Google Gemini ou outro provedor compatível.
                       </p>
                     </div>
                   </div>
@@ -423,7 +374,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
                     <div>
                       <h4 className="font-bold text-slate-800 leading-snug">Defina suas regras</h4>
                       <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                        Decida como e quando a IA age na sua operação.
+                        Você decide como a inteligência deve agir dentro da sua operação.
                       </p>
                     </div>
                   </div>
@@ -439,7 +390,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
                     <div>
                       <h4 className="font-bold text-slate-800 leading-snug">Pague pelo que utiliza</h4>
                       <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
-                        Mais previsibilidade, transparência e controle de custos.
+                        Mais transparência, previsibilidade e controle do seu investimento.
                       </p>
                     </div>
                   </div>
@@ -477,7 +428,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-900">Sem fidelidade</h4>
-                <p className="text-[11px] text-slate-500">Cancele quando quiser</p>
+                <p className="text-[11px] text-slate-500">Cancele quando quiser.</p>
               </div>
             </div>
 
@@ -493,8 +444,8 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
                 <ShieldCheck className="w-4 h-4" />
               </div>
               <div>
-                <h4 className="text-xs font-bold text-slate-900">Segurança & privacidade</h4>
-                <p className="text-[11px] text-slate-500">Dados criptografados</p>
+                <h4 className="text-xs font-bold text-slate-900">Segurança e privacidade</h4>
+                <p className="text-[11px] text-slate-500">Seus dados protegidos com criptografia e boas práticas.</p>
               </div>
             </div>
 
@@ -511,7 +462,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-900">Suporte especializado</h4>
-                <p className="text-[11px] text-slate-500">Acompanhamento próximo</p>
+                <p className="text-[11px] text-slate-500">Acompanhamento próximo para garantir o sucesso da operação.</p>
               </div>
             </div>
 
@@ -528,7 +479,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
               </div>
               <div>
                 <h4 className="text-xs font-bold text-slate-900">Evolução constante</h4>
-                <p className="text-[11px] text-slate-500">Novos agentes contínuos</p>
+                <p className="text-[11px] text-slate-500">Novas funcionalidades e agentes são liberados continuamente.</p>
               </div>
             </div>
           </div>
@@ -542,7 +493,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
               ENCONTRA. ENTENDE. AGE. CONVERTE.
             </p>
             <p className="text-[11px] text-slate-500 mt-0.5">
-              S.P.Y.: O sistema operacional de oportunidades comerciais.
+              S.P.Y. O sistema operacional de oportunidades comerciais.
             </p>
           </div>
         </div>
