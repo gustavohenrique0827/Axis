@@ -49,7 +49,6 @@ import {
   ConfigEmpresaPermissoes,
   ConfigEmpresaCargos,
   ConfigNichos,
-  ConfigTema,
   ConfigCRMFunis,
   ConfigCRMOrigens,
   ConfigCRMProdutos,
@@ -116,6 +115,10 @@ import { ConfirmDialogHost } from "./components/ui/confirm-dialog";
 function AppContent() {
   const location = useLocation();
   const isAppRoute = location.pathname.startsWith('/app') || location.pathname.startsWith('/login');
+  // /app/* já renderiza <Layout>, que monta seu próprio <Toaster> com o estilo
+  // certo do S.P.Y. — montar outro aqui também duplicaria toda notificação.
+  // /login não passa pelo Layout, então precisa do seu próprio.
+  const isLoginRoute = location.pathname.startsWith('/login');
   const { theme } = useData();
 
   useEffect(() => {
@@ -126,7 +129,7 @@ function AppContent() {
 
   return (
     <>
-      {isAppRoute && <Toaster theme={theme} position="bottom-right" richColors closeButton />}
+      {isLoginRoute && <Toaster theme={theme} position="bottom-right" richColors closeButton />}
       {isAppRoute && <ConfirmDialogHost />}
       <Routes>
         <Route path="/" element={<Navigate to="/app" replace />} />
@@ -225,7 +228,6 @@ function AppContent() {
             <Route path="empresa/modulos" element={<ConfigModulosDemos />} />
             <Route path="empresa/filiais" element={<ConfigEmpresaFiliais />} />
             <Route path="empresa/nichos" element={<ConfigNichos />} />
-            <Route path="empresa/tema" element={<ConfigTema />} />
             <Route path="empresa/equipe" element={<ConfigEmpresaEquipe />} />
             <Route path="empresa/permissoes" element={<ConfigEmpresaPermissoes />} />
             <Route path="empresa/cargos" element={<ConfigEmpresaCargos />} />
