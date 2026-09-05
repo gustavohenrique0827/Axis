@@ -118,12 +118,10 @@ export default function Login() {
             <h1 className="text-5xl font-black leading-tight mb-4" style={{ color: "#F8FAFC" }}>
               Operação{" "}
               <span
-                className="transition-all duration-700"
+                className="transition-colors duration-700 font-black"
                 style={{
-                  background: `linear-gradient(135deg, ${primaryColor}, ${hexAlpha(primaryColor, 0.7)})`,
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
+                  color: primaryColor,
+                  textShadow: `0 0 32px ${hexAlpha(primaryColor, 0.4)}`,
                 }}
               >
                 inteligente,
