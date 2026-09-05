@@ -463,18 +463,11 @@ app.get("/api/auth/tenant-theme", async (req, res) => {
       }
     }
 
-    // 3. Fallback: retorna lista de tenants ativos
-    const { data: list } = await client
-      .from("tenants")
-      .select("id, name, primary_color")
-      .eq("status", "Active")
-      .order("name");
-
+    // 3. Fallback: nenhum tenant identificado
     return res.json({
       primaryColor: null,
       tenantName: "",
       tenantId: "",
-      tenants: list || [],
     });
   } catch (err: any) {
     return res.status(500).json({ error: err.message });

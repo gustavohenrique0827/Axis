@@ -22,10 +22,6 @@ interface LoginTheme {
   resolving: boolean;
   /** Chama quando o e-mail muda para re-resolver a cor */
   resolveFromEmail: (email: string) => void;
-  /** Lista de empresas ativas para seleção */
-  tenants: TenantOption[];
-  /** Seleciona manualmente uma empresa */
-  selectTenant: (tenant: TenantOption) => void;
 }
 
 /** Tenta extrair palavras-chave do e-mail (username e domínio) */
@@ -242,8 +238,6 @@ export function useLoginTheme(): LoginTheme {
     tenantName,
     resolving,
     resolveFromEmail,
-    tenants,
-    selectTenant,
   };
 }
 
