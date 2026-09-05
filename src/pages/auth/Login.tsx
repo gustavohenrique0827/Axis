@@ -1,29 +1,40 @@
 import { LoginForm } from "./components/LoginForm";
 import { Logo } from "../../components/ui/Logo";
 import { Shield, Zap, Users, BarChart3 } from "lucide-react";
+import { useLoginTheme } from "./hooks/useLoginTheme";
 
 const features = [
-  { icon: Shield, label: "Segurança Corporativa", desc: "Autenticação em múltiplos fatores e criptografia de ponta." },
-  { icon: Zap,    label: "Aurora IA Integrada",  desc: "Inteligência artificial nativa em cada módulo da plataforma." },
-  { icon: Users,  label: "Multi-tenant",          desc: "Gerencie equipes, clientes e parceiros em um só lugar." },
-  { icon: BarChart3, label: "Analytics em tempo real", desc: "Dashboards vivos com dados atualizados ao segundo." },
+  { icon: Shield,    label: "Segurança Corporativa",    desc: "Autenticação em múltiplos fatores e criptografia de ponta." },
+  { icon: Zap,       label: "Aurora IA Integrada",      desc: "Inteligência artificial nativa em cada módulo da plataforma." },
+  { icon: Users,     label: "Multi-tenant",              desc: "Gerencie equipes, clientes e parceiros em um só lugar." },
+  { icon: BarChart3, label: "Analytics em tempo real",  desc: "Dashboards vivos com dados atualizados ao segundo." },
 ];
 
+/** Dado um hex, gera uma versão com opacidade para uso em rgba() sem instalar libs */
+function hexAlpha(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 export default function Login() {
+  const { primaryColor, resolveFromEmail } = useLoginTheme();
+
   return (
     <div className="min-h-screen flex overflow-hidden" style={{ background: "#070D1A" }}>
 
       {/* ── Painel esquerdo — branding animado ── */}
       <div className="hidden lg:flex flex-col flex-1 relative overflow-hidden">
 
-        {/* Fundo: gradiente radial + noise */}
+        {/* Fundo: gradiente radial usando a cor primária do tenant */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 transition-all duration-700"
           style={{
             background:
-              "radial-gradient(ellipse 80% 60% at 30% 40%, rgba(37,99,235,0.28) 0%, transparent 70%), " +
-              "radial-gradient(ellipse 60% 50% at 80% 80%, rgba(6,182,212,0.18) 0%, transparent 70%), " +
-              "#070D1A",
+              `radial-gradient(ellipse 80% 60% at 30% 40%, ${hexAlpha(primaryColor, 0.28)} 0%, transparent 70%), ` +
+              `radial-gradient(ellipse 60% 50% at 80% 80%, ${hexAlpha(primaryColor, 0.12)} 0%, transparent 70%), ` +
+              `#070D1A`,
           }}
         />
 
@@ -31,37 +42,33 @@ export default function Login() {
         <div
           className="absolute inset-0 opacity-[0.07]"
           style={{
-            backgroundImage:
-              "radial-gradient(circle, #ffffff 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)",
             backgroundSize: "36px 36px",
           }}
         />
 
-        {/* Orbs animados */}
+        {/* Orbs animados — cor dinâmica do tenant */}
         <div
-          className="absolute w-96 h-96 rounded-full opacity-20 blur-3xl"
+          className="absolute w-96 h-96 rounded-full opacity-20 blur-3xl transition-colors duration-700"
           style={{
-            background: "radial-gradient(circle, #2563EB, transparent 70%)",
-            top: "10%",
-            left: "5%",
+            background: `radial-gradient(circle, ${primaryColor}, transparent 70%)`,
+            top: "10%", left: "5%",
             animation: "float1 8s ease-in-out infinite",
           }}
         />
         <div
-          className="absolute w-72 h-72 rounded-full opacity-15 blur-3xl"
+          className="absolute w-72 h-72 rounded-full opacity-15 blur-3xl transition-colors duration-700"
           style={{
-            background: "radial-gradient(circle, #06B6D4, transparent 70%)",
-            bottom: "15%",
-            right: "10%",
+            background: `radial-gradient(circle, ${hexAlpha(primaryColor, 0.7)}, transparent 70%)`,
+            bottom: "15%", right: "10%",
             animation: "float2 11s ease-in-out infinite",
           }}
         />
         <div
-          className="absolute w-48 h-48 rounded-full opacity-10 blur-2xl"
+          className="absolute w-48 h-48 rounded-full opacity-10 blur-2xl transition-colors duration-700"
           style={{
-            background: "radial-gradient(circle, #7C3AED, transparent 70%)",
-            top: "55%",
-            left: "40%",
+            background: `radial-gradient(circle, ${hexAlpha(primaryColor, 0.5)}, transparent 70%)`,
+            top: "55%", left: "40%",
             animation: "float3 14s ease-in-out infinite",
           }}
         />
@@ -72,19 +79,19 @@ export default function Login() {
           {/* Logo topo */}
           <div className="flex items-center gap-3">
             <div
-              className="rounded-xl p-2.5 shadow-lg"
+              className="rounded-xl p-2.5 shadow-lg transition-all duration-700"
               style={{
                 background: "rgba(255,255,255,0.06)",
                 backdropFilter: "blur(12px)",
                 border: "1px solid rgba(255,255,255,0.1)",
-                boxShadow: "0 0 32px rgba(37,99,235,0.3)",
+                boxShadow: `0 0 32px ${hexAlpha(primaryColor, 0.3)}`,
               }}
             >
-              <Logo variant="icon" size={32} color="blue" />
+              <Logo variant="icon" size={32} color={primaryColor} />
             </div>
             <span
-              className="font-black tracking-[0.14em] text-xl"
-              style={{ color: "#2563EB", textShadow: "0 0 20px rgba(37,99,235,0.5)" }}
+              className="font-black tracking-[0.14em] text-xl transition-colors duration-700"
+              style={{ color: primaryColor, textShadow: `0 0 20px ${hexAlpha(primaryColor, 0.5)}` }}
             >
               S.P.Y.
             </span>
@@ -93,22 +100,27 @@ export default function Login() {
           {/* Headline */}
           <div className="mt-auto mb-10">
             <div
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold mb-6 transition-all duration-700"
               style={{
-                background: "rgba(37,99,235,0.15)",
-                border: "1px solid rgba(37,99,235,0.35)",
-                color: "#60A5FA",
+                background: hexAlpha(primaryColor, 0.15),
+                border: `1px solid ${hexAlpha(primaryColor, 0.35)}`,
+                color: primaryColor,
+                filter: "brightness(1.4)",
               }}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-pulse inline-block" />
+              <span
+                className="w-1.5 h-1.5 rounded-full animate-pulse inline-block"
+                style={{ background: primaryColor }}
+              />
               Plataforma Operacional Inteligente
             </div>
 
             <h1 className="text-5xl font-black leading-tight mb-4" style={{ color: "#F8FAFC" }}>
               Operação{" "}
               <span
+                className="transition-all duration-700"
                 style={{
-                  background: "linear-gradient(135deg, #2563EB, #06B6D4)",
+                  background: `linear-gradient(135deg, ${primaryColor}, ${hexAlpha(primaryColor, 0.7)})`,
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
@@ -130,7 +142,7 @@ export default function Login() {
             {features.map(({ icon: Icon, label, desc }) => (
               <div
                 key={label}
-                className="rounded-xl p-4 transition-all duration-300 hover:scale-[1.02] cursor-default group"
+                className="rounded-xl p-4 transition-all duration-300 hover:scale-[1.02] cursor-default"
                 style={{
                   background: "rgba(255,255,255,0.04)",
                   border: "1px solid rgba(255,255,255,0.07)",
@@ -138,10 +150,13 @@ export default function Login() {
                 }}
               >
                 <div
-                  className="w-8 h-8 rounded-lg flex items-center justify-center mb-3"
-                  style={{ background: "rgba(37,99,235,0.2)", border: "1px solid rgba(37,99,235,0.3)" }}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center mb-3 transition-all duration-700"
+                  style={{
+                    background: hexAlpha(primaryColor, 0.2),
+                    border: `1px solid ${hexAlpha(primaryColor, 0.3)}`,
+                  }}
                 >
-                  <Icon className="w-4 h-4" style={{ color: "#60A5FA" }} />
+                  <Icon className="w-4 h-4 transition-colors duration-700" style={{ color: primaryColor, filter: "brightness(1.4)" }} />
                 </div>
                 <p className="text-xs font-semibold mb-1" style={{ color: "#E2E8F0" }}>{label}</p>
                 <p className="text-[11px] leading-relaxed" style={{ color: "#64748B" }}>{desc}</p>
@@ -149,7 +164,6 @@ export default function Login() {
             ))}
           </div>
 
-          {/* Rodapé branding */}
           <p className="text-[11px]" style={{ color: "#334155" }}>
             © 2026 S.P.Y. Platform · Todos os direitos reservados
           </p>
@@ -165,20 +179,23 @@ export default function Login() {
           borderLeft: "1px solid rgba(255,255,255,0.07)",
         }}
       >
-        {/* Subtle top-left glow */}
+        {/* Glow no topo do painel — cor do tenant */}
         <div
-          className="absolute top-0 left-0 w-64 h-64 opacity-10 pointer-events-none"
+          className="absolute top-0 left-0 w-64 h-64 opacity-10 pointer-events-none transition-all duration-700"
           style={{
-            background: "radial-gradient(circle at top left, #2563EB, transparent 70%)",
+            background: `radial-gradient(circle at top left, ${primaryColor}, transparent 70%)`,
           }}
         />
 
         <div className="w-full max-w-sm relative z-10">
 
-          {/* Logo mobile (visível apenas em telas < lg) */}
+          {/* Logo mobile */}
           <div className="flex lg:hidden items-center gap-3 mb-10">
-            <Logo variant="icon" size={28} color="blue" />
-            <span className="font-black tracking-[0.14em] text-lg" style={{ color: "#2563EB" }}>
+            <Logo variant="icon" size={28} color={primaryColor} />
+            <span
+              className="font-black tracking-[0.14em] text-lg transition-colors duration-700"
+              style={{ color: primaryColor }}
+            >
               S.P.Y.
             </span>
           </div>
@@ -202,17 +219,16 @@ export default function Login() {
               boxShadow: "0 24px 48px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
             }}
           >
-            <LoginForm />
+            <LoginForm primaryColor={primaryColor} onEmailChange={resolveFromEmail} />
           </div>
 
-          {/* Rodapé mobile */}
           <p className="text-[11px] text-center mt-8" style={{ color: "#334155" }}>
             © 2026 S.P.Y. Platform
           </p>
         </div>
       </div>
 
-      {/* Keyframes globais para os orbs */}
+      {/* Keyframes para os orbs */}
       <style>{`
         @keyframes float1 {
           0%, 100% { transform: translate(0, 0) scale(1); }

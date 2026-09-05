@@ -5,23 +5,15 @@ import { Lock, Mail, ArrowRight, Eye, EyeOff, Loader2, KeyRound } from "lucide-r
 import { useAuth } from "../../../contexts/AuthContext";
 import { signIn, requestPasswordReset } from "../../../lib/supabase";
 import { toast } from "sonner";
+import { persistTenantTheme } from "../hooks/useLoginTheme";
+import { DEFAULT_BRAND_COLOR } from "../../../lib/theme";
 
-const inputClass = `
-  w-full rounded-xl pl-10 pr-4 py-3 text-sm transition-all duration-200 outline-none
-  placeholder:text-[#334155]
-  focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/60
-`.trim();
-
-const inputStyle = {
-  background: "rgba(255,255,255,0.05)",
-  border: "1px solid rgba(255,255,255,0.1)",
-  color: "#E2E8F0",
-};
-
-const inputFocusStyle = {
-  background: "rgba(37,99,235,0.08)",
-  borderColor: "rgba(37,99,235,0.5)",
-};
+interface LoginFormProps {
+  /** Cor primária do tenant (resolvida pelo useLoginTheme) */
+  primaryColor?: string;
+  /** Chamado a cada mudança de e-mail para re-resolver a cor do tenant */
+  onEmailChange?: (email: string) => void;
+}
 
 function FieldInput({
   id,
@@ -31,6 +23,7 @@ function FieldInput({
   placeholder,
   icon: Icon,
   rightSlot,
+  primaryColor,
 }: {
   id: string;
   type: string;
@@ -39,13 +32,20 @@ function FieldInput({
   placeholder: string;
   icon: React.ElementType;
   rightSlot?: React.ReactNode;
+  primaryColor: string;
 }) {
   const [focused, setFocused] = useState(false);
+
+  const r = parseInt(primaryColor.slice(1, 3), 16);
+  const g = parseInt(primaryColor.slice(3, 5), 16);
+  const b = parseInt(primaryColor.slice(5, 7), 16);
+  const alpha = (a: number) => `rgba(${r},${g},${b},${a})`;
+
   return (
     <div className="relative">
       <Icon
-        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-        style={{ color: focused ? "#60A5FA" : "#475569", transition: "color 0.2s" }}
+        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none transition-colors duration-200"
+        style={{ color: focused ? primaryColor : "#475569" }}
       />
       <input
         id={id}
@@ -56,15 +56,20 @@ function FieldInput({
         autoComplete={type === "password" ? "current-password" : "email"}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
-        className={inputClass}
-        style={focused ? { ...inputStyle, ...inputFocusStyle } : inputStyle}
+        className="w-full rounded-xl pl-10 pr-4 py-3 text-sm outline-none placeholder:text-[#334155] transition-all duration-200"
+        style={{
+          background: focused ? alpha(0.08) : "rgba(255,255,255,0.05)",
+          border: `1px solid ${focused ? alpha(0.5) : "rgba(255,255,255,0.1)"}`,
+          color: "#E2E8F0",
+          boxShadow: focused ? `0 0 0 3px ${alpha(0.15)}` : "none",
+        }}
       />
       {rightSlot}
     </div>
   );
 }
 
-export function LoginForm() {
+export function LoginForm({ primaryColor = DEFAULT_BRAND_COLOR, onEmailChange }: LoginFormProps) {
   const [email, setEmail]                   = useState("");
   const [password, setPassword]             = useState("");
   const [showPassword, setShowPassword]     = useState(false);
@@ -78,6 +83,16 @@ export function LoginForm() {
   const location  = useLocation();
   const { login } = useAuth();
   const from      = location.state?.from?.pathname || "/app/dashboard";
+
+  const r = parseInt(primaryColor.slice(1, 3), 16);
+  const g = parseInt(primaryColor.slice(3, 5), 16);
+  const b = parseInt(primaryColor.slice(5, 7), 16);
+  const alpha = (a: number) => `rgba(${r},${g},${b},${a})`;
+
+  const handleEmailChange = (v: string) => {
+    setEmail(v);
+    onEmailChange?.(v);
+  };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -99,6 +114,10 @@ export function LoginForm() {
       const result = await signIn(email, password);
       if (!result.success) { setError(result.error || "Falha no login"); return; }
       login(result.user);
+      // Persiste a cor do tenant para a próxima vez que o usuário abrir a tela de login
+      if (primaryColor && primaryColor !== DEFAULT_BRAND_COLOR) {
+        persistTenantTheme(primaryColor, result.user.tenantName);
+      }
       toast.success(`Bem-vindo, ${result.user.name}!`);
       navigate(from, { replace: true });
     } catch {
@@ -114,10 +133,10 @@ export function LoginForm() {
       <form onSubmit={handleForgotPassword} className="space-y-5">
         <div className="flex items-center gap-2 mb-2">
           <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-            style={{ background: "rgba(37,99,235,0.2)", border: "1px solid rgba(37,99,235,0.3)" }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-700"
+            style={{ background: alpha(0.2), border: `1px solid ${alpha(0.3)}` }}
           >
-            <KeyRound className="w-4 h-4" style={{ color: "#60A5FA" }} />
+            <KeyRound className="w-4 h-4 transition-colors duration-700" style={{ color: primaryColor, filter: "brightness(1.4)" }} />
           </div>
           <div>
             <h3 className="text-sm font-bold" style={{ color: "#F8FAFC" }}>Redefinir senha</h3>
@@ -138,6 +157,7 @@ export function LoginForm() {
             onChange={setResetEmail}
             placeholder="admin@empresa.com"
             icon={Mail}
+            primaryColor={primaryColor}
           />
         </div>
 
@@ -146,9 +166,9 @@ export function LoginForm() {
           disabled={sendingReset || !resetEmail}
           className="w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 disabled:opacity-50"
           style={{
-            background: "linear-gradient(135deg, #2563EB, #1D4ED8)",
+            background: `linear-gradient(135deg, ${primaryColor}, ${alpha(0.8)})`,
             color: "#fff",
-            boxShadow: "0 4px 20px rgba(37,99,235,0.4)",
+            boxShadow: `0 4px 20px ${alpha(0.4)}`,
           }}
         >
           {sendingReset ? (
@@ -185,9 +205,10 @@ export function LoginForm() {
           id="login-email"
           type="email"
           value={email}
-          onChange={setEmail}
+          onChange={handleEmailChange}
           placeholder="admin@empresa.com"
           icon={Mail}
+          primaryColor={primaryColor}
         />
       </div>
 
@@ -201,9 +222,9 @@ export function LoginForm() {
             type="button"
             onClick={() => { setShowForgot(true); setResetEmail(email); }}
             className="text-xs transition-colors duration-200"
-            style={{ color: "#2563EB" }}
-            onMouseEnter={(e) => (e.currentTarget.style.color = "#60A5FA")}
-            onMouseLeave={(e) => (e.currentTarget.style.color = "#2563EB")}
+            style={{ color: primaryColor, filter: "brightness(1.3)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.filter = "brightness(1.6)")}
+            onMouseLeave={(e) => (e.currentTarget.style.filter = "brightness(1.3)")}
           >
             Esqueci a senha
           </button>
@@ -215,6 +236,7 @@ export function LoginForm() {
           onChange={setPassword}
           placeholder="••••••••"
           icon={Lock}
+          primaryColor={primaryColor}
           rightSlot={
             <button
               type="button"
@@ -252,19 +274,19 @@ export function LoginForm() {
         id="login-submit"
         type="submit"
         disabled={loading}
-        className="w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 transition-all duration-200 group disabled:opacity-60"
+        className="w-full py-3 rounded-xl text-sm font-semibold flex items-center justify-center gap-2 group transition-all duration-300 disabled:opacity-60"
         style={{
           background: loading
-            ? "rgba(37,99,235,0.5)"
-            : "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)",
+            ? alpha(0.5)
+            : `linear-gradient(135deg, ${primaryColor} 0%, ${alpha(0.85)} 100%)`,
           color: "#fff",
-          boxShadow: loading ? "none" : "0 4px 24px rgba(37,99,235,0.45)",
+          boxShadow: loading ? "none" : `0 4px 24px ${alpha(0.45)}`,
         }}
         onMouseEnter={(e) => {
-          if (!loading) e.currentTarget.style.boxShadow = "0 6px 32px rgba(37,99,235,0.6)";
+          if (!loading) e.currentTarget.style.boxShadow = `0 6px 32px ${alpha(0.6)}`;
         }}
         onMouseLeave={(e) => {
-          if (!loading) e.currentTarget.style.boxShadow = "0 4px 24px rgba(37,99,235,0.45)";
+          if (!loading) e.currentTarget.style.boxShadow = `0 4px 24px ${alpha(0.45)}`;
         }}
       >
         {loading ? (
