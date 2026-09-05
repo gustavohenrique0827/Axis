@@ -32,7 +32,7 @@ export function ExemploOportunidadeSection() {
         <FadeIn delay={0.15}>
           <GlassCard className="p-6 sm:p-7 space-y-4">
             <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-600 mb-1" style={{ fontFamily: FONT_MONO }}>
-              <Sparkles className="w-3.5 h-3.5" /> Análise do Axis
+              <Sparkles className="w-3.5 h-3.5" /> Análise do S.P.Y.
             </div>
 
             {[

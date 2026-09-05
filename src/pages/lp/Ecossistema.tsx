@@ -21,7 +21,7 @@ export function EcossistemaSection() {
   const { theme, glow } = useLpTheme();
 
   const PILLARS: Pillar[] = [
-    { icon: Boxes, name: "AXIS", text: "O centro da operação. Onde CRM, dados e processos vivem juntos.", tone: "from-slate-700 to-slate-900" },
+    { icon: Boxes, name: "S.P.Y.", text: "O centro da operação. Onde CRM, dados e processos vivem juntos.", tone: "from-slate-700 to-slate-900" },
     {
       icon: Sparkles,
       name: "AURORA",
@@ -38,7 +38,7 @@ export function EcossistemaSection() {
   return (
     <Section id="ecossistema" className="bg-slate-50/70" glow>
       <div className="text-center mb-14">
-        <Kicker>O ecossistema Axis</Kicker>
+        <Kicker>O ecossistema S.P.Y.</Kicker>
         <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-5">
           Não é uma ferramenta. É um ecossistema operacional.
         </SectionTitle>

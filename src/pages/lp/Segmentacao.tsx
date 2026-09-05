@@ -1,50 +1,74 @@
 import { useState } from "react";
-import { Building2, Sun, Stethoscope, Briefcase, GraduationCap, Smartphone, Check, ArrowRight } from "lucide-react";
-import { Section, Kicker, SectionTitle, Lede, FadeIn, FONT_DISPLAY, FONT_MONO } from "./shared";
+import { Building2, Sun, Stethoscope, Briefcase, GraduationCap, ShoppingBag, Car, Check } from "lucide-react";
+import { Section, Kicker, SectionTitle, Lede, FadeIn, FONT_DISPLAY } from "./shared";
 import { useLpTheme } from "./theme/LpThemeContext";
 
 const SEGMENTS = [
   {
-    icon: Smartphone,
-    label: "Varejo Apple & Tech",
-    tagline: "Especializado para lojistas e revendedores de iPhones.",
-    example: "Classifica aparelhos na troca, calcula margem automática e gerencia fila de espera de clientes.",
+    icon: ShoppingBag,
+    label: "Varejo & Lojas",
+    tagline: "Para comércios físicos, e-commerce e venda consultiva de produtos.",
+    example: "Catálogo ágil no WhatsApp, controle de pedidos e recuperação de vendas.",
     features: [
-      "Avaliação de seminovos na base de troca",
-      "Controle de estoque por modelo, cor e bateria",
-      "Follow-up rápido para clientes que pediram cotação",
-      "Catálogo dinâmico enviado em segundos no WhatsApp",
+      "Catálogo de produtos dinâmico enviado em segundos no WhatsApp",
+      "Follow-up rápido para clientes que pediram cotação ou orçamento",
+      "Histórico de compras e preferências de cada cliente para recompra",
+      "Integração de pedidos e controle simplificado de saída",
+    ],
+  },
+  {
+    icon: Car,
+    label: "Concessionárias",
+    tagline: "Test drives agendados, avaliação de seminovos e financiamento.",
+    example: "Atendimento imediato ao lead de anúncio e triagem de interesse em veículo.",
+    features: [
+      "Agendamento automático de test drive com lembrete no WhatsApp",
+      "Captação de dados do veículo na troca para pré-avaliação",
+      "Acompanhamento das etapas de proposta e aprovação de crédito",
+      "Distribuição por equipe de veículos novos, seminovos e pós-venda",
+    ],
+  },
+  {
+    icon: Briefcase,
+    label: "Venda Consultiva",
+    tagline: "Ciclos de venda consultivos sem perder o histórico com decisores.",
+    example: "Múltiplos contatos por empresa, propostas formais e acompanhamento de SLA.",
+    features: [
+      "Múltiplos contatos e decisores vinculados ao mesmo CNPJ",
+      "Radar de fechamento quando a proposta é visualizada pelo cliente",
+      "Controle de propostas e previsão de faturamento mensal",
+      "DRE integrado com faturas e fluxo de caixa da operação",
     ],
   },
   {
     icon: GraduationCap,
     label: "Educação & Cursos",
     tagline: "O modelo oficial utilizado pela E-EMPREENDA+.",
-    example: "Inscrição interativa em etapas, rodízio entre consultores acadêmicos e fechamento de turmas.",
+    example: "Inscrição interativa em etapas, rodízio entre consultores e fechamento.",
     features: [
       "Formulário de qualificação em 5 passos integrado",
-      "Rodízio round-robin imediato entre os consultores",
+      "Rodízio round-robin imediato entre os consultores de matrícula",
       "Recuperação de alunos que pararam na etapa de pagamento",
       "Controle de matrículas, turmas e cobrança recorrente",
     ],
   },
   {
     icon: Building2,
-    label: "Imobiliárias & Corretores",
+    label: "Imobiliárias",
     tagline: "Do primeiro interesse à chave na mão com visitas agendadas.",
-    example: "Organiza lançamentos, visitas com bloqueio de agenda e cálculo de comissões por corretor.",
+    example: "Organiza lançamentos, visitas com bloqueio de agenda e comissões.",
     features: [
       "Portfólio com link personalizado por corretor",
       "Agendamento de visitas com lembrete no WhatsApp",
-      "Gestão de propostas e aprovação de crédito",
+      "Gestão de propostas e aprovação de crédito imobiliário",
       "Contratos de locação e compra com assinatura digital",
     ],
   },
   {
     icon: Stethoscope,
     label: "Clínicas & Saúde",
-    tagline: "Redução de até 70% no no-show de consultas.",
-    example: "Confirmação automática de consultas e acolhimento imediato de novos pacientes.",
+    tagline: "Redução de até 70% no no-show de consultas e exames.",
+    example: "Confirmação automática de consultas e acolhimento imediato de pacientes.",
     features: [
       "Confirmação automática via WhatsApp com botão Sim/Não",
       "Fila de espera para encaixes de horários cancelados",
@@ -54,26 +78,14 @@ const SEGMENTS = [
   },
   {
     icon: Sun,
-    label: "Energia Solar & Engenharia",
+    label: "Energia Solar",
     tagline: "Orçamentos técnicos rápidos e acompanhamento de projetos.",
-    example: "Do recebimento da conta de luz até a instalação da usina fotovoltaica.",
+    example: "Do recebimento da conta de luz até a instalação e homologação.",
     features: [
       "Recebimento de foto da fatura de energia no WhatsApp",
-      "Cálculo automático da média de consumo e economia",
+      "Cálculo automático da média de consumo e economia estimada",
       "Etapas do funil: visita técnica, proposta, homologação e instalação",
       "Contratos com valor jurídico e parcelamento",
-    ],
-  },
-  {
-    icon: Briefcase,
-    label: "Empresas B2B & Serviços",
-    tagline: "Ciclos de venda consultivos sem perder o histórico com decisores.",
-    example: "Múltiplos contatos por empresa, propostas formais e acompanhamento de SLA.",
-    features: [
-      "Múltiplos contatos e decisores vinculados ao mesmo CNPJ",
-      "Radar de fechamento quando a proposta é aberta",
-      "Controle de propostas e previsão de faturamento mensal",
-      "DRE integrado com faturas e fluxo de caixa",
     ],
   },
 ];
@@ -97,14 +109,14 @@ export function SegmentacaoSection() {
       </div>
 
       {/* Seletor de segmentos */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 max-w-5xl mx-auto mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 max-w-6xl mx-auto mb-8">
         {SEGMENTS.map((s, i) => {
           const isSelected = selectedIdx === i;
           return (
             <button
               key={s.label}
               onClick={() => setSelectedIdx(i)}
-              className={`flex flex-col items-center justify-center gap-2 p-3.5 rounded-2xl border text-center transition-all duration-200 ${
+              className={`flex flex-col items-center justify-center gap-2 p-3 rounded-2xl border text-center transition-all duration-200 ${
                 isSelected
                   ? "bg-slate-900 text-white border-slate-900 shadow-md -translate-y-1"
                   : "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300"

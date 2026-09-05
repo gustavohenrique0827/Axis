@@ -1,7 +1,7 @@
 import { Eye, Brain, Filter, RefreshCcw, LifeBuoy, CalendarClock, Handshake, Scale, Users, CircleCheck } from "lucide-react";
 import { Section, Kicker, SectionTitle, Lede, FadeIn, BrandLine, FONT_MONO } from "./shared";
 
-const AXIS_TASKS = [
+const SPY_TASKS = [
   { icon: Eye, label: "Observa" },
   { icon: Brain, label: "Analisa" },
   { icon: Filter, label: "Qualifica" },
@@ -24,7 +24,7 @@ export function EquipeHumanaSection() {
         <Kicker>Pessoas + inteligência</Kicker>
         <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-5">Sua equipe não precisa fazer tudo.</SectionTitle>
         <Lede className="max-w-2xl mx-auto text-base sm:text-lg">
-          O Axis assume tarefas repetitivas e operacionais. Sua equipe assume negociações complexas,
+          O S.P.Y. assume tarefas repetitivas e operacionais. Sua equipe assume negociações complexas,
           relacionamentos estratégicos, decisões importantes e fechamentos que exigem intervenção humana.
         </Lede>
       </div>
@@ -32,9 +32,9 @@ export function EquipeHumanaSection() {
       <div className="grid md:grid-cols-[1.4fr_1fr] gap-6 mb-12 items-stretch">
         <FadeIn>
           <div className="h-full rounded-2xl border border-blue-200 bg-gradient-to-b from-blue-50 to-blue-50/30 p-6 sm:p-7 shadow-sm shadow-blue-500/5">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 mb-5" style={{ fontFamily: FONT_MONO }}>AXIS</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 mb-5" style={{ fontFamily: FONT_MONO }}>S.P.Y.</p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {AXIS_TASKS.map((t) => (
+              {SPY_TASKS.map((t) => (
                 <div key={t.label} className="flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-blue-100 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all duration-300">
                   <t.icon className="w-4 h-4 text-blue-600 shrink-0" />
                   <span className="text-sm font-semibold text-slate-700">{t.label}</span>

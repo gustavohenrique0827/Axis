@@ -95,7 +95,7 @@ export function Hero({
           transition={{ delay: 0.2 }}
           className="text-lg sm:text-xl text-slate-700 font-medium max-w-2xl mx-auto mb-4"
         >
-          O Axis conecta CRM, vendas, atendimento, automação e inteligência artificial em uma única
+          O S.P.Y. conecta CRM, vendas, atendimento, automação e inteligência artificial em uma única
           operação — para você entender o que está acontecendo na sua empresa e o que fazer a seguir.
         </motion.p>
 
@@ -117,12 +117,12 @@ export function Hero({
           className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6"
         >
           <ThemedCTAButton onClick={onPrimaryCta} className="w-full sm:w-auto">
-            Quero conhecer o Axis
+            Quero conhecer o S.P.Y.
             <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
           </ThemedCTAButton>
           <ThemedOutlineButton onClick={onSecondaryCta} className="w-full sm:w-auto">
             <PlayCircle className="w-4 h-4" />
-            Ver o Axis funcionando
+            Ver o S.P.Y. funcionando
           </ThemedOutlineButton>
         </motion.div>
 

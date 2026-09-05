@@ -27,7 +27,7 @@ export function AxisAoVivoSection() {
     <Section id="axis-ao-vivo" className="bg-slate-50/70">
       <div className="text-center mb-14">
         <Kicker>Em operação agora</Kicker>
-        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-5">O Axis está vivo.</SectionTitle>
+        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-5">O S.P.Y. está vivo.</SectionTitle>
         <Lede className="max-w-xl mx-auto text-base sm:text-lg">
           Ele não apenas armazena informações. Ele movimenta a sua operação, passo a passo, em tempo real.
         </Lede>

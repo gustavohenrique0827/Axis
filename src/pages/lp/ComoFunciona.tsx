@@ -33,7 +33,7 @@ export function ComoFuncionaSection() {
     <Section id="como-funciona" glow>
       <div className="text-center mb-16">
         <Kicker>Como funciona</Kicker>
-        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl">O Axis encontra, entende e age.</SectionTitle>
+        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl">O S.P.Y. encontra, entende e age.</SectionTitle>
       </div>
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">

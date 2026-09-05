@@ -73,15 +73,15 @@ export function ProblemSection() {
 
 export function NovaLogicaSection({ onCta }: { onCta: () => void }) {
   const tradicional = ["Lead", "Cadastro", "Vendedor", "Follow-up", "Venda"];
-  const axis = ["Lead", "Inteligência", "Oportunidade", "Ação", "Resultado"];
+  const spy = ["Lead", "Inteligência", "Oportunidade", "Ação", "Resultado"];
 
   return (
     <Section id="nova-logica" className="bg-slate-50/70">
       <div className="text-center mb-14">
         <Kicker>Uma lógica diferente</Kicker>
-        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-5">O Axis muda essa lógica.</SectionTitle>
+        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-5">O S.P.Y. muda essa lógica.</SectionTitle>
         <Lede className="max-w-xl mx-auto text-base sm:text-lg">
-          Em vez de apenas armazenar oportunidades, o Axis trabalha sobre elas.
+          Em vez de apenas armazenar oportunidades, o S.P.Y. trabalha sobre elas.
         </Lede>
       </div>
 
@@ -104,9 +104,9 @@ export function NovaLogicaSection({ onCta }: { onCta: () => void }) {
 
         <FadeIn delay={0.1}>
           <div className="rounded-2xl border border-blue-200 bg-gradient-to-b from-blue-50 to-white p-6 sm:p-8 h-full shadow-lg shadow-blue-500/10 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/15">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 mb-6" style={{ fontFamily: FONT_MONO }}>AXIS</p>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-blue-600 mb-6" style={{ fontFamily: FONT_MONO }}>S.P.Y.</p>
             <div className="space-y-3">
-              {axis.map((step, i, arr) => (
+              {spy.map((step, i, arr) => (
                 <div key={step}>
                   <div className="px-4 py-3 rounded-xl bg-white border border-blue-200 shadow-sm text-sm font-bold text-slate-900">
                     {step}
@@ -120,7 +120,7 @@ export function NovaLogicaSection({ onCta }: { onCta: () => void }) {
       </div>
 
       <div className="text-center max-w-xl mx-auto mt-12">
-        <BrandLine>"O CRM registra o que aconteceu.<br />O Axis ajuda você a entender o que está acontecendo e o que fazer depois."</BrandLine>
+        <BrandLine>"O CRM registra o que aconteceu.<br />O S.P.Y. ajuda você a entender o que está acontecendo e o que fazer depois."</BrandLine>
         <button
           onClick={onCta}
           className="group inline-flex items-center justify-center gap-2 mt-7 px-6 py-3.5 rounded-xl border border-slate-300 text-slate-900 text-sm font-bold hover:bg-slate-50 transition-all"

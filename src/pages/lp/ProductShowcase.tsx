@@ -85,8 +85,8 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
   return (
     <Section id="produto" glow>
       <div className="text-center mb-10">
-        <Kicker>O Axis na prática</Kicker>
-        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-5">Veja o Axis funcionando.</SectionTitle>
+        <Kicker>O S.P.Y. na prática</Kicker>
+        <SectionTitle className="text-3xl sm:text-4xl lg:text-5xl mb-5">Veja o S.P.Y. funcionando.</SectionTitle>
         <Lede className="max-w-2xl mx-auto text-base sm:text-lg">
           Pipeline, leads, clientes, inteligência e indicadores — tudo dentro do mesmo produto, sem
           precisar alternar entre planilhas, WhatsApp e ferramentas soltas.
@@ -112,7 +112,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
 
       <FadeIn key={tab} className="max-w-4xl mx-auto">
         {tab === "pipeline" && (
-          <ChromeWindow title="Axis · Pipeline Comercial">
+          <ChromeWindow title="S.P.Y. · Pipeline Comercial">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {PIPELINE_COLUMNS.map((col) => (
                 <div key={col.name} className="bg-[var(--color-surface-sunken)] rounded-[var(--radius-panel)] p-3 border border-[var(--color-border-default)]">
@@ -136,7 +136,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
         )}
 
         {tab === "leads" && (
-          <ChromeWindow title="Axis · Leads & Clientes">
+          <ChromeWindow title="S.P.Y. · Leads & Clientes">
             <div className="divide-y divide-[var(--color-border-default)]">
               {LEADS_ROWS.map((l) => (
                 <div key={l.name} className="py-3 px-2 flex items-center justify-between text-[13px] hover:bg-[var(--color-surface-sunken)] transition-colors rounded-[var(--radius-panel)]">
@@ -165,7 +165,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
         )}
 
         {tab === "aurora" && (
-          <ChromeWindow title="Axis · Aurora">
+          <ChromeWindow title="S.P.Y. · Aurora">
             <div className="space-y-4">
               {AURORA_EXCHANGES.map((ex) => (
                 <div key={ex.q}>
@@ -196,7 +196,7 @@ export function ProductShowcaseSection({ onCta }: { onCta: () => void }) {
         )}
 
         {tab === "indicadores" && (
-          <ChromeWindow title="Axis · Painel Comercial">
+          <ChromeWindow title="S.P.Y. · Painel Comercial">
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {METRICS.map((m) => (
                 <div key={m.label} className="p-4 sm:p-5 rounded-[var(--radius-panel)] bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-[var(--shadow-panel)]">

@@ -58,7 +58,7 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
         <div className="grid lg:grid-cols-[1.1fr_1fr] gap-14 items-center">
           <div className="text-center lg:text-left">
             <div className="flex items-center justify-center lg:justify-start gap-2 mb-6">
-              <PillarBadge label="Axis" tone="blue" />
+              <PillarBadge label="S.P.Y." tone="blue" />
               <PillarBadge label="Aurora" tone="emerald" />
             </div>
             <Kicker>Vamos conversar</Kicker>
@@ -90,7 +90,7 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
                     Recebemos seu pedido.
                   </h3>
                   <p className="text-sm text-slate-500 leading-relaxed max-w-sm mx-auto">
-                    Agora queremos entender melhor sua operação para mostrar onde o Axis pode gerar mais valor.
+                    Agora queremos entender melhor sua operação para mostrar onde o S.P.Y. pode gerar mais valor.
                   </p>
                 </div>
               ) : (
@@ -140,7 +140,7 @@ export const CTAFinalFormSection = forwardRef<HTMLDivElement>(function CTAFinalF
                       className="w-full mt-2 py-4 rounded-xl bg-emerald-700 text-white text-sm font-bold hover:bg-emerald-800 transition-all shadow-lg shadow-emerald-900/20 disabled:opacity-70 flex items-center justify-center gap-2"
                     >
                       {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-                      {submitting ? "Enviando..." : "Quero conhecer o Axis"}
+                      {submitting ? "Enviando..." : "Quero conhecer o S.P.Y."}
                     </button>
                   </form>
                 </>

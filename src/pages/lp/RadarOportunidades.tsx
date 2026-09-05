@@ -48,7 +48,7 @@ export function RadarOportunidadesSection() {
           em um cliente que já comprou, em uma proposta esquecida ou em uma reunião que nunca teve follow-up.
         </Lede>
         <p className="text-base sm:text-lg font-bold text-slate-900 mb-6" style={{ fontFamily: FONT_DISPLAY }}>
-          O Axis não apenas mostra dados. Ele encontra padrões.
+          O S.P.Y. não apenas mostra dados. Ele encontra padrões.
         </p>
         <FadeIn className="flex flex-wrap items-center justify-center gap-2">
           {PATTERNS.map((p) => (
@@ -100,7 +100,7 @@ export function RadarOportunidadesSection() {
       </div>
 
       <div className="text-center max-w-xl mx-auto">
-        <BrandLine>"O Axis encontra sinais e os transforma em oportunidades com contexto e próxima ação."</BrandLine>
+        <BrandLine>"O S.P.Y. encontra sinais e os transforma em oportunidades com contexto e próxima ação."</BrandLine>
       </div>
     </Section>
   );

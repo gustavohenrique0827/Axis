@@ -74,7 +74,7 @@ export function AgentesSection() {
       </div>
 
       <div className="text-center max-w-xl mx-auto">
-        <BrandLine>"O Axis não precisa substituir seus vendedores. Ele pode potencializar cada um deles."</BrandLine>
+        <BrandLine>"O S.P.Y. não precisa substituir seus vendedores. Ele pode potencializar cada um deles."</BrandLine>
       </div>
     </Section>
   );

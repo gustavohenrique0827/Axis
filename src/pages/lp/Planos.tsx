@@ -95,7 +95,7 @@ const PLANS: PlanItem[] = [
   {
     id: "autonomous",
     name: "AUTONOMOUS",
-    description: "Para empresas que querem transformar o Axis em parte ativa da sua operação.",
+    description: "Para empresas que querem transformar o S.P.Y. em parte ativa da sua operação.",
     originalMonthly: "De R$ 3.997/mês",
     founderMonthly: "1.998,50",
     originalSetup: "R$ 9.997",
@@ -149,15 +149,23 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
       <div className="max-w-[1360px] mx-auto relative z-10">
         {/* Header superior idêntico ao design original */}
         <div className="flex flex-col lg:flex-row items-center justify-between gap-6 mb-12 pb-6 border-b border-white/[0.08]">
-          {/* Logo Axis à esquerda */}
+          {/* Logo S.P.Y. à esquerda */}
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 via-violet-600 to-purple-600 flex items-center justify-center font-black text-white text-xl shadow-md shadow-indigo-950/50">
-              A
+            <div
+              className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white text-xl shadow-md"
+              style={{
+                background: theme.id === "green"
+                  ? "linear-gradient(135deg, #15803D 0%, #22C55E 100%)"
+                  : "linear-gradient(135deg, #6366F1 0%, #7C3AED 100%)",
+                boxShadow: `0 4px 15px ${theme.glowColor}40`,
+              }}
+            >
+              S
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-xl font-black tracking-wider text-white" style={{ fontFamily: FONT_DISPLAY }}>
-                  AXIS
+                  S.P.Y.
                 </span>
               </div>
               <p className="text-xs text-slate-400 font-medium">
@@ -419,7 +427,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
               </div>
 
               <p className="text-xs text-slate-400 mb-4">
-                Consumo utilizado pelos agentes do Axis.
+                Consumo utilizado pelos agentes do S.P.Y.
               </p>
 
               {/* Tabela de Valores de Créditos */}
@@ -560,7 +568,7 @@ export function PlanosSection({ onCta }: { onCta: () => void }) {
               ENCONTRA. ENTENDE. AGE. CONVERTE.
             </p>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              AXIS: O sistema operacional de oportunidades comerciais.
+              S.P.Y.: O sistema operacional de oportunidades comerciais.
             </p>
           </div>
         </div>

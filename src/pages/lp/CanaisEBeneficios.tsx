@@ -30,7 +30,7 @@ export function CanaisSection() {
         </div>
       </FadeIn>
       <Lede className="text-center max-w-xl mx-auto text-sm sm:text-base">
-        O Axis reúne os sinais da operação para que a inteligência tenha contexto suficiente para agir.
+        O S.P.Y. reúne os sinais da operação para que a inteligência tenha contexto suficiente para agir.
       </Lede>
     </Section>
   );
