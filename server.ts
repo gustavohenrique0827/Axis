@@ -9,6 +9,7 @@ import { GoogleGenAI, Type } from "@google/genai";
 import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
 import axios from "axios";
+import { createGoogleCalendarRouter } from "./server/googleCalendar";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -136,11 +137,18 @@ function safeCreateClient(url: string, key: string) {
 
 const supabase = safeCreateClient(supabaseUrl, supabaseKey);
 
-// Client privilegiado (bypassa RLS) — uso restrito à rota /api/v1/leads, que é
-// chamada por integrações externas (não por um usuário logado no S.P.Y.) e por
-// isso não tem um JWT de sessão para respeitar a RLS normalmente. O tenant_id
-// usado nessas chamadas vem só do mapeamento de API key (apiKeyTenantMap),
-// nunca do corpo da requisição — é isso que mantém o isolamento aqui.
+// Client privilegiado (bypassa RLS). Usado por:
+// - /api/v1/leads: chamada por integrações externas (não por usuário logado),
+//   sem JWT de sessão pra respeitar RLS normalmente — tenant_id vem só do
+//   mapeamento de API key (apiKeyTenantMap), nunca do corpo da requisição.
+// - /api/google-calendar/*: google_calendar_connections não dá NENHUM grant
+//   direto a anon/authenticated (só SELECT de colunas não-sensíveis, sem
+//   token) — só este client grava/lê tokens, e só depois que a rota já
+//   validou tenant_id (current_tenant_id()/has_tenant_access(), nunca vindo
+//   direto do corpo da requisição) e user_id (req.user.id, do JWT validado
+//   por requireUser). Ver server/googleCalendar.ts.
+// Em ambos os casos, o isolamento por tenant é mantido pela rota, não pelo
+// client — só use supabaseService atrás de uma validação de tenant explícita.
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 const supabaseService = safeCreateClient(supabaseUrl, supabaseServiceKey);
 
@@ -271,10 +279,12 @@ app.use((req, res, next) => {
 const apiKeyLimiter = rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: true, legacyHeaders: false });
 const aiLimiter = rateLimit({ windowMs: 60_000, limit: 20, standardHeaders: true, legacyHeaders: false });
 const whatsappLimiter = rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: true, legacyHeaders: false });
+const googleCalendarLimiter = rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: true, legacyHeaders: false });
 app.use("/api/v1/leads", apiKeyLimiter);
 app.use("/api/leads", aiLimiter);
 app.use("/api/ai", aiLimiter);
 app.use("/api/whatsapp", whatsappLimiter);
+app.use("/api/google-calendar", googleCalendarLimiter);
 
 function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
   if (apiKeyTenantMap.size === 0) {
@@ -1374,6 +1384,8 @@ app.post("/api/whatsapp/copilot/analyze", requireUser, async (req: any, res) => 
     res.status(500).json({ error: "Erro de processamento da IA" });
   }
 });
+
+app.use("/api/google-calendar", createGoogleCalendarRouter({ requireUser, supabaseService }));
 
 // Global error handler — catches any unhandled throws in async routes. Nunca
 // devolve err.message pro cliente (pode conter detalhe de tabela/coluna/constraint

@@ -5,7 +5,9 @@ import { Button } from "../../components/ui/button";
 import { PageContainer } from "../../components/PageContainer";
 import { motion, AnimatePresence } from "motion/react";
 import { useData } from "../../contexts/DataContext";
-import { getAccessToken } from "../../lib/google-auth";
+import { useAuth } from "../../contexts/AuthContext";
+import { getGoogleCalendarStatus } from "../../lib/google-auth";
+import { listGoogleCalendarEvents } from "../../lib/google-calendar";
 import { toast } from "sonner";
 import { AgendaSidebar } from "./components/AgendaMedica/AgendaSidebar";
 import { AgendaDetailPanel } from "./components/AgendaMedica/AgendaDetailPanel";
@@ -26,6 +28,7 @@ type Appointment = {
 
 export default function AgendaClinica() {
   const { appointments, addAppointment, updateAppointment, deleteAppointment, squads, leads, addTask } = useData();
+  const { activeTenantId } = useAuth();
 
   const doctors = useMemo(() => {
     if (!squads || squads.length === 0) return [];
@@ -53,17 +56,19 @@ export default function AgendaClinica() {
   const selectedApt = appointments.find(a => a.id === selectedAptId);
 
   const handleSyncCalendar = async () => {
-    const token = await getAccessToken();
-    if (!token) { toast.error("Por favor, conecte sua conta Google na página de Telemedicina antes de sincronizar."); return; }
+    if (!activeTenantId) return;
+    const status = await getGoogleCalendarStatus(activeTenantId);
+    if (!status.connected) { toast.error("Por favor, conecte sua conta Google na página de Telemedicina antes de sincronizar."); return; }
     setIsSyncing(true);
     try {
       const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
       const todayEnd = new Date(); todayEnd.setHours(23, 59, 59, 999);
-      const response = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${todayStart.toISOString()}&timeMax=${todayEnd.toISOString()}&singleEvents=true`, { headers: { Authorization: `Bearer ${token}` } });
-      if (!response.ok) throw new Error("Falha ao buscar eventos do Google Calendar");
-      const data = await response.json();
+      const events = await listGoogleCalendarEvents(activeTenantId, {
+        timeMin: todayStart.toISOString(),
+        timeMax: todayEnd.toISOString(),
+      });
       let importedCount = 0;
-      (data.items || []).forEach((event: any) => {
+      events.forEach((event: any) => {
         const start = event.start.dateTime || event.start.date;
         const startTime = new Date(start).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
         if (!appointments.some(a => a.time === startTime && a.room === 'Google Calendar')) {

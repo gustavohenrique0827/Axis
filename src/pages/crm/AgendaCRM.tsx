@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useData } from "../../contexts/DataContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { PageContainer } from "../../components/PageContainer";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -37,15 +38,12 @@ import {
 import { toast } from "sonner";
 import { Reuniao } from "../../contexts/DataContextTypes";
 import {
-  googleSignIn,
-  getAccessToken,
-  getGoogleUserEmail,
-  logout as googleLogout,
+  connectGoogleCalendar,
+  consumeGoogleCalendarRedirectResult,
+  disconnectGoogleCalendar,
+  getGoogleCalendarStatus,
+  syncGoogleCalendar,
 } from "../../lib/google-auth";
-import {
-  listGoogleCalendarEvents,
-  mapGoogleEventToReuniao,
-} from "../../lib/google-calendar";
 
 type ViewMode = "mes" | "semana" | "dia" | "lista";
 type StatusFilter = "Todos" | "Agendada" | "Em Andamento" | "Concluída" | "Cancelada";
@@ -58,6 +56,7 @@ const DOW = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
 export default function AgendaCRM() {
   const { reunioes, deleteReuniao, updateReuniao, addReuniao, leads, colaboradores } = useData();
+  const { activeTenantId } = useAuth();
   const navigate = useNavigate();
 
   const [view, setView] = useState<ViewMode>("mes");
@@ -150,112 +149,86 @@ export default function AgendaCRM() {
     setSelectedDayDate(new Date());
   };
 
-  // Google Sync implementation
-  const handleSyncGoogle = async (forceAuth = false) => {
+  // Sincronização real acontece no backend (server/googleCalendar.ts): ele
+  // resolve a conexão Google do tenant/usuário ATIVO, busca os eventos e
+  // grava direto em reunioes (idempotente por googleEventId). O frontend só
+  // dispara e depois relê reunioes — nunca vê token, nunca fala com o
+  // Google diretamente.
+  const handleSyncGoogle = async () => {
+    if (!activeTenantId) return;
     setIsSyncing(true);
     try {
-      let token = await getAccessToken();
-
-      if (!token || forceAuth) {
-        const authResult = await googleSignIn();
-        if (authResult) {
-          token = authResult.accessToken;
-          setGoogleUserEmail(authResult.user.email || "Conectado");
-          toast.success("Conta Google conectada com sucesso!");
-        }
-      }
-
-      if (!token) {
-        toast.error("Conexão com o Google necessária para sincronizar a agenda.");
-        return;
-      }
-
-      // Janela de busca: do início do mês anterior até o fim de 3 meses adiante
       const minDate = new Date(year, month - 1, 1).toISOString();
       const maxDate = new Date(year, month + 4, 0).toISOString();
+      const result = await syncGoogleCalendar(activeTenantId, { timeMin: minDate, timeMax: maxDate });
 
-      const events = await listGoogleCalendarEvents(token, {
-        timeMin: minDate,
-        timeMax: maxDate,
-        maxResults: 250,
-      });
-
-      if (!events || events.length === 0) {
-        toast.info("Nenhum evento encontrado no seu Google Calendar para o período.");
-        return;
-      }
-
-      let importedCount = 0;
-      let updatedCount = 0;
-
-      const existingMap = new Map<string, Reuniao>();
-      (reunioes as Reuniao[]).forEach((r) => {
-        if (r.googleEventId) existingMap.set(r.googleEventId, r);
-        if (r.id) existingMap.set(r.id, r);
-      });
-
-      for (const ev of events) {
-        // Ignora eventos que são cancelados se nunca foram importados
-        if (ev.status === "cancelled" && !existingMap.has(ev.id) && !existingMap.has(`gcal-${ev.id}`)) {
-          continue;
-        }
-
-        const mapped = mapGoogleEventToReuniao(ev, googleUserEmail || "Google Calendar");
-        const existing = existingMap.get(ev.id) || existingMap.get(`gcal-${ev.id}`);
-
-        if (existing) {
-          // Atualiza se houver alteração
-          updateReuniao(existing.id, {
-            leadName: mapped.leadName,
-            companyName: mapped.companyName,
-            scheduledAt: mapped.scheduledAt,
-            durationMinutes: mapped.durationMinutes,
-            meetLink: mapped.meetLink,
-            status: mapped.status,
-            pauta: mapped.pauta,
-          });
-          updatedCount++;
-        } else {
-          // Novo evento importado
-          (addReuniao as any)(mapped);
-          existingMap.set(ev.id, mapped as any);
-          existingMap.set(`gcal-${ev.id}`, mapped as any);
-          importedCount++;
-        }
-      }
-
-      if (importedCount > 0 || updatedCount > 0) {
-        toast.success(
-          `Google Calendar sincronizado! ${importedCount} eventos importados, ${updatedCount} atualizados.`
-        );
-      } else {
+      if (result.imported === 0 && result.updated === 0) {
         toast.success("Agenda Google já sincronizada com o sistema!");
+      } else {
+        toast.success(`Google Calendar sincronizado! ${result.imported} eventos importados, ${result.updated} atualizados.`);
       }
     } catch (err: any) {
-      console.error("Erro na sincronização com Google Calendar:", err);
-      toast.error(err?.message || "Erro ao sincronizar com Google Calendar.");
+      if (err?.message === "google_calendar_not_connected") {
+        toast.error("Conecte sua conta Google para sincronizar a agenda.");
+      } else if (err?.message === "google_calendar_reauth_required") {
+        toast.error("Sua conexão com o Google expirou — reconecte para continuar sincronizando.");
+        setGoogleUserEmail(null);
+      } else {
+        console.error("Erro na sincronização com Google Calendar:", err);
+        toast.error(err?.message || "Erro ao sincronizar com Google Calendar.");
+      }
     } finally {
       setIsSyncing(false);
     }
   };
 
+  const handleConnectGoogle = async () => {
+    if (!activeTenantId) return;
+    try {
+      await connectGoogleCalendar(activeTenantId, "/crm/agenda");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao conectar ao Google.");
+    }
+  };
+
   const handleDisconnectGoogle = async () => {
-    await googleLogout();
+    if (!activeTenantId) return;
+    await disconnectGoogleCalendar(activeTenantId);
     setGoogleUserEmail(null);
     toast.success("Conta Google desconectada.");
   };
 
-  // Auto-detect Google auth on mount and auto-sync if token already exists
+  // Consulta o status (nunca um token) do tenant ATIVO ao montar e sempre
+  // que o tenant ativo mudar (switchTenant) — evita mostrar "Conectado"
+  // usando estado visual de um tenant anterior. Auto-sync roda em seguida
+  // se já houver conexão ativa para este tenant.
   useEffect(() => {
-    getAccessToken().then((token) => {
-      if (token) {
-        const email = getGoogleUserEmail();
-        setGoogleUserEmail(email || "Conectado");
-        // Sincronização automática em background se já tiver token ativo
-        handleSyncGoogle(false);
+    if (!activeTenantId) return;
+    setGoogleUserEmail(null);
+    getGoogleCalendarStatus(activeTenantId).then((status) => {
+      if (status.connected) {
+        setGoogleUserEmail(status.email || "Conectado");
+        handleSyncGoogle();
       }
     });
-  }, []);
+  }, [activeTenantId]);
+
+  // Depois de voltar do consentimento do Google (redirect real pro backend e
+  // de volta — ver server/googleCalendar.ts), avisa o usuário e recarrega o
+  // status/sincroniza.
+  useEffect(() => {
+    const result = consumeGoogleCalendarRedirectResult();
+    if (!result || !activeTenantId) return;
+    if (result.status === "connected") {
+      toast.success("Conta Google conectada com sucesso!");
+      getGoogleCalendarStatus(activeTenantId).then((status) => {
+        setGoogleUserEmail(status.connected ? status.email || "Conectado" : null);
+        if (status.connected) handleSyncGoogle();
+      });
+    } else {
+      toast.error("Não foi possível conectar ao Google" + (result.reason ? ` (${result.reason})` : "."));
+    }
+  }, [activeTenantId]);
 
   const handleCopyLink = (link?: string) => {
     if (!link) return;
@@ -295,7 +268,7 @@ export default function AgendaCRM() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleSyncGoogle(false)}
+                onClick={() => handleSyncGoogle()}
                 disabled={isSyncing}
                 className="text-xs font-bold gap-1.5 h-8 px-2.5 hover:bg-[var(--color-surface-sunken)]"
                 title="Sincronizar eventos do Google Calendar agora"
@@ -316,8 +289,7 @@ export default function AgendaCRM() {
           ) : (
             <Button
               variant="outline"
-              onClick={() => handleSyncGoogle(true)}
-              disabled={isSyncing}
+              onClick={handleConnectGoogle}
               className="text-xs font-bold gap-2 h-9 bg-white dark:bg-slate-900 border-slate-200 shadow-xs hover:border-blue-400 hover:bg-blue-50/50"
             >
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
@@ -326,7 +298,7 @@ export default function AgendaCRM() {
                 <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
                 <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
               </svg>
-              <span>{isSyncing ? "Conectando..." : "Conectar Google Calendar"}</span>
+              <span>Conectar Google Calendar</span>
             </Button>
           )}
 

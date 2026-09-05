@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useData } from "../../../contexts/DataContext";
+import { useAuth } from "../../../contexts/AuthContext";
 import { readKanbanConfig, KANBAN_KEYS, KanbanColConfig } from "../../../hooks/useKanbanConfig";
 import { Task } from "../../../types";
 import { initAuth, googleSignIn, getAccessToken } from "../../../lib/firebase";
@@ -15,25 +16,29 @@ export function useTarefas() {
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [deadlineFilter, setDeadlineFilter] = useState<string>("");
   const { tasks, addTask, updateTask, deleteTask, appSettings } = useData();
+  const { activeTenantId } = useAuth();
 
   const [needsAuth, setNeedsAuth] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
   useEffect(() => {
+    if (!activeTenantId) return;
     const unsubscribe = initAuth(
+      activeTenantId,
       () => setNeedsAuth(false),
       () => setNeedsAuth(true)
     );
     return () => unsubscribe();
-  }, []);
+  }, [activeTenantId]);
 
   const handleSyncGoogleTasks = async () => {
+    if (!activeTenantId) return;
     setIsSyncing(true);
-    let token = await getAccessToken();
-    
+    let token = await getAccessToken(activeTenantId);
+
     try {
       if (!token) {
-        const result = await googleSignIn();
+        const result = await googleSignIn(activeTenantId);
         if (result) {
           token = result.accessToken;
           setNeedsAuth(false);
@@ -197,7 +202,8 @@ export function useTarefas() {
   };
 
   const pushTaskToGoogle = async (task: Task) => {
-    const token = await getAccessToken();
+    if (!activeTenantId) return;
+    const token = await getAccessToken(activeTenantId);
     if (!token) return;
 
     try {

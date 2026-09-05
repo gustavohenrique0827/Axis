@@ -10,8 +10,9 @@ import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
 import { PageContainer } from "../../components/PageContainer";
-import { initAuth, googleSignIn, logout } from "../../lib/google-auth";
+import { connectGoogleCalendar, consumeGoogleCalendarRedirectResult, getGoogleCalendarStatus } from "../../lib/google-auth";
 import { createMeetSpace, MeetSpace } from "../../lib/meet";
+import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "sonner";
 
 const activeConferences = [
@@ -20,55 +21,59 @@ const activeConferences = [
 ];
 
 export default function TelemedicinaDashboard() {
+  const { activeTenantId } = useAuth();
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
   
-  const [googleUser, setGoogleUser] = useState<any>(null);
-  const [token, setToken] = useState<string | null>(null);
+  const [googleEmail, setGoogleEmail] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isCreatingMeeting, setIsCreatingMeeting] = useState(false);
   const [activeMeeting, setActiveMeeting] = useState<MeetSpace | null>(null);
 
   useEffect(() => {
-    const unsubscribe = initAuth(
-      (user, accessToken) => {
-        setGoogleUser(user);
-        setToken(accessToken);
-      },
-      () => {
-        setGoogleUser(null);
-        setToken(null);
-      }
-    );
-    return () => unsubscribe();
-  }, []);
+    if (!activeTenantId) return;
+    setGoogleEmail(null);
+    getGoogleCalendarStatus(activeTenantId).then((status) => {
+      setGoogleEmail(status.connected ? status.email : null);
+    });
+  }, [activeTenantId]);
+
+  // Depois de voltar do consentimento do Google (redirect real, não popup —
+  // ver server/googleCalendar.ts), avisa o usuário e reconfirma o status.
+  useEffect(() => {
+    const result = consumeGoogleCalendarRedirectResult();
+    if (!result || !activeTenantId) return;
+    if (result.status === "connected") {
+      toast.success("Conectado ao Google Workspace!");
+      getGoogleCalendarStatus(activeTenantId).then((status) => setGoogleEmail(status.connected ? status.email : null));
+    } else {
+      toast.error("Não foi possível conectar ao Google" + (result.reason ? ` (${result.reason})` : "."));
+    }
+  }, [activeTenantId]);
 
   const handleGoogleLogin = async () => {
+    if (!activeTenantId) return;
     setIsConnecting(true);
     try {
-      const result = await googleSignIn();
-      if (result) {
-        setGoogleUser(result.user);
-        setToken(result.accessToken);
-        toast.success("Conectado ao Google Workspace!");
-      }
-    } catch (error) {
+      await connectGoogleCalendar(activeTenantId, "/telemedicina");
+      // connectGoogleCalendar navega a página inteira pro Google — o código
+      // abaixo só roda se isso falhar antes de redirecionar.
+    } catch (error: any) {
       console.error(error);
-      toast.error("Erro ao conectar ao Google.");
-    } finally {
+      toast.error(error.message || "Erro ao conectar ao Google.");
       setIsConnecting(false);
     }
   };
 
   const handleStartMeeting = async () => {
-    if (!token) {
+    if (!activeTenantId || !googleEmail) {
       toast.error("Por favor, conecte sua conta Google primeiro.");
       return;
     }
 
     setIsCreatingMeeting(true);
     try {
-      const space = await createMeetSpace(token);
+      const space = await createMeetSpace(activeTenantId);
       setActiveMeeting(space);
       toast.success("Nova sala virtual criada no Google Meet!");
       window.open(space.meetingUri, '_blank');
@@ -86,8 +91,8 @@ export default function TelemedicinaDashboard() {
       description="Consultas virtuais criptografadas, monitoramento de sinais e integração Google Meet."
       actions={
         <div className="flex items-center gap-3 flex-wrap">
-          {!googleUser ? (
-            <Button 
+          {!googleEmail ? (
+            <Button
               onClick={handleGoogleLogin}
               disabled={isConnecting}
               variant="outline"
@@ -99,13 +104,13 @@ export default function TelemedicinaDashboard() {
           ) : (
             <div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-[var(--radius-control)] px-3 py-1 text-xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 truncate max-w-[150px]">{googleUser.email}</span>
+              <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 truncate max-w-[150px]">{googleEmail}</span>
             </div>
           )}
 
-          <Button 
+          <Button
             onClick={handleStartMeeting}
-            disabled={!token || isCreatingMeeting}
+            disabled={!googleEmail || isCreatingMeeting}
             className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
           >
             {isCreatingMeeting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Video className="w-3.5 h-3.5" />}
@@ -152,7 +157,7 @@ export default function TelemedicinaDashboard() {
                 </div>
                 <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Aguardando Início da Chamada</h3>
                 <p className="text-xs text-[var(--color-text-muted)] mt-1">
-                  {token ? "Clique em 'Gerar Sala Google Meet' para iniciar a transmissão" : "Conecte sua conta do Google Workspace"}
+                  {googleEmail ? "Clique em 'Gerar Sala Google Meet' para iniciar a transmissão" : "Conecte sua conta do Google Workspace"}
                 </p>
               </div>
             )}

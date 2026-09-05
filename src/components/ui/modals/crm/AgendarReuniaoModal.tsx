@@ -5,11 +5,12 @@ import {
   Calendar, Clock, User, FileText, Video,
   Copy, ExternalLink, Loader2, CheckCircle2, AlertCircle, MessageCircle, Phone,
 } from "lucide-react";
-import { googleSignIn, getAccessToken, getGoogleUserEmail } from "../../../../lib/google-auth";
+import { connectGoogleCalendar, getGoogleCalendarStatus } from "../../../../lib/google-auth";
 import { createMeetSpace } from "../../../../lib/meet";
 import { createCalendarEvent } from "../../../../lib/google-calendar";
 import { generateJitsiLink } from "../../JitsiEmbed";
 import { useData } from "../../../../contexts/DataContext";
+import { useAuth } from "../../../../contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "../../../../lib/utils";
 
@@ -22,6 +23,7 @@ interface AgendarReuniaoModalProps {
 
 export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: AgendarReuniaoModalProps) {
   const { colaboradores, leads, addReuniao } = useData();
+  const { activeTenantId } = useAuth();
 
   const [googleEmail, setGoogleEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -57,10 +59,11 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
   }, [closerName, colaboradores]);
 
   useEffect(() => {
-    getAccessToken().then((token) => {
-      if (token) setGoogleEmail("Conectado");
+    if (!activeTenantId) return;
+    getGoogleCalendarStatus(activeTenantId).then((status) => {
+      if (status.connected) setGoogleEmail(status.email || "Conectado");
     });
-  }, []);
+  }, [activeTenantId]);
 
   // Reset when modal opens
   useEffect(() => {
@@ -71,29 +74,27 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       setLeadPhone(lead.phone || "");
       setPauta("");
       setGoogleAuthError(null);
-      getAccessToken().then((token) => {
-        if (token) {
-          const email = getGoogleUserEmail();
-          setGoogleEmail(email || "Conectado");
-        }
-      });
+      if (activeTenantId) {
+        getGoogleCalendarStatus(activeTenantId).then((status) => {
+          if (status.connected) setGoogleEmail(status.email || "Conectado");
+        });
+      }
     }
-  }, [isOpen, lead.seller, lead.email]);
+  }, [isOpen, lead.seller, lead.email, activeTenantId]);
 
   const handleConnectGoogle = async () => {
+    if (!activeTenantId) return;
     try {
       setLoading(true);
       setGoogleAuthError(null);
-      const result = await googleSignIn();
-      if (result) {
-        setGoogleEmail(result.user.email || "Conectado");
-        toast.success("Google conectado com sucesso!");
-      }
+      // Redireciona a página inteira pro consentimento do Google — o modal
+      // precisa ser reaberto ao voltar (fluxo real de OAuth server-side, não
+      // dá pra manter isso numa Promise que resolve sem sair da página).
+      await connectGoogleCalendar(activeTenantId, window.location.pathname);
     } catch (err: any) {
       const msg: string = err.message || "Tente novamente";
       setGoogleAuthError(msg);
       toast.error(msg, { duration: 8000 });
-    } finally {
       setLoading(false);
     }
   };
@@ -124,18 +125,16 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       try {
         const jitsiLink = generateJitsiLink(reuniaoId);
 
-        // Sempre tenta criar evento no Google Calendar com link Jitsi na descrição
+        // Sempre tenta criar evento no Google Calendar com link Jitsi na
+        // descrição — opcional: sem conexão Google pro tenant/usuário atual,
+        // o backend responde google_calendar_not_connected e a sala segue
+        // criada mesmo assim, só sem o convite por e-mail.
         let calendarLink: string | undefined;
-        try {
-          let token = await getAccessToken();
-          if (!token) {
-            const r = await googleSignIn();
-            if (r) { token = r.accessToken; setGoogleEmail(r.user.email || "Conectado"); }
-          }
-          if (token) {
+        if (activeTenantId) {
+          try {
             const endDate = new Date(`${date}T${time}:00`);
             endDate.setMinutes(endDate.getMinutes() + duration);
-            const calEvent = await createCalendarEvent(token, {
+            const calEvent = await createCalendarEvent(activeTenantId, {
               title: `Reunião — ${lead.company || lead.name}`,
               description: [
                 "🖥️ Sala de vídeo S.P.Y. (Jitsi)",
@@ -149,9 +148,9 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
               skipConferenceData: true,
             });
             calendarLink = calEvent.htmlLink;
+          } catch {
+            toast.warning("Sala criada, mas convite de calendário não enviado.");
           }
-        } catch {
-          toast.warning("Sala criada, mas convite de calendário não enviado.");
         }
 
         (addReuniao as any)({ id: reuniaoId, ...baseReuniao, meetLink: jitsiLink });
@@ -178,20 +177,16 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       return;
     }
 
+    if (!activeTenantId) { toast.error("Nenhum tenant ativo."); return; }
     setLoading(true);
     try {
-      let token = await getAccessToken();
-      if (!token) {
-        const result = await googleSignIn();
-        if (!result) throw new Error("Login cancelado");
-        token = result.accessToken;
-        setGoogleEmail(result.user.email || "Conectado");
-      }
-
-      const meetSpace = await createMeetSpace(token);
+      // Chegamos aqui só quando googleEmail já está setado (branch acima
+      // cobre o caso desconectado com link manual) — o backend resolve a
+      // conexão do tenant/usuário atual, nenhum token passa pelo frontend.
+      const meetSpace = await createMeetSpace(activeTenantId);
       let googleEventId: string | undefined;
       try {
-        const calEvent = await createCalendarEvent(token, {
+        const calEvent = await createCalendarEvent(activeTenantId, {
           title: `Reunião — ${lead.company || lead.name}`,
           description: pauta || `Reunião comercial com ${lead.name}${lead.company ? ` (${lead.company})` : ""}.`,
           startISO, endISO, attendeeEmails: attendees,
@@ -205,7 +200,12 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       setCreatedMeeting({ id: reuniaoId, meetLink: meetSpace.meetingUri });
       toast.success("Reunião agendada! Convite enviado ao lead e ao closer.");
     } catch (err: any) {
-      toast.error("Erro ao criar reunião: " + (err.message || "Tente novamente"));
+      if (err?.message === "google_calendar_not_connected" || err?.message === "google_calendar_reauth_required") {
+        setGoogleEmail(null);
+        toast.error("Sua conexão com o Google expirou ou foi desfeita — reconecte e tente novamente.");
+      } else {
+        toast.error("Erro ao criar reunião: " + (err.message || "Tente novamente"));
+      }
     } finally {
       setLoading(false);
     }

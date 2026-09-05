@@ -6,7 +6,8 @@ import {
 import { Modal } from "../../modal";
 import { Button } from "../../button";
 import { useData } from "../../../../contexts/DataContext";
-import { googleSignIn, getAccessToken } from "../../../../lib/google-auth";
+import { useAuth } from "../../../../contexts/AuthContext";
+import { connectGoogleCalendar, getGoogleCalendarStatus } from "../../../../lib/google-auth";
 import { createCalendarEvent } from "../../../../lib/google-calendar";
 import { toast } from "sonner";
 
@@ -86,6 +87,7 @@ export function NovaTarefaModal({
   submitText = "Agendar Tarefa",
 }: NovaTarefaModalProps) {
   const { colaboradores, products } = useData();
+  const { activeTenantId } = useAuth();
 
   /* ─── Colaboradores disponíveis ────────────────────────────── */
   const collaboratorOptions = useMemo(
@@ -157,9 +159,11 @@ export function NovaTarefaModal({
     setEmailAvulso("");
     setGoogleError(null);
     // Checar se já está conectado
-    getAccessToken().then((token) => {
-      if (token) setGoogleEmail("Conectado");
-    });
+    if (activeTenantId) {
+      getGoogleCalendarStatus(activeTenantId).then((status) => {
+        if (status.connected) setGoogleEmail(status.email || "Conectado");
+      });
+    }
   }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Convidados helpers ─────────────────────────────────────── */
@@ -185,19 +189,17 @@ export function NovaTarefaModal({
 
   /* ─── Google Connect ─────────────────────────────────────────── */
   const handleConnectGoogle = async () => {
+    if (!activeTenantId) return;
     try {
       setGoogleLoading(true);
       setGoogleError(null);
-      const result = await googleSignIn();
-      if (result) {
-        setGoogleEmail(result.user.email || "Conectado");
-        toast.success("Google Calendar conectado!");
-      }
+      // Redireciona a página inteira pro consentimento do Google — volta
+      // pra esta mesma rota depois (o modal precisa ser reaberto).
+      await connectGoogleCalendar(activeTenantId, window.location.pathname);
     } catch (err: any) {
       const msg = err.message || "Erro ao conectar com Google";
       setGoogleError(msg);
       toast.error(msg, { duration: 8000 });
-    } finally {
       setGoogleLoading(false);
     }
   };
@@ -219,14 +221,9 @@ export function NovaTarefaModal({
 
     if (bloquearAgenda && convidados.length > 0) {
       try {
-        let token = await getAccessToken();
-        if (!token) {
-          const r = await googleSignIn();
-          if (r) { token = r.accessToken; setGoogleEmail(r.user.email || "Conectado"); }
-        }
-        if (!token) throw new Error("Não autenticado no Google.");
+        if (!activeTenantId) throw new Error("Nenhum tenant ativo.");
 
-        const event = await createCalendarEvent(token, {
+        const event = await createCalendarEvent(activeTenantId, {
           title: `${tipo} — ${nome}`,
           description: [
             `📋 Tarefa: ${nome}`,
@@ -242,7 +239,10 @@ export function NovaTarefaModal({
         calendarLink = event.htmlLink;
         toast.success(`Evento criado no Google Calendar! ${convidados.length} convidado(s) notificado(s).`);
       } catch (err: any) {
-        toast.warning("Tarefa salva, mas não foi possível criar o evento no Calendar: " + (err.message || ""));
+        const reason = err?.message === "google_calendar_not_connected"
+          ? "conecte sua conta Google primeiro"
+          : (err?.message || "");
+        toast.warning("Tarefa salva, mas não foi possível criar o evento no Calendar: " + reason);
       }
     }
 

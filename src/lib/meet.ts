@@ -1,28 +1,21 @@
+// Proxy fino pro backend (/api/google-calendar/meet-space) — o browser nunca
+// fala direto com meet.googleapis.com nem manuseia um access_token.
+import { apiFetch } from "./apiClient";
+
 export interface MeetSpace {
   name: string;
   meetingUri: string;
   meetingCode: string;
 }
 
-export const createMeetSpace = async (accessToken: string): Promise<MeetSpace> => {
-  const res = await fetch('https://meet.googleapis.com/v2/spaces', {
-    method: 'POST',
-    headers: { 
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({}),
+export const createMeetSpace = async (tenantId: string): Promise<MeetSpace> => {
+  const res = await apiFetch("/api/google-calendar/meet-space", {
+    method: "POST",
+    headers: { "x-active-tenant-id": tenantId },
   });
-
   if (!res.ok) {
-    const error = await res.json();
-    throw new Error(error.error?.message || 'Failed to create Meet space');
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error?.error || "Failed to create Meet space");
   }
-
-  const data = await res.json();
-  return {
-    name: data.name,
-    meetingUri: data.meetingUri,
-    meetingCode: data.meetingCode
-  };
+  return res.json();
 };

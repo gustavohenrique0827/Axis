@@ -6,9 +6,9 @@ import {
   Copy, Building2, Users, Loader2, CheckCircle2, ExternalLink, MessageCircle,
 } from "lucide-react";
 import { generateJitsiLink } from "../../JitsiEmbed";
-import { googleSignIn, getAccessToken } from "../../../../lib/google-auth";
 import { createCalendarEvent } from "../../../../lib/google-calendar";
 import { useData } from "../../../../contexts/DataContext";
+import { useAuth } from "../../../../contexts/AuthContext";
 import { toast } from "sonner";
 import { cn } from "../../../../lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -28,6 +28,7 @@ interface NovaReuniaoModalProps {
 
 export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
   const { colaboradores, leads, addReuniao } = useData();
+  const { activeTenantId } = useAuth();
   const navigate = useNavigate();
 
   const [meetingType, setMeetingType] = useState<MeetingType>("cliente");
@@ -95,20 +96,18 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
         createdAt: new Date().toISOString(),
       });
 
-      // Tenta criar evento no Google Calendar com link Jitsi na descrição
+      // Tenta criar evento no Google Calendar com link Jitsi na descrição —
+      // opcional: se o tenant/usuário atual não tiver Google conectado, o
+      // backend responde google_calendar_not_connected e seguimos sem o
+      // convite (a sala S.P.Y. já foi criada com sucesso de qualquer jeito).
       let calendarLink: string | undefined;
-      try {
-        let token = await getAccessToken();
-        if (!token) {
-          const r = await googleSignIn();
-          if (r) token = r.accessToken;
-        }
-        if (token) {
+      if (activeTenantId) {
+        try {
           const startISO = `${date}T${time}:00`;
           const endDate  = new Date(`${date}T${time}:00`);
           endDate.setMinutes(endDate.getMinutes() + duration);
           const attendees = [linkedLead?.email, closerEmail].filter(Boolean) as string[];
-          const calEvent = await createCalendarEvent(token, {
+          const calEvent = await createCalendarEvent(activeTenantId, {
             title: displayTitle,
             description: [
               "🖥️ Sala de vídeo S.P.Y. (Jitsi)",
@@ -122,9 +121,9 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
             skipConferenceData: true,
           });
           calendarLink = calEvent.htmlLink;
+        } catch {
+          // Sala foi criada com sucesso — convite de calendário é opcional
         }
-      } catch {
-        // Sala foi criada com sucesso — convite de calendário é opcional
       }
 
       setCreated({ id: reuniaoId, meetLink, calendarLink });
