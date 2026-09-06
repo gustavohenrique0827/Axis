@@ -251,30 +251,17 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
           <div className="flex items-center gap-2 w-full">
             <Button
               variant="outline"
-              onClick={() => {
-                const textToCopy = created.isPresencial ? (created.localEndereco || created.meetLink) : created.meetLink;
-                navigator.clipboard.writeText(textToCopy);
-                toast.success(created.isPresencial ? "Endereço copiado!" : "Link copiado!");
-              }}
+              onClick={() => { navigator.clipboard.writeText(created.meetLink); toast.success("Link copiado!"); }}
               className="flex-1 border-white/10 text-slate-400 h-9 text-xs gap-1.5"
             >
-              <Copy className="w-3.5 h-3.5" /> {created.isPresencial ? "Copiar Local" : "Copiar Link"}
+              <Copy className="w-3.5 h-3.5" /> Copiar Link
             </Button>
-            {created.isPresencial ? (
-              <Button
-                onClick={handleClose}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black h-9 text-xs gap-1.5"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" /> Concluir
-              </Button>
-            ) : (
-              <Button
-                onClick={handleEnter}
-                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black h-9 text-xs gap-1.5"
-              >
-                <Video className="w-3.5 h-3.5" /> Entrar na Sala
-              </Button>
-            )}
+            <Button
+              onClick={handleEnter}
+              className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black h-9 text-xs gap-1.5"
+            >
+              <Video className="w-3.5 h-3.5" /> Entrar na Sala
+            </Button>
           </div>
         )
       }
@@ -286,21 +273,15 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
             <CheckCircle2 className="w-8 h-8 text-emerald-400" />
           </div>
           <div>
-            <p className="text-base font-black text-white">
-              {created.isPresencial ? "Reunião Presencial Agendada!" : "Reunião Criada!"}
-            </p>
+            <p className="text-base font-black text-white">Reunião Criada!</p>
             <p className="text-xs text-slate-500 mt-1">
-              {created.calendarLink ? "Convite enviado pelo Google Calendar." : created.isPresencial ? "Compromisso presencial registrado" : "Sala S.P.Y. pronta para uso"}
+              {created.calendarLink ? "Convite enviado pelo Google Calendar." : "Sala S.P.Y. pronta para uso"}
             </p>
           </div>
           <div className="w-full px-4 py-3 bg-[var(--color-surface)] border border-white/[0.08] rounded-xl text-left space-y-3">
             <div>
-              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">
-                {created.isPresencial ? "Local da Reunião" : "Link da Sala"}
-              </p>
-              <p className="text-[11px] text-blue-400 font-mono break-all">
-                {created.isPresencial ? (created.localEndereco || created.meetLink) : created.meetLink}
-              </p>
+              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Link da Sala</p>
+              <p className="text-[11px] text-blue-400 font-mono break-all">{created.meetLink}</p>
             </div>
             {created.calendarLink && (
               <div>
@@ -324,18 +305,18 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
             className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/25 text-[#25D366] text-[11px] font-black uppercase tracking-widest transition-all"
           >
             <MessageCircle className="w-3.5 h-3.5" />
-            {(linkedLead as any)?.phone ? "Enviar confirmação pelo WhatsApp" : "Compartilhar via WhatsApp"}
+            {(linkedLead as any)?.phone ? "Enviar convite pelo WhatsApp" : "Compartilhar via WhatsApp"}
           </a>
 
           <p className="text-[10px] text-slate-600">
-            {created.calendarLink ? "Participantes receberão o convite por e-mail." : "Compartilhe as informações com os participantes."}
+            {created.calendarLink ? "Participantes receberão o convite por e-mail." : "Compartilhe o link com os participantes."}
           </p>
         </div>
       ) : (
         /* ── Form ── */
         <div className="space-y-4 py-2">
 
-          {/* Tipo de Reunião */}
+          {/* Tipo */}
           <div className="space-y-1.5">
             <label className="text-[8px] font-black uppercase tracking-widest text-slate-500">Tipo de Reunião</label>
             <div className="grid grid-cols-3 gap-2">
@@ -356,54 +337,6 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
               ))}
             </div>
           </div>
-
-          {/* Formato: Online vs Presencial */}
-          <div className="space-y-1.5">
-            <label className="text-[8px] font-black uppercase tracking-widest text-slate-500">Formato da Reunião</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setFormato("axis")}
-                className={cn(
-                  "flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-bold transition-all",
-                  formato === "axis"
-                    ? "bg-blue-500/15 border-blue-500/30 text-blue-300"
-                    : "bg-white/[0.02] border-white/[0.06] text-slate-400 hover:border-white/20"
-                )}
-              >
-                <Video className="w-3.5 h-3.5" /> Online (Sala S.P.Y.)
-              </button>
-              <button
-                type="button"
-                onClick={() => setFormato("presencial")}
-                className={cn(
-                  "flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-bold transition-all",
-                  formato === "presencial"
-                    ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
-                    : "bg-white/[0.02] border-white/[0.06] text-slate-400 hover:border-white/20"
-                )}
-              >
-                <MapPin className="w-3.5 h-3.5" /> Presencial (No Local)
-              </button>
-            </div>
-          </div>
-
-          {/* Endereço se for Presencial */}
-          {formato === "presencial" && (
-            <div className="p-3 bg-emerald-500/[0.06] border border-emerald-500/20 rounded-xl space-y-1.5">
-              <label className="text-[8px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
-                <MapPin className="w-3 h-3 text-emerald-400" /> Endereço / Local da Reunião
-              </label>
-              <input
-                type="text"
-                placeholder="Ex: Av. Paulista, 1000 - 12º andar ou escritório do cliente..."
-                value={localEndereco}
-                onChange={(e) => setLocalEndereco(e.target.value)}
-                className="w-full bg-[var(--color-surface)] border border-emerald-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/60 transition-all"
-                required
-              />
-            </div>
-          )}
 
           {/* Título */}
           <div className="space-y-1.5">
@@ -471,74 +404,6 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
             )}
           </div>
 
-          {/* Outros Participantes / Convidados */}
-          <div className="space-y-2 p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
-            <label className="text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-              <Users className="w-3 h-3 text-blue-400" /> Outros Participantes / Convidados
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="email"
-                placeholder="convidado@email.com"
-                value={novoConvidado}
-                onChange={(e) => setNovoConvidado(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddConvidado();
-                  }
-                }}
-                className="flex-1 bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40"
-              />
-              <Button
-                type="button"
-                onClick={() => handleAddConvidado()}
-                variant="outline"
-                className="text-xs h-8 px-3 gap-1 shrink-0"
-              >
-                <Plus className="w-3.5 h-3.5" /> Adicionar
-              </Button>
-            </div>
-            {/* Equipe rápida */}
-            {closerOptions.filter(c => c.email && c.name !== closerName && !convidados.includes(c.email.toLowerCase())).length > 0 && (
-              <div className="flex items-center gap-1.5 flex-wrap pt-1">
-                <span className="text-[10px] text-slate-500">Equipe:</span>
-                {closerOptions
-                  .filter(c => c.email && c.name !== closerName && !convidados.includes(c.email.toLowerCase()))
-                  .slice(0, 4)
-                  .map(colab => (
-                    <button
-                      key={colab.email}
-                      type="button"
-                      onClick={() => handleAddConvidado(colab.email)}
-                      className="text-[10px] px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 border border-white/10 transition-colors"
-                    >
-                      + {colab.name.split(" ")[0]}
-                    </button>
-                  ))}
-              </div>
-            )}
-            {convidados.length > 0 && (
-              <div className="flex flex-wrap gap-1.5 pt-1">
-                {convidados.map((email) => (
-                  <span
-                    key={email}
-                    className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-500/15 border border-blue-500/30 rounded-lg text-xs text-blue-300"
-                  >
-                    {email}
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveConvidado(email)}
-                      className="hover:text-rose-400 p-0.5 rounded"
-                    >
-                      <X className="w-3 h-3" />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* Data e Hora */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -600,22 +465,13 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
             />
           </div>
 
-          {/* Info sala / formato */}
-          {formato === "presencial" ? (
-            <div className="flex items-center gap-3 p-3 bg-emerald-500/[0.06] border border-emerald-500/15 rounded-xl">
-              <MapPin className="w-4 h-4 text-emerald-400 shrink-0" />
-              <p className="text-[10px] text-slate-400 leading-relaxed">
-                Reunião presencial registrada no local especificado. O endereço será sincronizado no Google Calendar e na mensagem de confirmação.
-              </p>
-            </div>
-          ) : (
-            <div className="flex items-center gap-3 p-3 bg-blue-500/[0.06] border border-blue-500/15 rounded-xl">
-              <Video className="w-4 h-4 text-blue-400 shrink-0" />
-              <p className="text-[10px] text-slate-400 leading-relaxed">
-                Será criada uma <strong className="text-blue-300">Sala S.P.Y. (Jitsi)</strong> exclusiva. Compartilhe o link com os participantes — nenhum app necessário.
-              </p>
-            </div>
-          )}
+          {/* Info sala S.P.Y. */}
+          <div className="flex items-center gap-3 p-3 bg-blue-500/[0.06] border border-blue-500/15 rounded-xl">
+            <Video className="w-4 h-4 text-blue-400 shrink-0" />
+            <p className="text-[10px] text-slate-400 leading-relaxed">
+              Será criada uma <strong className="text-blue-300">Sala S.P.Y. (Jitsi)</strong> exclusiva. Compartilhe o link com os participantes — nenhum app necessário.
+            </p>
+          </div>
         </div>
       )}
     </Modal>

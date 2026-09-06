@@ -71,8 +71,16 @@ export default function AvaliacoesVeiculos() {
     }
 
     const numKm = parseInt(km.replace(/[^\d]/g, ""), 10) || 0;
-    const numFipe = parseFloat(fipe.replace(/[^\d]/g, "")) || 0;
-    const numOferta = parseFloat(oferta.replace(/[^\d]/g, "")) || (numFipe > 0 ? Math.round(numFipe * 0.88) : 0);
+    const cleanMoney = (val: string) => {
+      const s = val.trim().replace("R$", "").trim();
+      if (s.includes(",") && s.includes(".")) {
+        return parseFloat(s.replace(/\./g, "").replace(",", ".")) || 0;
+      }
+      if (s.includes(",")) return parseFloat(s.replace(",", ".")) || 0;
+      return parseFloat(s.replace(/[^\d.]/g, "")) || 0;
+    };
+    const numFipe = cleanMoney(fipe);
+    const numOferta = cleanMoney(oferta) || (numFipe > 0 ? Math.round(numFipe * 0.88) : 0);
 
     const newItem: AvaliacaoItem = {
       id: crypto.randomUUID(),

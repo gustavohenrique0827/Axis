@@ -466,6 +466,7 @@ function VeiculoDetailDrawer({ v, onClose, onEdit, onDelete, onRepasseRegistrado
         {showFinanciamentoModal && (
           <VeiculoFinanciamentoModal
             veiculoValor={v.valor}
+            veiculoNome={`${v.marca} ${v.modelo}`}
             onClose={() => setShowFinanciamentoModal(false)}
             onSave={handleSaveFinanciamento}
           />

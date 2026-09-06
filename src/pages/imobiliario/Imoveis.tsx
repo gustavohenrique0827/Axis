@@ -28,6 +28,8 @@ type Imovel = {
   corretor: string;
   visitas: number;
   descricao: string;
+  condominio?: number;
+  iptu?: number;
   created_at?: string;
 };
 
@@ -84,6 +86,8 @@ function ImovelFormModal({ onClose, onSave, initial }: {
     quartos: String(initial?.quartos ?? "2"),
     banheiros: String(initial?.banheiros ?? "1"),
     vagas: String(initial?.vagas ?? "1"),
+    condominio: String((initial as any)?.condominio ?? ""),
+    iptu: String((initial as any)?.iptu ?? ""),
     corretor: initial?.corretor ?? "",
     descricao: initial?.descricao ?? "",
   });
@@ -129,6 +133,14 @@ function ImovelFormModal({ onClose, onSave, initial }: {
               <input type="number" value={form.valor} onChange={e => set("valor", e.target.value)} placeholder="850000" className={FIELD} />
             </div>
             <div>
+              <label className={LABEL}>Condomínio (R$/mês)</label>
+              <input type="number" value={form.condominio} onChange={e => set("condominio", e.target.value)} placeholder="800" className={FIELD} />
+            </div>
+            <div>
+              <label className={LABEL}>IPTU (R$/ano)</label>
+              <input type="number" value={form.iptu} onChange={e => set("iptu", e.target.value)} placeholder="2400" className={FIELD} />
+            </div>
+            <div>
               <label className={LABEL}>Área (m²)</label>
               <input type="number" value={form.area} onChange={e => set("area", e.target.value)} placeholder="120" className={FIELD} />
             </div>
@@ -149,7 +161,7 @@ function ImovelFormModal({ onClose, onSave, initial }: {
               <input type="number" value={form.banheiros} onChange={e => set("banheiros", e.target.value)} min="0" className={FIELD} />
             </div>
             <div>
-              <label className={LABEL}>Vagas</label>
+              <label className={LABEL}>Vagas de Garagem</label>
               <input type="number" value={form.vagas} onChange={e => set("vagas", e.target.value)} min="0" className={FIELD} />
             </div>
             <div className="col-span-2">
@@ -161,6 +173,17 @@ function ImovelFormModal({ onClose, onSave, initial }: {
               <textarea value={form.descricao} onChange={e => set("descricao", e.target.value)} rows={3} placeholder="Descrição do imóvel..." className={`${FIELD} resize-none`} />
             </div>
           </div>
+
+          {Number(form.valor) > 0 && (
+            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center justify-between text-xs">
+              <span className="text-slate-300">
+                Comissão Imobiliária Estimada ({form.operacao === "Venda" ? "6%" : "1º Aluguel"}):
+              </span>
+              <span className="font-mono font-black text-blue-400">
+                {(form.operacao === "Venda" ? Number(form.valor) * 0.06 : Number(form.valor)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              </span>
+            </div>
+          )}
         </div>
         <div className="p-6 border-t border-white/5 flex justify-end gap-3">
           <Button variant="ghost" onClick={onClose} className="text-slate-400">Cancelar</Button>
@@ -171,6 +194,8 @@ function ImovelFormModal({ onClose, onSave, initial }: {
                 ...form,
                 valor: Number(form.valor), area: Number(form.area),
                 quartos: Number(form.quartos), banheiros: Number(form.banheiros), vagas: Number(form.vagas),
+                condominio: form.condominio ? Number(form.condominio) : undefined,
+                iptu: form.iptu ? Number(form.iptu) : undefined,
               });
               onClose();
             }}

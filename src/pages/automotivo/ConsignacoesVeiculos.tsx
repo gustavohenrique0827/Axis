@@ -67,8 +67,16 @@ export default function ConsignacoesVeiculos() {
       return;
     }
 
-    const numPedido = parseFloat(valorPedido.replace(/[^\d]/g, "")) || 0;
-    const pct = parseFloat(comissaoPercent) || 5;
+    const cleanMoney = (val: string) => {
+      const s = val.trim().replace("R$", "").trim();
+      if (s.includes(",") && s.includes(".")) {
+        return parseFloat(s.replace(/\./g, "").replace(",", ".")) || 0;
+      }
+      if (s.includes(",")) return parseFloat(s.replace(",", ".")) || 0;
+      return parseFloat(s.replace(/[^\d.]/g, "")) || 0;
+    };
+    const numPedido = cleanMoney(valorPedido);
+    const pct = parseFloat(comissaoPercent.replace(",", ".")) || 5;
     const repasse = Math.round(numPedido * (1 - pct / 100));
 
     const newItem: ConsignacaoItem = {

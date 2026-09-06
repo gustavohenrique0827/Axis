@@ -70,8 +70,16 @@ export default function TrocasVeiculos() {
       return;
     }
 
-    const vEntrada = parseFloat(valorEntrada.replace(/[^\d]/g, "")) || 0;
-    const vSaida = parseFloat(valorSaida.replace(/[^\d]/g, "")) || 0;
+    const cleanMoney = (val: string) => {
+      const s = val.trim().replace("R$", "").trim();
+      if (s.includes(",") && s.includes(".")) {
+        return parseFloat(s.replace(/\./g, "").replace(",", ".")) || 0;
+      }
+      if (s.includes(",")) return parseFloat(s.replace(",", ".")) || 0;
+      return parseFloat(s.replace(/[^\d.]/g, "")) || 0;
+    };
+    const vEntrada = cleanMoney(valorEntrada);
+    const vSaida = cleanMoney(valorSaida);
     const diff = Math.max(0, vSaida - vEntrada);
 
     const newItem: TrocaItem = {

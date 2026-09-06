@@ -1,154 +1,1028 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
-import { Boxes, ArrowUpCircle, ArrowDownCircle, Settings2, History } from "lucide-react";
+import {
+  Boxes, ArrowUpCircle, ArrowDownCircle, Settings2, History,
+  Search, Plus, Filter, AlertTriangle, CheckCircle2, TrendingUp,
+  DollarSign, Package, Barcode, Edit3, Trash2, X, RefreshCw,
+  Layers, ArrowUpDown
+} from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { FormField } from "../../components/ui/form-field";
 import { EmptyState } from "../../components/ui/empty-state";
 import { useData } from "../../contexts/DataContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../lib/supabase";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 
-type Tipo = "entrada" | "saida" | "ajuste";
+type TipoMov = "entrada" | "saida" | "ajuste" | "venda";
 
 interface Movimentacao {
   id: string;
   product_id: string;
-  tipo: Tipo | "venda";
+  tipo: TipoMov;
   quantidade: number;
   motivo: string | null;
   created_at: string;
+  operador?: string;
+}
+
+function formatPrice(value: number) {
+  return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
 export default function VarejoEstoque() {
-  const { products } = useData();
-  const [selectedProductId, setSelectedProductId] = useState("");
-  const [tipo, setTipo] = useState<Tipo>("entrada");
-  const [quantidade, setQuantidade] = useState("");
-  const [motivo, setMotivo] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [historico, setHistorico] = useState<Movimentacao[]>([]);
-  const [loadingHistorico, setLoadingHistorico] = useState(true);
+  const { products, setProducts, addProduct, updateProduct, deleteProduct } = useData();
+  const { user, activeTenantId } = useAuth();
+  const tenantId = activeTenantId || "default";
 
-  const fetchHistorico = () => {
+  const [activeTab, setActiveTab] = useState<"tabela" | "movimentar" | "historico">("tabela");
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Todas");
+  const [filterEstoqueStatus, setFilterEstoqueStatus] = useState<"todos" | "critico" | "baixo" | "normal">("todos");
+
+  // Modal de Ajuste de Saldo
+  const [modalAjusteOpen, setModalAjusteOpen] = useState(false);
+  const [ajusteProduct, setAjusteProduct] = useState<any>(null);
+  const [ajusteTipo, setAjusteTipo] = useState<"entrada" | "saida" | "ajuste">("entrada");
+  const [ajusteQtd, setAjusteQtd] = useState("");
+  const [ajusteMotivo, setAjusteMotivo] = useState("Compra de Fornecedor");
+  const [ajusteSaving, setAjusteSaving] = useState(false);
+
+  // Modal de Novo / Editar Produto
+  const [modalProdutoOpen, setModalProdutoOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [formName, setFormName] = useState("");
+  const [formSku, setFormSku] = useState("");
+  const [formBarcode, setFormBarcode] = useState("");
+  const [formCategory, setFormCategory] = useState("Eletrônicos");
+  const [formCost, setFormCost] = useState("");
+  const [formPrice, setFormPrice] = useState("");
+  const [formCurrentStock, setFormCurrentStock] = useState("");
+  const [formStockMin, setFormStockMin] = useState("5");
+  const [formProvider, setFormProvider] = useState("");
+
+  // Histórico de Movimentações
+  const storageMovKey = `spy_estoque_mov_${tenantId}`;
+  const [historico, setHistorico] = useState<Movimentacao[]>(() => {
+    try {
+      const saved = localStorage.getItem(storageMovKey);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return [
+      {
+        id: "mov-1",
+        product_id: "prod-1",
+        tipo: "entrada",
+        quantidade: 20,
+        motivo: "Recebimento Nota Fiscal PC-101",
+        created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
+      },
+      {
+        id: "mov-2",
+        product_id: "prod-2",
+        tipo: "venda",
+        quantidade: -1,
+        motivo: "Venda PDV VND-900",
+        created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
+      },
+      {
+        id: "mov-3",
+        product_id: "prod-3",
+        tipo: "entrada",
+        quantidade: 50,
+        motivo: "Reposição Distribuidora Tech",
+        created_at: new Date(Date.now() - 3600000 * 48).toISOString(),
+      },
+    ];
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageMovKey, JSON.stringify(historico));
+    } catch {}
+  }, [historico, storageMovKey]);
+
+  // Carregar histórico adicional do Supabase se disponível
+  useEffect(() => {
     if (!supabase) return;
-    setLoadingHistorico(true);
     supabase
       .from("estoque_movimentacoes")
       .select("id, product_id, tipo, quantidade, motivo, created_at")
       .order("created_at", { ascending: false })
       .limit(50)
       .then(({ data, error }) => {
-        if (!error) setHistorico(data || []);
-        setLoadingHistorico(false);
+        if (!error && data && data.length > 0) {
+          setHistorico((prev) => {
+            const ids = new Set(prev.map((m) => m.id));
+            const novos = data.filter((d: any) => !ids.has(d.id));
+            return [...prev, ...novos];
+          });
+        }
       });
+  }, []);
+
+  const produtoNome = (productId: string) => {
+    return products.find((p: any) => p.id === productId)?.name || "Produto";
   };
 
-  useEffect(() => { fetchHistorico(); }, []);
+  const categories = useMemo(() => {
+    const set = new Set<string>();
+    products.forEach((p: any) => {
+      if (p.category) set.add(p.category);
+    });
+    return ["Todas", ...Array.from(set)];
+  }, [products]);
 
-  const produtoNome = (productId: string) => products.find((p: any) => p.id === productId)?.name || "Produto removido";
+  // Cálculos de KPI de Estoque
+  const metrics = useMemo(() => {
+    let totalItensCadastrados = products.length;
+    let unidadesTotais = 0;
+    let valorCustoTotal = 0;
+    let valorVendaTotal = 0;
+    let itensCriticos = 0;
 
-  const handleRegistrar = async () => {
-    if (!supabase) { toast.error("Conexão com o banco indisponível."); return; }
-    if (!selectedProductId) { toast.error("Selecione um produto."); return; }
-    const qtd = Number(quantidade);
-    if (!qtd || qtd <= 0) { toast.error("Informe uma quantidade válida."); return; }
+    products.forEach((p: any) => {
+      const stock = Number(p.currentStock) || 0;
+      const cost = Number(p.cost) || 0;
+      const price = Number(p.price) || 0;
+      const minStock = Number(p.stockMin) || 5;
 
-    setSaving(true);
+      unidadesTotais += stock;
+      valorCustoTotal += stock * cost;
+      valorVendaTotal += stock * price;
+
+      if (stock <= minStock) itensCriticos++;
+    });
+
+    const lucroPotencial = valorVendaTotal - valorCustoTotal;
+    const margemMedia = valorVendaTotal > 0 ? (lucroPotencial / valorVendaTotal) * 100 : 0;
+
+    return {
+      totalItensCadastrados,
+      unidadesTotais,
+      valorCustoTotal,
+      valorVendaTotal,
+      lucroPotencial,
+      margemMedia,
+      itensCriticos,
+    };
+  }, [products]);
+
+  // Filtragem dos Produtos
+  const filteredProducts = useMemo(() => {
+    return products.filter((p: any) => {
+      if (selectedCategory !== "Todas" && p.category !== selectedCategory) return false;
+
+      const stock = Number(p.currentStock) || 0;
+      const minStock = Number(p.stockMin) || 5;
+
+      if (filterEstoqueStatus === "critico" && stock > 0) return false;
+      if (filterEstoqueStatus === "baixo" && (stock <= 0 || stock > minStock)) return false;
+      if (filterEstoqueStatus === "normal" && stock <= minStock) return false;
+
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return (
+        p.name?.toLowerCase().includes(q) ||
+        p.sku?.toLowerCase().includes(q) ||
+        p.category?.toLowerCase().includes(q) ||
+        p.typeAttributes?.barcode?.toLowerCase().includes(q) ||
+        p.typeAttributes?.ean?.toLowerCase().includes(q)
+      );
+    });
+  }, [products, search, selectedCategory, filterEstoqueStatus]);
+
+  // Handlers para Ajuste de Estoque
+  const handleOpenAjuste = (product: any) => {
+    setAjusteProduct(product);
+    setAjusteTipo("entrada");
+    setAjusteQtd("");
+    setAjusteMotivo("Compra de Fornecedor");
+    setModalAjusteOpen(true);
+  };
+
+  const handleSalvarAjuste = async () => {
+    if (!ajusteProduct) return;
+    const qtd = Number(ajusteQtd);
+    if (isNaN(qtd) || qtd <= 0) {
+      toast.error("Informe uma quantidade válida.");
+      return;
+    }
+
+    setAjusteSaving(true);
     try {
-      const { data, error } = await supabase.rpc("registrar_movimentacao_estoque", {
-        p_product_id: selectedProductId, p_tipo: tipo, p_quantidade: qtd, p_motivo: motivo || null,
-      });
-      if (error) throw new Error(error.message);
-      toast.success(`Estoque atualizado — novo saldo: ${data?.novo_estoque ?? "?"} unidades.`);
-      setQuantidade("");
-      setMotivo("");
-      fetchHistorico();
+      let novoSaldo = ajusteProduct.currentStock ?? 0;
+      let qtdMovimentada = qtd;
+
+      if (ajusteTipo === "entrada") {
+        novoSaldo += qtd;
+        qtdMovimentada = qtd;
+      } else if (ajusteTipo === "saida") {
+        if (qtd > novoSaldo) {
+          toast.error(`Saldo insuficiente para saída. Estoque atual: ${novoSaldo}`);
+          setAjusteSaving(false);
+          return;
+        }
+        novoSaldo = Math.max(0, novoSaldo - qtd);
+        qtdMovimentada = -qtd;
+      } else if (ajusteTipo === "ajuste") {
+        qtdMovimentada = qtd - novoSaldo;
+        novoSaldo = qtd;
+      }
+
+      // 1. Atualizar produto
+      const updatedList = products.map((p: any) =>
+        p.id === ajusteProduct.id ? { ...p, currentStock: novoSaldo } : p
+      );
+      setProducts(updatedList);
+      try {
+        localStorage.setItem(`spy_products_${tenantId}`, JSON.stringify(updatedList));
+      } catch {}
+
+      // 2. Registrar no histórico
+      const novaMov: Movimentacao = {
+        id: `mov-${Math.floor(1000 + Math.random() * 9000)}`,
+        product_id: ajusteProduct.id,
+        tipo: ajusteTipo,
+        quantidade: qtdMovimentada,
+        motivo: ajusteMotivo || "Ajuste de Estoque",
+        created_at: new Date().toISOString(),
+        operador: user?.name || "Operador Estoque",
+      };
+      setHistorico((prev) => [novaMov, ...prev]);
+
+      // 3. Supabase RPC se disponível
+      if (supabase) {
+        try {
+          await supabase.rpc("registrar_movimentacao_estoque", {
+            p_product_id: ajusteProduct.id,
+            p_tipo: ajusteTipo,
+            p_quantidade: qtd,
+            p_motivo: ajusteMotivo || null,
+          });
+        } catch (supaErr) {
+          console.warn("[Estoque] Supabase sync fallback to local:", supaErr);
+        }
+      }
+
+      toast.success(`Estoque de "${ajusteProduct.name}" atualizado para ${novoSaldo} unidades!`);
+      setModalAjusteOpen(false);
     } catch (err: any) {
-      toast.error(err?.message || "Erro ao registrar movimentação.");
+      toast.error(err?.message || "Erro ao atualizar estoque.");
     } finally {
-      setSaving(false);
+      setAjusteSaving(false);
+    }
+  };
+
+  // Handlers para Cadastro / Edição de Produto
+  const handleOpenNovoProduto = () => {
+    setEditingProduct(null);
+    setFormName("");
+    setFormSku(`SKU-${Math.floor(100 + Math.random() * 900)}`);
+    setFormBarcode(`789123456${Math.floor(1000 + Math.random() * 9000)}`);
+    setFormCategory("Eletrônicos");
+    setFormCost("");
+    setFormPrice("");
+    setFormCurrentStock("10");
+    setFormStockMin("5");
+    setFormProvider("");
+    setModalProdutoOpen(true);
+  };
+
+  const handleOpenEditarProduto = (prod: any) => {
+    setEditingProduct(prod);
+    setFormName(prod.name || "");
+    setFormSku(prod.sku || "");
+    setFormBarcode(prod.typeAttributes?.barcode || prod.typeAttributes?.ean || "");
+    setFormCategory(prod.category || "Eletrônicos");
+    setFormCost(String(prod.cost ?? ""));
+    setFormPrice(String(prod.price ?? ""));
+    setFormCurrentStock(String(prod.currentStock ?? "0"));
+    setFormStockMin(String(prod.stockMin ?? "5"));
+    setFormProvider(prod.provider || "");
+    setModalProdutoOpen(true);
+  };
+
+  const handleSalvarProduto = () => {
+    if (!formName.trim()) {
+      toast.error("Informe o nome do produto.");
+      return;
+    }
+
+    const priceNum = parseFloat(formPrice.replace(",", ".")) || 0;
+    const costNum = parseFloat(formCost.replace(",", ".")) || 0;
+    const stockNum = parseInt(formCurrentStock, 10) || 0;
+    const stockMinNum = parseInt(formStockMin, 10) || 5;
+
+    const marginCalc = priceNum > 0 ? ((priceNum - costNum) / priceNum) * 100 : 0;
+
+    if (editingProduct) {
+      // Editar
+      const updated = {
+        ...editingProduct,
+        name: formName.trim(),
+        sku: formSku.trim(),
+        category: formCategory,
+        price: priceNum,
+        cost: costNum,
+        margin: Math.round(marginCalc * 10) / 10,
+        currentStock: stockNum,
+        stockMin: stockMinNum,
+        provider: formProvider.trim(),
+        typeAttributes: {
+          ...editingProduct.typeAttributes,
+          barcode: formBarcode.trim(),
+          ean: formBarcode.trim(),
+        },
+      };
+      updateProduct(editingProduct.id, updated);
+      toast.success("Produto atualizado com sucesso!");
+    } else {
+      // Criar
+      const newProd = {
+        id: `prod-${Math.random().toString(36).substring(2, 9)}`,
+        name: formName.trim(),
+        sku: formSku.trim(),
+        category: formCategory,
+        type: "Físico" as const,
+        price: priceNum,
+        cost: costNum,
+        margin: Math.round(marginCalc * 10) / 10,
+        commission: 5,
+        active: true,
+        currentStock: stockNum,
+        stockMin: stockMinNum,
+        stockMax: stockMinNum * 5,
+        provider: formProvider.trim() || "Distribuidor Padrão",
+        tags: ["varejo"],
+        typeAttributes: {
+          barcode: formBarcode.trim(),
+          ean: formBarcode.trim(),
+        },
+      };
+      addProduct(newProd);
+      toast.success("Produto cadastrado no estoque!");
+    }
+
+    setModalProdutoOpen(false);
+  };
+
+  const handleDeleteProduto = async (prod: any) => {
+    const ok = await confirmDialog({
+      title: "Excluir Produto",
+      message: `Deseja realmente remover o produto "${prod.name}" do catálogo e do estoque?`,
+      confirmText: "Sim, Excluir",
+      variant: "danger",
+    });
+    if (ok) {
+      deleteProduct(prod.id);
+      toast.success("Produto removido do estoque.");
     }
   };
 
   const tipoLabel: Record<string, { label: string; color: string }> = {
-    entrada: { label: "Entrada", color: "text-emerald-500" },
-    saida: { label: "Saída", color: "text-red-500" },
-    ajuste: { label: "Ajuste", color: "text-amber-500" },
-    venda: { label: "Venda", color: "text-blue-500" },
+    entrada: { label: "Entrada (+)", color: "text-emerald-500" },
+    saida: { label: "Saída (-)", color: "text-amber-500" },
+    ajuste: { label: "Ajuste Balanço (=)", color: "text-blue-500" },
+    venda: { label: "Venda PDV (-)", color: "text-purple-500" },
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-12">
-      <div>
-        <h1 className="text-2xl font-black tracking-tight text-[var(--color-text-primary)] flex items-center gap-2.5">
-          Movimentação de Estoque <Boxes className="w-5 h-5 text-[var(--color-primary-blue)]" />
-        </h1>
-        <p className="text-sm text-[var(--color-text-muted)] mt-1">
-          Registre entradas, saídas e ajustes manuais de estoque. Vendas baixam o estoque automaticamente e aparecem aqui como "Venda".
-        </p>
+    <div className="max-w-7xl mx-auto space-y-6 pb-16">
+      {/* Top Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black tracking-tight text-[var(--color-text-primary)] flex items-center gap-2.5">
+            Gestão & Controle de Estoque <Boxes className="w-6 h-6 text-blue-500" />
+          </h1>
+          <p className="text-xs text-[var(--color-text-muted)] mt-1">
+            Acompanhamento de saldos, custos de aquisição, margem bruta de varejo e histórico de movimentações.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleOpenNovoProduto} className="gap-1.5 font-bold text-xs">
+            <Plus className="w-4 h-4" /> Novo Produto
+          </Button>
+        </div>
       </div>
 
-      <Card className="p-6 space-y-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
-        <div className="grid sm:grid-cols-2 gap-4">
-          <FormField label="Produto" required>
-            <select value={selectedProductId} onChange={(e) => setSelectedProductId(e.target.value)}
-              className="w-full bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs font-bold text-[var(--color-text-primary)] h-10">
-              <option value="">Selecione...</option>
-              {products.map((p: any) => (
-                <option key={p.id} value={p.id}>{p.name} — {p.currentStock ?? 0} em estoque</option>
-              ))}
-            </select>
-          </FormField>
-          <FormField label="Tipo de Movimentação" required>
-            <select value={tipo} onChange={(e) => setTipo(e.target.value as Tipo)}
-              className="w-full bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs font-bold text-[var(--color-text-primary)] h-10">
-              <option value="entrada">Entrada (adiciona ao estoque)</option>
-              <option value="saida">Saída (remove do estoque)</option>
-              <option value="ajuste">Ajuste (define o saldo exato)</option>
-            </select>
-          </FormField>
-          <FormField label={tipo === "ajuste" ? "Novo saldo (valor absoluto)" : "Quantidade"} required>
-            <Input type="number" min={0} value={quantidade} onChange={(e) => setQuantidade(e.target.value)} placeholder="0" />
-          </FormField>
-          <FormField label="Motivo (opcional)">
-            <Input value={motivo} onChange={(e) => setMotivo(e.target.value)} placeholder="Ex: reposição, inventário, avaria..." />
-          </FormField>
-        </div>
-        <Button onClick={handleRegistrar} loading={saving} className="w-full sm:w-auto font-bold text-xs gap-2">
-          {tipo === "entrada" && <ArrowUpCircle className="w-4 h-4" />}
-          {tipo === "saida" && <ArrowDownCircle className="w-4 h-4" />}
-          {tipo === "ajuste" && <Settings2 className="w-4 h-4" />}
-          Registrar Movimentação
-        </Button>
-      </Card>
+      {/* KPI Cards no Topo */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-xs">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">
+              Total em Estoque
+            </span>
+            <Boxes className="w-4 h-4 text-blue-500" />
+          </div>
+          <div className="text-xl font-black font-mono text-[var(--color-text-primary)]">
+            {metrics.unidadesTotais} <span className="text-xs font-normal text-[var(--color-text-faint)]">un.</span>
+          </div>
+          <p className="text-[10px] text-[var(--color-text-muted)] mt-1">{metrics.totalItensCadastrados} SKUs cadastrados</p>
+        </Card>
 
-      <Card className="p-5 space-y-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
-        <h3 className="text-sm font-bold text-[var(--color-text-primary)] flex items-center gap-2">
-          <History className="w-4 h-4" /> Histórico Recente
-        </h3>
-        {loadingHistorico ? (
-          <p className="text-xs text-[var(--color-text-faint)] text-center py-6">Carregando...</p>
-        ) : historico.length === 0 ? (
-          <EmptyState icon={History} title="Nenhuma movimentação registrada" description="As movimentações de estoque aparecerão aqui." className="py-8" />
-        ) : (
-          <div className="space-y-2">
-            {historico.map((m) => (
-              <div key={m.id} className="flex items-center justify-between text-xs bg-[var(--color-surface-sunken)] p-3 rounded-[var(--radius-control)]">
-                <div>
-                  <span className={`font-bold ${tipoLabel[m.tipo]?.color || ""}`}>{tipoLabel[m.tipo]?.label || m.tipo}</span>
-                  <span className="text-[var(--color-text-muted)]"> — {produtoNome(m.product_id)}</span>
-                  {m.motivo && <span className="text-[var(--color-text-faint)]"> ({m.motivo})</span>}
-                </div>
-                <div className="flex items-center gap-3 shrink-0">
-                  <span className={`font-mono font-bold ${m.quantidade < 0 ? "text-red-500" : "text-emerald-500"}`}>{m.quantidade > 0 ? "+" : ""}{m.quantidade}</span>
-                  <span className="text-[var(--color-text-faint)]">{new Date(m.created_at).toLocaleString("pt-BR")}</span>
+        <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-xs">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">
+              Capital Imobilizado
+            </span>
+            <DollarSign className="w-4 h-4 text-slate-400" />
+          </div>
+          <div className="text-xl font-black font-mono text-[var(--color-text-primary)]">
+            {formatPrice(metrics.valorCustoTotal)}
+          </div>
+          <p className="text-[10px] text-[var(--color-text-muted)] mt-1">A preço de custo</p>
+        </Card>
+
+        <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-xs">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">
+              Potencial de Venda
+            </span>
+            <TrendingUp className="w-4 h-4 text-emerald-500" />
+          </div>
+          <div className="text-xl font-black font-mono text-emerald-500">
+            {formatPrice(metrics.valorVendaTotal)}
+          </div>
+          <p className="text-[10px] text-emerald-600/80 font-bold mt-1">
+            +{formatPrice(metrics.lucroPotencial)} lucro proj.
+          </p>
+        </Card>
+
+        <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-xs">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">
+              Margem Bruta Média
+            </span>
+            <Layers className="w-4 h-4 text-violet-500" />
+          </div>
+          <div className="text-xl font-black font-mono text-violet-500">
+            {metrics.margemMedia.toFixed(1)}%
+          </div>
+          <p className="text-[10px] text-[var(--color-text-muted)] mt-1">Markup médio da loja</p>
+        </Card>
+
+        <Card
+          className={`p-4 border shadow-xs ${
+            metrics.itensCriticos > 0
+              ? "bg-red-500/5 border-red-500/20"
+              : "bg-[var(--color-surface-elevated)] border-[var(--color-border-default)]"
+          }`}
+        >
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">
+              Estoque Crítico
+            </span>
+            <AlertTriangle className={`w-4 h-4 ${metrics.itensCriticos > 0 ? "text-red-500" : "text-slate-400"}`} />
+          </div>
+          <div
+            className={`text-xl font-black font-mono ${
+              metrics.itensCriticos > 0 ? "text-red-500" : "text-[var(--color-text-primary)]"
+            }`}
+          >
+            {metrics.itensCriticos} <span className="text-xs font-normal">itens</span>
+          </div>
+          <p className="text-[10px] text-[var(--color-text-muted)] mt-1">Abaixo do mínimo recomendado</p>
+        </Card>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl p-1 gap-1 w-fit shadow-xs">
+        <button
+          onClick={() => setActiveTab("tabela")}
+          className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+            activeTab === "tabela"
+              ? "bg-[var(--color-primary-blue)] text-white shadow-xs"
+              : "text-[var(--color-text-faint)] hover:text-[var(--color-text-primary)]"
+          }`}
+        >
+          <Boxes className="w-3.5 h-3.5" /> Saldos & Produtos ({products.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("historico")}
+          className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+            activeTab === "historico"
+              ? "bg-[var(--color-primary-blue)] text-white shadow-xs"
+              : "text-[var(--color-text-faint)] hover:text-[var(--color-text-primary)]"
+          }`}
+        >
+          <History className="w-3.5 h-3.5" /> Histórico de Movimentações ({historico.length})
+        </button>
+      </div>
+
+      {/* TAB 1: TABELA DE GESTÃO DE ESTOQUE */}
+      {activeTab === "tabela" && (
+        <div className="space-y-4">
+          {/* Filtros e Busca */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex flex-1 items-center gap-2 max-w-md">
+              <div className="relative flex-1">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-faint)]" />
+                <Input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Buscar por produto, SKU, código de barras..."
+                  className="pl-9 text-xs h-9"
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Filtro de Categoria */}
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl px-3 py-1.5 text-xs font-bold text-[var(--color-text-primary)] h-9"
+              >
+                {categories.map((c) => (
+                  <option key={c} value={c}>
+                    Categoria: {c}
+                  </option>
+                ))}
+              </select>
+
+              {/* Filtro por Situação de Estoque */}
+              <select
+                value={filterEstoqueStatus}
+                onChange={(e) => setFilterEstoqueStatus(e.target.value as any)}
+                className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl px-3 py-1.5 text-xs font-bold text-[var(--color-text-primary)] h-9"
+              >
+                <option value="todos">Status: Todos</option>
+                <option value="critico">Somente Esgotados (0 un.)</option>
+                <option value="baixo">Estoque Baixo (≤ Mínimo)</option>
+                <option value="normal">Estoque Normal</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Tabela de Produtos */}
+          {filteredProducts.length === 0 ? (
+            <EmptyState
+              icon={Package}
+              title="Nenhum item encontrado"
+              description="Tente ajustar os filtros de busca ou cadastre um novo produto."
+              className="py-12"
+            />
+          ) : (
+            <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[var(--color-surface-sunken)]/60 text-[10px] uppercase font-black tracking-wider text-[var(--color-text-muted)] border-b border-[var(--color-border-subtle)]">
+                    <tr>
+                      <th className="py-3 px-4">Produto & SKU</th>
+                      <th className="py-3 px-3">Categoria</th>
+                      <th className="py-3 px-3">Custo Unit.</th>
+                      <th className="py-3 px-3">Preço Venda</th>
+                      <th className="py-3 px-3">Margem</th>
+                      <th className="py-3 px-4">Nível de Saldo</th>
+                      <th className="py-3 px-3">Estoque Mín.</th>
+                      <th className="py-3 px-4 text-right">Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[var(--color-border-subtle)]">
+                    {filteredProducts.map((p: any) => {
+                      const stock = p.currentStock ?? 0;
+                      const min = p.stockMin || 5;
+                      const isZero = stock <= 0;
+                      const isLow = stock > 0 && stock <= min;
+                      const margin = p.price > 0 ? (((p.price - (p.cost || 0)) / p.price) * 100).toFixed(1) : "0.0";
+                      const barcode = p.typeAttributes?.barcode || p.typeAttributes?.ean;
+
+                      // Percentual da barra em relação ao dobro do mínimo
+                      const pctBar = Math.min(100, Math.max(8, (stock / (min * 2)) * 100));
+
+                      return (
+                        <tr key={p.id} className="hover:bg-[var(--color-surface-sunken)]/30 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="font-bold text-[var(--color-text-primary)] leading-tight">{p.name}</div>
+                            <div className="flex items-center gap-2 mt-0.5 text-[10px] text-[var(--color-text-faint)] font-mono">
+                              <span>SKU: {p.sku || "—"}</span>
+                              {barcode && <span>· EAN: {barcode}</span>}
+                            </div>
+                          </td>
+
+                          <td className="py-3 px-3">
+                            <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] border border-[var(--color-border-subtle)]">
+                              {p.category || "Varejo"}
+                            </span>
+                          </td>
+
+                          <td className="py-3 px-3 font-mono text-[var(--color-text-muted)]">
+                            {formatPrice(p.cost || 0)}
+                          </td>
+
+                          <td className="py-3 px-3 font-mono font-bold text-[var(--color-text-primary)]">
+                            {formatPrice(p.price || 0)}
+                          </td>
+
+                          <td className="py-3 px-3">
+                            <span className="font-mono font-black text-emerald-500">{margin}%</span>
+                          </td>
+
+                          <td className="py-3 px-4 min-w-[140px]">
+                            <div className="flex items-center justify-between text-[11px] font-mono font-bold mb-1">
+                              <span
+                                className={
+                                  isZero ? "text-red-500" : isLow ? "text-amber-500" : "text-emerald-500"
+                                }
+                              >
+                                {stock} un.
+                              </span>
+                              <span className="text-[9px] text-[var(--color-text-faint)]">
+                                {isZero ? "Esgotado" : isLow ? "Baixo" : "Normal"}
+                              </span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                              <div
+                                style={{ width: `${pctBar}%` }}
+                                className={`h-full rounded-full transition-all ${
+                                  isZero ? "bg-red-500" : isLow ? "bg-amber-500" : "bg-emerald-500"
+                                }`}
+                              />
+                            </div>
+                          </td>
+
+                          <td className="py-3 px-3 font-mono text-[var(--color-text-faint)]">
+                            {min} un.
+                          </td>
+
+                          <td className="py-3 px-4 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleOpenAjuste(p)}
+                                className="h-7 px-2 text-[11px] font-bold gap-1 text-blue-500 hover:bg-blue-500/10 border-blue-500/30"
+                              >
+                                <ArrowUpDown className="w-3 h-3" /> Ajustar Saldo
+                              </Button>
+
+                              <button
+                                onClick={() => handleOpenEditarProduto(p)}
+                                className="p-1.5 rounded-lg hover:bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors"
+                                title="Editar Produto"
+                              >
+                                <Edit3 className="w-3.5 h-3.5" />
+                              </button>
+
+                              <button
+                                onClick={() => handleDeleteProduto(p)}
+                                className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-400 hover:text-red-300 transition-colors"
+                                title="Excluir Produto"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* TAB 2: HISTÓRICO DE MOVIMENTAÇÕES */}
+      {activeTab === "historico" && (
+        <div className="space-y-4">
+          <Card className="p-5 space-y-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border-subtle)]">
+              <h3 className="text-sm font-black text-[var(--color-text-primary)] flex items-center gap-2">
+                <History className="w-4 h-4 text-blue-500" /> Registro Completo de Movimentações
+              </h3>
+              <span className="text-xs text-[var(--color-text-faint)]">
+                {historico.length} registros no histórico
+              </span>
+            </div>
+
+            {historico.length === 0 ? (
+              <EmptyState
+                icon={History}
+                title="Nenhuma movimentação registrada"
+                description="Entradas, saídas e vendas do PDV aparecerão detalhadas aqui."
+                className="py-10"
+              />
+            ) : (
+              <div className="divide-y divide-[var(--color-border-subtle)]">
+                {historico.map((m) => (
+                  <div key={m.id} className="py-3 flex items-center justify-between text-xs gap-3">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold ${
+                          m.quantidade > 0
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-red-500/10 text-red-500"
+                        }`}
+                      >
+                        {m.quantidade > 0 ? (
+                          <ArrowUpCircle className="w-4 h-4" />
+                        ) : (
+                          <ArrowDownCircle className="w-4 h-4" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1.5">
+                          <span className={`font-bold ${tipoLabel[m.tipo]?.color || ""}`}>
+                            {tipoLabel[m.tipo]?.label || m.tipo}
+                          </span>
+                          <span className="font-bold text-[var(--color-text-primary)]">
+                            — {produtoNome(m.product_id)}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-[var(--color-text-faint)] mt-0.5">
+                          {m.motivo || "Sem motivo especificado"} · {new Date(m.created_at).toLocaleString("pt-BR")}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <span
+                        className={`font-mono font-black text-sm ${
+                          m.quantidade < 0 ? "text-red-500" : "text-emerald-500"
+                        }`}
+                      >
+                        {m.quantidade > 0 ? `+${m.quantidade}` : m.quantidade} un.
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
+
+      {/* MODAL 1: AJUSTE RÁPIDO DE SALDO */}
+      {modalAjusteOpen && ajusteProduct && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border-subtle)]">
+              <div>
+                <h3 className="text-base font-black text-[var(--color-text-primary)]">
+                  Ajustar Estoque
+                </h3>
+                <p className="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">
+                  {ajusteProduct.name} (Saldo atual: <strong>{ajusteProduct.currentStock ?? 0} un.</strong>)
+                </p>
+              </div>
+              <button
+                onClick={() => setModalAjusteOpen(false)}
+                className="p-1 rounded-lg hover:bg-[var(--color-surface)]"
+              >
+                <X className="w-4 h-4 text-[var(--color-text-faint)]" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-faint)] block mb-1.5">
+                  Tipo de Movimentação
+                </label>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {(
+                    [
+                      { id: "entrada", label: "Entrada (+)" },
+                      { id: "saida", label: "Saída (-)" },
+                      { id: "ajuste", label: "Inventário (=)" },
+                    ] as const
+                  ).map((t) => (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setAjusteTipo(t.id)}
+                      className={`p-2 rounded-xl text-xs font-bold border transition-all text-center ${
+                        ajusteTipo === t.id
+                          ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                          : "bg-[var(--color-surface)] border-[var(--color-border-default)] text-[var(--color-text-muted)]"
+                      }`}
+                    >
+                      {t.label}
+                    </button>
+                  ))}
                 </div>
               </div>
-            ))}
+
+              <div>
+                <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
+                  {ajusteTipo === "ajuste" ? "Novo Saldo Exato (unidades)" : "Quantidade a Movimentar"}
+                </label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={ajusteQtd}
+                  onChange={(e) => setAjusteQtd(e.target.value)}
+                  placeholder="0"
+                  className="font-mono font-bold text-sm"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
+                  Motivo da Movimentação
+                </label>
+                <select
+                  value={ajusteMotivo}
+                  onChange={(e) => setAjusteMotivo(e.target.value)}
+                  className="w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--color-text-primary)]"
+                >
+                  <option value="Compra de Fornecedor">Compra de Fornecedor</option>
+                  <option value="Reposição de Loja">Reposição de Loja</option>
+                  <option value="Inventário Periódico">Inventário Periódico</option>
+                  <option value="Avaria / Quebra">Avaria / Quebra</option>
+                  <option value="Validade Vencida">Validade Vencida</option>
+                  <option value="Devolução de Cliente">Devolução de Cliente</option>
+                  <option value="Consumo Interno">Consumo Interno</option>
+                  <option value="Outros">Outros</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-[var(--color-border-subtle)] flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setModalAjusteOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSalvarAjuste}
+                loading={ajusteSaving}
+                className="font-bold bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Confirmar Ajuste
+              </Button>
+            </div>
           </div>
-        )}
-      </Card>
+        </div>
+      )}
+
+      {/* MODAL 2: CADASTRO / EDIÇÃO DE PRODUTO */}
+      {modalProdutoOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border-subtle)]">
+              <div>
+                <h3 className="text-base font-black text-[var(--color-text-primary)]">
+                  {editingProduct ? "Editar Produto" : "Novo Produto no Estoque"}
+                </h3>
+                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+                  Preencha os dados de catálogo, custos e estoque do item.
+                </p>
+              </div>
+              <button
+                onClick={() => setModalProdutoOpen(false)}
+                className="p-1 rounded-lg hover:bg-[var(--color-surface)]"
+              >
+                <X className="w-4 h-4 text-[var(--color-text-faint)]" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
+                  Nome do Produto *
+                </label>
+                <Input
+                  value={formName}
+                  onChange={(e) => setFormName(e.target.value)}
+                  placeholder="Ex: Smartwatch Ultra Pro"
+                  className="text-xs"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
+                    Código SKU
+                  </label>
+                  <Input
+                    value={formSku}
+                    onChange={(e) => setFormSku(e.target.value)}
+                    placeholder="Ex: TECH-001"
+                    className="text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
+                    Código de Barras (EAN)
+                  </label>
+                  <Input
+                    value={formBarcode}
+                    onChange={(e) => setFormBarcode(e.target.value)}
+                    placeholder="Ex: 7891234560012"
+                    className="text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
+                    Categoria
+                  </label>
+                  <select
+                    value={formCategory}
+                    onChange={(e) => setFormCategory(e.target.value)}
+                    className="w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--color-text-primary)]"
+                  >
+                    <option value="Eletrônicos">Eletrônicos</option>
+                    <option value="Acessórios">Acessórios</option>
+                    <option value="Vestuário">Vestuário</option>
+                    <option value="Utilidades">Utilidades</option>
+                    <option value="Alimentos & Bebidas">Alimentos & Bebidas</option>
+                    <option value="Informática">Informática</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
+                    Fornecedor Principal
+                  </label>
+                  <Input
+                    value={formProvider}
+                    onChange={(e) => setFormProvider(e.target.value)}
+                    placeholder="Ex: Global Imports"
+                    className="text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
+                    Preço de Custo (R$)
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formCost}
+                    onChange={(e) => setFormCost(e.target.value)}
+                    placeholder="0,00"
+                    className="text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
+                    Preço de Venda no PDV (R$) *
+                  </label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formPrice}
+                    onChange={(e) => setFormPrice(e.target.value)}
+                    placeholder="0,00"
+                    className="text-xs font-mono font-bold text-emerald-500"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
+                    Saldo Inicial / Estoque Atual
+                  </label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={formCurrentStock}
+                    onChange={(e) => setFormCurrentStock(e.target.value)}
+                    placeholder="0"
+                    className="text-xs font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
+                    Estoque Mínimo de Alerta
+                  </label>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={formStockMin}
+                    onChange={(e) => setFormStockMin(e.target.value)}
+                    placeholder="5"
+                    className="text-xs font-mono"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-[var(--color-border-subtle)] flex justify-end gap-2">
+              <Button variant="outline" size="sm" onClick={() => setModalProdutoOpen(false)}>
+                Cancelar
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSalvarProduto}
+                className="font-bold bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {editingProduct ? "Salvar Alterações" : "Cadastrar Produto"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

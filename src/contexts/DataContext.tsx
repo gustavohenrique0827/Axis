@@ -16,7 +16,8 @@ import {
   getDefaultAppointments,
   defaultSquads,
   defaultNotifications,
-  defaultLeadScoreTriggers
+  defaultLeadScoreTriggers,
+  defaultProducts
 } from './dataMocks';
 import { DataContext, DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, Reuniao, Indicacao, useData } from './DataContextTypes';
 import { apiFetch } from "../lib/apiClient";
@@ -440,7 +441,23 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [marketingCampaigns, setMarketingCampaigns] = useState<any[]>([]);
   const [marketingLandingPages, setMarketingLandingPages] = useState<any[]>([]);
   const [marketingForms, setMarketingForms] = useState<any[]>([]);
-  const [productsRaw, setProducts] = useState<any[]>([]);
+  const [productsRaw, setProducts] = useState<any[]>(() => {
+    try {
+      const saved = localStorage.getItem(`spy_products_${tenantId || "default"}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return defaultProducts;
+  });
+
+  useEffect(() => {
+    try {
+      if (productsRaw.length > 0) localStorage.setItem(`spy_products_${tenantId || "default"}`, JSON.stringify(productsRaw));
+    } catch (e) {}
+  }, [productsRaw, tenantId]);
+
   const [proposalsRaw, setProposals] = useState<any[]>([]);
   const [proposalItems, setProposalItems] = useState<any[]>([]);
   const [certificates, setCertificates] = useState<any[]>([]);
