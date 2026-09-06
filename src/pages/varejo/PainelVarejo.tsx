@@ -3,155 +3,494 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   ShoppingCart, DollarSign, TrendingUp, Boxes, Package,
-  Truck, ArrowRight, CheckCircle2, AlertTriangle
+  Truck, ArrowRight, CheckCircle2, AlertTriangle, CreditCard,
+  QrCode, Banknote, Clock, ArrowUpRight, BarChart3, RefreshCw
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { useData } from "../../contexts/DataContext";
 
-type PedidoVarejo = {
+interface VendaFinalizada {
   id: string;
+  timestamp: string;
+  data: string;
   cliente: string;
-  itens: string;
+  vendedor?: string;
+  itens: Array<{
+    id: string;
+    name: string;
+    price: number;
+    cost?: number;
+    qty: number;
+    total: number;
+  }>;
+  subtotal: number;
+  desconto: number;
   total: number;
   metodo: string;
-  status: string;
-  data: string;
-};
+  status: "concluida" | "cancelada";
+}
 
-const DEFAULT_PEDIDOS: PedidoVarejo[] = [
-  { id: "1", cliente: "Ana Carolina Ferraz", itens: "Cabo USB-C 2m (x2), Carregador 30W", total: 249.90, metodo: "Pix", status: "Concluído", data: new Date().toLocaleDateString("pt-BR") },
-  { id: "2", cliente: "Rodrigo Mendonça", itens: "Fone Bluetooth ANC, Película 3D", total: 420.00, metodo: "Cartão de Crédito", status: "Concluído", data: new Date().toLocaleDateString("pt-BR") },
-  { id: "3", cliente: "Camila Guimarães", itens: "Suporte Veicular MagSafe, Cabo Lightning", total: 185.50, metodo: "Pix", status: "Concluído", data: new Date().toLocaleDateString("pt-BR") },
-  { id: "4", cliente: "Lucas Martins", itens: "Smartwatch Sport GPS v4", total: 890.00, metodo: "Cartão Parcelado", status: "Concluído", data: new Date().toLocaleDateString("pt-BR") },
-];
+interface CaixaStatus {
+  aberto: boolean;
+  dataAbertura: string;
+  saldoInicial: number;
+  operador: string;
+}
 
 export default function PainelVarejo() {
-  const { user } = useAuth();
-  const tenantId = user?.tenant_id || "default";
+  const { user, activeTenantId } = useAuth();
+  const tenantId = activeTenantId || user?.tenant_id || "default";
+  const { products } = useData();
 
-  const [pedidos] = useState<PedidoVarejo[]>(() => {
+  // 1. Carregar vendas do PDV
+  const vendas = useMemo<VendaFinalizada[]>(() => {
     try {
-      const saved = localStorage.getItem(`spy_pedidos_varejo_${tenantId}`);
+      const saved = localStorage.getItem(`spy_vendas_${tenantId}`);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
-    } catch (e) {}
-    return DEFAULT_PEDIDOS;
-  });
+    } catch {}
+    return [
+      {
+        id: "VND-9801",
+        timestamp: new Date().toISOString(),
+        data: new Date().toLocaleDateString("pt-BR"),
+        cliente: "Ana Carolina Ferraz",
+        vendedor: "Carlos Varejo",
+        itens: [
+          { id: "1", name: "Cabo USB-C Trançado 2m", price: 49.90, qty: 2, total: 99.80 },
+          { id: "2", name: "Carregador Turbo 30W GaN", price: 150.10, qty: 1, total: 150.10 },
+        ],
+        subtotal: 249.90,
+        desconto: 0,
+        total: 249.90,
+        metodo: "Pix",
+        status: "concluida",
+      },
+      {
+        id: "VND-9802",
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        data: new Date().toLocaleDateString("pt-BR"),
+        cliente: "Rodrigo Mendonça",
+        vendedor: "Fernanda Loja",
+        itens: [
+          { id: "3", name: "Fone Bluetooth ANC Pro", price: 350.00, qty: 1, total: 350.00 },
+          { id: "4", name: "Película de Vidro 3D Premium", price: 70.00, qty: 1, total: 70.00 },
+        ],
+        subtotal: 420.00,
+        desconto: 0,
+        total: 420.00,
+        metodo: "Cartão de Crédito",
+        status: "concluida",
+      },
+      {
+        id: "VND-9803",
+        timestamp: new Date(Date.now() - 7200000).toISOString(),
+        data: new Date().toLocaleDateString("pt-BR"),
+        cliente: "Consumidor Final",
+        vendedor: "Carlos Varejo",
+        itens: [
+          { id: "5", name: "Suporte Veicular MagSafe", price: 185.50, qty: 1, total: 185.50 },
+        ],
+        subtotal: 185.50,
+        desconto: 0,
+        total: 185.50,
+        metodo: "Dinheiro",
+        status: "concluida",
+      },
+      {
+        id: "VND-9804",
+        timestamp: new Date(Date.now() - 14400000).toISOString(),
+        data: new Date().toLocaleDateString("pt-BR"),
+        cliente: "Lucas Martins",
+        vendedor: "Fernanda Loja",
+        itens: [
+          { id: "6", name: "Smartwatch Sport GPS v4", price: 890.00, qty: 1, total: 890.00 },
+        ],
+        subtotal: 890.00,
+        desconto: 0,
+        total: 890.00,
+        metodo: "Cartão de Crédito",
+        status: "concluida",
+      },
+    ];
+  }, [tenantId]);
 
-  const [compras] = useState<any[]>(() => {
+  // 2. Status do Caixa Atual
+  const caixa = useMemo<CaixaStatus>(() => {
+    try {
+      const saved = localStorage.getItem(`spy_caixa_${tenantId}`);
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return {
+      aberto: true,
+      dataAbertura: new Date().toLocaleDateString("pt-BR") + " 08:30",
+      saldoInicial: 200.0,
+      operador: user?.name || "Operador Principal",
+    };
+  }, [tenantId, user]);
+
+  // 3. Compras e reposições
+  const compras = useMemo<any[]>(() => {
     try {
       const saved = localStorage.getItem(`spy_compras_varejo_${tenantId}`);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
-    } catch (e) {}
+    } catch {}
     return [
-      { id: "1", fornecedor: "Distribuidora Tech Brasil", valor: 14800, data: "03/09/2026", status: "Em Transporte" },
-      { id: "2", fornecedor: "Global Imports Eletrônicos", valor: 8900, data: "28/08/2026", status: "Entregue" },
+      { id: "PC-102", fornecedor: "Distribuidora Tech Brasil", valor: 14800, data: "03/09/2026", status: "Em Transporte" },
+      { id: "PC-101", fornecedor: "Global Imports Eletrônicos", valor: 8900, data: "28/08/2026", status: "Recebido no Estoque" },
     ];
-  });
+  }, [tenantId]);
 
-  const kpis = useMemo(() => {
-    const totalFaturamento = pedidos.reduce((s, p) => s + (Number(p.total) || 0), 0);
-    const totalPedidos = pedidos.length;
-    const ticketMedio = totalPedidos > 0 ? totalFaturamento / totalPedidos : 0;
+  // Métricas Consolidadas
+  const metrics = useMemo(() => {
+    const ativas = vendas.filter(v => v.status !== "cancelada");
+    const totalFaturamento = ativas.reduce((acc, v) => acc + (Number(v.total) || 0), 0);
+    const totalVendas = ativas.length;
+    const ticketMedio = totalVendas > 0 ? totalFaturamento / totalVendas : 0;
+
+    // Lucro bruto estimado
+    const lucroEstimado = totalFaturamento * 0.42; // ~42% margem bruta de varejo padrão
+
+    // Mix de pagamento
+    const paymentMap: Record<string, number> = {};
+    ativas.forEach(v => {
+      const m = v.metodo || "Outro";
+      paymentMap[m] = (paymentMap[m] || 0) + v.total;
+    });
+
+    // Ranking de produtos mais vendidos
+    const prodMap: Record<string, { name: string; qty: number; total: number }> = {};
+    ativas.forEach(v => {
+      v.itens?.forEach(item => {
+        if (!prodMap[item.name]) {
+          prodMap[item.name] = { name: item.name, qty: 0, total: 0 };
+        }
+        prodMap[item.name].qty += item.qty || 1;
+        prodMap[item.name].total += item.total || (item.price * (item.qty || 1));
+      });
+    });
+
+    const topProdutos = Object.values(prodMap)
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 5);
 
     return {
       totalFaturamento,
-      totalPedidos,
+      totalVendas,
       ticketMedio,
-      totalSkus: 480,
+      lucroEstimado,
+      paymentMap,
+      topProdutos,
+      totalItensEstoque: products?.length || 480,
     };
-  }, [pedidos]);
+  }, [vendas, products]);
+
+  // Itens com estoque crítico
+  const itensCriticos = useMemo(() => {
+    if (!products || products.length === 0) {
+      return [
+        { name: "Cabo USB-C Trançado 2m", stock: 3, min: 15, status: "Crítico" },
+        { name: "Carregador Turbo 30W GaN", stock: 5, min: 20, status: "Atenção" },
+        { name: "Película de Vidro 3D Premium", stock: 8, min: 30, status: "Atenção" },
+      ];
+    }
+    return products
+      .filter(p => (p.currentStock ?? 0) <= (p.minStock ?? 5))
+      .slice(0, 4)
+      .map(p => ({
+        name: p.name,
+        stock: p.currentStock ?? 0,
+        min: p.minStock ?? 10,
+        status: (p.currentStock ?? 0) <= 2 ? "Crítico" : "Atenção",
+      }));
+  }, [products]);
 
   return (
     <PageContainer
-      title="Painel Executivo de Varejo & Loja"
-      description="Faturamento de frente de caixa (PDV), giro de estoque, reposição e pedidos de venda."
+      title="Painel Executivo de Varejo"
+      description="Visão consolidada da frente de caixa (PDV), giro de produtos, reposições e lucratividade da operação."
       actions={
         <div className="flex items-center gap-2">
           <Link
-            to="/app/varejo/vendas"
-            className="h-9 px-4 text-xs font-bold gap-1.5 inline-flex items-center rounded-xl bg-[var(--color-primary-blue)] text-white shadow-xs hover:opacity-95"
+            to="/app/varejo/estoque"
+            className="h-9 px-3.5 text-xs font-semibold gap-1.5 inline-flex items-center rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-elevated)] transition-colors"
           >
-            <ShoppingCart className="w-3.5 h-3.5" /> Abrir PDV / Vendas
+            <Boxes className="w-3.5 h-3.5 text-[var(--color-text-muted)]" /> Estoque
+          </Link>
+          <Link
+            to="/app/varejo/compras"
+            className="h-9 px-3.5 text-xs font-semibold gap-1.5 inline-flex items-center rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-elevated)] transition-colors"
+          >
+            <Truck className="w-3.5 h-3.5 text-[var(--color-text-muted)]" /> Compras & Reposição
+          </Link>
+          <Link
+            to="/app/varejo/vendas"
+            className="h-9 px-4 text-xs font-bold gap-1.5 inline-flex items-center rounded-xl bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white shadow-xs transition-all"
+          >
+            <ShoppingCart className="w-3.5 h-3.5" /> Abrir PDV / Caixa
           </Link>
         </div>
       }
     >
+      {/* Top Banner: Status do Caixa */}
+      <div className="mb-6 p-4 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className={`w-3.5 h-3.5 rounded-full ${caixa.aberto ? "bg-emerald-500 animate-pulse" : "bg-zinc-500"}`} />
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-[var(--color-text-primary)]">
+                Frente de Caixa: {caixa.aberto ? "Em Operação (Aberto)" : "Fechado"}
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-md font-mono bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                Operador: {caixa.operador}
+              </span>
+            </div>
+            <span className="text-[11px] text-[var(--color-text-muted)]">
+              Abertura: {caixa.dataAbertura} • Fundo de Troco Inicial: R$ {caixa.saldoInicial.toFixed(2)}
+            </span>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/app/varejo/vendas"
+            className="h-8 px-3 text-xs font-semibold inline-flex items-center gap-1.5 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
+          >
+            Acessar Terminal PDV <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+      </div>
+
+      {/* KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-emerald-500/25 shadow-xs">
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-emerald-500/20 shadow-xs">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Faturamento do Mês</span>
+            <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Faturamento Hoje</span>
             <DollarSign className="w-4 h-4 text-emerald-500" />
           </div>
-          <p className="text-xl font-black text-emerald-500 font-mono">
-            R$ {kpis.totalFaturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+          <p className="text-2xl font-black text-emerald-500 font-mono">
+            R$ {metrics.totalFaturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </p>
-          <span className="text-[10px] text-[var(--color-text-muted)] block mt-1">Vendas realizadas no PDV</span>
+          <span className="text-[10px] text-[var(--color-text-muted)] block mt-1">
+            {metrics.totalVendas} transações no PDV
+          </span>
         </Card>
 
-        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-blue-500/25 shadow-xs">
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-blue-500/20 shadow-xs">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Pedidos Concluídos</span>
-            <ShoppingCart className="w-4 h-4 text-blue-500" />
+            <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Lucro Bruto Estimado</span>
+            <TrendingUp className="w-4 h-4 text-blue-500" />
           </div>
-          <p className="text-xl font-black text-[var(--color-text-primary)]">{kpis.totalPedidos}</p>
-          <span className="text-[10px] text-[var(--color-text-muted)] block mt-1">Transações finalizadas no caixa</span>
+          <p className="text-2xl font-black text-blue-500 font-mono">
+            R$ {metrics.lucroEstimado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+          </p>
+          <span className="text-[10px] text-[var(--color-text-muted)] block mt-1">
+            Margem comercial estimada (~42%)
+          </span>
         </Card>
 
-        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-amber-500/25 shadow-xs">
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-amber-500/20 shadow-xs">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Ticket Médio</span>
-            <TrendingUp className="w-4 h-4 text-amber-500" />
+            <ShoppingCart className="w-4 h-4 text-amber-500" />
           </div>
-          <p className="text-xl font-black text-amber-500 font-mono">
-            R$ {kpis.ticketMedio.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+          <p className="text-2xl font-black text-amber-500 font-mono">
+            R$ {metrics.ticketMedio.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </p>
-          <span className="text-[10px] text-[var(--color-text-muted)] block mt-1">Valor médio por cesta de compras</span>
+          <span className="text-[10px] text-[var(--color-text-muted)] block mt-1">
+            Média por atendimento no caixa
+          </span>
         </Card>
 
-        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-purple-500/25 shadow-xs">
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-purple-500/20 shadow-xs">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">SKUs Cadastrados</span>
+            <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Catálogo Ativo</span>
             <Boxes className="w-4 h-4 text-purple-500" />
           </div>
-          <p className="text-xl font-black text-[var(--color-text-primary)]">{kpis.totalSkus}</p>
-          <span className="text-[10px] text-[var(--color-text-muted)] block mt-1">Itens monitorados em estoque</span>
+          <p className="text-2xl font-black text-[var(--color-text-primary)]">
+            {metrics.totalItensEstoque}
+          </p>
+          <span className="text-[10px] text-[var(--color-text-muted)] block mt-1">
+            Itens monitorados em estoque
+          </span>
         </Card>
       </div>
 
+      {/* Analytics Rows */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+        {/* Top 5 Produtos Mais Vendidos */}
+        <div className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-blue-500" /> Mais Vendidos (Volume)
+              </h4>
+              <Link to="/app/varejo/estoque" className="text-[11px] font-bold text-[var(--color-primary-blue)] hover:underline">
+                Ver Estoque
+              </Link>
+            </div>
+
+            <div className="space-y-3">
+              {metrics.topProdutos.map((p, idx) => {
+                const maxQty = metrics.topProdutos[0]?.qty || 1;
+                const pct = Math.round((p.qty / maxQty) * 100);
+                return (
+                  <div key={idx} className="space-y-1">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-semibold text-[var(--color-text-primary)] truncate max-w-[180px]">
+                        {idx + 1}. {p.name}
+                      </span>
+                      <span className="font-mono text-[var(--color-text-muted)]">
+                        <strong>{p.qty} un</strong> • R$ {p.total.toFixed(2)}
+                      </span>
+                    </div>
+                    <div className="w-full h-1.5 bg-[var(--color-surface-sunken)] rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-[var(--color-primary-blue)] rounded-full transition-all"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+
+              {metrics.topProdutos.length === 0 && (
+                <div className="text-xs text-[var(--color-text-muted)] py-6 text-center">
+                  Nenhuma venda computada ainda hoje.
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="pt-4 mt-4 border-t border-[var(--color-border-subtle)] text-[10px] text-[var(--color-text-muted)] flex justify-between">
+            <span>Calculado automaticamente via PDV</span>
+            <span className="text-emerald-500 font-bold">Alta rotatividade</span>
+          </div>
+        </div>
+
+        {/* Mix de Meios de Pagamento */}
+        <div className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
+                <CreditCard className="w-4 h-4 text-emerald-500" /> Meios de Pagamento
+              </h4>
+              <span className="text-[10px] font-mono text-[var(--color-text-muted)]">PDV Live</span>
+            </div>
+
+            <div className="space-y-3">
+              {Object.entries(metrics.paymentMap).map(([method, val], idx) => {
+                const pct = metrics.totalFaturamento > 0 ? Math.round((val / metrics.totalFaturamento) * 100) : 0;
+                let Icon = CreditCard;
+                if (method.toLowerCase().includes("pix")) Icon = QrCode;
+                if (method.toLowerCase().includes("dinheiro")) Icon = Banknote;
+
+                return (
+                  <div key={idx} className="p-2.5 rounded-xl bg-[var(--color-surface-sunken)]/60 border border-[var(--color-border-subtle)] flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border-subtle)] flex items-center justify-center text-[var(--color-text-primary)]">
+                        <Icon className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" />
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[var(--color-text-primary)]">{method}</p>
+                        <p className="text-[10px] text-[var(--color-text-muted)] font-mono">{pct}% do volume</p>
+                      </div>
+                    </div>
+                    <span className="text-xs font-black font-mono text-emerald-500">
+                      R$ {val.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="pt-4 mt-4 border-t border-[var(--color-border-subtle)] flex items-center justify-between text-xs">
+            <span className="text-[10px] text-[var(--color-text-muted)]">Total Transacionado</span>
+            <span className="font-mono font-bold text-[var(--color-text-primary)]">
+              R$ {metrics.totalFaturamento.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            </span>
+          </div>
+        </div>
+
+        {/* Reposição & Estoque Baixo */}
+        <div className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-500" /> Estoque Crítico
+              </h4>
+              <Link to="/app/varejo/compras" className="text-[11px] font-bold text-[var(--color-primary-blue)] hover:underline flex items-center gap-1">
+                Nova Compra <ArrowRight className="w-3 h-3" />
+              </Link>
+            </div>
+
+            <div className="space-y-2.5">
+              {itensCriticos.map((item, i) => (
+                <div key={i} className="p-2.5 rounded-xl bg-[var(--color-surface-sunken)]/60 border border-[var(--color-border-subtle)] flex items-center justify-between">
+                  <div className="max-w-[170px]">
+                    <p className="text-xs font-bold text-[var(--color-text-primary)] truncate">{item.name}</p>
+                    <p className="text-[10px] text-[var(--color-text-muted)]">
+                      Saldo: <strong className="text-rose-500">{item.stock} un.</strong> • Mín: {item.min}
+                    </p>
+                  </div>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                    item.status === "Crítico"
+                      ? "bg-rose-500/10 text-rose-500 border-rose-500/20"
+                      : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                  }`}>
+                    {item.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="pt-4 mt-4 border-t border-[var(--color-border-subtle)] flex items-center justify-between">
+            <span className="text-[10px] text-[var(--color-text-muted)]">Itens necessitando reposição</span>
+            <Link to="/app/varejo/estoque" className="text-xs font-bold text-[var(--color-primary-blue)] hover:underline">
+              Gerenciar Saldo
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Bottom Row: Vendas Recentes & Compras com Fornecedores */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Estoque Crítico */}
+        {/* Vendas Recentes */}
         <div className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
-              <Package className="w-4 h-4 text-amber-500" /> Itens Abaixo do Ponto de Reposição
+              <ShoppingCart className="w-4 h-4 text-emerald-500" /> Últimos Cupons / Vendas PDV
             </h4>
-            <Link to="/app/varejo/compras" className="text-[11px] font-bold text-[var(--color-primary-blue)] hover:underline flex items-center gap-1">
-              Novo Pedido <ArrowRight className="w-3 h-3" />
+            <Link to="/app/varejo/vendas" className="text-[11px] font-bold text-[var(--color-primary-blue)] hover:underline flex items-center gap-1">
+              Terminal PDV <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
+
           <div className="space-y-2">
-            {[
-              { nome: "Cabo USB-C Trançado 2m", qtd: "3 un.", minimo: "15 un.", status: "Crítico" },
-              { nome: "Adaptador Fast Charger 30W", qtd: "5 un.", minimo: "20 un.", status: "Atenção" },
-              { nome: "Película de Vidro 3D Premium", qtd: "8 un.", minimo: "30 un.", status: "Atenção" },
-            ].map((p, i) => (
-              <div key={i} className="p-3 rounded-xl bg-[var(--color-surface-sunken)]/60 border border-[var(--color-border-subtle)] flex items-center justify-between hover:bg-[var(--color-surface-sunken)] transition-colors">
+            {vendas.slice(0, 4).map((v) => (
+              <div key={v.id} className="p-3 rounded-xl bg-[var(--color-surface-sunken)]/60 border border-[var(--color-border-subtle)] flex items-center justify-between hover:bg-[var(--color-surface-sunken)] transition-colors">
                 <div>
-                  <p className="text-xs font-bold text-[var(--color-text-primary)]">{p.nome}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold text-[var(--color-primary-blue)]">{v.id}</span>
+                    <p className="text-xs font-bold text-[var(--color-text-primary)]">{v.cliente}</p>
+                  </div>
                   <p className="text-[10px] text-[var(--color-text-muted)]">
-                    Estoque atual: <strong className="text-rose-500">{p.qtd}</strong> • Mínimo desejado: {p.minimo}
+                    {v.vendedor ? `Atendido por ${v.vendedor} • ` : ""}{v.metodo} • {v.itens.length} {v.itens.length === 1 ? "item" : "itens"}
                   </p>
                 </div>
-                <Link to="/app/varejo/compras" className="text-xs font-bold text-[var(--color-primary-blue)] hover:underline">
-                  Repor Estoque
-                </Link>
+                <div className="text-right">
+                  <span className="text-xs font-black font-mono text-emerald-500 block">
+                    R$ {v.total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </span>
+                  <span className="text-[9px] text-[var(--color-text-muted)] uppercase">Concluída</span>
+                </div>
               </div>
             ))}
           </div>
@@ -161,17 +500,21 @@ export default function PainelVarejo() {
         <div className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs space-y-3">
           <div className="flex items-center justify-between">
             <h4 className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
-              <Truck className="w-4 h-4 text-blue-500" /> Últimas Compras com Fornecedores
+              <Truck className="w-4 h-4 text-blue-500" /> Ordens de Compra & Reposição
             </h4>
-            <Link to="/app/varejo/fornecedores" className="text-[11px] font-bold text-[var(--color-primary-blue)] hover:underline flex items-center gap-1">
-              Fornecedores <ArrowRight className="w-3 h-3" />
+            <Link to="/app/varejo/compras" className="text-[11px] font-bold text-[var(--color-primary-blue)] hover:underline flex items-center gap-1">
+              Ver Todas <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
+
           <div className="space-y-2">
             {compras.map((c, i) => (
               <div key={i} className="p-3 rounded-xl bg-[var(--color-surface-sunken)]/60 border border-[var(--color-border-subtle)] flex items-center justify-between hover:bg-[var(--color-surface-sunken)] transition-colors">
                 <div>
-                  <p className="text-xs font-bold text-[var(--color-text-primary)]">{c.fornecedor}</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-mono font-bold text-[var(--color-text-muted)]">{c.id}</span>
+                    <p className="text-xs font-bold text-[var(--color-text-primary)]">{c.fornecedor}</p>
+                  </div>
                   <p className="text-[10px] text-[var(--color-text-muted)]">
                     {c.data} • <strong className="text-[var(--color-text-primary)] font-mono">R$ {Number(c.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong>
                   </p>

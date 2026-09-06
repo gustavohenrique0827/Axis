@@ -6,6 +6,7 @@ import {
   DollarSign, CheckCircle2, Trash2, X
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
+import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -230,105 +231,120 @@ export default function TrocasVeiculos() {
       </div>
 
       {/* Modal de Nova Troca */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Nova Negociação com Troca</h3>
-              <button onClick={() => setModalOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
-                <X className="w-4 h-4" />
-              </button>
+      {/* Standardized Modal */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        maxWidth="max-w-md"
+        title={
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] flex items-center justify-center shrink-0">
+              <ArrowRightLeft className="w-4 h-4" />
             </div>
-
-            <form onSubmit={handleCreate} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Cliente</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Nome do cliente"
-                    value={cliente}
-                    onChange={e => setCliente(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Telefone</label>
-                  <input
-                    type="text"
-                    placeholder="(11) 90000-0000"
-                    value={telefone}
-                    onChange={e => setTelefone(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Veículo de Entrada (Cliente)</span>
-                <input
-                  type="text"
-                  required
-                  placeholder="Modelo: ex. HB20 1.6 2019"
-                  value={veiculoEntrada}
-                  onChange={e => setVeiculoEntrada(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                />
-                <input
-                  type="text"
-                  placeholder="Valor de avaliação (R$): ex. 45.000"
-                  value={valorEntrada}
-                  onChange={e => setValorEntrada(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                />
-              </div>
-
-              <div className="p-3 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] space-y-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Veículo Pretendido (Loja)</span>
-                <input
-                  type="text"
-                  required
-                  placeholder="Modelo: ex. Compass Longitude 2022"
-                  value={veiculoSaida}
-                  onChange={e => setVeiculoSaida(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                />
-                <input
-                  type="text"
-                  placeholder="Preço de venda (R$): ex. 140.000"
-                  value={valorSaida}
-                  onChange={e => setValorSaida(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Forma de Pagamento da Diferença</label>
-                <select
-                  value={formaPagamento}
-                  onChange={e => setFormaPagamento(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                >
-                  <option value="Financiamento Bancário">Financiamento Bancário</option>
-                  <option value="À Vista via Pix">À Vista via Pix</option>
-                  <option value="Cartão de Crédito">Cartão de Crédito</option>
-                  <option value="Consórcio Contemplado">Consórcio Contemplado</option>
-                </select>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="h-9 px-4 text-xs font-bold rounded-xl">
-                  Cancelar
-                </Button>
-                <Button type="submit" className="h-9 px-4 text-xs font-bold rounded-xl bg-[var(--color-primary-blue)] text-white">
-                  Registrar Troca
-                </Button>
-              </div>
-            </form>
+            <div>
+              <h3 className="text-base font-bold text-[var(--color-text-primary)]">Nova Negociação com Troca</h3>
+              <p className="text-xs text-[var(--color-text-muted)]">Configure a entrada, veículo de saída e a diferença de valor</p>
+            </div>
           </div>
-        </div>
-      )}
+        }
+        footer={
+          <div className="flex items-center justify-end gap-2 w-full">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setModalOpen(false)}
+              className="h-9 px-4 text-xs font-semibold"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="form-troca"
+              className="h-9 px-4 text-xs font-semibold bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white"
+            >
+              Registrar Troca
+            </Button>
+          </div>
+        }
+      >
+        <form id="form-troca" onSubmit={handleCreate} className="space-y-3.5 py-1">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Cliente</label>
+              <input
+                type="text"
+                required
+                placeholder="Nome do cliente"
+                value={cliente}
+                onChange={e => setCliente(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Telefone</label>
+              <input
+                type="text"
+                placeholder="(11) 90000-0000"
+                value={telefone}
+                onChange={e => setTelefone(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+          </div>
+
+          <div className="p-3 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Veículo de Entrada (Cliente)</span>
+            <input
+              type="text"
+              required
+              placeholder="Modelo: ex. HB20 1.6 2019"
+              value={veiculoEntrada}
+              onChange={e => setVeiculoEntrada(e.target.value)}
+              className="w-full px-3 py-1.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+            />
+            <input
+              type="text"
+              placeholder="Valor de avaliação (R$): ex. 45.000"
+              value={valorEntrada}
+              onChange={e => setValorEntrada(e.target.value)}
+              className="w-full px-3 py-1.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+            />
+          </div>
+
+          <div className="p-3 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] space-y-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Veículo Pretendido (Loja)</span>
+            <input
+              type="text"
+              required
+              placeholder="Modelo: ex. Compass Longitude 2022"
+              value={veiculoSaida}
+              onChange={e => setVeiculoSaida(e.target.value)}
+              className="w-full px-3 py-1.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+            />
+            <input
+              type="text"
+              placeholder="Preço de venda (R$): ex. 140.000"
+              value={valorSaida}
+              onChange={e => setValorSaida(e.target.value)}
+              className="w-full px-3 py-1.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Forma de Pagamento da Diferença</label>
+            <select
+              value={formaPagamento}
+              onChange={e => setFormaPagamento(e.target.value)}
+              className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+            >
+              <option value="Financiamento Bancário">Financiamento Bancário</option>
+              <option value="À Vista via Pix">À Vista via Pix</option>
+              <option value="Cartão de Crédito">Cartão de Crédito</option>
+              <option value="Consórcio Contemplado">Consórcio Contemplado</option>
+            </select>
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }

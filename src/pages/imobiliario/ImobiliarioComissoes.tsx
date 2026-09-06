@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
+import { Modal } from "../../components/ui/modal";
 
 type Comissao = {
   id: string;
@@ -361,177 +362,181 @@ export default function ImobiliarioComissoes() {
         </div>
       </div>
 
-      {/* Modal Nova Comissão */}
-      {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl animate-in fade-in-50 zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border-subtle)]">
-              <div>
-                <h3 className="text-base font-bold text-[var(--color-text-primary)] flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-emerald-500" /> Nova Comissão / Split de Honorários
-                </h3>
-                <p className="text-[11px] text-[var(--color-text-muted)]">
-                  Calcule comissões de venda e divisão entre corretores parceiros e imobiliária.
-                </p>
-              </div>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-1 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
-              >
-                <X className="w-5 h-5" />
-              </button>
+      {/* Standardized Modal */}
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        maxWidth="max-w-lg"
+        title={
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+              <DollarSign className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold text-[var(--color-text-primary)]">Nova Comissão / Split de Honorários</h3>
+              <p className="text-xs text-[var(--color-text-muted)]">Calcule comissões de venda e divisão entre corretores e imobiliária</p>
+            </div>
+          </div>
+        }
+        footer={
+          <div className="flex items-center justify-end gap-2 w-full">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowModal(false)}
+              className="h-9 px-4 text-xs font-semibold"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="form-comissao"
+              className="h-9 px-4 text-xs font-semibold bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white"
+            >
+              Registrar Comissão
+            </Button>
+          </div>
+        }
+      >
+        <form id="form-comissao" onSubmit={handleCreate} className="space-y-3.5 py-1">
+          <div>
+            <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">
+              Imóvel Negociado *
+            </label>
+            <input
+              value={imovel}
+              onChange={e => setImovel(e.target.value)}
+              placeholder="Ex: Apartamento 82 - Reserva Vila Nova"
+              required
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">
+                Corretor Responsável
+              </label>
+              <input
+                value={corretor}
+                onChange={e => setCorretor(e.target.value)}
+                placeholder="Nome do corretor"
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
             </div>
 
-            <form onSubmit={handleCreate} className="space-y-3.5">
-              <div>
-                <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                  Imóvel Negociado *
-                </label>
-                <input
-                  value={imovel}
-                  onChange={e => setImovel(e.target.value)}
-                  placeholder="Ex: Apartamento 82 - Reserva Vila Nova"
-                  required
-                  className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                    Corretor Responsável
-                  </label>
-                  <input
-                    value={corretor}
-                    onChange={e => setCorretor(e.target.value)}
-                    placeholder="Nome do corretor"
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                    Valor de Venda (R$) *
-                  </label>
-                  <input
-                    value={valorVenda}
-                    onChange={e => setValorVenda(e.target.value)}
-                    placeholder="Ex: 850000"
-                    type="number"
-                    required
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                    Comissão Total (%)
-                  </label>
-                  <input
-                    value={percentualTotal}
-                    onChange={e => setPercentualTotal(e.target.value)}
-                    placeholder="6"
-                    type="number"
-                    step="0.1"
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                    Repasse Corretor (%)
-                  </label>
-                  <input
-                    value={splitCorretor}
-                    onChange={e => setSplitCorretor(e.target.value)}
-                    placeholder="50"
-                    type="number"
-                    step="0.5"
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                  />
-                </div>
-              </div>
-
-              {/* Live Preview of Calculations */}
-              {numValorVenda > 0 && (
-                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-1 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-[var(--color-text-muted)]">Comissão Bruta ({numPercTotal}%):</span>
-                    <strong className="text-emerald-500 font-mono">
-                      R$ {calcComissaoTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                    </strong>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-[var(--color-text-muted)]">Repasse Corretor ({numSplitCorretor}%):</span>
-                    <strong className="text-blue-500 font-mono">
-                      R$ {calcComissaoCorretor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                    </strong>
-                  </div>
-                  <div className="flex justify-between border-t border-emerald-500/20 pt-1">
-                    <span className="text-[var(--color-text-muted)]">Líquido Imobiliária:</span>
-                    <strong className="text-[var(--color-text-primary)] font-mono">
-                      R$ {calcComissaoImobiliaria.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                    </strong>
-                  </div>
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                    Status Inicial
-                  </label>
-                  <select
-                    value={status}
-                    onChange={e => setStatus(e.target.value as Comissao["status"])}
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                  >
-                    <option value="A Receber">A Receber</option>
-                    <option value="Em Tramitação">Em Tramitação</option>
-                    <option value="Liquidada">Liquidada</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                    Previsão de Liquidação
-                  </label>
-                  <input
-                    type="date"
-                    value={previsao}
-                    onChange={e => setPrevisao(e.target.value)}
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                  Observações / Cartório
-                </label>
-                <textarea
-                  rows={2}
-                  value={observacoes}
-                  onChange={e => setObservacoes(e.target.value)}
-                  placeholder="Informações adicionais, número de matrícula, etc."
-                  className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)] resize-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--color-border-subtle)]">
-                <Button type="button" variant="ghost" onClick={() => setShowModal(false)} className="text-xs">
-                  Cancelar
-                </Button>
-                <Button type="submit" className="text-xs font-bold bg-[var(--color-primary-blue)] text-white">
-                  Registrar Comissão
-                </Button>
-              </div>
-            </form>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">
+                Valor de Venda (R$) *
+              </label>
+              <input
+                value={valorVenda}
+                onChange={e => setValorVenda(e.target.value)}
+                placeholder="Ex: 850000"
+                type="number"
+                required
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3 py-2 text-xs font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">
+                Comissão Total (%)
+              </label>
+              <input
+                value={percentualTotal}
+                onChange={e => setPercentualTotal(e.target.value)}
+                placeholder="6"
+                type="number"
+                step="0.1"
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3 py-2 text-xs font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">
+                Repasse Corretor (%)
+              </label>
+              <input
+                value={splitCorretor}
+                onChange={e => setSplitCorretor(e.target.value)}
+                placeholder="50"
+                type="number"
+                step="0.5"
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3 py-2 text-xs font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+          </div>
+
+          {/* Live Preview of Calculations */}
+          {numValorVenda > 0 && (
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-1 text-xs">
+              <div className="flex justify-between">
+                <span className="text-[var(--color-text-muted)]">Comissão Bruta ({numPercTotal}%):</span>
+                <strong className="text-emerald-500 font-mono">
+                  R$ {calcComissaoTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </strong>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--color-text-muted)]">Repasse Corretor ({numSplitCorretor}%):</span>
+                <strong className="text-blue-500 font-mono">
+                  R$ {calcComissaoCorretor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </strong>
+              </div>
+              <div className="flex justify-between border-t border-emerald-500/20 pt-1">
+                <span className="text-[var(--color-text-muted)]">Líquido Imobiliária:</span>
+                <strong className="text-[var(--color-text-primary)] font-mono">
+                  R$ {calcComissaoImobiliaria.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                </strong>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">
+                Status Inicial
+              </label>
+              <select
+                value={status}
+                onChange={e => setStatus(e.target.value as Comissao["status"])}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              >
+                <option value="A Receber">A Receber</option>
+                <option value="Em Tramitação">Em Tramitação</option>
+                <option value="Liquidada">Liquidada</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">
+                Previsão de Liquidação
+              </label>
+              <input
+                type="date"
+                value={previsao}
+                onChange={e => setPrevisao(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">
+              Observações / Cartório
+            </label>
+            <textarea
+              rows={2}
+              value={observacoes}
+              onChange={e => setObservacoes(e.target.value)}
+              placeholder="Informações adicionais, número de matrícula, etc."
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)] resize-none"
+            />
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }

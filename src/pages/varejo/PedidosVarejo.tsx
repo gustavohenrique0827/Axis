@@ -6,6 +6,7 @@ import {
   Clock, Package, ArrowRight, Plus, Trash2, X
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
+import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
@@ -229,94 +230,108 @@ export default function PedidosVarejo() {
         )}
       </div>
 
-      {/* Modal de Novo Pedido */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Registrar Pedido de Balcão</h3>
-              <button onClick={() => setModalOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
-                <X className="w-4 h-4" />
-              </button>
+      {/* Standardized Modal */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        maxWidth="max-w-md"
+        title={
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] flex items-center justify-center shrink-0">
+              <ShoppingBag className="w-4 h-4" />
             </div>
-
-            <form onSubmit={handleCreate} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Nome do Cliente</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Nome completo"
-                    value={cliente}
-                    onChange={e => setCliente(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Telefone</label>
-                  <input
-                    type="text"
-                    placeholder="(11) 90000-0000"
-                    value={telefone}
-                    onChange={e => setTelefone(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Itens Vendidos</label>
-                <textarea
-                  rows={2}
-                  required
-                  placeholder="Ex: 1x Capa iPhone 15 Pro, 1x Película de Vidro 9D"
-                  value={itens}
-                  onChange={e => setItens(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Valor Total (R$)</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ex: 159.90"
-                    value={total}
-                    onChange={e => setTotal(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Forma de Pagamento</label>
-                  <select
-                    value={formaPagto}
-                    onChange={e => setFormaPagto(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  >
-                    <option value="Pix">Pix</option>
-                    <option value="Cartão de Crédito">Cartão de Crédito</option>
-                    <option value="Cartão de Débito">Cartão de Débito</option>
-                    <option value="Dinheiro">Dinheiro</option>
-                    <option value="Boleto Bancário">Boleto Bancário</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="h-9 px-4 text-xs font-bold rounded-xl">
-                  Cancelar
-                </Button>
-                <Button type="submit" className="h-9 px-4 text-xs font-bold rounded-xl bg-[var(--color-primary-blue)] text-white">
-                  Registrar Pedido
-                </Button>
-              </div>
-            </form>
+            <div>
+              <h3 className="text-base font-bold text-[var(--color-text-primary)]">Registrar Pedido de Balcão</h3>
+              <p className="text-xs text-[var(--color-text-muted)]">Cadastre vendas manuais e entregas sob demanda</p>
+            </div>
           </div>
-        </div>
-      )}
+        }
+        footer={
+          <div className="flex items-center justify-end gap-2 w-full">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setModalOpen(false)}
+              className="h-9 px-4 text-xs font-semibold"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="form-pedidos"
+              className="h-9 px-4 text-xs font-semibold bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white"
+            >
+              Registrar Pedido
+            </Button>
+          </div>
+        }
+      >
+        <form id="form-pedidos" onSubmit={handleCreate} className="space-y-3.5 py-1">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Nome do Cliente</label>
+              <input
+                type="text"
+                required
+                placeholder="Nome completo"
+                value={cliente}
+                onChange={e => setCliente(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Telefone</label>
+              <input
+                type="text"
+                placeholder="(11) 90000-0000"
+                value={telefone}
+                onChange={e => setTelefone(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Itens Vendidos</label>
+            <textarea
+              rows={2}
+              required
+              placeholder="Ex: 1x Capa iPhone 15 Pro, 1x Película de Vidro 9D"
+              value={itens}
+              onChange={e => setItens(e.target.value)}
+              className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)] resize-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Valor Total (R$)</label>
+              <input
+                type="text"
+                required
+                placeholder="Ex: 159.90"
+                value={total}
+                onChange={e => setTotal(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Forma de Pagamento</label>
+              <select
+                value={formaPagto}
+                onChange={e => setFormaPagto(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              >
+                <option value="Pix">Pix</option>
+                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                <option value="Cartão de Débito">Cartão de Débito</option>
+                <option value="Dinheiro">Dinheiro</option>
+                <option value="Boleto Bancário">Boleto Bancário</option>
+              </select>
+            </div>
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }

@@ -6,6 +6,7 @@ import {
   Building2, DollarSign, Package, Trash2, X
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
+import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -178,111 +179,125 @@ export default function FornecedoresVarejo() {
         )}
       </div>
 
-      {/* Modal de Novo Fornecedor */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Cadastrar Novo Fornecedor</h3>
-              <button onClick={() => setModalOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
-                <X className="w-4 h-4" />
-              </button>
+      {/* Standardized Modal */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        maxWidth="max-w-md"
+        title={
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] flex items-center justify-center shrink-0">
+              <Truck className="w-4 h-4" />
             </div>
-
-            <form onSubmit={handleCreate} className="space-y-3">
-              <div>
-                <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Razão Social / Nome Fantasia</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Distribuidora Nacional de Peças SA"
-                  value={razaoSocial}
-                  onChange={e => setRazaoSocial(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">CNPJ</label>
-                  <input
-                    type="text"
-                    placeholder="00.000.000/0001-00"
-                    value={cnpj}
-                    onChange={e => setCnpj(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Nome do Vendedor / Contato</label>
-                  <input
-                    type="text"
-                    placeholder="Nome completo"
-                    value={contato}
-                    onChange={e => setContato(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Telefone / WhatsApp</label>
-                  <input
-                    type="text"
-                    placeholder="(11) 90000-0000"
-                    value={telefone}
-                    onChange={e => setTelefone(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">E-mail Comercial</label>
-                  <input
-                    type="email"
-                    placeholder="pedidos@empresa.com"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Prazo de Entrega</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: 3 dias úteis"
-                    value={prazoEntrega}
-                    onChange={e => setPrazoEntrega(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Linhas / Categorias</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: Acessórios, Cabos"
-                    value={categorias}
-                    onChange={e => setCategorias(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="h-9 px-4 text-xs font-bold rounded-xl">
-                  Cancelar
-                </Button>
-                <Button type="submit" className="h-9 px-4 text-xs font-bold rounded-xl bg-[var(--color-primary-blue)] text-white">
-                  Salvar Fornecedor
-                </Button>
-              </div>
-            </form>
+            <div>
+              <h3 className="text-base font-bold text-[var(--color-text-primary)]">Cadastrar Novo Fornecedor</h3>
+              <p className="text-xs text-[var(--color-text-muted)]">Dados cadastrais e contato comercial do parceiro</p>
+            </div>
           </div>
-        </div>
-      )}
+        }
+        footer={
+          <div className="flex items-center justify-end gap-2 w-full">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setModalOpen(false)}
+              className="h-9 px-4 text-xs font-semibold"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="form-fornecedores"
+              className="h-9 px-4 text-xs font-semibold bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white"
+            >
+              Salvar Fornecedor
+            </Button>
+          </div>
+        }
+      >
+        <form id="form-fornecedores" onSubmit={handleCreate} className="space-y-3.5 py-1">
+          <div>
+            <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Razão Social / Nome Fantasia</label>
+            <input
+              type="text"
+              required
+              placeholder="Ex: Distribuidora Nacional de Peças SA"
+              value={razaoSocial}
+              onChange={e => setRazaoSocial(e.target.value)}
+              className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">CNPJ</label>
+              <input
+                type="text"
+                placeholder="00.000.000/0001-00"
+                value={cnpj}
+                onChange={e => setCnpj(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Nome do Contato</label>
+              <input
+                type="text"
+                placeholder="Nome completo"
+                value={contato}
+                onChange={e => setContato(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Telefone / WhatsApp</label>
+              <input
+                type="text"
+                placeholder="(11) 90000-0000"
+                value={telefone}
+                onChange={e => setTelefone(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">E-mail Comercial</label>
+              <input
+                type="email"
+                placeholder="pedidos@empresa.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Prazo de Entrega</label>
+              <input
+                type="text"
+                placeholder="Ex: 3 dias úteis"
+                value={prazoEntrega}
+                onChange={e => setPrazoEntrega(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Linhas / Categorias</label>
+              <input
+                type="text"
+                placeholder="Ex: Acessórios, Cabos"
+                value={categorias}
+                onChange={e => setCategorias(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }

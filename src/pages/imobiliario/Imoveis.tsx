@@ -10,6 +10,7 @@ import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
+import { Modal } from "../../components/ui/modal";
 import { Link } from "react-router-dom";
 
 type Imovel = {
@@ -38,9 +39,9 @@ const TIPOS = ["Todos", "Apartamento", "Casa", "Cobertura", "Kitnet", "Comercial
 const STATUS_LIST = ["Todos", "Disponível", "Vendido", "Locado", "Reservado"];
 const OPERACOES = ["Todos", "Venda", "Locação"];
 
-const FIELD = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
-const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
-const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
+const FIELD = "w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:border-blue-500/50";
+const SELECT = "w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3.5 py-2.5 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:border-blue-500/50";
+const LABEL = "text-[10px] font-black text-[var(--color-text-faint)] uppercase tracking-wider mb-1.5 block";
 
 const statusColor = (s: string) => {
   if (s === "Disponível") return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
@@ -94,118 +95,135 @@ function ImovelFormModal({ onClose, onSave, initial }: {
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
   const isEdit = Boolean(initial?.id);
 
-  return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-white/5">
-          <div>
-            <h2 className="text-base font-black text-white">{isEdit ? "Editar Imóvel" : "Novo Imóvel"}</h2>
-            <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações do imóvel" : "Cadastre um novo imóvel ao portfólio"}</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
-        </div>
-        <div className="p-6 space-y-4">
-          <div>
-            <label className={LABEL}>Título do Imóvel</label>
-            <input value={form.titulo} onChange={e => set("titulo", e.target.value)} placeholder="Ex: Apartamento 3 quartos - Moema" className={FIELD} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={LABEL}>Tipo</label>
-              <select value={form.tipo} onChange={e => set("tipo", e.target.value)} className={SELECT}>
-                {["Apartamento","Casa","Cobertura","Kitnet","Comercial","Terreno"].map(t => <option key={t}>{t}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={LABEL}>Operação</label>
-              <select value={form.operacao} onChange={e => set("operacao", e.target.value)} className={SELECT}>
-                <option>Venda</option><option>Locação</option>
-              </select>
-            </div>
-            <div>
-              <label className={LABEL}>Status</label>
-              <select value={form.status} onChange={e => set("status", e.target.value)} className={SELECT}>
-                {["Disponível","Reservado","Vendido","Locado"].map(s => <option key={s}>{s}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={LABEL}>Valor (R$)</label>
-              <input type="number" value={form.valor} onChange={e => set("valor", e.target.value)} placeholder="850000" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Condomínio (R$/mês)</label>
-              <input type="number" value={form.condominio} onChange={e => set("condominio", e.target.value)} placeholder="800" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>IPTU (R$/ano)</label>
-              <input type="number" value={form.iptu} onChange={e => set("iptu", e.target.value)} placeholder="2400" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Área (m²)</label>
-              <input type="number" value={form.area} onChange={e => set("area", e.target.value)} placeholder="120" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Bairro</label>
-              <input value={form.bairro} onChange={e => set("bairro", e.target.value)} placeholder="Moema" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Cidade</label>
-              <input value={form.cidade} onChange={e => set("cidade", e.target.value)} placeholder="São Paulo" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Quartos</label>
-              <input type="number" value={form.quartos} onChange={e => set("quartos", e.target.value)} min="0" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Banheiros</label>
-              <input type="number" value={form.banheiros} onChange={e => set("banheiros", e.target.value)} min="0" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Vagas de Garagem</label>
-              <input type="number" value={form.vagas} onChange={e => set("vagas", e.target.value)} min="0" className={FIELD} />
-            </div>
-            <div className="col-span-2">
-              <label className={LABEL}>Corretor Responsável</label>
-              <input value={form.corretor} onChange={e => set("corretor", e.target.value)} placeholder="Nome do corretor" className={FIELD} />
-            </div>
-            <div className="col-span-2">
-              <label className={LABEL}>Descrição</label>
-              <textarea value={form.descricao} onChange={e => set("descricao", e.target.value)} rows={3} placeholder="Descrição do imóvel..." className={`${FIELD} resize-none`} />
-            </div>
-          </div>
+  const handleSave = () => {
+    if (!form.titulo.trim()) { toast.error("Título é obrigatório"); return; }
+    onSave({
+      ...form,
+      valor: Number(form.valor), area: Number(form.area),
+      quartos: Number(form.quartos), banheiros: Number(form.banheiros), vagas: Number(form.vagas),
+      condominio: form.condominio ? Number(form.condominio) : undefined,
+      iptu: form.iptu ? Number(form.iptu) : undefined,
+    });
+    onClose();
+  };
 
-          {Number(form.valor) > 0 && (
-            <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center justify-between text-xs">
-              <span className="text-slate-300">
-                Comissão Imobiliária Estimada ({form.operacao === "Venda" ? "6%" : "1º Aluguel"}):
-              </span>
-              <span className="font-mono font-black text-blue-400">
-                {(form.operacao === "Venda" ? Number(form.valor) * 0.06 : Number(form.valor)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-              </span>
-            </div>
-          )}
+  return (
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      maxWidth="max-w-2xl"
+      title={
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold shrink-0">
+            <Building2 className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-[var(--color-text-primary)]">
+              {isEdit ? "Editar Imóvel" : "Novo Imóvel no Portfólio"}
+            </h3>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {isEdit ? "Atualize as informações do imóvel" : "Cadastre um novo imóvel ao catálogo da imobiliária"}
+            </p>
+          </div>
         </div>
-        <div className="p-6 border-t border-white/5 flex justify-end gap-3">
-          <Button variant="ghost" onClick={onClose} className="text-slate-400">Cancelar</Button>
+      }
+      footer={
+        <>
+          <Button variant="ghost" size="sm" onClick={onClose} className="text-xs">
+            Cancelar
+          </Button>
           <Button
-            onClick={() => {
-              if (!form.titulo.trim()) { toast.error("Título é obrigatório"); return; }
-              onSave({
-                ...form,
-                valor: Number(form.valor), area: Number(form.area),
-                quartos: Number(form.quartos), banheiros: Number(form.banheiros), vagas: Number(form.vagas),
-                condominio: form.condominio ? Number(form.condominio) : undefined,
-                iptu: form.iptu ? Number(form.iptu) : undefined,
-              });
-              onClose();
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6"
+            size="sm"
+            onClick={handleSave}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 text-xs font-bold"
           >
             {isEdit ? "Salvar Alterações" : "Cadastrar Imóvel"}
           </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div>
+          <label className={LABEL}>Título do Imóvel *</label>
+          <input value={form.titulo} onChange={e => set("titulo", e.target.value)} placeholder="Ex: Apartamento 3 quartos - Moema" className={FIELD} />
         </div>
+        <div className="grid grid-cols-2 gap-3.5">
+          <div>
+            <label className={LABEL}>Tipo</label>
+            <select value={form.tipo} onChange={e => set("tipo", e.target.value)} className={SELECT}>
+              {["Apartamento","Casa","Cobertura","Kitnet","Comercial","Terreno"].map(t => <option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={LABEL}>Operação</label>
+            <select value={form.operacao} onChange={e => set("operacao", e.target.value)} className={SELECT}>
+              <option>Venda</option><option>Locação</option>
+            </select>
+          </div>
+          <div>
+            <label className={LABEL}>Status</label>
+            <select value={form.status} onChange={e => set("status", e.target.value)} className={SELECT}>
+              {["Disponível","Reservado","Vendido","Locado"].map(s => <option key={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={LABEL}>Valor (R$)</label>
+            <input type="number" value={form.valor} onChange={e => set("valor", e.target.value)} placeholder="850000" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Condomínio (R$/mês)</label>
+            <input type="number" value={form.condominio} onChange={e => set("condominio", e.target.value)} placeholder="800" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>IPTU (R$/ano)</label>
+            <input type="number" value={form.iptu} onChange={e => set("iptu", e.target.value)} placeholder="2400" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Área (m²)</label>
+            <input type="number" value={form.area} onChange={e => set("area", e.target.value)} placeholder="120" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Bairro</label>
+            <input value={form.bairro} onChange={e => set("bairro", e.target.value)} placeholder="Moema" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Cidade</label>
+            <input value={form.cidade} onChange={e => set("cidade", e.target.value)} placeholder="São Paulo" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Quartos</label>
+            <input type="number" value={form.quartos} onChange={e => set("quartos", e.target.value)} min="0" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Banheiros</label>
+            <input type="number" value={form.banheiros} onChange={e => set("banheiros", e.target.value)} min="0" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Vagas de Garagem</label>
+            <input type="number" value={form.vagas} onChange={e => set("vagas", e.target.value)} min="0" className={FIELD} />
+          </div>
+          <div className="col-span-2">
+            <label className={LABEL}>Corretor Responsável</label>
+            <input value={form.corretor} onChange={e => set("corretor", e.target.value)} placeholder="Nome do corretor" className={FIELD} />
+          </div>
+          <div className="col-span-2">
+            <label className={LABEL}>Descrição</label>
+            <textarea value={form.descricao} onChange={e => set("descricao", e.target.value)} rows={3} placeholder="Descrição do imóvel..." className={`${FIELD} resize-none`} />
+          </div>
+        </div>
+
+        {Number(form.valor) > 0 && (
+          <div className="p-3.5 bg-blue-500/10 border border-blue-500/20 rounded-xl flex items-center justify-between text-xs">
+            <span className="text-[var(--color-text-muted)]">
+              Comissão Imobiliária Estimada ({form.operacao === "Venda" ? "6%" : "1º Aluguel"}):
+            </span>
+            <span className="font-mono font-black text-blue-500">
+              {(form.operacao === "Venda" ? Number(form.valor) * 0.06 : Number(form.valor)).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+            </span>
+          </div>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }
 

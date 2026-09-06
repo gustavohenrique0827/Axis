@@ -8,6 +8,7 @@ import {
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Card } from "../../components/ui/card";
+import { Modal } from "../../components/ui/modal";
 import { useAuth } from "../../contexts/AuthContext";
 
 interface TestDriveItem {
@@ -238,110 +239,125 @@ export default function TestDrives() {
       </div>
 
       {/* Modal de Novo Test-Drive */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Agendar Novo Test-Drive</h3>
-              <button onClick={() => setModalOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
-                <X className="w-4 h-4" />
-              </button>
+      {/* Standardized Modal */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        maxWidth="max-w-md"
+        title={
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] flex items-center justify-center shrink-0">
+              <Calendar className="w-4 h-4" />
             </div>
-
-            <form onSubmit={handleCreate} className="space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Nome do Cliente</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Nome completo"
-                    value={cliente}
-                    onChange={e => setCliente(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Telefone / WhatsApp</label>
-                  <input
-                    type="text"
-                    placeholder="(11) 90000-0000"
-                    value={telefone}
-                    onChange={e => setTelefone(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Veículo do Test-Drive</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Jeep Commander Limited T270 2023"
-                  value={carro}
-                  onChange={e => setCarro(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Data</label>
-                  <input
-                    type="date"
-                    value={data}
-                    onChange={e => setData(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Horário</label>
-                  <input
-                    type="time"
-                    value={hora}
-                    onChange={e => setHora(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Consultor Acompanhante</label>
-                <input
-                  type="text"
-                  placeholder="Nome do consultor"
-                  value={vendedor}
-                  onChange={e => setVendedor(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                />
-              </div>
-
-              <div className="flex items-center gap-2 pt-1">
-                <input
-                  type="checkbox"
-                  id="cnhCheck"
-                  checked={cnhValida}
-                  onChange={e => setCnhValida(e.target.checked)}
-                  className="rounded border-[var(--color-border-default)] text-[var(--color-primary-blue)]"
-                />
-                <label htmlFor="cnhCheck" className="text-xs text-[var(--color-text-primary)] cursor-pointer">
-                  CNH física ou digital validada
-                </label>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="h-9 px-4 text-xs font-bold rounded-xl">
-                  Cancelar
-                </Button>
-                <Button type="submit" className="h-9 px-4 text-xs font-bold rounded-xl bg-[var(--color-primary-blue)] text-white">
-                  Confirmar Agendamento
-                </Button>
-              </div>
-            </form>
+            <div>
+              <h3 className="text-base font-bold text-[var(--color-text-primary)]">Agendar Novo Test-Drive</h3>
+              <p className="text-xs text-[var(--color-text-muted)]">Cadastre o cliente, veículo e horário agendado</p>
+            </div>
           </div>
-        </div>
-      )}
+        }
+        footer={
+          <div className="flex items-center justify-end gap-2 w-full">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setModalOpen(false)}
+              className="h-9 px-4 text-xs font-semibold"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="form-test-drive"
+              className="h-9 px-4 text-xs font-semibold bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white"
+            >
+              Confirmar Agendamento
+            </Button>
+          </div>
+        }
+      >
+        <form id="form-test-drive" onSubmit={handleCreate} className="space-y-3.5 py-1">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Nome do Cliente</label>
+              <input
+                type="text"
+                required
+                placeholder="Nome completo"
+                value={cliente}
+                onChange={e => setCliente(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Telefone / WhatsApp</label>
+              <input
+                type="text"
+                placeholder="(11) 90000-0000"
+                value={telefone}
+                onChange={e => setTelefone(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Veículo do Test-Drive</label>
+            <input
+              type="text"
+              required
+              placeholder="Ex: Jeep Commander Limited T270 2023"
+              value={carro}
+              onChange={e => setCarro(e.target.value)}
+              className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Data</label>
+              <input
+                type="date"
+                value={data}
+                onChange={e => setData(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Horário</label>
+              <input
+                type="time"
+                value={hora}
+                onChange={e => setHora(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Consultor Acompanhante</label>
+            <input
+              type="text"
+              placeholder="Nome do consultor"
+              value={vendedor}
+              onChange={e => setVendedor(e.target.value)}
+              className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <input
+              type="checkbox"
+              id="cnhCheck"
+              checked={cnhValida}
+              onChange={e => setCnhValida(e.target.checked)}
+              className="rounded border-[var(--color-border-default)] text-[var(--color-primary-blue)]"
+            />
+            <label htmlFor="cnhCheck" className="text-xs text-[var(--color-text-primary)] cursor-pointer select-none">
+              CNH física ou digital validada
+            </label>
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }

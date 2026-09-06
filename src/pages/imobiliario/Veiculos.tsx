@@ -10,6 +10,7 @@ import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
+import { Modal } from "../../components/ui/modal";
 import { VeiculoFinanciamentoModal } from "./components/VeiculoFinanciamentoModal";
 import { Link } from "react-router-dom";
 
@@ -41,9 +42,9 @@ const COMBUSTIVEIS = ["Todos", "Flex", "Gasolina", "Diesel", "Elétrico", "Híbr
 const CAMBIOS = ["Manual", "Automático", "CVT"];
 const STATUS_LIST = ["Todos", "Disponível", "Reservado", "Vendido", "Em Preparação"];
 
-const FIELD = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
-const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
-const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
+const FIELD = "w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:border-blue-500/50";
+const SELECT = "w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3.5 py-2.5 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:border-blue-500/50";
+const LABEL = "text-[10px] font-black text-[var(--color-text-faint)] uppercase tracking-wider mb-1.5 block";
 
 const statusColor = (s: string) => {
   if (s === "Disponível") return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
@@ -97,130 +98,149 @@ function VeiculoFormModal({ onClose, onSave, initial }: {
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
   const isEdit = Boolean(initial?.id);
 
-  return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto shadow-2xl">
-        <div className="flex items-center justify-between p-6 border-b border-white/5">
-          <div>
-            <h2 className="text-base font-black text-white">{isEdit ? "Editar Veículo" : "Novo Veículo"}</h2>
-            <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações do veículo" : "Cadastre um novo veículo ao estoque"}</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
-        </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={LABEL}>Marca</label>
-              <input value={form.marca} onChange={e => set("marca", e.target.value)} placeholder="Ex: Honda" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Modelo</label>
-              <input value={form.modelo} onChange={e => set("modelo", e.target.value)} placeholder="Ex: Civic EXL" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Ano Fabricação</label>
-              <input type="number" value={form.ano_fabricacao} onChange={e => set("ano_fabricacao", e.target.value)} className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Ano Modelo</label>
-              <input type="number" value={form.ano_modelo} onChange={e => set("ano_modelo", e.target.value)} className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>KM</label>
-              <input type="number" value={form.km} onChange={e => set("km", e.target.value)} placeholder="45000" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Placa</label>
-              <input value={form.placa} onChange={e => set("placa", e.target.value)} placeholder="ABC-1D23" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Cor</label>
-              <input value={form.cor} onChange={e => set("cor", e.target.value)} placeholder="Prata" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Combustível</label>
-              <select value={form.combustivel} onChange={e => set("combustivel", e.target.value)} className={SELECT}>
-                {COMBUSTIVEIS.filter(c => c !== "Todos").map(c => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={LABEL}>Câmbio</label>
-              <select value={form.cambio} onChange={e => set("cambio", e.target.value)} className={SELECT}>
-                {CAMBIOS.map(c => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={LABEL}>Valor (R$)</label>
-              <input type="number" value={form.valor} onChange={e => set("valor", e.target.value)} placeholder="85000" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Status</label>
-              <select value={form.status} onChange={e => set("status", e.target.value)} className={SELECT}>
-                {STATUS_LIST.filter(s => s !== "Todos").map(s => <option key={s}>{s}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={LABEL}>Vendedor Responsável</label>
-              <input value={form.vendedor} onChange={e => set("vendedor", e.target.value)} placeholder="Nome do vendedor" className={FIELD} />
-            </div>
-            <div className="col-span-2">
-              <label className={LABEL}>Descrição</label>
-              <textarea value={form.descricao} onChange={e => set("descricao", e.target.value)} rows={3} placeholder="Descrição do veículo, opcionais, estado de conservação..." className={`${FIELD} resize-none`} />
-            </div>
-          </div>
+  const handleSave = () => {
+    if (!form.marca.trim() || !form.modelo.trim()) { toast.error("Marca e modelo são obrigatórios"); return; }
+    onSave({
+      ...form,
+      ano_fabricacao: Number(form.ano_fabricacao) || null,
+      ano_modelo: Number(form.ano_modelo) || null,
+      km: Number(form.km) || 0,
+      valor: Number(form.valor) || 0,
+      comissao_percentual: form.is_consignado ? (Number(form.comissao_percentual) || 0) : null,
+      consignante_nome: form.is_consignado ? form.consignante_nome : null,
+      consignante_telefone: form.is_consignado ? form.consignante_telefone : null,
+    });
+    onClose();
+  };
 
-          <div className="pt-4 mt-2 border-t border-white/10">
-            <label className="flex items-center gap-2.5 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.is_consignado}
-                onChange={e => setForm(f => ({ ...f, is_consignado: e.target.checked }))}
-                className="w-4 h-4 accent-blue-600"
-              />
-              <span className="text-xs font-bold text-white flex items-center gap-1.5"><HandCoins className="w-3.5 h-3.5 text-amber-400" /> Veículo Consignado (de terceiro, venda por comissão)</span>
-            </label>
-            {form.is_consignado && (
-              <div className="grid grid-cols-2 gap-4 mt-3">
-                <div>
-                  <label className={LABEL}>Nome do Consignante</label>
-                  <input value={form.consignante_nome} onChange={e => set("consignante_nome", e.target.value)} placeholder="Ex: José da Silva" className={FIELD} />
-                </div>
-                <div>
-                  <label className={LABEL}>Telefone do Consignante</label>
-                  <input value={form.consignante_telefone} onChange={e => set("consignante_telefone", e.target.value)} placeholder="(11) 99999-0000" className={FIELD} />
-                </div>
-                <div className="col-span-2">
-                  <label className={LABEL}>Comissão da Loja (%)</label>
-                  <input type="number" min="0" max="100" value={form.comissao_percentual} onChange={e => set("comissao_percentual", e.target.value)} className={FIELD} />
-                </div>
-              </div>
-            )}
+  return (
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      maxWidth="max-w-2xl"
+      title={
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold shrink-0">
+            <Car className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-base font-black text-[var(--color-text-primary)]">
+              {isEdit ? "Editar Veículo" : "Novo Veículo no Estoque"}
+            </h3>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              {isEdit ? "Atualize as informações do veículo" : "Cadastre um novo veículo ao catálogo da concessionária"}
+            </p>
           </div>
         </div>
-        <div className="p-6 border-t border-white/5 flex justify-end gap-3">
-          <Button variant="ghost" onClick={onClose} className="text-slate-400">Cancelar</Button>
+      }
+      footer={
+        <>
+          <Button variant="ghost" size="sm" onClick={onClose} className="text-xs">
+            Cancelar
+          </Button>
           <Button
-            onClick={() => {
-              if (!form.marca.trim() || !form.modelo.trim()) { toast.error("Marca e modelo são obrigatórios"); return; }
-              onSave({
-                ...form,
-                ano_fabricacao: Number(form.ano_fabricacao) || null,
-                ano_modelo: Number(form.ano_modelo) || null,
-                km: Number(form.km) || 0,
-                valor: Number(form.valor) || 0,
-                comissao_percentual: form.is_consignado ? (Number(form.comissao_percentual) || 0) : null,
-                consignante_nome: form.is_consignado ? form.consignante_nome : null,
-                consignante_telefone: form.is_consignado ? form.consignante_telefone : null,
-              });
-              onClose();
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6"
+            size="sm"
+            onClick={handleSave}
+            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 text-xs font-bold"
           >
             {isEdit ? "Salvar Alterações" : "Cadastrar Veículo"}
           </Button>
+        </>
+      }
+    >
+      <div className="space-y-4">
+        <div className="grid grid-cols-2 gap-3.5">
+          <div>
+            <label className={LABEL}>Marca *</label>
+            <input value={form.marca} onChange={e => set("marca", e.target.value)} placeholder="Ex: Honda" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Modelo *</label>
+            <input value={form.modelo} onChange={e => set("modelo", e.target.value)} placeholder="Ex: Civic EXL" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Ano Fabricação</label>
+            <input type="number" value={form.ano_fabricacao} onChange={e => set("ano_fabricacao", e.target.value)} className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Ano Modelo</label>
+            <input type="number" value={form.ano_modelo} onChange={e => set("ano_modelo", e.target.value)} className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>KM</label>
+            <input type="number" value={form.km} onChange={e => set("km", e.target.value)} placeholder="45000" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Placa</label>
+            <input value={form.placa} onChange={e => set("placa", e.target.value)} placeholder="ABC-1D23" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Cor</label>
+            <input value={form.cor} onChange={e => set("cor", e.target.value)} placeholder="Prata" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Combustível</label>
+            <select value={form.combustivel} onChange={e => set("combustivel", e.target.value)} className={SELECT}>
+              {COMBUSTIVEIS.filter(c => c !== "Todos").map(c => <option key={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={LABEL}>Câmbio</label>
+            <select value={form.cambio} onChange={e => set("cambio", e.target.value)} className={SELECT}>
+              {CAMBIOS.map(c => <option key={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={LABEL}>Valor de Venda (R$)</label>
+            <input type="number" value={form.valor} onChange={e => set("valor", e.target.value)} placeholder="85000" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Status</label>
+            <select value={form.status} onChange={e => set("status", e.target.value)} className={SELECT}>
+              {STATUS_LIST.filter(s => s !== "Todos").map(s => <option key={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={LABEL}>Vendedor Responsável</label>
+            <input value={form.vendedor} onChange={e => set("vendedor", e.target.value)} placeholder="Nome do vendedor" className={FIELD} />
+          </div>
+          <div className="col-span-2">
+            <label className={LABEL}>Descrição & Opcionais</label>
+            <textarea value={form.descricao} onChange={e => set("descricao", e.target.value)} rows={3} placeholder="Descrição do veículo, opcionais, estado de conservação..." className={`${FIELD} resize-none`} />
+          </div>
+        </div>
+
+        <div className="pt-3 border-t border-[var(--color-border-subtle)]">
+          <label className="flex items-center gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={form.is_consignado}
+              onChange={e => setForm(f => ({ ...f, is_consignado: e.target.checked }))}
+              className="w-4 h-4 accent-blue-600 rounded"
+            />
+            <span className="text-xs font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+              <HandCoins className="w-3.5 h-3.5 text-amber-500" /> Veículo Consignado (de terceiro, venda por comissão)
+            </span>
+          </label>
+          {form.is_consignado && (
+            <div className="grid grid-cols-2 gap-3.5 mt-3 p-3.5 bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl">
+              <div>
+                <label className={LABEL}>Nome do Consignante</label>
+                <input value={form.consignante_nome} onChange={e => set("consignante_nome", e.target.value)} placeholder="Ex: José da Silva" className={FIELD} />
+              </div>
+              <div>
+                <label className={LABEL}>Telefone do Consignante</label>
+                <input value={form.consignante_telefone} onChange={e => set("consignante_telefone", e.target.value)} placeholder="(11) 99999-0000" className={FIELD} />
+              </div>
+              <div className="col-span-2">
+                <label className={LABEL}>Comissão da Concessionária (%)</label>
+                <input type="number" min="0" max="100" value={form.comissao_percentual} onChange={e => set("comissao_percentual", e.target.value)} className={FIELD} />
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 

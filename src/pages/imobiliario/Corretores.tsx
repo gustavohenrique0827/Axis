@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
+import { Modal } from "../../components/ui/modal";
 
 type Corretor = {
   id: string;
@@ -33,9 +34,9 @@ type Corretor = {
 
 const ESPECIALIDADES = ["Residencial", "Comercial", "Alto Padrão", "Lançamentos", "Rural", "Industrial"];
 
-const FIELD = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
-const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
-const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
+const FIELD = "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3.5 py-2 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary-blue)]";
+const SELECT = "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3.5 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]";
+const LABEL = "text-xs font-semibold text-[var(--color-text-primary)] mb-1.5 block";
 
 function StarRating({ value }: { value: number }) {
   return (
@@ -77,77 +78,94 @@ function CorretorFormModal({ onClose, onSave, initial }: {
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
   const isEdit = Boolean(initial?.id);
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.nome.trim()) {
+      toast.error("Nome é obrigatório");
+      return;
+    }
+    onSave({ ...form, meta: Number(form.meta) || 5, comissaoPct: Number(form.comissaoPct) || 0 });
+    onClose();
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-white/5">
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      maxWidth="max-w-lg"
+      title={
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] flex items-center justify-center shrink-0">
+            <Users className="w-4 h-4" />
+          </div>
           <div>
-            <h2 className="text-base font-black text-white">{isEdit ? "Editar Corretor" : "Novo Corretor"}</h2>
-            <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize os dados do corretor" : "Cadastre um novo membro da equipe"}</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
-        </div>
-        <div className="p-6 space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={LABEL}>Nome Completo</label>
-              <input value={form.nome} onChange={e => set("nome", e.target.value)} placeholder="Ana Lima" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>CRECI</label>
-              <input value={form.creci} onChange={e => set("creci", e.target.value)} placeholder="CRECI-SP 123456" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Telefone</label>
-              <input value={form.telefone} onChange={e => set("telefone", e.target.value)} placeholder="(11) 99999-9999" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>E-mail</label>
-              <input value={form.email} onChange={e => set("email", e.target.value)} placeholder="corretor@email.com" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Especialidade</label>
-              <select value={form.especialidade} onChange={e => set("especialidade", e.target.value)} className={SELECT}>
-                {ESPECIALIDADES.map(e => <option key={e}>{e}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className={LABEL}>Meta Mensal (vendas)</label>
-              <input type="number" value={form.meta} onChange={e => set("meta", e.target.value)} placeholder="5" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Comissão (%)</label>
-              <input type="number" step="0.5" min="0" max="100" value={form.comissaoPct} onChange={e => set("comissaoPct", e.target.value)} placeholder="5" className={FIELD} />
-            </div>
-            {isEdit && (
-              <div>
-                <label className={LABEL}>Status</label>
-                <select value={form.status} onChange={e => set("status", e.target.value)} className={SELECT}>
-                  <option>Ativo</option><option>Inativo</option>
-                </select>
-              </div>
-            )}
-            <div className={isEdit ? "" : "col-span-2"}>
-              <label className={LABEL}>Bio / Descrição</label>
-              <textarea value={form.bio} onChange={e => set("bio", e.target.value)} rows={3} placeholder="Fale sobre a experiência e especialização..." className={`${FIELD} resize-none`} />
-            </div>
+            <h2 className="text-base font-bold text-[var(--color-text-primary)]">{isEdit ? "Editar Corretor" : "Novo Corretor"}</h2>
+            <p className="text-xs text-[var(--color-text-muted)]">{isEdit ? "Atualize os dados do corretor" : "Cadastre um novo membro da equipe"}</p>
           </div>
         </div>
-        <div className="p-6 border-t border-white/5 flex justify-end gap-3">
-          <Button variant="ghost" onClick={onClose} className="text-slate-400">Cancelar</Button>
+      }
+      footer={
+        <div className="flex items-center justify-end gap-2 w-full">
+          <Button type="button" variant="outline" onClick={onClose} className="h-9 px-4 text-xs font-semibold">
+            Cancelar
+          </Button>
           <Button
-            onClick={() => {
-              if (!form.nome.trim()) { toast.error("Nome é obrigatório"); return; }
-              onSave({ ...form, meta: Number(form.meta) || 5, comissaoPct: Number(form.comissaoPct) || 0 });
-              onClose();
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6"
+            type="submit"
+            form="form-corretor-modal"
+            className="h-9 px-4 text-xs font-semibold bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white"
           >
             {isEdit ? "Salvar Alterações" : "Cadastrar Corretor"}
           </Button>
         </div>
-      </div>
-    </div>
+      }
+    >
+      <form id="form-corretor-modal" onSubmit={handleSubmit} className="space-y-4 py-1">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={LABEL}>Nome Completo *</label>
+            <input required value={form.nome} onChange={e => set("nome", e.target.value)} placeholder="Ana Lima" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>CRECI</label>
+            <input value={form.creci} onChange={e => set("creci", e.target.value)} placeholder="CRECI-SP 123456" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Telefone</label>
+            <input value={form.telefone} onChange={e => set("telefone", e.target.value)} placeholder="(11) 99999-9999" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>E-mail</label>
+            <input value={form.email} onChange={e => set("email", e.target.value)} placeholder="corretor@email.com" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Especialidade</label>
+            <select value={form.especialidade} onChange={e => set("especialidade", e.target.value)} className={SELECT}>
+              {ESPECIALIDADES.map(e => <option key={e}>{e}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={LABEL}>Meta Mensal (vendas)</label>
+            <input type="number" value={form.meta} onChange={e => set("meta", e.target.value)} placeholder="5" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Comissão (%)</label>
+            <input type="number" step="0.5" min="0" max="100" value={form.comissaoPct} onChange={e => set("comissaoPct", e.target.value)} placeholder="5" className={FIELD} />
+          </div>
+          {isEdit && (
+            <div>
+              <label className={LABEL}>Status</label>
+              <select value={form.status} onChange={e => set("status", e.target.value)} className={SELECT}>
+                <option>Ativo</option><option>Inativo</option>
+              </select>
+            </div>
+          )}
+          <div className={isEdit ? "" : "col-span-2"}>
+            <label className={LABEL}>Bio / Descrição</label>
+            <textarea value={form.bio} onChange={e => set("bio", e.target.value)} rows={3} placeholder="Fale sobre a experiência e especialização..." className={`${FIELD} resize-none`} />
+          </div>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

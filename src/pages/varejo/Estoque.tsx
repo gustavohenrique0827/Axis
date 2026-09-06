@@ -4,13 +4,14 @@ import {
   Boxes, ArrowUpCircle, ArrowDownCircle, Settings2, History,
   Search, Plus, Filter, AlertTriangle, CheckCircle2, TrendingUp,
   DollarSign, Package, Barcode, Edit3, Trash2, X, RefreshCw,
-  Layers, ArrowUpDown
+  Layers, ArrowUpDown, Download
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { FormField } from "../../components/ui/form-field";
 import { EmptyState } from "../../components/ui/empty-state";
+import { Modal } from "../../components/ui/modal";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../lib/supabase";
@@ -382,6 +383,36 @@ export default function VarejoEstoque() {
     }
   };
 
+  const handleExportCSV = () => {
+    if (!products || products.length === 0) {
+      toast.error("Nenhum produto cadastrado para exportar.");
+      return;
+    }
+    const headers = ["ID", "Produto", "SKU", "EAN_Barras", "Categoria", "Fornecedor", "Estoque_Atual", "Estoque_Min", "Preco_Custo", "Preco_Venda", "Margem_Pct"];
+    const rows = products.map((p: any) => [
+      p.id,
+      `"${(p.name || "").replace(/"/g, '""')}"`,
+      p.sku || "",
+      p.typeAttributes?.barcode || p.typeAttributes?.ean || "",
+      p.category || "",
+      `"${(p.provider || "").replace(/"/g, '""')}"`,
+      p.currentStock ?? 0,
+      p.stockMin ?? 5,
+      Number(p.cost || 0).toFixed(2),
+      Number(p.price || 0).toFixed(2),
+      `${p.margin || 0}%`,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `inventario_estoque_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Inventário de estoque exportado com sucesso!");
+  };
+
   const tipoLabel: Record<string, { label: string; color: string }> = {
     entrada: { label: "Entrada (+)", color: "text-emerald-500" },
     saida: { label: "Saída (-)", color: "text-amber-500" },
@@ -402,7 +433,14 @@ export default function VarejoEstoque() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button onClick={handleOpenNovoProduto} className="gap-1.5 font-bold text-xs">
+          <Button
+            variant="outline"
+            onClick={handleExportCSV}
+            className="gap-1.5 font-semibold text-xs border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)] hover:bg-[var(--color-surface-elevated)]"
+          >
+            <Download className="w-3.5 h-3.5 text-[var(--color-text-muted)]" /> Exportar CSV
+          </Button>
+          <Button onClick={handleOpenNovoProduto} className="gap-1.5 font-bold text-xs bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white shadow-xs">
             <Plus className="w-4 h-4" /> Novo Produto
           </Button>
         </div>
@@ -758,91 +796,23 @@ export default function VarejoEstoque() {
       )}
 
       {/* MODAL 1: AJUSTE RÁPIDO DE SALDO */}
-      {modalAjusteOpen && ajusteProduct && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border-subtle)]">
-              <div>
-                <h3 className="text-base font-black text-[var(--color-text-primary)]">
-                  Ajustar Estoque
-                </h3>
-                <p className="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">
-                  {ajusteProduct.name} (Saldo atual: <strong>{ajusteProduct.currentStock ?? 0} un.</strong>)
-                </p>
-              </div>
-              <button
-                onClick={() => setModalAjusteOpen(false)}
-                className="p-1 rounded-lg hover:bg-[var(--color-surface)]"
-              >
-                <X className="w-4 h-4 text-[var(--color-text-faint)]" />
-              </button>
+      {ajusteProduct && (
+        <Modal
+          isOpen={modalAjusteOpen}
+          onClose={() => setModalAjusteOpen(false)}
+          maxWidth="max-w-md"
+          title={
+            <div>
+              <h3 className="text-base font-bold text-[var(--color-text-primary)]">
+                Ajustar Estoque
+              </h3>
+              <p className="text-xs text-[var(--color-text-muted)] mt-0.5 truncate">
+                {ajusteProduct.name} (Saldo atual: <strong>{ajusteProduct.currentStock ?? 0} un.</strong>)
+              </p>
             </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-faint)] block mb-1.5">
-                  Tipo de Movimentação
-                </label>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {(
-                    [
-                      { id: "entrada", label: "Entrada (+)" },
-                      { id: "saida", label: "Saída (-)" },
-                      { id: "ajuste", label: "Inventário (=)" },
-                    ] as const
-                  ).map((t) => (
-                    <button
-                      key={t.id}
-                      type="button"
-                      onClick={() => setAjusteTipo(t.id)}
-                      className={`p-2 rounded-xl text-xs font-bold border transition-all text-center ${
-                        ajusteTipo === t.id
-                          ? "bg-blue-600 text-white border-blue-600 shadow-xs"
-                          : "bg-[var(--color-surface)] border-[var(--color-border-default)] text-[var(--color-text-muted)]"
-                      }`}
-                    >
-                      {t.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
-                  {ajusteTipo === "ajuste" ? "Novo Saldo Exato (unidades)" : "Quantidade a Movimentar"}
-                </label>
-                <Input
-                  type="number"
-                  min={1}
-                  value={ajusteQtd}
-                  onChange={(e) => setAjusteQtd(e.target.value)}
-                  placeholder="0"
-                  className="font-mono font-bold text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
-                  Motivo da Movimentação
-                </label>
-                <select
-                  value={ajusteMotivo}
-                  onChange={(e) => setAjusteMotivo(e.target.value)}
-                  className="w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--color-text-primary)]"
-                >
-                  <option value="Compra de Fornecedor">Compra de Fornecedor</option>
-                  <option value="Reposição de Loja">Reposição de Loja</option>
-                  <option value="Inventário Periódico">Inventário Periódico</option>
-                  <option value="Avaria / Quebra">Avaria / Quebra</option>
-                  <option value="Validade Vencida">Validade Vencida</option>
-                  <option value="Devolução de Cliente">Devolução de Cliente</option>
-                  <option value="Consumo Interno">Consumo Interno</option>
-                  <option value="Outros">Outros</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="pt-3 border-t border-[var(--color-border-subtle)] flex justify-end gap-2">
+          }
+          footer={
+            <div className="flex justify-end gap-2 w-full">
               <Button variant="outline" size="sm" onClick={() => setModalAjusteOpen(false)}>
                 Cancelar
               </Button>
@@ -850,179 +820,237 @@ export default function VarejoEstoque() {
                 size="sm"
                 onClick={handleSalvarAjuste}
                 loading={ajusteSaving}
-                className="font-bold bg-blue-600 hover:bg-blue-700 text-white"
+                className="font-bold bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white"
               >
                 Confirmar Ajuste
               </Button>
             </div>
+          }
+        >
+          <div className="space-y-3.5 py-1">
+            <div>
+              <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-faint)] block mb-1.5">
+                Tipo de Movimentação
+              </label>
+              <div className="grid grid-cols-3 gap-1.5">
+                {(
+                  [
+                    { id: "entrada", label: "Entrada (+)" },
+                    { id: "saida", label: "Saída (-)" },
+                    { id: "ajuste", label: "Inventário (=)" },
+                  ] as const
+                ).map((t) => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setAjusteTipo(t.id)}
+                    className={`p-2 rounded-xl text-xs font-bold border transition-all text-center ${
+                      ajusteTipo === t.id
+                        ? "bg-[var(--color-primary-blue)] text-white border-[var(--color-primary-blue)] shadow-xs"
+                        : "bg-[var(--color-surface-sunken)] border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1">
+                {ajusteTipo === "ajuste" ? "Novo Saldo Exato (unidades)" : "Quantidade a Movimentar"}
+              </label>
+              <Input
+                type="number"
+                min={1}
+                value={ajusteQtd}
+                onChange={(e) => setAjusteQtd(e.target.value)}
+                placeholder="0"
+                className="font-mono font-bold text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1">
+                Motivo da Movimentação
+              </label>
+              <select
+                value={ajusteMotivo}
+                onChange={(e) => setAjusteMotivo(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3 py-2 text-xs font-medium text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              >
+                <option value="Compra de Fornecedor">Compra de Fornecedor</option>
+                <option value="Reposição de Loja">Reposição de Loja</option>
+                <option value="Inventário Periódico">Inventário Periódico</option>
+                <option value="Avaria / Quebra">Avaria / Quebra</option>
+                <option value="Validade Vencida">Validade Vencida</option>
+                <option value="Devolução de Cliente">Devolução de Cliente</option>
+                <option value="Consumo Interno">Consumo Interno</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
           </div>
-        </div>
+        </Modal>
       )}
 
       {/* MODAL 2: CADASTRO / EDIÇÃO DE PRODUTO */}
-      {modalProdutoOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border-subtle)]">
-              <div>
-                <h3 className="text-base font-black text-[var(--color-text-primary)]">
-                  {editingProduct ? "Editar Produto" : "Novo Produto no Estoque"}
-                </h3>
-                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
-                  Preencha os dados de catálogo, custos e estoque do item.
-                </p>
-              </div>
-              <button
-                onClick={() => setModalProdutoOpen(false)}
-                className="p-1 rounded-lg hover:bg-[var(--color-surface)]"
-              >
-                <X className="w-4 h-4 text-[var(--color-text-faint)]" />
-              </button>
+      <Modal
+        isOpen={modalProdutoOpen}
+        onClose={() => setModalProdutoOpen(false)}
+        maxWidth="max-w-lg"
+        title={
+          <div>
+            <h3 className="text-base font-bold text-[var(--color-text-primary)]">
+              {editingProduct ? "Editar Produto" : "Novo Produto no Estoque"}
+            </h3>
+            <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+              Preencha os dados de catálogo, custos e estoque do item.
+            </p>
+          </div>
+        }
+        footer={
+          <div className="flex justify-end gap-2 w-full">
+            <Button variant="outline" size="sm" onClick={() => setModalProdutoOpen(false)}>
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSalvarProduto}
+              className="font-bold bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white"
+            >
+              {editingProduct ? "Salvar Alterações" : "Cadastrar Produto"}
+            </Button>
+          </div>
+        }
+      >
+        <div className="space-y-3.5 py-1">
+          <div>
+            <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1">
+              Nome do Produto *
+            </label>
+            <Input
+              value={formName}
+              onChange={(e) => setFormName(e.target.value)}
+              placeholder="Ex: Smartwatch Ultra Pro"
+              className="text-xs"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1">
+                Código SKU
+              </label>
+              <Input
+                value={formSku}
+                onChange={(e) => setFormSku(e.target.value)}
+                placeholder="Ex: TECH-001"
+                className="text-xs font-mono"
+              />
             </div>
-
-            <div className="space-y-3">
-              <div>
-                <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
-                  Nome do Produto *
-                </label>
-                <Input
-                  value={formName}
-                  onChange={(e) => setFormName(e.target.value)}
-                  placeholder="Ex: Smartwatch Ultra Pro"
-                  className="text-xs"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
-                    Código SKU
-                  </label>
-                  <Input
-                    value={formSku}
-                    onChange={(e) => setFormSku(e.target.value)}
-                    placeholder="Ex: TECH-001"
-                    className="text-xs font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
-                    Código de Barras (EAN)
-                  </label>
-                  <Input
-                    value={formBarcode}
-                    onChange={(e) => setFormBarcode(e.target.value)}
-                    placeholder="Ex: 7891234560012"
-                    className="text-xs font-mono"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
-                    Categoria
-                  </label>
-                  <select
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value)}
-                    className="w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--color-text-primary)]"
-                  >
-                    <option value="Eletrônicos">Eletrônicos</option>
-                    <option value="Acessórios">Acessórios</option>
-                    <option value="Vestuário">Vestuário</option>
-                    <option value="Utilidades">Utilidades</option>
-                    <option value="Alimentos & Bebidas">Alimentos & Bebidas</option>
-                    <option value="Informática">Informática</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
-                    Fornecedor Principal
-                  </label>
-                  <Input
-                    value={formProvider}
-                    onChange={(e) => setFormProvider(e.target.value)}
-                    placeholder="Ex: Global Imports"
-                    className="text-xs"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
-                    Preço de Custo (R$)
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={formCost}
-                    onChange={(e) => setFormCost(e.target.value)}
-                    placeholder="0,00"
-                    className="text-xs font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
-                    Preço de Venda no PDV (R$) *
-                  </label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    value={formPrice}
-                    onChange={(e) => setFormPrice(e.target.value)}
-                    placeholder="0,00"
-                    className="text-xs font-mono font-bold text-emerald-500"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
-                    Saldo Inicial / Estoque Atual
-                  </label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={formCurrentStock}
-                    onChange={(e) => setFormCurrentStock(e.target.value)}
-                    placeholder="0"
-                    className="text-xs font-mono"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] block mb-1">
-                    Estoque Mínimo de Alerta
-                  </label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={formStockMin}
-                    onChange={(e) => setFormStockMin(e.target.value)}
-                    placeholder="5"
-                    className="text-xs font-mono"
-                  />
-                </div>
-              </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1">
+                Código de Barras (EAN)
+              </label>
+              <Input
+                value={formBarcode}
+                onChange={(e) => setFormBarcode(e.target.value)}
+                placeholder="Ex: 7891234560012"
+                className="text-xs font-mono"
+              />
             </div>
+          </div>
 
-            <div className="pt-3 border-t border-[var(--color-border-subtle)] flex justify-end gap-2">
-              <Button variant="outline" size="sm" onClick={() => setModalProdutoOpen(false)}>
-                Cancelar
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleSalvarProduto}
-                className="font-bold bg-blue-600 hover:bg-blue-700 text-white"
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1">
+                Categoria
+              </label>
+              <select
+                value={formCategory}
+                onChange={(e) => setFormCategory(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3 py-2 text-xs font-medium text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
               >
-                {editingProduct ? "Salvar Alterações" : "Cadastrar Produto"}
-              </Button>
+                <option value="Eletrônicos">Eletrônicos</option>
+                <option value="Acessórios">Acessórios</option>
+                <option value="Vestuário">Vestuário</option>
+                <option value="Utilidades">Utilidades</option>
+                <option value="Alimentos & Bebidas">Alimentos & Bebidas</option>
+                <option value="Informática">Informática</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1">
+                Fornecedor Principal
+              </label>
+              <Input
+                value={formProvider}
+                onChange={(e) => setFormProvider(e.target.value)}
+                placeholder="Ex: Global Imports"
+                className="text-xs"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1">
+                Preço de Custo (R$)
+              </label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formCost}
+                onChange={(e) => setFormCost(e.target.value)}
+                placeholder="0,00"
+                className="text-xs font-mono"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1">
+                Preço de Venda no PDV (R$) *
+              </label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formPrice}
+                onChange={(e) => setFormPrice(e.target.value)}
+                placeholder="0,00"
+                className="text-xs font-mono font-bold text-emerald-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1">
+                Saldo Inicial / Estoque Atual
+              </label>
+              <Input
+                type="number"
+                min={0}
+                value={formCurrentStock}
+                onChange={(e) => setFormCurrentStock(e.target.value)}
+                placeholder="0"
+                className="text-xs font-mono"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1">
+                Estoque Mínimo de Alerta
+              </label>
+              <Input
+                type="number"
+                min={1}
+                value={formStockMin}
+                onChange={(e) => setFormStockMin(e.target.value)}
+                placeholder="5"
+                className="text-xs font-mono"
+              />
             </div>
           </div>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

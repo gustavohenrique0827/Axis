@@ -10,6 +10,7 @@ import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
+import { Modal } from "../../components/ui/modal";
 
 type Visita = {
   id: string;
@@ -45,9 +46,9 @@ const STATUS_ICON: Record<string, any> = {
   Cancelada: XCircle,
 };
 
-const FIELD = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/50";
-const SELECT = "w-full bg-[var(--color-surface)] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/50";
-const LABEL = "text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5 block";
+const FIELD = "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3.5 py-2 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary-blue)]";
+const SELECT = "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-3.5 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]";
+const LABEL = "text-xs font-semibold text-[var(--color-text-primary)] mb-1.5 block";
 
 // ─── FORM MODAL ───────────────────────────────────────────────────────────────
 function VisitaFormModal({ onClose, onSave, initial, ativos }: {
@@ -72,101 +73,118 @@ function VisitaFormModal({ onClose, onSave, initial, ativos }: {
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
   const isEdit = Boolean(initial?.id);
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.imovel.trim() || !form.cliente.trim() || !form.data) {
+      toast.error("Preencha os campos obrigatórios");
+      return;
+    }
+    const [ativoTipo, ativoId] = form.ativoKey ? form.ativoKey.split(":") : [null, null];
+    const { ativoKey, ...rest } = form;
+    onSave({
+      ...rest,
+      imovelId: ativoTipo === "imovel" ? ativoId : null,
+      veiculoId: ativoTipo === "veiculo" ? ativoId : null,
+    });
+    onClose();
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-2xl w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-white/5">
-          <div>
-            <h2 className="text-base font-black text-white">{isEdit ? "Editar Visita" : "Agendar Visita"}</h2>
-            <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações da visita" : "Cadastre uma nova visita"}</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
-        </div>
-        <div className="p-6 space-y-4">
-          <div>
-            <label className={LABEL}>Imóvel ou Veículo</label>
-            <input value={form.imovel} onChange={e => set("imovel", e.target.value)} placeholder="Nome/endereço do imóvel ou marca/modelo do veículo" className={FIELD} />
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      maxWidth="max-w-lg"
+      title={
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-[var(--color-primary-blue)]/10 text-[var(--color-primary-blue)] flex items-center justify-center shrink-0">
+            <Calendar className="w-4 h-4" />
           </div>
           <div>
-            <label className={LABEL}>Vincular a um Cadastro (opcional)</label>
-            <select value={form.ativoKey} onChange={e => set("ativoKey", e.target.value)} className={SELECT}>
-              <option value="">Nenhum — apenas o texto acima</option>
-              {ativos.filter(a => a.tipo === "imovel").length > 0 && (
-                <optgroup label="Imóveis">
-                  {ativos.filter(a => a.tipo === "imovel").map(a => (
-                    <option key={a.id} value={`imovel:${a.id}`}>{a.label}</option>
-                  ))}
-                </optgroup>
-              )}
-              {ativos.filter(a => a.tipo === "veiculo").length > 0 && (
-                <optgroup label="Veículos">
-                  {ativos.filter(a => a.tipo === "veiculo").map(a => (
-                    <option key={a.id} value={`veiculo:${a.id}`}>{a.label}</option>
-                  ))}
-                </optgroup>
-              )}
-            </select>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={LABEL}>Bairro</label>
-              <input value={form.bairro} onChange={e => set("bairro", e.target.value)} placeholder="Moema" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Corretor</label>
-              <input value={form.corretor} onChange={e => set("corretor", e.target.value)} placeholder="Nome do corretor" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Cliente</label>
-              <input value={form.cliente} onChange={e => set("cliente", e.target.value)} placeholder="Nome do cliente" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Telefone</label>
-              <input value={form.telefone} onChange={e => set("telefone", e.target.value)} placeholder="(11) 99999-9999" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Data</label>
-              <input type="date" value={form.data} onChange={e => set("data", e.target.value)} className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Horário</label>
-              <input type="time" value={form.hora} onChange={e => set("hora", e.target.value)} className={FIELD} />
-            </div>
-            {isEdit && (
-              <div className="col-span-2">
-                <label className={LABEL}>Status</label>
-                <select value={form.status} onChange={e => set("status", e.target.value)} className={SELECT}>
-                  <option>Agendada</option><option>Confirmada</option><option>Realizada</option><option>Cancelada</option>
-                </select>
-              </div>
-            )}
-            <div className="col-span-2">
-              <label className={LABEL}>Observações</label>
-              <textarea value={form.obs} onChange={e => set("obs", e.target.value)} rows={2} placeholder="Informações adicionais, preferências do cliente..." className={`${FIELD} resize-none`} />
-            </div>
+            <h2 className="text-base font-bold text-[var(--color-text-primary)]">{isEdit ? "Editar Visita" : "Agendar Visita"}</h2>
+            <p className="text-xs text-[var(--color-text-muted)]">{isEdit ? "Atualize as informações da visita" : "Cadastre uma nova visita de cliente"}</p>
           </div>
         </div>
-        <div className="p-6 border-t border-white/5 flex justify-end gap-3">
-          <Button variant="ghost" onClick={onClose} className="text-slate-400">Cancelar</Button>
+      }
+      footer={
+        <div className="flex items-center justify-end gap-2 w-full">
+          <Button type="button" variant="outline" onClick={onClose} className="h-9 px-4 text-xs font-semibold">
+            Cancelar
+          </Button>
           <Button
-            onClick={() => {
-              if (!form.imovel.trim() || !form.cliente.trim() || !form.data) { toast.error("Preencha os campos obrigatórios"); return; }
-              const [ativoTipo, ativoId] = form.ativoKey ? form.ativoKey.split(":") : [null, null];
-              const { ativoKey, ...rest } = form;
-              onSave({
-                ...rest,
-                imovelId: ativoTipo === "imovel" ? ativoId : null,
-                veiculoId: ativoTipo === "veiculo" ? ativoId : null,
-              });
-              onClose();
-            }}
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6"
+            type="submit"
+            form="form-visita-modal"
+            className="h-9 px-4 text-xs font-semibold bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white"
           >
             {isEdit ? "Salvar Alterações" : "Agendar Visita"}
           </Button>
         </div>
-      </div>
-    </div>
+      }
+    >
+      <form id="form-visita-modal" onSubmit={handleSubmit} className="space-y-4 py-1">
+        <div>
+          <label className={LABEL}>Imóvel ou Veículo *</label>
+          <input required value={form.imovel} onChange={e => set("imovel", e.target.value)} placeholder="Nome/endereço do imóvel ou marca/modelo do veículo" className={FIELD} />
+        </div>
+        <div>
+          <label className={LABEL}>Vincular a um Cadastro (opcional)</label>
+          <select value={form.ativoKey} onChange={e => set("ativoKey", e.target.value)} className={SELECT}>
+            <option value="">Nenhum — apenas o texto acima</option>
+            {ativos.filter(a => a.tipo === "imovel").length > 0 && (
+              <optgroup label="Imóveis">
+                {ativos.filter(a => a.tipo === "imovel").map(a => (
+                  <option key={a.id} value={`imovel:${a.id}`}>{a.label}</option>
+                ))}
+              </optgroup>
+            )}
+            {ativos.filter(a => a.tipo === "veiculo").length > 0 && (
+              <optgroup label="Veículos">
+                {ativos.filter(a => a.tipo === "veiculo").map(a => (
+                  <option key={a.id} value={`veiculo:${a.id}`}>{a.label}</option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={LABEL}>Bairro</label>
+            <input value={form.bairro} onChange={e => set("bairro", e.target.value)} placeholder="Moema" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Corretor / Consultor</label>
+            <input value={form.corretor} onChange={e => set("corretor", e.target.value)} placeholder="Nome do corretor" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Cliente *</label>
+            <input required value={form.cliente} onChange={e => set("cliente", e.target.value)} placeholder="Nome do cliente" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Telefone</label>
+            <input value={form.telefone} onChange={e => set("telefone", e.target.value)} placeholder="(11) 99999-9999" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Data *</label>
+            <input required type="date" value={form.data} onChange={e => set("data", e.target.value)} className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Horário *</label>
+            <input required type="time" value={form.hora} onChange={e => set("hora", e.target.value)} className={FIELD} />
+          </div>
+          {isEdit && (
+            <div className="col-span-2">
+              <label className={LABEL}>Status</label>
+              <select value={form.status} onChange={e => set("status", e.target.value)} className={SELECT}>
+                <option>Agendada</option><option>Confirmada</option><option>Realizada</option><option>Cancelada</option>
+              </select>
+            </div>
+          )}
+          <div className="col-span-2">
+            <label className={LABEL}>Observações</label>
+            <textarea value={form.obs} onChange={e => set("obs", e.target.value)} rows={2} placeholder="Informações adicionais, preferências do cliente..." className={`${FIELD} resize-none`} />
+          </div>
+        </div>
+      </form>
+    </Modal>
   );
 }
 

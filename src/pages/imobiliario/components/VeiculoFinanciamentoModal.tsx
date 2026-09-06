@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { X, Landmark, Calculator, Percent, Sparkles, Share2, CheckCircle2 } from "lucide-react";
 import { Button } from "../../../components/ui/button";
+import { Modal } from "../../../components/ui/modal";
 import { toast } from "sonner";
 
 const FIELD = "w-full bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:border-blue-500/50";
@@ -93,183 +94,27 @@ export function VeiculoFinanciamentoModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-      <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-xl max-h-[92vh] overflow-y-auto shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between p-5 border-b border-[var(--color-border-subtle)]">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
-              <Landmark className="w-4 h-4" />
-            </div>
-            <div>
-              <h2 className="text-base font-black text-[var(--color-text-primary)]">
-                Simulador de Financiamento Automotivo
-              </h2>
-              <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
-                {veiculoNome} · Valor: <strong className="text-emerald-500 font-mono">{veiculoValor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
-              </p>
-            </div>
+    <Modal
+      isOpen={true}
+      onClose={onClose}
+      maxWidth="max-w-xl"
+      title={
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold">
+            <Landmark className="w-4 h-4" />
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--color-surface)] text-[var(--color-text-faint)]">
-            <X className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="p-5 space-y-4">
-          {/* Dados do Cliente */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="sm:col-span-2">
-              <label className={LABEL}>Nome do Cliente *</label>
-              <input
-                value={form.cliente}
-                onChange={(e) => set("cliente", e.target.value)}
-                placeholder="Ex: João Silva"
-                className={FIELD}
-              />
-            </div>
-            <div>
-              <label className={LABEL}>Telefone / WhatsApp</label>
-              <input
-                value={form.telefone}
-                onChange={(e) => set("telefone", e.target.value)}
-                placeholder="(11) 99999-9999"
-                className={FIELD}
-              />
-            </div>
-          </div>
-
-          {/* Entrada & Atalhos Rápidos */}
-          <div className="p-3.5 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border-default)] space-y-2.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
-                <Percent className="w-3.5 h-3.5 text-blue-500" /> Valor de Entrada (R$)
-              </label>
-              <span className="text-[11px] font-bold text-blue-500">
-                {percentualEntrada.toFixed(1)}% do veículo
-              </span>
-            </div>
-
-            <input
-              type="number"
-              value={form.valor_entrada}
-              onChange={(e) => set("valor_entrada", e.target.value)}
-              className={`${FIELD} font-mono font-bold`}
-            />
-
-            {/* Atalhos Rápidos de Entrada */}
-            <div className="flex gap-1.5 justify-end">
-              <button
-                type="button"
-                onClick={() => set("valor_entrada", "0")}
-                className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] hover:border-blue-500 text-[var(--color-text-muted)]"
-              >
-                Zero Entrada
-              </button>
-              {[20, 30, 40, 50].map((pct) => (
-                <button
-                  key={pct}
-                  type="button"
-                  onClick={() => set("valor_entrada", String(Math.round(veiculoValor * (pct / 100))))}
-                  className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] hover:border-blue-500 text-[var(--color-text-muted)]"
-                >
-                  {pct}%
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Parcelas e Taxa */}
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={LABEL}>Quantidade de Parcelas</label>
-              <select
-                value={form.parcelas}
-                onChange={(e) => set("parcelas", e.target.value)}
-                className={FIELD}
-              >
-                {[12, 24, 36, 48, 60].map((p) => (
-                  <option key={p} value={p}>
-                    {p} meses ({p}x)
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={LABEL}>Taxa Estimada (% a.m.)</label>
-              <input
-                type="number"
-                step="0.05"
-                value={form.taxa_juros}
-                onChange={(e) => set("taxa_juros", e.target.value)}
-                className={FIELD}
-              />
-            </div>
-          </div>
-
-          {/* Instituição Financeira */}
           <div>
-            <label className={LABEL}>Banco / Financeira Parceira</label>
-            <select
-              value={form.banco_financeira}
-              onChange={(e) => set("banco_financeira", e.target.value)}
-              className={FIELD}
-            >
-              <option value="Santander Financiamentos">Santander Financiamentos</option>
-              <option value="BV Financeira">BV Financeira</option>
-              <option value="Itaú Auto">Itaú Financiamentos</option>
-              <option value="Bradesco Financiamentos">Bradesco Financiamentos</option>
-              <option value="Banco Pan">Banco Pan</option>
-              <option value="Safra Financeira">Safra Financeira</option>
-            </select>
-          </div>
-
-          {/* Veículo de Troca */}
-          <div className="p-3.5 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border-default)] space-y-2.5">
-            <label className="text-xs font-bold text-[var(--color-text-primary)] block">
-              Veículo na Troca (Opcional)
-            </label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <input
-                value={form.veiculo_troca_descricao}
-                onChange={(e) => set("veiculo_troca_descricao", e.target.value)}
-                placeholder="Ex: Corolla 2019 XEi Prata"
-                className={FIELD}
-              />
-              <input
-                type="number"
-                value={form.veiculo_troca_valor}
-                onChange={(e) => set("veiculo_troca_valor", e.target.value)}
-                placeholder="Valor avaliado (R$)"
-                className={`${FIELD} font-mono`}
-              />
-            </div>
-          </div>
-
-          {/* Resumo Visual de Parcela */}
-          <div className="p-4 bg-gradient-to-r from-blue-900/30 to-indigo-900/20 rounded-2xl border border-blue-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div>
-              <span className="text-[10px] font-black uppercase tracking-wider text-blue-400 block">
-                Valor Total Financiado
-              </span>
-              <span className="text-base font-black font-mono text-[var(--color-text-primary)]">
-                {valorFinanciado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-              </span>
-            </div>
-
-            <div className="text-left sm:text-right">
-              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">
-                {numParcelas}x Parcelas Estimadas
-              </span>
-              <span className="text-2xl font-black font-mono text-emerald-400">
-                {valorParcelaEstimada.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                <span className="text-xs font-normal text-slate-400">/mês</span>
-              </span>
-            </div>
+            <h2 className="text-base font-black text-[var(--color-text-primary)]">
+              Simulador de Financiamento Automotivo
+            </h2>
+            <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+              {veiculoNome} · Valor: <strong className="text-emerald-500 font-mono">{veiculoValor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
+            </p>
           </div>
         </div>
-
-        {/* Footer */}
-        <div className="p-5 border-t border-[var(--color-border-subtle)] flex flex-wrap items-center justify-between gap-2">
+      }
+      footer={
+        <div className="flex flex-wrap items-center justify-between gap-2 w-full">
           <Button
             type="button"
             variant="outline"
@@ -293,7 +138,160 @@ export function VeiculoFinanciamentoModal({
             </Button>
           </div>
         </div>
+      }
+    >
+      <div className="space-y-4">
+        {/* Dados do Cliente */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="sm:col-span-2">
+            <label className={LABEL}>Nome do Cliente *</label>
+            <input
+              value={form.cliente}
+              onChange={(e) => set("cliente", e.target.value)}
+              placeholder="Ex: João Silva"
+              className={FIELD}
+            />
+          </div>
+          <div>
+            <label className={LABEL}>Telefone / WhatsApp</label>
+            <input
+              value={form.telefone}
+              onChange={(e) => set("telefone", e.target.value)}
+              placeholder="(11) 99999-9999"
+              className={FIELD}
+            />
+          </div>
+        </div>
+
+        {/* Entrada & Atalhos Rápidos */}
+        <div className="p-3.5 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border-default)] space-y-2.5">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-[var(--color-text-primary)] flex items-center gap-1.5">
+              <Percent className="w-3.5 h-3.5 text-blue-500" /> Valor de Entrada (R$)
+            </label>
+            <span className="text-[11px] font-bold text-blue-500">
+              {percentualEntrada.toFixed(1)}% do veículo
+            </span>
+          </div>
+
+          <input
+            type="number"
+            value={form.valor_entrada}
+            onChange={(e) => set("valor_entrada", e.target.value)}
+            className={`${FIELD} font-mono font-bold`}
+          />
+
+          {/* Atalhos Rápidos de Entrada */}
+          <div className="flex gap-1.5 justify-end">
+            <button
+              type="button"
+              onClick={() => set("valor_entrada", "0")}
+              className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] hover:border-blue-500 text-[var(--color-text-muted)]"
+            >
+              Zero Entrada
+            </button>
+            {[20, 30, 40, 50].map((pct) => (
+              <button
+                key={pct}
+                type="button"
+                onClick={() => set("valor_entrada", String(Math.round(veiculoValor * (pct / 100))))}
+                className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] hover:border-blue-500 text-[var(--color-text-muted)]"
+              >
+                {pct}%
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Parcelas e Taxa */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={LABEL}>Quantidade de Parcelas</label>
+            <select
+              value={form.parcelas}
+              onChange={(e) => set("parcelas", e.target.value)}
+              className={FIELD}
+            >
+              {[12, 24, 36, 48, 60].map((p) => (
+                <option key={p} value={p}>
+                  {p} meses ({p}x)
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className={LABEL}>Taxa Estimada (% a.m.)</label>
+            <input
+              type="number"
+              step="0.05"
+              value={form.taxa_juros}
+              onChange={(e) => set("taxa_juros", e.target.value)}
+              className={FIELD}
+            />
+          </div>
+        </div>
+
+        {/* Instituição Financeira */}
+        <div>
+          <label className={LABEL}>Banco / Financeira Parceira</label>
+          <select
+            value={form.banco_financeira}
+            onChange={(e) => set("banco_financeira", e.target.value)}
+            className={FIELD}
+          >
+            <option value="Santander Financiamentos">Santander Financiamentos</option>
+            <option value="BV Financeira">BV Financeira</option>
+            <option value="Itaú Auto">Itaú Financiamentos</option>
+            <option value="Bradesco Financiamentos">Bradesco Financiamentos</option>
+            <option value="Banco Pan">Banco Pan</option>
+            <option value="Safra Financeira">Safra Financeira</option>
+          </select>
+        </div>
+
+        {/* Veículo de Troca */}
+        <div className="p-3.5 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border-default)] space-y-2.5">
+          <label className="text-xs font-bold text-[var(--color-text-primary)] block">
+            Veículo na Troca (Opcional)
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <input
+              value={form.veiculo_troca_descricao}
+              onChange={(e) => set("veiculo_troca_descricao", e.target.value)}
+              placeholder="Ex: Corolla 2019 XEi Prata"
+              className={FIELD}
+            />
+            <input
+              type="number"
+              value={form.veiculo_troca_valor}
+              onChange={(e) => set("veiculo_troca_valor", e.target.value)}
+              placeholder="Valor avaliado (R$)"
+              className={`${FIELD} font-mono`}
+            />
+          </div>
+        </div>
+
+        {/* Resumo Visual de Parcela */}
+        <div className="p-4 bg-gradient-to-r from-blue-900/30 to-indigo-900/20 rounded-2xl border border-blue-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-wider text-blue-400 block">
+              Valor Total Financiado
+            </span>
+            <span className="text-base font-black font-mono text-[var(--color-text-primary)]">
+              {valorFinanciado.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+            </span>
+          </div>
+
+          <div className="text-left sm:text-right">
+            <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 block">
+              {numParcelas}x Parcelas Estimadas
+            </span>
+            <span className="text-2xl font-black font-mono text-emerald-400">
+              {valorParcelaEstimada.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+              <span className="text-xs font-normal text-slate-400">/mês</span>
+            </span>
+          </div>
+        </div>
       </div>
-    </div>
+    </Modal>
   );
 }

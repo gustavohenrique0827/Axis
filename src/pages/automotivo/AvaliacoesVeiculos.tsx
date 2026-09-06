@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
+import { Modal } from "../../components/ui/modal";
 import { useAuth } from "../../contexts/AuthContext";
 
 interface AvaliacaoItem {
@@ -231,111 +232,144 @@ export default function AvaliacoesVeiculos() {
       </div>
 
       {/* Modal de Nova Avaliação */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Nova Avaliação de Seminovos</h3>
-              <button onClick={() => setModalOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
-                <X className="w-4 h-4" />
-              </button>
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        maxWidth="max-w-lg"
+        title={
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center font-bold shrink-0">
+              <CheckSquare className="w-5 h-5" />
             </div>
-
-            <form onSubmit={handleCreate} className="space-y-3">
-              <div>
-                <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Modelo / Versão do Veículo</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Jeep Compass Longitude 2.0 Flex 2021"
-                  value={veiculo}
-                  onChange={e => setVeiculo(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Placa</label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Ex: BRA-2E19"
-                    value={placa}
-                    onChange={e => setPlaca(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Quilometragem</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: 45.000 km"
-                    value={km}
-                    onChange={e => setKm(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Tabela FIPE (R$)</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: 115.000"
-                    value={fipe}
-                    onChange={e => setFipe(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Oferta / Compra (R$)</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: 102.000"
-                    value={oferta}
-                    onChange={e => setOferta(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Proprietário / Cliente</label>
-                  <input
-                    type="text"
-                    placeholder="Nome do cliente"
-                    value={cliente}
-                    onChange={e => setCliente(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Vistoriador</label>
-                  <input
-                    type="text"
-                    placeholder="Nome do vistoriador"
-                    value={avaliador}
-                    onChange={e => setAvaliador(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="h-9 px-4 text-xs font-bold rounded-xl">
-                  Cancelar
-                </Button>
-                <Button type="submit" className="h-9 px-4 text-xs font-bold rounded-xl bg-[var(--color-primary-blue)] text-white">
-                  Registrar Avaliação
-                </Button>
-              </div>
-            </form>
+            <div>
+              <h3 className="text-base font-black text-[var(--color-text-primary)]">
+                Nova Avaliação de Seminovos
+              </h3>
+              <p className="text-xs text-[var(--color-text-muted)]">
+                Registre os dados do veículo e da proposta de compra/troca
+              </p>
+            </div>
           </div>
-        </div>
-      )}
+        }
+        footer={
+          <>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setModalOpen(false)}
+              className="text-xs"
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleCreate}
+              className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-5 text-xs font-bold"
+            >
+              Iniciar Avaliação
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleCreate} className="space-y-3.5">
+          <div>
+            <label className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-faint)] block mb-1">
+              Modelo / Versão do Veículo *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="Ex: Jeep Compass Longitude 2.0 Flex 2021"
+              value={veiculo}
+              onChange={e => setVeiculo(e.target.value)}
+              className="w-full px-3.5 py-2.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] focus:outline-none focus:border-blue-500/50"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-faint)] block mb-1">
+                Placa *
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="Ex: BRA-2E19"
+                value={placa}
+                onChange={e => setPlaca(e.target.value)}
+                className="w-full px-3.5 py-2.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] focus:outline-none font-mono"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-faint)] block mb-1">
+                Quilometragem (KM)
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: 45.000 km"
+                value={km}
+                onChange={e => setKm(e.target.value)}
+                className="w-full px-3.5 py-2.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] focus:outline-none font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-faint)] block mb-1">
+                Tabela FIPE (R$)
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: 115.000"
+                value={fipe}
+                onChange={e => setFipe(e.target.value)}
+                className="w-full px-3.5 py-2.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] focus:outline-none font-mono font-bold"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-faint)] block mb-1">
+                Oferta / Compra (R$)
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: 102.000"
+                value={oferta}
+                onChange={e => setOferta(e.target.value)}
+                className="w-full px-3.5 py-2.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] focus:outline-none font-mono font-bold text-emerald-500"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-faint)] block mb-1">
+                Proprietário / Cliente
+              </label>
+              <input
+                type="text"
+                placeholder="Nome do cliente"
+                value={cliente}
+                onChange={e => setCliente(e.target.value)}
+                className="w-full px-3.5 py-2.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-faint)] block mb-1">
+                Vistoriador Responsável
+              </label>
+              <input
+                type="text"
+                placeholder="Nome do vistoriador"
+                value={avaliador}
+                onChange={e => setAvaliador(e.target.value)}
+                className="w-full px-3.5 py-2.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] placeholder:text-[var(--color-text-faint)] focus:outline-none"
+              />
+            </div>
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }
