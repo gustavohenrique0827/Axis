@@ -90,6 +90,8 @@ export interface Task {
   related: string;
   type?: string;
   date?: string;
+  time?: string;
+  duration?: number;
 
   // compat: algumas telas usam `desc`, outras usam `description`
   description?: string;
@@ -101,6 +103,9 @@ export interface Task {
   tags?: string[];
   relatedProductIds?: string[];
   responsible?: string;
+  convidados?: string[];
+  calendarLink?: string;
+  googleEventId?: string;
 }
 
 export interface Colaborador {

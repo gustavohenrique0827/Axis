@@ -1,6 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { PageContainer } from "../../components/PageContainer";
-import { Button } from "../../components/ui/button";
+import { useState, useEffect } from "react";
+import { Button } from "../../../components/ui/button";
 import {
   Plus, X, Trophy, ThumbsDown, ChevronRight, Check, Brain,
   MessageSquare, Phone, Mail, Calendar, FileText, Building2,
@@ -9,11 +8,11 @@ import {
   Edit2, CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "../../lib/supabase";
-import { cn } from "../../lib/utils";
-import { useData } from "../../contexts/DataContext";
-import { useAuth } from "../../contexts/AuthContext";
-import { CriarPropostaModal } from "../../components/ui/modals/crm/CriarPropostaModal";
+import { supabase } from "../../../lib/supabase";
+import { cn } from "../../../lib/utils";
+import { useData } from "../../../contexts/DataContext";
+import { useAuth } from "../../../contexts/AuthContext";
+import { CriarPropostaModal } from "../../../components/ui/modals/crm/CriarPropostaModal";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 type Etapa = "Prospecção" | "Qualificação" | "Apresentação" | "Negociação" | "Fechamento";
@@ -43,9 +42,12 @@ interface Lead {
 }
 
 /** Imóvel ou veículo disponível pra vincular a um lead — alimenta o seletor
- * "Ativo relacionado" do formulário. Um lead pode não estar ligado a nenhum
- * ainda (ainda em prospecção genérica) ou a exatamente um dos dois. */
+ * "Ativo relacionado" do formulário, já filtrado pelo tipo de funil (imóveis
+ * ou veículos) em que o board está sendo usado. */
 interface AtivoOption { id: string; tipo: "imovel" | "veiculo"; label: string; }
+
+const INTERESSES_IMOVEL = ["Apartamento", "Apartamento 2q", "Apartamento 3q", "Casa", "Cobertura", "Cobertura Duplex", "Kitnet", "Sala Comercial", "Terreno"];
+const INTERESSES_VEICULO = ["Carro Popular", "Sedan", "SUV", "Picape", "Utilitário", "Moto", "Carro de Luxo"];
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const ETAPAS: Etapa[] = ["Prospecção", "Qualificação", "Apresentação", "Negociação", "Fechamento"];
@@ -99,22 +101,25 @@ function fmtBRLFull(v: number) {
 }
 
 // ─── LEAD FORM MODAL ──────────────────────────────────────────────────────────
-function LeadFormModal({ onClose, onSave, initial, ativos }: {
+function LeadFormModal({ onClose, onSave, initial, ativos, tipo }: {
   onClose: () => void;
   onSave: (d: Partial<Lead>) => void;
   initial?: Partial<Lead>;
   ativos: AtivoOption[];
+  tipo: "imovel" | "veiculo";
 }) {
+  const { user } = useAuth();
   const isEdit = Boolean(initial?.id);
   const initialAtivoKey = initial?.imovelId ? `imovel:${initial.imovelId}` : initial?.veiculoId ? `veiculo:${initial.veiculoId}` : "";
+  const interesses = tipo === "veiculo" ? INTERESSES_VEICULO : INTERESSES_IMOVEL;
   const [form, setForm] = useState({
     cliente:   initial?.cliente   ?? "",
     telefone:  initial?.telefone  ?? "",
     email:     initial?.email     ?? "",
-    interesse: initial?.interesse ?? "Apartamento",
+    interesse: initial?.interesse ?? interesses[0],
     bairro:    initial?.bairro    ?? "",
     orcamento: String(initial?.orcamento ?? ""),
-    corretor:  initial?.corretor  ?? "",
+    corretor:  initial?.corretor  ?? user?.name ?? "",
     origem:    initial?.origem    ?? "Site",
     prioridade:initial?.prioridade ?? "Média" as Prioridade,
     etapa:     initial?.etapa     ?? "Prospecção" as Etapa,
@@ -129,7 +134,7 @@ function LeadFormModal({ onClose, onSave, initial, ativos }: {
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
             <h2 className="text-base font-black text-white">{isEdit ? "Editar Lead" : "Novo Lead"}</h2>
-            <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações" : "Adicione ao funil imobiliário"}</p>
+            <p className="text-xs text-slate-500 mt-0.5">{isEdit ? "Atualize as informações" : `Adicione ao funil de ${tipo === "veiculo" ? "veículos" : "imóveis"}`}</p>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg bg-white/[0.03] hover:bg-white/5 text-slate-500"><X className="w-4 h-4" /></button>
         </div>
@@ -150,27 +155,17 @@ function LeadFormModal({ onClose, onSave, initial, ativos }: {
             <div>
               <label className={LABEL}>Interesse</label>
               <select value={form.interesse} onChange={e => set("interesse", e.target.value)} className={SELECT}>
-                {["Apartamento","Apartamento 2q","Apartamento 3q","Casa","Cobertura","Cobertura Duplex","Kitnet","Sala Comercial","Terreno"].map(t => <option key={t}>{t}</option>)}
+                {interesses.map(t => <option key={t}>{t}</option>)}
               </select>
             </div>
             <div className="col-span-2">
-              <label className={LABEL}>Ativo Relacionado (opcional)</label>
+              <label className={LABEL}>{tipo === "veiculo" ? "Veículo de Interesse" : "Imóvel Relacionado (opcional)"}</label>
               <select value={form.ativoKey} onChange={e => set("ativoKey", e.target.value)} className={SELECT}>
-                <option value="">Nenhum ainda — lead genérico</option>
-                {ativos.filter(a => a.tipo === "imovel").length > 0 && (
-                  <optgroup label="Imóveis">
-                    {ativos.filter(a => a.tipo === "imovel").map(a => (
-                      <option key={a.id} value={`imovel:${a.id}`}>{a.label}</option>
-                    ))}
-                  </optgroup>
-                )}
-                {ativos.filter(a => a.tipo === "veiculo").length > 0 && (
-                  <optgroup label="Veículos">
-                    {ativos.filter(a => a.tipo === "veiculo").map(a => (
-                      <option key={a.id} value={`veiculo:${a.id}`}>{a.label}</option>
-                    ))}
-                  </optgroup>
-                )}
+                {tipo === "imovel" && <option value="">Nenhum ainda — lead genérico</option>}
+                {tipo === "veiculo" && ativos.length === 0 && <option value="">Nenhum veículo cadastrado ainda</option>}
+                {ativos.map(a => (
+                  <option key={a.id} value={`${a.tipo}:${a.id}`}>{a.label}</option>
+                ))}
               </select>
             </div>
             <div>
@@ -216,6 +211,7 @@ function LeadFormModal({ onClose, onSave, initial, ativos }: {
           <Button
             onClick={() => {
               if (!form.cliente.trim()) { toast.error("Nome é obrigatório"); return; }
+              if (tipo === "veiculo" && !form.ativoKey) { toast.error("Selecione o veículo de interesse"); return; }
               const [ativoTipo, ativoId] = form.ativoKey ? form.ativoKey.split(":") : [null, null];
               const { ativoKey, ...rest } = form;
               onSave({
@@ -938,7 +934,12 @@ function LeadRow({ lead, onSelect }: { lead: Lead; onSelect: (l: Lead) => void }
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
-export default function PipelineImobiliario() {
+/** Funil de leads reutilizável, embutido diretamente na página principal de
+ * Imóveis ou de Veículos (cada uma passa seu `tipo`) — não é mais uma página
+ * própria com rota/menu dedicados. Um lead é bucketizado pelo tipo de ativo
+ * vinculado: `veiculo_id` preenchido → funil de Veículos; caso contrário
+ * (vinculado a imóvel ou ainda genérico) → funil de Imóveis. */
+export function LeadsPipelineBoard({ tipo }: { tipo: "imovel" | "veiculo" }) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [ativos, setAtivos] = useState<AtivoOption[]>([]);
   const [view, setView] = useState<"kanban" | "lista">("kanban");
@@ -954,11 +955,9 @@ export default function PipelineImobiliario() {
   // Load from Supabase on mount
   useEffect(() => {
     if (!supabase) return;
-    supabase
-      .from("imobiliario_leads")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
+    let query = supabase.from("imobiliario_leads").select("*").order("created_at", { ascending: false });
+    query = tipo === "veiculo" ? query.not("veiculo_id", "is", null) : query.is("veiculo_id", null);
+    query.then(({ data }) => {
         if (!data) return;
         setLeads(data.map(r => ({
           id: r.id,
@@ -982,20 +981,19 @@ export default function PipelineImobiliario() {
         })));
       });
 
-    // Alimenta o seletor "Ativo Relacionado" do formulário com imóveis + veículos do tenant.
-    Promise.all([
-      supabase.from("imobiliario_imoveis").select("id, titulo, bairro"),
-      supabase.from("imobiliario_veiculos").select("id, marca, modelo"),
-    ]).then(([imoveisRes, veiculosRes]) => {
-      const imoveis: AtivoOption[] = (imoveisRes.data ?? []).map(i => ({
-        id: i.id, tipo: "imovel", label: `${i.titulo}${i.bairro ? ` — ${i.bairro}` : ""}`,
-      }));
-      const veiculos: AtivoOption[] = (veiculosRes.data ?? []).map(v => ({
-        id: v.id, tipo: "veiculo", label: `${v.marca} ${v.modelo}`,
-      }));
-      setAtivos([...imoveis, ...veiculos]);
-    });
-  }, []);
+    // Alimenta o seletor "Ativo Relacionado" do formulário — só com os ativos
+    // do tipo deste funil (imóveis para o board de Imóveis, veículos para o
+    // de Veículos), já que os dois módulos agora são independentes.
+    if (tipo === "veiculo") {
+      supabase.from("imobiliario_veiculos").select("id, marca, modelo").then(({ data }) => {
+        setAtivos((data ?? []).map(v => ({ id: v.id, tipo: "veiculo" as const, label: `${v.marca} ${v.modelo}` })));
+      });
+    } else {
+      supabase.from("imobiliario_imoveis").select("id, titulo, bairro").then(({ data }) => {
+        setAtivos((data ?? []).map(i => ({ id: i.id, tipo: "imovel" as const, label: `${i.titulo}${i.bairro ? ` — ${i.bairro}` : ""}` })));
+      });
+    }
+  }, [tipo]);
 
   // Async save to Supabase
   const saveToDB = async (lead: Lead) => {
@@ -1078,10 +1076,12 @@ export default function PipelineImobiliario() {
   const perdidos = leads.filter(l => l.status === "Perdido").length;
 
   return (
-    <PageContainer
-      title="Leads & Pipeline"
-      description="Gerencie leads imobiliários em visão kanban ou lista. Arraste para mover entre etapas."
-      actions={
+    <div>
+      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
+        <div>
+          <h2 className="text-sm font-black text-white uppercase tracking-wider">Funil de Leads</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Gerencie leads de {tipo === "veiculo" ? "veículos" : "imóveis"} em visão kanban ou lista. Arraste para mover entre etapas.</p>
+        </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center bg-white/5 border border-white/10 rounded-xl p-1 gap-0.5">
             <button onClick={() => setView("kanban")} className={cn("p-1.5 rounded-lg transition-all", view === "kanban" ? "bg-blue-600 text-white" : "text-slate-500 hover:text-white")}>
@@ -1095,10 +1095,10 @@ export default function PipelineImobiliario() {
             <Plus className="w-4 h-4" /> Novo Lead
           </Button>
         </div>
-      }
-    >
-      {showForm && <LeadFormModal onClose={() => setShowForm(false)} onSave={handleSave} ativos={ativos} />}
-      {editLead && <LeadFormModal onClose={() => setEditLead(null)} onSave={handleEdit} initial={editLead} ativos={ativos} />}
+      </div>
+
+      {showForm && <LeadFormModal onClose={() => setShowForm(false)} onSave={handleSave} ativos={ativos} tipo={tipo} />}
+      {editLead && <LeadFormModal onClose={() => setEditLead(null)} onSave={handleEdit} initial={editLead} ativos={ativos} tipo={tipo} />}
       {selectedLead && (
         <LeadDetailDrawer
           lead={selectedLead}
@@ -1221,6 +1221,6 @@ export default function PipelineImobiliario() {
           )}
         </div>
       )}
-    </PageContainer>
+    </div>
   );
 }

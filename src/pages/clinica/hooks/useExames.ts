@@ -69,5 +69,20 @@ export function useExames() {
     }
   }
 
-  return { exames, loading, addExame };
+  async function updateExame(id: string | number, payload: { status: string; result: string }) {
+    if (!supabase) {
+      setExames(prev => prev.map(e => e.id === id ? { ...e, ...payload } : e));
+      toast.success('Pedido atualizado!');
+      return;
+    }
+    const { error } = await supabase
+      .from('exames_pedidos')
+      .update({ status: payload.status, result: payload.result })
+      .eq('id', id);
+    if (error) { toast.error('Erro ao atualizar pedido'); return; }
+    setExames(prev => prev.map(e => e.id === id ? { ...e, ...payload } : e));
+    toast.success('Pedido atualizado!');
+  }
+
+  return { exames, loading, addExame, updateExame };
 }

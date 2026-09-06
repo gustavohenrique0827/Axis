@@ -166,7 +166,7 @@ export function ConfigIntegracoesSDR() {
               </Badge>
             </div>
             <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
-              Disparado quando a IA (MIA) classifica o lead com score suficiente para transferência.
+              Disparado quando a IA (Aurora) classifica o lead com score suficiente para transferência.
             </p>
           </div>
           <Switch

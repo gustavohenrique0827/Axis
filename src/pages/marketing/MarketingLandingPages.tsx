@@ -50,7 +50,7 @@ export default function MarketingLandingPages() {
       id: Date.now(), name: newName,
       url: `lp.seussistema.com/${newSlug.replace(/\s+/g, "-").toLowerCase()}`,
       status: "published", views: 0, conversions: 0, rate: "0%",
-      sparkline: [5, 5, 5, 5, 5, 5, 5], pixel: pixelId, gtag: gtagId
+      pixel: pixelId, gtag: gtagId
     });
     toast.success("Landing Page criada e publicada com sucesso!");
     setIsCreateModalOpen(false);
@@ -77,7 +77,7 @@ export default function MarketingLandingPages() {
   return (
     <PageContainer
       title="Landing Pages"
-      subtitle="Crie, publique e acompanhe a conversão das suas páginas de captura."
+      subtitle="Crie e publique páginas de captura. Rastreamento automático de visitas/conversões ainda não está disponível — os números abaixo precisam ser atualizados manualmente."
     >
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-black text-white">Suas Páginas ({pages.length})</h3>

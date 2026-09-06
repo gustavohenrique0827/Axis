@@ -39,7 +39,7 @@ function isInCiclo(date: Date | null, ciclo: Ciclo, now: Date): boolean {
 }
 
 export default function FinanceiroVisaoGeral() {
-  const { financeEntries, contracts } = useData();
+  const { financeEntries, contracts, leads } = useData();
   const [ciclo, setCiclo] = useState<Ciclo>("mes");
 
   const cicloEntries = useMemo(() => {
@@ -91,6 +91,16 @@ export default function FinanceiroVisaoGeral() {
   }, [financeEntries]);
 
   const stabilityScore = receita + despesa > 0 ? Math.round((receita / (receita + despesa)) * 100) : 0;
+
+  const operationalInsights = useMemo(() => {
+    const marketingSpend = financeEntries
+      .filter(f => f.type === "Pagar" && f.status === "Pago" && (f.category?.toLowerCase().includes("marketing") || f.category?.toLowerCase().includes("anúncio")))
+      .reduce((s, f) => s + f.value, 0);
+    const cpl = leads.length > 0 ? marketingSpend / leads.length : null;
+    const ltvProjetado = mrr > 0 ? mrr * 12 : null;
+    const margemEbitda = receita > 0 ? ((receita - despesa) / receita) * 100 : null;
+    return { cpl, ltvProjetado, margemEbitda };
+  }, [financeEntries, leads, mrr, receita, despesa]);
 
   const handleExport = () => {
     downloadCsv(
@@ -144,7 +154,7 @@ export default function FinanceiroVisaoGeral() {
       <div className="space-y-6 max-w-[1700px] mx-auto pb-12">
         <FinanceiroKPIs receita={receita} despesa={despesa} mrr={mrr} inadimplencia={inadimplencia} />
         <FinanceiroCashflowChart chartData={chartData} stabilityScore={stabilityScore} />
-        <FinanceiroBottomPanels upcomingEntries={upcomingEntries} />
+        <FinanceiroBottomPanels upcomingEntries={upcomingEntries} {...operationalInsights} />
       </div>
     </PageContainer>
   );

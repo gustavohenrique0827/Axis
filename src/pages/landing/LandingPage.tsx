@@ -7,7 +7,6 @@ import {
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { useRef, useEffect } from "react";
-import { FlyingMascot } from "./components/FlyingMascot";
 import { HeroSection } from "./components/HeroSection";
 import { NeuralSection } from "./components/NeuralSection";
 
@@ -40,10 +39,7 @@ export default function LandingPage() {
   return (
     <div ref={containerRef} className="min-h-screen bg-[var(--color-surface)] text-[var(--color-text-primary)] font-sans selection:bg-blue-500/30 overflow-x-hidden relative">
       <div className="noise-overlay" />
-      
-      {/* Cinematic Flying Mascot Component */}
-      <FlyingMascot />
-      
+
       {/* Background System - Interactive Parallax */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <motion.div 

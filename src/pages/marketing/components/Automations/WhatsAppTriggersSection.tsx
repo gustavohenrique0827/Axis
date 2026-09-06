@@ -8,7 +8,7 @@ import {
 import { toast } from "sonner";
 import { apiFetch } from "../../../../lib/apiClient";
 
-export function EvolutionSection() {
+export function WhatsAppTriggersSection() {
   const [isSyncing, setIsSyncing] = useState(false);
   const [instances, setInstances] = useState<any[]>([]);
   const [providerStatus, setProviderStatus] = useState<{ provider: "simulator" | "waha"; configured: boolean } | null>(null);

@@ -5,6 +5,7 @@ import { Button } from '../../../components/ui/button';
 import { Badge } from '../../../components/ui/badge';
 import { ResponsiveContainer, AreaChart, CartesianGrid, XAxis, YAxis, Tooltip, Area, Line } from 'recharts';
 import { BarChart3, RefreshCw, Target, Trophy, Layers, Zap, Briefcase, ChevronDown } from 'lucide-react';
+import { useData } from '../../../contexts/DataContext';
 
 interface Squad {
   nome: string;
@@ -32,6 +33,14 @@ export function StrategicalView({
   squads = [],
   contracts = [],
 }: StrategicalViewProps) {
+  const { leads } = useData();
+  const leadsAbertos = leads.filter(l => l.status !== 'Fechado' && l.status !== 'Perdido');
+  const valorPipelineAberto = leadsAbertos.reduce((s, l) => s + (l.value || 0), 0);
+  const leadsQuentes = leadsAbertos.filter(l => (l.scoreIA ?? 0) > 80).length;
+
+  const contratosInadimplentes = contracts.filter(c => c.status === 'Inadimplente').length;
+  const taxaInadimplencia = contracts.length > 0 ? (contratosInadimplentes / contracts.length) * 100 : null;
+
   // Compute Goal Meter from real squads
   const totalMeta = squads.reduce((s, sq) => s + (sq.meta || 0), 0);
   const totalAlcancado = squads.reduce((s, sq) => s + (sq.faturamentoAlcancado || 0), 0);
@@ -99,7 +108,7 @@ export function StrategicalView({
             </div>
             <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-cyan-500/10 rounded-full border border-cyan-500/20">
               <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 opacity-60" />
-              <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-bold uppercase tracking-wider">Projeção IA</span>
+              <span className="text-[10px] text-cyan-600 dark:text-cyan-400 font-bold uppercase tracking-wider">Volume de Leads</span>
             </div>
           </div>
 
@@ -127,7 +136,7 @@ export function StrategicalView({
                   itemStyle={{ fontSize: '11px', fontWeight: 'bold' }}
                 />
                 <Area type="monotone" dataKey="vendas" stroke="#2563EB" fillOpacity={1} fill="url(#colorSales)" strokeWidth={3} strokeLinecap="round" />
-                <Area type="monotone" dataKey="leads" stroke="#06B6D4" fillOpacity={0} strokeWidth={2.5} strokeDasharray="5 5" name="Projeção IA" />
+                <Area type="monotone" dataKey="leads" stroke="#06B6D4" fillOpacity={0} strokeWidth={2.5} strokeDasharray="5 5" name="Volume de Leads" />
                 <Line type="stepAfter" dataKey="retention" stroke="#8B5CF6" strokeWidth={2} dot={false} name="Health Index" />
               </AreaChart>
             </ResponsiveContainer>
@@ -214,13 +223,19 @@ export function StrategicalView({
               <div className="space-y-4">
                 <div>
                   <p className="text-xs font-bold text-[var(--color-text-primary)] mb-1 flex items-center gap-1.5">
-                    <Zap className="w-3.5 h-3.5 text-amber-500" /> Velocidade de Fechamento
+                    <Zap className="w-3.5 h-3.5 text-amber-500" /> Pipeline em Aberto
                   </p>
-                  <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">Ciclo médio otimizado em 14% neste período com a automação de SDR.</p>
+                  <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
+                    {leadsAbertos.length} lead(s) em negociação, somando {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(valorPipelineAberto)}.
+                  </p>
                 </div>
                 <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-[var(--radius-control)]">
                   <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-0.5">Oportunidade Mapeada</p>
-                  <p className="text-[11px] text-[var(--color-text-muted)]">Leads quentes com score &gt; 80 aguardando follow-up do closer.</p>
+                  <p className="text-[11px] text-[var(--color-text-muted)]">
+                    {leadsQuentes > 0
+                      ? `${leadsQuentes} lead(s) quente(s) com Score IA > 80 aguardando follow-up.`
+                      : "Nenhum lead com Score IA > 80 em aberto no momento."}
+                  </p>
                 </div>
               </div>
             </Card>
@@ -230,9 +245,11 @@ export function StrategicalView({
                 <h3 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2.5">
                   <Briefcase className="w-4 h-4 text-purple-500" /> Snapshot de Contratos & Retenção
                 </h3>
-                <Badge variant="success" dot>
-                  NRR 106.4%
-                </Badge>
+                {taxaInadimplencia !== null && (
+                  <Badge variant={taxaInadimplencia > 0 ? "destructive" : "success"} dot>
+                    {taxaInadimplencia === 0 ? "Sem inadimplência" : `${taxaInadimplencia.toFixed(1)}% inadimplente`}
+                  </Badge>
+                )}
               </div>
               <div className="grid md:grid-cols-3 gap-6">
                 {!hasContracts ? (

@@ -87,7 +87,7 @@ export function NovaTarefaModal({
   submitText = "Agendar Tarefa",
 }: NovaTarefaModalProps) {
   const { colaboradores, products } = useData();
-  const { activeTenantId } = useAuth();
+  const { activeTenantId, user } = useAuth();
 
   /* ─── Colaboradores disponíveis ────────────────────────────── */
   const collaboratorOptions = useMemo(
@@ -98,16 +98,20 @@ export function NovaTarefaModal({
         .filter((c) => c.name),
     [colaboradores]
   );
-  const sellerOptions = collaboratorOptions.filter(
-    (c) => !c.name || true // todos os colaboradores podem ser vendedor responsável
-  );
+  const sellerOptions = useMemo(() => {
+    const list = [...collaboratorOptions];
+    if (user?.name && !list.some((c) => c.name === user.name)) {
+      list.unshift({ name: user.name, email: user.email || "" });
+    }
+    return list;
+  }, [collaboratorOptions, user?.name, user?.email]);
 
   /* ─── Campos principais ─────────────────────────────────────── */
   const [nome, setNome] = useState(initialValue?.nome || "");
   const [tipo, setTipo] = useState(initialValue?.tipo || TASK_TYPES[0]);
   const [prioridade, setPrioridade] = useState(initialValue?.prioridade || "Média");
   const [relacionado, setRelacionado] = useState(initialValue?.relacionado || "");
-  const [vendedor, setVendedor] = useState(initialValue?.vendedor || "");
+  const [vendedor, setVendedor] = useState(initialValue?.vendedor || user?.name || "");
   const [produtos, setProdutos] = useState<string[]>(initialValue?.produtos || []);
   const [tags, setTags] = useState(initialValue?.tags || "");
 
@@ -151,7 +155,7 @@ export function NovaTarefaModal({
       setHoraFim(twoHoursFromNow());
     }
     setRelacionado(initialValue?.relacionado || "");
-    setVendedor(initialValue?.vendedor || "");
+    setVendedor(initialValue?.vendedor || user?.name || "");
     setProdutos(initialValue?.produtos || []);
     setTags(initialValue?.tags || "");
     setConvidados(initialValue?.convidados || []);
@@ -219,10 +223,11 @@ export function NovaTarefaModal({
 
     let calendarLink: string | undefined;
 
-    if (bloquearAgenda && convidados.length > 0) {
+    if (bloquearAgenda) {
       try {
         if (!activeTenantId) throw new Error("Nenhum tenant ativo.");
 
+        const attendees = Array.from(new Set([...convidados])).filter(Boolean);
         const event = await createCalendarEvent(activeTenantId, {
           title: `${tipo} — ${nome}`,
           description: [
@@ -230,14 +235,19 @@ export function NovaTarefaModal({
             `🏢 Relacionado: ${relacionado}`,
             vendedor ? `👤 Responsável: ${vendedor}` : "",
             tags ? `🏷️ Tags: ${tags}` : "",
+            attendees.length > 0 ? `👥 Convidados: ${attendees.join(", ")}` : "",
           ].filter(Boolean).join("\n"),
           startISO: dataInicio,
           endISO: dataFim,
-          attendeeEmails: convidados,
+          attendeeEmails: attendees,
           skipConferenceData: true,
         });
         calendarLink = event.htmlLink;
-        toast.success(`Evento criado no Google Calendar! ${convidados.length} convidado(s) notificado(s).`);
+        toast.success(
+          attendees.length > 0
+            ? `Evento criado no Google Calendar! ${attendees.length} participante(s) notificado(s).`
+            : "Evento sincronizado na sua agenda Google com sucesso!"
+        );
       } catch (err: any) {
         const reason = err?.message === "google_calendar_not_connected"
           ? "conecte sua conta Google primeiro"

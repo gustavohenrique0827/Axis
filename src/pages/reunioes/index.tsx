@@ -467,7 +467,7 @@ export default function ReunioesList() {
             )}
           </Card>
 
-          {/* S.P.Y. Insights — matching Telemedicina MIA card style */}
+          {/* S.P.Y. Insights — matching Telemedicina Aurora card style */}
           <Card className="p-6 bg-gradient-to-br from-violet-600/10 to-transparent border-violet-500/20 relative overflow-hidden">
             <div className="absolute top-0 right-0 p-6 opacity-[0.05]">
               <Zap className="w-20 h-20 text-violet-400" />

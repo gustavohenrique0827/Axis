@@ -23,7 +23,7 @@ const MOCK_ENVIRONMENTS: DevEnvironment[] = [
     name: 'Produção',
     type: 'Production',
     status: 'operacional',
-    url: 'app.axiscrm.com.br',
+    url: 'app.spy.pluppex.com.br',
     version: 'v2.4.1',
     lastDeploy: '2 dias atrás',
     uptime: '99.98%',
@@ -42,7 +42,7 @@ const MOCK_ENVIRONMENTS: DevEnvironment[] = [
     name: 'Staging',
     type: 'Staging',
     status: 'em deploy',
-    url: 'staging.axiscrm.com.br',
+    url: 'staging.spy.pluppex.com.br',
     version: 'v2.4.2-rc1',
     lastDeploy: '45 min atrás',
     uptime: '99.2%',
@@ -61,7 +61,7 @@ const MOCK_ENVIRONMENTS: DevEnvironment[] = [
     name: 'Desenvolvimento',
     type: 'Development',
     status: 'operacional',
-    url: 'dev.axiscrm.com.br',
+    url: 'dev.spy.pluppex.com.br',
     version: 'v2.5.0-dev',
     lastDeploy: '2h atrás',
     uptime: '95.4%',
@@ -116,21 +116,20 @@ export function useAmbientes() {
   const [environments, setEnvironments] = useState<DevEnvironment[]>(supabase ? [] : MOCK_ENVIRONMENTS);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const refetch = async () => {
     if (!supabase) return;
-    async function load() {
-      setLoading(true);
-      const { data, error } = await supabase!
-        .from('dev_environments')
-        .select('*')
-        .order('created_at', { ascending: true });
-      if (!error && data !== null) {
-        setEnvironments(data.map(rowToEnv));
-      }
-      setLoading(false);
+    setLoading(true);
+    const { data, error } = await supabase
+      .from('dev_environments')
+      .select('*')
+      .order('created_at', { ascending: true });
+    if (!error && data !== null) {
+      setEnvironments(data.map(rowToEnv));
     }
-    load();
-  }, []);
+    setLoading(false);
+  };
 
-  return { environments, loading };
+  useEffect(() => { refetch(); }, []);
+
+  return { environments, loading, refetch };
 }

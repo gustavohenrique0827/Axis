@@ -45,6 +45,7 @@ export type Appointment = {
   id: string;
   time: string;
   patient: string;
+  patientId?: string | null;
   drId: string;
   drName: string;
   status: 'Confirmado' | 'Aguardando' | 'Atrasado' | 'Em Atendimento' | 'Finalizado';
@@ -135,8 +136,6 @@ export interface DataContextType {
   simulateOverdueTask: () => void;
   whatsappWebhookUrl: string;
   setWhatsappWebhookUrl: (url: string) => void;
-  robotStatus: 'executando' | 'pausado';
-  setRobotStatus: (status: 'executando' | 'pausado') => void;
   customLeadFields: CustomField[];
   setCustomLeadFields: (fields: CustomField[]) => void;
   leadScoreTriggers: LeadScoreTrigger[];

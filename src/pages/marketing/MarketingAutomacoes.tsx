@@ -1,27 +1,26 @@
 import { useState } from "react";
-import { 
-  Zap, Search, Plus, Filter, Play, 
-  Settings, Users, Mail, MessageSquare,
-  BarChart3, Clock, ChevronRight, Pause,
-  Share2, MousePointer2
+import {
+  Zap, Search, Plus, Play,
+  Users, Mail,
+  BarChart3, Pause, Trash2,
+  MousePointer2
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 
 interface Automation {
   id: string;
   name: string;
-  trigger: string;
+  trigger: string | null;
   steps: number;
-  activeCount: number;
-  conversion: string;
+  active_count: number;
+  conversion_rate: number;
   status: 'Ativa' | 'Pausada' | 'Rascunho';
-  lastRun: string;
+  last_run: string | null;
 }
-
-
 
 import { toast } from "sonner";
 import { PageContainer } from "../../components/PageContainer";
@@ -29,7 +28,8 @@ import { PageContainer } from "../../components/PageContainer";
 import { useData } from "../../contexts/DataContext";
 
 export default function MarketingAutomacoes() {
-  const { marketingAutomations: automations, setMarketingAutomations } = useData();
+  const { marketingAutomations, addMarketingAutomation, updateMarketingAutomation, deleteMarketingAutomation } = useData();
+  const automations = marketingAutomations as Automation[];
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -41,17 +41,16 @@ export default function MarketingAutomacoes() {
       toast.error("Preencha o nome da automação");
       return;
     }
-    const newAutomation: Automation = {
+    addMarketingAutomation({
       id: Math.random().toString(36).substring(7),
       name: newFlowName,
       trigger: newFlowTrigger,
       steps: 1,
-      activeCount: 0,
-      conversion: "0%",
+      active_count: 0,
+      conversion_rate: 0,
       status: "Rascunho",
-      lastRun: "-",
-    };
-    setMarketingAutomations([newAutomation, ...automations]);
+      last_run: null,
+    });
     setIsCreateModalOpen(false);
     setNewFlowName("");
     toast.success("Novo fluxo criado com sucesso!");
@@ -61,28 +60,25 @@ export default function MarketingAutomacoes() {
     const a = automations.find(a => a.id === id);
     if (a) {
       const nextStatus = a.status === 'Ativa' ? 'Pausada' : 'Ativa';
-      setMarketingAutomations(automations.map(a => a.id === id ? { ...a, status: nextStatus } : a));
+      updateMarketingAutomation(id, { status: nextStatus });
       toast.success(`Automação "${a.name}" ${nextStatus === 'Ativa' ? 'ativada' : 'pausada'}`);
     }
   };
 
   const filtered = automations.filter(a => {
     const matchesSearch = a.name.toLowerCase().includes(search.toLowerCase()) ||
-                         a.trigger.toLowerCase().includes(search.toLowerCase());
+                         (a.trigger || "").toLowerCase().includes(search.toLowerCase());
     const matchesStatus = !activeFilter || a.status === activeFilter;
     return matchesSearch && matchesStatus;
   });
 
   return (
     <PageContainer
-      title="Automações S.P.Y."
-      description="Orquestração de jornadas inteligentes e réguas de relacionamento preditivas via MIA-6."
+      title="Automações"
+      description="Crie fluxos automatizados disparados por eventos do CRM (novo lead, compra aprovada, etc)."
       actions={
         <div className="flex items-center gap-3">
-          <Button className="bg-white/5 hover:bg-white/10 text-white border-white/10 h-11 px-6 rounded-xl font-bold uppercase tracking-widest text-[10px]">
-             Biblioteca
-          </Button>
-          <Button 
+          <Button
             onClick={() => setIsCreateModalOpen(true)}
             className="bg-purple-600 hover:bg-purple-700 text-white h-11 px-8 rounded-xl font-black uppercase tracking-widest text-[10px] shadow-lg shadow-purple-600/20 cursor-pointer"
           >
@@ -95,10 +91,12 @@ export default function MarketingAutomacoes() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Leads em Fluxo", value: "0", icon: Users, color: "text-indigo-500" },
-          { label: "Emails Enviados", value: "0", icon: Mail, color: "text-blue-500" },
-          { label: "Conversões Assist.", value: "0", icon: MousePointer2, color: "text-emerald-500" },
-          { label: "Eficiência Média", value: "0%", icon: BarChart3, color: "text-amber-500" },
+          { label: "Leads em Fluxo", value: automations.reduce((s, a) => s + (a.active_count || 0), 0).toString(), icon: Users, color: "text-indigo-500" },
+          // Envio de e-mail em massa por automação ainda não existe no S.P.Y. — mostrar
+          // "—" em vez de um número de exemplo até existir uma fonte real.
+          { label: "Emails Enviados", value: "—", icon: Mail, color: "text-blue-500" },
+          { label: "Conversões Assist.", value: "—", icon: MousePointer2, color: "text-emerald-500" },
+          { label: "Eficiência Média", value: automations.length > 0 ? `${(automations.reduce((s, a) => s + (a.conversion_rate || 0), 0) / automations.length).toFixed(1)}%` : "—", icon: BarChart3, color: "text-amber-500" },
         ].map((stat, i) => (
           <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/50 border hover:border-white/10 border-white/5 backdrop-blur-md transition-all">
             <stat.icon className={`w-5 h-5 ${stat.color} mb-4`} />
@@ -166,30 +164,33 @@ export default function MarketingAutomacoes() {
                 </div>
                 <div className="p-4 rounded-xl bg-white/5 border border-white/5">
                    <div className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Ativos</div>
-                   <div className="text-xl font-display font-black text-white italic">{item.activeCount}</div>
+                   <div className="text-xl font-display font-black text-white italic">{item.active_count}</div>
                 </div>
                 <div className="p-4 rounded-xl bg-white/5 border border-white/5">
                    <div className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Conversão</div>
-                   <div className="text-xl font-display font-black text-emerald-500 italic">{item.conversion}</div>
+                   <div className="text-xl font-display font-black text-emerald-500 italic">{item.conversion_rate.toFixed(1)}%</div>
                 </div>
              </div>
 
              <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                <div className="text-[10px] font-medium text-slate-600">Última execução: {item.lastRun}</div>
+                <div className="text-[10px] font-medium text-slate-600">Última execução: {item.last_run || "nunca executada"}</div>
                 <div className="flex gap-2">
-                   <Button 
+                   <Button
                     onClick={() => toggleStatus(item.id)}
-                    size="icon" 
-                    variant="ghost" 
+                    size="icon"
+                    variant="ghost"
                     className={`w-10 h-10 rounded-xl bg-white/5 transition-all ${item.status === 'Ativa' ? 'text-amber-500 hover:bg-amber-500/10' : 'text-emerald-500 hover:bg-emerald-500/10'}`}
                    >
                       {item.status === 'Ativa' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                    </Button>
-                   <Button size="icon" variant="ghost" className="w-10 h-10 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all">
-                      <Settings className="w-4 h-4" />
-                   </Button>
-                   <Button size="icon" variant="ghost" className="w-10 h-10 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-all">
-                      <Share2 className="w-4 h-4" />
+                   <Button
+                    onClick={async () => {
+                      if (!(await confirmDialog({ title: "Excluir automação", description: `Excluir o fluxo "${item.name}"? Essa ação não pode ser desfeita.` }))) return;
+                      deleteMarketingAutomation(item.id);
+                      toast.success("Automação removida.");
+                    }}
+                    size="icon" variant="ghost" className="w-10 h-10 rounded-xl bg-white/5 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-all">
+                      <Trash2 className="w-4 h-4" />
                    </Button>
                 </div>
              </div>

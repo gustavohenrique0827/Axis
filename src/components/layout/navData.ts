@@ -17,7 +17,6 @@ import {
   FileText,
   Megaphone,
   Edit3,
-  Share2,
   Globe,
   Stethoscope,
   Sun,
@@ -43,6 +42,9 @@ import {
   SlidersHorizontal,
   ShoppingCart,
   Boxes,
+  ClipboardList,
+  Wrench,
+  Truck,
 } from "lucide-react";
 
 /**
@@ -55,18 +57,37 @@ export const navSections = [
   {
     title: "Visão Geral",
     items: [
-      { name: "Dashboard", path: "/app/dashboard", icon: LayoutDashboard },
+      { name: "Dashboard Geral", path: "/app/dashboard", icon: LayoutDashboard },
     ],
   },
   {
     title: "CRM & Vendas",
     reqModule: "crm",
     items: [
-      { name: "Leads & Pipeline", path: "/app/pipeline", icon: Columns3 },
-      { name: "Agenda Comercial", path: "/app/crm/agenda", icon: CalendarDays },
-      { name: "Reuniões", path: "/app/reunioes", icon: Video },
-      { name: "Propostas", path: "/app/propostas", icon: FileText },
-      { name: "Base de Clientes", path: "/app/clientes", icon: Users },
+      { name: "Leads & Prospecção", path: "/app/crm/leads", icon: Users },
+      { name: "Pipeline Comercial", path: "/app/crm/pipeline", icon: Columns3 },
+      { name: "Propostas Comerciais", path: "/app/crm/propostas", icon: FileText },
+      { name: "Base de Clientes", path: "/app/crm/clientes", icon: Users },
+    ],
+  },
+  {
+    title: "Agenda & Reuniões",
+    reqModule: "agenda",
+    items: [
+      { name: "Calendário Geral", path: "/app/agenda/calendario", icon: CalendarDays },
+      { name: "Salas de Reunião", path: "/app/agenda/reunioes", icon: Video },
+    ],
+  },
+  {
+    title: "Gestão Financeira",
+    reqModule: "financeiro",
+    items: [
+      { name: "Painel Financeiro", path: "/app/financeiro/dashboard", icon: Wallet },
+      { name: "Contas a Receber", path: "/app/financeiro/receber", icon: TrendingUp },
+      { name: "Contas a Pagar", path: "/app/financeiro/pagar", icon: Wallet },
+      { name: "DRE & Resultados", path: "/app/financeiro/dre", icon: PieChart },
+      { name: "Contratos & Faturas", path: "/app/financeiro/faturas", icon: Receipt },
+      { name: "Indicações & Parcerias", path: "/app/financeiro/indicacoes", icon: Handshake },
     ],
   },
   {
@@ -89,18 +110,6 @@ export const navSections = [
     ],
   },
   {
-    title: "Gestão Financeira",
-    reqModule: "financeiro",
-    items: [
-      { name: "Painel Financeiro", path: "/app/financeiro", icon: Wallet },
-      { name: "Contratos & Faturas", path: "/app/financeiro/faturas", icon: Receipt },
-      { name: "Contas a Receber", path: "/app/financeiro/receber", icon: TrendingUp },
-      { name: "Contas a Pagar", path: "/app/financeiro/pagar", icon: Wallet },
-      { name: "DRE & Resultados", path: "/app/financeiro/dre", icon: PieChart },
-      { name: "Indicações", path: "/app/financeiro/indicacoes", icon: Handshake },
-    ],
-  },
-  {
     title: "Inteligência & BI",
     reqModule: "bi",
     items: [
@@ -109,26 +118,74 @@ export const navSections = [
       { name: "Relatórios Executivos", path: "/app/relatorios", icon: PieChart },
     ],
   },
+
+  // ═══════════════════════════════════════════════════
+  // MÓDULOS VERTICAIS (100% Gated por Tenant / Multi-tenant)
+  // ═══════════════════════════════════════════════════
+  {
+    title: "Imobiliário",
+    reqModule: "imobiliaria",
+    items: [
+      { name: "Painel Imobiliário", path: "/app/imobiliario/dashboard", icon: Building2 },
+      { name: "Catálogo de Imóveis", path: "/app/imobiliario/imoveis", icon: KeySquare },
+      { name: "Proprietários", path: "/app/imobiliario/proprietarios", icon: Users },
+      { name: "Captações", path: "/app/imobiliario/captacoes", icon: ClipboardList },
+      { name: "Empreendimentos", path: "/app/imobiliario/empreendimentos", icon: Building2 },
+      { name: "Corretores", path: "/app/imobiliario/corretores", icon: Users },
+      { name: "Visitas Agendadas", path: "/app/imobiliario/visitas", icon: Calendar },
+    ],
+  },
   {
     title: "Energia Solar",
     reqModule: "solar",
     items: [
-      { name: "Análise de Fatura", path: "/app/solar/analise-fatura", icon: Sun },
+      { name: "Painel Fotovoltaico", path: "/app/energia-solar/dashboard", icon: Sun },
+      { name: "Projetos Solares", path: "/app/energia-solar/projetos", icon: LayoutDashboard },
+      { name: "Vistorias Técnicas", path: "/app/energia-solar/vistorias", icon: ClipboardList },
+      { name: "Análise de Fatura & kWp", path: "/app/energia-solar/dimensionamentos", icon: Sun },
+      { name: "Instalações & Obras", path: "/app/energia-solar/instalacoes", icon: Wrench },
+      { name: "Homologações", path: "/app/energia-solar/homologacoes", icon: FileText },
+      { name: "Manutenções & Pós-Venda", path: "/app/energia-solar/manutencoes", icon: Wrench },
+    ],
+  },
+  {
+    title: "Automotivo",
+    reqModule: "automotivo",
+    items: [
+      { name: "Painel Concessionária", path: "/app/automotivo/dashboard", icon: Building2 },
+      { name: "Estoque de Veículos", path: "/app/automotivo/veiculos", icon: Car },
+      { name: "Captações", path: "/app/automotivo/captacoes", icon: ClipboardList },
+      { name: "Avaliações de Usados", path: "/app/automotivo/avaliacoes", icon: CheckSquare },
+      { name: "Consignações", path: "/app/automotivo/consignacoes", icon: Handshake },
+      { name: "Trocas & Repasses", path: "/app/automotivo/trocas", icon: TrendingUp },
+      { name: "Vendedores", path: "/app/automotivo/corretores", icon: Users },
+      { name: "Test-Drives Agendados", path: "/app/automotivo/visitas", icon: Calendar },
+    ],
+  },
+  {
+    title: "Varejo",
+    reqModule: "varejo",
+    items: [
+      { name: "Painel de Varejo", path: "/app/varejo/dashboard", icon: LayoutDashboard },
+      { name: "Frente de Caixa (PDV)", path: "/app/varejo/vendas", icon: ShoppingCart },
+      { name: "Controle de Estoque", path: "/app/varejo/estoque", icon: Boxes },
+      { name: "Fornecedores", path: "/app/varejo/fornecedores", icon: Truck },
+      { name: "Pedidos de Compra", path: "/app/varejo/compras", icon: ClipboardList },
     ],
   },
   {
     title: "Clínica & Saúde",
     reqModule: "clinica",
     items: [
-      { name: "Painel Geral", path: "/app/clinica/painel", icon: Stethoscope },
-      { name: "Agenda Médica", path: "/app/clinica/agenda", icon: Calendar },
-      { name: "Pacientes", path: "/app/clinica/pacientes", icon: Users },
-      { name: "Prontuários EHR", path: "/app/clinica/prontuarios", icon: FileText },
-      { name: "Faturamento", path: "/app/clinica/faturamento", icon: Wallet },
-      { name: "Estoque Clínico", path: "/app/clinica/estoque", icon: Archive },
-      { name: "Telemedicina", path: "/app/clinica/telemedicina", icon: Video },
-      { name: "Exames & Labs", path: "/app/clinica/exames", icon: FlaskConical },
-      { name: "BI Clínico", path: "/app/clinica/bi", icon: BarChart3 },
+      { name: "Painel Geral", path: "/app/clinicas/dashboard", icon: Stethoscope },
+      { name: "Agenda Médica", path: "/app/clinicas/agenda", icon: Calendar },
+      { name: "Pacientes", path: "/app/clinicas/pacientes", icon: Users },
+      { name: "Prontuários EHR", path: "/app/clinicas/prontuarios", icon: FileText },
+      { name: "Telemedicina", path: "/app/clinicas/telemedicina", icon: Video },
+      { name: "Faturamento Clínico", path: "/app/clinicas/faturamento", icon: Wallet },
+      { name: "Estoque de Insumos", path: "/app/clinicas/estoque", icon: Archive },
+      { name: "Exames & Labs", path: "/app/clinicas/exames", icon: FlaskConical },
+      { name: "BI Clínico", path: "/app/clinicas/bi", icon: BarChart3 },
     ],
   },
   {
@@ -141,26 +198,6 @@ export const navSections = [
       { name: "Banco de Conteúdo", path: "/app/educacao/conteudo", icon: BookOpen },
       { name: "Certificados", path: "/app/educacao/certificados", icon: Award },
       { name: "Mensalidades", path: "/app/educacao/mensalidades", icon: Wallet },
-    ],
-  },
-  {
-    title: "Varejo",
-    reqModule: "varejo",
-    items: [
-      { name: "Ponto de Venda", path: "/app/varejo/vendas", icon: ShoppingCart },
-      { name: "Estoque", path: "/app/varejo/estoque", icon: Boxes },
-    ],
-  },
-  {
-    title: "Imobiliário & Concessionárias",
-    reqModule: "imobiliario",
-    items: [
-      { name: "Painel Geral", path: "/app/imobiliario/painel", icon: Building2 },
-      { name: "Leads & Pipeline", path: "/app/imobiliario/pipeline", icon: Columns3 },
-      { name: "Imóveis", path: "/app/imobiliario/imoveis", icon: KeySquare },
-      { name: "Veículos", path: "/app/imobiliario/veiculos", icon: Car },
-      { name: "Corretores & Vendedores", path: "/app/imobiliario/corretores", icon: Users },
-      { name: "Visitas & Test-Drives", path: "/app/imobiliario/visitas", icon: Calendar },
     ],
   },
   {

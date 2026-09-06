@@ -1,15 +1,14 @@
 import { useMemo } from "react";
-import { Users, Brain, DollarSign, Award } from "lucide-react";
+import { Users, Brain, DollarSign, Award, Zap } from "lucide-react";
 
 import { PageContainer } from "../../components/PageContainer";
 import { useData } from "../../contexts/DataContext";
 
-import { MiaHero } from "./components/PerformanceDashboard/MiaHero";
 import { KpiCards } from "./components/PerformanceDashboard/KpiCards";
 import { PerformanceScoreChart, HotLeadsPanel, LeadsVolumeChart } from "./components/PerformanceDashboard/PerformanceCharts";
 
 export default function Dashboard() {
-  const { leads, robotStatus } = useData();
+  const { leads, leadScoreTriggers } = useData();
 
   const performanceData = useMemo(() => {
     const now = new Date();
@@ -44,8 +43,9 @@ export default function Dashboard() {
       { label: "Score IA Médio",    value: avgScore.toFixed(1),           icon: Brain },
       { label: "Pipeline Total",    value: `R$ ${(totalValue/1000).toFixed(1)}k`, icon: DollarSign },
       { label: "Taxa de Conversão", value: `${winRate.toFixed(1)}%`,      icon: Award },
+      { label: "Gatilhos de Automação Ativos", value: leadScoreTriggers.length, icon: Zap },
     ];
-  }, [leads]);
+  }, [leads, leadScoreTriggers]);
 
   const hotLeads = useMemo(() =>
     (leads as any[]).filter(l => (l.temperature || "").toLowerCase() === "quente").slice(0, 5),
@@ -56,8 +56,6 @@ export default function Dashboard() {
       title="Dashboard de Performance"
       description="Análise inteligente da correlação entre pré-qualificação IA e conversão comercial."
     >
-      <MiaHero robotStatus={robotStatus || "idle"} leadsCount={(leads as any[]).length} />
-
       <KpiCards stats={stats} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">

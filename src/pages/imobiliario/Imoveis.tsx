@@ -4,12 +4,13 @@ import { Button } from "../../components/ui/button";
 import {
   Building2, Plus, Search, MapPin, Bed, Bath, Car, Eye, Edit2, Trash2,
   Copy, X, Home, DollarSign, Grid3x3, List, TrendingUp, Package,
-  ChevronRight, User, ExternalLink, SquarePen,
+  ChevronRight, User, ExternalLink, SquarePen, Columns3,
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
+import { Link } from "react-router-dom";
 
 type Imovel = {
   id: string;
@@ -414,9 +415,17 @@ export default function Imoveis() {
       title="Imóveis"
       description="Gerencie o portfólio completo de imóveis disponíveis, vendidos e locados."
       actions={
-        <Button onClick={() => setShowForm(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
-          <Plus className="w-3.5 h-3.5" /> Novo Imóvel
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/app/crm/pipeline?nicho=imobiliario"
+            className="h-9 px-3.5 text-xs font-bold gap-1.5 inline-flex items-center rounded-xl bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] hover:border-[var(--color-primary-blue)] text-[var(--color-text-primary)] transition-all"
+          >
+            <Columns3 className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" /> Ver Pipeline CRM
+          </Link>
+          <Button onClick={() => setShowForm(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+            <Plus className="w-3.5 h-3.5" /> Novo Imóvel
+          </Button>
+        </div>
       }
     >
       {showForm && <ImovelFormModal onClose={() => setShowForm(false)} onSave={handleSave} />}

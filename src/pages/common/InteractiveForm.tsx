@@ -2,14 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Check, ArrowRight, ArrowLeft, Zap, Home, Heart, GraduationCap, Briefcase, Rocket, ShieldCheck, Smartphone, AlertTriangle } from 'lucide-react';
-import { MascotMIA6 } from '../../components/MascotMIA6';
 import { apiFetch } from '../../lib/apiClient';
 
 const niches: Record<string, any> = {
   "mia-6": {
     name: "S.P.Y. Core Systems",
     title: "Implante o S.P.Y. na Sua Empresa",
-    subtitle: "Automatize processos, integre o MIA-6 e escale a sua operação de vendas de ponta a ponta.",
+    subtitle: "Automatize processos, integre a Aurora e escale a sua operação de vendas de ponta a ponta.",
     icon: Rocket,
     color: "blue",
     bgGradient: "from-blue-900 to-slate-900",
@@ -268,13 +267,6 @@ export function InteractiveForm() {
 
   return (
     <div className={`min-h-screen bg-gradient-to-br ${formConfig.bgGradient} flex items-center justify-center p-4 sm:p-8 font-sans relative overflow-hidden`}>
-      {/* Decorative Mascot for MIA-6 Form */}
-      {niche === 'mia-6' && (
-        <div className="absolute top-1/2 right-[-200px] -translate-y-1/2 opacity-30 lg:opacity-100 lg:right-10 pointer-events-none xl:right-32">
-          <MascotMIA6 className="w-[300px] h-[300px] lg:w-[400px] lg:h-[400px]" />
-        </div>
-      )}
-
       <div className="w-full max-w-3xl relative z-10">
 
         {/* Header / Progress */}

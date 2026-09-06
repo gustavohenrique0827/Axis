@@ -1,12 +1,16 @@
-import { motion } from "motion/react";
 import { Card } from "../../../../components/ui/card";
-import { Cpu, ShieldCheck, AlertTriangle, ArrowUpRight } from "lucide-react";
+import { Cpu, Scale, DollarSign } from "lucide-react";
+
+const fmt = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
 
 export function PerformanceIAEngineCards(props: {
   simulationData: any[];
   isSimulating: boolean;
+  currentCAC: number;
+  currentLTV: number;
 }) {
-  const { simulationData } = props;
+  const { simulationData, currentCAC, currentLTV } = props;
+  const ltvCacRatio = currentCAC > 0 ? currentLTV / currentCAC : null;
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -18,51 +22,48 @@ export function PerformanceIAEngineCards(props: {
           <div className="flex items-center gap-3 mb-6">
             <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
             <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">
-              Motor Neural v4.2
+              Auditoria Comercial IA
             </span>
           </div>
           <h3 className="text-2xl font-black text-white italic tracking-tighter mb-2">Processamento Ativo</h3>
           <p className="text-xs text-slate-400 leading-relaxed font-medium">
-            Analisando pontos de dados em tempo real para identificação de gargalos de conversão.
+            Analisa MRR, CAC e LTV atuais para sugerir cenários de crescimento e gargalos de conversão.
           </p>
         </div>
       </Card>
 
       <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 flex flex-col justify-between">
         <div className="flex items-center justify-between">
-          <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Score de Saúde IA</h4>
-          <ShieldCheck className="w-4 h-4 text-emerald-500" />
+          <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Razão LTV / CAC</h4>
+          <Scale className="w-4 h-4 text-emerald-500" />
         </div>
         <div className="py-6 flex items-end gap-3 text-white">
           <span className="text-5xl font-black font-mono tracking-tighter">
-            {simulationData.length > 0 ? "94" : "--"}
+            {ltvCacRatio !== null ? ltvCacRatio.toFixed(1) : "—"}
           </span>
-          <span className="text-sm font-bold text-slate-500 mb-2">/100</span>
+          {ltvCacRatio !== null && <span className="text-sm font-bold text-slate-500 mb-2">x</span>}
         </div>
-        <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: simulationData.length > 0 ? "94%" : "0%" }}
-            className="h-full bg-emerald-500"
-          />
-        </div>
+        <p className="text-[10px] text-slate-400 font-bold tracking-tight">
+          {ltvCacRatio === null
+            ? "Sem gasto de marketing registrado para calcular o CAC."
+            : ltvCacRatio >= 3
+              ? "Saudável — acima de 3x é o parâmetro de mercado."
+              : "Abaixo do parâmetro de mercado (3x)."}
+        </p>
       </Card>
 
-      <Card className="p-8 bg-amber-500/10 border-amber-500/20 flex flex-col justify-between">
+      <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 flex flex-col justify-between">
         <div className="flex items-center justify-between">
-          <h4 className="text-[10px] font-black text-amber-500 uppercase tracking-widest">Anomalias Detectadas</h4>
-          <AlertTriangle className="w-4 h-4 text-amber-500" />
+          <h4 className="text-[10px] font-black text-slate-500 uppercase tracking-widest">CAC Atual</h4>
+          <DollarSign className="w-4 h-4 text-amber-500" />
         </div>
         <div className="py-6 flex items-end gap-3 text-white">
-          <span className="text-5xl font-black font-mono tracking-tighter">
-            {simulationData.length > 0 ? "02" : "00"}
+          <span className="text-4xl font-black font-mono tracking-tighter">
+            {currentCAC > 0 ? fmt(currentCAC) : "—"}
           </span>
-          <ArrowUpRight className="w-6 h-6 text-rose-500 mb-2" />
         </div>
-        <p className="text-[10px] text-slate-400 font-bold italic tracking-tight">
-          {simulationData.length > 0
-            ? "Queda inesperada na velocidade de prospecção."
-            : "Sem dados para análise de anomalias."}
+        <p className="text-[10px] text-slate-400 font-bold tracking-tight">
+          Custo médio de aquisição por lead, com base nos lançamentos de marketing pagos.
         </p>
       </Card>
     </div>

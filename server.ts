@@ -820,6 +820,33 @@ app.post("/api/ai/performance-audit", requireUser, async (req, res) => {
   }
 });
 
+app.post("/api/ai/content-script", requireUser, async (req, res) => {
+  const { title, desc, platform } = req.body;
+  if (!title) return res.status(400).json({ error: "Informe o título da pauta." });
+  if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "Chave de IA não configurada." });
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Você é um redator de conteúdo para redes sociais. Crie um roteiro curto (15-30 segundos de leitura) para um post de "${platform || "Instagram"}" com o tema "${title}". Contexto adicional: ${desc || "nenhum"}.
+      Retorne estritamente um JSON: {"script": string, "hashtags": string[]} (hashtags sem o caractere #, só a palavra).`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            script: { type: Type.STRING },
+            hashtags: { type: Type.ARRAY, items: { type: Type.STRING } },
+          },
+          required: ["script", "hashtags"],
+        },
+      },
+    });
+    res.json(JSON.parse(response.text ?? "{}"));
+  } catch {
+    res.status(500).json({ error: "Falha ao gerar script." });
+  }
+});
+
 app.post("/api/ai/pipeline-audit", requireUser, async (req, res) => {
   const { stageName, leads } = req.body;
   if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline" });
@@ -1137,6 +1164,26 @@ const AURORA_TOOLS = [
       required: ["dias"],
     },
   },
+  {
+    name: "tarefas_pendentes",
+    description: "Lista tarefas operacionais e follow-ups em aberto ou atrasados do tenant.",
+    parameters: { type: Type.OBJECT, properties: {} },
+  },
+  {
+    name: "vendas_e_propostas",
+    description: "Retorna resumo de propostas comerciais emitidas e vendas registradas no tenant.",
+    parameters: { type: Type.OBJECT, properties: {} },
+  },
+  {
+    name: "clientes_resumo",
+    description: "Retorna a lista e quantidade de clientes cadastrados no tenant por setor e situação.",
+    parameters: { type: Type.OBJECT, properties: {} },
+  },
+  {
+    name: "solar_funil_resumo",
+    description: "Retorna o resumo do funil fotovoltaico do tenant: quantidade de análises por estágio, propostas enviadas, vendas fechadas e potência instalada. Use para perguntas sobre leads solares, propostas e status do funil de energia solar.",
+    parameters: { type: Type.OBJECT, properties: {} },
+  },
 ];
 
 async function runAuroraTool(name: string, args: any, supabaseClient: any): Promise<any> {
@@ -1193,6 +1240,67 @@ async function runAuroraTool(name: string, args: any, supabaseClient: any): Prom
       porTipo[t] = (porTipo[t] || 0) + (Number(row.value) || 0);
     }
     return { dias_considerados: dias, total_lancamentos: data?.length ?? 0, soma_por_tipo: porTipo };
+  }
+
+  if (name === "tarefas_pendentes") {
+    const { data, error } = await supabaseClient
+      .from("tasks")
+      .select("title, status, priority, date, responsible")
+      .neq("status", "Concluída")
+      .limit(25);
+    if (error) return { error: error.message };
+    return { total_pendentes: data?.length ?? 0, tarefas: data ?? [] };
+  }
+
+  if (name === "vendas_e_propostas") {
+    const { data: propostas, error: propErr } = await supabaseClient
+      .from("proposals")
+      .select("titulo, cliente, valor, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(15);
+    if (propErr) return { error: propErr.message };
+
+    const { data: vendas, error: vendErr } = await supabaseClient
+      .from("vendas")
+      .select("id, valor_total, forma_pagamento, status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(15);
+
+    return {
+      propostas: propostas ?? [],
+      vendas_recentes: vendErr ? [] : (vendas ?? [])
+    };
+  }
+
+  if (name === "clientes_resumo") {
+    const { data, error } = await supabaseClient
+      .from("clientes")
+      .select("name, industry, status, city, state")
+      .limit(30);
+    if (error) return { error: error.message };
+    return { total_clientes: data?.length ?? 0, clientes: data ?? [] };
+  }
+
+  if (name === "solar_funil_resumo") {
+    const { data, error } = await supabaseClient
+      .from("solar_analises")
+      .select("status, potencia_estimada_kwp, valor_proposta");
+    if (error) return { error: error.message };
+    const rows = data ?? [];
+    const porEstagio: Record<string, number> = {};
+    rows.forEach((r: any) => { porEstagio[r.status] = (porEstagio[r.status] ?? 0) + 1; });
+    const fechados = rows.filter((r: any) => r.status === "Concluído");
+    const propostasEnviadas = rows.filter((r: any) =>
+      ["Proposta Enviada", "Homologação", "Instalação", "Concluído"].includes(r.status)
+    ).length;
+    return {
+      total_leads_solares: rows.length,
+      por_estagio: porEstagio,
+      propostas_enviadas: propostasEnviadas,
+      vendas_fechadas: fechados.length,
+      potencia_instalada_kwp: fechados.reduce((s: number, r: any) => s + Number(r.potencia_estimada_kwp ?? 0), 0),
+      receita_fechada: fechados.reduce((s: number, r: any) => s + Number(r.valor_proposta ?? 0), 0),
+    };
   }
 
   return { error: `Ferramenta desconhecida: ${name}` };
@@ -1802,13 +1910,13 @@ app.post("/api/whatsapp/copilot/analyze", requireUser, async (req: any, res) => 
 // então um fetch direto do browser falharia mesmo com a URL certa.
 
 app.post("/api/integrations/webhook-test", requireUser, async (req: any, res) => {
-  const { url, event } = req.body ?? {};
+  const { url, event, payload } = req.body ?? {};
   if (!url) return res.status(400).json({ error: "URL do webhook é obrigatória." });
   try {
     const started = Date.now();
     const response = await axios.post(
       url,
-      { event: event || "test_ping", test: true, timestamp: new Date().toISOString() },
+      payload ?? { event: event || "test_ping", test: true, timestamp: new Date().toISOString() },
       { timeout: 8000, validateStatus: () => true }
     );
     const ok = response.status >= 200 && response.status < 300;

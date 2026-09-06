@@ -172,7 +172,7 @@ export const defaultLeads: Lead[] = [
     pipelineId: "sdr",
     scoreIA: 95,
     temperature: "quente",
-    iaSummary: "Qualificado pela MIA com 95 pontos. Reunião de demonstração confirmada para amanhã às 15h.",
+    iaSummary: "Qualificado pela Aurora com 95 pontos. Reunião de demonstração confirmada para amanhã às 15h.",
     timeIdle: 1,
     tags: ["Agronegócio", "Reunião Agendada"],
   },

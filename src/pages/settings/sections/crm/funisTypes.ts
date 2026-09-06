@@ -36,7 +36,7 @@ export const FUNIS_DEFAULT: Funil[] = [
   },
   {
     id: "funil-sdr-ia-default",
-    nome: "Funil SDR IA — MIA-6",
+    nome: "Funil SDR IA — Aurora",
     tipo: "sdr_ia",
     etapas: ["Triagem SDR", "Contato Efetuado", "Qualificação SDR", "Reunião Agendada", "Promovido Closer"],
     ativo: true,
@@ -44,7 +44,7 @@ export const FUNIS_DEFAULT: Funil[] = [
     sdrEtapaHandoff: "Promovido Closer",
     sdrScoreMinimo: 65,
     sdrDelayResposta: 2,
-    sdrMsgBoasVindas: "Olá! Sou a MIA, assistente comercial da S.P.Y.. Poderia me contar um pouco sobre o seu desafio atual?",
+    sdrMsgBoasVindas: "Olá! Sou a Aurora, assistente comercial da S.P.Y.. Poderia me contar um pouco sobre o seu desafio atual?",
     sdrCriterioDesqualificacao: "sem_interesse",
   },
 ];

@@ -482,7 +482,7 @@ export function createGoogleCalendarRouter({ requireUser, supabaseService }: Goo
     const tenantResult = await resolveTenantId(req);
     if ("error" in tenantResult) return res.status(tenantResult.status).json({ error: tenantResult.error });
 
-    const { title, description, startISO, endISO, attendeeEmails, skipConferenceData } = req.body || {};
+    const { title, description, location, startISO, endISO, attendeeEmails, skipConferenceData } = req.body || {};
     if (!title || !startISO || !endISO) return res.status(400).json({ error: "title, startISO e endISO são obrigatórios." });
 
     try {
@@ -490,6 +490,7 @@ export function createGoogleCalendarRouter({ requireUser, supabaseService }: Goo
       const body: Record<string, unknown> = {
         summary: title,
         description: description || "",
+        ...(location ? { location } : {}),
         start: { dateTime: startISO, timeZone: "America/Sao_Paulo" },
         end: { dateTime: endISO, timeZone: "America/Sao_Paulo" },
         attendees: (attendeeEmails || []).filter(Boolean).map((email: string) => ({ email })),

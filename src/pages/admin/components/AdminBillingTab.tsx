@@ -11,10 +11,19 @@ interface AdminBillingTabProps {
 }
 
 export function AdminBillingTab({ revenueData, CustomTooltip }: AdminBillingTabProps) {
+  const fmt = (n: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(n);
+  const mesesComReceita = revenueData.filter(m => m.mrr > 0);
+  const arpu = mesesComReceita.length > 0
+    ? mesesComReceita.reduce((s, m) => s + m.mrr, 0) / mesesComReceita.length
+    : 0;
+  const ltvEstimado = arpu * 12;
+
   const metricItems = [
-    { label: "ARPU (Ticket Médio)", value: "R$ 0,00", icon: DollarSign, color: "text-emerald-500" },
-    { label: "Churn Rate", value: "0%", icon: TrendingDown, color: "text-rose-500" },
-    { label: "LTV Estimado", value: "R$ 0,00", icon: Wallet, color: "text-indigo-500" },
+    { label: "ARPU (Ticket Médio)", value: arpu > 0 ? fmt(arpu) : "—", icon: DollarSign, color: "text-emerald-500" },
+    // Não há acompanhamento real de cancelamento/churn no sistema hoje — mostrar
+    // "—" em vez de um número de exemplo até existir uma fonte real de dados.
+    { label: "Churn Rate", value: "—", icon: TrendingDown, color: "text-rose-500" },
+    { label: "LTV Estimado", value: ltvEstimado > 0 ? fmt(ltvEstimado) : "—", icon: Wallet, color: "text-indigo-500" },
   ];
 
   return (

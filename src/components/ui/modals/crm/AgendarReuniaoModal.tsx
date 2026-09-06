@@ -4,6 +4,7 @@ import { Button } from "../../button";
 import {
   Calendar, Clock, User, FileText, Video,
   Copy, ExternalLink, Loader2, CheckCircle2, AlertCircle, MessageCircle, Phone,
+  MapPin, Plus, X, Users,
 } from "lucide-react";
 import { connectGoogleCalendar, getGoogleCalendarStatus } from "../../../../lib/google-auth";
 import { createMeetSpace } from "../../../../lib/meet";
@@ -23,16 +24,23 @@ interface AgendarReuniaoModalProps {
 
 export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: AgendarReuniaoModalProps) {
   const { colaboradores, leads, addReuniao } = useData();
-  const { activeTenantId } = useAuth();
+  const { activeTenantId, user } = useAuth();
 
   const [googleEmail, setGoogleEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [createdMeeting, setCreatedMeeting] = useState<{ id: string; meetLink: string; calendarLink?: string } | null>(null);
+  const [createdMeeting, setCreatedMeeting] = useState<{
+    id: string;
+    meetLink: string;
+    calendarLink?: string;
+    isPresencial?: boolean;
+    localEndereco?: string;
+  } | null>(null);
   const [googleAuthError, setGoogleAuthError] = useState<string | null>(null);
   const [manualLink, setManualLink] = useState("");
-  const [videoProvider, setVideoProvider] = useState<"axis" | "google">("axis");
+  const [videoProvider, setVideoProvider] = useState<"axis" | "google" | "presencial">("axis");
+  const [localEndereco, setLocalEndereco] = useState("");
 
-  const [closerName, setCloserName] = useState(lead.seller || "");
+  const [closerName, setCloserName] = useState(lead.seller || user?.name || "");
   const [closerEmail, setCloserEmail] = useState("");
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [time, setTime] = useState("09:00");
@@ -41,22 +49,30 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
   const [pauta, setPauta]             = useState("");
   const [leadPhone, setLeadPhone]     = useState(lead.phone || "");
 
+  const [convidados, setConvidados]   = useState<string[]>([]);
+  const [novoConvidado, setNovoConvidado] = useState("");
+
   const closerOptions: { name: string; email: string }[] = (() => {
-    const fromColab = (colaboradores as any[])
+    let fromColab = (colaboradores as any[])
       .filter((c: any) => c.status !== "Desligado")
       .map((c: any) => ({ name: c.nome || c.name || "", email: c.email || "" }))
       .filter((c) => c.name);
-    if (fromColab.length > 0) return fromColab;
-    const sellers = [...new Set((leads as any[]).map((l: any) => l.seller).filter(Boolean))];
-    return (sellers as string[]).map((s) => ({ name: s, email: "" }));
+    if (fromColab.length === 0) {
+      const sellers = [...new Set((leads as any[]).map((l: any) => l.seller).filter(Boolean))];
+      fromColab = (sellers as string[]).map((s) => ({ name: s, email: "" }));
+    }
+    if (user?.name && !fromColab.some((c) => c.name === user.name)) {
+      fromColab = [{ name: user.name, email: user.email || "" }, ...fromColab];
+    }
+    return fromColab;
   })();
 
   useEffect(() => {
-    const found = (colaboradores as any[]).find(
-      (c: any) => (c.nome || c.name) === closerName
+    const found = closerOptions.find(
+      (c) => c.name === closerName
     );
     setCloserEmail(found?.email || "");
-  }, [closerName, colaboradores]);
+  }, [closerName, closerOptions]);
 
   useEffect(() => {
     if (!activeTenantId) return;
@@ -65,14 +81,16 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
     });
   }, [activeTenantId]);
 
-  // Reset when modal opens
   useEffect(() => {
     if (isOpen) {
       setCreatedMeeting(null);
-      setCloserName(lead.seller || "");
+      setCloserName(lead.seller || user?.name || "");
       setLeadEmail(lead.email || "");
       setLeadPhone(lead.phone || "");
       setPauta("");
+      setLocalEndereco("");
+      setConvidados([]);
+      setNovoConvidado("");
       setGoogleAuthError(null);
       if (activeTenantId) {
         getGoogleCalendarStatus(activeTenantId).then((status) => {
@@ -80,16 +98,13 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
         });
       }
     }
-  }, [isOpen, lead.seller, lead.email, activeTenantId]);
+  }, [isOpen, lead.seller, lead.email, activeTenantId, user?.name]);
 
   const handleConnectGoogle = async () => {
     if (!activeTenantId) return;
     try {
       setLoading(true);
       setGoogleAuthError(null);
-      // Redireciona a página inteira pro consentimento do Google — o modal
-      // precisa ser reaberto ao voltar (fluxo real de OAuth server-side, não
-      // dá pra manter isso numa Promise que resolve sem sair da página).
       await connectGoogleCalendar(activeTenantId, window.location.pathname);
     } catch (err: any) {
       const msg: string = err.message || "Tente novamente";
@@ -99,17 +114,37 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
     }
   };
 
+  const handleAddConvidado = (emailToAdd?: string) => {
+    const val = (emailToAdd || novoConvidado).trim().toLowerCase();
+    if (!val) return;
+    if (!convidados.includes(val)) {
+      setConvidados((prev) => [...prev, val]);
+    }
+    setNovoConvidado("");
+  };
+
+  const handleRemoveConvidado = (email: string) => {
+    setConvidados((prev) => prev.filter((c) => c !== email));
+  };
+
+  const allAttendeesFormatted = () => {
+    return Array.from(new Set([leadEmail, closerEmail, ...convidados].filter(Boolean))).join(", ");
+  };
+
   const handleCreateMeeting = async () => {
     if (!closerName) { toast.error("Selecione o closer responsável."); return; }
     if (!date || !time) { toast.error("Informe data e horário."); return; }
+    if (videoProvider === "presencial" && !localEndereco.trim()) {
+      toast.error("Informe o endereço ou local da reunião presencial.");
+      return;
+    }
 
     const startISO = `${date}T${time}:00`;
     const endDate = new Date(`${date}T${time}:00`);
     endDate.setMinutes(endDate.getMinutes() + duration);
     const endISO = endDate.toISOString().slice(0, 19);
-    // ID determinístico: usado tanto no estado local quanto no Supabase
     const reuniaoId = `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-    const attendees = [leadEmail, closerEmail].filter(Boolean);
+    const allAttendees = Array.from(new Set([leadEmail, closerEmail, ...convidados].filter(Boolean)));
 
     const baseReuniao = {
       leadId: lead.id, clienteId: lead.clienteId,
@@ -117,43 +152,100 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       leadEmail, closerName, closerEmail,
       scheduledAt: startISO, durationMinutes: duration,
       status: "Agendada" as const, pauta: pauta || undefined,
+      convidados: convidados.length > 0 ? convidados : undefined,
     };
 
-    // ── Sala S.P.Y. com Jitsi embutido ──────────────────────────────────────
+    if (videoProvider === "presencial") {
+      setLoading(true);
+      try {
+        const presencialMeetDesc = localEndereco.trim()
+          ? `Presencial: ${localEndereco.trim()}`
+          : "Presencial (Local a combinar)";
+
+        let calendarLink: string | undefined;
+        let googleEventId: string | undefined;
+        if (activeTenantId) {
+          try {
+            const calEvent = await createCalendarEvent(activeTenantId, {
+              title: `Reunião Presencial — ${lead.company || lead.name}`,
+              description: [
+                "📍 Reunião Presencial",
+                `🏢 Local / Endereço: ${localEndereco.trim()}`,
+                closerName ? `👤 Responsável: ${closerName}` : "",
+                convidados.length > 0 ? `👥 Outros Participantes: ${convidados.join(", ")}` : "",
+                pauta ? `\n📋 Pauta:\n${pauta}` : "",
+              ].filter(Boolean).join("\n"),
+              location: localEndereco.trim(),
+              startISO,
+              endISO,
+              attendeeEmails: allAttendees,
+              skipConferenceData: true,
+            });
+            calendarLink = calEvent.htmlLink;
+            googleEventId = calEvent.id;
+          } catch {
+            toast.warning("Reunião presencial registrada, mas convite de calendário não enviado.");
+          }
+        }
+
+        (addReuniao as any)({
+          id: reuniaoId,
+          ...baseReuniao,
+          meetLink: presencialMeetDesc,
+          tipo: "presencial",
+          local: localEndereco.trim(),
+          googleEventId,
+        });
+        setCreatedMeeting({
+          id: reuniaoId,
+          meetLink: presencialMeetDesc,
+          calendarLink,
+          isPresencial: true,
+          localEndereco: localEndereco.trim(),
+        });
+        toast.success(calendarLink
+          ? "Reunião presencial agendada e convite sincronizado no Google Calendar!"
+          : "Reunião presencial agendada com sucesso!"
+        );
+      } catch (err: any) {
+        toast.error("Erro ao agendar reunião presencial: " + (err.message || "Tente novamente"));
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
     if (videoProvider === "axis") {
       setLoading(true);
       try {
         const jitsiLink = generateJitsiLink(reuniaoId);
-
-        // Sempre tenta criar evento no Google Calendar com link Jitsi na
-        // descrição — opcional: sem conexão Google pro tenant/usuário atual,
-        // o backend responde google_calendar_not_connected e a sala segue
-        // criada mesmo assim, só sem o convite por e-mail.
         let calendarLink: string | undefined;
+        let googleEventId: string | undefined;
         if (activeTenantId) {
           try {
-            const endDate = new Date(`${date}T${time}:00`);
-            endDate.setMinutes(endDate.getMinutes() + duration);
             const calEvent = await createCalendarEvent(activeTenantId, {
               title: `Reunião — ${lead.company || lead.name}`,
               description: [
                 "🖥️ Sala de vídeo S.P.Y. (Jitsi)",
                 `🔗 Acesse: ${jitsiLink}`,
                 "Nenhum app necessário — funciona direto no navegador.",
+                closerName ? `👤 Responsável: ${closerName}` : "",
+                convidados.length > 0 ? `👥 Outros Participantes: ${convidados.join(", ")}` : "",
                 pauta ? `\n📋 Pauta:\n${pauta}` : "",
               ].filter(Boolean).join("\n"),
               startISO,
-              endISO: endDate.toISOString().slice(0, 19),
-              attendeeEmails: attendees,
+              endISO,
+              attendeeEmails: allAttendees,
               skipConferenceData: true,
             });
             calendarLink = calEvent.htmlLink;
+            googleEventId = calEvent.id;
           } catch {
             toast.warning("Sala criada, mas convite de calendário não enviado.");
           }
         }
 
-        (addReuniao as any)({ id: reuniaoId, ...baseReuniao, meetLink: jitsiLink });
+        (addReuniao as any)({ id: reuniaoId, ...baseReuniao, meetLink: jitsiLink, googleEventId });
         setCreatedMeeting({ id: reuniaoId, meetLink: jitsiLink, calendarLink });
         toast.success(calendarLink
           ? "Sala S.P.Y. criada! Convite enviado pelo Google Calendar."
@@ -167,7 +259,6 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
       return;
     }
 
-    // ── Google Meet (link manual ou via API) ──────────────────────────────
     if (googleAuthError || !googleEmail) {
       const link = manualLink.trim();
       if (!link) { toast.error("Insira um link do Google Meet ou conecte sua conta Google."); return; }
@@ -180,16 +271,16 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
     if (!activeTenantId) { toast.error("Nenhum tenant ativo."); return; }
     setLoading(true);
     try {
-      // Chegamos aqui só quando googleEmail já está setado (branch acima
-      // cobre o caso desconectado com link manual) — o backend resolve a
-      // conexão do tenant/usuário atual, nenhum token passa pelo frontend.
       const meetSpace = await createMeetSpace(activeTenantId);
       let googleEventId: string | undefined;
       try {
         const calEvent = await createCalendarEvent(activeTenantId, {
           title: `Reunião — ${lead.company || lead.name}`,
-          description: pauta || `Reunião comercial com ${lead.name}${lead.company ? ` (${lead.company})` : ""}.`,
-          startISO, endISO, attendeeEmails: attendees,
+          description: [
+            pauta || `Reunião comercial com ${lead.name}${lead.company ? ` (${lead.company})` : ""}.`,
+            convidados.length > 0 ? `\n👥 Participantes: ${allAttendees.join(", ")}` : "",
+          ].filter(Boolean).join("\n"),
+          startISO, endISO, attendeeEmails: allAttendees,
         });
         googleEventId = calEvent.id;
       } catch {
@@ -198,7 +289,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
 
       (addReuniao as any)({ id: reuniaoId, ...baseReuniao, meetLink: meetSpace.meetingUri, googleEventId });
       setCreatedMeeting({ id: reuniaoId, meetLink: meetSpace.meetingUri });
-      toast.success("Reunião agendada! Convite enviado ao lead e ao closer.");
+      toast.success("Reunião agendada! Convite enviado ao lead, closer e participantes.");
     } catch (err: any) {
       if (err?.message === "google_calendar_not_connected" || err?.message === "google_calendar_reauth_required") {
         setGoogleEmail(null);
@@ -213,20 +304,22 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
 
   const buildWhatsAppUrl = (meetLink: string) => {
     const dateStr = new Date(`${date}T${time}:00`).toLocaleDateString("pt-BR");
+    const isPresencial = videoProvider === "presencial";
     const msg = [
       `Olá, ${lead.name}! 👋`,
       "",
-      `Sua reunião com *${lead.company || "a S.P.Y."}* foi confirmada. 🎯`,
+      `Sua reunião com *${lead.company || "a nossa equipe"}* foi confirmada. 🎯`,
       "",
       `📅 *Data:* ${dateStr} às ${time}`,
       `⏱️ *Duração:* ${duration} minutos`,
       closerName ? `👤 *Responsável:* ${closerName}` : "",
+      convidados.length > 0 ? `👥 *Participantes:* ${allAttendeesFormatted()}` : "",
       pauta ? `\n📋 *Pauta:*\n${pauta}` : "",
       "",
-      `🔗 *Link de acesso:*\n${meetLink}`,
-      "",
-      "Acesse direto pelo navegador — sem precisar instalar nada. ✅",
-    ].filter((l) => l !== undefined).join("\n");
+      isPresencial
+        ? `📍 *Formato: Reunião Presencial*\n🏢 *Local:* ${localEndereco.trim() || "A combinar"}`
+        : `🔗 *Link de acesso:*\n${meetLink}\n\nAcesse direto pelo navegador — sem precisar instalar nada. ✅`,
+    ].filter(Boolean).join("\n");
 
     const encoded = encodeURIComponent(msg);
     if (leadPhone) {
@@ -255,16 +348,26 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
             onClick={onClose}
             className="text-slate-400 hover:text-white px-4 h-9 text-sm"
           >
-            Cancelar
+            {createdMeeting ? "Fechar" : "Cancelar"}
           </Button>
           {createdMeeting ? (
-            <Button
-              onClick={() => onConfirm(createdMeeting.id, createdMeeting.meetLink)}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 h-9 text-sm"
-            >
-              <Video className="w-3.5 h-3.5 mr-1.5" />
-              Entrar na Reunião
-            </Button>
+            createdMeeting.isPresencial ? (
+              <Button
+                onClick={onClose}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 h-9 text-sm"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                Concluir Agendamento
+              </Button>
+            ) : (
+              <Button
+                onClick={() => onConfirm(createdMeeting.id, createdMeeting.meetLink)}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 h-9 text-sm"
+              >
+                <Video className="w-3.5 h-3.5 mr-1.5" />
+                Entrar na Reunião
+              </Button>
+            )
           ) : (
             <Button
               onClick={handleCreateMeeting}
@@ -273,7 +376,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
             >
               {loading
                 ? <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                : <Video className="w-3.5 h-3.5 mr-1.5" />}
+                : <Calendar className="w-3.5 h-3.5 mr-1.5" />}
               {loading ? "Criando..." : "Agendar Reunião"}
             </Button>
           )}
@@ -292,38 +395,71 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
           </div>
         </div>
 
-        {/* Video provider toggle */}
+        {/* Video / Meeting provider toggle */}
         <div>
-          <label className={labelCls}><Video className="w-3 h-3" /> Tipo de Sala</label>
-          <div className="grid grid-cols-2 gap-2">
+          <label className={labelCls}><Video className="w-3 h-3" /> Formato da Reunião</label>
+          <div className="grid grid-cols-3 gap-2">
             <button
               type="button"
               onClick={() => setVideoProvider("axis")}
               className={cn(
-                "flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all",
+                "flex flex-col items-start gap-1 p-2.5 rounded-xl border text-left transition-all",
                 videoProvider === "axis"
                   ? "bg-blue-500/15 border-blue-500/30 text-blue-300"
                   : "bg-white/[0.03] border-white/[0.08] text-slate-400 hover:border-white/20"
               )}
             >
               <span className="text-xs font-black">🖥️ Sala S.P.Y.</span>
-              <span className="text-[10px] leading-tight opacity-70">Vídeo embutido no CRM — sem sair do sistema</span>
+              <span className="text-[10px] leading-tight opacity-70">Vídeo no CRM</span>
             </button>
             <button
               type="button"
               onClick={() => setVideoProvider("google")}
               className={cn(
-                "flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all",
+                "flex flex-col items-start gap-1 p-2.5 rounded-xl border text-left transition-all",
                 videoProvider === "google"
                   ? "bg-blue-500/15 border-blue-500/30 text-blue-300"
                   : "bg-white/[0.03] border-white/[0.08] text-slate-400 hover:border-white/20"
               )}
             >
               <span className="text-xs font-black">📹 Google Meet</span>
-              <span className="text-[10px] leading-tight opacity-70">Cria sala no Google Meet e envia convite</span>
+              <span className="text-[10px] leading-tight opacity-70">Meet & convite</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setVideoProvider("presencial")}
+              className={cn(
+                "flex flex-col items-start gap-1 p-2.5 rounded-xl border text-left transition-all",
+                videoProvider === "presencial"
+                  ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                  : "bg-white/[0.03] border-white/[0.08] text-slate-400 hover:border-white/20"
+              )}
+            >
+              <span className="text-xs font-black">📍 Presencial</span>
+              <span className="text-[10px] leading-tight opacity-70">No local físico</span>
             </button>
           </div>
         </div>
+
+        {/* Campo de endereço/local quando for Presencial */}
+        {videoProvider === "presencial" && (
+          <div className="p-3 bg-emerald-500/[0.06] border border-emerald-500/20 rounded-xl space-y-1.5">
+            <label className={cn(labelCls, "text-emerald-400")}>
+              <MapPin className="w-3 h-3 text-emerald-400" /> Endereço / Local da Reunião
+            </label>
+            <input
+              type="text"
+              value={localEndereco}
+              onChange={(e) => setLocalEndereco(e.target.value)}
+              placeholder="Ex: Av. Paulista, 1000 - 12º andar, sala 4 ou endereço do cliente..."
+              className={cn(inputCls, "border-emerald-500/30 focus:border-emerald-500/60")}
+              required
+            />
+            <p className="text-[10px] text-slate-400">
+              O local será sincronizado no Google Agenda e formatado na confirmação de WhatsApp.
+            </p>
+          </div>
+        )}
 
         {/* Google Connect */}
         <div className={cn(
@@ -382,7 +518,7 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
         {/* Form */}
         <div className="grid grid-cols-2 gap-3">
           <div className="col-span-2">
-            <label className={labelCls}><User className="w-3 h-3" /> Closer Responsável</label>
+            <label className={labelCls}><User className="w-3 h-3" /> Closer / Responsável</label>
             <select value={closerName} onChange={(e) => setCloserName(e.target.value)} className={inputCls}>
               <option value="">Selecione o closer...</option>
               {closerOptions.map((c) => (
@@ -440,6 +576,73 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
             />
           </div>
 
+          {/* Outros participantes / convidados */}
+          <div className="col-span-2 space-y-2 p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+            <label className={labelCls}><Users className="w-3 h-3 text-blue-400" /> Outros Participantes / Convidados</label>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                value={novoConvidado}
+                onChange={(e) => setNovoConvidado(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddConvidado();
+                  }
+                }}
+                placeholder="email@participante.com"
+                className={cn(inputCls, "flex-1")}
+              />
+              <Button
+                type="button"
+                onClick={() => handleAddConvidado()}
+                variant="outline"
+                className="text-xs h-9 px-3 gap-1 shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" /> Adicionar
+              </Button>
+            </div>
+            {/* Atalho rápido colaboradores */}
+            {closerOptions.filter(c => c.email && c.name !== closerName && !convidados.includes(c.email.toLowerCase())).length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                <span className="text-[10px] text-slate-500">Adicionar equipe:</span>
+                {closerOptions
+                  .filter(c => c.email && c.name !== closerName && !convidados.includes(c.email.toLowerCase()))
+                  .slice(0, 4)
+                  .map(colab => (
+                    <button
+                      key={colab.email}
+                      type="button"
+                      onClick={() => handleAddConvidado(colab.email)}
+                      className="text-[10px] px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 border border-white/10 transition-colors"
+                    >
+                      + {colab.name.split(" ")[0]}
+                    </button>
+                  ))}
+              </div>
+            )}
+            {/* Chips dos convidados */}
+            {convidados.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {convidados.map((email) => (
+                  <span
+                    key={email}
+                    className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-500/15 border border-blue-500/30 rounded-lg text-xs text-blue-300"
+                  >
+                    {email}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveConvidado(email)}
+                      className="hover:text-rose-400 p-0.5 rounded"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div className="col-span-2">
             <label className={labelCls}><FileText className="w-3 h-3" /> Pauta (opcional)</label>
             <textarea
@@ -457,29 +660,39 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
           <div className="bg-emerald-500/[0.08] border border-emerald-500/20 rounded-xl p-4 space-y-3">
             <div className="flex items-center gap-2 text-emerald-400 font-black text-sm">
               <CheckCircle2 className="w-4 h-4" />
-              Reunião criada! {createdMeeting.calendarLink ? "Convite enviado pelo Google Calendar." : "Sala pronta."}
+              {createdMeeting.isPresencial
+                ? "Reunião Presencial Agendada!"
+                : `Reunião criada! ${createdMeeting.calendarLink ? "Convite enviado pelo Google Calendar." : "Sala pronta."}`}
             </div>
 
-            {/* Link da sala */}
+            {/* Detalhe da Sala / Local */}
             <div>
-              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Link da Sala</p>
+              <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">
+                {createdMeeting.isPresencial ? "Local da Reunião" : "Link da Sala"}
+              </p>
               <div className="flex items-center gap-2">
                 <input
                   readOnly
-                  value={createdMeeting.meetLink}
+                  value={createdMeeting.isPresencial ? (createdMeeting.localEndereco || createdMeeting.meetLink) : createdMeeting.meetLink}
                   className="flex-1 bg-[var(--color-surface)] border border-white/[0.08] rounded-lg px-3 py-1.5 text-xs text-slate-300 font-mono min-w-0"
                 />
                 <button
-                  onClick={() => { navigator.clipboard.writeText(createdMeeting.meetLink); toast.success("Link copiado!"); }}
+                  onClick={() => {
+                    const textToCopy = createdMeeting.isPresencial ? (createdMeeting.localEndereco || createdMeeting.meetLink) : createdMeeting.meetLink;
+                    navigator.clipboard.writeText(textToCopy);
+                    toast.success("Copiado com sucesso!");
+                  }}
                   className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-xs text-slate-400 hover:text-white transition-all"
                 >
                   <Copy className="w-3 h-3" />
                 </button>
-                <a href={createdMeeting.meetLink} target="_blank" rel="noopener noreferrer" className="shrink-0">
-                  <button className="flex items-center gap-1 px-2.5 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-xs text-slate-400 hover:text-white transition-all">
-                    <ExternalLink className="w-3 h-3" />
-                  </button>
-                </a>
+                {!createdMeeting.isPresencial && (
+                  <a href={createdMeeting.meetLink} target="_blank" rel="noopener noreferrer" className="shrink-0">
+                    <button className="flex items-center gap-1 px-2.5 py-1.5 bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] rounded-lg text-xs text-slate-400 hover:text-white transition-all">
+                      <ExternalLink className="w-3 h-3" />
+                    </button>
+                  </a>
+                )}
               </div>
             </div>
 
@@ -507,13 +720,13 @@ export function AgendarReuniaoModal({ isOpen, onClose, lead, onConfirm }: Agenda
               className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/25 text-[#25D366] text-[11px] font-black uppercase tracking-widest transition-all"
             >
               <MessageCircle className="w-3.5 h-3.5" />
-              {leadPhone ? "Enviar convite pelo WhatsApp" : "Compartilhar via WhatsApp"}
+              {leadPhone ? "Enviar confirmação pelo WhatsApp" : "Compartilhar via WhatsApp"}
             </a>
 
-            {(leadEmail || closerEmail) && (
+            {allAttendeesFormatted() && (
               <p className="text-[10px] text-slate-500">
                 {createdMeeting.calendarLink ? "Convite enviado para:" : "Participantes:"}{" "}
-                {[leadEmail, closerEmail].filter(Boolean).join(", ")}
+                {allAttendeesFormatted()}
               </p>
             )}
           </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   FileText, Search, FlaskConical,
   Clock, CheckCircle2, AlertCircle, Download,
-  Eye, Plus, X, Check
+  Eye, Plus, X, Check, Pencil
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -14,9 +14,12 @@ import { motion, AnimatePresence } from 'motion/react';
 import { exportToCSV } from '../../lib/exportCsv';
 
 export default function Exames() {
-  const { exames: examList, addExame } = useExames();
+  const { exames: examList, addExame, updateExame } = useExames();
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingExam, setEditingExam] = useState<typeof examList[number] | null>(null);
+  const [editStatus, setEditStatus] = useState('Aguardando Coleta');
+  const [editResult, setEditResult] = useState('');
 
   // Form state
   const [patientName, setPatientName] = useState('');
@@ -47,6 +50,19 @@ export default function Exames() {
     setIsAddModalOpen(false);
     setPatientName('');
     setExamName('');
+  };
+
+  const openEdit = (exam: typeof examList[number]) => {
+    setEditingExam(exam);
+    setEditStatus(exam.status);
+    setEditResult(exam.result === '-' ? '' : exam.result);
+  };
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingExam) return;
+    await updateExame(editingExam.id, { status: editStatus, result: editResult.trim() || '-' });
+    setEditingExam(null);
   };
 
   return (
@@ -150,8 +166,18 @@ export default function Exames() {
                               else toast.info(`${exam.patient} ainda não possui resultado lançado.`);
                             }}
                             className="h-7 w-7 p-0 cursor-pointer"
+                            title="Ver resultado"
                           >
                             <Eye className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => openEdit(exam)}
+                            className="h-7 w-7 p-0 cursor-pointer"
+                            title="Atualizar status / lançar resultado"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
                           </Button>
                         </div>
                       </td>
@@ -169,31 +195,24 @@ export default function Exames() {
             </div>
           </Card>
 
-          {/* Lab Integration Section */}
+          {/* Lab Tracking Section */}
           <div className="space-y-4">
             <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
               <h3 className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider mb-4 flex items-center gap-2">
-                <FlaskConical className="w-4 h-4 text-[var(--color-primary-blue)]" /> Integração com Laboratórios
+                <FlaskConical className="w-4 h-4 text-[var(--color-primary-blue)]" /> Acompanhamento de Pedidos
               </h3>
               <div className="p-3 bg-[var(--color-surface-sunken)] rounded-[var(--radius-control)] border border-[var(--color-border-subtle)] space-y-1">
-                <p className="text-xs font-bold text-[var(--color-text-primary)]">Fluxo Automatizado</p>
-                <p className="text-xs text-[var(--color-text-muted)] leading-relaxed italic">
-                  Laudos liberados pelos laboratórios conveniados são automaticamente vinculados ao prontuário eletrônico do paciente.
+                <p className="text-xs font-bold text-[var(--color-text-primary)]">Lançamento Manual de Resultados</p>
+                <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+                  Cada pedido é registrado manualmente pela equipe da clínica. Use o ícone de edição na tabela para
+                  atualizar o status e lançar o resultado assim que o laboratório informar.
                 </p>
               </div>
-
-              <div className="mt-4 space-y-2">
-                <p className="text-[10px] font-bold text-[var(--color-text-faint)] uppercase tracking-wider">Protocolos Conectados</p>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-3 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-lg text-center">
-                    <p className="text-xs font-bold text-[var(--color-primary-blue)]">HL7 / FHIR</p>
-                    <p className="text-[9px] text-[var(--color-text-muted)]">Ativo</p>
-                  </div>
-                  <div className="p-3 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-lg text-center">
-                    <p className="text-xs font-bold text-emerald-500">DICOM</p>
-                    <p className="text-[9px] text-[var(--color-text-muted)]">Imagens</p>
-                  </div>
-                </div>
+              <div className="mt-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-[var(--radius-control)]">
+                <p className="text-[10px] text-amber-500 font-bold leading-relaxed">
+                  Integração eletrônica direta com laboratórios (HL7/FHIR/DICOM) não está disponível — todo o fluxo
+                  hoje é manual.
+                </p>
               </div>
             </Card>
           </div>
@@ -298,6 +317,87 @@ export default function Exames() {
                     className="h-9 px-5 text-xs font-bold shadow-xs gap-1.5"
                   >
                     <Check className="w-3.5 h-3.5" /> Criar Pedido
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Modal: Atualizar Status / Resultado */}
+      <AnimatePresence>
+        {editingExam && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setEditingExam(null)}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="relative w-full max-w-md bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-panel)] overflow-hidden shadow-2xl z-10"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="p-5 bg-[var(--color-surface-sunken)] border-b border-[var(--color-border-subtle)] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Pencil className="w-4 h-4 text-[var(--color-primary-blue)]" />
+                  <h3 className="text-sm font-bold text-[var(--color-text-primary)] uppercase tracking-tight">
+                    Atualizar Pedido — {editingExam.patient}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingExam(null)}
+                  className="p-1.5 hover:bg-[var(--color-surface-elevated)] rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer border-none bg-transparent"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveEdit} className="p-5 space-y-3.5">
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Status</label>
+                  <select
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value)}
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2.5 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
+                  >
+                    <option value="Aguardando Coleta">Aguardando Coleta</option>
+                    <option value="Em Análise">Em Análise</option>
+                    <option value="Finalizado">Finalizado</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Resultado</label>
+                  <input
+                    type="text"
+                    value={editResult}
+                    onChange={(e) => setEditResult(e.target.value)}
+                    placeholder="Ex: Normal, Alterado, ver laudo anexo"
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
+                  />
+                </div>
+
+                <div className="pt-3 border-t border-[var(--color-border-subtle)] flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setEditingExam(null)}
+                    className="h-9 px-4 text-xs font-bold"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="h-9 px-5 text-xs font-bold shadow-xs gap-1.5"
+                  >
+                    <Check className="w-3.5 h-3.5" /> Salvar
                   </Button>
                 </div>
               </form>

@@ -7,7 +7,7 @@ import { NewLeadModal } from "../../components/ui/modals/crm/NewLeadModal";
 import { LeadDetailsModal } from "../../components/ui/LeadDetailsModal";
 import { AgendarReuniaoModal } from "../../components/ui/modals/crm/AgendarReuniaoModal";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -69,11 +69,17 @@ export default function Pipeline() {
     draggedOverStageId, setDraggedOverStageId,
     companiesList,
     activePipelineStages, sellers,
-    filteredItemsList, analyticsData,
+    filteredItemsList, analyticsData, hotLeadsCount,
     formattedTotalValue, winRate,
     triggerCelebration, exportPDF,
     handleExportIAResume, handleTransferToComercial,
   } = usePipeline();
+
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const nicho = searchParams.get("nicho") || searchParams.get("filtro");
+    if (nicho) setSearchQuery(nicho);
+  }, [searchParams, setSearchQuery]);
 
   useEffect(() => {
     setMinimizedColumns(
@@ -153,7 +159,7 @@ export default function Pipeline() {
 
         {view === "kanban" && (
           <>
-            <PipelineAnalytics showAnalytics={showAnalytics} analyticsData={analyticsData} exportPDF={exportPDF} />
+            <PipelineAnalytics showAnalytics={showAnalytics} analyticsData={analyticsData} exportPDF={exportPDF} hotLeadsCount={hotLeadsCount} />
 
             {noPipelineConfigured ? <PipelineDefaultState /> : null}
 

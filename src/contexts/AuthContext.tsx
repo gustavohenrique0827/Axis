@@ -80,7 +80,7 @@ const DEFAULT_TENANT_MODULES: Record<string, TenantModules> = {
     crm: true, financeiro: true, produtividade: true, marketing: true, bi: true, rh: true, engajamento: true
   },
   "Imobiliária Prime": {
-    crm: true, financeiro: true, produtividade: true, marketing: true, bi: true, rh: true, catalogo: true, imobiliario: true
+    crm: true, financeiro: true, produtividade: true, marketing: true, bi: true, rh: true, catalogo: true, imobiliaria: true
   },
   "Clínica Vida": {
     clinica: true, crm: true, financeiro: true, produtividade: true, rh: true, engajamento: true, bi: true

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Award, Plus, ShieldCheck, RefreshCw, Star } from "lucide-react";
+import { Award, Plus, ShieldCheck, RefreshCw, Star, Search, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { toast } from "sonner";
 import { PageContainer } from "../../components/PageContainer";
@@ -30,17 +30,36 @@ export default function Certificados() {
   const [studentName, setStudentName] = useState("");
   const [courseName, setCourseName] = useState("");
   const [studentGrade, setStudentGrade] = useState("");
+  const [isValidateModalOpen, setIsValidateModalOpen] = useState(false);
+  const [validateCode, setValidateCode] = useState("");
+  const [validateResult, setValidateResult] = useState<Certificate | null | "not_found">(null);
 
-  const handleSaveCertificate = (e: { preventDefault(): void }) => {
+  // Código de autenticação é um hash SHA-256 real do aluno+curso+timestamp+salt
+  // aleatório — não um número sequencial fácil de adivinhar.
+  async function generateCertCode(student: string, course: string): Promise<string> {
+    const data = `${student}|${course}|${Date.now()}|${Math.random()}`;
+    const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(data));
+    const hex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, "0")).join("");
+    return `AX-${hex.slice(0, 12).toUpperCase()}`;
+  }
+
+  const handleSaveCertificate = async (e: { preventDefault(): void }) => {
     e.preventDefault();
+    const code = await generateCertCode(studentName, courseName);
     addCertificate({
       student: studentName, course: courseName,
       issue_date: new Date().toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }),
-      code: `AX-${Math.floor(1000 + Math.random() * 9000)}-${Math.random().toString(36).substring(2, 5).toUpperCase()}`,
+      code,
       status: "Emitido", grade: studentGrade,
     });
     toast.success("Certificado emitido com sucesso!");
     setIsEmitModalOpen(false);
+  };
+
+  const handleValidateCode = (e: { preventDefault(): void }) => {
+    e.preventDefault();
+    const found = certs.find(c => c.code.toLowerCase() === validateCode.trim().toLowerCase());
+    setValidateResult(found ?? "not_found");
   };
 
   const filteredCerts = certs.filter(c =>
@@ -58,11 +77,14 @@ export default function Certificados() {
 
   return (
     <PageContainer
-      title="Certificados & Credenciais S.P.Y."
-      description="Emissão de diplomas, validação de competências e registro de histórico acadêmico com criptografia S.P.Y.."
+      title="Certificados & Credenciais"
+      description="Emissão de diplomas e validação de códigos de autenticação (hash SHA-256) dos certificados emitidos por este tenant."
       actions={
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="h-11 px-6 rounded-2xl border-white/10 text-white text-[10px] font-black uppercase tracking-widest">
+          <Button
+            onClick={() => { setValidateResult(null); setValidateCode(""); setIsValidateModalOpen(true); }}
+            variant="outline" className="h-11 px-6 rounded-2xl border-white/10 text-white text-[10px] font-black uppercase tracking-widest"
+          >
             Validar Código
           </Button>
           <Button
@@ -84,8 +106,8 @@ export default function Certificados() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
           <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
             <div className="p-8 border-b border-white/5 bg-gradient-to-br from-amber-500/10 to-transparent">
-              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">🎓 Nova Autenticação S.P.Y.</h3>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Crie e valide uma nova credencial acadêmica irrevogável.</p>
+              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">🎓 Nova Autenticação</h3>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Emita uma nova credencial acadêmica com código de verificação único.</p>
             </div>
             <form onSubmit={handleSaveCertificate} className="p-8 space-y-5">
               <div className="space-y-4">
@@ -99,13 +121,61 @@ export default function Certificados() {
                   <input required type="number" step="0.1" placeholder="Média (0.0 - 10.0)" value={studentGrade} onChange={(e) => setStudentGrade(e.target.value)}
                     className="bg-white/5 border border-white/5 rounded-2xl h-14 px-6 text-sm text-white focus:border-amber-500/50 transition-all font-black font-mono"
                   />
-                  <div className="bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center text-[10px] font-black text-slate-600 uppercase tracking-widest px-4 text-center">Auto-Geração Hash Ativa</div>
+                  <div className="bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center text-[10px] font-black text-slate-600 uppercase tracking-widest px-4 text-center">Código SHA-256 ao salvar</div>
                 </div>
               </div>
               <div className="flex gap-4 pt-4">
                 <Button type="button" variant="outline" className="flex-1 h-14 rounded-2xl border-white/5 text-[10px] font-black uppercase tracking-widest" onClick={() => setIsEmitModalOpen(false)}>Cancelar</Button>
                 <Button type="submit" className="flex-1 h-14 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-black uppercase tracking-widest">Emitir Diploma</Button>
               </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {isValidateModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+          <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden">
+            <div className="p-8 border-b border-white/5">
+              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Validar Código</h3>
+              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Verifique se um código pertence a um certificado emitido por este tenant.</p>
+            </div>
+            <form onSubmit={handleValidateCode} className="p-8 space-y-4">
+              <div className="flex gap-3">
+                <input
+                  autoFocus
+                  placeholder="Ex: AX-3F9A0C1B2E4D"
+                  value={validateCode}
+                  onChange={(e) => { setValidateCode(e.target.value); setValidateResult(null); }}
+                  className="flex-1 bg-white/5 border border-white/5 rounded-2xl h-14 px-6 text-sm text-white font-mono uppercase focus:border-amber-500/50 transition-all"
+                />
+                <Button type="submit" className="h-14 px-6 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white gap-2">
+                  <Search className="w-4 h-4" /> Buscar
+                </Button>
+              </div>
+
+              {validateResult === "not_found" && (
+                <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3">
+                  <XCircle className="w-5 h-5 text-rose-500 shrink-0" />
+                  <p className="text-xs text-rose-400 font-bold">Código não encontrado entre os certificados emitidos.</p>
+                </div>
+              )}
+              {validateResult && validateResult !== "not_found" && (
+                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl space-y-1.5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                    <p className="text-xs text-emerald-400 font-black uppercase">
+                      {validateResult.status === "Revogado" ? "Certificado revogado" : "Certificado válido"}
+                    </p>
+                  </div>
+                  <p className="text-sm text-white font-bold">{validateResult.student}</p>
+                  <p className="text-xs text-slate-400">{validateResult.course} — emitido em {validateResult.issueDate}</p>
+                </div>
+              )}
+
+              <Button type="button" variant="outline" className="w-full h-12 rounded-2xl border-white/5 text-[10px] font-black uppercase tracking-widest" onClick={() => setIsValidateModalOpen(false)}>
+                Fechar
+              </Button>
             </form>
           </div>
         </div>

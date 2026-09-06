@@ -8,7 +8,7 @@ import { useData } from '../../../contexts/DataContext';
 const COLORS = ['#3b82f6', '#f43f5e', '#10b981', '#8b5cf6', '#f59e0b', '#06b6d4'];
 
 export function MarketingView() {
-  const { leads, financeEntries, contracts } = useData();
+  const { leads, financeEntries, contracts, marketingLandingPages } = useData();
 
   // Calculate real metrics from database
   const totalRevenue = leads.filter(l => l.status === 'Fechado').reduce((s, l) => s + (l.value || 0), 0);
@@ -45,6 +45,12 @@ export function MarketingView() {
       }))
       .sort((a, b) => b.count - a.count);
   }, [leads]);
+
+  const topSource = sourceData[0];
+
+  const totalLpViews = (marketingLandingPages || []).reduce((s: number, p: any) => s + (p.views || 0), 0);
+  const totalLpConversions = (marketingLandingPages || []).reduce((s: number, p: any) => s + (p.conversions || 0), 0);
+  const lpConversionRate = totalLpViews > 0 ? (totalLpConversions / totalLpViews) * 100 : null;
 
   // Attribution data - leads by source and channel
   const attributionData = useMemo(() => {
@@ -94,7 +100,7 @@ export function MarketingView() {
                  <p className="text-xs text-slate-500 mt-2 font-medium">Modelagem multicanal de primeira interação e conversão final.</p>
               </div>
               <div className="flex items-center gap-2">
-                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-xl border border-white/5 italic">Atribuição Dinâmica MIA</span>
+                 <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-xl border border-white/5 italic">Atribuição Dinâmica Aurora</span>
               </div>
            </div>
            <div className="h-[320px]">
@@ -175,17 +181,23 @@ export function MarketingView() {
                  <Sparkles className="w-16 h-16 text-white" />
               </div>
               <h5 className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em] mb-2">Insight de Campanha</h5>
-              <p className="text-[11px] text-slate-200 leading-relaxed font-medium">Seus anúncios fixos em 'Gestão Financeira' estão saturando. Recomendamos rotacionar criativos para evitar blindness.</p>
+              <p className="text-[11px] text-slate-200 leading-relaxed font-medium">
+                {topSource
+                  ? `${topSource.count} leads (${topSource.value.toFixed(0)}%) vieram de "${topSource.name}" — sua principal fonte de aquisição no período.`
+                  : "Ainda não há leads suficientes para gerar um insight de campanha."}
+              </p>
            </Card>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
          {[
-           { icon: MousePointer2, label: "CTR Médio", value: "0%", trend: "0%", color: "text-indigo-500", bg: "bg-indigo-500/10" },
-           { icon: Layers, label: "Conv. Landing Pages", value: "0%", trend: "0%", color: "text-blue-500", bg: "bg-blue-500/10" },
-           { icon: Users, label: "Leads de Marketing", value: "0", trend: "0%", color: "text-emerald-500", bg: "bg-emerald-500/10" },
-           { icon: DollarSign, label: "Total Investido", value: "R$ 0", trend: "0%", color: "text-amber-500", bg: "bg-amber-500/10" },
+           // CTR (cliques/impressões) depende de integração com plataformas de anúncio que o
+           // sistema ainda não tem — mostrar "—" em vez de um número de exemplo.
+           { icon: MousePointer2, label: "CTR Médio", value: "—", color: "text-indigo-500", bg: "bg-indigo-500/10" },
+           { icon: Layers, label: "Conv. Landing Pages", value: lpConversionRate !== null ? `${lpConversionRate.toFixed(1)}%` : "—", color: "text-blue-500", bg: "bg-blue-500/10" },
+           { icon: Users, label: "Leads de Marketing", value: totalLeads.toString(), color: "text-emerald-500", bg: "bg-emerald-500/10" },
+           { icon: DollarSign, label: "Total Investido", value: totalSpent > 0 ? `R$ ${totalSpent.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}` : "R$ 0", color: "text-amber-500", bg: "bg-amber-500/10" },
          ].map((metric, i) => (
             <Card key={i} className="p-6 bg-[var(--color-surface-elevated)]/80 border-white/5 group hover:border-white/10 transition-all rounded-3xl">
                <div className="flex items-center gap-4 mb-4">
@@ -194,12 +206,7 @@ export function MarketingView() {
                   </div>
                   <p className="text-[10px] text-slate-500 font-extrabold uppercase tracking-widest">{metric.label}</p>
                </div>
-               <div className="flex items-end justify-between">
-                  <h4 className="text-2xl font-black text-white font-mono tracking-tighter">{metric.value}</h4>
-                  <span className={`text-[10px] font-bold ${metric.trend.startsWith('+') ? 'text-emerald-400' : metric.trend === '0%' ? 'text-slate-500' : 'text-rose-400'}`}>
-                     {metric.trend}
-                  </span>
-               </div>
+               <h4 className="text-2xl font-black text-white font-mono tracking-tighter">{metric.value}</h4>
             </Card>
          ))}
       </div>

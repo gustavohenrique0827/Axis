@@ -24,10 +24,24 @@ export default function EstoqueClinico() {
   const [itemMinQty, setItemMinQty] = useState('');
   const [itemPrice, setItemPrice] = useState('');
 
-  const filteredItems = stockItems.filter(i => 
+  const filteredItems = stockItems.filter(i =>
     i.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     i.category.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const parsePrice = (p: string) => {
+    const n = parseFloat(p.replace(/[^\d,.-]/g, '').replace(/\./g, '').replace(',', '.'));
+    return isNaN(n) ? 0 : n;
+  };
+
+  const stockValue = stockItems.reduce((sum, i) => sum + i.qty * parsePrice(i.price), 0);
+  const stockValueFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(stockValue);
+  const categoryCount = new Set(stockItems.map(i => i.category)).size;
+
+  const mostCriticalItems = [...stockItems]
+    .filter(i => i.status === 'Crítico' || i.status === 'Alerta')
+    .sort((a, b) => (a.qty - a.minQty) - (b.qty - b.minQty))
+    .slice(0, 3);
 
   const handleCreateItem = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,8 +94,8 @@ export default function EstoqueClinico() {
           {[
             { label: "Itens Cadastrados", value: stockItems.length.toString(), icon: Box, color: "text-[var(--color-primary-blue)]" },
             { label: "Alertas de Reposição", value: stockItems.filter(i => i.status === 'Crítico' || i.status === 'Alerta').length.toString(), icon: ShieldAlert, color: "text-amber-500" },
-            { label: "Valor em Estoque", value: "R$ 42.150", icon: BarChart3, color: "text-emerald-500" },
-            { label: "Pedidos Pendentes", value: "05", icon: Truck, color: "text-purple-500" },
+            { label: "Valor em Estoque", value: stockValueFmt, icon: BarChart3, color: "text-emerald-500" },
+            { label: "Categorias Cadastradas", value: categoryCount.toString(), icon: Truck, color: "text-purple-500" },
           ].map((stat, i) => (
             <Card key={i} className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
               <div className="flex items-center justify-between mb-2">
@@ -159,34 +173,30 @@ export default function EstoqueClinico() {
           <div className="space-y-4">
             <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
               <h3 className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider mb-4 flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-500" /> Previsão de Reabastecimento
+                <Zap className="w-4 h-4 text-amber-500" /> Itens Mais Críticos
               </h3>
-              <div className="p-3 bg-[var(--color-surface-sunken)] rounded-[var(--radius-control)] border border-[var(--color-border-subtle)] space-y-1.5">
-                <p className="text-xs font-bold text-[var(--color-text-primary)]">Sugestão de Reposição Automática</p>
-                <p className="text-xs text-[var(--color-text-muted)] leading-relaxed italic">
-                  O consumo de insumos críticos está mapeado. Solicitações acima de 500 unidades recebem desconto via fornecedor parceiro.
-                </p>
-              </div>
-
-              <div className="mt-4 space-y-2">
-                <p className="text-[10px] font-bold text-[var(--color-text-faint)] uppercase tracking-wider">Vencimentos Próximos</p>
-                {[
-                  { item: "Lidocaína 2%", date: "12 Ago/26", qty: "14 frascos" },
-                  { item: "Vitamina C Inj.", date: "15 Jul/26", qty: "08 frascos" },
-                ].map((v, i) => (
-                  <div key={i} className="flex justify-between items-center text-xs p-2 bg-[var(--color-surface-sunken)] rounded-md">
-                    <span className="font-medium text-[var(--color-text-primary)]">{v.item}</span>
-                    <span className="text-rose-500 font-mono font-bold text-[10px]">{v.date}</span>
-                  </div>
-                ))}
-              </div>
+              {mostCriticalItems.length === 0 ? (
+                <p className="text-xs text-[var(--color-text-muted)] italic">Nenhum item abaixo do estoque mínimo no momento.</p>
+              ) : (
+                <div className="space-y-2">
+                  {mostCriticalItems.map((it) => (
+                    <div key={it.id} className="flex justify-between items-center text-xs p-2 bg-[var(--color-surface-sunken)] rounded-md">
+                      <span className="font-medium text-[var(--color-text-primary)]">{it.name}</span>
+                      <span className="text-rose-500 font-mono font-bold text-[10px]">{it.qty} / min {it.minQty}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-[10px] text-[var(--color-text-faint)] mt-3 leading-relaxed">
+                Itens ordenados pela maior distância abaixo da quantidade mínima cadastrada.
+              </p>
             </Card>
 
             <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm flex items-center gap-3">
               <RefreshCw className="w-5 h-5 text-emerald-500 shrink-0" />
               <div>
-                <h4 className="text-xs font-bold text-[var(--color-text-primary)]">Contagem Cíclica Ativa</h4>
-                <p className="text-[10px] text-[var(--color-text-muted)]">Rastreamento de lote e data de validade integrado.</p>
+                <h4 className="text-xs font-bold text-[var(--color-text-primary)]">Alerta Automático por Mínimo</h4>
+                <p className="text-[10px] text-[var(--color-text-muted)]">Status calculado a partir da quantidade atual vs. mínima de cada item.</p>
               </div>
             </Card>
           </div>

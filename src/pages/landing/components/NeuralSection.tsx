@@ -1,6 +1,5 @@
 import { motion, MotionValue } from "motion/react";
-import { Terminal, Star, Zap } from "lucide-react";
-import { MascotMIA6 } from "../../../components/MascotMIA6";
+import { Terminal, Star, Zap, Sparkles } from "lucide-react";
 
 interface NeuralSectionProps {
   rotateX: MotionValue<number>;
@@ -15,7 +14,7 @@ export function NeuralSection({ rotateX, rotateY }: NeuralSectionProps) {
           <div className="flex-1 space-y-8 sm:space-y-16">
              <div className="inline-flex items-center gap-3 px-4 py-1.5 bg-blue-600/10 rounded-full border border-blue-500/20 w-fit">
                 <Terminal className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
-                <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.25em] sm:tracking-[0.4em] text-blue-500">NÚCLEO_MIA_ACTIVE</span>
+                <span className="text-[9px] sm:text-[11px] font-black uppercase tracking-[0.25em] sm:tracking-[0.4em] text-blue-500">NÚCLEO_AURORA_ACTIVE</span>
              </div>
              <h2 className="text-4xl sm:text-7xl lg:text-9xl font-display font-bold tracking-tighter leading-[0.9] sm:leading-[0.8] italic">
                 DOMINE A <br />
@@ -91,9 +90,13 @@ export function NeuralSection({ rotateX, rotateY }: NeuralSectionProps) {
                   ease: [0.25, 0.46, 0.45, 0.94]
                 }}
                 viewport={{ once: true }}
-                className="w-64 h-64 sm:w-96 sm:h-96 relative group"
+                className="w-64 h-64 sm:w-96 sm:h-96 relative group flex items-center justify-center"
               >
-                 <MascotMIA6 isHero={true} />
+                <div className="absolute w-[70%] h-[70%] bg-blue-500 rounded-full filter blur-[80px] opacity-20 animate-pulse" />
+                <div className="relative w-40 h-40 sm:w-56 sm:h-56 rounded-full border border-blue-500/30 bg-black/40 backdrop-blur-xl flex flex-col items-center justify-center gap-3">
+                  <Sparkles className="w-10 h-10 sm:w-14 sm:h-14 text-blue-500" />
+                  <span className="text-xs sm:text-sm font-black uppercase tracking-widest text-white">Aurora</span>
+                </div>
               </motion.div>
             </motion.div>
 

@@ -53,7 +53,7 @@ export function HeroSection({ rotateX, rotateY }: HeroSectionProps) {
           transition={{ delay: 0.8, duration: 1.5 }}
           className="max-w-4xl mx-auto text-sm sm:text-xl lg:text-3xl text-slate-400 font-medium leading-relaxed mb-10 sm:mb-20 px-4 sm:px-8"
         >
-          Sinta a força da <span className="text-white font-black italic underline decoration-blue-500 decoration-4 underline-offset-8">MIA-6</span>. O primeiro CRM do planeta que não apenas organiza, mas antecipa cada respiração do seu mercado.
+          Sinta a força da <span className="text-white font-black italic underline decoration-blue-500 decoration-4 underline-offset-8">Aurora</span>. O primeiro CRM do planeta que não apenas organiza, mas antecipa cada respiração do seu mercado.
         </motion.p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 md:gap-10">
@@ -128,7 +128,7 @@ export function HeroSection({ rotateX, rotateY }: HeroSectionProps) {
               />
             ))}
          </div>
-         <div className="mt-6 text-[11px] font-black text-white uppercase tracking-widest text-center italic">MIA_ACTIVE: 100%</div>
+         <div className="mt-6 text-[11px] font-black text-white uppercase tracking-widest text-center italic">AURORA_ACTIVE: 100%</div>
       </motion.div>
     </section>
   );

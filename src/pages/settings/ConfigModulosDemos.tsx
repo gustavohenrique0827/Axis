@@ -5,7 +5,7 @@ import {
   Cpu, Activity, Layers, Database, UserCheck,
   Target, Award, DollarSign, Package, MessageSquare, Users, Columns3, Clock, Code2,
   Plus, X, Building2, RefreshCw, ChevronDown, Megaphone, Pencil, Trash2, AlertTriangle,
-  Sparkles, Search, CheckCircle2, ShieldCheck, ArrowRight, HeartPulse, Home, Sun, ShoppingCart
+  Sparkles, Search, CheckCircle2, ShieldCheck, ArrowRight, HeartPulse, Home, Sun, ShoppingCart, Car
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -120,7 +120,11 @@ export default function ConfigModulosDemos() {
     bi: true,
     clinica: true,
     dev: true,
-    imobiliario: false,
+    imobiliaria: false,
+    concessionaria: false,
+    automotivo: false,
+    varejo: false,
+    solar: false,
     aurora: true,
   };
 
@@ -184,13 +188,18 @@ export default function ConfigModulosDemos() {
   }, [selectedTenant, allTenantModules]);
 
   const handleToggleModule = async (key: string) => {
-    const updated = { ...activeModules, [key]: !activeModules[key] };
+    const newVal = !activeModules[key];
+    const updated = { ...activeModules, [key]: newVal };
+    if (key === 'concessionaria' || key === 'automotivo') {
+      updated.concessionaria = newVal;
+      updated.automotivo = newVal;
+    }
     setActiveModules(updated);
     await updateTenantModules(selectedTenant, updated as any);
     if (selectedTenant === user?.tenantName) {
       setSidebarModules(updated);
     }
-    toast.success(`Módulo "${key.toUpperCase()}" ${updated[key] ? 'ATIVADO' : 'OCULTADO'} para ${selectedTenant}!`);
+    toast.success(`Módulo "${key.toUpperCase()}" ${newVal ? 'ATIVADO' : 'OCULTADO'} para ${selectedTenant}!`);
   };
 
   const handleSwitchRole = (role: string) => {
@@ -203,36 +212,41 @@ export default function ConfigModulosDemos() {
     let preset: Record<string, boolean>;
     switch (presetName) {
       case "ALL_ACTIVE":
-        preset = { crm: true, educacao: true, produtividade: true, financeiro: true, catalogo: true, engajamento: true, rh: true, bi: true, clinica: true, marketing: true, dev: true, imobiliario: true, aurora: true };
+        preset = { crm: true, educacao: true, produtividade: true, financeiro: true, catalogo: true, engajamento: true, rh: true, bi: true, clinica: true, marketing: true, dev: true, imobiliaria: true, concessionaria: true, varejo: true, solar: true, aurora: true };
         toast.success("Preset Aplicado: Ecossistema Global (Todos os Módulos Ativos)");
         break;
       case "EDUCACAO":
-        preset = { crm: true, educacao: true, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: true, dev: false, imobiliario: false, aurora: true };
+        preset = { crm: true, educacao: true, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: true, dev: false, imobiliaria: false, concessionaria: false, varejo: false, solar: false, aurora: true };
         toast.success("Preset Aplicado: Escola & Acadêmico");
         break;
       case "SDR_CLOSER":
-        preset = { crm: true, educacao: false, produtividade: true, financeiro: false, catalogo: false, engajamento: true, rh: false, bi: true, clinica: false, marketing: true, dev: false, imobiliario: false, aurora: true };
+        preset = { crm: true, educacao: false, produtividade: true, financeiro: false, catalogo: false, engajamento: true, rh: false, bi: true, clinica: false, marketing: true, dev: false, imobiliaria: false, concessionaria: false, varejo: false, solar: false, aurora: true };
         toast.success("Preset Aplicado: Agência SDR & Closers");
         break;
       case "CLINICA":
-        preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: true, marketing: false, dev: false, imobiliario: false, aurora: true };
+        preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: true, marketing: false, dev: false, imobiliaria: false, concessionaria: false, varejo: false, solar: false, aurora: true };
         toast.success("Preset Aplicado: Clínica & Saúde Integrada");
         break;
-      case "IMOBILIARIO":
-        preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: true, dev: false, imobiliario: true, aurora: true };
-        toast.success("Preset Aplicado: Imobiliário & Concessionárias");
+      case "IMOBILIARIA":
+        preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: true, dev: false, imobiliaria: true, concessionaria: false, varejo: false, solar: false, aurora: true };
+        toast.success("Preset Aplicado: Imobiliária");
+        break;
+      case "CONCESSIONARIA":
+        preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: true, dev: false, imobiliaria: false, concessionaria: true, varejo: false, solar: false, aurora: true };
+        toast.success("Preset Aplicado: Concessionária");
         break;
       case "VAREJO":
-        preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: true, engajamento: true, rh: true, bi: true, clinica: false, marketing: true, dev: false, imobiliario: false, aurora: true };
+        preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: true, engajamento: true, rh: true, bi: true, clinica: false, marketing: true, dev: false, imobiliaria: false, concessionaria: false, varejo: true, solar: false, aurora: true };
         toast.success("Preset Aplicado: Varejo & Lojas");
         break;
       case "SOLAR":
-        preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: false, dev: false, imobiliario: false, aurora: true, solar: true };
+        preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: false, dev: false, imobiliaria: false, concessionaria: false, varejo: false, solar: true, aurora: true };
         toast.success("Preset Aplicado: Energia Solar");
         break;
       default:
         return;
     }
+    if (preset.concessionaria !== undefined) preset.automotivo = preset.concessionaria;
     setActiveModules(preset);
     await updateTenantModules(selectedTenant, preset as any);
     if (selectedTenant === user?.tenantName) {
@@ -760,7 +774,7 @@ export default function ConfigModulosDemos() {
               <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-primary-blue)] flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" /> Presets Estratégicos de Operação em 1 Clique
               </span>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-8 gap-2.5">
                 <button
                   type="button"
                   onClick={() => applyPreset("ALL_ACTIVE")}
@@ -803,12 +817,22 @@ export default function ConfigModulosDemos() {
 
                 <button
                   type="button"
-                  onClick={() => applyPreset("IMOBILIARIO")}
+                  onClick={() => applyPreset("IMOBILIARIA")}
                   className="flex flex-col items-center justify-center p-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/25 rounded-xl transition-all cursor-pointer shadow-2xs group"
                 >
                   <span className="text-lg mb-1 group-hover:scale-110 transition-transform">🏢</span>
-                  <span className="text-[11px] font-bold">Imob. & Concess.</span>
-                  <span className="text-[9px] opacity-80">Imóveis & Veículos</span>
+                  <span className="text-[11px] font-bold">Imobiliária</span>
+                  <span className="text-[9px] opacity-80">Portfólio de Imóveis</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => applyPreset("CONCESSIONARIA")}
+                  className="flex flex-col items-center justify-center p-3 bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/25 rounded-xl transition-all cursor-pointer shadow-2xs group"
+                >
+                  <span className="text-lg mb-1 group-hover:scale-110 transition-transform">🚗</span>
+                  <span className="text-[11px] font-bold">Concessionária</span>
+                  <span className="text-[9px] opacity-80">Estoque de Veículos</span>
                 </button>
 
                 <button
@@ -847,7 +871,8 @@ export default function ConfigModulosDemos() {
                 { id: 'clinica', title: "Clínica Médica & Saúde", desc: "Prontuários EHR, telemedicina e consultas", icon: Activity, color: "text-teal-500 bg-teal-500/10 border-teal-500/20" },
                 { id: 'rh', title: "RH & Colaboradores", desc: "Equipe interna, comissões e organograma", icon: Users, color: "text-blue-500 bg-blue-500/10 border-blue-500/20" },
                 { id: 'bi', title: "BI & Inteligência de Dados", desc: "Dashboards analíticos, OTE e métricas avançadas", icon: Columns3, color: "text-indigo-500 bg-indigo-500/10 border-indigo-500/20" },
-                { id: 'imobiliario', title: "Imobiliário & Concessionárias", desc: "Portfólio de imóveis e veículos, visitas, test-drives e equipe", icon: Home, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" },
+                { id: 'imobiliaria', title: "Imobiliária", desc: "Portfólio de imóveis, visitas, corretores e funil de leads", icon: Home, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" },
+                { id: 'concessionaria', title: "Concessionária", desc: "Estoque de veículos, financiamento, consignação e funil de leads", icon: Car, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" },
                 { id: 'solar', title: "Energia Solar", desc: "Análise de fatura por IA, dimensionamento e funil fotovoltaico", icon: Sun, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" },
                 { id: 'varejo', title: "Varejo & Ponto de Venda", desc: "Carrinho, baixa de estoque na venda e catálogo público compartilhável", icon: ShoppingCart, color: "text-lime-500 bg-lime-500/10 border-lime-500/20" },
                 { id: 'dev', title: "Engenharia & Sprint Dev", desc: "Quadro de sprints, releases e demandas tech", icon: Code2, color: "text-slate-500 bg-slate-500/10 border-slate-500/20" },

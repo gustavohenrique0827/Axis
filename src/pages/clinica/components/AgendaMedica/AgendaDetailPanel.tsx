@@ -7,6 +7,7 @@ interface Appointment {
   id: string;
   time: string;
   patient: string;
+  patientId?: string | null;
   drId: string;
   drName: string;
   status: 'Confirmado' | 'Aguardando' | 'Atrasado' | 'Em Atendimento' | 'Finalizado';
@@ -139,12 +140,14 @@ export function AgendaDetailPanel({ selectedApt, onClose, onUpdateStatus, onDele
                       <Check className="w-3.5 h-3.5 mr-1" /> Finalizar Consulta
                     </Button>
                   )}
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={!selectedApt.patientId}
+                    title={selectedApt.patientId ? undefined : "Este atendimento não está vinculado a um paciente cadastrado"}
                     onClick={() => {
                       onClose();
-                      navigate('/app/clinica/prontuarios');
+                      navigate(selectedApt.patientId ? `/app/clinica/prontuarios?paciente=${selectedApt.patientId}` : '/app/clinica/prontuarios');
                     }}
                     className="h-10 text-xs font-bold"
                   >

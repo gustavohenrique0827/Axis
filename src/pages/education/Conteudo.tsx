@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { readKanbanConfig, KANBAN_KEYS, KANBAN_COR_DOT } from "../../hooks/useKanbanConfig";
-import { Layers, Globe, Star, Download, Plus } from "lucide-react";
+import { Layers, FileSearch, Star, Download, Plus } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { toast } from "sonner";
 import { PageContainer } from "../../components/PageContainer";
+import { exportToCSV } from "../../lib/exportCsv";
 import { NovoConteudoModal } from "../../components/ui/modals/education/NovoConteudoModal";
 import { ConteudoKPIs } from "./components/Conteudo/ConteudoKPIs";
 import { ConteudoFilters } from "./components/Conteudo/ConteudoFilters";
@@ -82,14 +83,21 @@ export default function Conteudo() {
     dotColor: KANBAN_COR_DOT[c.cor] ?? KANBAN_COR_DOT.slate,
   }));
 
-  const totalAcessos = content.reduce((acc, c) => acc + (c.accessCount || 0), 0);
-  const totalAcessosFmt = totalAcessos >= 1000 ? `${(totalAcessos / 1000).toFixed(1)}k` : String(totalAcessos);
   const kpiStats = [
     { label: "Ativos Totais", value: String(content.length), icon: Layers, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-    { label: "Total Acessos", value: content.length === 0 ? "—" : totalAcessosFmt, icon: Globe, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Em Revisão", value: String(content.filter(c => c.status === "Em Revisão").length), icon: FileSearch, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
     { label: "Publicados", value: String(content.filter(c => c.status === "Publicado").length), icon: Star, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
     { label: "Em Rascunho", value: String(content.filter(c => c.status === "Rascunho").length), icon: Download, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
   ];
+
+  const handleExport = () => {
+    if (filteredContent.length === 0) { toast.error("Nenhum material para exportar."); return; }
+    exportToCSV(filteredContent.map(c => ({
+      Título: c.title, Tipo: c.type, Curso: c.course, Módulo: c.module,
+      Duração: c.duration || "", Status: c.status, "Última Atualização": c.lastUpdate,
+    })), `conteudo_educacional_${Date.now()}`);
+    toast.success("CSV exportado.");
+  };
 
   return (
     <PageContainer
@@ -97,7 +105,7 @@ export default function Conteudo() {
       description="Gestão centralizada de ativos educacionais e trilhas de aprendizagem de alta performance."
       actions={
         <div className="flex items-center gap-3">
-          <Button variant="outline" className="border-white/10 text-[10px] font-black uppercase tracking-widest h-11 px-6 rounded-2xl gap-2">
+          <Button onClick={handleExport} variant="outline" className="border-white/10 text-[10px] font-black uppercase tracking-widest h-11 px-6 rounded-2xl gap-2">
             <Download className="w-4 h-4" /> Exportar Lote
           </Button>
           <Button

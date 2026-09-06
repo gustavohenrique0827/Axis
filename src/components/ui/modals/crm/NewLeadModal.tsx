@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Modal } from "../../modal";
 import { Button } from "../../button";
 import { useData } from "../../../../contexts/DataContext";
@@ -49,16 +49,30 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
   const isEmailDuplicate = leads.some(l => l.email.toLowerCase() === emailValue.toLowerCase() && emailValue !== "");
   const isCnpjDuplicate = leads.some(l => l.cnpj === cnpjValue && cnpjValue !== "");
 
-  const [selectedSeller, setSelectedSeller] = useState("");
+  const [selectedSeller, setSelectedSeller] = useState(user?.name || "");
 
   const sellerOptions = useMemo<string[]>(() => {
+    let list: string[] = [];
     if (colaboradores && colaboradores.length > 0) {
-      return colaboradores.filter((c: any) => c.nome && c.status !== "Desligado" && c.departamento === "Vendas").map((c: any) => c.nome as string);
+      list = colaboradores.filter((c: any) => c.nome && c.status !== "Desligado" && c.departamento === "Vendas").map((c: any) => c.nome as string);
+    } else {
+      list = Array.from(new Set(leads.map((l: any) => l.seller).filter(Boolean))) as string[];
     }
-    return Array.from(new Set(leads.map((l: any) => l.seller).filter(Boolean))) as string[];
-  }, [colaboradores, leads]);
+    if (user?.name && !list.includes(user.name)) {
+      list = [user.name, ...list];
+    }
+    return list;
+  }, [colaboradores, leads, user?.name]);
 
-  useMemo(() => { if (!selectedSeller && sellerOptions.length > 0) setSelectedSeller(sellerOptions[0]); }, [sellerOptions]);
+  useEffect(() => {
+    if (isOpen) {
+      if (user?.name) {
+        setSelectedSeller(user.name);
+      } else if (!selectedSeller && sellerOptions.length > 0) {
+        setSelectedSeller(sellerOptions[0]);
+      }
+    }
+  }, [isOpen, user?.name, sellerOptions]);
 
   const sellerPipelineId = useMemo(() => {
     if (!selectedSeller || !colaboradores?.length) return "comercial";
@@ -180,7 +194,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
     setCnpjValue(""); setCompanyValue(""); setEmailValue(""); setPhoneValue("");
     setLinkedinLink(""); setCurrentRole(""); setTeamSize("");
     setClientSearch(""); setSelectedClientId(""); setSelectedClientName("");
-    setSelectedSeller(sellerOptions[0] || ""); setSelectedProductIds([]);
+    setSelectedSeller(user?.name || sellerOptions[0] || ""); setSelectedProductIds([]);
     setCnpjStatus({ status: "idle" });
     onClose();
   };

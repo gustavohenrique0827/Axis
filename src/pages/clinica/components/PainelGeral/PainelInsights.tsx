@@ -8,6 +8,7 @@ interface Appointment {
   drName: string;
   time: string;
   status: string;
+  phone?: string;
 }
 
 interface PainelInsightsProps {
@@ -30,6 +31,13 @@ const STATUS_TEXT: Record<string, string> = {
 };
 
 export function PainelInsights({ totalAppointments, confirmed, late, activeToday, onNewBooking }: PainelInsightsProps) {
+  const lateList = activeToday.filter(a => a.status === 'Atrasado');
+  const buildReminderLink = (a: Appointment) => {
+    const phoneRaw = (a.phone || '').replace(/\D/g, '');
+    const text = encodeURIComponent(`Olá, ${a.patient}! Notamos que seu horário das ${a.time} com ${a.drName} está atrasado. Você ainda vai comparecer?`);
+    return phoneRaw ? `https://wa.me/55${phoneRaw}?text=${text}` : null;
+  };
+
   return (
     <div className="grid lg:grid-cols-2 gap-6">
       <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] relative overflow-hidden group shadow-sm">
@@ -41,16 +49,30 @@ export function PainelInsights({ totalAppointments, confirmed, late, activeToday
         </h4>
         <div className="space-y-3">
           {late > 0 && (
-            <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-[var(--radius-panel)]">
+            <div className="p-4 bg-rose-500/5 border border-rose-500/20 rounded-[var(--radius-panel)] space-y-3">
               <h5 className="text-xs font-bold text-[var(--color-text-primary)] mb-1 flex items-center gap-1.5">
                 ⚠️ Atrasos Detectados
               </h5>
-              <p className="text-xs text-[var(--color-text-muted)] leading-relaxed mb-3">
-                {late} paciente(s) com horário ultrapassado. Envie um lembrete automático.
+              <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+                {late} paciente(s) com horário ultrapassado.
               </p>
-              <Button variant="danger" size="sm" className="h-8 font-bold text-xs gap-1.5">
-                <BellRing className="w-3.5 h-3.5" /> Enviar Lembrete WhatsApp
-              </Button>
+              <div className="space-y-1.5">
+                {lateList.map((a) => {
+                  const link = buildReminderLink(a);
+                  return (
+                    <div key={a.id} className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-medium text-[var(--color-text-primary)] truncate">{a.patient}</span>
+                      {link ? (
+                        <Button variant="danger" size="sm" className="h-7 font-bold text-[10px] gap-1 shrink-0" onClick={() => window.open(link, "_blank")}>
+                          <BellRing className="w-3 h-3" /> Lembrete
+                        </Button>
+                      ) : (
+                        <span className="text-[10px] text-[var(--color-text-faint)] shrink-0">sem telefone cadastrado</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
           {totalAppointments === 0 && (

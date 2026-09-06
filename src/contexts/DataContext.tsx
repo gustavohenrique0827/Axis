@@ -206,8 +206,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const contracts = useMemo(() => filterByFilial(contractsRaw), [contractsRaw, activeFilialId]);
   const appointments = useMemo(() => filterByFilial(appointmentsRaw), [appointmentsRaw, activeFilialId]);
 
-  const [robotStatus, setRobotStatus] = useState<'executando' | 'pausado'>('executando');
-
   const [squads, setSquads] = useState<Squad[]>([]);
 
   const addSquad = async (squad: Omit<Squad, 'id'>) => {
@@ -473,7 +471,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               productsRes, proposalsRes, proposalItemsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
               clienteBaseRes, reunioesRes, financialGoalsRes, funisRes, filiaisRes,
               financeCategoriesRes, scheduledExportsRes, educationContentRes,
-              marketingFormsRes, nichosRes, financeCommissionEntriesRes, indicacoesRes
+              marketingFormsRes, nichosRes, financeCommissionEntriesRes, indicacoesRes, mktAutoRes
             ] = await Promise.all([
               supabase.from('leads').select('*').eq('tenant_id', tenantId),
               supabase.from('tasks').select('*').eq('tenant_id', tenantId),
@@ -484,7 +482,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('squads').select('*').eq('tenant_id', tenantId),
               supabase.from('notifications').select('*').eq('tenant_id', tenantId),
               supabase.from('marketing_campaigns').select('*').eq('tenant_id', tenantId),
-              supabase.from('marketing_content').select('*').eq('tenant_id', tenantId),
+              supabase.from('marketing_content').select('*').eq('tenant_id', tenantId).is('deleted_at', null),
               supabase.from('marketing_landing_pages').select('*').eq('tenant_id', tenantId),
               // Inclui linhas globais (tenant_id IS NULL) + as do tenant ativo, explicitamente —
               // sem esse filtro, contas master/parceiro (has_tenant_access verdadeiro pra vários
@@ -513,13 +511,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('nichos').select('*').or(`tenant_id.eq.${tenantId},tenant_id.is.null`),
               supabase.from('finance_commission_entries').select('*').eq('tenant_id', tenantId),
               supabase.from('indicacoes').select('*').eq('tenant_id', tenantId),
+              supabase.from('marketing_automations').select('*').eq('tenant_id', tenantId),
             ]);
 
             if (!leadsRes.error && leadsRes.data) setLeads(leadsRes.data as Lead[]);
             if (!tasksRes.error && tasksRes.data) setTasks(tasksRes.data as Task[]);
             if (!actsRes.error && actsRes.data) setLeadActivities(actsRes.data as LeadActivity[]);
             if (!financeRes.error && financeRes.data) setFinanceEntries(financeRes.data as FinanceEntry[]);
-            if (!apptRes.error && apptRes.data) setAppointments(apptRes.data as Appointment[]);
+            if (!apptRes.error && apptRes.data) setAppointments(apptRes.data.map((r: any): Appointment => ({
+              id: r.id, time: r.time, patient: r.patient, patientId: r.patient_id ?? null,
+              drId: r.dr_id, drName: r.dr_name, status: r.status, type: r.type,
+              room: r.room, specialty: r.specialty, phone: r.phone, date: r.date, notes: r.notes,
+            })));
             if (!squadsRes.error && squadsRes.data) setSquads(squadsRes.data.map((r: any): Squad => ({
               id: r.id, nome: r.nome,
               departamento: r.departamento || 'Geral',
@@ -554,6 +557,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!financeCategoriesRes.error && financeCategoriesRes.data) setFinanceCategories(financeCategoriesRes.data);
             if (!financeCommissionEntriesRes.error && financeCommissionEntriesRes.data) setFinanceCommissionEntries(financeCommissionEntriesRes.data);
             if (!indicacoesRes.error && indicacoesRes.data) setIndicacoes(indicacoesRes.data as Indicacao[]);
+            if (!mktAutoRes.error && mktAutoRes.data) setMarketingAutomations(mktAutoRes.data);
             if (!scheduledExportsRes.error && scheduledExportsRes.data) setScheduledExports(scheduledExportsRes.data);
             if (!educationContentRes.error && educationContentRes.data) setEducationContent(educationContentRes.data);
             if (!marketingFormsRes.error && marketingFormsRes.data) setMarketingForms(marketingFormsRes.data);
@@ -679,6 +683,41 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       clearInterval(interval);
     };
   }, [leads, tasks]);
+
+  // Motor real dos Gatilhos de Lead Score IA (Configurações > CRM > Gatilhos IA):
+  // verifica periodicamente se algum lead do funil SDR cruzou o score configurado
+  // em alguma regra e move ele de verdade para a coluna alvo, em vez das regras
+  // ficarem só salvas sem nenhum motor aplicando-as.
+  const movedByTriggerRef = React.useRef<Record<string, true>>({});
+  useEffect(() => {
+    const checkLeadScoreTriggers = () => {
+      if (leadScoreTriggers.length === 0) return;
+      leads.forEach(lead => {
+        if (lead.pipelineId !== 'sdr' || lead.scoreIA === undefined) return;
+        for (const trigger of leadScoreTriggers) {
+          const matches = trigger.condition === 'greater'
+            ? lead.scoreIA >= trigger.scoreThreshold
+            : lead.scoreIA <= trigger.scoreThreshold;
+          if (!matches) continue;
+          if (lead.stageId === trigger.targetStageId) continue;
+          const key = `${lead.id}-${trigger.id}-${trigger.targetStageId}`;
+          if (movedByTriggerRef.current[key]) continue;
+          movedByTriggerRef.current[key] = true;
+          moveLead(lead.id, trigger.targetStageId, 0);
+          addNotification({
+            title: "Gatilho de Lead Score Aplicado",
+            desc: `${lead.name} (Score IA: ${lead.scoreIA}) foi movido automaticamente para a etapa configurada no gatilho.`,
+            type: "info",
+            category: "Automação"
+          }, true);
+          break;
+        }
+      });
+    };
+    const timer = setTimeout(checkLeadScoreTriggers, 5000);
+    const interval = setInterval(checkLeadScoreTriggers, 20000);
+    return () => { clearTimeout(timer); clearInterval(interval); };
+  }, [leads, leadScoreTriggers]);
 
   // Automated background checker for squad goals (90% threshold)
   const notifiedSquadsRef = React.useRef<Record<string, boolean>>({});
@@ -1263,9 +1302,9 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     toast.success('Agendamento realizado!');
     if (supabase) {
       try {
-        const { id, patient, phone, drId, drName, specialty, room, type, status, date, time } = newApt as any;
+        const { id, patient, patientId, phone, drId, drName, specialty, room, type, status, date, time } = newApt as any;
         await supabase.from('appointments').insert({
-          id, patient, phone, dr_id: drId, dr_name: drName, specialty, room, type, status, date, time,
+          id, patient, patient_id: patientId ?? null, phone, dr_id: drId, dr_name: drName, specialty, room, type, status, date, time,
           tenant_id: newApt.tenant_id, filial_id: newApt.filial_id,
         });
       } catch (err) {
@@ -1281,7 +1320,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         const payload: any = { ...updates };
         if ('drId' in payload) payload.dr_id = payload.drId;
         if ('drName' in payload) payload.dr_name = payload.drName;
-        delete payload.drId; delete payload.drName;
+        if ('patientId' in payload) payload.patient_id = payload.patientId;
+        delete payload.drId; delete payload.drName; delete payload.patientId;
         await supabase.from('appointments').update(payload).eq('id', id);
       } catch (err) {
         console.error("Supabase update appointment failed:", err);
@@ -1316,8 +1356,6 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       simulateOverdueTask,
       whatsappWebhookUrl,
       setWhatsappWebhookUrl: updateWhatsappWebhookUrl,
-      robotStatus,
-      setRobotStatus,
       customLeadFields,
       setCustomLeadFields: updateCustomLeadFields,
       leadScoreTriggers,

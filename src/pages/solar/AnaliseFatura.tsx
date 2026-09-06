@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sun, Upload, Zap, TrendingDown, Loader2, Trash2, CheckCircle2 } from "lucide-react";
 import { PageContainer } from "../../components/PageContainer";
 import { Card } from "../../components/ui/card";
@@ -8,11 +9,14 @@ import { toast } from "sonner";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { supabase } from "../../lib/supabase";
 import { analyzeFaturaSolar, FaturaAnalise } from "../../lib/solarOcr";
+import { useData } from "../../contexts/DataContext";
 
 interface SolarAnalise extends FaturaAnalise {
   id: string;
   cliente: string;
   status: string;
+  valorProposta: number | null;
+  proposalId: string | null;
   created_at: string;
 }
 
@@ -39,6 +43,8 @@ const statusColor = (s: string) => {
 };
 
 export default function AnaliseFatura() {
+  const navigate = useNavigate();
+  const { addTask, createProposalWithItems } = useData();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [cliente, setCliente] = useState("");
@@ -47,11 +53,27 @@ export default function AnaliseFatura() {
   const [analises, setAnalises] = useState<SolarAnalise[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const rowToAnalise = (r: any): SolarAnalise => ({
+    id: r.id,
+    cliente: r.cliente,
+    status: r.status,
+    distribuidora: r.distribuidora,
+    consumoMedioKwh: r.consumo_medio_kwh !== null ? Number(r.consumo_medio_kwh) : null,
+    valorFatura: r.valor_fatura !== null ? Number(r.valor_fatura) : null,
+    mesReferencia: r.mes_referencia,
+    potenciaEstimadaKwp: r.potencia_estimada_kwp !== null ? Number(r.potencia_estimada_kwp) : null,
+    economiaMensalEstimada: r.economia_mensal_estimada !== null ? Number(r.economia_mensal_estimada) : null,
+    economiaAnualEstimada: r.economia_anual_estimada !== null ? Number(r.economia_anual_estimada) : null,
+    valorProposta: r.valor_proposta !== null ? Number(r.valor_proposta) : null,
+    proposalId: r.proposal_id ?? null,
+    created_at: r.created_at,
+  });
+
   const refetch = () => {
     if (!supabase) return;
     supabase.from("solar_analises").select("*").order("created_at", { ascending: false }).then(({ data, error }) => {
       if (error) toast.error(`Erro ao carregar análises: ${error.message}`);
-      else if (data) setAnalises(data as SolarAnalise[]);
+      else if (data) setAnalises(data.map(rowToAnalise));
     });
   };
 
@@ -107,13 +129,72 @@ export default function AnaliseFatura() {
     refetch();
   };
 
+  // Estágios que geram automaticamente uma tarefa de acompanhamento real em
+  // Tarefas, conectando o funil fotovoltaico ao resto do CRM em vez de deixar
+  // o avanço de status como um evento isolado dentro da página de Solar.
+  const FOLLOWUP_TASK_BY_STATUS: Record<string, string> = {
+    "Visita Técnica": "Agendar visita técnica",
+    "Homologação": "Acompanhar homologação junto à distribuidora",
+    "Instalação": "Agendar instalação do sistema fotovoltaico",
+  };
+
   const handleAdvanceStatus = async (a: SolarAnalise) => {
     const idx = STATUS_FLOW.indexOf(a.status);
     const next = STATUS_FLOW[idx + 1];
     if (!next || !supabase) return;
-    const { error } = await supabase.from("solar_analises").update({ status: next }).eq("id", a.id);
+
+    if (next === "Proposta Enviada" && !a.valorProposta) {
+      toast.error("Preencha o valor da proposta antes de avançar para este estágio.");
+      return;
+    }
+
+    const payload: any = { status: next };
+    if (next === "Concluído") payload.data_conclusao = new Date().toISOString();
+
+    let proposalId: string | null = null;
+    if (next === "Proposta Enviada" && !a.proposalId) {
+      proposalId = await createProposalWithItems({
+        titulo: `Proposta Fotovoltaica — ${a.cliente}`,
+        cliente: a.cliente,
+        valor: a.valorProposta!,
+        status: "Enviada",
+        vendedor: "Energia Solar",
+        tipo: "texto",
+        conteudoTexto: [
+          `Proposta de sistema fotovoltaico para ${a.cliente}.`,
+          a.consumoMedioKwh ? `Consumo médio: ${a.consumoMedioKwh} kWh/mês.` : null,
+          a.potenciaEstimadaKwp ? `Potência estimada do sistema: ${a.potenciaEstimadaKwp} kWp.` : null,
+          a.economiaMensalEstimada ? `Economia mensal estimada: R$ ${a.economiaMensalEstimada.toFixed(2)}.` : null,
+          "Estimativa baseada em irradiação solar média nacional — valor real varia por região, orientação do telhado e tarifa vigente.",
+        ].filter(Boolean).join("\n"),
+      });
+      payload.proposal_id = proposalId;
+    }
+
+    const { error } = await supabase.from("solar_analises").update(payload).eq("id", a.id);
     if (error) { toast.error(`Erro ao atualizar status: ${error.message}`); return; }
-    setAnalises(prev => prev.map(x => x.id === a.id ? { ...x, status: next } : x));
+    setAnalises(prev => prev.map(x => x.id === a.id ? { ...x, status: next, proposalId: proposalId ?? x.proposalId } : x));
+
+    if (proposalId) toast.success("Proposta gerada em Propostas — pronta para envio/compartilhamento.");
+
+    const taskTitle = FOLLOWUP_TASK_BY_STATUS[next];
+    if (taskTitle) {
+      addTask({
+        title: `${taskTitle} — ${a.cliente}`,
+        related: a.cliente,
+        type: "Energia Solar",
+        status: "Em Aberto",
+        priority: "Alta",
+        tags: ["Solar", next],
+      });
+    }
+  };
+
+  const handleUpdateValorProposta = async (a: SolarAnalise, valor: number | null) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("solar_analises").update({ valor_proposta: valor }).eq("id", a.id);
+    if (error) { toast.error(`Erro ao salvar valor da proposta: ${error.message}`); return; }
+    setAnalises(prev => prev.map(x => x.id === a.id ? { ...x, valorProposta: valor } : x));
   };
 
   const handleDelete = async (id: string, cliente: string) => {
@@ -245,8 +326,24 @@ export default function AnaliseFatura() {
                       {a.consumoMedioKwh ? `${a.consumoMedioKwh} kWh/mês` : "—"} · {a.potenciaEstimadaKwp ? `${a.potenciaEstimadaKwp} kWp` : "—"}
                     </p>
                   </div>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[10px] text-[var(--color-text-faint)]">R$</span>
+                    <input
+                      type="number"
+                      defaultValue={a.valorProposta ?? ""}
+                      onBlur={(e) => {
+                        const v = e.target.value ? Number(e.target.value) : null;
+                        if (v !== a.valorProposta) handleUpdateValorProposta(a, v);
+                      }}
+                      placeholder="valor proposta"
+                      className="w-24 bg-transparent border-b border-dashed border-[var(--color-border-default)] text-right text-xs font-bold text-[var(--color-text-primary)] outline-none focus:border-amber-500"
+                    />
+                  </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className={`text-[9px] font-black px-2.5 py-1 rounded-full border ${statusColor(a.status)}`}>{a.status}</span>
+                    {a.proposalId && (
+                      <button onClick={() => navigate("/app/propostas")} className="text-[9px] font-black uppercase text-emerald-500 hover:text-emerald-400">Ver Proposta</button>
+                    )}
                     {a.status !== "Concluído" && (
                       <button onClick={() => handleAdvanceStatus(a)} className="text-[9px] font-black uppercase text-blue-500 hover:text-blue-400">Avançar</button>
                     )}

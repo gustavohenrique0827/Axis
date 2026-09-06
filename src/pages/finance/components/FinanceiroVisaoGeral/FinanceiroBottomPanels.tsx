@@ -8,9 +8,19 @@ interface UpcomingEntry { label: string; date: string; value: string; type: "pag
 
 interface FinanceiroBottomPanelsProps {
   upcomingEntries: UpcomingEntry[];
+  cpl: number | null;
+  ltvProjetado: number | null;
+  margemEbitda: number | null;
 }
 
-export function FinanceiroBottomPanels({ upcomingEntries }: FinanceiroBottomPanelsProps) {
+const fmtBRL = (n: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 }).format(n);
+
+export function FinanceiroBottomPanels({ upcomingEntries, cpl, ltvProjetado, margemEbitda }: FinanceiroBottomPanelsProps) {
+  const insights = [
+    { label: "Custo por Lead (CPL)", value: cpl !== null ? fmtBRL(cpl) : "—" },
+    { label: "LTV Projetado (12m)", value: ltvProjetado !== null ? fmtBRL(ltvProjetado) : "—" },
+    { label: "Margem Ebitda", value: margemEbitda !== null ? `${margemEbitda.toFixed(1)}%` : "—" },
+  ];
   return (
     <>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
@@ -43,25 +53,17 @@ export function FinanceiroBottomPanels({ upcomingEntries }: FinanceiroBottomPane
         <Card className="lg:col-span-2 p-8 border-white/5 bg-[var(--color-surface-elevated)]/80 backdrop-blur-xl relative overflow-hidden">
           <div className="flex items-center justify-between mb-10">
             <h3 className="font-black flex items-center gap-3 uppercase text-[10px] tracking-[0.2em] text-slate-300">
-              <TrendingUp className="w-4 h-4 text-emerald-400" /> Inteligência Operacional
+              <TrendingUp className="w-4 h-4 text-emerald-400" /> Indicadores Operacionais
             </h3>
-            <Badge className="bg-white/5 border-white/10 text-slate-500 text-[8px] font-black uppercase h-6">Projeções ML em Tempo Real</Badge>
+            <Badge className="bg-white/5 border-white/10 text-slate-500 text-[8px] font-black uppercase h-6">Calculado a partir dos lançamentos do período</Badge>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             <div className="space-y-6">
-              {[
-                { label: "Custo por Lead (CPL)", value: "R$ 0,00", trend: "0%", status: "Estável" },
-                { label: "LTV Projetado (12m)", value: "R$ 0,00", trend: "0%", status: "Estável" },
-                { label: "Margem Ebitda", value: "0%", trend: "0%", status: "Estável" },
-              ].map((insight, idx) => (
+              {insights.map((insight, idx) => (
                 <div key={idx} className="flex items-center justify-between border-b border-white/5 pb-4 last:border-0 last:pb-0">
                   <div>
                     <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{insight.label}</p>
                     <h5 className="text-lg font-black text-white italic tracking-tighter">{insight.value}</h5>
-                  </div>
-                  <div className="text-right">
-                    <span className={`text-[9px] font-black uppercase block mb-1 ${insight.trend.startsWith("+") ? "text-emerald-400" : "text-rose-400"}`}>{insight.trend}</span>
-                    <span className={`text-[8px] font-black px-2 py-0.5 rounded uppercase ${insight.status === "Seguro" ? "bg-emerald-500/10 text-emerald-400" : insight.status === "Atenção" ? "bg-rose-500/10 text-rose-400" : "bg-white/5 text-slate-500"}`}>{insight.status}</span>
                   </div>
                 </div>
               ))}
@@ -76,8 +78,9 @@ export function FinanceiroBottomPanels({ upcomingEntries }: FinanceiroBottomPane
                   <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest">Recomendação Automatizada</p>
                 </div>
               </div>
-              <p className="text-[11px] font-bold text-slate-400 leading-relaxed uppercase tracking-tighter">Sem dados suficientes para geração de insights automáticos no momento.</p>
-              <Button className="mt-6 h-11 w-full rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-[10px] uppercase tracking-widest">Executar Estratégia</Button>
+              <p className="text-[11px] font-bold text-slate-400 leading-relaxed uppercase tracking-tighter">
+                Recomendações automatizadas de estratégia financeira ainda não estão disponíveis nesta versão do S.P.Y.
+              </p>
             </div>
           </div>
         </Card>

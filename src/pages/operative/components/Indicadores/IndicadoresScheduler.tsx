@@ -38,11 +38,11 @@ export function IndicadoresScheduler({
             <Settings2 className="text-blue-400 w-5 h-5 animate-pulse" /> Exportação Agendada de Performance (CSV)
           </h2>
           <p className="text-xs text-slate-400 mt-1 max-w-2xl leading-relaxed">
-            Configure o envio automático de planilhas de performance comercial diretamente para os e-mails dos gestores e diretores.
+            Cadastre os destinatários e a frequência desejada. O envio automático por e-mail ainda não está disponível — use o botão ao lado para exportar o CSV manualmente enquanto isso.
           </p>
         </div>
         <Button type="button" onClick={onSimulateRun} className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shrink-0 flex items-center gap-2 h-9 px-4 rounded-lg">
-          <Send className="w-4 h-4" /> Simular Disparo (Segunda-feira)
+          <Send className="w-4 h-4" /> Baixar CSV Agora
         </Button>
       </div>
 
@@ -119,7 +119,7 @@ export function IndicadoresScheduler({
           <div className="bg-[var(--color-surface)]/60 p-3.5 rounded-xl border border-white/5 flex items-start gap-2.5 mt-4 text-left">
             <CheckCircle className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
             <p className="text-[10px] text-slate-400 leading-normal">
-              <strong>Dispensadores automáticos:</strong> Os relatórios são disparados através de rotinas CRON agendadas. Você também pode baixar o arquivo CSV compilado imediatamente pressionando a opção <strong>"Simular Disparo"</strong> acima.
+              <strong>Disparo automático por e-mail ainda não disponível:</strong> os agendamentos abaixo ficam salvos, mas o envio periódico automático ainda não roda no servidor. Use <strong>"Baixar CSV Agora"</strong> para exportar o relatório na hora.
             </p>
           </div>
         </div>

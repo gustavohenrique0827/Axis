@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ShoppingCart, Plus, Minus, Trash2, Search, Package, Link2, Copy } from "lucide-react";
+import { ShoppingCart, Plus, Minus, Trash2, Search, Package, Link2, Copy, History, ChevronDown, ChevronUp, TrendingUp, Receipt } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
@@ -8,6 +8,22 @@ import { EmptyState } from "../../components/ui/empty-state";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { supabase } from "../../lib/supabase";
+
+interface VendaHistorico {
+  id: string;
+  cliente_nome: string | null;
+  forma_pagamento: string | null;
+  status: string;
+  valor_total: number;
+  created_at: string;
+}
+
+interface VendaItemRow {
+  id: string;
+  product_name: string | null;
+  quantidade: number;
+  preco_unitario: number;
+}
 
 interface CartItem {
   productId: string;
@@ -24,11 +40,44 @@ function formatPrice(value: number) {
 export default function VarejoVendas() {
   const { products } = useData();
   const { activeTenantId } = useAuth();
+  const [tab, setTab] = useState<"pdv" | "historico">("pdv");
   const [search, setSearch] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
   const [clienteNome, setClienteNome] = useState("");
   const [formaPagamento, setFormaPagamento] = useState("Dinheiro");
   const [finalizando, setFinalizando] = useState(false);
+
+  const [historico, setHistorico] = useState<VendaHistorico[]>([]);
+  const [loadingHistorico, setLoadingHistorico] = useState(true);
+  const [expandedVenda, setExpandedVenda] = useState<string | null>(null);
+  const [itensPorVenda, setItensPorVenda] = useState<Record<string, VendaItemRow[]>>({});
+
+  const fetchHistorico = () => {
+    if (!supabase) { setLoadingHistorico(false); return; }
+    setLoadingHistorico(true);
+    supabase.from("vendas").select("id, cliente_nome, forma_pagamento, status, valor_total, created_at")
+      .order("created_at", { ascending: false }).limit(100)
+      .then(({ data, error }) => {
+        if (!error) setHistorico(data || []);
+        setLoadingHistorico(false);
+      });
+  };
+
+  useEffect(() => { if (tab === "historico") fetchHistorico(); }, [tab]);
+
+  const toggleExpandVenda = async (vendaId: string) => {
+    if (expandedVenda === vendaId) { setExpandedVenda(null); return; }
+    setExpandedVenda(vendaId);
+    if (!itensPorVenda[vendaId] && supabase) {
+      const { data } = await supabase.from("venda_items").select("id, product_name, quantidade, preco_unitario").eq("venda_id", vendaId);
+      setItensPorVenda(prev => ({ ...prev, [vendaId]: data || [] }));
+    }
+  };
+
+  const hojeStr = new Date().toISOString().split("T")[0];
+  const vendasHoje = historico.filter(v => v.status === "paga" && v.created_at.startsWith(hojeStr));
+  const faturamentoHoje = vendasHoje.reduce((s, v) => s + Number(v.valor_total), 0);
+  const ticketMedioHoje = vendasHoje.length > 0 ? faturamentoHoje / vendasHoje.length : 0;
 
   const produtosDisponiveis = useMemo(() => {
     const ativos = products.filter((p: any) => p.active !== false);
@@ -129,6 +178,79 @@ export default function VarejoVendas() {
         )}
       </div>
 
+      <div className="flex bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-xl p-1 gap-1 w-fit">
+        <button onClick={() => setTab("pdv")} className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${tab === "pdv" ? "bg-[var(--color-primary-blue)] text-white" : "text-[var(--color-text-faint)] hover:text-[var(--color-text-primary)]"}`}>
+          <ShoppingCart className="w-3.5 h-3.5" /> PDV
+        </button>
+        <button onClick={() => setTab("historico")} className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${tab === "historico" ? "bg-[var(--color-primary-blue)] text-white" : "text-[var(--color-text-faint)] hover:text-[var(--color-text-primary)]"}`}>
+          <History className="w-3.5 h-3.5" /> Histórico de Vendas
+        </button>
+      </div>
+
+      {tab === "historico" && (
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">Vendas Hoje</span>
+                <ShoppingCart className="w-4 h-4 text-[var(--color-primary-blue)]" />
+              </div>
+              <div className="text-xl font-black font-mono text-[var(--color-text-primary)]">{vendasHoje.length}</div>
+            </Card>
+            <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">Faturamento Hoje</span>
+                <TrendingUp className="w-4 h-4 text-emerald-500" />
+              </div>
+              <div className="text-xl font-black font-mono text-[var(--color-text-primary)]">{formatPrice(faturamentoHoje)}</div>
+            </Card>
+            <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">Ticket Médio Hoje</span>
+                <Receipt className="w-4 h-4 text-amber-500" />
+              </div>
+              <div className="text-xl font-black font-mono text-[var(--color-text-primary)]">{formatPrice(ticketMedioHoje)}</div>
+            </Card>
+          </div>
+
+          {loadingHistorico ? (
+            <p className="text-xs text-[var(--color-text-faint)] text-center py-10">Carregando histórico...</p>
+          ) : historico.length === 0 ? (
+            <EmptyState icon={History} title="Nenhuma venda registrada" description="As vendas finalizadas no PDV aparecerão aqui." className="py-12" />
+          ) : (
+            <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden">
+              <div className="divide-y divide-[var(--color-border-subtle)]">
+                {historico.map((v) => (
+                  <div key={v.id}>
+                    <button onClick={() => toggleExpandVenda(v.id)} className="w-full flex items-center justify-between gap-3 p-3.5 text-left hover:bg-[var(--color-surface-sunken)]/50 transition-colors">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs font-bold text-[var(--color-text-primary)]">{v.cliente_nome || "Cliente não identificado"}</p>
+                        <p className="text-[10px] text-[var(--color-text-faint)]">{new Date(v.created_at).toLocaleString("pt-BR")} · {v.forma_pagamento || "—"}</p>
+                      </div>
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border shrink-0 ${v.status === "paga" ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : v.status === "cancelada" ? "bg-red-500/10 text-red-500 border-red-500/20" : "bg-amber-500/10 text-amber-500 border-amber-500/20"}`}>{v.status}</span>
+                      <span className="text-sm font-black text-[var(--color-text-primary)] font-mono shrink-0">{formatPrice(Number(v.valor_total))}</span>
+                      {expandedVenda === v.id ? <ChevronUp className="w-4 h-4 text-[var(--color-text-faint)] shrink-0" /> : <ChevronDown className="w-4 h-4 text-[var(--color-text-faint)] shrink-0" />}
+                    </button>
+                    {expandedVenda === v.id && (
+                      <div className="px-3.5 pb-3.5 space-y-1.5 bg-[var(--color-surface-sunken)]/30">
+                        {(itensPorVenda[v.id] || []).map(item => (
+                          <div key={item.id} className="flex items-center justify-between text-[11px] pl-2">
+                            <span className="text-[var(--color-text-muted)]">{item.quantidade}x {item.product_name}</span>
+                            <span className="font-mono text-[var(--color-text-primary)]">{formatPrice(item.quantidade * Number(item.preco_unitario))}</span>
+                          </div>
+                        ))}
+                        {!itensPorVenda[v.id] && <p className="text-[11px] text-[var(--color-text-faint)] pl-2">Carregando itens...</p>}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {tab === "pdv" && (
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div className="relative">
@@ -205,6 +327,7 @@ export default function VarejoVendas() {
           </div>
         </Card>
       </div>
+      )}
     </div>
   );
 }

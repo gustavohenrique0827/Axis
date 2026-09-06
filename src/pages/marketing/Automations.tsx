@@ -3,7 +3,7 @@ import { Button } from "../../components/ui/button";
 import { Plus } from "lucide-react";
 import { NovaAutomacaoModal } from "../../components/ui/modals/marketing/NovaAutomacaoModal";
 import { toast } from "sonner";
-import { EvolutionSection } from "./components/Automations/EvolutionSection";
+import { WhatsAppTriggersSection } from "./components/Automations/WhatsAppTriggersSection";
 import { SystemWorkflowsSection } from "./components/Automations/SystemWorkflowsSection";
 
 export default function Automations() {
@@ -30,7 +30,7 @@ export default function Automations() {
         </Button>
       </div>
 
-      <EvolutionSection />
+      <WhatsAppTriggersSection />
       <SystemWorkflowsSection initialWorkflows={systemWorkflows} />
 
       <NovaAutomacaoModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleCreateSystemWorkflow} />

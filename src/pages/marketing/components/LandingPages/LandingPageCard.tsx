@@ -2,7 +2,6 @@ import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Globe, Link as LinkIcon, Eye, MousePointerClick, TrendingUp, CheckCircle2, Clock, Settings, Edit2, Trash2 } from "lucide-react";
 import { motion } from "motion/react";
-import { LineChart, Line, ResponsiveContainer, YAxis } from "recharts";
 
 interface LandingPage {
   id: string;
@@ -12,7 +11,6 @@ interface LandingPage {
   views: number;
   conversions: number;
   rate: string;
-  sparkline: number[];
   pixel?: string;
   gtag?: string;
 }
@@ -59,25 +57,17 @@ export function LandingPageCard({ page, index, onToggleStatus, onOpenTracking, o
         </div>
 
         <div className="flex items-center gap-4 sm:gap-6 lg:gap-12 flex-1 lg:flex-none border-t lg:border-t-0 border-white/10 pt-4 lg:pt-0 overflow-x-auto pb-2 lg:pb-0">
-          <div className="hidden lg:block w-32 h-12 shrink-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={page.sparkline.map((val: number, i: number) => ({ day: i, value: val }))}>
-                <YAxis hide domain={['dataMin', 'dataMax']} />
-                <Line type="monotone" dataKey="value" stroke={page.status === 'published' ? "#10b981" : "#64748b"} strokeWidth={2} dot={false} isAnimationActive={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
           <div className="flex flex-col items-center lg:items-start shrink-0">
             <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest flex items-center gap-1 mb-1"><Eye className="w-3" /> Visitas</span>
-            <span className="text-lg font-bold text-white">{page.views.toLocaleString()}</span>
+            <span className="text-lg font-bold text-white">{page.views > 0 ? page.views.toLocaleString() : "—"}</span>
           </div>
           <div className="flex flex-col items-center lg:items-start shrink-0">
             <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest flex items-center gap-1 mb-1"><MousePointerClick className="w-3 text-purple-400" /> Leads</span>
-            <span className="text-lg font-bold text-white">{page.conversions.toLocaleString()}</span>
+            <span className="text-lg font-bold text-white">{page.conversions > 0 ? page.conversions.toLocaleString() : "—"}</span>
           </div>
           <div className="flex flex-col items-center lg:items-start shrink-0">
             <span className="text-[10px] text-slate-500 uppercase font-black tracking-widest flex items-center gap-1 mb-1"><TrendingUp className="w-3 text-emerald-400" /> Tx Conv</span>
-            <span className="text-lg font-bold text-emerald-400">{page.rate}</span>
+            <span className="text-lg font-bold text-emerald-400">{page.views > 0 ? page.rate : "—"}</span>
           </div>
         </div>
 

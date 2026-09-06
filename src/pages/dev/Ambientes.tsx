@@ -27,20 +27,28 @@ function MetricBar({ value, color }: { value: number; color: string }) {
 }
 
 export default function Ambientes() {
-  const { environments, loading } = useAmbientes();
+  const { environments, loading, refetch } = useAmbientes();
   const [refreshing, setRefreshing] = useState<string | null>(null);
+  const [refreshingAll, setRefreshingAll] = useState(false);
 
   const operacionalCount = environments.filter(e => e.status === 'operacional').length;
 
-  const handleRefresh = (id: string) => {
+  const handleRefresh = async (id: string) => {
     setRefreshing(id);
-    setTimeout(() => setRefreshing(null), 1800);
+    await refetch();
+    setRefreshing(null);
+  };
+
+  const handleRefreshAll = async () => {
+    setRefreshingAll(true);
+    await refetch();
+    setRefreshingAll(false);
   };
 
   return (
     <PageContainer
       title="Ambientes"
-      description="Status em tempo real dos ambientes de produção, staging, desenvolvimento e QA."
+      description="Status dos ambientes de produção, staging, desenvolvimento e QA, registrado manualmente pela equipe."
       breadcrumb={[{ label: "Dev & Tecnologia", path: "/app/dev/painel" }, { label: "Ambientes" }]}
       actions={
         <div className="flex items-center gap-3">
@@ -50,8 +58,8 @@ export default function Ambientes() {
               {operacionalCount}/{environments.length} operacionais
             </span>
           </div>
-          <Button variant="outline" className="h-10 rounded-xl border-white/5 text-xs gap-2">
-            <RefreshCw className="w-4 h-4" /> Atualizar Todos
+          <Button onClick={handleRefreshAll} disabled={refreshingAll} variant="outline" className="h-10 rounded-xl border-white/5 text-xs gap-2 disabled:opacity-50">
+            <RefreshCw className={`w-4 h-4 ${refreshingAll ? 'animate-spin' : ''}`} /> Atualizar Todos
           </Button>
         </div>
       }

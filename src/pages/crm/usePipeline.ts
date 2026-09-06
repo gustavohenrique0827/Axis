@@ -159,9 +159,14 @@ export function usePipeline() {
           );
       const q = searchQuery.toLowerCase();
       const matchesSearch  =
-        (item.name   ?? "").toLowerCase().includes(q) ||
-        (item.company ?? "").toLowerCase().includes(q) ||
-        (item.title   ?? "").toLowerCase().includes(q);
+        (item.name     ?? "").toLowerCase().includes(q) ||
+        (item.company  ?? "").toLowerCase().includes(q) ||
+        (item.title    ?? "").toLowerCase().includes(q) ||
+        (item.nicho    ?? "").toLowerCase().includes(q) ||
+        (item.segmento ?? "").toLowerCase().includes(q) ||
+        (item.vertical ?? "").toLowerCase().includes(q) ||
+        (item.origem   ?? "").toLowerCase().includes(q) ||
+        (item.email    ?? "").toLowerCase().includes(q);
       return matchesPipeline && matchesSeller && matchesCompany && matchesClient && matchesSearch;
     })
     // Newest leads first — uses Supabase's auto-set created_at
@@ -184,6 +189,10 @@ export function usePipeline() {
     })),
     [activePipelineStages, filteredItemsList]
   );
+
+  const hotLeadsCount = filteredItemsList.filter((l: any) =>
+    (l.temperature === 'quente' || (l.scoreIA ?? 0) >= 80) && l.status !== 'Fechado' && l.status !== 'Perdido'
+  ).length;
 
   const totalValueSum = filteredItemsList.reduce((sum, item) => {
     const ids: string[] = Array.isArray(item.productIds) ? item.productIds : [];
@@ -359,6 +368,7 @@ export function usePipeline() {
     allSellersFullList: sellers.filter((s) => s !== "Todos"),
     filteredItemsList,
     analyticsData,
+    hotLeadsCount,
     formattedTotalValue,
     winRate,
     triggerCelebration,

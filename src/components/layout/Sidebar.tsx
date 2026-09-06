@@ -49,10 +49,16 @@ export function Sidebar({
   const cargoModulos: string[] | null = userCargo && Array.isArray(userCargo.modulos) && userCargo.modulos.length > 0
     ? userCargo.modulos
     : null;
+  const checkModule = (mod: string) => {
+    if (mod === "automotivo" || mod === "concessionaria") return isModuleEnabled("automotivo") || isModuleEnabled("concessionaria");
+    if (mod === "agenda") return isModuleEnabled("agenda") || isModuleEnabled("crm");
+    if (mod === "documentos") return isModuleEnabled("documentos") || isModuleEnabled("crm");
+    return isModuleEnabled(mod);
+  };
   const canAccessModule = (mod: string) => {
-    if (user?.isMaster) return isModuleEnabled(mod);
-    if (!cargoModulos) return isModuleEnabled(mod);
-    return isModuleEnabled(mod) && cargoModulos.includes(mod);
+    if (user?.isMaster) return checkModule(mod);
+    if (!cargoModulos) return checkModule(mod);
+    return checkModule(mod) && cargoModulos.some(m => m === mod || ((mod === "automotivo" || mod === "concessionaria") && (m === "automotivo" || m === "concessionaria")));
   };
 
   return (

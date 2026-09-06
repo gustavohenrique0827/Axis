@@ -4,13 +4,14 @@ import { Button } from "../../components/ui/button";
 import {
   Car, Plus, Search, Gauge, Fuel, Settings2, Calendar, Eye, Edit2, Trash2,
   X, Palette, DollarSign, Grid3x3, List, TrendingUp, Package,
-  ChevronRight, Landmark, ArrowRightLeft, HandCoins, Banknote,
+  ChevronRight, Landmark, ArrowRightLeft, HandCoins, Banknote, Columns3,
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { VeiculoFinanciamentoModal } from "./components/VeiculoFinanciamentoModal";
+import { Link } from "react-router-dom";
 
 type Veiculo = {
   id: string;
@@ -579,9 +580,17 @@ export default function Veiculos() {
       title="Veículos"
       description="Gerencie o estoque completo de veículos disponíveis, reservados e vendidos."
       actions={
-        <Button onClick={() => setShowForm(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
-          <Plus className="w-3.5 h-3.5" /> Novo Veículo
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/app/crm/pipeline?nicho=automotivo"
+            className="h-9 px-3.5 text-xs font-bold gap-1.5 inline-flex items-center rounded-xl bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] hover:border-[var(--color-primary-blue)] text-[var(--color-text-primary)] transition-all"
+          >
+            <Columns3 className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" /> Ver Pipeline CRM
+          </Link>
+          <Button onClick={() => setShowForm(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+            <Plus className="w-3.5 h-3.5" /> Novo Veículo
+          </Button>
+        </div>
       }
     >
       {showForm && <VeiculoFormModal onClose={() => setShowForm(false)} onSave={handleSave} />}

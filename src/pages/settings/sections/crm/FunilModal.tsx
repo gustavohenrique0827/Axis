@@ -26,7 +26,7 @@ export function FunilModal({ funil, onClose, onSave, availableClients }: FunilMo
   const [sdrEtapaHandoff, setSdrEtapaHandoff] = useState(funil?.sdrEtapaHandoff ?? "");
   const [sdrScoreMinimo, setSdrScoreMinimo] = useState(funil?.sdrScoreMinimo ?? 65);
   const [sdrDelayResposta, setSdrDelayResposta] = useState(funil?.sdrDelayResposta ?? 2);
-  const [sdrMsgBoasVindas, setSdrMsgBoasVindas] = useState(funil?.sdrMsgBoasVindas ?? "Olá! Sou a MIA, assistente comercial da S.P.Y.. Poderia me contar um pouco sobre o seu desafio atual?");
+  const [sdrMsgBoasVindas, setSdrMsgBoasVindas] = useState(funil?.sdrMsgBoasVindas ?? "Olá! Sou a Aurora, assistente comercial da S.P.Y.. Poderia me contar um pouco sobre o seu desafio atual?");
   const [sdrCriterioDesqualificacao, setSdrCriterioDesqualificacao] = useState(funil?.sdrCriterioDesqualificacao ?? "sem_interesse");
   const [saving, setSaving] = useState(false);
 
@@ -94,7 +94,7 @@ export function FunilModal({ funil, onClose, onSave, availableClients }: FunilMo
               <Bot className={`w-5 h-5 shrink-0 ${tipo === "sdr_ia" ? "text-blue-400" : "text-slate-600"}`} />
               <div>
                 <div className="text-xs font-black uppercase tracking-tight">SDR IA</div>
-                <div className="text-[10px] text-slate-500 mt-0.5">Qualificação automática pela MIA</div>
+                <div className="text-[10px] text-slate-500 mt-0.5">Qualificação automática pela Aurora</div>
               </div>
             </button>
             <button type="button" onClick={() => setTipo("comercial")}
@@ -167,7 +167,7 @@ export function FunilModal({ funil, onClose, onSave, availableClients }: FunilMo
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className={labelClass}><Zap className="w-3 h-3 inline mr-1 text-blue-400" />Etapa de entrada (MIA atua)</label>
+                <label className={labelClass}><Zap className="w-3 h-3 inline mr-1 text-blue-400" />Etapa de entrada (Aurora atua)</label>
                 <select value={sdrEtapaEntrada} onChange={e => setSdrEtapaEntrada(e.target.value)} className={inputClass}>
                   {etapas.map(e => <option key={e} value={e}>{e}</option>)}
                 </select>
@@ -202,7 +202,7 @@ export function FunilModal({ funil, onClose, onSave, availableClients }: FunilMo
                 </select>
               </div>
               <div className="md:col-span-2">
-                <label className={labelClass}><MessageSquare className="w-3 h-3 inline mr-1 text-cyan-400" />Mensagem de abertura da MIA</label>
+                <label className={labelClass}><MessageSquare className="w-3 h-3 inline mr-1 text-cyan-400" />Mensagem de abertura da Aurora</label>
                 <textarea value={sdrMsgBoasVindas} onChange={e => setSdrMsgBoasVindas(e.target.value)} rows={3} className={inputClass}
                   placeholder="Primeira mensagem enviada ao lead..." />
               </div>

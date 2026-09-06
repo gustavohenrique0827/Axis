@@ -94,7 +94,7 @@ export function SdrReportSection({
                 Relatório de Qualificação SDR
               </h4>
               <span className="text-[10px] text-[var(--color-text-faint)] font-medium block">
-                Motor de Inteligência S.P.Y. MIA-6
+                Motor de Inteligência S.P.Y. Aurora
               </span>
             </div>
           </div>

@@ -11,7 +11,7 @@ export function AlunosInsight() {
       <div className="relative z-10 grid md:grid-cols-2 gap-12 items-center">
         <div>
           <h3 className="text-xs font-black text-blue-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
-            <Star className="w-4 h-4 animate-pulse" /> MIA Edu-Analytics
+            <Star className="w-4 h-4 animate-pulse" /> Aurora Edu-Analytics
           </h3>
           <h4 className="text-2xl font-black text-white italic mb-4 tracking-tighter">Predição de Abandono (Churn Acadêmico)</h4>
           <p className="text-sm text-slate-300 leading-relaxed italic">

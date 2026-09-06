@@ -15,6 +15,8 @@ export default function PerformanceIA() {
     aiRecommendations,
     simulationData,
     runSimulation,
+    currentCAC,
+    currentLTV,
   } = usePerformanceIA();
 
   return (
@@ -27,6 +29,8 @@ export default function PerformanceIA() {
         <PerformanceIAEngineCards
           simulationData={simulationData}
           isSimulating={isSimulating}
+          currentCAC={currentCAC}
+          currentLTV={currentLTV}
         />
 
         {/* What-If Simulator + Recomendações */}

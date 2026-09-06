@@ -27,6 +27,7 @@ type Corretor = {
   bio: string;
   slug: string;
   status: "Ativo" | "Inativo";
+  comissaoPct: number;
 };
 
 
@@ -71,6 +72,7 @@ function CorretorFormModal({ onClose, onSave, initial }: {
     bio: initial?.bio ?? "",
     meta: String(initial?.meta ?? "5"),
     status: initial?.status ?? "Ativo",
+    comissaoPct: String(initial?.comissaoPct ?? "5"),
   });
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
   const isEdit = Boolean(initial?.id);
@@ -113,6 +115,10 @@ function CorretorFormModal({ onClose, onSave, initial }: {
               <label className={LABEL}>Meta Mensal (vendas)</label>
               <input type="number" value={form.meta} onChange={e => set("meta", e.target.value)} placeholder="5" className={FIELD} />
             </div>
+            <div>
+              <label className={LABEL}>Comissão (%)</label>
+              <input type="number" step="0.5" min="0" max="100" value={form.comissaoPct} onChange={e => set("comissaoPct", e.target.value)} placeholder="5" className={FIELD} />
+            </div>
             {isEdit && (
               <div>
                 <label className={LABEL}>Status</label>
@@ -132,7 +138,7 @@ function CorretorFormModal({ onClose, onSave, initial }: {
           <Button
             onClick={() => {
               if (!form.nome.trim()) { toast.error("Nome é obrigatório"); return; }
-              onSave({ ...form, meta: Number(form.meta) || 5 });
+              onSave({ ...form, meta: Number(form.meta) || 5, comissaoPct: Number(form.comissaoPct) || 0 });
               onClose();
             }}
             className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6"
@@ -215,7 +221,7 @@ function CorretorDetailDrawer({ c, idx, onClose, onEdit, onDelete }: {
           <div className="px-6 py-4 border-b border-white/5">
             <div className="flex items-center justify-between mb-2">
               <p className={LABEL}>Meta do Mês</p>
-              <span className="text-xs font-black text-white">R$ {c.vgvMes}M VGV</span>
+              <span className="text-xs font-black text-white">R$ {c.vgvMes.toFixed(1)}M VGV</span>
             </div>
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-[10px] text-slate-500">{c.vendasMes} de {c.meta} vendas</span>
@@ -223,6 +229,12 @@ function CorretorDetailDrawer({ c, idx, onClose, onEdit, onDelete }: {
             </div>
             <div className="h-2 bg-white/5 rounded-full overflow-hidden">
               <div className={`h-full rounded-full ${metaPct >= 100 ? "bg-emerald-500" : metaPct >= 60 ? "bg-amber-500" : "bg-blue-500"}`} style={{ width: `${metaPct}%` }} />
+            </div>
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+              <span className="text-[10px] text-slate-500">Comissão ({c.comissaoPct}%) estimada no mês</span>
+              <span className="text-xs font-black text-emerald-400">
+                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(c.vgvMes * 1_000_000 * (c.comissaoPct / 100))}
+              </span>
             </div>
           </div>
 
@@ -299,16 +311,32 @@ export default function Corretores() {
 
   useEffect(() => {
     if (!supabase) return;
-    supabase.from("imobiliario_corretores").select("*").order("created_at", { ascending: false }).then(({ data }) => {
-      if (data) {
-        setCorretores(data.map(r => ({
+    Promise.all([
+      supabase.from("imobiliario_corretores").select("*").order("created_at", { ascending: false }),
+      supabase.from("imobiliario_imoveis").select("corretor,status,valor,updated_at"),
+    ]).then(([{ data }, { data: imoveis }]) => {
+      if (!data) return;
+      const now = new Date();
+      const normalize = (s: string) => s.trim().toLowerCase();
+
+      setCorretores(data.map(r => {
+        const meus = (imoveis ?? []).filter(im => normalize(im.corretor ?? "") === normalize(r.nome));
+        const vendidos = meus.filter(im => im.status === "Vendido");
+        const vendidosMes = vendidos.filter(im => {
+          const d = new Date(im.updated_at ?? "");
+          return !isNaN(d.getTime()) && d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        });
+        const ativos = meus.filter(im => im.status === "Disponível" || im.status === "Reservado").length;
+        const vgvMesReais = vendidosMes.reduce((s, im) => s + Number(im.valor ?? 0), 0);
+
+        return {
           id: r.id, nome: r.nome, creci: r.creci ?? "", telefone: r.telefone ?? "",
-          email: r.email ?? "", especialidade: r.especialidade, imovisAtivos: r.imoveis_ativos ?? 0,
-          vendasMes: r.vendas_mes ?? 0, totalVendas: r.total_vendas ?? 0, vgvMes: Number(r.vgv_mes ?? 0),
+          email: r.email ?? "", especialidade: r.especialidade, imovisAtivos: ativos,
+          vendasMes: vendidosMes.length, totalVendas: vendidos.length, vgvMes: vgvMesReais / 1_000_000,
           meta: r.meta ?? 5, avaliacao: Number(r.avaliacao ?? 5), bio: r.bio ?? "",
-          slug: r.slug ?? "", status: r.status,
-        })));
-      }
+          slug: r.slug ?? "", status: r.status, comissaoPct: Number(r.comissao_pct ?? 5),
+        };
+      }));
     });
   }, []);
 
@@ -333,7 +361,7 @@ export default function Corretores() {
     setCorretores(prev => [novo, ...prev]);
     toast.success("Corretor cadastrado!");
     if (supabase) {
-      const { error } = await supabase.from("imobiliario_corretores").insert({ nome: form.nome, creci: form.creci, telefone: form.telefone, email: form.email, especialidade: form.especialidade, bio: form.bio, slug, meta: form.meta, id: novo.id });
+      const { error } = await supabase.from("imobiliario_corretores").insert({ nome: form.nome, creci: form.creci, telefone: form.telefone, email: form.email, especialidade: form.especialidade, bio: form.bio, slug, meta: form.meta, comissao_pct: form.comissaoPct, id: novo.id });
       if (error) console.error("[Supabase]", error.message);
     }
   };
@@ -345,7 +373,7 @@ export default function Corretores() {
     if (selectedCorretor?.c.id === editCorretor.id) setSelectedCorretor({ c: updated, idx: selectedCorretor.idx });
     toast.success("Corretor atualizado!");
     if (supabase) {
-      const { error } = await supabase.from("imobiliario_corretores").update({ nome: form.nome, creci: form.creci, telefone: form.telefone, email: form.email, especialidade: form.especialidade, bio: form.bio, meta: form.meta, status: form.status }).eq("id", editCorretor.id);
+      const { error } = await supabase.from("imobiliario_corretores").update({ nome: form.nome, creci: form.creci, telefone: form.telefone, email: form.email, especialidade: form.especialidade, bio: form.bio, meta: form.meta, status: form.status, comissao_pct: form.comissaoPct }).eq("id", editCorretor.id);
       if (error) console.error("[Supabase]", error.message);
     }
     setEditCorretor(null);

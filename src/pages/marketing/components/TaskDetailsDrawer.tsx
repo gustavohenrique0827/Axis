@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card } from '../../../components/ui/card';
 import { Button } from '../../../components/ui/button';
-import { 
-  Calendar, Clock, AlignLeft, FileText, Globe, Zap, 
-  DollarSign, CheckCircle2, Image, MessageSquare, Plus, Sparkles, X 
+import {
+  Calendar, Clock, AlignLeft, FileText, Globe, Zap,
+  Image, Plus, Sparkles, Loader2, Copy, CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { apiFetch } from '../../../lib/apiClient';
 
 interface TaskDetailsDrawerProps {
   selectedTask: any;
@@ -28,6 +29,32 @@ export function TaskDetailsDrawer({
   setActiveTab,
   updateTaskInDatabase
 }: TaskDetailsDrawerProps) {
+  const [checklist, setChecklist] = useState<boolean[]>([false, false, false, false]);
+  const [isGeneratingScript, setIsGeneratingScript] = useState(false);
+  const [generatedScript, setGeneratedScript] = useState("");
+  const [generatedHashtags, setGeneratedHashtags] = useState<string[]>([]);
+
+  const handleGenerateScript = async () => {
+    setIsGeneratingScript(true);
+    try {
+      const res = await apiFetch("/api/ai/content-script", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: selectedTask.title, desc: selectedTask.desc, platform: selectedTask.platform }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Falha ao gerar script.");
+      setGeneratedScript(data.script || "");
+      setGeneratedHashtags(data.hashtags || []);
+      setActiveTab("script");
+      toast.success("Script gerado pela IA!");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao gerar script.");
+    } finally {
+      setIsGeneratingScript(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-6 text-left">
       {/* Dynamic Content Stages Navigation */}
@@ -211,20 +238,27 @@ export function TaskDetailsDrawer({
                   <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Tarefas</h4>
                   <div className="space-y-2">
                      {['Definir briefing', 'Criar roteiro', 'Gravar / Produzir', 'Aprovar'].map((t, i) => (
-                       <div key={i} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors">
-                          <CheckCircle2 className={`w-4 h-4 ${i < 2 ? 'text-emerald-500' : 'text-slate-600'}`} />
-                          <span className={`text-[11px] font-bold ${i < 2 ? 'text-slate-500 line-through' : 'text-slate-300'}`}>{t}</span>
-                       </div>
+                       <button
+                         key={i}
+                         type="button"
+                         onClick={() => setChecklist(prev => prev.map((v, idx) => idx === i ? !v : v))}
+                         className="w-full flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5 cursor-pointer hover:bg-white/10 transition-colors text-left"
+                       >
+                          <CheckCircle2 className={`w-4 h-4 shrink-0 ${checklist[i] ? 'text-emerald-500' : 'text-slate-600'}`} />
+                          <span className={`text-[11px] font-bold ${checklist[i] ? 'text-slate-500 line-through' : 'text-slate-300'}`}>{t}</span>
+                       </button>
                      ))}
                   </div>
                </div>
                <div className="space-y-3">
                   <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Links / Anexos</h4>
                   <div className="flex flex-wrap gap-2">
-                     <button className="w-10 h-10 rounded-xl border border-dashed border-white/10 flex items-center justify-center text-slate-500 hover:text-white hover:border-white/30 transition-all bg-transparent cursor-pointer">
+                     <button
+                       onClick={() => toast.info("Upload de anexos ainda não disponível — em breve.")}
+                       className="w-10 h-10 rounded-xl border border-dashed border-white/10 flex items-center justify-center text-slate-500 hover:text-white hover:border-white/30 transition-all bg-transparent cursor-pointer"
+                     >
                         <Plus className="w-4 h-4" />
                      </button>
-                     <div className="w-10 h-10 rounded-xl bg-slate-800 border border-white/5"></div>
                   </div>
                </div>
              </div>
@@ -235,11 +269,23 @@ export function TaskDetailsDrawer({
           <div className="space-y-4 animate-in fade-in duration-200">
             <div className="flex justify-between items-center">
               <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Editor de Roteiro</h4>
-              <Button variant="ghost" className="h-6 text-[9px] uppercase font-black px-2 hover:bg-white/5 cursor-pointer" onClick={() => toast.success('Copiado para área de transferência!')}>Copiar Tudo</Button>
+              <Button
+                variant="ghost"
+                className="h-6 text-[9px] uppercase font-black px-2 hover:bg-white/5 cursor-pointer gap-1"
+                onClick={() => {
+                  if (!generatedScript) { toast.error("Nada para copiar ainda."); return; }
+                  navigator.clipboard.writeText(generatedScript);
+                  toast.success('Copiado para área de transferência!');
+                }}
+              >
+                <Copy className="w-3 h-3" /> Copiar Tudo
+              </Button>
             </div>
-            <textarea 
+            <textarea
+              value={generatedScript}
+              onChange={(e) => setGeneratedScript(e.target.value)}
               className="w-full bg-white/5 border border-white/5 rounded-2xl p-6 text-slate-300 text-sm leading-relaxed focus:border-blue-500 outline-none transition-all min-h-[300px] shadow-inner font-mono"
-              placeholder="Escreva seu roteiro passo-a-passo aqui..."
+              placeholder="Escreva seu roteiro passo-a-passo aqui, ou gere um com IA na aba Assistente IA..."
             ></textarea>
           </div>
         )}
@@ -248,16 +294,11 @@ export function TaskDetailsDrawer({
           <div className="space-y-6 animate-in fade-in duration-200">
             <h4 className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-500">Referências Externas</h4>
             <div className="space-y-3">
-              <Card className="p-3 bg-white/5 border-white/5 flex items-center gap-3 hover:border-white/20 transition-all rounded-xl">
-                 <div className="w-8 h-8 rounded-lg bg-pink-500/10 flex items-center justify-center text-pink-400">
-                    <Globe className="w-4 h-4" />
-                 </div>
-                 <div className="min-w-0">
-                    <h5 className="text-[11px] font-bold text-white truncate">Referência Instagram #01</h5>
-                    <p className="text-[9px] text-slate-500 truncate">instagram.com/p/C6...</p>
-                 </div>
-              </Card>
-              <Button variant="outline" className="w-full border-dashed border-white/10 h-12 text-[10px] uppercase font-bold text-slate-500 gap-2 hover:bg-white/5 cursor-pointer bg-transparent">
+              <p className="text-[11px] text-slate-500">Nenhuma referência adicionada ainda.</p>
+              <Button
+                onClick={() => toast.info("Anexar links de referência ainda não disponível — em breve.")}
+                variant="outline" className="w-full border-dashed border-white/10 h-12 text-[10px] uppercase font-bold text-slate-500 gap-2 hover:bg-white/5 cursor-pointer bg-transparent"
+              >
                  <Plus className="w-3.5 h-3.5" /> Adicionar Link de Ideia
               </Button>
             </div>
@@ -273,18 +314,27 @@ export function TaskDetailsDrawer({
                      <h4 className="text-[10px] font-black text-white uppercase tracking-widest">CoPilot IA Content</h4>
                   </div>
                   <p className="text-xs text-slate-400 leading-relaxed mb-6">
-                     Posso gerar um roteiro completo de 15, 30 ou 60 segundos otimizado para o algoritmo do <strong>{selectedTask.platform}</strong>.
+                     Gere um roteiro curto otimizado para <strong>{selectedTask.platform}</strong> com base no título e na descrição desta pauta.
                   </p>
-                  <Button className="w-full bg-blue-600 hover:bg-blue-700 h-10 font-bold uppercase text-[10px] tracking-widest cursor-pointer">Gerar Script de Alta Conversão</Button>
+                  <Button
+                    onClick={handleGenerateScript}
+                    disabled={isGeneratingScript}
+                    className="w-full bg-blue-600 hover:bg-blue-700 h-10 font-bold uppercase text-[10px] tracking-widest cursor-pointer disabled:opacity-50 gap-2"
+                  >
+                    {isGeneratingScript ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                    {isGeneratingScript ? "Gerando..." : "Gerar Script de Alta Conversão"}
+                  </Button>
                </div>
             </div>
-            
+
             <Card className="p-4 bg-white/5 border-white/5 rounded-xl">
                <h5 className="text-[9px] font-black text-white uppercase tracking-[0.2em] mb-3 flex gap-2 items-center">
                   <Sparkles className="w-3 h-3 text-yellow-500" /> Hashtags sugeridas
                </h5>
                <p className="text-[11px] text-slate-400 font-mono leading-relaxed">
-                  #MarketingDigital #Growth #CRM #SPYCloud #VendasOnLine
+                  {generatedHashtags.length > 0
+                    ? generatedHashtags.map(h => `#${h}`).join(' ')
+                    : "Gere um script para receber sugestões de hashtags baseadas nesta pauta."}
                </p>
             </Card>
           </div>

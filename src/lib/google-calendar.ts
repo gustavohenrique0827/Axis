@@ -61,6 +61,7 @@ export async function createCalendarEvent(
     startISO: string;
     endISO: string;
     attendeeEmails: string[];
+    location?: string;
     /** true = Sala S.P.Y. (Jitsi link na descrição, sem criar Google Meet) */
     skipConferenceData?: boolean;
   }

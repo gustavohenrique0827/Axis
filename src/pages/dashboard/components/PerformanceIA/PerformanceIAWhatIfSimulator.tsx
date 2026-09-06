@@ -58,27 +58,13 @@ export function PerformanceIAWhatIfSimulator(props: {
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
-
-            <div className="mt-8 grid md:grid-cols-4 gap-4">
-              {["Investimento em Ads", "Taxa de Conversão", "Churn Estimado", "Ticket Médio"].map((label) => (
-                <div key={label} className="p-4 bg-white/5 border border-white/5 rounded-2xl">
-                  <p className="text-[9px] text-slate-500 font-black uppercase mb-3">{label}</p>
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-white">+15%</span>
-                    <div className="h-1 flex-1 mx-3 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-blue-500 w-2/3" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
           </>
         )}
       </Card>
 
       <Card className="p-8 bg-[var(--color-surface-elevated)]/80 border-white/5 h-full flex flex-col">
         <h4 className="text-sm font-black text-white mb-8 uppercase tracking-widest flex items-center gap-3">
-          <Lightbulb className="w-4 h-4 text-amber-500" /> Recomendações MIA
+          <Lightbulb className="w-4 h-4 text-amber-500" /> Recomendações Aurora
         </h4>
 
         {simulationData.length === 0 ? (
@@ -111,8 +97,13 @@ export function PerformanceIAWhatIfSimulator(props: {
           </div>
         )}
 
-        <Button variant="outline" className="w-full mt-8 border-white/5 text-[10px] font-black uppercase tracking-[0.2em] h-12 rounded-2xl hover:bg-white/5">
-          Ver Auditoria Completa
+        <Button
+          onClick={runSimulation}
+          disabled={isSimulating || simulationData.length === 0}
+          variant="outline"
+          className="w-full mt-8 border-white/5 text-[10px] font-black uppercase tracking-[0.2em] h-12 rounded-2xl hover:bg-white/5 disabled:opacity-50"
+        >
+          {isSimulating ? "Executando..." : "Executar Nova Auditoria"}
         </Button>
       </Card>
     </div>

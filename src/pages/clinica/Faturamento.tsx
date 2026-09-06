@@ -29,25 +29,41 @@ export default function FaturamentoClinico() {
   const avgTicket = appointments.length > 0 ? (totalReceived / appointments.length) : 0;
 
   const revenueData = useMemo(() => {
-    const months: Record<string, { faturado: number, recebido: number, glosas: number }> = {};
+    const months: Record<string, { faturado: number, recebido: number, glosas: number, sortKey: string }> = {};
     receivables.forEach(f => {
       try {
         const d = new Date(f.date || '');
         if (isNaN(d.getTime())) return;
+        const sortKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         const month = d.toLocaleDateString('pt-BR', { month: 'short' });
-        
-        if (!months[month]) months[month] = { faturado: 0, recebido: 0, glosas: 0 };
-        
-        months[month].faturado += f.value;
-        if (f.status === 'Pago') months[month].recebido += f.value;
-        if (f.status === 'Atrasado') months[month].glosas += f.value;
+
+        if (!months[sortKey]) months[sortKey] = { faturado: 0, recebido: 0, glosas: 0, sortKey };
+        (months[sortKey] as any).month = month;
+
+        months[sortKey].faturado += f.value;
+        if (f.status === 'Pago') months[sortKey].recebido += f.value;
+        if (f.status === 'Atrasado') months[sortKey].glosas += f.value;
       } catch {}
     });
-    return Object.entries(months).map(([month, data]) => ({
-      month,
-      ...data
-    }));
+    return Object.values(months)
+      .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
+      .map(({ sortKey, ...rest }) => rest as { month: string, faturado: number, recebido: number, glosas: number });
   }, [receivables]);
+
+  const trend = (curr: number, prev: number): string | null => {
+    if (revenueData.length < 2) return null;
+    if (prev === 0) return curr > 0 ? '+100%' : null;
+    const pct = ((curr - prev) / prev) * 100;
+    return `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`;
+  };
+
+  const last = revenueData[revenueData.length - 1];
+  const prevM = revenueData[revenueData.length - 2];
+  const faturadoTrend = last && prevM ? trend(last.faturado, prevM.faturado) : null;
+  const recebidoTrend = last && prevM ? trend(last.recebido, prevM.recebido) : null;
+  const glosaTrend = last && prevM && prevM.faturado > 0 && last.faturado > 0
+    ? trend((last.glosas / last.faturado) * 100, (prevM.glosas / prevM.faturado) * 100)
+    : null;
 
   const insuranceData = useMemo(() => {
     const categories: Record<string, number> = {};
@@ -93,17 +109,25 @@ export default function FaturamentoClinico() {
         {/* Financial KPIs */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: "Faturamento Bruto", value: fmt(totalBilled), trend: "+12%", icon: Landmark, color: "text-[var(--color-primary-blue)]" },
-            { label: "Receita Recebida", value: fmt(totalReceived), trend: "+8.5%", icon: Wallet, color: "text-emerald-500" },
-            { label: "Taxa de Inadimplência", value: glosaRate, trend: "-0.5%", icon: AlertCircle, color: "text-rose-500" },
-            { label: "Ticket Médio por Consulta", value: fmt(avgTicket), trend: "+3%", icon: CreditCard, color: "text-purple-500" },
+            { label: "Faturamento Bruto", value: fmt(totalBilled), trend: faturadoTrend, icon: Landmark, color: "text-[var(--color-primary-blue)]" },
+            { label: "Receita Recebida", value: fmt(totalReceived), trend: recebidoTrend, icon: Wallet, color: "text-emerald-500" },
+            { label: "Taxa de Inadimplência", value: glosaRate, trend: glosaTrend, icon: AlertCircle, color: "text-rose-500" },
+            { label: "Ticket Médio por Consulta", value: fmt(avgTicket), trend: null, icon: CreditCard, color: "text-purple-500" },
           ].map((stat, i) => (
             <Card key={i} className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)]">{stat.label}</span>
                 <stat.icon className={`w-4 h-4 ${stat.color}`} />
               </div>
-              <div className="text-2xl font-black font-mono text-[var(--color-text-primary)]">{stat.value}</div>
+              <div className="flex items-end justify-between gap-2">
+                <div className="text-2xl font-black font-mono text-[var(--color-text-primary)]">{stat.value}</div>
+                {stat.trend && (
+                  <span className={`flex items-center gap-0.5 text-[10px] font-bold mb-1 ${stat.trend.startsWith('-') ? 'text-rose-500' : 'text-emerald-500'}`}>
+                    {stat.trend.startsWith('-') ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
+                    {stat.trend} <span className="text-[var(--color-text-faint)] font-medium">vs mês ant.</span>
+                  </span>
+                )}
+              </div>
             </Card>
           ))}
         </div>

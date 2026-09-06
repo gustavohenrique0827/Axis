@@ -26,11 +26,10 @@ export function SDRWebhookModal({ isOpen, onClose }: SDRWebhookModalProps) {
     setStatus("idle");
 
     try {
-      // Mocking Axios POST request
       const payload = {
         event: "sdr_funnel_test",
         timestamp: new Date().toISOString(),
-        robot: "MIA-6",
+        robot: "Aurora",
         data: {
           message: "SPY_CORE_SYSTEMS_PING",
         }
@@ -43,21 +42,12 @@ export function SDRWebhookModal({ isOpen, onClose }: SDRWebhookModalProps) {
         headers["Authorization"] = `Bearer ${secretAuth}`;
       }
 
-      // Simulate a network request via Axios
-      // In production/sandbox, we might hit a CORS error if not careful,
-      // so we try-catch it and ignore network disconnects for the sake of UI interactivity.
-      try {
-         await axios.post(endpoint, payload, { headers, timeout: 5000 });
-      } catch (err: any) {
-         // Silently handle actual network failure for preview but pretend it works if they type mocky etc
-         // or we can strictly use the response
-         console.warn("Axios Webhook call:", err.message);
-      }
-      
-      toast.success("Ping enviado! (Webhook validado virtualmente)");
+      await axios.post(endpoint, payload, { headers, timeout: 8000 });
+
+      toast.success("Ping enviado! O endpoint respondeu com sucesso.");
       setStatus("success");
     } catch (e: any) {
-      toast.error(`Falha no Ping: ${e.message}`);
+      toast.error(`Falha no Ping: ${e.response?.status ? `HTTP ${e.response.status}` : e.message}`);
       setStatus("error");
     } finally {
       setTesting(false);
@@ -83,7 +73,7 @@ export function SDRWebhookModal({ isOpen, onClose }: SDRWebhookModalProps) {
       <div className="space-y-6">
         <div className="bg-[#0f172a] p-4 rounded-xl border border-blue-500/20">
           <p className="text-xs text-slate-300 leading-relaxed mb-0">
-            Conecte o MIA-6 ao seu <strong>CRM</strong>, <strong>N8N</strong>, <strong>Make</strong> ou <strong>RD Station</strong>. 
+            Conecte a Aurora ao seu <strong>CRM</strong>, <strong>N8N</strong>, <strong>Make</strong> ou <strong>RD Station</strong>.
             Todas as conversões de leads ou análises de pipeline dispararão um POST usando `axios` com os dados JSON.
           </p>
         </div>
@@ -118,7 +108,7 @@ export function SDRWebhookModal({ isOpen, onClose }: SDRWebhookModalProps) {
         {status === "success" && (
           <div className="bg-emerald-900/30 text-emerald-400 border border-emerald-500/50 p-3 rounded-lg flex items-center gap-2">
             <ShieldCheck className="w-4 h-4" />
-            <span className="text-xs font-medium">Conexão verificada. O endpoint está respondendo (simulação).</span>
+            <span className="text-xs font-medium">Conexão verificada. O endpoint respondeu com sucesso ao ping real.</span>
           </div>
         )}
 

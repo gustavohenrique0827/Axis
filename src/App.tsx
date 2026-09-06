@@ -10,6 +10,7 @@ import PerformanceIA from "./pages/dashboard/PerformanceIA";
 import PainelGeral from "./pages/clinica/PainelGeral";
 import AgendaMedica from "./pages/clinica/AgendaMedica";
 import AnaliseFatura from "./pages/solar/AnaliseFatura";
+import PainelSolar from "./pages/solar/PainelSolar";
 import Prontuarios from "./pages/clinica/Prontuarios";
 import Faturamento from "./pages/clinica/Faturamento";
 import Estoque from "./pages/clinica/Estoque";
@@ -24,11 +25,16 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import Pipeline from "./pages/crm/Pipeline";
 import Clientes from "./pages/crm/Clientes";
 import AgendaCRM from "./pages/crm/AgendaCRM";
+import Contatos from "./pages/crm/Contatos";
+import Empresas from "./pages/crm/Empresas";
+import Oportunidades from "./pages/crm/Oportunidades";
+import Atividades from "./pages/crm/Atividades";
+import FollowUps from "./pages/crm/FollowUps";
+import CRMImportacao from "./pages/crm/Importacao";
 import Tarefas from "./pages/operative/Tarefas";
 import Produtos from "./pages/operative/Produtos";
 import Indicadores from "./pages/operative/Indicadores";
-import Equipe from "./pages/operative/Equipe";
-
+import RelatoriosExecutivos from "./pages/crm/RelatoriosExecutivos";
 import Contracts from "./pages/crm/Contracts";
 import Messaging from "./pages/crm/Messaging";
 import Automations from "./pages/marketing/Automations";
@@ -39,8 +45,20 @@ import FinanceiroLayout from "./pages/finance/FinanceiroLayout";
 import FinanceiroVisaoGeral from "./pages/finance/FinanceiroVisaoGeral";
 import FinanceiroReceber from "./pages/finance/FinanceiroReceber";
 import FinanceiroPagar from "./pages/finance/FinanceiroPagar";
+import FinanceiroReceitas from "./pages/finance/FinanceiroReceitas";
+import FinanceiroDespesas from "./pages/finance/FinanceiroDespesas";
+import FinanceiroFluxoCaixa from "./pages/finance/FinanceiroFluxoCaixa";
+import FinanceiroTransacoes from "./pages/finance/FinanceiroTransacoes";
+import FinanceiroCobrancas from "./pages/finance/FinanceiroCobrancas";
+import FinanceiroConciliacao from "./pages/finance/FinanceiroConciliacao";
+import FinanceiroCentrosCusto from "./pages/finance/FinanceiroCentrosCusto";
 import FinanceiroDRE from "./pages/finance/FinanceiroDRE";
 import Indicacoes from "./pages/finance/Indicacoes";
+
+import Calendario from "./pages/agenda/Calendario";
+import Eventos from "./pages/agenda/Eventos";
+import Disponibilidade from "./pages/agenda/Disponibilidade";
+import AgendaConfiguracoes from "./pages/agenda/AgendaConfiguracoes";
 
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import ConfigEmpresaDados from "./pages/settings/ConfigEmpresaDados";
@@ -94,12 +112,38 @@ import MarketingFormularios from "./pages/marketing/MarketingFormularios";
 import RHColaboradores from "./pages/hr/RHColaboradores";
 import ReunioesList from "./pages/reunioes/index";
 import ReuniaoRoom from "./pages/reunioes/ReuniaoRoom";
+
 import ImobiliarioPainel from "./pages/imobiliario/PainelGeral";
 import ImobiliariosImoveis from "./pages/imobiliario/Imoveis";
 import ImobiliariosVeiculos from "./pages/imobiliario/Veiculos";
 import ImobiliariosCorretores from "./pages/imobiliario/Corretores";
 import ImobiliariosVisitas from "./pages/imobiliario/Visitas";
-import ImobiliariosPipeline from "./pages/imobiliario/Pipeline";
+import Proprietarios from "./pages/imobiliario/Proprietarios";
+import Captacoes from "./pages/imobiliario/Captacoes";
+import Empreendimentos from "./pages/imobiliario/Empreendimentos";
+import ImobiliarioComissoes from "./pages/imobiliario/ImobiliarioComissoes";
+
+import ProjetosSolar from "./pages/solar/ProjetosSolar";
+import VistoriasSolar from "./pages/solar/VistoriasSolar";
+import InstalacoesSolar from "./pages/solar/InstalacoesSolar";
+import HomologacoesSolar from "./pages/solar/HomologacoesSolar";
+import ManutencoesSolar from "./pages/solar/ManutencoesSolar";
+
+import PainelAutomotivo from "./pages/automotivo/PainelAutomotivo";
+import AvaliacoesVeiculos from "./pages/automotivo/AvaliacoesVeiculos";
+import ConsignacoesVeiculos from "./pages/automotivo/ConsignacoesVeiculos";
+import TrocasVeiculos from "./pages/automotivo/TrocasVeiculos";
+import TestDrives from "./pages/automotivo/TestDrives";
+
+import PainelVarejo from "./pages/varejo/PainelVarejo";
+import FornecedoresVarejo from "./pages/varejo/FornecedoresVarejo";
+import ComprasVarejo from "./pages/varejo/ComprasVarejo";
+import PedidosVarejo from "./pages/varejo/PedidosVarejo";
+
+import ProfissionaisClinica from "./pages/clinica/ProfissionaisClinica";
+import ServicosClinica from "./pages/clinica/ServicosClinica";
+import PlanosTratamento from "./pages/clinica/PlanosTratamento";
+
 import PortfolioCorretor from "./pages/imobiliario/PortfolioCorretor";
 import ImovelPublico from "./pages/imobiliario/ImovelPublico";
 import PropostaPublica from "./pages/public/PropostaPublica";
@@ -164,51 +208,51 @@ function AppContent() {
         }>
           <Route index element={<Navigate to="/app/dashboard" />} />
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="leads" element={<Navigate to="/app/pipeline" replace />} />
-          <Route path="pipeline" element={<Pipeline />} />
-          <Route path="crm/agenda" element={<AgendaCRM />} />
-          <Route path="agenda" element={<Navigate to="/app/crm/agenda" replace />} />
+          <Route path="leads" element={<Navigate to="/app/crm/pipeline" replace />} />
+          <Route path="pipeline" element={<Navigate to="/app/crm/pipeline" replace />} />
+          <Route path="clientes" element={<Navigate to="/app/crm/clientes" replace />} />
+          <Route path="propostas" element={<Navigate to="/app/crm/propostas" replace />} />
+          <Route path="documentos" element={<Contracts />} />
           <Route path="performance-ia" element={<PerformanceIA />} />
-          <Route path="clinica">
-            <Route index element={<Navigate to="painel" replace />} />
-            <Route path="painel" element={<PainelGeral />} />
-            <Route path="agenda" element={<AgendaMedica />} />
-            <Route path="pacientes" element={<Pacientes />} />
-            <Route path="prontuarios" element={<Prontuarios />} />
-            <Route path="faturamento" element={<Faturamento />} />
-            <Route path="estoque" element={<Estoque />} />
-            <Route path="telemedicina" element={<Telemedicina />} />
-            <Route path="exames" element={<Exames />} />
-            <Route path="bi" element={<EstatisticasClinicas />} />
-          </Route>
-          <Route path="clientes" element={<Clientes />} />
 
-          <Route path="solar">
-            <Route index element={<Navigate to="analise-fatura" replace />} />
-            <Route path="analise-fatura" element={<AnaliseFatura />} />
-          </Route>
-
-          <Route path="varejo">
-            <Route index element={<Navigate to="vendas" replace />} />
-            <Route path="vendas" element={<VarejoVendas />} />
-            <Route path="estoque" element={<VarejoEstoque />} />
+          {/* Módulo CRM (Núcleo Central do S.P.Y.) */}
+          <Route path="crm">
+            <Route index element={<Navigate to="pipeline" replace />} />
+            <Route path="pipeline" element={<Pipeline />} />
+            <Route path="contatos" element={<Contatos />} />
+            <Route path="clientes" element={<Clientes />} />
+            <Route path="empresas" element={<Empresas />} />
+            <Route path="oportunidades" element={<Oportunidades />} />
+            <Route path="propostas" element={<Propostas />} />
+            <Route path="contratos" element={<Contracts />} />
+            <Route path="atividades" element={<Atividades />} />
+            <Route path="follow-ups" element={<FollowUps />} />
+            <Route path="importacao" element={<CRMImportacao />} />
+            <Route path="dashboard" element={<CommercialDashboard />} />
+            <Route path="agenda" element={<AgendaCRM />} />
           </Route>
 
-          <Route path="propostas" element={<Propostas />} />
+          {/* Módulo Agenda (Compartilhada entre módulos) */}
+          <Route path="agenda">
+            <Route index element={<Navigate to="calendario" replace />} />
+            <Route path="calendario" element={<Calendario />} />
+            <Route path="eventos" element={<Eventos />} />
+            <Route path="disponibilidade" element={<Disponibilidade />} />
+            <Route path="configuracoes" element={<AgendaConfiguracoes />} />
+          </Route>
 
+          {/* Operações & Tarefas */}
           <Route path="tarefas" element={<Tarefas />} />
           <Route path="produtos" element={<Produtos />} />
 
-          <Route path="educacao">
-            <Route index element={<Navigate to="painel" replace />} />
-            <Route path="painel" element={<PainelGeralEdu />} />
-            <Route path="turmas" element={<EducationTurmas />} />
-            <Route path="alunos" element={<AlunosEdu />} />
-            <Route path="conteudo" element={<EducationConteudo />} />
-            <Route path="certificados" element={<EducationCertificados />} />
-            <Route path="mensalidades" element={<EducationMensalidades />} />
-          </Route>
+          {/* Inteligência & BI */}
+          <Route path="indicadores" element={<Indicadores />} />
+          <Route path="relatorios" element={<RelatoriosExecutivos />} />
+          <Route path="equipe" element={<RHColaboradores />} />
 
+          {/* Comunicação & Marketing */}
+          <Route path="mensageria" element={<Messaging />} />
+          <Route path="automacoes" element={<MarketingAutomacoes />} />
           <Route path="marketing">
             <Route index element={<Navigate to="conteudo" replace />} />
             <Route path="conteudo" element={<MarketingConteudo />} />
@@ -220,23 +264,143 @@ function AppContent() {
             <Route path="formularios" element={<MarketingFormularios />} />
           </Route>
 
-          <Route path="mensageria" element={<Messaging />} />
-          <Route path="automacoes" element={<MarketingAutomacoes />} />
-
-          <Route path="indicadores" element={<Indicadores />} />
-          <Route path="relatorios" element={<Indicadores />} /> {/* Reutlizando Indicadores */}
-          <Route path="equipe" element={<RHColaboradores />} />
-
-          {/* Financeiro Layout & Nested Routes */}
+          {/* Módulo Financeiro */}
           <Route path="financeiro" element={<FinanceiroLayout />}>
             <Route index element={<FinanceiroVisaoGeral />} />
-            <Route path="faturas" element={<Contracts />} /> {/* Resuing contracts view for demo */}
+            <Route path="visao-geral" element={<FinanceiroVisaoGeral />} />
             <Route path="receber" element={<FinanceiroReceber />} />
             <Route path="pagar" element={<FinanceiroPagar />} />
+            <Route path="receitas" element={<FinanceiroReceitas />} />
+            <Route path="despesas" element={<FinanceiroDespesas />} />
+            <Route path="fluxo-caixa" element={<FinanceiroFluxoCaixa />} />
+            <Route path="transacoes" element={<FinanceiroTransacoes />} />
+            <Route path="cobrancas" element={<FinanceiroCobrancas />} />
+            <Route path="conciliacao" element={<FinanceiroConciliacao />} />
+            <Route path="centros-custo" element={<FinanceiroCentrosCusto />} />
             <Route path="dre" element={<FinanceiroDRE />} />
             <Route path="indicacoes" element={<Indicacoes />} />
+            <Route path="faturas" element={<Contracts />} />
             <Route path="categorias" element={<SettingsGenericForm />} />
             <Route path="*" element={<GenericPlaceholder />} />
+          </Route>
+
+          {/* Verticais de Nicho: Imobiliário */}
+          <Route path="imobiliario">
+            <Route index element={<Navigate to="painel" replace />} />
+            <Route path="painel" element={<ImobiliarioPainel />} />
+            <Route path="imoveis" element={<ImobiliariosImoveis />} />
+            <Route path="proprietarios" element={<Proprietarios />} />
+            <Route path="captacoes" element={<Captacoes />} />
+            <Route path="empreendimentos" element={<Empreendimentos />} />
+            <Route path="corretores" element={<ImobiliariosCorretores />} />
+            <Route path="visitas" element={<ImobiliariosVisitas />} />
+            <Route path="comissoes" element={<ImobiliarioComissoes />} />
+            <Route path="veiculos" element={<Navigate to="/app/automotivo/veiculos" replace />} />
+            <Route path="pipeline" element={<Navigate to="/app/crm/pipeline?nicho=imobiliario" replace />} />
+            <Route path="leads" element={<Navigate to="/app/crm/pipeline?nicho=imobiliario" replace />} />
+          </Route>
+
+          {/* Verticais de Nicho: Energia Solar */}
+          <Route path="energia-solar">
+            <Route index element={<Navigate to="painel" replace />} />
+            <Route path="painel" element={<PainelSolar />} />
+            <Route path="projetos" element={<ProjetosSolar />} />
+            <Route path="analise-fatura" element={<AnaliseFatura />} />
+            <Route path="vistorias" element={<VistoriasSolar />} />
+            <Route path="instalacoes" element={<InstalacoesSolar />} />
+            <Route path="homologacoes" element={<HomologacoesSolar />} />
+            <Route path="manutencoes" element={<ManutencoesSolar />} />
+          </Route>
+          {/* Alias legado /solar */}
+          <Route path="solar">
+            <Route index element={<Navigate to="/app/energia-solar/painel" replace />} />
+            <Route path="painel" element={<PainelSolar />} />
+            <Route path="projetos" element={<ProjetosSolar />} />
+            <Route path="analise-fatura" element={<AnaliseFatura />} />
+            <Route path="vistorias" element={<VistoriasSolar />} />
+            <Route path="instalacoes" element={<InstalacoesSolar />} />
+            <Route path="homologacoes" element={<HomologacoesSolar />} />
+            <Route path="manutencoes" element={<ManutencoesSolar />} />
+          </Route>
+
+          {/* Verticais de Nicho: Automotivo */}
+          <Route path="automotivo">
+            <Route index element={<Navigate to="painel" replace />} />
+            <Route path="painel" element={<PainelAutomotivo />} />
+            <Route path="veiculos" element={<ImobiliariosVeiculos />} />
+            <Route path="avaliacoes" element={<AvaliacoesVeiculos />} />
+            <Route path="consignacoes" element={<ConsignacoesVeiculos />} />
+            <Route path="trocas" element={<TrocasVeiculos />} />
+            <Route path="test-drives" element={<TestDrives />} />
+            <Route path="corretores" element={<ImobiliariosCorretores />} />
+            <Route path="visitas" element={<ImobiliariosVisitas />} />
+          </Route>
+          {/* Alias legado /concessionaria */}
+          <Route path="concessionaria">
+            <Route index element={<Navigate to="/app/automotivo/painel" replace />} />
+            <Route path="painel" element={<PainelAutomotivo />} />
+            <Route path="veiculos" element={<ImobiliariosVeiculos />} />
+            <Route path="avaliacoes" element={<AvaliacoesVeiculos />} />
+            <Route path="consignacoes" element={<ConsignacoesVeiculos />} />
+            <Route path="trocas" element={<TrocasVeiculos />} />
+            <Route path="test-drives" element={<TestDrives />} />
+            <Route path="corretores" element={<ImobiliariosCorretores />} />
+            <Route path="visitas" element={<ImobiliariosVisitas />} />
+          </Route>
+
+          {/* Verticais de Nicho: Varejo */}
+          <Route path="varejo">
+            <Route index element={<Navigate to="painel" replace />} />
+            <Route path="painel" element={<PainelVarejo />} />
+            <Route path="vendas" element={<VarejoVendas />} />
+            <Route path="pedidos" element={<PedidosVarejo />} />
+            <Route path="estoque" element={<VarejoEstoque />} />
+            <Route path="compras" element={<ComprasVarejo />} />
+            <Route path="fornecedores" element={<FornecedoresVarejo />} />
+          </Route>
+
+          {/* Verticais de Nicho: Clínicas */}
+          <Route path="clinicas">
+            <Route index element={<Navigate to="painel" replace />} />
+            <Route path="painel" element={<PainelGeral />} />
+            <Route path="agenda" element={<AgendaMedica />} />
+            <Route path="profissionais" element={<ProfissionaisClinica />} />
+            <Route path="servicos" element={<ServicosClinica />} />
+            <Route path="tratamentos" element={<PlanosTratamento />} />
+            <Route path="pacientes" element={<Pacientes />} />
+            <Route path="prontuarios" element={<Prontuarios />} />
+            <Route path="faturamento" element={<Faturamento />} />
+            <Route path="estoque" element={<Estoque />} />
+            <Route path="telemedicina" element={<Telemedicina />} />
+            <Route path="exames" element={<Exames />} />
+            <Route path="bi" element={<EstatisticasClinicas />} />
+          </Route>
+          {/* Alias legado /clinica */}
+          <Route path="clinica">
+            <Route index element={<Navigate to="/app/clinicas/painel" replace />} />
+            <Route path="painel" element={<PainelGeral />} />
+            <Route path="agenda" element={<AgendaMedica />} />
+            <Route path="profissionais" element={<ProfissionaisClinica />} />
+            <Route path="servicos" element={<ServicosClinica />} />
+            <Route path="tratamentos" element={<PlanosTratamento />} />
+            <Route path="pacientes" element={<Pacientes />} />
+            <Route path="prontuarios" element={<Prontuarios />} />
+            <Route path="faturamento" element={<Faturamento />} />
+            <Route path="estoque" element={<Estoque />} />
+            <Route path="telemedicina" element={<Telemedicina />} />
+            <Route path="exames" element={<Exames />} />
+            <Route path="bi" element={<EstatisticasClinicas />} />
+          </Route>
+
+          {/* Verticais de Nicho: Educação */}
+          <Route path="educacao">
+            <Route index element={<Navigate to="painel" replace />} />
+            <Route path="painel" element={<PainelGeralEdu />} />
+            <Route path="turmas" element={<EducationTurmas />} />
+            <Route path="alunos" element={<AlunosEdu />} />
+            <Route path="conteudo" element={<EducationConteudo />} />
+            <Route path="certificados" element={<EducationCertificados />} />
+            <Route path="mensalidades" element={<EducationMensalidades />} />
           </Route>
 
           {/* Configurações Layout & Nested Routes */}
@@ -290,19 +454,6 @@ function AppContent() {
             <Route path="repositorios" element={<RepositoriosDev />} />
             <Route path="ambientes" element={<AmbientesDev />} />
             <Route path="projetos/:projectId" element={<ProjetoDetalhesDev />} />
-
-          </Route>
-
-          {/* Módulo Imobiliário & Concessionárias */}
-          <Route path="imobiliario">
-            <Route index element={<Navigate to="painel" replace />} />
-            <Route path="painel" element={<ImobiliarioPainel />} />
-            <Route path="pipeline" element={<ImobiliariosPipeline />} />
-            <Route path="imoveis" element={<ImobiliariosImoveis />} />
-            <Route path="veiculos" element={<ImobiliariosVeiculos />} />
-            <Route path="corretores" element={<ImobiliariosCorretores />} />
-            <Route path="leads" element={<Navigate to="/app/imobiliario/pipeline" replace />} />
-            <Route path="visitas" element={<ImobiliariosVisitas />} />
           </Route>
 
           <Route path="reunioes">

@@ -118,6 +118,8 @@ export function usePerformanceIA() {
     aiRecommendations,
     simulationData,
     runSimulation,
+    currentCAC,
+    currentLTV,
   };
 }
 

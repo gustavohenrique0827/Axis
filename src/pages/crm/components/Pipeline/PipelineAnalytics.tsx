@@ -9,12 +9,14 @@ interface PipelineAnalyticsProps {
   showAnalytics: boolean;
   analyticsData: any[];
   exportPDF: () => void;
+  hotLeadsCount: number;
 }
 
 export function PipelineAnalytics({
   showAnalytics,
   analyticsData,
-  exportPDF
+  exportPDF,
+  hotLeadsCount,
 }: PipelineAnalyticsProps) {
   if (!showAnalytics) return null;
 
@@ -45,8 +47,12 @@ export function PipelineAnalytics({
             <Download className="w-4 h-4" /> Exportar PDF Completo
           </Button>
           <div className="p-3 bg-[var(--color-primary-blue)]/5 rounded-[var(--radius-control)] border border-[var(--color-primary-blue)]/10">
-             <p className="text-[9px] text-[var(--color-primary-blue)] font-bold uppercase mb-1">Previsão IA</p>
-             <p className="text-xs text-[var(--color-text-muted)] font-medium">Alta probabilidade de fechamento nas próximas 48h para 3 leads.</p>
+             <p className="text-[9px] text-[var(--color-primary-blue)] font-bold uppercase mb-1">Leads Quentes</p>
+             <p className="text-xs text-[var(--color-text-muted)] font-medium">
+               {hotLeadsCount > 0
+                 ? `${hotLeadsCount} lead(s) com Score IA ≥ 80 ou temperatura quente, ainda em aberto.`
+                 : "Nenhum lead com Score IA ≥ 80 em aberto no momento."}
+             </p>
           </div>
         </div>
       </Card>

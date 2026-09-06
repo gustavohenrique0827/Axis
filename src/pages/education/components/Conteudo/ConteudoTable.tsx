@@ -1,6 +1,6 @@
 import { Card } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
-import { FileText, Video, HelpCircle, MoreVertical } from "lucide-react";
+import { FileText, Video, HelpCircle, Clock } from "lucide-react";
 
 interface ContentItem {
   id: string;
@@ -29,7 +29,7 @@ export function ConteudoTable({ items, onEdit }: ConteudoTableProps) {
               <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest pl-10">Material Educacional</th>
               <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Curso / Módulo</th>
               <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Tipo</th>
-              <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Performance</th>
+              <th className="text-left p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest text-center">Duração</th>
               <th className="text-right p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest pr-10">Status</th>
             </tr>
           </thead>
@@ -57,29 +57,19 @@ export function ConteudoTable({ items, onEdit }: ConteudoTableProps) {
                   </Badge>
                 </td>
                 <td className="p-6">
-                  <div className="flex flex-col items-center gap-1.5">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-black text-white font-mono">{item.accessCount}</span>
-                      <span className="text-[9px] text-slate-600 font-bold uppercase tracking-tighter italic">Views</span>
-                    </div>
-                    <div className="h-1 w-20 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-blue-500" style={{ width: `${Math.min(100, (item.accessCount / 500) * 100)}%` }} />
-                    </div>
+                  <div className="flex items-center justify-center gap-1.5 text-slate-400">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span className="text-[10px] font-black text-white font-mono">{item.duration || "—"}</span>
                   </div>
                 </td>
                 <td className="p-6 pr-10 text-right">
-                  <div className="flex items-center justify-end gap-3">
-                    <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border ${
-                      item.status === "Publicado" ? "bg-emerald-500/5 text-emerald-400 border-emerald-500/20" :
-                      item.status === "Em Revisão" ? "bg-amber-500/5 text-amber-400 border-amber-500/20" :
-                      "bg-slate-500/5 text-slate-500 border-white/5"
-                    }`}>
-                      {item.status}
-                    </span>
-                    <button className="p-2 bg-white/[0.03] hover:bg-white/5 rounded-lg text-slate-600 hover:text-white transition-colors">
-                      <MoreVertical className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <span className={`text-[9px] font-black uppercase px-2.5 py-1 rounded-lg border ${
+                    item.status === "Publicado" ? "bg-emerald-500/5 text-emerald-400 border-emerald-500/20" :
+                    item.status === "Em Revisão" ? "bg-amber-500/5 text-amber-400 border-amber-500/20" :
+                    "bg-slate-500/5 text-slate-500 border-white/5"
+                  }`}>
+                    {item.status}
+                  </span>
                 </td>
               </tr>
             ))}

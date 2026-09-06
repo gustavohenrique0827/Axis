@@ -4,6 +4,7 @@ import { Button } from "../../button";
 import {
   Calendar, Clock, User, FileText, Video,
   Copy, Building2, Users, Loader2, CheckCircle2, ExternalLink, MessageCircle,
+  MapPin, Plus, X,
 } from "lucide-react";
 import { generateJitsiLink } from "../../JitsiEmbed";
 import { createCalendarEvent } from "../../../../lib/google-calendar";
@@ -28,31 +29,42 @@ interface NovaReuniaoModalProps {
 
 export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
   const { colaboradores, leads, addReuniao } = useData();
-  const { activeTenantId } = useAuth();
+  const { activeTenantId, user } = useAuth();
   const navigate = useNavigate();
 
   const [meetingType, setMeetingType] = useState<MeetingType>("cliente");
+  const [formato, setFormato]         = useState<"axis" | "presencial">("axis");
+  const [localEndereco, setLocalEndereco] = useState("");
   const [title, setTitle]             = useState("");
   const [pauta, setPauta]             = useState("");
-  const [closerName, setCloserName]   = useState("");
+  const [closerName, setCloserName]   = useState(user?.name || "");
   const [date, setDate]               = useState(() => new Date().toISOString().slice(0, 10));
   const [time, setTime]               = useState("09:00");
   const [duration, setDuration]       = useState(60);
+
+  // Convidados adicionais
+  const [convidados, setConvidados]   = useState<string[]>([]);
+  const [novoConvidado, setNovoConvidado] = useState("");
 
   // For "cliente" type, optionally link a lead
   const [linkedLeadId, setLinkedLeadId] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [created, setCreated] = useState<{ id: string; meetLink: string; calendarLink?: string } | null>(null);
+  const [created, setCreated] = useState<{ id: string; meetLink: string; calendarLink?: string; isPresencial?: boolean; localEndereco?: string } | null>(null);
 
   const closerOptions: { name: string; email: string }[] = (() => {
-    const fromColab = (colaboradores as any[])
+    let fromColab = (colaboradores as any[])
       .filter((c: any) => c.status !== "Desligado")
       .map((c: any) => ({ name: c.nome || c.name || "", email: c.email || "" }))
       .filter((c) => c.name);
-    if (fromColab.length > 0) return fromColab;
-    const sellers = [...new Set((leads as any[]).map((l: any) => l.seller).filter(Boolean))] as string[];
-    return sellers.map((s) => ({ name: s, email: "" }));
+    if (fromColab.length === 0) {
+      const sellers = [...new Set((leads as any[]).map((l: any) => l.seller).filter(Boolean))] as string[];
+      fromColab = (sellers as string[]).map((s) => ({ name: s, email: "" }));
+    }
+    if (user?.name && !fromColab.some((c) => c.name === user.name)) {
+      fromColab = [{ name: user.name, email: user.email || "" }, ...fromColab];
+    }
+    return fromColab;
   })();
 
   const closerEmail = closerOptions.find((c) => c.name === closerName)?.email ?? "";
@@ -61,13 +73,33 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
     ? (leads as any[]).find((l) => l.id === linkedLeadId)
     : null;
 
+  const handleAddConvidado = (emailToAdd?: string) => {
+    const val = (emailToAdd || novoConvidado).trim().toLowerCase();
+    if (!val) return;
+    if (!convidados.includes(val)) {
+      setConvidados((prev) => [...prev, val]);
+    }
+    setNovoConvidado("");
+  };
+
+  const handleRemoveConvidado = (email: string) => {
+    setConvidados((prev) => prev.filter((c) => c !== email));
+  };
+
   const handleCreate = async () => {
     if (!closerName.trim()) { toast.error("Selecione o responsável."); return; }
+    if (formato === "presencial" && !localEndereco.trim()) {
+      toast.error("Informe o local ou endereço da reunião presencial.");
+      return;
+    }
 
     setLoading(true);
     try {
       const reuniaoId   = `r${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-      const meetLink    = generateJitsiLink(reuniaoId);
+      const isPresencial = formato === "presencial";
+      const meetLink    = isPresencial
+        ? (localEndereco.trim() ? `Presencial: ${localEndereco.trim()}` : "Presencial (Local a combinar)")
+        : generateJitsiLink(reuniaoId);
       const scheduledAt = new Date(`${date}T${time}:00`).toISOString();
 
       const displayTitle = title.trim() || (
@@ -78,6 +110,8 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
           : "Reunião Interna"
       );
 
+      const allAttendees = Array.from(new Set([linkedLead?.email, closerEmail, ...convidados].filter(Boolean))) as string[];
+
       (addReuniao as any)({
         id: reuniaoId,
         leadId:       linkedLead?.id   ?? `standalone-${reuniaoId}`,
@@ -87,47 +121,53 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
         leadEmail:    linkedLead?.email ?? "",
         closerName,
         closerEmail,
+        convidados:   convidados.length > 0 ? convidados : undefined,
         scheduledAt,
         durationMinutes: duration,
         meetLink,
         status:  "Agendada",
         pauta:   pauta.trim() || undefined,
+        tipo:    isPresencial ? "presencial" : "online",
+        local:   isPresencial ? localEndereco.trim() : undefined,
         relatorio: undefined,
         createdAt: new Date().toISOString(),
       });
 
-      // Tenta criar evento no Google Calendar com link Jitsi na descrição —
-      // opcional: se o tenant/usuário atual não tiver Google conectado, o
-      // backend responde google_calendar_not_connected e seguimos sem o
-      // convite (a sala S.P.Y. já foi criada com sucesso de qualquer jeito).
       let calendarLink: string | undefined;
       if (activeTenantId) {
         try {
           const startISO = `${date}T${time}:00`;
           const endDate  = new Date(`${date}T${time}:00`);
           endDate.setMinutes(endDate.getMinutes() + duration);
-          const attendees = [linkedLead?.email, closerEmail].filter(Boolean) as string[];
           const calEvent = await createCalendarEvent(activeTenantId, {
-            title: displayTitle,
+            title: isPresencial ? `Reunião Presencial — ${displayTitle}` : displayTitle,
             description: [
-              "🖥️ Sala de vídeo S.P.Y. (Jitsi)",
-              `🔗 Acesse: ${meetLink}`,
-              "Nenhum app necessário — funciona direto no navegador.",
+              isPresencial ? "📍 Reunião Presencial" : "🖥️ Sala de vídeo S.P.Y. (Jitsi)",
+              isPresencial ? `🏢 Local: ${localEndereco.trim()}` : `🔗 Acesse: ${meetLink}`,
+              !isPresencial ? "Nenhum app necessário — funciona direto no navegador." : "",
+              closerName ? `👤 Responsável: ${closerName}` : "",
+              convidados.length > 0 ? `👥 Outros Participantes: ${convidados.join(", ")}` : "",
               pauta ? `\n📋 Pauta:\n${pauta}` : "",
             ].filter(Boolean).join("\n"),
+            location: isPresencial ? localEndereco.trim() : undefined,
             startISO,
             endISO: endDate.toISOString().slice(0, 19),
-            attendeeEmails: attendees,
+            attendeeEmails: allAttendees,
             skipConferenceData: true,
           });
           calendarLink = calEvent.htmlLink;
         } catch {
-          // Sala foi criada com sucesso — convite de calendário é opcional
+          // Opcional
         }
       }
 
-      setCreated({ id: reuniaoId, meetLink, calendarLink });
-      toast.success(calendarLink ? "Reunião criada! Convite enviado pelo Google Calendar." : "Reunião criada com sucesso!");
+      setCreated({ id: reuniaoId, meetLink, calendarLink, isPresencial, localEndereco: localEndereco.trim() });
+      toast.success(calendarLink
+        ? "Reunião criada! Convite enviado pelo Google Calendar."
+        : isPresencial
+        ? "Reunião presencial criada com sucesso!"
+        : "Reunião criada com sucesso!"
+      );
     } catch (err) {
       toast.error("Erro ao criar reunião.");
     } finally {
@@ -137,6 +177,7 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
 
   const buildWhatsAppUrl = (meetLink: string) => {
     const dateStr = new Date(`${date}T${time}:00`).toLocaleDateString("pt-BR");
+    const isPresencial = formato === "presencial";
     const displayTitle = title.trim() || (
       meetingType === "cliente"
         ? `Reunião com ${linkedLead?.company || linkedLead?.name || "Cliente"}`
@@ -149,12 +190,14 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
       "",
       `📅 *Data:* ${dateStr} às ${time}`,
       `⏱️ *Duração:* ${duration} minutos`,
+      closerName ? `👤 *Responsável:* ${closerName}` : "",
+      convidados.length > 0 ? `👥 *Participantes:* ${[closerEmail, ...convidados].filter(Boolean).join(", ")}` : "",
       pauta ? `\n📋 *Pauta:*\n${pauta}` : "",
       "",
-      `🔗 *Link de acesso:*\n${meetLink}`,
-      "",
-      "Acesse direto pelo navegador — sem precisar instalar nada. ✅",
-    ].join("\n");
+      isPresencial
+        ? `📍 *Formato: Presencial*\n🏢 *Local:* ${localEndereco.trim() || "A combinar"}`
+        : `🔗 *Link de acesso:*\n${meetLink}\n\nAcesse direto pelo navegador — sem precisar instalar nada. ✅`,
+    ].filter(Boolean).join("\n");
 
     const encoded = encodeURIComponent(msg);
     const phone = (linkedLead as any)?.phone as string | undefined;
@@ -173,9 +216,10 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
   };
 
   const reset = () => {
-    setTitle(""); setPauta(""); setCloserName("");
+    setTitle(""); setPauta(""); setCloserName(user?.name || "");
     setLinkedLeadId(""); setCreated(null);
-    setMeetingType("cliente");
+    setMeetingType("cliente"); setFormato("axis"); setLocalEndereco("");
+    setConvidados([]); setNovoConvidado("");
     setDate(new Date().toISOString().slice(0, 10));
     setTime("09:00"); setDuration(60);
   };
@@ -207,17 +251,30 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
           <div className="flex items-center gap-2 w-full">
             <Button
               variant="outline"
-              onClick={() => { navigator.clipboard.writeText(created.meetLink); toast.success("Link copiado!"); }}
+              onClick={() => {
+                const textToCopy = created.isPresencial ? (created.localEndereco || created.meetLink) : created.meetLink;
+                navigator.clipboard.writeText(textToCopy);
+                toast.success(created.isPresencial ? "Endereço copiado!" : "Link copiado!");
+              }}
               className="flex-1 border-white/10 text-slate-400 h-9 text-xs gap-1.5"
             >
-              <Copy className="w-3.5 h-3.5" /> Copiar Link
+              <Copy className="w-3.5 h-3.5" /> {created.isPresencial ? "Copiar Local" : "Copiar Link"}
             </Button>
-            <Button
-              onClick={handleEnter}
-              className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black h-9 text-xs gap-1.5"
-            >
-              <Video className="w-3.5 h-3.5" /> Entrar na Sala
-            </Button>
+            {created.isPresencial ? (
+              <Button
+                onClick={handleClose}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black h-9 text-xs gap-1.5"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5" /> Concluir
+              </Button>
+            ) : (
+              <Button
+                onClick={handleEnter}
+                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-black h-9 text-xs gap-1.5"
+              >
+                <Video className="w-3.5 h-3.5" /> Entrar na Sala
+              </Button>
+            )}
           </div>
         )
       }
@@ -229,15 +286,21 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
             <CheckCircle2 className="w-8 h-8 text-emerald-400" />
           </div>
           <div>
-            <p className="text-base font-black text-white">Reunião Criada!</p>
+            <p className="text-base font-black text-white">
+              {created.isPresencial ? "Reunião Presencial Agendada!" : "Reunião Criada!"}
+            </p>
             <p className="text-xs text-slate-500 mt-1">
-              {created.calendarLink ? "Convite enviado pelo Google Calendar." : "Sala S.P.Y. pronta para uso"}
+              {created.calendarLink ? "Convite enviado pelo Google Calendar." : created.isPresencial ? "Compromisso presencial registrado" : "Sala S.P.Y. pronta para uso"}
             </p>
           </div>
           <div className="w-full px-4 py-3 bg-[var(--color-surface)] border border-white/[0.08] rounded-xl text-left space-y-3">
             <div>
-              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">Link da Sala</p>
-              <p className="text-[11px] text-blue-400 font-mono break-all">{created.meetLink}</p>
+              <p className="text-[9px] font-black text-slate-600 uppercase tracking-widest mb-1">
+                {created.isPresencial ? "Local da Reunião" : "Link da Sala"}
+              </p>
+              <p className="text-[11px] text-blue-400 font-mono break-all">
+                {created.isPresencial ? (created.localEndereco || created.meetLink) : created.meetLink}
+              </p>
             </div>
             {created.calendarLink && (
               <div>
@@ -261,18 +324,18 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
             className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/25 text-[#25D366] text-[11px] font-black uppercase tracking-widest transition-all"
           >
             <MessageCircle className="w-3.5 h-3.5" />
-            {(linkedLead as any)?.phone ? "Enviar convite pelo WhatsApp" : "Compartilhar via WhatsApp"}
+            {(linkedLead as any)?.phone ? "Enviar confirmação pelo WhatsApp" : "Compartilhar via WhatsApp"}
           </a>
 
           <p className="text-[10px] text-slate-600">
-            {created.calendarLink ? "Participantes receberão o convite por e-mail." : "Compartilhe o link com os participantes."}
+            {created.calendarLink ? "Participantes receberão o convite por e-mail." : "Compartilhe as informações com os participantes."}
           </p>
         </div>
       ) : (
         /* ── Form ── */
         <div className="space-y-4 py-2">
 
-          {/* Tipo */}
+          {/* Tipo de Reunião */}
           <div className="space-y-1.5">
             <label className="text-[8px] font-black uppercase tracking-widest text-slate-500">Tipo de Reunião</label>
             <div className="grid grid-cols-3 gap-2">
@@ -293,6 +356,54 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
               ))}
             </div>
           </div>
+
+          {/* Formato: Online vs Presencial */}
+          <div className="space-y-1.5">
+            <label className="text-[8px] font-black uppercase tracking-widest text-slate-500">Formato da Reunião</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setFormato("axis")}
+                className={cn(
+                  "flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-bold transition-all",
+                  formato === "axis"
+                    ? "bg-blue-500/15 border-blue-500/30 text-blue-300"
+                    : "bg-white/[0.02] border-white/[0.06] text-slate-400 hover:border-white/20"
+                )}
+              >
+                <Video className="w-3.5 h-3.5" /> Online (Sala S.P.Y.)
+              </button>
+              <button
+                type="button"
+                onClick={() => setFormato("presencial")}
+                className={cn(
+                  "flex items-center justify-center gap-2 p-2.5 rounded-xl border text-xs font-bold transition-all",
+                  formato === "presencial"
+                    ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-300"
+                    : "bg-white/[0.02] border-white/[0.06] text-slate-400 hover:border-white/20"
+                )}
+              >
+                <MapPin className="w-3.5 h-3.5" /> Presencial (No Local)
+              </button>
+            </div>
+          </div>
+
+          {/* Endereço se for Presencial */}
+          {formato === "presencial" && (
+            <div className="p-3 bg-emerald-500/[0.06] border border-emerald-500/20 rounded-xl space-y-1.5">
+              <label className="text-[8px] font-black uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+                <MapPin className="w-3 h-3 text-emerald-400" /> Endereço / Local da Reunião
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: Av. Paulista, 1000 - 12º andar ou escritório do cliente..."
+                value={localEndereco}
+                onChange={(e) => setLocalEndereco(e.target.value)}
+                className="w-full bg-[var(--color-surface)] border border-emerald-500/30 rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/60 transition-all"
+                required
+              />
+            </div>
+          )}
 
           {/* Título */}
           <div className="space-y-1.5">
@@ -360,6 +471,74 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
             )}
           </div>
 
+          {/* Outros Participantes / Convidados */}
+          <div className="space-y-2 p-3 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+            <label className="text-[8px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+              <Users className="w-3 h-3 text-blue-400" /> Outros Participantes / Convidados
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="email"
+                placeholder="convidado@email.com"
+                value={novoConvidado}
+                onChange={(e) => setNovoConvidado(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddConvidado();
+                  }
+                }}
+                className="flex-1 bg-[var(--color-surface)] border border-white/[0.08] rounded-xl px-3 py-2 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-blue-500/40"
+              />
+              <Button
+                type="button"
+                onClick={() => handleAddConvidado()}
+                variant="outline"
+                className="text-xs h-8 px-3 gap-1 shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" /> Adicionar
+              </Button>
+            </div>
+            {/* Equipe rápida */}
+            {closerOptions.filter(c => c.email && c.name !== closerName && !convidados.includes(c.email.toLowerCase())).length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                <span className="text-[10px] text-slate-500">Equipe:</span>
+                {closerOptions
+                  .filter(c => c.email && c.name !== closerName && !convidados.includes(c.email.toLowerCase()))
+                  .slice(0, 4)
+                  .map(colab => (
+                    <button
+                      key={colab.email}
+                      type="button"
+                      onClick={() => handleAddConvidado(colab.email)}
+                      className="text-[10px] px-2 py-0.5 rounded bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 border border-white/10 transition-colors"
+                    >
+                      + {colab.name.split(" ")[0]}
+                    </button>
+                  ))}
+              </div>
+            )}
+            {convidados.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {convidados.map((email) => (
+                  <span
+                    key={email}
+                    className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-blue-500/15 border border-blue-500/30 rounded-lg text-xs text-blue-300"
+                  >
+                    {email}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveConvidado(email)}
+                      className="hover:text-rose-400 p-0.5 rounded"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Data e Hora */}
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -421,13 +600,22 @@ export function NovaReuniaoModal({ isOpen, onClose }: NovaReuniaoModalProps) {
             />
           </div>
 
-          {/* Info sala S.P.Y. */}
-          <div className="flex items-center gap-3 p-3 bg-blue-500/[0.06] border border-blue-500/15 rounded-xl">
-            <Video className="w-4 h-4 text-blue-400 shrink-0" />
-            <p className="text-[10px] text-slate-400 leading-relaxed">
-              Será criada uma <strong className="text-blue-300">Sala S.P.Y. (Jitsi)</strong> exclusiva. Compartilhe o link com os participantes — nenhum app necessário.
-            </p>
-          </div>
+          {/* Info sala / formato */}
+          {formato === "presencial" ? (
+            <div className="flex items-center gap-3 p-3 bg-emerald-500/[0.06] border border-emerald-500/15 rounded-xl">
+              <MapPin className="w-4 h-4 text-emerald-400 shrink-0" />
+              <p className="text-[10px] text-slate-400 leading-relaxed">
+                Reunião presencial registrada no local especificado. O endereço será sincronizado no Google Calendar e na mensagem de confirmação.
+              </p>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 p-3 bg-blue-500/[0.06] border border-blue-500/15 rounded-xl">
+              <Video className="w-4 h-4 text-blue-400 shrink-0" />
+              <p className="text-[10px] text-slate-400 leading-relaxed">
+                Será criada uma <strong className="text-blue-300">Sala S.P.Y. (Jitsi)</strong> exclusiva. Compartilhe o link com os participantes — nenhum app necessário.
+              </p>
+            </div>
+          )}
         </div>
       )}
     </Modal>

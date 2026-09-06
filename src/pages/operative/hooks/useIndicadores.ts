@@ -3,6 +3,7 @@ import { toast } from "sonner";
 import { Target, Activity, Zap, Users } from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
 import { confirmDialog } from "../../../components/ui/confirm-dialog";
+import { exportToCSV } from "../../../lib/exportCsv";
 
 export function useIndicadores() {
   const { leads, financeEntries, contracts, financialGoals, scheduledExports, addScheduledExport, updateScheduledExport, deleteScheduledExport } = useData();
@@ -55,16 +56,12 @@ export function useIndicadores() {
     toast.success("Agendamento de e-mail removido.");
   };
 
-  const simulateRunAndDownloadCSV = () => {
-    toast.success(`Simulação realizada! Relatório CSV disparado para ${schedules.filter(s => s.active).length} destinatários ativos.`);
-  };
-
   // KPIs dinâmicos
   const kpiCards = useMemo(() => {
     const closedLeads = leads.filter(l => l.status === 'Fechado');
     const totalClosedValue = closedLeads.reduce((s, l) => s + (l.value || 0), 0);
     const ticketMedio = closedLeads.length > 0 ? totalClosedValue / closedLeads.length : 0;
-    
+
     const toNumberMRR = (mrr: string | number): number => {
       if (typeof mrr === 'number') return mrr;
       const cleaned = String(mrr).replace('R$ ', '').replace(/\./g, '').replace(',', '.');
@@ -77,12 +74,37 @@ export function useIndicadores() {
     const ltv = mrr * 12; // LTV simples de 1 ano
     const fmt = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
 
+    // Ticket médio por mês (com base em l.date), pra calcular uma tendência real
+    // mês a mês em vez de um número de exemplo.
+    const porMes: Record<string, { soma: number; qtd: number }> = {};
+    closedLeads.forEach(l => {
+      const d = new Date(l.date || '');
+      if (isNaN(d.getTime())) return;
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+      if (!porMes[key]) porMes[key] = { soma: 0, qtd: 0 };
+      porMes[key].soma += l.value || 0;
+      porMes[key].qtd += 1;
+    });
+    const mesesOrdenados = Object.keys(porMes).sort();
+    let ticketTrend = "—";
+    if (mesesOrdenados.length >= 2) {
+      const atual = porMes[mesesOrdenados[mesesOrdenados.length - 1]];
+      const anterior = porMes[mesesOrdenados[mesesOrdenados.length - 2]];
+      const ticketAtual = atual.soma / atual.qtd;
+      const ticketAnterior = anterior.soma / anterior.qtd;
+      if (ticketAnterior > 0) {
+        const pct = ((ticketAtual - ticketAnterior) / ticketAnterior) * 100;
+        ticketTrend = `${pct >= 0 ? '+' : ''}${pct.toFixed(1)}%`;
+      }
+    }
+
     return [
-       { label: "Ticket Médio", value: closedLeads.length > 0 ? fmt(ticketMedio) : "—", trend: "+5.2%", icon: Target, color: "text-[#06B6D4]" },
-       // Ciclo de Vendas e Retention Rate ainda não são medidos de verdade em nenhum lugar do S.P.Y. —
-       // mostrar "—" em vez de um número de exemplo até existir uma fonte real (ex.: datas de estágio do funil).
+       { label: "Ticket Médio", value: closedLeads.length > 0 ? fmt(ticketMedio) : "—", trend: ticketTrend, icon: Target, color: "text-[#06B6D4]" },
+       // Ciclo de Vendas, LTV Projetado (sem série histórica de MRR pra comparar) e Retention Rate
+       // ainda não têm tendência real medida em nenhum lugar do S.P.Y. — mostrar "—" em vez de um
+       // número de exemplo até existir uma fonte real (ex.: datas de estágio do funil, snapshots de MRR).
        { label: "Ciclo de Vendas", value: "—", trend: "—", icon: Activity, color: "text-[#06B6D4]" },
-       { label: "LTV Projetado", value: ltv > 0 ? fmt(ltv) : "—", trend: "+12.4%", icon: Zap, color: "text-[#06B6D4]" },
+       { label: "LTV Projetado", value: ltv > 0 ? fmt(ltv) : "—", trend: "—", icon: Zap, color: "text-[#06B6D4]" },
        { label: "Retention Rate", value: "—", trend: "—", icon: Users, color: "text-[#06B6D4]" },
     ];
   }, [leads, contracts]);
@@ -125,6 +147,18 @@ export function useIndicadores() {
 
     return Object.entries(months).map(([name, data]) => ({ name, receita: data.receita, meta: data.meta }));
   }, [financeEntries, financialGoals]);
+
+  // Gera e baixa de verdade o CSV de receita vs. meta por mês — o envio automático
+  // por e-mail via rotina agendada (CRON) ainda não existe; este botão só cobre a
+  // parte que já é real: gerar o arquivo agora.
+  const simulateRunAndDownloadCSV = () => {
+    if (monthlyData.length === 0) {
+      toast.error("Nenhum dado de receita/meta para exportar ainda.");
+      return;
+    }
+    exportToCSV(monthlyData.map(m => ({ Mês: m.name, Receita: m.receita, Meta: m.meta })), `indicadores_receita_meta_${Date.now()}`);
+    toast.success("CSV gerado e baixado.");
+  };
 
   // Distribuição de Leads por Origem
   const pieData = useMemo(() => {

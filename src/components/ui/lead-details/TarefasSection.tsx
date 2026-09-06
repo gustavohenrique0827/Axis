@@ -1,6 +1,12 @@
-import { useState } from "react";
-import { ListTodo, Plus, CheckCircle2, Circle, Clock, Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  ListTodo, Plus, CheckCircle2, Circle, Clock, Trash2,
+  Users, ExternalLink, CalendarCheck, X, Loader2,
+} from "lucide-react";
 import { useData } from "../../../contexts/DataContext";
+import { useAuth } from "../../../contexts/AuthContext";
+import { createCalendarEvent } from "../../../lib/google-calendar";
+import { getGoogleCalendarStatus } from "../../../lib/google-auth";
 import { toast } from "sonner";
 import { cn } from "../../../lib/utils";
 import { Button } from "../button";
@@ -17,7 +23,8 @@ interface TarefasSectionProps {
 }
 
 export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) {
-  const { tasks, addTask, updateTask, deleteTask } = useData();
+  const { tasks, addTask, updateTask, deleteTask, colaboradores } = useData();
+  const { activeTenantId, user } = useAuth();
 
   const leadTasks = (tasks as any[]).filter(
     (t) => t.related === lead.id || t.related === leadName || t.related === lead.company
@@ -27,25 +34,104 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newDate, setNewDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [newTime, setNewTime] = useState("09:00");
+  const [newDuration, setNewDuration] = useState(30);
   const [newPriority, setNewPriority] = useState<"Alta" | "Média" | "Baixa">("Média");
 
-  const handleAdd = () => {
+  const [convidados, setConvidados] = useState<string[]>([]);
+  const [novoConvidado, setNovoConvidado] = useState("");
+  const [vincularGoogle, setVincularGoogle] = useState(false);
+  const [googleConnected, setGoogleConnected] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (!activeTenantId) return;
+    getGoogleCalendarStatus(activeTenantId).then((status) => {
+      if (status.connected) {
+        setGoogleConnected(true);
+        setVincularGoogle(true);
+      }
+    });
+  }, [activeTenantId]);
+
+  const handleAddConvidado = (emailToAdd?: string) => {
+    const val = (emailToAdd || novoConvidado).trim().toLowerCase();
+    if (!val) return;
+    if (!convidados.includes(val)) {
+      setConvidados((prev) => [...prev, val]);
+    }
+    setNovoConvidado("");
+  };
+
+  const handleRemoveConvidado = (email: string) => {
+    setConvidados((prev) => prev.filter((c) => c !== email));
+  };
+
+  const handleAdd = async () => {
     if (!newTitle.trim()) { toast.error("Título da tarefa é obrigatório."); return; }
+    if (!newDate || !newTime) { toast.error("Informe a data e o horário da tarefa."); return; }
+
+    setSaving(true);
+    let calendarLink: string | undefined;
+    let googleEventId: string | undefined;
+
+    if (vincularGoogle && activeTenantId) {
+      try {
+        const startISO = `${newDate}T${newTime}:00`;
+        const endDate = new Date(`${newDate}T${newTime}:00`);
+        endDate.setMinutes(endDate.getMinutes() + newDuration);
+        const endISO = endDate.toISOString().slice(0, 19);
+
+        const attendees = Array.from(new Set([...convidados])).filter(Boolean);
+
+        const calEvent = await createCalendarEvent(activeTenantId, {
+          title: `Tarefa — ${newTitle.trim()} (${lead.company || leadName})`,
+          description: [
+            `📋 Tarefa: ${newTitle.trim()}`,
+            newDesc.trim() ? `📝 Descrição: ${newDesc.trim()}` : "",
+            `👤 Responsável: ${user?.name || seller || "Comercial"}`,
+            `🏢 Lead: ${lead.company || leadName}`,
+            attendees.length > 0 ? `👥 Participantes: ${attendees.join(", ")}` : "",
+          ].filter(Boolean).join("\n"),
+          startISO,
+          endISO,
+          attendeeEmails: attendees,
+          skipConferenceData: true,
+        });
+        calendarLink = calEvent.htmlLink;
+        googleEventId = calEvent.id;
+      } catch (err: any) {
+        toast.warning("Tarefa criada, mas não foi possível sincronizar com o Google Calendar.");
+      }
+    }
+
     addTask({
       title: newTitle.trim(),
       description: newDesc.trim(),
       related: lead.id,
       type: "CRM",
       date: newDate,
+      time: newTime,
+      duration: newDuration,
       status: "A Fazer",
       priority: newPriority,
-      seller: seller || "Sistema",
+      seller: user?.name || seller || "Sistema",
+      convidados: convidados.length > 0 ? convidados : undefined,
+      calendarLink,
+      googleEventId,
     });
+
     setNewTitle("");
     setNewDesc("");
     setNewPriority("Média");
+    setConvidados([]);
+    setNovoConvidado("");
     setShowForm(false);
-    toast.success("Tarefa vinculada ao lead com sucesso!");
+    setSaving(false);
+    toast.success(calendarLink
+      ? "Tarefa vinculada e sincronizada no Google Calendar!"
+      : "Tarefa vinculada ao lead com sucesso!"
+    );
   };
 
   const toggleDone = (task: any) => {
@@ -107,8 +193,8 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
             />
           </FormField>
 
-          <div className="grid grid-cols-2 gap-3">
-            <FormField label="Data Limite">
+          <div className="grid grid-cols-3 gap-3">
+            <FormField label="Data">
               <Input
                 type="date"
                 value={newDate}
@@ -116,6 +202,30 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
               />
             </FormField>
 
+            <FormField label="Horário">
+              <Input
+                type="time"
+                value={newTime}
+                onChange={(e) => setNewTime(e.target.value)}
+              />
+            </FormField>
+
+            <FormField label="Duração">
+              <select
+                value={newDuration}
+                onChange={(e) => setNewDuration(Number(e.target.value))}
+                className="w-full bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] h-9"
+              >
+                <option value={15}>15 minutos</option>
+                <option value={30}>30 minutos</option>
+                <option value={45}>45 minutos</option>
+                <option value={60}>1 hora</option>
+                <option value={120}>2 horas</option>
+              </select>
+            </FormField>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
             <FormField label="Prioridade">
               <select
                 value={newPriority}
@@ -127,6 +237,108 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
                 <option value="Baixa">Baixa Prioridade</option>
               </select>
             </FormField>
+
+            <FormField label="Responsável">
+              <input
+                readOnly
+                value={user?.name || seller || "Você (usuário logado)"}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-muted)] h-9 font-medium cursor-not-allowed"
+              />
+            </FormField>
+          </div>
+
+          {/* Outros participantes / convidados */}
+          <div className="space-y-2 p-3 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl">
+            <label className="text-[10px] font-black uppercase tracking-wider text-[var(--color-text-muted)] flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" />
+              Outros Participantes (E-mails)
+            </label>
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="convidado@empresa.com"
+                value={novoConvidado}
+                onChange={(e) => setNovoConvidado(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleAddConvidado();
+                  }
+                }}
+                className="text-xs"
+              />
+              <Button
+                type="button"
+                onClick={() => handleAddConvidado()}
+                variant="outline"
+                size="sm"
+                className="text-xs shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" /> Adicionar
+              </Button>
+            </div>
+            {/* Equipe rápida */}
+            {colaboradores && (colaboradores as any[]).filter((c: any) => c.email && !convidados.includes(c.email.toLowerCase())).length > 0 && (
+              <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                <span className="text-[10px] text-[var(--color-text-faint)]">Equipe:</span>
+                {(colaboradores as any[])
+                  .filter((c: any) => c.email && !convidados.includes(c.email.toLowerCase()))
+                  .slice(0, 4)
+                  .map((c: any) => (
+                    <button
+                      key={c.email}
+                      type="button"
+                      onClick={() => handleAddConvidado(c.email)}
+                      className="text-[10px] px-2 py-0.5 rounded bg-[var(--color-surface-elevated)] hover:bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] border border-[var(--color-border-subtle)] transition-colors"
+                    >
+                      + {(c.nome || c.name)?.split(" ")[0]}
+                    </button>
+                  ))}
+              </div>
+            )}
+            {convidados.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {convidados.map((email) => (
+                  <span
+                    key={email}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-500/10 border border-blue-500/25 rounded-md text-[11px] text-blue-400 font-medium"
+                  >
+                    {email}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveConvidado(email)}
+                      className="hover:text-rose-400 p-0.5"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Sincronização Google Calendar */}
+          <div className="p-3 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <CalendarCheck className={cn("w-4 h-4 shrink-0", vincularGoogle ? "text-emerald-400" : "text-[var(--color-text-faint)]")} />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-[var(--color-text-primary)]">Vincular ao Google Agenda</p>
+                <p className="text-[10px] text-[var(--color-text-muted)] truncate">
+                  {googleConnected
+                    ? "Cria o evento na agenda e notifica os participantes convidados"
+                    : "Conecte sua conta Google no módulo de Agenda ou configurações"}
+                </p>
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+              <input
+                type="checkbox"
+                checked={vincularGoogle}
+                onChange={(e) => setVincularGoogle(e.target.checked)}
+                className="sr-only peer"
+              />
+              <div className="w-9 h-5 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--color-primary-blue)]"></div>
+            </label>
           </div>
 
           <div className="flex gap-2 pt-2 justify-end">
@@ -136,6 +348,7 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
               size="sm"
               onClick={() => setShowForm(false)}
               className="text-xs"
+              disabled={saving}
             >
               Cancelar
             </Button>
@@ -143,9 +356,11 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
               type="button"
               size="sm"
               onClick={handleAdd}
-              className="text-xs font-bold"
+              disabled={saving}
+              className="text-xs font-bold gap-1.5"
             >
-              Criar Tarefa
+              {saving && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+              {saving ? "Salvando..." : "Criar Tarefa"}
             </Button>
           </div>
         </Card>
@@ -220,7 +435,7 @@ function TaskCard({ task, onToggle, onDelete, dimmed }: {
         <div className="flex items-center gap-2 flex-wrap pt-0.5">
           {task.date && (
             <span className="flex items-center gap-1 text-[10px] text-[var(--color-text-faint)] font-medium">
-              <Clock className="w-3 h-3" /> {task.date}
+              <Clock className="w-3 h-3" /> {task.date}{task.time ? ` às ${task.time}` : ""}
             </span>
           )}
           {task.priority && (
@@ -234,6 +449,26 @@ function TaskCard({ task, onToggle, onDelete, dimmed }: {
           <span className="text-[10px] font-bold text-[var(--color-text-muted)]">
             {task.status}
           </span>
+          {task.seller && (
+            <span className="text-[10px] text-[var(--color-text-faint)]">
+              · {task.seller}
+            </span>
+          )}
+          {task.convidados && task.convidados.length > 0 && (
+            <span className="flex items-center gap-1 text-[10px] text-blue-400 font-medium">
+              <Users className="w-3 h-3" /> {task.convidados.length} convidado{task.convidados.length !== 1 ? "s" : ""}
+            </span>
+          )}
+          {task.calendarLink && (
+            <a
+              href={task.calendarLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1 text-[10px] text-emerald-400 hover:text-emerald-300 font-bold transition-colors ml-auto"
+            >
+              <CalendarCheck className="w-3 h-3" /> Google Agenda
+            </a>
+          )}
         </div>
       </div>
 

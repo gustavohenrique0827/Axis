@@ -1,9 +1,10 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from "motion/react";
 import { X, Search, ChevronDown, Check, Calendar, UserPlus } from 'lucide-react';
 import { Button } from "../../../components/ui/button";
 import { toast } from "sonner";
 import { useData } from "../../../contexts/DataContext";
+import { supabase } from "../../../lib/supabase";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -27,20 +28,38 @@ export function BookingModal({ isOpen, onClose, leads, addTask, addAppointment }
   // Booking Form State
   const [searchPatient, setSearchPatient] = useState('');
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
+  const [selectedIsPaciente, setSelectedIsPaciente] = useState(false);
   const [selectedSpecialty, setSelectedSpecialty] = useState('');
   const [selectedDoctorId, setSelectedDoctorId] = useState('');
   const [bookingDate, setBookingDate] = useState('');
   const [bookingTime, setBookingTime] = useState('');
 
+  const [pacientes, setPacientes] = useState<Array<{ id: string; name: string; email: string | null; phone: string | null }>>([]);
+
+  useEffect(() => {
+    if (!isOpen || !supabase) return;
+    supabase.from('pacientes').select('id,nome,email,telefone').order('nome', { ascending: true }).then(({ data, error }) => {
+      if (!error && data) {
+        setPacientes(data.map((p: any) => ({ id: p.id, name: p.nome, email: p.email, phone: p.telefone })));
+      }
+    });
+  }, [isOpen]);
+
   const filteredPatients = useMemo(() => {
     if (!searchPatient) return [];
-    return leads.filter(l =>
-      l.name.toLowerCase().includes(searchPatient.toLowerCase()) ||
-      l.email?.toLowerCase().includes(searchPatient.toLowerCase())
-    ).slice(0, 5);
-  }, [leads, searchPatient]);
+    const q = searchPatient.toLowerCase();
+    const fromPacientes = pacientes
+      .filter(p => p.name.toLowerCase().includes(q) || p.email?.toLowerCase().includes(q))
+      .map(p => ({ ...p, isPaciente: true as const }));
+    const fromLeads = leads
+      .filter(l => l.name.toLowerCase().includes(q) || l.email?.toLowerCase().includes(q))
+      .map((l: any) => ({ id: l.id, name: l.name, email: l.email, phone: l.phone, isPaciente: false as const }));
+    return [...fromPacientes, ...fromLeads].slice(0, 6);
+  }, [leads, pacientes, searchPatient]);
 
-  const selectedPatient = leads.find(l => l.id === selectedPatientId);
+  const selectedPatient = selectedIsPaciente
+    ? pacientes.find(p => p.id === selectedPatientId)
+    : leads.find(l => l.id === selectedPatientId);
   const patientName = selectedPatient?.name || (searchPatient.trim().length > 0 ? searchPatient.trim() : '');
 
   const handleBooking = (e: React.FormEvent) => {
@@ -71,7 +90,8 @@ export function BookingModal({ isOpen, onClose, leads, addTask, addAppointment }
       addAppointment({
         time: bookingTime,
         patient: patientName,
-        phone: (selectedPatient as any)?.phone || '(11) 98888-0000',
+        patientId: selectedIsPaciente ? selectedPatientId : null,
+        phone: (selectedPatient as any)?.phone || '',
         drId: doctor?.id || '1',
         drName: doctor?.name || 'Médico',
         status: 'Confirmado',
@@ -89,6 +109,7 @@ export function BookingModal({ isOpen, onClose, leads, addTask, addAppointment }
 
   const resetForm = () => {
     setSelectedPatientId(null);
+    setSelectedIsPaciente(false);
     setSearchPatient('');
     setSelectedSpecialty('');
     setSelectedDoctorId('');
@@ -161,16 +182,22 @@ export function BookingModal({ isOpen, onClose, leads, addTask, addAppointment }
                         <div className="absolute top-full left-0 w-full mt-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] overflow-hidden shadow-xl z-50 divide-y divide-[var(--color-border-subtle)]">
                           {filteredPatients.map(p => (
                             <button
-                              key={p.id}
+                              key={`${p.isPaciente ? 'pac' : 'lead'}-${p.id}`}
                               type="button"
                               onClick={() => {
                                 setSelectedPatientId(p.id);
+                                setSelectedIsPaciente(p.isPaciente);
                                 setSearchPatient('');
                               }}
                               className="w-full p-3 hover:bg-[var(--color-surface-sunken)] flex items-center justify-between transition-colors cursor-pointer border-none bg-transparent text-left"
                             >
                               <div>
-                                <p className="text-xs font-bold text-[var(--color-text-primary)]">{p.name}</p>
+                                <div className="flex items-center gap-1.5">
+                                  <p className="text-xs font-bold text-[var(--color-text-primary)]">{p.name}</p>
+                                  {p.isPaciente && (
+                                    <span className="text-[8px] font-black uppercase px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 border border-emerald-500/20">Paciente</span>
+                                  )}
+                                </div>
                                 <p className="text-[10px] text-[var(--color-text-muted)]">{p.email || p.phone}</p>
                               </div>
                               <ChevronDown className="w-4 h-4 text-[var(--color-text-faint)] -rotate-90" />
@@ -187,12 +214,14 @@ export function BookingModal({ isOpen, onClose, leads, addTask, addAppointment }
                         </div>
                         <div>
                           <p className="text-xs font-bold text-[var(--color-text-primary)]">{selectedPatient?.name}</p>
-                          <p className="text-[10px] text-[var(--color-primary-blue)] font-bold">Paciente Selecionado</p>
+                          <p className="text-[10px] text-[var(--color-primary-blue)] font-bold">
+                            {selectedIsPaciente ? 'Paciente Cadastrado' : 'Selecionado (não cadastrado como paciente)'}
+                          </p>
                         </div>
                       </div>
                       <button
                         type="button"
-                        onClick={() => setSelectedPatientId(null)}
+                        onClick={() => { setSelectedPatientId(null); setSelectedIsPaciente(false); }}
                         className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer border-none bg-transparent"
                       >
                         <X className="w-4 h-4" />
