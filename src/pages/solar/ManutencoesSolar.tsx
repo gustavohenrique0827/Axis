@@ -1,26 +1,171 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   Wrench, CheckCircle2, Clock, Activity, Calendar,
-  ShieldCheck, AlertTriangle
+  ShieldCheck, AlertTriangle, Plus, Search, Trash2, X
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
+import { useAuth } from "../../contexts/AuthContext";
+
+interface ManutencaoSolarItem {
+  id: string;
+  usina: string;
+  potencia: string;
+  servico: string;
+  data: string;
+  status: "Agendada" | "Em Atendimento" | "Concluída" | "Aguardando Peça";
+  geracaoAtual: string;
+}
+
+const DEFAULT_MANUTENCOES: ManutencaoSolarItem[] = [
+  { id: "1", usina: "UFV Granja Esperança", potencia: "30 kWp", servico: "Limpeza de Módulos (Semestral)", data: "15/09/2026", status: "Agendada", geracaoAtual: "98% do esperado" },
+  { id: "2", usina: "Centro Automotivo Paulista", potencia: "15 kWp", servico: "Inspeção de Inversor & String Box", data: "02/09/2026", status: "Concluída", geracaoAtual: "100% normal" },
+  { id: "3", usina: "Supermercado CompreBem", potencia: "112.5 kWp", servico: "Termografia de Conexões Elétricas", data: "20/09/2026", status: "Agendada", geracaoAtual: "96% do esperado" },
+];
 
 export default function ManutencoesSolar() {
-  const [chamados, setChamados] = useState([
-    { id: "1", usina: "UFV Granja Esperança", potencia: "30 kWp", servico: "Limpeza de Módulos (Semestral)", data: "15/09/2026", status: "Agendada", geracaoAtual: "98% do esperado" },
-    { id: "2", usina: "Centro Automotivo Paulista", potencia: "15 kWp", servico: "Inspeção de Inversor & String Box", data: "02/09/2026", status: "Concluída", geracaoAtual: "100% normal" },
-  ]);
+  const { activeTenantId } = useAuth();
+  const storageKey = `spy_manutencoes_solar_${activeTenantId || "default"}`;
+
+  const [chamados, setChamados] = useState<ManutencaoSolarItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? JSON.parse(saved) : DEFAULT_MANUTENCOES;
+    } catch {
+      return DEFAULT_MANUTENCOES;
+    }
+  });
+
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("Todos");
+  const [modalOpen, setModalOpen] = useState(false);
+
+  // Form state
+  const [usina, setUsina] = useState("");
+  const [potencia, setPotencia] = useState("");
+  const [servico, setServico] = useState("Limpeza e Lavagem de Módulos");
+  const [data, setData] = useState("");
+  const [geracaoAtual, setGeracaoAtual] = useState("100% normal");
+  const [status, setStatus] = useState<ManutencaoSolarItem["status"]>("Agendada");
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(chamados));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [chamados, storageKey]);
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!usina.trim()) {
+      toast.error("Informe o nome da usina / cliente.");
+      return;
+    }
+
+    const newItem: ManutencaoSolarItem = {
+      id: crypto.randomUUID(),
+      usina: usina.trim(),
+      potencia: potencia.trim() || "10 kWp",
+      servico,
+      data: data || new Date().toLocaleDateString("pt-BR"),
+      status,
+      geracaoAtual: geracaoAtual.trim() || "Operação Normal",
+    };
+
+    setChamados(prev => [newItem, ...prev]);
+    toast.success("Chamado de manutenção agendado!");
+    setModalOpen(false);
+
+    setUsina("");
+    setPotencia("");
+    setData("");
+  };
+
+  const handleDelete = (id: string) => {
+    setChamados(prev => prev.filter(c => c.id !== id));
+    toast.info("Chamado removido.");
+  };
+
+  const handleUpdateStatus = (id: string, newStatus: ManutencaoSolarItem["status"]) => {
+    setChamados(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
+    toast.success(`Status da manutenção: ${newStatus}`);
+  };
+
+  const filtered = chamados.filter(c => {
+    const matchSearch = (
+      c.usina.toLowerCase().includes(search.toLowerCase()) ||
+      c.servico.toLowerCase().includes(search.toLowerCase())
+    );
+    const matchStatus = filterStatus === "Todos" || c.status === filterStatus;
+    return matchSearch && matchStatus;
+  });
 
   return (
     <PageContainer
       title="Manutenção & Pós-Venda Solar"
       description="Planos de limpeza periódica de módulos, telemetria de inversores e chamados de garantia."
+      actions={
+        <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+          <Plus className="w-3.5 h-3.5" /> Agendar Manutenção
+        </Button>
+      }
     >
+      {/* Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Chamados Ativos</span>
+          <div className="text-2xl font-black text-[var(--color-text-primary)]">{chamados.length}</div>
+        </Card>
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Manutenções Agendadas</span>
+          <div className="text-2xl font-black text-amber-500">
+            {chamados.filter(c => c.status === "Agendada").length}
+          </div>
+        </Card>
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Concluídas com Sucesso</span>
+          <div className="text-2xl font-black text-emerald-500">
+            {chamados.filter(c => c.status === "Concluída").length}
+          </div>
+        </Card>
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4 items-center justify-between">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+          <input
+            type="text"
+            placeholder="Buscar por usina ou serviço..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
+          {["Todos", "Agendada", "Em Atendimento", "Concluída", "Aguardando Peça"].map(st => (
+            <button
+              key={st}
+              onClick={() => setFilterStatus(st)}
+              className={`text-xs px-3 py-1.5 rounded-xl font-medium transition-all shrink-0 ${
+                filterStatus === st
+                  ? "bg-amber-500 text-white font-bold"
+                  : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+              }`}
+            >
+              {st}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* List */}
       <div className="space-y-3">
-        {chamados.map(c => (
+        {filtered.map(c => (
           <div key={c.id} className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -28,18 +173,112 @@ export default function ManutencoesSolar() {
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 font-bold">
                   {c.potencia}
                 </span>
+                <span className="text-[10px] text-[var(--color-text-muted)]">• {c.data}</span>
               </div>
               <p className="text-[11px] text-[var(--color-text-muted)]">
-                Serviço: <strong className="text-[var(--color-text-primary)]">{c.servico}</strong> • Data: {c.data} • Status de Geração: <span className="text-emerald-500 font-bold">{c.geracaoAtual}</span>
+                Serviço: <strong className="text-[var(--color-text-primary)]">{c.servico}</strong> • Geração: <span className="text-emerald-500 font-bold">{c.geracaoAtual}</span>
               </p>
             </div>
 
-            <span className="text-[10px] font-bold uppercase px-2.5 py-1 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/25 self-start sm:self-auto">
-              {c.status}
-            </span>
+            <div className="flex items-center gap-2 shrink-0">
+              <select
+                value={c.status}
+                onChange={e => handleUpdateStatus(c.id, e.target.value as any)}
+                className="text-[10px] font-bold uppercase px-2.5 py-1 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)] focus:outline-none"
+              >
+                <option value="Agendada">Agendada</option>
+                <option value="Em Atendimento">Em Atendimento</option>
+                <option value="Concluída">Concluída</option>
+                <option value="Aguardando Peça">Aguardando Peça</option>
+              </select>
+
+              <Button size="sm" variant="ghost" onClick={() => handleDelete(c.id)} className="h-8 w-8 p-0 text-red-500 hover:bg-red-500/10 rounded-xl">
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+            </div>
           </div>
         ))}
+
+        {filtered.length === 0 && (
+          <div className="p-8 text-center text-xs text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl">
+            Nenhuma manutenção encontrada para este filtro.
+          </div>
+        )}
       </div>
+
+      {/* Modal de Nova Manutenção */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Agendar Manutenção Fotovoltaica</h3>
+              <button onClick={() => setModalOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreate} className="space-y-3">
+              <div>
+                <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Usina / Cliente</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Nome do cliente ou da usina"
+                  value={usina}
+                  onChange={e => setUsina(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Potência da Usina</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: 25 kWp"
+                    value={potencia}
+                    onChange={e => setPotencia(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Data Prevista</label>
+                  <input
+                    type="date"
+                    value={data}
+                    onChange={e => setData(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Tipo de Serviço</label>
+                <select
+                  value={servico}
+                  onChange={e => setServico(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                >
+                  <option value="Limpeza e Lavagem de Módulos">Limpeza e Lavagem de Módulos</option>
+                  <option value="Inspeção de Inversor & String Box">Inspeção de Inversor & String Box</option>
+                  <option value="Termografia e Reaperto de Conexões">Termografia e Reaperto de Conexões</option>
+                  <option value="Diagnóstico de Queda de Geração">Diagnóstico de Queda de Geração</option>
+                  <option value="Substituição de Fusível / DPS">Substituição de Fusível / DPS</option>
+                </select>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="h-9 px-4 text-xs font-bold rounded-xl">
+                  Cancelar
+                </Button>
+                <Button type="submit" className="h-9 px-4 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-600 text-white">
+                  Confirmar Agendamento
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </PageContainer>
   );
 }

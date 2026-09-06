@@ -2,7 +2,55 @@ import { Lead, Task, Contract, CustomField, LeadScoreTrigger, Squad, LeadActivit
 
 export const defaultCustomLeadFields: CustomField[] = [];
 export const defaultLeadScoreTriggers: LeadScoreTrigger[] = [];
-export const defaultFinanceEntries: FinanceEntry[] = [];
+
+export const defaultFinanceEntries: FinanceEntry[] = [
+  {
+    id: "fin-1",
+    description: "Mensalidade Enterprise - Nexus Automação",
+    value: 4800,
+    type: "Receber",
+    category: "Receita Recorrente (MRR)",
+    date: new Date().toLocaleDateString("pt-BR"),
+    status: "Pago",
+  },
+  {
+    id: "fin-2",
+    description: "Implantação Módulo Solar - Solaris Energia",
+    value: 8500,
+    type: "Receber",
+    category: "Serviços & Setup",
+    date: new Date().toLocaleDateString("pt-BR"),
+    status: "Pago",
+  },
+  {
+    id: "fin-3",
+    description: "Honorários de Venda Imobiliária - Terraço Jardins",
+    value: 55500,
+    type: "Receber",
+    category: "Comissões Imobiliárias",
+    date: "15/09/2026",
+    status: "Pendente",
+  },
+  {
+    id: "fin-4",
+    description: "Hospedagem em Nuvem & Bancos de Dados AWS",
+    value: 2450,
+    type: "Pagar",
+    category: "Infraestrutura & TI",
+    date: "10/09/2026",
+    status: "Pendente",
+  },
+  {
+    id: "fin-5",
+    description: "Campanhas de Aquisição Google Ads & Meta Ads",
+    value: 4200,
+    type: "Pagar",
+    category: "Marketing & Aquisição",
+    date: new Date().toLocaleDateString("pt-BR"),
+    status: "Pago",
+  },
+];
+
 export const defaultGlobalWebhooks: GlobalWebhook[] = [];
 
 export const defaultLeads: Lead[] = [
@@ -25,7 +73,7 @@ export const defaultLeads: Lead[] = [
     temperature: "quente",
     iaSummary: "Diretoria busca substituir sistema legado por solução integrada S.P.Y.. Orçamento aprovado.",
     timeIdle: 2,
-    tags: ["Decisor", "Enterprise", "Prioritário"],
+    tags: ["Decisor", "Enterprise", "Prioritário", "imobiliario"],
     clientName: "Alpha Tech Soluções",
   },
   {
@@ -47,7 +95,7 @@ export const defaultLeads: Lead[] = [
     temperature: "quente",
     iaSummary: "Reunião de diagnóstico realizada. Solicitou minuta de contrato com módulos de CRM e Finanças.",
     timeIdle: 5,
-    tags: ["Solar", "Mid-Market"],
+    tags: ["Solar", "Mid-Market", "solar", "energia-solar"],
   },
   {
     id: "lead-3",
@@ -68,21 +116,21 @@ export const defaultLeads: Lead[] = [
     temperature: "quente",
     iaSummary: "Proposta técnica apresentada. Negociando termo de confidencialidade e SLA de atendimento.",
     timeIdle: 1,
-    tags: ["Saúde", "Telemedicina", "VIP"],
+    tags: ["Saúde", "Telemedicina", "VIP", "clinica", "saude"],
     clientName: "Gama Saúde Hospitalar",
   },
   {
     id: "lead-4",
     name: "Guilherme Siqueira",
-    company: "Vanguard Logística Integrada",
-    email: "guilherme@vanguardlog.com",
+    company: "Vanguard Veículos & Frotas",
+    email: "guilherme@vanguardveiculos.com",
     phone: "(41) 98877-6655",
     status: "Em Aberto",
     value: "R$ 21.000,00",
     date: new Date().toLocaleDateString("pt-BR"),
     seller: "Fernanda Lima",
     source: "WhatsApp",
-    title: "Controle de Frotas & Operações",
+    title: "Gestão de Concessionária & Pátio",
     priority: "Baixa",
     stageId: "4",
     pipelineId: "comercial",
@@ -90,7 +138,7 @@ export const defaultLeads: Lead[] = [
     temperature: "morno",
     iaSummary: "Em fase de revisão orçamentária para o próximo trimestre.",
     timeIdle: 8,
-    tags: ["Logística", "Follow-up"],
+    tags: ["Automotivo", "automotivo", "veiculos", "Follow-up"],
   },
   {
     id: "lead-5",
@@ -111,7 +159,7 @@ export const defaultLeads: Lead[] = [
     temperature: "quente",
     iaSummary: "Contrato assinado! Onboarding agendado para o time acadêmico.",
     timeIdle: 0,
-    tags: ["Educação", "Ganhos", "Contrato Fechado"],
+    tags: ["Educação", "educacao", "Ganhos", "Contrato Fechado"],
   },
   {
     id: "lead-6",
@@ -132,12 +180,12 @@ export const defaultLeads: Lead[] = [
     temperature: "quente",
     iaSummary: "Lead preencheu formulário buscando automação de corretores e espelho de vendas.",
     timeIdle: 0.5,
-    tags: ["Imobiliário", "SDR"],
+    tags: ["Imobiliário", "imobiliario", "SDR"],
   },
   {
     id: "lead-7",
     name: "Patrícia Albuquerque",
-    company: "Omni Store Cosméticos",
+    company: "Omni Store Cosméticos & Varejo",
     email: "patricia@omnistore.com.br",
     phone: "(21) 98112-3344",
     status: "Em Aberto",
@@ -153,13 +201,13 @@ export const defaultLeads: Lead[] = [
     temperature: "morno",
     iaSummary: "Primeiro contato telefônico realizado. Validando número de vendedores e demanda de CRM.",
     timeIdle: 3,
-    tags: ["Varejo", "SDR"],
+    tags: ["Varejo", "varejo", "SDR"],
   },
   {
     id: "lead-8",
     name: "Marcos Vinicius Tavares",
-    company: "AgroForte Insumos Agrícolas",
-    email: "marcos@agroforte.com.br",
+    company: "SolarMax Distribuidora",
+    email: "marcos@solarmax.com.br",
     phone: "(62) 99334-5566",
     status: "Em Aberto",
     value: "R$ 42.000,00",
@@ -174,15 +222,184 @@ export const defaultLeads: Lead[] = [
     temperature: "quente",
     iaSummary: "Qualificado pela Aurora com 95 pontos. Reunião de demonstração confirmada para amanhã às 15h.",
     timeIdle: 1,
-    tags: ["Agronegócio", "Reunião Agendada"],
+    tags: ["Solar", "solar", "energia-solar", "Reunião Agendada"],
   },
 ];
 
-export const defaultTasks: Task[] = [];
-export const defaultContracts: Contract[] = [];
-export const defaultActivitiesOnLoad: LeadActivity[] = [];
-export const getDefaultAppointments = (): Appointment[] => [];
-export const defaultSquads: Squad[] = [];
-export const defaultNotifications: Notification[] = [];
+export const defaultTasks: Task[] = [
+  {
+    id: "task-1",
+    title: "Apresentar Demonstração Comercial S.P.Y.",
+    description: "Reunião técnica de diagnóstico e tour guiado pela plataforma.",
+    priority: "Alta",
+    status: "Pendente",
+    dueDate: new Date().toISOString().split("T")[0],
+    assignedTo: "Lucas Martins",
+  },
+  {
+    id: "task-2",
+    title: "Enviar Minuta de Contrato e Proposta",
+    description: "Encaminhar proposta com módulo Financeiro + CRM Integrado.",
+    priority: "Média",
+    status: "Em Andamento",
+    dueDate: new Date().toISOString().split("T")[0],
+    assignedTo: "Mariana Rios",
+  },
+  {
+    id: "task-3",
+    title: "Configurar Integração de WhatsApp e Webhooks",
+    description: "Parametrizar canais oficiais e gatilhos de disparo com o SDR.",
+    priority: "Baixa",
+    status: "Concluída",
+    dueDate: new Date().toISOString().split("T")[0],
+    assignedTo: "Carlos Mendes",
+  },
+];
 
-export const defaultColaboradores: any[] = [];
+export const defaultContracts: Contract[] = [
+  {
+    id: "ct-1",
+    client: "Nexus Automação Industrial",
+    mrr: 4800,
+    status: "Ativo",
+    date: "01/08/2026",
+    plan: "Plano Enterprise S.P.Y.",
+  },
+  {
+    id: "ct-2",
+    client: "Solaris Energia Sustentável",
+    mrr: 3500,
+    status: "Ativo",
+    date: "15/07/2026",
+    plan: "Plano Solar Pro",
+  },
+  {
+    id: "ct-3",
+    client: "Hospitalar Care Diagnósticos",
+    mrr: 7200,
+    status: "Ativo",
+    date: "20/08/2026",
+    plan: "Plano Clínicas & Telemedicina",
+  },
+  {
+    id: "ct-4",
+    client: "EducaTech Cursos",
+    mrr: 5000,
+    status: "Ativo",
+    date: "02/09/2026",
+    plan: "Plano Acadêmico EAD",
+  },
+];
+
+export const defaultActivitiesOnLoad: LeadActivity[] = [];
+
+export const getDefaultAppointments = (): Appointment[] => [
+  {
+    id: "apt-1",
+    time: "14:00",
+    patient: "Carlos Eduardo Silva",
+    patientId: "p-1",
+    drId: "dr-1",
+    drName: "Dr. Marcelo Fonseca",
+    status: "Confirmado",
+    type: "Presencial",
+    room: "Consultório 102",
+    specialty: "Cardiologia",
+    phone: "(11) 98765-4321",
+    date: new Date().toISOString().split("T")[0],
+    notes: "Consulta de rotina com eletrocardiograma.",
+  },
+  {
+    id: "apt-2",
+    time: "15:30",
+    patient: "Mariana Souza Lima",
+    patientId: "p-2",
+    drId: "dr-2",
+    drName: "Dra. Camila Guimarães",
+    status: "Em Atendimento",
+    type: "Teleconsulta",
+    room: "Sala Virtual A",
+    specialty: "Dermatologia",
+    phone: "(11) 99876-5432",
+    date: new Date().toISOString().split("T")[0],
+    notes: "Avaliação de manchas e prescrição de cuidados.",
+  },
+  {
+    id: "apt-3",
+    time: "17:00",
+    patient: "Fernando Albuquerque",
+    patientId: "p-3",
+    drId: "dr-3",
+    drName: "Dr. Roberto Mendes",
+    status: "Finalizado",
+    type: "Presencial",
+    room: "Consultório 105",
+    specialty: "Ortopedia",
+    phone: "(11) 97654-3210",
+    date: new Date().toISOString().split("T")[0],
+    notes: "Retorno pós-exame de ressonância.",
+  },
+];
+
+export const defaultSquads: Squad[] = [
+  {
+    id: "sq-1",
+    nome: "Squad Vendas Enterprise",
+    departamento: "Comercial",
+    focoComercial: "Contas Corporativas e Franquias",
+    membros: ["Lucas Martins", "Mariana Rios", "Felipe Ramos"],
+    leader: "Lucas Martins",
+    cor: "#3b82f6",
+    faturamentoAlcancado: 142000,
+    meta: 150000,
+  } as any,
+  {
+    id: "sq-2",
+    nome: "Squad SDR & Inbound Growth",
+    departamento: "Pré-Vendas",
+    focoComercial: "Qualificação e Agendamentos",
+    membros: ["Beatriz Oliveira", "Thiago Rocha"],
+    leader: "Beatriz Oliveira",
+    cor: "#10b981",
+    faturamentoAlcancado: 78000,
+    meta: 80000,
+  } as any,
+];
+
+export const defaultNotifications: Notification[] = [
+  {
+    id: "notif-1",
+    title: "Meta do Mês Próxima!",
+    desc: "O Squad Enterprise atingiu 94% da meta mensal.",
+    type: "success",
+    timestamp: "Há 10 min",
+    read: false,
+  },
+  {
+    id: "notif-2",
+    title: "Novo Lead Qualificado",
+    desc: "Ana Carolina Ferraz foi classificada como Quente pela IA.",
+    type: "info",
+    timestamp: "Há 25 min",
+    read: false,
+  },
+];
+
+export const defaultColaboradores: any[] = [
+  {
+    id: "colab-1",
+    nome: "Lucas Martins",
+    email: "lucas.martins@empresa.com",
+    cargo: "Executivo Comercial Senior",
+    departamento: "Comercial",
+    status: "Ativo",
+  },
+  {
+    id: "colab-2",
+    nome: "Mariana Rios",
+    email: "mariana.rios@empresa.com",
+    cargo: "Closer & Parcerias",
+    departamento: "Comercial",
+    status: "Ativo",
+  },
+];

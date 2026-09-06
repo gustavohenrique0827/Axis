@@ -84,7 +84,10 @@ export function PipelineKanbanBoard({
   };
 
   const matchesStage = (l: any, stage: any) =>
-    l.stageId === stage.id || l.stage === stage.id || l.status === stage.id || l.status === stage.name;
+    String(l.stageId) === String(stage.id) ||
+    String(l.stage) === String(stage.id) ||
+    l.status === stage.id ||
+    l.status === stage.name;
 
   // Leads cujo stageId não bate com NENHUMA coluna atual — acontece quando uma
   // etapa é reordenada/excluída em Configurações > CRM > Funis (os ids das etapas

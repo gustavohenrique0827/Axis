@@ -78,7 +78,11 @@ export default function Pipeline() {
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const nicho = searchParams.get("nicho") || searchParams.get("filtro");
-    if (nicho) setSearchQuery(nicho);
+    if (nicho) {
+      setSearchQuery(nicho);
+    } else {
+      setSearchQuery("");
+    }
   }, [searchParams, setSearchQuery]);
 
   useEffect(() => {

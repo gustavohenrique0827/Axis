@@ -17,13 +17,33 @@ const STATUS_FLOW = ["Análise Concluída", "Visita Técnica", "Proposta Enviada
 
 const fmtBRL = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
 
+const DEFAULT_SOLAR_ROWS: SolarRow[] = [
+  { id: "sol-1", status: "Concluído", potencia_estimada_kwp: 8.4, valor_proposta: 38000, created_at: "2026-07-10T10:00:00Z", data_conclusao: "2026-08-15T10:00:00Z" },
+  { id: "sol-2", status: "Instalação", potencia_estimada_kwp: 45.0, valor_proposta: 165000, created_at: "2026-08-01T10:00:00Z", data_conclusao: null },
+  { id: "sol-3", status: "Homologação", potencia_estimada_kwp: 12.8, valor_proposta: 54000, created_at: "2026-08-12T10:00:00Z", data_conclusao: null },
+  { id: "sol-4", status: "Proposta Enviada", potencia_estimada_kwp: 120.0, valor_proposta: 420000, created_at: "2026-08-20T10:00:00Z", data_conclusao: null },
+  { id: "sol-5", status: "Visita Técnica", potencia_estimada_kwp: 6.2, valor_proposta: 28500, created_at: "2026-08-28T10:00:00Z", data_conclusao: null },
+  { id: "sol-6", status: "Concluído", potencia_estimada_kwp: 15.6, valor_proposta: 68000, created_at: "2026-07-20T10:00:00Z", data_conclusao: "2026-08-30T10:00:00Z" },
+];
+
 export default function PainelSolar() {
-  const [rows, setRows] = useState<SolarRow[]>([]);
+  const [rows, setRows] = useState<SolarRow[]>(() => {
+    try {
+      const saved = localStorage.getItem("spy_projetos_solar_painel");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return DEFAULT_SOLAR_ROWS;
+  });
 
   useEffect(() => {
     if (!supabase) return;
     supabase.from("solar_analises").select("id,status,potencia_estimada_kwp,valor_proposta,created_at,data_conclusao").then(({ data }) => {
-      if (data) setRows(data as SolarRow[]);
+      if (data && data.length > 0) setRows(data as SolarRow[]);
+    }).catch(err => {
+      console.warn("Solar painel data loaded from defaults:", err);
     });
   }, []);
 

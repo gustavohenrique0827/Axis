@@ -1,30 +1,149 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   Truck, Plus, Search, Phone, Mail, MapPin,
-  Building2, DollarSign, Package
+  Building2, DollarSign, Package, Trash2, X
 } from "lucide-react";
+import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
+import { useAuth } from "../../contexts/AuthContext";
+
+interface FornecedorItem {
+  id: string;
+  razaoSocial: string;
+  cnpj: string;
+  contato: string;
+  telefone: string;
+  email: string;
+  prazoEntrega: string;
+  categorias: string;
+}
+
+const DEFAULT_FORNECEDORES: FornecedorItem[] = [
+  { id: "1", razaoSocial: "Distribuidora Tech Brasil Ltda", cnpj: "12.345.678/0001-90", contato: "Marcos Vinicius", telefone: "(11) 3214-5500", email: "pedidos@techbrasil.com.br", prazoEntrega: "3 dias úteis", categorias: "Acessórios, Cabos, Carregadores" },
+  { id: "2", razaoSocial: "Global Imports Eletrônicos SA", cnpj: "98.765.432/0001-10", contato: "Fernanda Dias", telefone: "(11) 3322-8899", email: "vendas@globalimports.com", prazoEntrega: "5 dias úteis", categorias: "Smartwatches, Áudio, Fones" },
+  { id: "3", razaoSocial: "Atacadista Master Varejo", cnpj: "45.123.890/0001-33", contato: "Carlos Eduardo", telefone: "(19) 3881-2200", email: "comercial@mastervarejo.com.br", prazoEntrega: "2 dias úteis", categorias: "Embalagens, Suprimentos, Periféricos" },
+];
 
 export default function FornecedoresVarejo() {
-  const [fornecedores, setFornecedores] = useState([
-    { id: "1", razaoSocial: "Distribuidora Tech Brasil Ltda", cnpj: "12.345.678/0001-90", contato: "Marcos Vinicius", telefone: "(11) 3214-5500", email: "pedidos@techbrasil.com.br", prazoEntrega: "3 dias úteis", categorias: "Acessórios, Cabos, Carregadores" },
-    { id: "2", razaoSocial: "Global Imports Eletrônicos SA", cnpj: "98.765.432/0001-10", contato: "Fernanda Dias", telefone: "(11) 3322-8899", email: "vendas@globalimports.com", prazoEntrega: "5 dias úteis", categorias: "Smartwatches, Áudio, Fones" },
-  ]);
+  const { activeTenantId } = useAuth();
+  const storageKey = `spy_fornecedores_varejo_${activeTenantId || "default"}`;
+
+  const [fornecedores, setFornecedores] = useState<FornecedorItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? JSON.parse(saved) : DEFAULT_FORNECEDORES;
+    } catch {
+      return DEFAULT_FORNECEDORES;
+    }
+  });
+
+  const [search, setSearch] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+
+  // Form state
+  const [razaoSocial, setRazaoSocial] = useState("");
+  const [cnpj, setCnpj] = useState("");
+  const [contato, setContato] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [email, setEmail] = useState("");
+  const [prazoEntrega, setPrazoEntrega] = useState("3 dias úteis");
+  const [categorias, setCategorias] = useState("");
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(fornecedores));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [fornecedores, storageKey]);
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!razaoSocial.trim()) {
+      toast.error("Informe a Razão Social do fornecedor.");
+      return;
+    }
+
+    const newItem: FornecedorItem = {
+      id: crypto.randomUUID(),
+      razaoSocial: razaoSocial.trim(),
+      cnpj: cnpj.trim() || "00.000.000/0001-00",
+      contato: contato.trim() || "Comercial",
+      telefone: telefone.trim(),
+      email: email.trim(),
+      prazoEntrega: prazoEntrega.trim() || "3 dias úteis",
+      categorias: categorias.trim() || "Geral",
+    };
+
+    setFornecedores(prev => [newItem, ...prev]);
+    toast.success("Fornecedor cadastrado com sucesso!");
+    setModalOpen(false);
+
+    setRazaoSocial("");
+    setCnpj("");
+    setContato("");
+    setTelefone("");
+    setEmail("");
+    setCategorias("");
+  };
+
+  const handleDelete = (id: string) => {
+    setFornecedores(prev => prev.filter(f => f.id !== id));
+    toast.info("Fornecedor removido.");
+  };
+
+  const filtered = fornecedores.filter(f => (
+    f.razaoSocial.toLowerCase().includes(search.toLowerCase()) ||
+    f.cnpj.toLowerCase().includes(search.toLowerCase()) ||
+    f.categorias.toLowerCase().includes(search.toLowerCase()) ||
+    f.contato.toLowerCase().includes(search.toLowerCase())
+  ));
 
   return (
     <PageContainer
       title="Fornecedores de Mercadorias"
       description="Cadastro de distribuidoras, condições de pagamento, prazos de entrega e catálogo de produtos."
       actions={
-        <Button onClick={() => toast.info("Cadastro de novo fornecedor.")} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+        <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
           <Plus className="w-3.5 h-3.5" /> Novo Fornecedor
         </Button>
       }
     >
+      {/* Metrics */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Fornecedores Cadastrados</span>
+          <div className="text-2xl font-black text-[var(--color-text-primary)]">{fornecedores.length}</div>
+        </Card>
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Prazo Médio de Reposição</span>
+          <div className="text-2xl font-black text-blue-500">3.5 dias</div>
+        </Card>
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Parceiros Homologados</span>
+          <div className="text-2xl font-black text-emerald-500">100%</div>
+        </Card>
+      </div>
+
+      {/* Search Bar */}
+      <div className="mb-4">
+        <div className="relative w-full sm:w-80">
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]" />
+          <input
+            type="text"
+            placeholder="Buscar fornecedor, CNPJ ou categoria..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+          />
+        </div>
+      </div>
+
+      {/* List */}
       <div className="space-y-3">
-        {fornecedores.map(f => (
+        {filtered.map(f => (
           <div key={f.id} className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <div className="flex items-center gap-2 mb-1">
@@ -34,19 +153,136 @@ export default function FornecedoresVarejo() {
                 </span>
               </div>
               <p className="text-[11px] text-[var(--color-text-muted)]">
-                Contato: <strong className="text-[var(--color-text-primary)]">{f.contato}</strong> ({f.telefone}) • Prazo de Entrega: {f.prazoEntrega}
+                Contato: <strong className="text-[var(--color-text-primary)]">{f.contato}</strong> {f.telefone && `(${f.telefone})`} {f.email && `• ${f.email}`} • Prazo: {f.prazoEntrega}
               </p>
               <p className="text-[10px] text-[var(--color-primary-blue)] font-bold mt-1">
                 Linhas: {f.categorias}
               </p>
             </div>
 
-            <Button size="sm" variant="outline" onClick={() => toast.success(`Catálogo de ${f.razaoSocial} aberto.`)} className="h-8 text-xs font-bold rounded-xl self-end sm:self-center">
-              Fazer Pedido
-            </Button>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button size="sm" variant="outline" onClick={() => toast.success(`Pedido para ${f.razaoSocial} iniciado.`)} className="h-8 text-xs font-bold rounded-xl">
+                Novo Pedido de Compra
+              </Button>
+              <Button size="sm" variant="ghost" onClick={() => handleDelete(f.id)} className="h-8 w-8 p-0 text-red-500 hover:bg-red-500/10 rounded-xl">
+                <Trash2 className="w-3.5 h-3.5" />
+              </Button>
+            </div>
           </div>
         ))}
+
+        {filtered.length === 0 && (
+          <div className="p-8 text-center text-xs text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl">
+            Nenhum fornecedor encontrado.
+          </div>
+        )}
       </div>
+
+      {/* Modal de Novo Fornecedor */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Cadastrar Novo Fornecedor</h3>
+              <button onClick={() => setModalOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreate} className="space-y-3">
+              <div>
+                <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Razão Social / Nome Fantasia</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ex: Distribuidora Nacional de Peças SA"
+                  value={razaoSocial}
+                  onChange={e => setRazaoSocial(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">CNPJ</label>
+                  <input
+                    type="text"
+                    placeholder="00.000.000/0001-00"
+                    value={cnpj}
+                    onChange={e => setCnpj(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Nome do Vendedor / Contato</label>
+                  <input
+                    type="text"
+                    placeholder="Nome completo"
+                    value={contato}
+                    onChange={e => setContato(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Telefone / WhatsApp</label>
+                  <input
+                    type="text"
+                    placeholder="(11) 90000-0000"
+                    value={telefone}
+                    onChange={e => setTelefone(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">E-mail Comercial</label>
+                  <input
+                    type="email"
+                    placeholder="pedidos@empresa.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Prazo de Entrega</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: 3 dias úteis"
+                    value={prazoEntrega}
+                    onChange={e => setPrazoEntrega(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Linhas / Categorias</label>
+                  <input
+                    type="text"
+                    placeholder="Ex: Acessórios, Cabos"
+                    value={categorias}
+                    onChange={e => setCategorias(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="h-9 px-4 text-xs font-bold rounded-xl">
+                  Cancelar
+                </Button>
+                <Button type="submit" className="h-9 px-4 text-xs font-bold rounded-xl bg-[var(--color-primary-blue)] text-white">
+                  Salvar Fornecedor
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </PageContainer>
   );
 }

@@ -1,62 +1,390 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   Layers, Plus, Search, DollarSign, Users, TrendingUp,
-  Building2, Trash2, Edit2
+  Building2, Trash2, Edit2, X, AlertCircle, PieChart
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
+import { useAuth } from "../../contexts/AuthContext";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
+
+type CentroCusto = {
+  id: string;
+  nome: string;
+  codigo: string;
+  orcamento: number;
+  gasto: number;
+  responsavel: string;
+  created_at?: string;
+};
+
+const INITIAL_CENTROS: CentroCusto[] = [
+  { id: "1", nome: "Operação Comercial & Vendas", codigo: "CC-01", orcamento: 45000, gasto: 32000, responsavel: "Diretoria Comercial" },
+  { id: "2", nome: "Tecnologia & Produto", codigo: "CC-02", orcamento: 60000, gasto: 48500, responsavel: "Engenharia" },
+  { id: "3", nome: "Marketing & Growth", codigo: "CC-03", orcamento: 30000, gasto: 27800, responsavel: "Head de Marketing" },
+  { id: "4", nome: "Administrativo & Infra", codigo: "CC-04", orcamento: 25000, gasto: 19400, responsavel: "Financeiro / RH" },
+];
 
 export default function FinanceiroCentrosCusto() {
-  const [centros, setCentros] = useState([
-    { id: "1", nome: "Operação Comercial & Vendas", codigo: "CC-01", orcamento: 45000, gasto: 32000, responsavel: "Diretoria Comercial" },
-    { id: "2", nome: "Tecnologia & Produto", codigo: "CC-02", orcamento: 60000, gasto: 48500, responsavel: "Engenharia" },
-    { id: "3", nome: "Marketing & Growth", codigo: "CC-03", orcamento: 30000, gasto: 27800, responsavel: "Head de Marketing" },
-    { id: "4", nome: "Administrativo & Infra", codigo: "CC-04", orcamento: 25000, gasto: 19400, responsavel: "Financeiro / RH" },
-  ]);
+  const { user } = useAuth();
+  const tenantId = user?.tenant_id || "default";
+  const storageKey = `spy_centros_custo_${tenantId}`;
+
+  const [centros, setCentros] = useState<CentroCusto[]>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
+    }
+    return INITIAL_CENTROS;
+  });
+
+  const [search, setSearch] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Form State
+  const [nome, setNome] = useState("");
+  const [codigo, setCodigo] = useState("");
+  const [orcamento, setOrcamento] = useState("");
+  const [gasto, setGasto] = useState("");
+  const [responsavel, setResponsavel] = useState("");
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(centros));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [centros, storageKey]);
+
+  const handleOpenNew = () => {
+    setEditingId(null);
+    setNome("");
+    setCodigo(`CC-0${centros.length + 1}`);
+    setOrcamento("");
+    setGasto("0");
+    setResponsavel(user?.name || "");
+    setShowModal(true);
+  };
+
+  const handleOpenEdit = (c: CentroCusto) => {
+    setEditingId(c.id);
+    setNome(c.nome);
+    setCodigo(c.codigo);
+    setOrcamento(c.orcamento.toString());
+    setGasto(c.gasto.toString());
+    setResponsavel(c.responsavel);
+    setShowModal(true);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nome.trim()) {
+      toast.error("Informe o nome do centro de custo.");
+      return;
+    }
+
+    const numOrcamento = parseFloat(orcamento) || 0;
+    const numGasto = parseFloat(gasto) || 0;
+
+    if (editingId) {
+      setCentros(prev =>
+        prev.map(c =>
+          c.id === editingId
+            ? {
+                ...c,
+                nome: nome.trim(),
+                codigo: codigo.trim(),
+                orcamento: numOrcamento,
+                gasto: numGasto,
+                responsavel: responsavel.trim() || "Responsável",
+              }
+            : c
+        )
+      );
+      toast.success("Centro de custo atualizado com sucesso!");
+    } else {
+      const novo: CentroCusto = {
+        id: "cc_" + Date.now(),
+        nome: nome.trim(),
+        codigo: codigo.trim() || `CC-0${centros.length + 1}`,
+        orcamento: numOrcamento,
+        gasto: numGasto,
+        responsavel: responsavel.trim() || user?.name || "Responsável",
+        created_at: new Date().toISOString(),
+      };
+      setCentros(prev => [...prev, novo]);
+      toast.success("Centro de custo criado com sucesso!");
+    }
+
+    setShowModal(false);
+  };
+
+  const handleDelete = async (id: string) => {
+    const ok = await confirmDialog({
+      title: "Excluir Centro de Custo",
+      message: "Tem certeza de que deseja excluir esta unidade de despesa?",
+      confirmText: "Sim, Excluir",
+      cancelText: "Cancelar",
+      variant: "danger",
+    });
+    if (!ok) return;
+
+    setCentros(prev => prev.filter(c => c.id !== id));
+    toast.success("Centro de custo excluído.");
+  };
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return centros.filter(
+      c =>
+        c.nome.toLowerCase().includes(q) ||
+        c.codigo.toLowerCase().includes(q) ||
+        c.responsavel.toLowerCase().includes(q)
+    );
+  }, [centros, search]);
+
+  const totalOrcado = centros.reduce((s, c) => s + c.orcamento, 0);
+  const totalGasto = centros.reduce((s, c) => s + c.gasto, 0);
+  const saldoGeral = totalOrcado - totalGasto;
+  const percGeral = totalOrcado > 0 ? Math.round((totalGasto / totalOrcado) * 100) : 0;
 
   return (
     <PageContainer
       title="Centros de Custo & Squads"
       description="Gerencie unidades de despesa, orçamentos departamentais e centros de resultado."
       actions={
-        <Button onClick={() => toast.info("Configure novos centros de custo pelo menu Configurações > Financeiro.")} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+        <Button onClick={handleOpenNew} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs bg-[var(--color-primary-blue)] text-white hover:opacity-95">
           <Plus className="w-3.5 h-3.5" /> Novo Centro de Custo
         </Button>
       }
     >
+      {/* KPIs */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Orçamento Total</span>
+            <DollarSign className="w-4 h-4 text-[var(--color-primary-blue)]" />
+          </div>
+          <div className="text-2xl font-black text-[var(--color-text-primary)]">
+            R$ {totalOrcado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+          </div>
+        </Card>
+
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-amber-500/25">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Total Consumido</span>
+            <TrendingUp className="w-4 h-4 text-amber-500" />
+          </div>
+          <div className="text-2xl font-black text-amber-500">
+            R$ {totalGasto.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+          </div>
+          <span className="text-[10px] text-[var(--color-text-muted)] block mt-0.5">{percGeral}% do teto global</span>
+        </Card>
+
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-emerald-500/25">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Saldo Disponível</span>
+            <DollarSign className="w-4 h-4 text-emerald-500" />
+          </div>
+          <div className="text-2xl font-black text-emerald-500">
+            R$ {saldoGeral.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+          </div>
+        </Card>
+
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">Unidades de Custo</span>
+            <Layers className="w-4 h-4 text-indigo-500" />
+          </div>
+          <div className="text-2xl font-black text-[var(--color-text-primary)]">
+            {centros.length}
+          </div>
+        </Card>
+      </div>
+
+      {/* Search */}
+      <div className="flex items-center justify-between gap-3 mb-5">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+          <input
+            type="text"
+            placeholder="Buscar por nome, código ou gestor..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl pl-10 pr-4 py-2 text-xs text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+          />
+        </div>
+      </div>
+
+      {/* Grid of Centros de Custo */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        {centros.map(c => {
-          const perc = Math.round((c.gasto / c.orcamento) * 100);
+        {filtered.map(c => {
+          const perc = c.orcamento > 0 ? Math.round((c.gasto / c.orcamento) * 100) : 0;
           return (
-            <div key={c.id} className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs space-y-3">
+            <div key={c.id} className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs space-y-3 relative group">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] font-bold">
                   {c.codigo}
                 </span>
-                <span className="text-[10px] font-bold text-[var(--color-text-muted)]">{c.responsavel}</span>
+                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button
+                    onClick={() => handleOpenEdit(c)}
+                    className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-primary-blue)] transition-colors"
+                    title="Editar"
+                  >
+                    <Edit2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(c.id)}
+                    className="p-1 text-[var(--color-text-muted)] hover:text-rose-500 transition-colors"
+                    title="Excluir"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-              <h4 className="text-xs font-bold text-[var(--color-text-primary)]">{c.nome}</h4>
+
+              <div>
+                <h4 className="text-xs font-bold text-[var(--color-text-primary)]">{c.nome}</h4>
+                <p className="text-[10px] text-[var(--color-text-muted)] mt-0.5">Gestor: {c.responsavel}</p>
+              </div>
 
               <div>
                 <div className="flex justify-between text-[11px] mb-1">
-                  <span className="text-[var(--color-text-muted)]">Consumido:</span>
-                  <span className="font-bold text-[var(--color-text-primary)]">{perc}%</span>
+                  <span className="text-[var(--color-text-muted)]">Consumo:</span>
+                  <span className={`font-bold ${perc > 90 ? 'text-rose-500' : perc > 75 ? 'text-amber-500' : 'text-emerald-500'}`}>
+                    {perc}%
+                  </span>
                 </div>
                 <div className="w-full h-2 rounded-full bg-[var(--color-surface-sunken)] overflow-hidden">
-                  <div className={`h-full rounded-full ${perc > 90 ? 'bg-rose-500' : perc > 75 ? 'bg-amber-500' : 'bg-emerald-500'}`} style={{ width: `${perc}%` }} />
+                  <div
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      perc > 90 ? 'bg-rose-500' : perc > 75 ? 'bg-amber-500' : 'bg-emerald-500'
+                    }`}
+                    style={{ width: `${Math.min(perc, 100)}%` }}
+                  />
                 </div>
               </div>
 
               <div className="pt-2 border-t border-[var(--color-border-subtle)] flex justify-between text-[11px]">
-                <span className="text-[var(--color-text-muted)]">Gasto: <strong className="text-[var(--color-text-primary)]">R$ {c.gasto.toLocaleString("pt-BR")}</strong></span>
-                <span className="text-[var(--color-text-muted)]">Teto: <strong>R$ {c.orcamento.toLocaleString("pt-BR")}</strong></span>
+                <span className="text-[var(--color-text-muted)]">
+                  Gasto: <strong className="text-[var(--color-text-primary)]">R$ {c.gasto.toLocaleString("pt-BR")}</strong>
+                </span>
+                <span className="text-[var(--color-text-muted)]">
+                  Teto: <strong>R$ {c.orcamento.toLocaleString("pt-BR")}</strong>
+                </span>
               </div>
             </div>
           );
         })}
       </div>
+
+      {filtered.length === 0 && (
+        <div className="p-12 text-center text-xs text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl">
+          Nenhum centro de custo cadastrado.
+        </div>
+      )}
+
+      {/* Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl animate-in fade-in-50 zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border-subtle)]">
+              <h3 className="text-base font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                <Layers className="w-4 h-4 text-[var(--color-primary-blue)]" />
+                {editingId ? "Editar Centro de Custo" : "Novo Centro de Custo"}
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-1 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSave} className="space-y-3">
+              <div>
+                <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                  Nome do Centro / Unidade *
+                </label>
+                <input
+                  value={nome}
+                  onChange={e => setNome(e.target.value)}
+                  placeholder="Ex: Marketing Digital & Performance"
+                  required
+                  className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Código Interno
+                  </label>
+                  <input
+                    value={codigo}
+                    onChange={e => setCodigo(e.target.value)}
+                    placeholder="CC-05"
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Gestor / Responsável
+                  </label>
+                  <input
+                    value={responsavel}
+                    onChange={e => setResponsavel(e.target.value)}
+                    placeholder="Nome do líder"
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Orçamento Mensal (R$)
+                  </label>
+                  <input
+                    type="number"
+                    value={orcamento}
+                    onChange={e => setOrcamento(e.target.value)}
+                    placeholder="50000"
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)] font-mono"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Gasto Atual (R$)
+                  </label>
+                  <input
+                    type="number"
+                    value={gasto}
+                    onChange={e => setGasto(e.target.value)}
+                    placeholder="0"
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)] font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--color-border-subtle)]">
+                <Button type="button" variant="ghost" onClick={() => setShowModal(false)} className="text-xs">
+                  Cancelar
+                </Button>
+                <Button type="submit" className="text-xs font-bold bg-[var(--color-primary-blue)] text-white">
+                  {editingId ? "Salvar Alterações" : "Criar Centro de Custo"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </PageContainer>
   );
 }

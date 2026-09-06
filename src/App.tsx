@@ -219,6 +219,7 @@ function AppContent() {
           <Route path="crm">
             <Route index element={<Navigate to="pipeline" replace />} />
             <Route path="pipeline" element={<Pipeline />} />
+            <Route path="leads" element={<Navigate to="/app/crm/pipeline" replace />} />
             <Route path="contatos" element={<Contatos />} />
             <Route path="clientes" element={<Clientes />} />
             <Route path="empresas" element={<Empresas />} />
@@ -239,6 +240,8 @@ function AppContent() {
             <Route path="eventos" element={<Eventos />} />
             <Route path="disponibilidade" element={<Disponibilidade />} />
             <Route path="configuracoes" element={<AgendaConfiguracoes />} />
+            <Route path="reunioes" element={<ReunioesList />} />
+            <Route path="reunioes/:id" element={<ReuniaoRoom />} />
           </Route>
 
           {/* Operações & Tarefas */}
@@ -267,6 +270,8 @@ function AppContent() {
           {/* Módulo Financeiro */}
           <Route path="financeiro" element={<FinanceiroLayout />}>
             <Route index element={<FinanceiroVisaoGeral />} />
+            <Route path="dashboard" element={<FinanceiroVisaoGeral />} />
+            <Route path="painel" element={<FinanceiroVisaoGeral />} />
             <Route path="visao-geral" element={<FinanceiroVisaoGeral />} />
             <Route path="receber" element={<FinanceiroReceber />} />
             <Route path="pagar" element={<FinanceiroPagar />} />
@@ -286,7 +291,8 @@ function AppContent() {
 
           {/* Verticais de Nicho: Imobiliário */}
           <Route path="imobiliario">
-            <Route index element={<Navigate to="painel" replace />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<ImobiliarioPainel />} />
             <Route path="painel" element={<ImobiliarioPainel />} />
             <Route path="imoveis" element={<ImobiliariosImoveis />} />
             <Route path="proprietarios" element={<Proprietarios />} />
@@ -302,9 +308,11 @@ function AppContent() {
 
           {/* Verticais de Nicho: Energia Solar */}
           <Route path="energia-solar">
-            <Route index element={<Navigate to="painel" replace />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<PainelSolar />} />
             <Route path="painel" element={<PainelSolar />} />
             <Route path="projetos" element={<ProjetosSolar />} />
+            <Route path="dimensionamentos" element={<AnaliseFatura />} />
             <Route path="analise-fatura" element={<AnaliseFatura />} />
             <Route path="vistorias" element={<VistoriasSolar />} />
             <Route path="instalacoes" element={<InstalacoesSolar />} />
@@ -313,9 +321,11 @@ function AppContent() {
           </Route>
           {/* Alias legado /solar */}
           <Route path="solar">
-            <Route index element={<Navigate to="/app/energia-solar/painel" replace />} />
+            <Route index element={<Navigate to="/app/energia-solar/dashboard" replace />} />
+            <Route path="dashboard" element={<PainelSolar />} />
             <Route path="painel" element={<PainelSolar />} />
             <Route path="projetos" element={<ProjetosSolar />} />
+            <Route path="dimensionamentos" element={<AnaliseFatura />} />
             <Route path="analise-fatura" element={<AnaliseFatura />} />
             <Route path="vistorias" element={<VistoriasSolar />} />
             <Route path="instalacoes" element={<InstalacoesSolar />} />
@@ -325,9 +335,11 @@ function AppContent() {
 
           {/* Verticais de Nicho: Automotivo */}
           <Route path="automotivo">
-            <Route index element={<Navigate to="painel" replace />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<PainelAutomotivo />} />
             <Route path="painel" element={<PainelAutomotivo />} />
             <Route path="veiculos" element={<ImobiliariosVeiculos />} />
+            <Route path="captacoes" element={<Captacoes />} />
             <Route path="avaliacoes" element={<AvaliacoesVeiculos />} />
             <Route path="consignacoes" element={<ConsignacoesVeiculos />} />
             <Route path="trocas" element={<TrocasVeiculos />} />
@@ -337,9 +349,11 @@ function AppContent() {
           </Route>
           {/* Alias legado /concessionaria */}
           <Route path="concessionaria">
-            <Route index element={<Navigate to="/app/automotivo/painel" replace />} />
+            <Route index element={<Navigate to="/app/automotivo/dashboard" replace />} />
+            <Route path="dashboard" element={<PainelAutomotivo />} />
             <Route path="painel" element={<PainelAutomotivo />} />
             <Route path="veiculos" element={<ImobiliariosVeiculos />} />
+            <Route path="captacoes" element={<Captacoes />} />
             <Route path="avaliacoes" element={<AvaliacoesVeiculos />} />
             <Route path="consignacoes" element={<ConsignacoesVeiculos />} />
             <Route path="trocas" element={<TrocasVeiculos />} />
@@ -350,7 +364,8 @@ function AppContent() {
 
           {/* Verticais de Nicho: Varejo */}
           <Route path="varejo">
-            <Route index element={<Navigate to="painel" replace />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<PainelVarejo />} />
             <Route path="painel" element={<PainelVarejo />} />
             <Route path="vendas" element={<VarejoVendas />} />
             <Route path="pedidos" element={<PedidosVarejo />} />
@@ -361,7 +376,8 @@ function AppContent() {
 
           {/* Verticais de Nicho: Clínicas */}
           <Route path="clinicas">
-            <Route index element={<Navigate to="painel" replace />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<PainelGeral />} />
             <Route path="painel" element={<PainelGeral />} />
             <Route path="agenda" element={<AgendaMedica />} />
             <Route path="profissionais" element={<ProfissionaisClinica />} />
@@ -377,7 +393,8 @@ function AppContent() {
           </Route>
           {/* Alias legado /clinica */}
           <Route path="clinica">
-            <Route index element={<Navigate to="/app/clinicas/painel" replace />} />
+            <Route index element={<Navigate to="/app/clinicas/dashboard" replace />} />
+            <Route path="dashboard" element={<PainelGeral />} />
             <Route path="painel" element={<PainelGeral />} />
             <Route path="agenda" element={<AgendaMedica />} />
             <Route path="profissionais" element={<ProfissionaisClinica />} />
@@ -394,7 +411,8 @@ function AppContent() {
 
           {/* Verticais de Nicho: Educação */}
           <Route path="educacao">
-            <Route index element={<Navigate to="painel" replace />} />
+            <Route index element={<Navigate to="dashboard" replace />} />
+            <Route path="dashboard" element={<PainelGeralEdu />} />
             <Route path="painel" element={<PainelGeralEdu />} />
             <Route path="turmas" element={<EducationTurmas />} />
             <Route path="alunos" element={<AlunosEdu />} />

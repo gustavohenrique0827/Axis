@@ -3,18 +3,26 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   Receipt, Plus, QrCode, Copy, CheckCircle2, Clock,
-  AlertTriangle, Search, ExternalLink, DollarSign
+  AlertTriangle, Search, ExternalLink, DollarSign, X, Trash2, Check
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { useData } from "../../contexts/DataContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
 
 export default function FinanceiroCobrancas() {
-  const { financeEntries } = useData();
+  const { financeEntries, addFinanceEntry, updateFinanceEntry, deleteFinanceEntry } = useData();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Todos");
   const [showModal, setShowModal] = useState(false);
   const [novaCobranca, setNovaCobranca] = useState({
-    cliente: "", valor: "", vencimento: "", metodo: "Pix"
+    cliente: "",
+    valor: "",
+    vencimento: new Date().toISOString().split("T")[0],
+    metodo: "Pix",
+    categoria: "Receita de Vendas",
   });
 
   const cobrancas = useMemo(() => {
@@ -25,19 +33,77 @@ export default function FinanceiroCobrancas() {
         cliente: f.description,
         valor: f.value,
         vencimento: f.date,
-        metodo: f.value > 1000 ? "Boleto" : "Pix",
+        metodo: f.value > 2000 ? "Boleto" : "Pix",
         status: f.status === "Pago" ? "Liquidada" : "Pendente",
+        categoria: f.category,
       }));
   }, [financeEntries]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return cobrancas.filter(c => c.cliente.toLowerCase().includes(q));
-  }, [cobrancas, search]);
+    return cobrancas.filter(c => {
+      const matchQ = c.cliente.toLowerCase().includes(q) || c.metodo.toLowerCase().includes(q);
+      const matchSt = statusFilter === "Todos" || c.status === statusFilter;
+      return matchQ && matchSt;
+    });
+  }, [cobrancas, search, statusFilter]);
 
-  const handleCopyPix = () => {
-    navigator.clipboard.writeText("00020126580014br.gov.bcb.pix0136123e4567-e89b-12d3-a456-4266141740005204000053039865802BR5913SPY GESTAO6009SAO PAULO62070503***6304E2CA");
-    toast.success("Código Pix Copia e Cola copiado!");
+  const handleCopyPix = (cliente: string, valor: number) => {
+    const pixPayload = `00020126580014br.gov.bcb.pix0136${Math.random().toString(36).substring(2, 15)}520400005303986540${valor.toFixed(2)}5802BR5913SPY GESTAO6009SAO PAULO62070503***6304${Math.floor(1000 + Math.random() * 9000)}`;
+    navigator.clipboard.writeText(pixPayload);
+    toast.success(`Chave Copia e Cola Pix gerada para ${cliente}!`);
+  };
+
+  const handleToggleStatus = (id: string, currentStatus: string) => {
+    const nextStatus = currentStatus === "Liquidada" ? "Pendente" : "Pago";
+    updateFinanceEntry(id, { status: nextStatus });
+    toast.success(nextStatus === "Pago" ? "Cobrança marcada como Liquidada!" : "Cobrança retornada para Pendente.");
+  };
+
+  const handleDelete = async (id: string) => {
+    const ok = await confirmDialog({
+      title: "Cancelar Cobrança",
+      message: "Deseja realmente excluir este título a receber?",
+      confirmText: "Sim, Excluir",
+      cancelText: "Voltar",
+      variant: "danger",
+    });
+    if (!ok) return;
+
+    deleteFinanceEntry(id);
+    toast.success("Cobrança removida.");
+  };
+
+  const handleCreateCobranca = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!novaCobranca.cliente.trim()) {
+      toast.error("Informe o cliente / sacado.");
+      return;
+    }
+    const val = parseFloat(novaCobranca.valor.replace(/\./g, "").replace(",", ".")) || 0;
+    if (val <= 0) {
+      toast.error("Informe um valor positivo.");
+      return;
+    }
+
+    addFinanceEntry({
+      description: novaCobranca.cliente.trim(),
+      value: val,
+      type: "Receber",
+      category: novaCobranca.categoria || "Serviços / Honorários",
+      date: novaCobranca.vencimento,
+      status: "Pendente",
+    });
+
+    toast.success("Cobrança emitida e vinculada ao Contas a Receber!");
+    setShowModal(false);
+    setNovaCobranca({
+      cliente: "",
+      valor: "",
+      vencimento: new Date().toISOString().split("T")[0],
+      metodo: "Pix",
+      categoria: "Receita de Vendas",
+    });
   };
 
   return (
@@ -45,7 +111,10 @@ export default function FinanceiroCobrancas() {
       title="Gestão de Cobranças & Faturamento"
       description="Emissão e acompanhamento de faturas, boletos bancários e cobranças via Pix com conciliação automática."
       actions={
-        <Button onClick={() => setShowModal(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+        <Button
+          onClick={() => setShowModal(true)}
+          className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs bg-[var(--color-primary-blue)] text-white hover:opacity-95"
+        >
           <Plus className="w-3.5 h-3.5" /> Nova Cobrança
         </Button>
       }
@@ -68,17 +137,33 @@ export default function FinanceiroCobrancas() {
         ))}
       </div>
 
-      {/* Search Bar */}
-      <div className="flex items-center gap-3 mb-5">
-        <div className="relative flex-1 max-w-md">
+      {/* Search & Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-5">
+        <div className="relative flex-1 w-full max-w-md">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
           <input
             type="text"
-            placeholder="Buscar cobrança por cliente ou identificador..."
+            placeholder="Buscar cobrança por cliente ou método..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl pl-10 pr-4 py-2 text-xs text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary-blue)]"
           />
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {["Todos", "Liquidada", "Pendente"].map(st => (
+            <button
+              key={st}
+              onClick={() => setStatusFilter(st)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                statusFilter === st
+                  ? "bg-[var(--color-primary-blue)] text-white border-[var(--color-primary-blue)]"
+                  : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] border-[var(--color-border-subtle)] hover:bg-[var(--color-surface-elevated)]"
+              }`}
+            >
+              {st}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -93,7 +178,7 @@ export default function FinanceiroCobrancas() {
                 <th className="px-4 py-3">Vencimento</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3 text-right">Valor</th>
-                <th className="px-5 py-3 text-right">Ação</th>
+                <th className="px-5 py-3 text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border-subtle)]">
@@ -107,23 +192,35 @@ export default function FinanceiroCobrancas() {
                   </td>
                   <td className="px-4 py-3.5 font-mono text-[var(--color-text-muted)]">{c.vencimento}</td>
                   <td className="px-4 py-3.5">
-                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${
-                      c.status === "Liquidada"
-                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                        : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                    }`}>
+                    <button
+                      onClick={() => handleToggleStatus(c.id, c.status)}
+                      className={`text-[10px] font-bold uppercase px-2.5 py-1 rounded-full border transition-all inline-flex items-center gap-1 ${
+                        c.status === "Liquidada"
+                          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20 hover:bg-emerald-500/20"
+                          : "bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20"
+                      }`}
+                      title="Clique para alternar o status"
+                    >
+                      {c.status === "Liquidada" ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
                       {c.status}
-                    </span>
+                    </button>
                   </td>
-                  <td className="px-4 py-3.5 text-right font-bold text-[var(--color-text-primary)]">
+                  <td className="px-4 py-3.5 text-right font-bold text-[var(--color-text-primary)] font-mono">
                     R$ {c.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                   </td>
-                  <td className="px-5 py-3.5 text-right">
+                  <td className="px-5 py-3.5 text-right flex items-center justify-end gap-1.5">
                     <button
-                      onClick={handleCopyPix}
+                      onClick={() => handleCopyPix(c.cliente, c.valor)}
                       className="px-2.5 py-1 rounded-lg bg-[var(--color-surface-sunken)] hover:bg-[var(--color-primary-blue)] hover:text-white border border-[var(--color-border-default)] text-[11px] font-bold transition-all inline-flex items-center gap-1"
                     >
-                      <Copy className="w-3 h-3" /> Pix Copia e Cola
+                      <Copy className="w-3 h-3" /> Pix
+                    </button>
+                    <button
+                      onClick={() => handleDelete(c.id)}
+                      className="p-1 rounded-lg text-[var(--color-text-muted)] hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                      title="Excluir Cobrança"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </td>
                 </tr>
@@ -131,7 +228,7 @@ export default function FinanceiroCobrancas() {
               {filtered.length === 0 && (
                 <tr>
                   <td colSpan={6} className="py-12 text-center text-[var(--color-text-muted)]">
-                    Nenhuma cobrança pendente.
+                    Nenhuma cobrança encontrada.
                   </td>
                 </tr>
               )}
@@ -142,30 +239,50 @@ export default function FinanceiroCobrancas() {
 
       {showModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl">
-            <h3 className="text-base font-bold text-[var(--color-text-primary)]">Nova Cobrança</h3>
-            <div className="space-y-3">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl animate-in fade-in-50 zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border-subtle)]">
+              <h3 className="text-base font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-[var(--color-primary-blue)]" /> Nova Cobrança
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-1 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateCobranca} className="space-y-3">
               <div>
-                <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">Cliente / Sacado</label>
+                <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                  Cliente / Sacado *
+                </label>
                 <input
                   value={novaCobranca.cliente}
                   onChange={e => setNovaCobranca({ ...novaCobranca, cliente: e.target.value })}
                   placeholder="Nome do cliente ou empresa"
+                  required
                   className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
                 />
               </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">Valor (R$)</label>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Valor (R$) *
+                  </label>
                   <input
                     value={novaCobranca.valor}
                     onChange={e => setNovaCobranca({ ...novaCobranca, valor: e.target.value })}
-                    placeholder="1500,00"
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                    placeholder="1500.00"
+                    required
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] font-mono focus:outline-none focus:border-[var(--color-primary-blue)]"
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">Método</label>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Método
+                  </label>
                   <select
                     value={novaCobranca.metodo}
                     onChange={e => setNovaCobranca({ ...novaCobranca, metodo: e.target.value })}
@@ -177,11 +294,41 @@ export default function FinanceiroCobrancas() {
                   </select>
                 </div>
               </div>
-            </div>
-            <div className="flex justify-end gap-2 pt-3 border-t border-[var(--color-border-subtle)]">
-              <Button variant="ghost" onClick={() => setShowModal(false)} className="text-xs">Cancelar</Button>
-              <Button onClick={() => { toast.success("Cobrança gerada com sucesso!"); setShowModal(false); }} className="text-xs font-bold">Emitir Cobrança</Button>
-            </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Vencimento
+                  </label>
+                  <input
+                    type="date"
+                    value={novaCobranca.vencimento}
+                    onChange={e => setNovaCobranca({ ...novaCobranca, vencimento: e.target.value })}
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Categoria
+                  </label>
+                  <input
+                    value={novaCobranca.categoria}
+                    onChange={e => setNovaCobranca({ ...novaCobranca, categoria: e.target.value })}
+                    placeholder="Honorários, Produtos..."
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--color-border-subtle)]">
+                <Button type="button" variant="ghost" onClick={() => setShowModal(false)} className="text-xs">
+                  Cancelar
+                </Button>
+                <Button type="submit" className="text-xs font-bold bg-[var(--color-primary-blue)] text-white">
+                  Emitir Cobrança
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}

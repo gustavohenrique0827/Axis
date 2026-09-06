@@ -1,55 +1,285 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   DollarSign, CheckCircle2, Clock, Users, ArrowUpRight,
-  TrendingUp, Download, Building2
+  TrendingUp, Download, Building2, Plus, Search, Trash2, X, AlertCircle
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../contexts/AuthContext";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
+
+type Comissao = {
+  id: string;
+  imovel: string;
+  corretor: string;
+  valorVenda: number;
+  comissaoTotal: number;
+  comissaoCorretor: number;
+  comissaoImobiliaria: number;
+  status: "A Receber" | "Em Tramitação" | "Liquidada";
+  previsao: string;
+  observacoes?: string;
+  created_at?: string;
+};
+
+const INITIAL_COMISSOES: Comissao[] = [
+  {
+    id: "1",
+    imovel: "Apartamento 142 - Terraço Jardins",
+    corretor: "Gustavo Henrique",
+    valorVenda: 1850000,
+    comissaoTotal: 111000,
+    comissaoCorretor: 55500,
+    comissaoImobiliaria: 55500,
+    status: "A Receber",
+    previsao: "15/09/2026",
+    observacoes: "Contrato assinado em cartório, aguardando liberação do financiamento bancário."
+  },
+  {
+    id: "2",
+    imovel: "Casa em Condomínio - Alphaville",
+    corretor: "Mariana Costa",
+    valorVenda: 3200000,
+    comissaoTotal: 192000,
+    comissaoCorretor: 96000,
+    comissaoImobiliaria: 96000,
+    status: "Liquidada",
+    previsao: "28/08/2026",
+    observacoes: "TED compensada na conta da imobiliária e repasse pago via Pix."
+  },
+  {
+    id: "3",
+    imovel: "Cobertura Duplex - Cerqueira César",
+    corretor: "Felipe Ramos",
+    valorVenda: 4500000,
+    comissaoTotal: 270000,
+    comissaoCorretor: 135000,
+    comissaoImobiliaria: 135000,
+    status: "Em Tramitação",
+    previsao: "30/09/2026",
+    observacoes: "Escritura pública agendada para o final do mês corrente."
+  },
+];
 
 export default function ImobiliarioComissoes() {
-  const [comissoes, setComissoes] = useState([
-    { id: "1", imovel: "Apartamento 142 - Terraço Jardins", corretor: "Gustavo Henrique", valorVenda: 1850000, comissaoTotal: 111000, comissaoCorretor: 55500, status: "A Receber", previsao: "15/09/2026" },
-    { id: "2", imovel: "Casa em Condomínio - Alphaville", corretor: "Mariana Costa", valorVenda: 3200000, comissaoTotal: 192000, comissaoCorretor: 96000, status: "Liquidada", previsao: "28/08/2026" },
-    { id: "3", imovel: "Cobertura Duplex - Cerqueira César", corretor: "Felipe Ramos", valorVenda: 4500000, comissaoTotal: 270000, comissaoCorretor: 135000, status: "Em Tramitação", previsao: "30/09/2026" },
-  ]);
+  const { user } = useAuth();
+  const tenantId = user?.tenant_id || "default";
+  const storageKey = `spy_imobiliario_comissoes_${tenantId}`;
+
+  const [comissoes, setComissoes] = useState<Comissao[]>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) return JSON.parse(saved);
+    } catch (e) {
+      console.error(e);
+    }
+    return INITIAL_COMISSOES;
+  });
+
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("Todos");
+  const [showModal, setShowModal] = useState(false);
+
+  // Form state
+  const [imovel, setImovel] = useState("");
+  const [corretor, setCorretor] = useState(user?.name || "");
+  const [valorVenda, setValorVenda] = useState("");
+  const [percentualTotal, setPercentualTotal] = useState("6");
+  const [splitCorretor, setSplitCorretor] = useState("50");
+  const [status, setStatus] = useState<Comissao["status"]>("A Receber");
+  const [previsao, setPrevisao] = useState("");
+  const [observacoes, setObservacoes] = useState("");
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(comissoes));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [comissoes, storageKey]);
+
+  // Calculations for new entry
+  const numValorVenda = parseFloat(valorVenda.replace(/\D/g, "")) || 0;
+  const numPercTotal = parseFloat(percentualTotal) || 0;
+  const numSplitCorretor = parseFloat(splitCorretor) || 0;
+  const calcComissaoTotal = (numValorVenda * numPercTotal) / 100;
+  const calcComissaoCorretor = (calcComissaoTotal * numSplitCorretor) / 100;
+  const calcComissaoImobiliaria = calcComissaoTotal - calcComissaoCorretor;
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!imovel.trim()) {
+      toast.error("Informe o imóvel negociado.");
+      return;
+    }
+    if (numValorVenda <= 0) {
+      toast.error("Informe um valor de venda válido.");
+      return;
+    }
+
+    const nova: Comissao = {
+      id: "com_" + Date.now(),
+      imovel: imovel.trim(),
+      corretor: corretor.trim() || "Corretor Interno",
+      valorVenda: numValorVenda,
+      comissaoTotal: calcComissaoTotal,
+      comissaoCorretor: calcComissaoCorretor,
+      comissaoImobiliaria: calcComissaoImobiliaria,
+      status,
+      previsao: previsao || new Date().toLocaleDateString("pt-BR"),
+      observacoes: observacoes.trim(),
+      created_at: new Date().toISOString(),
+    };
+
+    setComissoes(prev => [nova, ...prev]);
+    setShowModal(false);
+    toast.success("Comissão registrada com sucesso!");
+
+    // Reset
+    setImovel("");
+    setValorVenda("");
+    setObservacoes("");
+  };
+
+  const handleUpdateStatus = (id: string, newStatus: Comissao["status"]) => {
+    setComissoes(prev =>
+      prev.map(c => (c.id === id ? { ...c, status: newStatus } : c))
+    );
+    toast.success(`Status atualizado para "${newStatus}"`);
+  };
+
+  const handleDelete = async (id: string) => {
+    const ok = await confirmDialog({
+      title: "Excluir Registro de Comissão",
+      message: "Deseja realmente remover este registro de honorários? Esta ação não pode ser desfeita.",
+      confirmText: "Sim, Excluir",
+      cancelText: "Cancelar",
+      variant: "danger",
+    });
+    if (!ok) return;
+
+    setComissoes(prev => prev.filter(c => c.id !== id));
+    toast.success("Registro de comissão removido.");
+  };
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return comissoes.filter(c => {
+      const matchSearch =
+        c.imovel.toLowerCase().includes(q) ||
+        c.corretor.toLowerCase().includes(q) ||
+        (c.observacoes && c.observacoes.toLowerCase().includes(q));
+      const matchStatus = statusFilter === "Todos" || c.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+  }, [comissoes, search, statusFilter]);
+
+  const totalAReceber = comissoes
+    .filter(c => c.status !== "Liquidada")
+    .reduce((s, c) => s + c.comissaoTotal, 0);
+
+  const totalRepasses = comissoes
+    .filter(c => c.status !== "Liquidada")
+    .reduce((s, c) => s + c.comissaoCorretor, 0);
+
+  const totalLiquidado = comissoes
+    .filter(c => c.status === "Liquidada")
+    .reduce((s, c) => s + c.comissaoTotal, 0);
 
   return (
     <PageContainer
       title="Comissões Imobiliárias & Honorários"
-      description="Cálculo de comissões, split entre imobiliária e corretores parceiros, integrado ao Contas a Pagar/Receber."
+      description="Cálculo de comissões, split entre imobiliária e corretores parceiros, integrado ao fluxo de caixa."
       actions={
-        <Link
-          to="/app/financeiro/receber"
-          className="h-9 px-3.5 text-xs font-bold gap-1.5 inline-flex items-center rounded-xl bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] hover:border-[var(--color-primary-blue)] text-[var(--color-text-primary)] transition-all"
-        >
-          <DollarSign className="w-3.5 h-3.5 text-emerald-500" /> Ver no Financeiro
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            to="/app/financeiro/receber"
+            className="h-9 px-3.5 text-xs font-bold gap-1.5 inline-flex items-center rounded-xl bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] hover:border-[var(--color-primary-blue)] text-[var(--color-text-primary)] transition-all"
+          >
+            <DollarSign className="w-3.5 h-3.5 text-emerald-500" /> Ver no Financeiro
+          </Link>
+          <Button
+            onClick={() => setShowModal(true)}
+            className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs bg-[var(--color-primary-blue)] text-white hover:opacity-95"
+          >
+            <Plus className="w-3.5 h-3.5" /> Nova Comissão / Split
+          </Button>
+        </div>
       }
     >
+      {/* KPIs */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-emerald-500/25 shadow-xs">
-          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Comissões a Receber (VGV)</span>
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">
+            Comissões a Receber (VGV)
+          </span>
           <div className="text-2xl font-black text-emerald-500">
-            R$ {(comissoes.reduce((s, c) => s + c.comissaoTotal, 0) / 1000).toFixed(1)}k
+            R$ {totalAReceber.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </div>
+          <span className="text-[10px] text-[var(--color-text-muted)] mt-1 block">
+            Aguardando compensação ou escritura
+          </span>
         </Card>
+
         <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
-          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Repasses a Corretores</span>
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">
+            Repasses Previstos a Corretores
+          </span>
           <div className="text-2xl font-black text-[var(--color-text-primary)]">
-            R$ {(comissoes.reduce((s, c) => s + c.comissaoCorretor, 0) / 1000).toFixed(1)}k
+            R$ {totalRepasses.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </div>
+          <span className="text-[10px] text-[var(--color-text-muted)] mt-1 block">
+            Split automático de honorários
+          </span>
         </Card>
+
         <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-blue-500/25 shadow-xs">
-          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Honorários Liquidados</span>
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">
+            Honorários Liquidados
+          </span>
           <div className="text-2xl font-black text-[var(--color-primary-blue)]">
-            R$ {(comissoes.filter(c => c.status === "Liquidada").reduce((s, c) => s + c.comissaoTotal, 0) / 1000).toFixed(1)}k
+            R$ {totalLiquidado.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </div>
+          <span className="text-[10px] text-[var(--color-text-muted)] mt-1 block">
+            Totalmente recebidos e distribuídos
+          </span>
         </Card>
       </div>
 
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-5">
+        <div className="relative flex-1 w-full max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
+          <input
+            type="text"
+            placeholder="Buscar por imóvel, corretor..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl pl-10 pr-4 py-2 text-xs text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+          />
+        </div>
+
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          {["Todos", "A Receber", "Em Tramitação", "Liquidada"].map(st => (
+            <button
+              key={st}
+              onClick={() => setStatusFilter(st)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                statusFilter === st
+                  ? "bg-[var(--color-primary-blue)] text-white border-[var(--color-primary-blue)]"
+                  : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] border-[var(--color-border-subtle)] hover:bg-[var(--color-surface-elevated)]"
+              }`}
+            >
+              {st}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Table */}
       <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
@@ -60,34 +290,248 @@ export default function ImobiliarioComissoes() {
                 <th className="px-4 py-3">Valor da Venda</th>
                 <th className="px-4 py-3">Comissão Total</th>
                 <th className="px-4 py-3">Repasse Corretor</th>
+                <th className="px-4 py-3">Líquido Imobiliária</th>
                 <th className="px-4 py-3">Status</th>
-                <th className="px-5 py-3 text-right">Previsão</th>
+                <th className="px-4 py-3">Previsão</th>
+                <th className="px-5 py-3 text-right">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border-subtle)]">
-              {comissoes.map(c => (
+              {filtered.map(c => (
                 <tr key={c.id} className="hover:bg-[var(--color-surface-sunken)]/40 transition-colors">
-                  <td className="px-5 py-3.5 font-bold text-[var(--color-text-primary)]">{c.imovel}</td>
-                  <td className="px-4 py-3.5 text-[var(--color-text-muted)]">{c.corretor}</td>
-                  <td className="px-4 py-3.5 font-mono text-[var(--color-text-primary)]">R$ {c.valorVenda.toLocaleString("pt-BR")}</td>
-                  <td className="px-4 py-3.5 font-bold text-emerald-500">R$ {c.comissaoTotal.toLocaleString("pt-BR")}</td>
-                  <td className="px-4 py-3.5 font-bold text-blue-500">R$ {c.comissaoCorretor.toLocaleString("pt-BR")}</td>
-                  <td className="px-4 py-3.5">
-                    <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${
-                      c.status === "Liquidada"
-                        ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-                        : "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                    }`}>
-                      {c.status}
-                    </span>
+                  <td className="px-5 py-3.5">
+                    <span className="font-bold text-[var(--color-text-primary)] block">{c.imovel}</span>
+                    {c.observacoes && (
+                      <span className="text-[10px] text-[var(--color-text-muted)] line-clamp-1 mt-0.5">
+                        {c.observacoes}
+                      </span>
+                    )}
                   </td>
-                  <td className="px-5 py-3.5 text-right font-mono text-[var(--color-text-muted)]">{c.previsao}</td>
+                  <td className="px-4 py-3.5 text-[var(--color-text-muted)] font-medium">{c.corretor}</td>
+                  <td className="px-4 py-3.5 font-mono text-[var(--color-text-primary)]">
+                    R$ {c.valorVenda.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="px-4 py-3.5 font-bold text-emerald-500 font-mono">
+                    R$ {c.comissaoTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="px-4 py-3.5 font-bold text-blue-500 font-mono">
+                    R$ {c.comissaoCorretor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="px-4 py-3.5 font-mono text-[var(--color-text-primary)]">
+                    R$ {c.comissaoImobiliaria.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <select
+                      value={c.status}
+                      onChange={e => handleUpdateStatus(c.id, e.target.value as Comissao["status"])}
+                      className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full border cursor-pointer focus:outline-none ${
+                        c.status === "Liquidada"
+                          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                          : c.status === "Em Tramitação"
+                          ? "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                          : "bg-amber-500/10 text-amber-500 border-amber-500/20"
+                      }`}
+                    >
+                      <option value="A Receber">A Receber</option>
+                      <option value="Em Tramitação">Em Tramitação</option>
+                      <option value="Liquidada">Liquidada</option>
+                    </select>
+                  </td>
+                  <td className="px-4 py-3.5 font-mono text-[var(--color-text-muted)]">{c.previsao}</td>
+                  <td className="px-5 py-3.5 text-right">
+                    <button
+                      onClick={() => handleDelete(c.id)}
+                      className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-rose-500 hover:bg-rose-500/10 transition-colors"
+                      title="Excluir comissão"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </td>
                 </tr>
               ))}
+              {filtered.length === 0 && (
+                <tr>
+                  <td colSpan={9} className="py-12 text-center text-[var(--color-text-muted)]">
+                    Nenhuma comissão encontrada.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Modal Nova Comissão */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl animate-in fade-in-50 zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border-subtle)]">
+              <div>
+                <h3 className="text-base font-bold text-[var(--color-text-primary)] flex items-center gap-2">
+                  <DollarSign className="w-4 h-4 text-emerald-500" /> Nova Comissão / Split de Honorários
+                </h3>
+                <p className="text-[11px] text-[var(--color-text-muted)]">
+                  Calcule comissões de venda e divisão entre corretores parceiros e imobiliária.
+                </p>
+              </div>
+              <button
+                onClick={() => setShowModal(false)}
+                className="p-1 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreate} className="space-y-3.5">
+              <div>
+                <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                  Imóvel Negociado *
+                </label>
+                <input
+                  value={imovel}
+                  onChange={e => setImovel(e.target.value)}
+                  placeholder="Ex: Apartamento 82 - Reserva Vila Nova"
+                  required
+                  className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Corretor Responsável
+                  </label>
+                  <input
+                    value={corretor}
+                    onChange={e => setCorretor(e.target.value)}
+                    placeholder="Nome do corretor"
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Valor de Venda (R$) *
+                  </label>
+                  <input
+                    value={valorVenda}
+                    onChange={e => setValorVenda(e.target.value)}
+                    placeholder="Ex: 850000"
+                    type="number"
+                    required
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Comissão Total (%)
+                  </label>
+                  <input
+                    value={percentualTotal}
+                    onChange={e => setPercentualTotal(e.target.value)}
+                    placeholder="6"
+                    type="number"
+                    step="0.1"
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Repasse Corretor (%)
+                  </label>
+                  <input
+                    value={splitCorretor}
+                    onChange={e => setSplitCorretor(e.target.value)}
+                    placeholder="50"
+                    type="number"
+                    step="0.5"
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-mono text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                  />
+                </div>
+              </div>
+
+              {/* Live Preview of Calculations */}
+              {numValorVenda > 0 && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-[var(--color-text-muted)]">Comissão Bruta ({numPercTotal}%):</span>
+                    <strong className="text-emerald-500 font-mono">
+                      R$ {calcComissaoTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[var(--color-text-muted)]">Repasse Corretor ({numSplitCorretor}%):</span>
+                    <strong className="text-blue-500 font-mono">
+                      R$ {calcComissaoCorretor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </strong>
+                  </div>
+                  <div className="flex justify-between border-t border-emerald-500/20 pt-1">
+                    <span className="text-[var(--color-text-muted)]">Líquido Imobiliária:</span>
+                    <strong className="text-[var(--color-text-primary)] font-mono">
+                      R$ {calcComissaoImobiliaria.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </strong>
+                  </div>
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Status Inicial
+                  </label>
+                  <select
+                    value={status}
+                    onChange={e => setStatus(e.target.value as Comissao["status"])}
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                  >
+                    <option value="A Receber">A Receber</option>
+                    <option value="Em Tramitação">Em Tramitação</option>
+                    <option value="Liquidada">Liquidada</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                    Previsão de Liquidação
+                  </label>
+                  <input
+                    type="date"
+                    value={previsao}
+                    onChange={e => setPrevisao(e.target.value)}
+                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                  Observações / Cartório
+                </label>
+                <textarea
+                  rows={2}
+                  value={observacoes}
+                  onChange={e => setObservacoes(e.target.value)}
+                  placeholder="Informações adicionais, número de matrícula, etc."
+                  className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)] resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--color-border-subtle)]">
+                <Button type="button" variant="ghost" onClick={() => setShowModal(false)} className="text-xs">
+                  Cancelar
+                </Button>
+                <Button type="submit" className="text-xs font-bold bg-[var(--color-primary-blue)] text-white">
+                  Registrar Comissão
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </PageContainer>
   );
 }

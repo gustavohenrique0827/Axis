@@ -1,25 +1,98 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   Users, Plus, Search, Phone, Mail, Home,
-  Building2, MessageSquare, Trash2
+  Building2, MessageSquare, Trash2, X
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
+import { useAuth } from "../../contexts/AuthContext";
+
+interface ProprietarioItem {
+  id: string;
+  nome: string;
+  telefone: string;
+  email: string;
+  imoveisCount: number;
+  tipo: "Pessoa Física" | "Pessoa Jurídica";
+  status: "Ativo" | "Inativo";
+}
+
+const DEFAULT_PROPRIETARIOS: ProprietarioItem[] = [
+  { id: "1", nome: "Roberto Albuquerque", telefone: "(11) 98765-1122", email: "roberto.albuquerque@email.com", imoveisCount: 3, tipo: "Pessoa Física", status: "Ativo" },
+  { id: "2", nome: "Patrícia Menezes", telefone: "(11) 97654-2233", email: "patricia.menezes@email.com", imoveisCount: 1, tipo: "Pessoa Física", status: "Ativo" },
+  { id: "3", nome: "Holdings Alpha Imóveis Ltda", telefone: "(11) 3344-5566", email: "contato@alphaimoveis.com.br", imoveisCount: 8, tipo: "Pessoa Jurídica", status: "Ativo" },
+  { id: "4", nome: "Carlos Eduardo Vieira", telefone: "(11) 96543-3344", email: "carlos.vieira@email.com", imoveisCount: 2, tipo: "Pessoa Física", status: "Ativo" },
+];
 
 export default function Proprietarios() {
+  const { activeTenantId } = useAuth();
+  const storageKey = `spy_proprietarios_${activeTenantId || "default"}`;
+
+  const [proprietarios, setProprietarios] = useState<ProprietarioItem[]>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      return saved ? JSON.parse(saved) : DEFAULT_PROPRIETARIOS;
+    } catch {
+      return DEFAULT_PROPRIETARIOS;
+    }
+  });
+
   const [search, setSearch] = useState("");
-  const [proprietarios, setProprietarios] = useState([
-    { id: "1", nome: "Roberto Albuquerque", telefone: "(11) 98765-1122", email: "roberto.albuquerque@email.com", imoveisCount: 3, tipo: "Pessoa Física", status: "Ativo" },
-    { id: "2", nome: "Patrícia Menezes", telefone: "(11) 97654-2233", email: "patricia.menezes@email.com", imoveisCount: 1, tipo: "Pessoa Física", status: "Ativo" },
-    { id: "3", nome: "Holdings Alpha Imóveis Ltda", telefone: "(11) 3344-5566", email: "contato@alphaimoveis.com.br", imoveisCount: 8, tipo: "Pessoa Jurídica", status: "Ativo" },
-    { id: "4", nome: "Carlos Eduardo Vieira", telefone: "(11) 96543-3344", email: "carlos.vieira@email.com", imoveisCount: 2, tipo: "Pessoa Física", status: "Ativo" },
-  ]);
+  const [modalOpen, setModalOpen] = useState(false);
+
+  // Form state
+  const [nome, setNome] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [email, setEmail] = useState("");
+  const [tipo, setTipo] = useState<ProprietarioItem["tipo"]>("Pessoa Física");
+  const [imoveisCount, setImoveisCount] = useState("1");
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(proprietarios));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [proprietarios, storageKey]);
+
+  const handleCreate = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nome.trim()) {
+      toast.error("Informe o nome do proprietário.");
+      return;
+    }
+
+    const newItem: ProprietarioItem = {
+      id: crypto.randomUUID(),
+      nome: nome.trim(),
+      telefone: telefone.trim(),
+      email: email.trim(),
+      tipo,
+      imoveisCount: parseInt(imoveisCount, 10) || 1,
+      status: "Ativo",
+    };
+
+    setProprietarios(prev => [newItem, ...prev]);
+    toast.success("Proprietário cadastrado com sucesso!");
+    setModalOpen(false);
+
+    setNome("");
+    setTelefone("");
+    setEmail("");
+    setImoveisCount("1");
+  };
+
+  const handleDelete = (id: string) => {
+    setProprietarios(prev => prev.filter(p => p.id !== id));
+    toast.info("Proprietário removido.");
+  };
 
   const filtered = proprietarios.filter(p =>
     p.nome.toLowerCase().includes(search.toLowerCase()) ||
-    p.email.toLowerCase().includes(search.toLowerCase())
+    p.email.toLowerCase().includes(search.toLowerCase()) ||
+    p.telefone.includes(search)
   );
 
   return (
@@ -27,7 +100,7 @@ export default function Proprietarios() {
       title="Gestão de Proprietários"
       description="Cadastro, documentos de posse e imóveis vinculados a locadores e proprietários vendedores."
       actions={
-        <Button onClick={() => toast.info("Cadastro de proprietários disponível no formulário do imóvel ou novo cadastro.")} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+        <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
           <Plus className="w-3.5 h-3.5" /> Novo Proprietário
         </Button>
       }
@@ -38,7 +111,7 @@ export default function Proprietarios() {
           { icon: Users, label: "Total de Proprietários", val: proprietarios.length, color: "text-blue-500" },
           { icon: Home, label: "Imóveis Vinculados", val: proprietarios.reduce((s, p) => s + p.imoveisCount, 0), color: "text-emerald-500" },
           { icon: Building2, label: "Pessoas Jurídicas", val: proprietarios.filter(p => p.tipo === "Pessoa Jurídica").length, color: "text-purple-500" },
-          { icon: Phone, label: "Contatos com WhatsApp", val: proprietarios.length, color: "text-amber-500" },
+          { icon: Phone, label: "Contatos Registrados", val: proprietarios.length, color: "text-amber-500" },
         ].map((k, i) => (
           <Card key={i} className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
             <div className="flex items-center justify-between mb-2">
@@ -56,62 +129,137 @@ export default function Proprietarios() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)]" />
           <input
             type="text"
-            placeholder="Buscar por nome, e-mail ou documento..."
+            placeholder="Buscar por nome, e-mail ou telefone..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl pl-10 pr-4 py-2 text-xs text-[var(--color-text-primary)] placeholder-[var(--color-text-muted)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+            className="w-full pl-9 pr-3 py-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
           />
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)]/60 text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
-                <th className="px-5 py-3">Proprietário</th>
-                <th className="px-4 py-3">Tipo</th>
-                <th className="px-4 py-3">Imóveis no Portfólio</th>
-                <th className="px-4 py-3">Contato Direto</th>
-                <th className="px-5 py-3 text-right">Ação</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[var(--color-border-subtle)]">
-              {filtered.map(p => (
-                <tr key={p.id} className="hover:bg-[var(--color-surface-sunken)]/40 transition-colors">
-                  <td className="px-5 py-3.5">
-                    <div className="font-bold text-[var(--color-text-primary)]">{p.nome}</div>
-                    <div className="text-[10px] text-[var(--color-text-muted)] mt-0.5">{p.email}</div>
-                  </td>
-                  <td className="px-4 py-3.5 text-[var(--color-text-muted)]">{p.tipo}</td>
-                  <td className="px-4 py-3.5 font-bold text-[var(--color-primary-blue)]">
-                    {p.imoveisCount} imóvel(is)
-                  </td>
-                  <td className="px-4 py-3.5">
-                    <a
-                      href={`https://wa.me/55${p.telefone.replace(/\D/g, '')}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 font-bold transition-all text-xs"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" /> {p.telefone}
-                    </a>
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <button
-                      onClick={() => toast.success(`Histórico de ${p.nome} carregado.`)}
-                      className="px-3 py-1 rounded-lg bg-[var(--color-surface-sunken)] hover:bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] text-xs font-bold transition-all"
-                    >
-                      Ver Portfólio
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      {/* Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {filtered.map(p => (
+          <div key={p.id} className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] hover:border-[var(--color-primary-blue)]/50 transition-all flex flex-col justify-between gap-3 shadow-2xs">
+            <div>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)]">
+                  {p.tipo}
+                </span>
+                <Button size="sm" variant="ghost" onClick={() => handleDelete(p.id)} className="h-7 w-7 p-0 text-red-500 hover:bg-red-500/10 rounded-lg">
+                  <Trash2 className="w-3.5 h-3.5" />
+                </Button>
+              </div>
+
+              <h4 className="text-sm font-bold text-[var(--color-text-primary)]">{p.nome}</h4>
+              <div className="space-y-1 text-xs text-[var(--color-text-muted)] mt-2">
+                <p className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-amber-500" /> {p.telefone || "Telefone não informado"}</p>
+                <p className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-blue-500" /> {p.email || "E-mail não informado"}</p>
+                <p className="flex items-center gap-1.5"><Home className="w-3.5 h-3.5 text-emerald-500" /> {p.imoveisCount} imóvel(is) cadastrado(s)</p>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-[var(--color-border-subtle)] flex items-center justify-between">
+              <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500">
+                {p.status}
+              </span>
+              <Button size="sm" variant="outline" onClick={() => toast.success(`Abrindo imóveis de ${p.nome}`)} className="h-8 text-xs font-bold rounded-xl">
+                Ver Imóveis
+              </Button>
+            </div>
+          </div>
+        ))}
+
+        {filtered.length === 0 && (
+          <div className="col-span-full p-8 text-center text-xs text-[var(--color-text-muted)] bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl">
+            Nenhum proprietário encontrado.
+          </div>
+        )}
       </div>
+
+      {/* Modal de Novo Proprietário */}
+      {modalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Cadastrar Proprietário</h3>
+              <button onClick={() => setModalOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleCreate} className="space-y-3">
+              <div>
+                <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Nome / Razão Social</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Nome completo ou Razão Social"
+                  value={nome}
+                  onChange={e => setNome(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Tipo</label>
+                  <select
+                    value={tipo}
+                    onChange={e => setTipo(e.target.value as any)}
+                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                  >
+                    <option value="Pessoa Física">Pessoa Física</option>
+                    <option value="Pessoa Jurídica">Pessoa Jurídica</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Qtd. Imóveis</label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={imoveisCount}
+                    onChange={e => setImoveisCount(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Telefone / WhatsApp</label>
+                  <input
+                    type="text"
+                    placeholder="(11) 90000-0000"
+                    value={telefone}
+                    onChange={e => setTelefone(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">E-mail</label>
+                  <input
+                    type="email"
+                    placeholder="contato@email.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="h-9 px-4 text-xs font-bold rounded-xl">
+                  Cancelar
+                </Button>
+                <Button type="submit" className="h-9 px-4 text-xs font-bold rounded-xl bg-[var(--color-primary-blue)] text-white">
+                  Cadastrar Proprietário
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </PageContainer>
   );
 }

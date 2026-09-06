@@ -1,30 +1,91 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
-import { Clock, Check, Save, User, Calendar } from "lucide-react";
+import { Clock, Check, Save, Calendar, Coffee, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
 
-const DIAS = [
-  { id: "seg", label: "Segunda-feira" },
-  { id: "ter", label: "Terça-feira" },
-  { id: "qua", label: "Quarta-feira" },
-  { id: "qui", label: "Quinta-feira" },
-  { id: "sex", label: "Sexta-feira" },
-  { id: "sab", label: "Sábado" },
+type DiaSemana = {
+  id: string;
+  label: string;
+  ativo: boolean;
+  inicio: string;
+  fim: string;
+};
+
+const DEFAULT_DIAS: DiaSemana[] = [
+  { id: "seg", label: "Segunda-feira", ativo: true, inicio: "09:00", fim: "18:00" },
+  { id: "ter", label: "Terça-feira", ativo: true, inicio: "09:00", fim: "18:00" },
+  { id: "qua", label: "Quarta-feira", ativo: true, inicio: "09:00", fim: "18:00" },
+  { id: "qui", label: "Quinta-feira", ativo: true, inicio: "09:00", fim: "18:00" },
+  { id: "sex", label: "Sexta-feira", ativo: true, inicio: "09:00", fim: "18:00" },
+  { id: "sab", label: "Sábado", ativo: false, inicio: "09:00", fim: "13:00" },
+  { id: "dom", label: "Domingo", ativo: false, inicio: "09:00", fim: "12:00" },
 ];
 
 export default function Disponibilidade() {
   const { user } = useAuth();
-  const [horarios, setHorarios] = useState({
-    inicio: "09:00",
-    fim: "18:00",
-    intervalo: "15",
-    duracaoPadrao: "45",
+  const tenantId = user?.tenant_id || "default";
+  const storageKey = `spy_agenda_disponibilidade_${tenantId}`;
+
+  const [dias, setDias] = useState<DiaSemana[]>(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.dias) return parsed.dias;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+    return DEFAULT_DIAS;
   });
 
+  const [duracaoPadrao, setDuracaoPadrao] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) return JSON.parse(saved).duracaoPadrao || "45";
+    } catch (e) {
+      console.error(e);
+    }
+    return "45";
+  });
+
+  const [intervalo, setIntervalo] = useState(() => {
+    try {
+      const saved = localStorage.getItem(storageKey);
+      if (saved) return JSON.parse(saved).intervalo || "15";
+    } catch (e) {
+      console.error(e);
+    }
+    return "15";
+  });
+
+  const [almoçoInicio, setAlmocoInicio] = useState("12:00");
+  const [almoçoFim, setAlmocoFim] = useState("13:00");
+
+  const handleToggleDia = (id: string) => {
+    setDias(prev =>
+      prev.map(d => (d.id === id ? { ...d, ativo: !d.ativo } : d))
+    );
+  };
+
+  const handleChangeHora = (id: string, campo: "inicio" | "fim", valor: string) => {
+    setDias(prev =>
+      prev.map(d => (d.id === id ? { ...d, [campo]: valor } : d))
+    );
+  };
+
   const handleSave = () => {
-    toast.success("Grade de horários de atendimento salva com sucesso!");
+    try {
+      localStorage.setItem(
+        storageKey,
+        JSON.stringify({ dias, duracaoPadrao, intervalo, almoçoInicio, almoçoFim })
+      );
+      toast.success("Grade de horários e disponibilidade salva com sucesso!");
+    } catch (e) {
+      toast.error("Erro ao salvar disponibilidade.");
+    }
   };
 
   return (
@@ -32,78 +93,134 @@ export default function Disponibilidade() {
       title="Disponibilidade & Horários de Atendimento"
       description="Configure janelas de agendamento para reuniões de SDR, closers, visitas a imóveis e vistorias."
       actions={
-        <Button onClick={handleSave} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+        <Button
+          onClick={handleSave}
+          className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs bg-[var(--color-primary-blue)] text-white hover:opacity-95"
+        >
           <Save className="w-3.5 h-3.5" /> Salvar Disponibilidade
         </Button>
       }
     >
-      <div className="max-w-2xl space-y-6">
+      <div className="max-w-3xl space-y-6">
+        {/* Duração e Buffer */}
         <div className="p-6 bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl space-y-4 shadow-xs">
           <h4 className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
-            <Clock className="w-4 h-4 text-[var(--color-primary-blue)]" /> Horário Comercial Padrão
+            <Clock className="w-4 h-4 text-[var(--color-primary-blue)]" /> Padrões de Reunião & Intervalos
           </h4>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
-              <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">Início</label>
-              <input
-                type="time"
-                value={horarios.inicio}
-                onChange={e => setHorarios({ ...horarios, inicio: e.target.value })}
-                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--color-text-primary)]"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">Término</label>
-              <input
-                type="time"
-                value={horarios.fim}
-                onChange={e => setHorarios({ ...horarios, fim: e.target.value })}
-                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--color-text-primary)]"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">Duração Reunião</label>
+              <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                Duração da Sessão
+              </label>
               <select
-                value={horarios.duracaoPadrao}
-                onChange={e => setHorarios({ ...horarios, duracaoPadrao: e.target.value })}
-                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--color-text-primary)]"
+                value={duracaoPadrao}
+                onChange={e => setDuracaoPadrao(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
               >
-                <option value="30">30 min</option>
-                <option value="45">45 min</option>
-                <option value="60">1 hora</option>
+                <option value="15">15 minutos (Quick Call)</option>
+                <option value="30">30 minutos (Diagnóstico)</option>
+                <option value="45">45 minutos (Apresentação)</option>
+                <option value="60">60 minutos (Fechamento/Visita)</option>
               </select>
             </div>
+
             <div>
-              <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">Intervalo Entre</label>
+              <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                Intervalo entre Sessões
+              </label>
               <select
-                value={horarios.intervalo}
-                onChange={e => setHorarios({ ...horarios, intervalo: e.target.value })}
-                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--color-text-primary)]"
+                value={intervalo}
+                onChange={e => setIntervalo(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
               >
-                <option value="10">10 min</option>
-                <option value="15">15 min</option>
-                <option value="30">30 min</option>
+                <option value="5">5 minutos</option>
+                <option value="10">10 minutos</option>
+                <option value="15">15 minutos (Recomendado)</option>
+                <option value="30">30 minutos</option>
               </select>
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                Pausa / Almoço (Início)
+              </label>
+              <input
+                type="time"
+                value={almoçoInicio}
+                onChange={e => setAlmocoInicio(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+
+            <div>
+              <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                Pausa / Almoço (Fim)
+              </label>
+              <input
+                type="time"
+                value={almoçoFim}
+                onChange={e => setAlmocoFim(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
             </div>
           </div>
         </div>
 
-        <div className="p-6 bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl space-y-3 shadow-xs">
-          <h4 className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-[var(--color-primary-blue)]" /> Dias Ativos na Semana
-          </h4>
+        {/* Grade Semanal */}
+        <div className="p-6 bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl space-y-4 shadow-xs">
+          <div className="flex items-center justify-between">
+            <h4 className="text-xs font-bold text-[var(--color-text-primary)] uppercase tracking-wider flex items-center gap-2">
+              <Calendar className="w-4 h-4 text-[var(--color-primary-blue)]" /> Grade Semanal de Atendimento
+            </h4>
+            <span className="text-[11px] text-[var(--color-text-muted)]">
+              {dias.filter(d => d.ativo).length} dias ativos na semana
+            </span>
+          </div>
 
-          <div className="space-y-2">
-            {DIAS.map(d => (
-              <label key={d.id} className="flex items-center justify-between p-3 rounded-xl bg-[var(--color-surface-sunken)]/60 border border-[var(--color-border-subtle)] cursor-pointer">
-                <span className="text-xs font-bold text-[var(--color-text-primary)]">{d.label}</span>
-                <input
-                  type="checkbox"
-                  defaultChecked={d.id !== "sab"}
-                  className="rounded border-[var(--color-border-default)] text-[var(--color-primary-blue)]"
-                />
-              </label>
+          <div className="space-y-2.5">
+            {dias.map(d => (
+              <div
+                key={d.id}
+                className={`p-3.5 rounded-xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                  d.ativo
+                    ? "bg-[var(--color-surface)] border-[var(--color-border-default)]"
+                    : "bg-[var(--color-surface-sunken)]/40 border-[var(--color-border-subtle)] opacity-60"
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={d.ativo}
+                    onChange={() => handleToggleDia(d.id)}
+                    className="w-4 h-4 rounded border-[var(--color-border-default)] text-[var(--color-primary-blue)] cursor-pointer"
+                  />
+                  <span className="text-xs font-bold text-[var(--color-text-primary)] min-w-[130px]">
+                    {d.label}
+                  </span>
+                </div>
+
+                {d.ativo ? (
+                  <div className="flex items-center gap-2 text-xs font-medium">
+                    <span className="text-[10px] uppercase font-bold text-[var(--color-text-muted)]">Das</span>
+                    <input
+                      type="time"
+                      value={d.inicio}
+                      onChange={e => handleChangeHora(d.id, "inicio", e.target.value)}
+                      className="bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-lg px-2 py-1 text-xs font-bold text-[var(--color-text-primary)]"
+                    />
+                    <span className="text-[10px] uppercase font-bold text-[var(--color-text-muted)]">às</span>
+                    <input
+                      type="time"
+                      value={d.fim}
+                      onChange={e => handleChangeHora(d.id, "fim", e.target.value)}
+                      className="bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-lg px-2 py-1 text-xs font-bold text-[var(--color-text-primary)]"
+                    />
+                  </div>
+                ) : (
+                  <span className="text-xs text-[var(--color-text-muted)] italic">Indisponível</span>
+                )}
+              </div>
             ))}
           </div>
         </div>

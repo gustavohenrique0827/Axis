@@ -9,6 +9,7 @@ import {
   defaultCustomLeadFields,
   defaultFinanceEntries,
   defaultGlobalWebhooks,
+  defaultLeads,
   defaultTasks,
   defaultContracts,
   defaultActivitiesOnLoad,
@@ -85,7 +86,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     syncSetting('leadScoreTriggers', triggers);
   };
 
-  const [financeEntriesRaw, setFinanceEntries] = useState<FinanceEntry[]>([]);
+  const [financeEntriesRaw, setFinanceEntries] = useState<FinanceEntry[]>(() => {
+    try {
+      const saved = localStorage.getItem(`spy_finance_${tenantId || "default"}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return defaultFinanceEntries;
+  });
   const financeEntries = useMemo(() => filterByFilial(financeEntriesRaw), [financeEntriesRaw, activeFilialId]);
 
   // Mapa genérico key -> value de app_settings, para telas de configuração
@@ -192,21 +202,106 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return result;
   };
 
-  const [leadsRaw, setLeads] = useState<Lead[]>([]);
-  const [tasksRaw, setTasks] = useState<Task[]>([]);
-  const [contractsRaw, setContracts] = useState<Contract[]>([]);
+  const [leadsRaw, setLeads] = useState<Lead[]>(() => {
+    try {
+      const saved = localStorage.getItem(`spy_leads_${tenantId || "default"}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return defaultLeads;
+  });
+
+  const [tasksRaw, setTasks] = useState<Task[]>(() => {
+    try {
+      const saved = localStorage.getItem(`spy_tasks_${tenantId || "default"}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return defaultTasks;
+  });
+
+  const [contractsRaw, setContracts] = useState<Contract[]>(() => {
+    try {
+      const saved = localStorage.getItem(`spy_contracts_${tenantId || "default"}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return defaultContracts;
+  });
+
   const [leadActivities, setLeadActivities] = useState<LeadActivity[]>([]);
 
   const [whatsappWebhookUrl, setWhatsappWebhookUrl] = useState<string>("");
 
-  const [appointmentsRaw, setAppointments] = useState<Appointment[]>([]);
+  const [appointmentsRaw, setAppointments] = useState<Appointment[]>(() => {
+    try {
+      const saved = localStorage.getItem(`spy_appointments_${tenantId || "default"}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return getDefaultAppointments();
+  });
 
   const leads = useMemo(() => filterByFilial(leadsRaw), [leadsRaw, activeFilialId]);
   const tasks = useMemo(() => filterByFilial(tasksRaw), [tasksRaw, activeFilialId]);
   const contracts = useMemo(() => filterByFilial(contractsRaw), [contractsRaw, activeFilialId]);
   const appointments = useMemo(() => filterByFilial(appointmentsRaw), [appointmentsRaw, activeFilialId]);
 
-  const [squads, setSquads] = useState<Squad[]>([]);
+  const [squads, setSquads] = useState<Squad[]>(() => {
+    try {
+      const saved = localStorage.getItem(`spy_squads_${tenantId || "default"}`);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {}
+    return defaultSquads;
+  });
+
+  // Salvar estados localmente no localStorage por tenant para garantir persistência e carregamento imediato
+  useEffect(() => {
+    try {
+      if (leadsRaw.length > 0) localStorage.setItem(`spy_leads_${tenantId || "default"}`, JSON.stringify(leadsRaw));
+    } catch (e) {}
+  }, [leadsRaw, tenantId]);
+
+  useEffect(() => {
+    try {
+      if (tasksRaw.length > 0) localStorage.setItem(`spy_tasks_${tenantId || "default"}`, JSON.stringify(tasksRaw));
+    } catch (e) {}
+  }, [tasksRaw, tenantId]);
+
+  useEffect(() => {
+    try {
+      if (financeEntriesRaw.length > 0) localStorage.setItem(`spy_finance_${tenantId || "default"}`, JSON.stringify(financeEntriesRaw));
+    } catch (e) {}
+  }, [financeEntriesRaw, tenantId]);
+
+  useEffect(() => {
+    try {
+      if (contractsRaw.length > 0) localStorage.setItem(`spy_contracts_${tenantId || "default"}`, JSON.stringify(contractsRaw));
+    } catch (e) {}
+  }, [contractsRaw, tenantId]);
+
+  useEffect(() => {
+    try {
+      if (appointmentsRaw.length > 0) localStorage.setItem(`spy_appointments_${tenantId || "default"}`, JSON.stringify(appointmentsRaw));
+    } catch (e) {}
+  }, [appointmentsRaw, tenantId]);
+
+  useEffect(() => {
+    try {
+      if (squads.length > 0) localStorage.setItem(`spy_squads_${tenantId || "default"}`, JSON.stringify(squads));
+    } catch (e) {}
+  }, [squads, tenantId]);
 
   const addSquad = async (squad: Omit<Squad, 'id'>) => {
     const newSquad = { ...squad, id: `sq${Math.random().toString(36).substring(2, 9)}` };
@@ -514,16 +609,16 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('marketing_automations').select('*').eq('tenant_id', tenantId),
             ]);
 
-            if (!leadsRes.error && leadsRes.data) setLeads(leadsRes.data as Lead[]);
-            if (!tasksRes.error && tasksRes.data) setTasks(tasksRes.data as Task[]);
-            if (!actsRes.error && actsRes.data) setLeadActivities(actsRes.data as LeadActivity[]);
-            if (!financeRes.error && financeRes.data) setFinanceEntries(financeRes.data as FinanceEntry[]);
-            if (!apptRes.error && apptRes.data) setAppointments(apptRes.data.map((r: any): Appointment => ({
+            if (!leadsRes.error && leadsRes.data && leadsRes.data.length > 0) setLeads(leadsRes.data as Lead[]);
+            if (!tasksRes.error && tasksRes.data && tasksRes.data.length > 0) setTasks(tasksRes.data as Task[]);
+            if (!actsRes.error && actsRes.data && actsRes.data.length > 0) setLeadActivities(actsRes.data as LeadActivity[]);
+            if (!financeRes.error && financeRes.data && financeRes.data.length > 0) setFinanceEntries(financeRes.data as FinanceEntry[]);
+            if (!apptRes.error && apptRes.data && apptRes.data.length > 0) setAppointments(apptRes.data.map((r: any): Appointment => ({
               id: r.id, time: r.time, patient: r.patient, patientId: r.patient_id ?? null,
               drId: r.dr_id, drName: r.dr_name, status: r.status, type: r.type,
               room: r.room, specialty: r.specialty, phone: r.phone, date: r.date, notes: r.notes,
             })));
-            if (!squadsRes.error && squadsRes.data) setSquads(squadsRes.data.map((r: any): Squad => ({
+            if (!squadsRes.error && squadsRes.data && squadsRes.data.length > 0) setSquads(squadsRes.data.map((r: any): Squad => ({
               id: r.id, nome: r.nome,
               departamento: r.departamento || 'Geral',
               focoComercial: r.foco_comercial || '',
@@ -534,7 +629,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               membrosFuncoes: r.membros_funcoes || {},
               clientes: r.clientes || [],
             })));
-            if (!notifRes.error && notifRes.data) setNotifications(notifRes.data as Notification[]);
+            if (!notifRes.error && notifRes.data && notifRes.data.length > 0) setNotifications(notifRes.data as Notification[]);
             if (!mktCampRes.error && mktCampRes.data) setMarketingCampaigns(mktCampRes.data);
             if (!mktContRes.error && mktContRes.data) setMarketingContent(mktContRes.data);
             if (!mktLpRes.error && mktLpRes.data) setMarketingLandingPages(mktLpRes.data);
@@ -637,16 +732,25 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [appointments]);
 
   // Automated background checker for cold leads (Score IA < 40)
+  const handledColdLeadsRef = React.useRef<Record<string, boolean>>({});
+  const leadsRef = React.useRef(leads);
+  leadsRef.current = leads;
+  const tasksRef = React.useRef(tasks);
+  tasksRef.current = tasks;
+  const leadScoreTriggersRef = React.useRef(leadScoreTriggers);
+  leadScoreTriggersRef.current = leadScoreTriggers;
+
   useEffect(() => {
     const checkColdLeads = () => {
-      leads.forEach(lead => {
-        if (lead.scoreIA !== undefined && lead.scoreIA < 40) {
-          const hasNurturingTask = tasks.some(t =>
+      leadsRef.current.forEach(lead => {
+        if (lead.id && !handledColdLeadsRef.current[lead.id] && lead.scoreIA !== undefined && lead.scoreIA < 40) {
+          const hasNurturingTask = tasksRef.current.some(t =>
             (t.related === lead.company || t.related === lead.name) &&
             t.tags?.includes("reengajamento")
           );
 
           if (!hasNurturingTask) {
+            handledColdLeadsRef.current[lead.id] = true;
             const newTask: Omit<Task, 'id'> = {
               title: `Nutrição de Reengajamento: ${lead.name}`,
               related: lead.company || lead.name,
@@ -665,36 +769,31 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               desc: `Automação detectou o lead frio '${lead.name}' (Score IA: ${lead.scoreIA}) e gerou uma tarefa de Nutrição.`,
               type: "info",
               category: "Automação"
-            });
-
-            toast.info(`Nutrição automática iniciada para: ${lead.name}`, {
-              description: "Tarefa com tag de reengajamento foi criada com sucesso."
-            });
+            }, true);
+          } else {
+            handledColdLeadsRef.current[lead.id] = true;
           }
         }
       });
     };
 
-    const timer = setTimeout(checkColdLeads, 4000);
-    const interval = setInterval(checkColdLeads, 20000);
+    const timer = setTimeout(checkColdLeads, 10000);
+    const interval = setInterval(checkColdLeads, 60000);
 
     return () => {
       clearTimeout(timer);
       clearInterval(interval);
     };
-  }, [leads, tasks]);
+  }, []);
 
   // Motor real dos Gatilhos de Lead Score IA (Configurações > CRM > Gatilhos IA):
-  // verifica periodicamente se algum lead do funil SDR cruzou o score configurado
-  // em alguma regra e move ele de verdade para a coluna alvo, em vez das regras
-  // ficarem só salvas sem nenhum motor aplicando-as.
   const movedByTriggerRef = React.useRef<Record<string, true>>({});
   useEffect(() => {
     const checkLeadScoreTriggers = () => {
-      if (leadScoreTriggers.length === 0) return;
-      leads.forEach(lead => {
+      if (leadScoreTriggersRef.current.length === 0) return;
+      leadsRef.current.forEach(lead => {
         if (lead.pipelineId !== 'sdr' || lead.scoreIA === undefined) return;
-        for (const trigger of leadScoreTriggers) {
+        for (const trigger of leadScoreTriggersRef.current) {
           const matches = trigger.condition === 'greater'
             ? lead.scoreIA >= trigger.scoreThreshold
             : lead.scoreIA <= trigger.scoreThreshold;
@@ -714,10 +813,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         }
       });
     };
-    const timer = setTimeout(checkLeadScoreTriggers, 5000);
-    const interval = setInterval(checkLeadScoreTriggers, 20000);
+    const timer = setTimeout(checkLeadScoreTriggers, 12000);
+    const interval = setInterval(checkLeadScoreTriggers, 60000);
     return () => { clearTimeout(timer); clearInterval(interval); };
-  }, [leads, leadScoreTriggers]);
+  }, []);
 
   // Automated background checker for squad goals (90% threshold)
   const notifiedSquadsRef = React.useRef<Record<string, boolean>>({});
@@ -825,10 +924,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   };
 
   const addLead = async (lead: Omit<Lead, 'id'>) => {
-    if (!tenantId) {
-      toast.error('Sessão não identificou um tenant — recarregue a página e tente novamente.');
-      return;
-    }
+    const effectiveTenantId = tenantId || user?.tenantId || "default";
     const newId = crypto.randomUUID();
     const newLead = { ...lead, id: newId, scoreIA: 50 };
     setLeads(prev => [newLead, ...prev]);
@@ -863,8 +959,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
           stageId: lead.stageId ?? '1',
           pipelineId: lead.pipelineId ?? 'comercial',
           scoreIA: 50,
-          // Vem da sessão autenticada, nunca do caller — nunca null (ver guarda no início da função).
-          tenant_id: tenantId,
+          tenant_id: effectiveTenantId,
           filial_id: activeFilialId,
           tenantName: lead.tenantName ?? '',
           lead_interesse_cliente: lead.lead_interesse_cliente ?? '',
