@@ -123,7 +123,17 @@ export default function PainelVarejo() {
   const caixa = useMemo<CaixaStatus>(() => {
     try {
       const saved = localStorage.getItem(`spy_caixa_${tenantId}`);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === "object") {
+          return {
+            aberto: parsed.aberto ?? true,
+            dataAbertura: parsed.dataAbertura || new Date().toLocaleDateString("pt-BR") + " 08:30",
+            saldoInicial: Number(parsed.saldoInicial ?? parsed.saldo_inicial ?? 200.0) || 0,
+            operador: parsed.operador || user?.name || "Operador Principal",
+          };
+        }
+      }
     } catch {}
     return {
       aberto: true,
@@ -150,7 +160,7 @@ export default function PainelVarejo() {
 
   // Métricas Consolidadas
   const metrics = useMemo(() => {
-    const ativas = vendas.filter(v => v.status !== "cancelada");
+    const ativas = (vendas || []).filter(v => v.status !== "cancelada");
     const totalFaturamento = ativas.reduce((acc, v) => acc + (Number(v.total) || 0), 0);
     const totalVendas = ativas.length;
     const ticketMedio = totalVendas > 0 ? totalFaturamento / totalVendas : 0;
@@ -162,18 +172,22 @@ export default function PainelVarejo() {
     const paymentMap: Record<string, number> = {};
     ativas.forEach(v => {
       const m = v.metodo || "Outro";
-      paymentMap[m] = (paymentMap[m] || 0) + v.total;
+      paymentMap[m] = (paymentMap[m] || 0) + (Number(v.total) || 0);
     });
 
     // Ranking de produtos mais vendidos
     const prodMap: Record<string, { name: string; qty: number; total: number }> = {};
     ativas.forEach(v => {
-      v.itens?.forEach(item => {
-        if (!prodMap[item.name]) {
-          prodMap[item.name] = { name: item.name, qty: 0, total: 0 };
+      (v.itens || []).forEach(item => {
+        if (!item) return;
+        const name = item.name || "Produto";
+        if (!prodMap[name]) {
+          prodMap[name] = { name, qty: 0, total: 0 };
         }
-        prodMap[item.name].qty += item.qty || 1;
-        prodMap[item.name].total += item.total || (item.price * (item.qty || 1));
+        const q = Number(item.qty) || 1;
+        const tot = Number(item.total) || ((Number(item.price) || 0) * q);
+        prodMap[name].qty += q;
+        prodMap[name].total += tot;
       });
     });
 
@@ -201,15 +215,19 @@ export default function PainelVarejo() {
         { name: "Película de Vidro 3D Premium", stock: 8, min: 30, status: "Atenção" },
       ];
     }
-    return products
-      .filter(p => (p.currentStock ?? 0) <= (p.minStock ?? 5))
+    return (products || [])
+      .filter(p => (Number(p.currentStock ?? p.current_stock ?? p.stock) || 0) <= (Number(p.minStock ?? p.min_stock) || 5))
       .slice(0, 4)
-      .map(p => ({
-        name: p.name,
-        stock: p.currentStock ?? 0,
-        min: p.minStock ?? 10,
-        status: (p.currentStock ?? 0) <= 2 ? "Crítico" : "Atenção",
-      }));
+      .map(p => {
+        const stock = Number(p.currentStock ?? p.current_stock ?? p.stock) || 0;
+        const min = Number(p.minStock ?? p.min_stock) || 10;
+        return {
+          name: p.name || "Item em estoque",
+          stock,
+          min,
+          status: stock <= 2 ? "Crítico" : "Atenção",
+        };
+      });
   }, [products]);
 
   return (
@@ -253,7 +271,7 @@ export default function PainelVarejo() {
               </span>
             </div>
             <span className="text-[11px] text-[var(--color-text-muted)]">
-              Abertura: {caixa.dataAbertura} • Fundo de Troco Inicial: R$ {caixa.saldoInicial.toFixed(2)}
+              Abertura: {caixa.dataAbertura} • Fundo de Troco Inicial: R$ {(Number(caixa.saldoInicial) || 0).toFixed(2)}
             </span>
           </div>
         </div>
@@ -347,7 +365,7 @@ export default function PainelVarejo() {
                         {idx + 1}. {p.name}
                       </span>
                       <span className="font-mono text-[var(--color-text-muted)]">
-                        <strong>{p.qty} un</strong> • R$ {p.total.toFixed(2)}
+                        <strong>{p.qty} un</strong> • R$ {(Number(p.total) || 0).toFixed(2)}
                       </span>
                     </div>
                     <div className="w-full h-1.5 bg-[var(--color-surface-sunken)] rounded-full overflow-hidden">
@@ -474,25 +492,28 @@ export default function PainelVarejo() {
           </div>
 
           <div className="space-y-2">
-            {vendas.slice(0, 4).map((v) => (
-              <div key={v.id} className="p-3 rounded-xl bg-[var(--color-surface-sunken)]/60 border border-[var(--color-border-subtle)] flex items-center justify-between hover:bg-[var(--color-surface-sunken)] transition-colors">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono font-bold text-[var(--color-primary-blue)]">{v.id}</span>
-                    <p className="text-xs font-bold text-[var(--color-text-primary)]">{v.cliente}</p>
+            {(vendas || []).slice(0, 4).map((v) => {
+              const itens = v.itens || [];
+              return (
+                <div key={v.id} className="p-3 rounded-xl bg-[var(--color-surface-sunken)]/60 border border-[var(--color-border-subtle)] flex items-center justify-between hover:bg-[var(--color-surface-sunken)] transition-colors">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-mono font-bold text-[var(--color-primary-blue)]">{v.id}</span>
+                      <p className="text-xs font-bold text-[var(--color-text-primary)]">{v.cliente || "Consumidor"}</p>
+                    </div>
+                    <p className="text-[10px] text-[var(--color-text-muted)]">
+                      {v.vendedor ? `Atendido por ${v.vendedor} • ` : ""}{v.metodo || "Outro"} • {itens.length} {itens.length === 1 ? "item" : "itens"}
+                    </p>
                   </div>
-                  <p className="text-[10px] text-[var(--color-text-muted)]">
-                    {v.vendedor ? `Atendido por ${v.vendedor} • ` : ""}{v.metodo} • {v.itens.length} {v.itens.length === 1 ? "item" : "itens"}
-                  </p>
+                  <div className="text-right">
+                    <span className="text-xs font-black font-mono text-emerald-500 block">
+                      R$ {(Number(v.total) || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </span>
+                    <span className="text-[9px] text-[var(--color-text-muted)] uppercase">{v.status === "cancelada" ? "Cancelada" : "Concluída"}</span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-black font-mono text-emerald-500 block">
-                    R$ {v.total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </span>
-                  <span className="text-[9px] text-[var(--color-text-muted)] uppercase">Concluída</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
@@ -508,7 +529,7 @@ export default function PainelVarejo() {
           </div>
 
           <div className="space-y-2">
-            {compras.map((c, i) => (
+            {(compras || []).map((c, i) => (
               <div key={i} className="p-3 rounded-xl bg-[var(--color-surface-sunken)]/60 border border-[var(--color-border-subtle)] flex items-center justify-between hover:bg-[var(--color-surface-sunken)] transition-colors">
                 <div>
                   <div className="flex items-center gap-2">
@@ -516,11 +537,11 @@ export default function PainelVarejo() {
                     <p className="text-xs font-bold text-[var(--color-text-primary)]">{c.fornecedor}</p>
                   </div>
                   <p className="text-[10px] text-[var(--color-text-muted)]">
-                    {c.data} • <strong className="text-[var(--color-text-primary)] font-mono">R$ {Number(c.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong>
+                    {c.data} • <strong className="text-[var(--color-text-primary)] font-mono">R$ {Number(c.valor || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</strong>
                   </p>
                 </div>
                 <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/20">
-                  {c.status}
+                  {c.status || "Pendente"}
                 </span>
               </div>
             ))}

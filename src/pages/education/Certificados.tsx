@@ -63,6 +63,33 @@ export default function Certificados() {
     setValidateResult(found ?? "not_found");
   };
 
+  const kpiStats = [
+    { label: "Diplomas Emitidos", value: certs.length.toString(), icon: Award, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Validações Hoje", value: "12", icon: ShieldCheck, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Processamento", value: certs.filter(c => c.status === "Processando").length.toString(), icon: RefreshCw, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+    { label: "Média Acadêmica", value: "9.2", icon: Star, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
+  ];
+
+  const handleExportCSV = () => {
+    if (certs.length === 0) {
+      toast.error("Nenhum certificado para exportar");
+      return;
+    }
+    const headers = "ID,Aluno,Curso,Data,Codigo,Status,Nota\n";
+    const rows = certs
+      .map(c => `"${c.id}","${c.student}","${c.course}","${c.issueDate}","${c.code}","${c.status}","${c.grade}"`)
+      .join("\n");
+    const blob = new Blob([headers + rows], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `certificados_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("CSV exportado com sucesso!");
+  };
+
   const filteredCerts = certs.filter(c =>
     c.student.toLowerCase().includes(search.toLowerCase()) ||
     c.course.toLowerCase().includes(search.toLowerCase()) ||
