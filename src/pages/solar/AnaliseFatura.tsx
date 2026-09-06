@@ -1,0 +1,265 @@
+import { useEffect, useRef, useState } from "react";
+import { Sun, Upload, Zap, TrendingDown, Loader2, Trash2, CheckCircle2 } from "lucide-react";
+import { PageContainer } from "../../components/PageContainer";
+import { Card } from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
+import { toast } from "sonner";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
+import { supabase } from "../../lib/supabase";
+import { analyzeFaturaSolar, FaturaAnalise } from "../../lib/solarOcr";
+
+interface SolarAnalise extends FaturaAnalise {
+  id: string;
+  cliente: string;
+  status: string;
+  created_at: string;
+}
+
+const STATUS_FLOW = ["Análise Concluída", "Visita Técnica", "Proposta Enviada", "Homologação", "Instalação", "Concluído"];
+
+// Mesma fórmula usada no backend (/api/ai/solar-analyze-fatura) — reaplicada
+// aqui pra recalcular a estimativa em tempo real quando o usuário corrige o
+// consumo/valor extraído pela IA na etapa de revisão humana.
+const HSP_MEDIO_BRASIL = 4.5;
+const EFICIENCIA_SISTEMA = 0.8;
+function recalcularEstimativas(consumoMedioKwh: number | null, valorFatura: number | null) {
+  const potenciaEstimadaKwp = consumoMedioKwh
+    ? Math.round((consumoMedioKwh / (HSP_MEDIO_BRASIL * 30 * EFICIENCIA_SISTEMA)) * 100) / 100
+    : null;
+  const economiaMensalEstimada = valorFatura ? Math.round(valorFatura * 0.85 * 100) / 100 : null;
+  const economiaAnualEstimada = economiaMensalEstimada ? Math.round(economiaMensalEstimada * 12 * 100) / 100 : null;
+  return { potenciaEstimadaKwp, economiaMensalEstimada, economiaAnualEstimada };
+}
+
+const statusColor = (s: string) => {
+  if (s === "Concluído") return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+  if (s === "Instalação" || s === "Homologação") return "bg-blue-500/10 text-blue-400 border-blue-500/20";
+  return "bg-amber-500/10 text-amber-400 border-amber-500/20";
+};
+
+export default function AnaliseFatura() {
+  const [file, setFile] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [cliente, setCliente] = useState("");
+  const [analyzing, setAnalyzing] = useState(false);
+  const [resultado, setResultado] = useState<FaturaAnalise | null>(null);
+  const [analises, setAnalises] = useState<SolarAnalise[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const refetch = () => {
+    if (!supabase) return;
+    supabase.from("solar_analises").select("*").order("created_at", { ascending: false }).then(({ data, error }) => {
+      if (error) toast.error(`Erro ao carregar análises: ${error.message}`);
+      else if (data) setAnalises(data as SolarAnalise[]);
+    });
+  };
+
+  useEffect(() => { refetch(); }, []);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (f.size > 4 * 1024 * 1024) { toast.error("Imagem muito grande. Máximo 4MB."); return; }
+    setFile(f);
+    setResultado(null);
+    setPreview(URL.createObjectURL(f));
+  };
+
+  const handleAnalyze = async () => {
+    if (!file) { toast.error("Selecione uma foto da fatura."); return; }
+    setAnalyzing(true);
+    try {
+      const analise = await analyzeFaturaSolar(file);
+      setResultado(analise);
+      if (!analise.consumoMedioKwh && !analise.valorFatura) {
+        toast.warning("Não consegui extrair os dados da fatura. Tente uma foto mais nítida.");
+      } else {
+        toast.success("Fatura analisada com sucesso!");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Falha ao analisar a fatura.");
+    } finally {
+      setAnalyzing(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (!resultado || !supabase) return;
+    if (!cliente.trim()) { toast.error("Informe o nome do cliente."); return; }
+    const { error } = await supabase.from("solar_analises").insert({
+      cliente: cliente.trim(),
+      distribuidora: resultado.distribuidora,
+      consumo_medio_kwh: resultado.consumoMedioKwh,
+      valor_fatura: resultado.valorFatura,
+      mes_referencia: resultado.mesReferencia,
+      potencia_estimada_kwp: resultado.potenciaEstimadaKwp,
+      economia_mensal_estimada: resultado.economiaMensalEstimada,
+      economia_anual_estimada: resultado.economiaAnualEstimada,
+    });
+    if (error) { toast.error(`Erro ao salvar: ${error.message}`); return; }
+    toast.success("Análise salva! Cliente adicionado ao funil fotovoltaico.");
+    setFile(null);
+    setPreview(null);
+    setResultado(null);
+    setCliente("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    refetch();
+  };
+
+  const handleAdvanceStatus = async (a: SolarAnalise) => {
+    const idx = STATUS_FLOW.indexOf(a.status);
+    const next = STATUS_FLOW[idx + 1];
+    if (!next || !supabase) return;
+    const { error } = await supabase.from("solar_analises").update({ status: next }).eq("id", a.id);
+    if (error) { toast.error(`Erro ao atualizar status: ${error.message}`); return; }
+    setAnalises(prev => prev.map(x => x.id === a.id ? { ...x, status: next } : x));
+  };
+
+  const handleDelete = async (id: string, cliente: string) => {
+    if (!supabase) return;
+    if (!(await confirmDialog({ title: "Remover análise", description: `Remover a análise de ${cliente}?` }))) return;
+    const { error } = await supabase.from("solar_analises").delete().eq("id", id);
+    if (error) { toast.error(`Erro ao remover: ${error.message}`); return; }
+    setAnalises(prev => prev.filter(x => x.id !== id));
+  };
+
+  return (
+    <PageContainer
+      title="Energia Solar — Análise de Fatura"
+      description="Envie uma foto da conta de luz e obtenha consumo médio, dimensionamento e economia estimada automaticamente."
+    >
+      <div className="space-y-6 max-w-5xl mx-auto pb-12">
+        <Card className="p-6 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
+          <div className="flex items-center gap-2 mb-4">
+            <Sun className="w-5 h-5 text-amber-500" />
+            <h3 className="text-sm font-black text-[var(--color-text-primary)] uppercase tracking-wider">Nova Análise</h3>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-6">
+            <div>
+              <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] block mb-2">Foto da Fatura de Energia</label>
+              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileChange} className="hidden" id="fatura-upload" />
+              <label
+                htmlFor="fatura-upload"
+                className="flex flex-col items-center justify-center gap-2 h-40 border-2 border-dashed border-[var(--color-border-default)] rounded-xl cursor-pointer hover:border-amber-500/50 transition-colors overflow-hidden"
+              >
+                {preview ? (
+                  <img src={preview} alt="Preview da fatura" className="h-full w-full object-contain" />
+                ) : (
+                  <>
+                    <Upload className="w-6 h-6 text-[var(--color-text-faint)]" />
+                    <span className="text-xs text-[var(--color-text-muted)]">Clique para enviar (JPEG, PNG, WebP — até 4MB)</span>
+                  </>
+                )}
+              </label>
+              <Button
+                onClick={handleAnalyze}
+                disabled={!file || analyzing}
+                className="w-full mt-3 gap-2 h-10 text-xs font-bold disabled:opacity-40"
+              >
+                {analyzing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+                {analyzing ? "Analisando com IA..." : "Analisar Fatura"}
+              </Button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-black uppercase tracking-widest text-[var(--color-text-muted)] block mb-2">Nome do Cliente</label>
+                <Input value={cliente} onChange={e => setCliente(e.target.value)} placeholder="Nome do cliente/lead" />
+              </div>
+
+              {resultado && (
+                <div className="p-4 bg-[var(--color-surface-sunken)] rounded-xl border border-[var(--color-border-subtle)] space-y-2.5 text-xs">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-amber-500/80 pb-1">
+                    Revise os dados extraídos pela IA antes de salvar
+                  </p>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[var(--color-text-muted)] shrink-0">Distribuidora</span>
+                    <input
+                      value={resultado.distribuidora ?? ""}
+                      onChange={(e) => setResultado({ ...resultado, distribuidora: e.target.value || null })}
+                      placeholder="Não identificado"
+                      className="bg-transparent text-right font-bold text-[var(--color-text-primary)] outline-none border-b border-transparent focus:border-amber-500/50 w-40"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[var(--color-text-muted)] shrink-0">Consumo médio (kWh)</span>
+                    <input
+                      type="number"
+                      value={resultado.consumoMedioKwh ?? ""}
+                      onChange={(e) => {
+                        const consumoMedioKwh = e.target.value ? Number(e.target.value) : null;
+                        setResultado({ ...resultado, consumoMedioKwh, ...recalcularEstimativas(consumoMedioKwh, resultado.valorFatura) });
+                      }}
+                      placeholder="Não identificado"
+                      className="bg-transparent text-right font-bold text-[var(--color-text-primary)] outline-none border-b border-transparent focus:border-amber-500/50 w-24"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-[var(--color-text-muted)] shrink-0">Valor da fatura (R$)</span>
+                    <input
+                      type="number"
+                      value={resultado.valorFatura ?? ""}
+                      onChange={(e) => {
+                        const valorFatura = e.target.value ? Number(e.target.value) : null;
+                        setResultado({ ...resultado, valorFatura, ...recalcularEstimativas(resultado.consumoMedioKwh, valorFatura) });
+                      }}
+                      placeholder="Não identificado"
+                      className="bg-transparent text-right font-bold text-[var(--color-text-primary)] outline-none border-b border-transparent focus:border-amber-500/50 w-24"
+                    />
+                  </div>
+                  <div className="pt-2 mt-2 border-t border-[var(--color-border-subtle)] flex justify-between">
+                    <span className="text-[var(--color-text-muted)] flex items-center gap-1"><Zap className="w-3 h-3 text-amber-500" />Sistema estimado</span>
+                    <span className="font-black text-amber-500">{resultado.potenciaEstimadaKwp ? `${resultado.potenciaEstimadaKwp} kWp` : "—"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-[var(--color-text-muted)] flex items-center gap-1"><TrendingDown className="w-3 h-3 text-emerald-500" />Economia mensal estimada</span>
+                    <span className="font-black text-emerald-500">{resultado.economiaMensalEstimada ? `R$ ${resultado.economiaMensalEstimada.toFixed(2)}` : "—"}</span>
+                  </div>
+                  <p className="text-[9px] text-[var(--color-text-faint)] pt-1">
+                    Estimativa baseada em irradiação solar média nacional (4,5 HSP) e eficiência de sistema de 80%. Valor real varia por região, orientação do telhado e tarifa vigente. Potência e economia acima são recalculadas a partir do consumo revisado só ao salvar.
+                  </p>
+                  <Button onClick={handleSave} className="w-full mt-2 h-9 text-[10px] font-black uppercase tracking-widest gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Confirmar Revisão e Adicionar ao Funil
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </Card>
+
+        <Card className="overflow-hidden bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)]">
+          <div className="p-4 border-b border-[var(--color-border-subtle)]">
+            <h3 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider">Funil Fotovoltaico</h3>
+          </div>
+          {analises.length === 0 ? (
+            <p className="p-6 text-xs text-[var(--color-text-muted)]">Nenhuma análise salva ainda.</p>
+          ) : (
+            <div className="divide-y divide-[var(--color-border-subtle)]">
+              {analises.map(a => (
+                <div key={a.id} className="p-4 flex items-center justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="text-sm font-bold text-[var(--color-text-primary)] truncate">{a.cliente}</p>
+                    <p className="text-[10px] text-[var(--color-text-muted)]">
+                      {a.consumoMedioKwh ? `${a.consumoMedioKwh} kWh/mês` : "—"} · {a.potenciaEstimadaKwp ? `${a.potenciaEstimadaKwp} kWp` : "—"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`text-[9px] font-black px-2.5 py-1 rounded-full border ${statusColor(a.status)}`}>{a.status}</span>
+                    {a.status !== "Concluído" && (
+                      <button onClick={() => handleAdvanceStatus(a)} className="text-[9px] font-black uppercase text-blue-500 hover:text-blue-400">Avançar</button>
+                    )}
+                    <button onClick={() => handleDelete(a.id, a.cliente)} className="p-1.5 text-[var(--color-text-faint)] hover:text-danger">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </div>
+    </PageContainer>
+  );
+}

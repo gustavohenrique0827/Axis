@@ -20,6 +20,7 @@ import {
   Share2,
   Globe,
   Stethoscope,
+  Sun,
   Calendar,
   Video,
   Archive,
@@ -40,6 +41,8 @@ import {
   Receipt,
   TrendingUp,
   SlidersHorizontal,
+  ShoppingCart,
+  Boxes,
 } from "lucide-react";
 
 /**
@@ -94,6 +97,7 @@ export const navSections = [
       { name: "Contas a Receber", path: "/app/financeiro/receber", icon: TrendingUp },
       { name: "Contas a Pagar", path: "/app/financeiro/pagar", icon: Wallet },
       { name: "DRE & Resultados", path: "/app/financeiro/dre", icon: PieChart },
+      { name: "Indicações", path: "/app/financeiro/indicacoes", icon: Handshake },
     ],
   },
   {
@@ -103,6 +107,13 @@ export const navSections = [
       { name: "Performance SDR / IA", path: "/app/performance-ia", icon: Brain },
       { name: "CPM & Indicadores", path: "/app/indicadores", icon: BarChart2 },
       { name: "Relatórios Executivos", path: "/app/relatorios", icon: PieChart },
+    ],
+  },
+  {
+    title: "Energia Solar",
+    reqModule: "solar",
+    items: [
+      { name: "Análise de Fatura", path: "/app/solar/analise-fatura", icon: Sun },
     ],
   },
   {
@@ -129,6 +140,15 @@ export const navSections = [
       { name: "Base de Alunos", path: "/app/educacao/alunos", icon: Users },
       { name: "Banco de Conteúdo", path: "/app/educacao/conteudo", icon: BookOpen },
       { name: "Certificados", path: "/app/educacao/certificados", icon: Award },
+      { name: "Mensalidades", path: "/app/educacao/mensalidades", icon: Wallet },
+    ],
+  },
+  {
+    title: "Varejo",
+    reqModule: "varejo",
+    items: [
+      { name: "Ponto de Venda", path: "/app/varejo/vendas", icon: ShoppingCart },
+      { name: "Estoque", path: "/app/varejo/estoque", icon: Boxes },
     ],
   },
   {

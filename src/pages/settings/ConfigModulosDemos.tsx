@@ -5,7 +5,7 @@ import {
   Cpu, Activity, Layers, Database, UserCheck,
   Target, Award, DollarSign, Package, MessageSquare, Users, Columns3, Clock, Code2,
   Plus, X, Building2, RefreshCw, ChevronDown, Megaphone, Pencil, Trash2, AlertTriangle,
-  Sparkles, Search, CheckCircle2, ShieldCheck, ArrowRight, HeartPulse, Home
+  Sparkles, Search, CheckCircle2, ShieldCheck, ArrowRight, HeartPulse, Home, Sun, ShoppingCart
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
@@ -221,6 +221,14 @@ export default function ConfigModulosDemos() {
       case "IMOBILIARIO":
         preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: true, dev: false, imobiliario: true, aurora: true };
         toast.success("Preset Aplicado: Imobiliário & Concessionárias");
+        break;
+      case "VAREJO":
+        preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: true, engajamento: true, rh: true, bi: true, clinica: false, marketing: true, dev: false, imobiliario: false, aurora: true };
+        toast.success("Preset Aplicado: Varejo & Lojas");
+        break;
+      case "SOLAR":
+        preset = { crm: true, educacao: false, produtividade: true, financeiro: true, catalogo: false, engajamento: true, rh: true, bi: true, clinica: false, marketing: false, dev: false, imobiliario: false, aurora: true, solar: true };
+        toast.success("Preset Aplicado: Energia Solar");
         break;
       default:
         return;
@@ -752,7 +760,7 @@ export default function ConfigModulosDemos() {
               <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-primary-blue)] flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" /> Presets Estratégicos de Operação em 1 Clique
               </span>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2.5">
                 <button
                   type="button"
                   onClick={() => applyPreset("ALL_ACTIVE")}
@@ -802,6 +810,26 @@ export default function ConfigModulosDemos() {
                   <span className="text-[11px] font-bold">Imob. & Concess.</span>
                   <span className="text-[9px] opacity-80">Imóveis & Veículos</span>
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => applyPreset("VAREJO")}
+                  className="flex flex-col items-center justify-center p-3 bg-pink-500/10 hover:bg-pink-500/20 text-pink-600 dark:text-pink-400 border border-pink-500/25 rounded-xl transition-all cursor-pointer shadow-2xs group"
+                >
+                  <span className="text-lg mb-1 group-hover:scale-110 transition-transform">🛍️</span>
+                  <span className="text-[11px] font-bold">Varejo & Lojas</span>
+                  <span className="text-[9px] opacity-80">Catálogo & Estoque</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => applyPreset("SOLAR")}
+                  className="flex flex-col items-center justify-center p-3 bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/25 rounded-xl transition-all cursor-pointer shadow-2xs group"
+                >
+                  <span className="text-lg mb-1 group-hover:scale-110 transition-transform">☀️</span>
+                  <span className="text-[11px] font-bold">Energia Solar</span>
+                  <span className="text-[9px] opacity-80">Funil Fotovoltaico</span>
+                </button>
               </div>
             </div>
 
@@ -820,6 +848,8 @@ export default function ConfigModulosDemos() {
                 { id: 'rh', title: "RH & Colaboradores", desc: "Equipe interna, comissões e organograma", icon: Users, color: "text-blue-500 bg-blue-500/10 border-blue-500/20" },
                 { id: 'bi', title: "BI & Inteligência de Dados", desc: "Dashboards analíticos, OTE e métricas avançadas", icon: Columns3, color: "text-indigo-500 bg-indigo-500/10 border-indigo-500/20" },
                 { id: 'imobiliario', title: "Imobiliário & Concessionárias", desc: "Portfólio de imóveis e veículos, visitas, test-drives e equipe", icon: Home, color: "text-orange-500 bg-orange-500/10 border-orange-500/20" },
+                { id: 'solar', title: "Energia Solar", desc: "Análise de fatura por IA, dimensionamento e funil fotovoltaico", icon: Sun, color: "text-amber-500 bg-amber-500/10 border-amber-500/20" },
+                { id: 'varejo', title: "Varejo & Ponto de Venda", desc: "Carrinho, baixa de estoque na venda e catálogo público compartilhável", icon: ShoppingCart, color: "text-lime-500 bg-lime-500/10 border-lime-500/20" },
                 { id: 'dev', title: "Engenharia & Sprint Dev", desc: "Quadro de sprints, releases e demandas tech", icon: Code2, color: "text-slate-500 bg-slate-500/10 border-slate-500/20" },
               ].map((mod) => {
                 const isEnabled = activeModules[mod.id] ?? true;

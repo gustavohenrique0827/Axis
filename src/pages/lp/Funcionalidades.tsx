@@ -73,9 +73,9 @@ const MODULES: Module[] = [
     icon: FileCheck,
     name: "Contratos & Propostas",
     badge: "Fechamento Rápido",
-    tagline: "Geração de propostas e contratos com assinatura digital em 1 clique.",
-    description: "Elimine a demora burocrática no momento mais crítico da venda. Preencha os dados do cliente automaticamente no modelo oficial e colete a assinatura direto pelo celular.",
-    highlights: ["Geração instantânea em PDF", "Envio direto no WhatsApp do cliente", "Validade jurídica e trilha de auditoria"],
+    tagline: "Geração de propostas e contratos em PDF em 1 clique.",
+    description: "Elimine a demora burocrática no momento mais crítico da venda. Preencha os dados do cliente automaticamente no modelo oficial e envie pronto pra assinatura.",
+    highlights: ["Geração instantânea em PDF", "Envio direto no WhatsApp do cliente", "Assinatura eletrônica com validade jurídica (roadmap)"],
     capabilities: [
       { title: "Modelos Customizáveis", desc: "Templates pré-formatados para vendas de produtos, prestações de serviços e matrículas." },
       { title: "Assinatura Eletrônica", desc: "Cliente assina na tela do smartphone com registro de IP, data e hora com valor probatório." },

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
   FileText, Search, FlaskConical,
   Clock, CheckCircle2, AlertCircle, Download,
-  Eye, Plus, Share2, X, Check
+  Eye, Plus, X, Check
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -11,6 +11,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { useExames } from './hooks/useExames';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
+import { exportToCSV } from '../../lib/exportCsv';
 
 export default function Exames() {
   const { exames: examList, addExame } = useExames();
@@ -51,12 +52,16 @@ export default function Exames() {
   return (
     <PageContainer 
       title="Exames & Laboratório" 
-      description="Gerencie pedidos de exames laboratoriais, acompanhe laudos e integre com parceiros."
+      description="Gerencie pedidos de exames laboratoriais e acompanhe o status de cada resultado."
       actions={
         <div className="flex items-center gap-3 flex-wrap">
-          <Button 
-            variant="outline" 
-            onClick={() => toast.success("Lote de exames exportado com sucesso!")}
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (filteredExames.length === 0) { toast.error("Nenhum pedido para exportar."); return; }
+              exportToCSV(filteredExames, "Exames_SPY");
+              toast.success("Lote de exames exportado!");
+            }}
             className="h-9 px-4 text-xs font-bold gap-1.5"
           >
             <Download className="w-3.5 h-3.5" /> Exportar Lote
@@ -137,11 +142,16 @@ export default function Exames() {
                       </td>
                       <td className="p-3.5 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          <Button variant="ghost" size="xs" onClick={() => toast.info(`Visualizando laudo de ${exam.patient}`)} className="h-7 w-7 p-0 cursor-pointer">
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            onClick={() => {
+                              if (exam.result && exam.result !== "-") toast.info(`Resultado de ${exam.patient}: ${exam.result}`);
+                              else toast.info(`${exam.patient} ainda não possui resultado lançado.`);
+                            }}
+                            className="h-7 w-7 p-0 cursor-pointer"
+                          >
                             <Eye className="w-3.5 h-3.5" />
-                          </Button>
-                          <Button variant="ghost" size="xs" onClick={() => toast.success("Link do laudo copiado para compartilhamento!")} className="h-7 w-7 p-0 cursor-pointer">
-                            <Share2 className="w-3.5 h-3.5" />
                           </Button>
                         </div>
                       </td>

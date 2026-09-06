@@ -10,7 +10,7 @@ const FAQS = [
   },
   {
     q: "Existe risco de ter o WhatsApp bloqueado ao usar automação?",
-    a: "Não. O S.P.Y. utiliza conexão segura e arquitetura homologada (Cloud API e Evolution API) com distribuição multi-instância e regras humanas de delay e cadência. As mensagens de qualificação e follow-up soam naturais e só são enviadas para leads que iniciaram contato ou interagiram com suas campanhas, eliminando o risco de denúncias de spam.",
+    a: "O S.P.Y. foi desenhado para reduzir esse risco: a conexão com o WhatsApp é feita por um provedor dedicado (não pelo seu WhatsApp pessoal com QR code compartilhado), e as mensagens automáticas só são enviadas para leads que já iniciaram contato ou interagiram com suas campanhas. Nenhuma ferramenta de automação elimina 100% o risco de bloqueio — isso depende de políticas do próprio WhatsApp — mas a arquitetura minimiza esse risco.",
   },
   {
     q: "Como funciona o rodízio de leads entre a equipe comercial?",
@@ -33,8 +33,8 @@ const FAQS = [
     a: "Sim. O S.P.Y. possui assistente de importação via arquivos CSV/Excel e integração com webhooks. Você pode importar seus leads, clientes da carteira, tags e etapas do funil em poucos minutos sem perder nenhum histórico.",
   },
   {
-    q: "Os contratos gerados com assinatura digital têm validade jurídica?",
-    a: "Sim. A assinatura digital do S.P.Y. segue a legislação brasileira (MP 2.200-2/2001 e Lei 14.063/2020), registrando endereço IP, carimbo de data/hora (timestamp), dados do dispositivo e integridade do documento assinado em PDF, com plena eficácia probatória em juízo.",
+    q: "O S.P.Y. gera contratos e propostas em PDF?",
+    a: "Sim. Você gera propostas e contratos em PDF direto do CRM, prontos para enviar ao cliente. A assinatura eletrônica com validade jurídica plena (MP 2.200-2/2001 e Lei 14.063/2020) está no nosso roadmap — hoje o documento sai pronto para ser assinado pelo meio que você já usa.",
   },
   {
     q: "Como funciona a implantação assistida?",

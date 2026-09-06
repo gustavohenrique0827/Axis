@@ -197,4 +197,5 @@ export interface Appointment {
   specialty: string;
   phone: string;
   date: string;
+  notes?: string;
 }

@@ -11,6 +11,9 @@ import {
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 import { cn } from "../../lib/utils";
+import { useData } from "../../contexts/DataContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { CriarPropostaModal } from "../../components/ui/modals/crm/CriarPropostaModal";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 type Etapa = "Prospecção" | "Qualificação" | "Apresentação" | "Negociação" | "Fechamento";
@@ -269,6 +272,54 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
   const [tags, setTags] = useState<string[]>(lead.tags ?? []);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [isEditingNota, setIsEditingNota] = useState(false);
+  const [isPropostaModalOpen, setIsPropostaModalOpen] = useState(false);
+  const [novaTarefaTitulo, setNovaTarefaTitulo] = useState("");
+  const { createProposalWithItems, tasks, addTask, updateTask, deleteTask } = useData();
+  const { user } = useAuth();
+
+  // Tarefas do lead — usa o mesmo módulo genérico de Tarefas do CRM (tabela
+  // `tasks`, já com persistência real) filtrado por `related === lead.id`,
+  // em vez do checklist hardcoded que existia antes (array fixo, sempre os
+  // mesmos 3 itens, "Nova tarefa" sem nenhuma ação).
+  const tarefasDoLead = tasks.filter((t) => t.related === lead.id);
+  const handleAddTarefa = () => {
+    if (!novaTarefaTitulo.trim()) return;
+    addTask({ title: novaTarefaTitulo.trim(), related: lead.id, status: "A Fazer" });
+    setNovaTarefaTitulo("");
+  };
+  const handleToggleTarefa = (taskId: string, done: boolean) => {
+    updateTask(taskId, { status: done ? "A Fazer" : "Concluída" });
+  };
+
+  // Gera a proposta de verdade (tabela `proposals`, o mesmo motor da tela
+  // Propostas do CRM) e já copia o link público — reusa o view_token
+  // gerado pelo banco (migration 20260906_public_proposal_view_tracking),
+  // não inventa um link separado pro módulo imobiliário.
+  const handleCreateProposta = async (data: any) => {
+    const proposalId = await createProposalWithItems({
+      titulo: data.titulo,
+      cliente: data.cliente || lead.cliente,
+      valor: parseFloat(data.valor) || 0,
+      validade: data.dataValidade || null,
+      status: "Enviada",
+      vendedor: user?.name || lead.corretor || "Sistema S.P.Y.",
+      itens: data.itens?.filter((i: any) => i.descricao?.trim()) || [],
+      tipo: data.tipo,
+      conteudoTexto: data.conteudoTexto,
+      linkPdf: data.linkPdf,
+    });
+    setIsPropostaModalOpen(false);
+    if (supabase) {
+      const { data: row } = await supabase.from("proposals").select("view_token").eq("id", proposalId).maybeSingle();
+      if (row?.view_token) {
+        const url = `${window.location.origin}/proposta/${row.view_token}`;
+        navigator.clipboard.writeText(url);
+        toast.success("Proposta criada! Link público copiado — envie para o cliente acompanhar.");
+        return;
+      }
+    }
+    toast.success("Proposta criada! Veja o link público na tela de Propostas.");
+  };
 
   const temp = getTemperatura(lead.diasEtapa);
   const tc = TEMP_CFG[temp];
@@ -293,12 +344,12 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
   };
 
   const QUICK_ACTIONS = [
-    { label: "WhatsApp",    color: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20", icon: MessageSquare, href: `https://wa.me/55${phoneRaw}` },
-    { label: "Ligar",       color: "bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20",             icon: Phone,         href: `tel:${phoneRaw}` },
-    { label: "E-mail",      color: "bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20",         icon: Mail,          href: lead.email ? `mailto:${lead.email}` : undefined },
-    { label: "Visita",      color: "bg-violet-500/10 border-violet-500/20 text-violet-400 hover:bg-violet-500/20",     icon: Calendar,      href: undefined },
-    { label: "Proposta",    color: "bg-cyan-500/10 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20",             icon: FileText,      href: undefined },
-    { label: "Fechar",      color: "bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20",             icon: CheckCircle2,  href: undefined },
+    { label: "WhatsApp",    color: "bg-emerald-500/10 border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/20", icon: MessageSquare, href: `https://wa.me/55${phoneRaw}`, onClick: undefined },
+    { label: "Ligar",       color: "bg-blue-500/10 border-blue-500/20 text-blue-400 hover:bg-blue-500/20",             icon: Phone,         href: `tel:${phoneRaw}`, onClick: undefined },
+    { label: "E-mail",      color: "bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20",         icon: Mail,          href: lead.email ? `mailto:${lead.email}` : undefined, onClick: undefined },
+    { label: "Visita",      color: "bg-violet-500/10 border-violet-500/20 text-violet-400 hover:bg-violet-500/20",     icon: Calendar,      href: undefined, onClick: undefined },
+    { label: "Proposta",    color: "bg-cyan-500/10 border-cyan-500/20 text-cyan-400 hover:bg-cyan-500/20",             icon: FileText,      href: undefined, onClick: () => setIsPropostaModalOpen(true) },
+    { label: "Fechar",      color: "bg-rose-500/10 border-rose-500/20 text-rose-400 hover:bg-rose-500/20",             icon: CheckCircle2,  href: undefined, onClick: undefined },
   ];
 
   return (
@@ -479,7 +530,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
                       <button
                         key={a.label}
                         className={cn("flex flex-col items-center gap-1.5 py-3 rounded-xl border text-[10px] font-black transition-all", a.color)}
-                        onClick={() => toast.info(`${a.label} — em breve`)}
+                        onClick={a.onClick || (() => toast.info(`${a.label} — em breve`))}
                       >
                         <a.icon className="w-4 h-4" />
                         {a.label}
@@ -519,7 +570,7 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
                   <span className="text-[10px] text-slate-600">Sugestão de ação:</span>
                   <button
                     className="text-[10px] font-black text-cyan-400 hover:text-cyan-300 transition-colors"
-                    onClick={() => toast.info("Abrindo sugestão...")}
+                    onClick={() => setIsPropostaModalOpen(true)}
                   >
                     Aplicar Proposta →
                   </button>
@@ -631,21 +682,38 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
             <div className="px-5 py-4">
               <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-4">Tarefas</p>
               <div className="space-y-2">
-                {[
-                  { label: "Ligar para o cliente", done: true  },
-                  { label: "Enviar proposta por e-mail", done: false },
-                  { label: "Agendar visita ao imóvel", done: false },
-                ].map((task, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 bg-white/[0.03] border border-white/[0.06] rounded-xl">
-                    <div className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0", task.done ? "bg-emerald-500 border-emerald-500" : "border-slate-600")}>
-                      {task.done && <Check className="w-2.5 h-2.5 text-white" />}
+                {tarefasDoLead.length === 0 && (
+                  <p className="text-xs text-slate-600 italic px-1 pb-1">Nenhuma tarefa vinculada a este lead ainda.</p>
+                )}
+                {tarefasDoLead.map((task) => {
+                  const done = task.status === "Concluída";
+                  return (
+                    <div key={task.id} className="flex items-center gap-3 p-3 bg-white/[0.03] border border-white/[0.06] rounded-xl group">
+                      <button
+                        onClick={() => handleToggleTarefa(task.id, done)}
+                        className={cn("w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 cursor-pointer", done ? "bg-emerald-500 border-emerald-500" : "border-slate-600")}
+                      >
+                        {done && <Check className="w-2.5 h-2.5 text-white" />}
+                      </button>
+                      <span className={cn("text-sm flex-1", done ? "line-through text-slate-600" : "text-slate-300")}>{task.title}</span>
+                      <button onClick={() => deleteTask(task.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-all cursor-pointer">
+                        <Trash className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <span className={cn("text-sm", task.done ? "line-through text-slate-600" : "text-slate-300")}>{task.label}</span>
-                  </div>
-                ))}
-                <button className="w-full flex items-center gap-2 p-3 border border-dashed border-white/10 rounded-xl text-slate-600 hover:text-slate-400 hover:border-white/20 text-sm transition-all">
-                  <Plus className="w-3.5 h-3.5" /> Nova tarefa
-                </button>
+                  );
+                })}
+                <div className="flex gap-2">
+                  <input
+                    value={novaTarefaTitulo}
+                    onChange={(e) => setNovaTarefaTitulo(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") handleAddTarefa(); }}
+                    placeholder="Nova tarefa..."
+                    className="flex-1 bg-white/[0.03] border border-dashed border-white/10 rounded-xl px-3 py-2.5 text-sm text-slate-300 placeholder-slate-600 focus:outline-none focus:border-white/20"
+                  />
+                  <button onClick={handleAddTarefa} className="flex items-center gap-1.5 px-3 border border-dashed border-white/10 rounded-xl text-slate-600 hover:text-slate-400 hover:border-white/20 text-sm transition-all cursor-pointer">
+                    <Plus className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
           )}
@@ -744,6 +812,15 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
           )}
         </div>
       </div>
+
+      <CriarPropostaModal
+        isOpen={isPropostaModalOpen}
+        onClose={() => setIsPropostaModalOpen(false)}
+        onSave={handleCreateProposta}
+        title="Criar Proposta"
+        submitText="Gerar Proposta"
+        initialValue={{ cliente: lead.cliente, titulo: `Proposta — ${lead.interesse || "Imóvel"}` }}
+      />
     </div>
   );
 }

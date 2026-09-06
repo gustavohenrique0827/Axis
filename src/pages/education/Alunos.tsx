@@ -5,8 +5,10 @@ import { PageContainer } from "../../components/PageContainer";
 import { useData } from "../../contexts/DataContext";
 import { toast } from "sonner";
 import { exportToCSV } from "../../lib/exportCsv";
+import { apiFetch } from "../../lib/apiClient";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { NovaMatriculaModal } from "../../components/ui/modals/education/NovaMatriculaModal";
+import { supabase } from "../../lib/supabase";
 import { AlunoGradesModal } from "../../components/ui/modals/education/AlunoGradesModal";
 import { AlunosKPIs } from "./components/Alunos/AlunosKPIs";
 import { AlunosFilters } from "./components/Alunos/AlunosFilters";
@@ -21,17 +23,20 @@ interface Student {
 
 export default function Alunos() {
   const [searchTerm, setSearchTerm] = useState("");
-  const { students: rawStudents, addStudent, updateStudent, deleteStudent } = useData();
+  const { students: rawStudents, addStudent, updateStudent, deleteStudent, turmas } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isGradesModalOpen, setIsGradesModalOpen] = useState(false);
 
-  const students: Student[] = useMemo(() => rawStudents.map(s => ({
-    id: s.id, name: s.nome || s.name, email: s.email || "",
-    phone: s.telefone || s.phone || "", course: s.curso || s.course || "",
-    progress: s.progress || 0, status: s.status || "Ativo",
-    avatar: s.avatar || "", grades: s.grades || [],
-  })), [rawStudents]);
+  const students: Student[] = useMemo(() => rawStudents.map(s => {
+    const turma = turmas.find((t: any) => t.id === s.turma_id);
+    return {
+      id: s.id, name: s.nome || s.name, email: s.email || "",
+      phone: s.telefone || s.phone || "", course: turma?.curso || turma?.nome || s.course || "",
+      progress: s.progress || 0, status: s.status || "Ativo",
+      avatar: s.avatar || "", grades: s.grades || [],
+    };
+  }), [rawStudents, turmas]);
 
   const filteredAlunos = useMemo(() => students.filter(a =>
     a.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -73,7 +78,18 @@ export default function Alunos() {
   };
 
   const handleAnalyzeAI = async (student: Student) => {
-    return `O aluno ${student.name} apresenta progresso de ${student.progress}%, com desempenho consistente nas disciplinas.`;
+    try {
+      const res = await apiFetch("/api/ai/student-performance-insight", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: student.name, progress: student.progress, grades: student.grades }),
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      return data.insight || data.error || "Não foi possível gerar uma análise no momento.";
+    } catch {
+      return "Não foi possível gerar uma análise no momento. Tente novamente em instantes.";
+    }
   };
 
   return (
@@ -122,14 +138,30 @@ export default function Alunos() {
       <NovaMatriculaModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        onSubmit={(data) => {
-          addStudent({
-            ...data,
-            id: Date.now().toString(),
+        onSubmit={async (data) => {
+          const { curso, valorMensalidade, diaVencimento, quantidadeParcelas, ...rest } = data as any;
+          const studentId = Date.now().toString();
+          await addStudent({
+            ...rest,
+            turma_id: curso || null,
+            id: studentId,
             status: "Ativo",
             progress: 0,
             grades: []
           });
+
+          const valor = Number(valorMensalidade);
+          if (supabase && valor > 0) {
+            const { error } = await supabase.rpc("gerar_mensalidades_matricula", {
+              p_student_id: studentId,
+              p_turma_id: curso || null,
+              p_valor_mensalidade: valor,
+              p_dia_vencimento: Number(diaVencimento) || 10,
+              p_quantidade_parcelas: Number(quantidadeParcelas) || 1,
+            });
+            if (error) toast.error(`Matrícula criada, mas falhou ao gerar mensalidades: ${error.message}`);
+          }
+
           toast.success(`Matrícula de ${data.nome} confirmada com sucesso!`);
           setIsModalOpen(false);
         }}

@@ -20,6 +20,16 @@ interface SquadsTabContentProps {
   setOteVendasRealizadas: (val: string) => void;
   oteAtingimentoMeta: string;
   setOteAtingimentoMeta: (val: string) => void;
+  oteColaboradorId: string;
+  setOteColaboradorId: (val: string) => void;
+  oteNivel: string;
+  setOteNivel: (val: string) => void;
+  otePeriod: string;
+  setOtePeriod: (val: string) => void;
+  colaboradores: any[];
+  financeCommissionEntries: any[];
+  onSaveOteEntry: () => void;
+  onDeleteOteEntry: (id: string) => void;
   calcVariable: number;
   calcBonus: number;
   totalOTE: number;
@@ -29,6 +39,8 @@ export function SquadsTabContent({
   squads, handleDeleteSquad,
   oteBaseSalary, setOteBaseSalary, oteCommPercentage, setOteCommPercentage,
   oteVendasRealizadas, setOteVendasRealizadas, oteAtingimentoMeta, setOteAtingimentoMeta,
+  oteColaboradorId, setOteColaboradorId, oteNivel, setOteNivel, otePeriod, setOtePeriod,
+  colaboradores: colaboradoresForOte, financeCommissionEntries, onSaveOteEntry, onDeleteOteEntry,
   calcVariable, calcBonus, totalOTE,
 }: SquadsTabContentProps) {
   const { colaboradores, updateSquad } = useData();
@@ -189,6 +201,13 @@ export function SquadsTabContent({
         oteCommPercentage={oteCommPercentage} setOteCommPercentage={setOteCommPercentage}
         oteVendasRealizadas={oteVendasRealizadas} setOteVendasRealizadas={setOteVendasRealizadas}
         oteAtingimentoMeta={oteAtingimentoMeta} setOteAtingimentoMeta={setOteAtingimentoMeta}
+        oteColaboradorId={oteColaboradorId} setOteColaboradorId={setOteColaboradorId}
+        oteNivel={oteNivel} setOteNivel={setOteNivel}
+        otePeriod={otePeriod} setOtePeriod={setOtePeriod}
+        colaboradores={colaboradoresForOte}
+        financeCommissionEntries={financeCommissionEntries}
+        onSaveOteEntry={onSaveOteEntry}
+        onDeleteOteEntry={onDeleteOteEntry}
         calcVariable={calcVariable} calcBonus={calcBonus} totalOTE={totalOTE}
       />
     </div>

@@ -1,8 +1,9 @@
-import { Wallet, Sparkles } from "lucide-react";
+import { Wallet, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "../../../../components/ui/button";
 import { Card } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
 import { toast } from "sonner";
+import { confirmDialog } from "../../../../components/ui/confirm-dialog";
 
 interface SquadOTECalculatorProps {
   oteBaseSalary: string;
@@ -13,6 +14,16 @@ interface SquadOTECalculatorProps {
   setOteVendasRealizadas: (v: string) => void;
   oteAtingimentoMeta: string;
   setOteAtingimentoMeta: (v: string) => void;
+  oteColaboradorId: string;
+  setOteColaboradorId: (v: string) => void;
+  oteNivel: string;
+  setOteNivel: (v: string) => void;
+  otePeriod: string;
+  setOtePeriod: (v: string) => void;
+  colaboradores: any[];
+  financeCommissionEntries: any[];
+  onSaveOteEntry: () => void;
+  onDeleteOteEntry: (id: string) => void;
   calcVariable: number;
   calcBonus: number;
   totalOTE: number;
@@ -27,8 +38,21 @@ const PRESETS = [
 export function SquadOTECalculator({
   oteBaseSalary, setOteBaseSalary, oteCommPercentage, setOteCommPercentage,
   oteVendasRealizadas, setOteVendasRealizadas, oteAtingimentoMeta, setOteAtingimentoMeta,
+  oteColaboradorId, setOteColaboradorId, oteNivel, setOteNivel, otePeriod, setOtePeriod,
+  colaboradores, financeCommissionEntries, onSaveOteEntry, onDeleteOteEntry,
   calcVariable, calcBonus, totalOTE,
 }: SquadOTECalculatorProps) {
+  const entriesForPeriod = financeCommissionEntries
+    .filter(e => e.period === otePeriod)
+    .sort((a, b) => (b.realizado ?? 0) - (a.realizado ?? 0));
+
+  const handleDelete = async (id: string, nome: string) => {
+    if (!(await confirmDialog({
+      title: "Remover lançamento",
+      description: `Remover o lançamento de comissão de "${nome}" para ${otePeriod}? Essa ação não pode ser desfeita.`,
+    }))) return;
+    onDeleteOteEntry(id);
+  };
   return (
     <Card className="p-6 sm:p-10 bg-[var(--color-surface)]/80 backdrop-blur-xl border border-white/10 rounded-[3rem] mt-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 p-6 opacity-5 pointer-events-none">
@@ -47,6 +71,25 @@ export function SquadOTECalculator({
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Inputs */}
         <div className="lg:col-span-7 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-2 sm:col-span-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 font-mono">Colaborador</label>
+              <select
+                value={oteColaboradorId}
+                onChange={e => setOteColaboradorId(e.target.value)}
+                className="w-full bg-white/5 border border-white/5 h-11 text-sm rounded-xl px-3 text-white"
+              >
+                <option value="" className="bg-slate-900">Selecione...</option>
+                {colaboradores.map(c => (
+                  <option key={c.id} value={c.id} className="bg-slate-900">{c.nome} — {c.cargo}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 font-mono">Período</label>
+              <Input type="month" value={otePeriod} onChange={e => setOtePeriod(e.target.value)} className="bg-white/5 border-white/5 h-11 text-sm rounded-xl" />
+            </div>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 font-mono">Salário Base Mensal (R$)</label>
@@ -68,6 +111,10 @@ export function SquadOTECalculator({
               <span className="text-[8px] text-slate-500 font-bold block">Meta &gt;= 100% libera Bônus Superador de 25% do Base!</span>
             </div>
           </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-wider text-slate-400 font-mono">Nível</label>
+            <Input value={oteNivel} onChange={e => setOteNivel(e.target.value)} placeholder="Ex: Júnior, Pleno, Sênior..." className="bg-white/5 border-white/5 h-11 text-sm rounded-xl" />
+          </div>
 
           {/* Preset buttons */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
@@ -79,6 +126,7 @@ export function SquadOTECalculator({
                   setOteCommPercentage(loader.c);
                   setOteVendasRealizadas(loader.v);
                   setOteAtingimentoMeta("100");
+                  setOteNivel(loader.l);
                   toast.info(`Simulador pré-carregado para: ${loader.l}`);
                 }}
                 className="p-2 py-2.5 bg-slate-900 border border-white/5 hover:bg-white/5 text-slate-400 hover:text-white rounded-xl text-[9px] font-black uppercase tracking-wider text-center"
@@ -118,13 +166,55 @@ export function SquadOTECalculator({
           </div>
           <div className="pt-6 border-t border-white/5">
             <Button
-              onClick={() => toast.success(`Parâmetros de comissionamento de R$ ${totalOTE.toLocaleString()} salvos!`)}
-              className="w-full bg-[#2563EB] hover:bg-blue-600 font-black text-[9px] uppercase tracking-widest h-11 rounded-xl"
+              onClick={onSaveOteEntry}
+              disabled={!oteColaboradorId}
+              className="w-full bg-[#2563EB] hover:bg-blue-600 font-black text-[9px] uppercase tracking-widest h-11 rounded-xl disabled:opacity-40"
             >
-              Aplicar Modelo Salarial
+              Aplicar e Salvar Modelo Salarial
             </Button>
           </div>
         </div>
+      </div>
+
+      {/* Histórico de lançamentos do período */}
+      <div className="mt-8 pt-6 border-t border-white/5">
+        <span className="text-[10px] font-mono font-black uppercase tracking-widest text-slate-400">Lançamentos salvos — {otePeriod}</span>
+        {entriesForPeriod.length === 0 ? (
+          <p className="text-xs text-slate-500 mt-3">Nenhum lançamento salvo para este período ainda.</p>
+        ) : (
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="text-[9px] uppercase tracking-wider text-slate-500 border-b border-white/5">
+                  <th className="py-2 pr-3">Nome</th>
+                  <th className="py-2 pr-3">Cargo</th>
+                  <th className="py-2 pr-3">Nível</th>
+                  <th className="py-2 pr-3">Squad</th>
+                  <th className="py-2 pr-3 text-right">Meta (R$)</th>
+                  <th className="py-2 pr-3 text-right">Realizado (R$)</th>
+                  <th className="py-2 pr-3 text-right"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {entriesForPeriod.map(entry => (
+                  <tr key={entry.id}>
+                    <td className="py-2 pr-3 text-white font-semibold">{entry.nome}</td>
+                    <td className="py-2 pr-3 text-slate-400">{entry.cargo}</td>
+                    <td className="py-2 pr-3 text-slate-400">{entry.nivel}</td>
+                    <td className="py-2 pr-3 text-slate-400">{entry.squad || "—"}</td>
+                    <td className="py-2 pr-3 text-right text-slate-300 font-mono">{(entry.meta ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td className="py-2 pr-3 text-right text-emerald-400 font-mono">{(entry.realizado ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                    <td className="py-2 pr-3 text-right">
+                      <button onClick={() => handleDelete(entry.id, entry.nome)} className="text-slate-500 hover:text-red-400">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </Card>
   );

@@ -9,19 +9,13 @@ import { Settings, X, Zap, Send, Activity } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "../../contexts/DataContext";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
+import { apiFetch } from "../../lib/apiClient";
 
 export function ConfigIntegracoesWebhooks() {
   const { globalWebhooks, addGlobalWebhook, deleteGlobalWebhook, toggleGlobalWebhook } = useData();
-  
-  const [webhookLogs, setWebhookLogs] = useState<any[]>([
-    {
-      time: "10:45:12",
-      endpoint: "https://n8n.cloud/webhook/novo-lead",
-      status: 200,
-      payload: '{"event":"lead.created","id":"ld_84920","timestamp":"2026-08-27T10:45:12Z"}'
-    }
-  ]);
-  
+
+  const [webhookLogs, setWebhookLogs] = useState<any[]>([]);
+
   const [newWebhookUrl, setNewWebhookUrl] = useState("");
   const [newWebhookEvent, setNewWebhookEvent] = useState("Novo Lead Criado");
 
@@ -54,27 +48,31 @@ export function ConfigIntegracoesWebhooks() {
     toast.success("URL de Webhook vinculada ao CRM com sucesso! Disparos automáticos ativados.");
   };
 
-  const testWebhookTrigger = (indexNum: number) => {
+  const testWebhookTrigger = async (indexNum: number) => {
     const webhook = globalWebhooks[indexNum];
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 800)),
-      {
-        loading: "Disparando payload sintético para o endpoint...",
-        success: () => {
-          setWebhookLogs(prev => [
-            {
-              time: new Date().toLocaleTimeString('pt-BR', { hour12: false }),
-              endpoint: webhook.endpoint.substring(0, 35) + (webhook.endpoint.length > 35 ? '...' : ''),
-              status: 200,
-              payload: JSON.stringify({ event: "test_ping", id: webhook.id, timestamp: new Date().toISOString() })
-            },
-            ...prev.slice(0, 9)
-          ]);
-          return "Disparo concluído! HTTP Status Code 200 (Success) retornado! 🌐✨";
+    const payload = JSON.stringify({ event: "test_ping", id: webhook.id, timestamp: new Date().toISOString() });
+    try {
+      const res = await apiFetch("/api/integrations/webhook-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: webhook.endpoint, event: webhook.event }),
+      });
+      const data = await res.json();
+      setWebhookLogs(prev => [
+        {
+          time: new Date().toLocaleTimeString('pt-BR', { hour12: false }),
+          endpoint: webhook.endpoint.substring(0, 35) + (webhook.endpoint.length > 35 ? '...' : ''),
+          status: data.status ?? "ERR",
+          ok: data.ok,
+          payload,
         },
-        error: "Erro no envio"
-      }
-    );
+        ...prev.slice(0, 9)
+      ]);
+      if (data.ok) toast.success(`Disparo concluído — HTTP ${data.status} recebido do endpoint.`);
+      else toast.error(data.error || `Endpoint respondeu com status ${data.status}.`);
+    } catch (err: any) {
+      toast.error("Falha ao contatar o servidor para disparar o teste.");
+    }
   };
 
   return (
@@ -85,7 +83,7 @@ export function ConfigIntegracoesWebhooks() {
           <Zap className="w-5 h-5 text-[var(--color-primary-blue)]" />
         </h1>
         <p className="text-sm text-[var(--color-text-muted)] mt-1">
-          Notifique sistemas terceiros (Make, Zapier, n8n, web services customizados) instantaneamente via requisições POST com payloads JSON.
+          Cadastre endpoints e valide a conexão com "Disparar Teste" (chamada HTTP real). O disparo automático nos eventos do CRM (novo lead, negócio ganho, etc.) ainda não está implementado — hoje só o teste manual envia uma requisição de verdade.
         </p>
       </div>
 
@@ -206,7 +204,7 @@ export function ConfigIntegracoesWebhooks() {
             ) : (
               webhookLogs.map((log, idx) => (
                 <div key={idx} className="p-3 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-[var(--radius-control)] flex items-start gap-3">
-                  <Badge variant="success" className="shrink-0">{log.status} OK</Badge>
+                  <Badge variant={log.ok ? "success" : "destructive"} className="shrink-0">{log.status}</Badge>
                   <div className="flex-1 min-w-0">
                     <div className="text-[10px] text-[var(--color-text-faint)]">{log.time} • {log.endpoint}</div>
                     <div className="text-[11px] text-[var(--color-text-muted)] truncate mt-1 bg-[var(--color-surface-elevated)] p-1.5 rounded border border-[var(--color-border-subtle)]">

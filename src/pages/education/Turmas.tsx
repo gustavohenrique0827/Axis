@@ -43,9 +43,18 @@ export default function Turmas() {
   }));
 
   if (selectedTurma) {
+    const turmaStudents = students
+      .filter((s: any) => s.turma_id === selectedTurma.id)
+      .map((s: any) => ({
+        id: s.id,
+        name: s.nome || s.name || "",
+        status: (s.status === "Ativo" ? "active" : s.status === "Inativo" ? "completed" : "onboarding") as any,
+        progress: s.progress || 0,
+      }));
     return (
       <EducationTurmaDetalhes
         turma={{ id: selectedTurma.id, nome: selectedTurma.name, curso: selectedTurma.subject, instrutor: selectedTurma.instructor }}
+        students={turmaStudents}
         onBack={() => setSelectedTurma(null)}
       />
     );

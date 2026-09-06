@@ -1,14 +1,12 @@
 import { Card } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
-import { MoreVertical, Clock } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 
 interface Student {
   id: string;
   name: string;
   status: "onboarding" | "active" | "at_risk" | "completed";
   progress: number;
-  attendance: number;
-  lastPresence: string;
 }
 
 const KANBAN_COLUMNS = [
@@ -52,10 +50,7 @@ export function TurmaDetalhesKanban({ students }: TurmaDetalhesKanbanProps) {
                     <div className="h-full bg-blue-600 rounded-full" style={{ width: `${student.progress}%` }} />
                   </div>
                 </div>
-                <div className="mt-4 flex items-center justify-between pt-4 border-t border-white/5">
-                  <div className="flex items-center gap-1.5 text-[9px] font-black text-slate-600 uppercase tracking-widest">
-                    <Clock className="w-3 h-3" /> {student.lastPresence}
-                  </div>
+                <div className="mt-4 flex items-center justify-end pt-4 border-t border-white/5">
                   <div className="flex -space-x-2">
                     <div className="w-5 h-5 rounded-full bg-indigo-500 border border-[var(--color-surface-elevated)]" />
                   </div>

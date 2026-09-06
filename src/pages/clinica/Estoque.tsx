@@ -54,12 +54,12 @@ export default function EstoqueClinico() {
   return (
     <PageContainer 
       title="Estoque e Suprimentos" 
-      description="Controle de insumos, rastreabilidade de lotes e automação de suprimentos clínicos."
+      description="Controle de insumos e alertas automáticos de estoque baixo ou crítico."
       actions={
         <div className="flex items-center gap-3 flex-wrap">
-          <Button 
-            variant="outline" 
-            onClick={() => toast.success("Solicitação de compra enviada aos fornecedores parceiros!")}
+          <Button
+            variant="outline"
+            onClick={() => toast.info("Integração com fornecedores ainda não disponível — em breve.")}
             className="h-9 px-4 text-xs font-bold gap-1.5"
           >
             <Truck className="w-3.5 h-3.5" /> Solicitar Pedido

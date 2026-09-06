@@ -53,6 +53,23 @@ export type Appointment = {
   specialty: string;
   phone?: string;
   date: string;
+  notes?: string;
+};
+
+export type Indicacao = {
+  id: string;
+  referrer_type: 'colaborador' | 'cliente';
+  referrer_colaborador_id?: string | null;
+  referrer_cliente_id?: string | null;
+  referrer_name: string;
+  referred_name: string;
+  referred_contact?: string | null;
+  commission_value: number;
+  status: 'Pendente' | 'Aprovada' | 'Paga' | 'Cancelada';
+  date_indicated: string;
+  date_paid?: string | null;
+  notes?: string | null;
+  created_at?: string;
 };
 
 export interface Reuniao {
@@ -116,8 +133,8 @@ export interface DataContextType {
   deleteAppointment: (id: string) => void;
   simulateNewLeadAssignment: () => void;
   simulateOverdueTask: () => void;
-  evolutionWebhookUrl: string;
-  setEvolutionWebhookUrl: (url: string) => void;
+  whatsappWebhookUrl: string;
+  setWhatsappWebhookUrl: (url: string) => void;
   robotStatus: 'executando' | 'pausado';
   setRobotStatus: (status: 'executando' | 'pausado') => void;
   customLeadFields: CustomField[];
@@ -149,6 +166,10 @@ export interface DataContextType {
   addFinanceCategory: (category: any) => Promise<void>;
   updateFinanceCategory: (id: string, updates: any) => Promise<void>;
   deleteFinanceCategory: (id: string) => Promise<boolean>;
+  financeCommissionEntries: any[];
+  addFinanceCommissionEntry: (entry: any) => Promise<void>;
+  updateFinanceCommissionEntry: (id: string, updates: any) => Promise<void>;
+  deleteFinanceCommissionEntry: (id: string) => Promise<boolean>;
   scheduledExports: any[];
   addScheduledExport: (item: any) => Promise<void>;
   updateScheduledExport: (id: string, updates: any) => Promise<void>;
@@ -245,6 +266,10 @@ export interface DataContextType {
   addReuniao: (r: Omit<Reuniao, 'id' | 'createdAt'>) => void;
   updateReuniao: (id: string, updates: Partial<Reuniao>) => void;
   deleteReuniao: (id: string) => void;
+  indicacoes: Indicacao[];
+  addIndicacao: (i: Omit<Indicacao, 'id' | 'created_at'>) => void;
+  updateIndicacao: (id: string, updates: Partial<Indicacao>) => void;
+  deleteIndicacao: (id: string) => void;
 }
 
 export const DataContext = createContext<DataContextType | undefined>(undefined);

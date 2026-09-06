@@ -17,7 +17,7 @@ import {
   defaultNotifications,
   defaultLeadScoreTriggers
 } from './dataMocks';
-import { DataContext, DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, Reuniao, useData } from './DataContextTypes';
+import { DataContext, DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, Reuniao, Indicacao, useData } from './DataContextTypes';
 import { apiFetch } from "../lib/apiClient";
 
 export { useData };
@@ -197,7 +197,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [contractsRaw, setContracts] = useState<Contract[]>([]);
   const [leadActivities, setLeadActivities] = useState<LeadActivity[]>([]);
 
-  const [evolutionWebhookUrl, setEvolutionWebhookUrl] = useState<string>("https://spy-crm.cloud/api/webhooks/whatsapp");
+  const [whatsappWebhookUrl, setWhatsappWebhookUrl] = useState<string>("");
 
   const [appointmentsRaw, setAppointments] = useState<Appointment[]>([]);
 
@@ -260,8 +260,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateEvolutionWebhookUrl = (url: string) => {
-    setEvolutionWebhookUrl(url);
+  const updateWhatsappWebhookUrl = (url: string) => {
+    setWhatsappWebhookUrl(url);
   };
 
   // ─── Funis do CRM (crm_funis) ────────────────────────────────────────────
@@ -361,9 +361,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [empresaFiliais, setEmpresaFiliais] = useState<any[]>([]);
   const [nichos, setNichos] = useState<any[]>([]);
   const [financeCategories, setFinanceCategories] = useState<any[]>([]);
+  const [financeCommissionEntries, setFinanceCommissionEntries] = useState<any[]>([]);
   const [scheduledExports, setScheduledExports] = useState<any[]>([]);
   const [educationContent, setEducationContent] = useState<any[]>([]);
   const [clienteBase, setClienteBase] = useState<any[]>([]);
+  const [indicacoes, setIndicacoes] = useState<Indicacao[]>([]);
 
   const products = useMemo(() => filterByFilial(productsRaw), [productsRaw, activeFilialId]);
   const proposals = useMemo(() => filterByFilial(proposalsRaw), [proposalsRaw, activeFilialId]);
@@ -442,8 +444,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         .on('postgres_changes', { event: '*', schema: 'public', table: 'empresa_filiais' }, () => fetchTableData('empresa_filiais', setEmpresaFiliais))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'nichos' }, () => fetchNichos())
         .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_categories' }, () => fetchTableData('finance_categories', setFinanceCategories))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_commission_entries' }, () => fetchTableData('finance_commission_entries', setFinanceCommissionEntries))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'scheduled_exports' }, () => fetchTableData('scheduled_exports', setScheduledExports))
         .on('postgres_changes', { event: '*', schema: 'public', table: 'education_content' }, () => fetchTableData('education_content', setEducationContent))
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'indicacoes' }, () => fetchTableData('indicacoes', setIndicacoes as any))
         .subscribe();
     }
 
@@ -469,7 +473,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               productsRes, proposalsRes, proposalItemsRes, turmasRes, studentsRes, colabRes, squadMetasRes, certRes, cargosRes,
               clienteBaseRes, reunioesRes, financialGoalsRes, funisRes, filiaisRes,
               financeCategoriesRes, scheduledExportsRes, educationContentRes,
-              marketingFormsRes, nichosRes
+              marketingFormsRes, nichosRes, financeCommissionEntriesRes, indicacoesRes
             ] = await Promise.all([
               supabase.from('leads').select('*').eq('tenant_id', tenantId),
               supabase.from('tasks').select('*').eq('tenant_id', tenantId),
@@ -507,6 +511,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('marketing_forms').select('*').eq('tenant_id', tenantId),
               // Nichos globais (tenant_id null) + os do tenant ativo, mesmo motivo do app_settings acima.
               supabase.from('nichos').select('*').or(`tenant_id.eq.${tenantId},tenant_id.is.null`),
+              supabase.from('finance_commission_entries').select('*').eq('tenant_id', tenantId),
+              supabase.from('indicacoes').select('*').eq('tenant_id', tenantId),
             ]);
 
             if (!leadsRes.error && leadsRes.data) setLeads(leadsRes.data as Lead[]);
@@ -546,6 +552,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!filiaisRes.error && filiaisRes.data) setEmpresaFiliais(filiaisRes.data);
             if (!nichosRes.error && nichosRes.data) setNichos(nichosRes.data);
             if (!financeCategoriesRes.error && financeCategoriesRes.data) setFinanceCategories(financeCategoriesRes.data);
+            if (!financeCommissionEntriesRes.error && financeCommissionEntriesRes.data) setFinanceCommissionEntries(financeCommissionEntriesRes.data);
+            if (!indicacoesRes.error && indicacoesRes.data) setIndicacoes(indicacoesRes.data as Indicacao[]);
             if (!scheduledExportsRes.error && scheduledExportsRes.data) setScheduledExports(scheduledExportsRes.data);
             if (!educationContentRes.error && educationContentRes.data) setEducationContent(educationContentRes.data);
             if (!marketingFormsRes.error && marketingFormsRes.data) setMarketingForms(marketingFormsRes.data);
@@ -1203,9 +1211,11 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const empresaFilialCrud = createCrudHelper('empresa_filiais', setEmpresaFiliais);
   const nichoCrud = createCrudHelper('nichos', setNichos);
   const financeCategoryCrud = createCrudHelper('finance_categories', setFinanceCategories);
+  const financeCommissionEntryCrud = createCrudHelper('finance_commission_entries', setFinanceCommissionEntries);
   const scheduledExportCrud = createCrudHelper('scheduled_exports', setScheduledExports);
   const educationContentCrud = createCrudHelper('education_content', setEducationContent);
   const certCrud = createCrudHelper('certificates', setCertificates);
+  const indicacaoCrud = createCrudHelper('indicacoes', setIndicacoes as any);
 
   const addFinanceEntry = async (entry: Omit<FinanceEntry, 'id'>) => {
     const newEntry: any = { ...entry, id: `f${Math.random().toString(36).substring(2, 9)}` };
@@ -1304,8 +1314,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addAppointment, updateAppointment, deleteAppointment,
       simulateNewLeadAssignment,
       simulateOverdueTask,
-      evolutionWebhookUrl,
-      setEvolutionWebhookUrl: updateEvolutionWebhookUrl,
+      whatsappWebhookUrl,
+      setWhatsappWebhookUrl: updateWhatsappWebhookUrl,
       robotStatus,
       setRobotStatus,
       customLeadFields,
@@ -1344,6 +1354,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addFinanceCategory: financeCategoryCrud.add,
       updateFinanceCategory: financeCategoryCrud.update,
       deleteFinanceCategory: financeCategoryCrud.del,
+      financeCommissionEntries,
+      addFinanceCommissionEntry: financeCommissionEntryCrud.add,
+      updateFinanceCommissionEntry: financeCommissionEntryCrud.update,
+      deleteFinanceCommissionEntry: financeCommissionEntryCrud.del,
       scheduledExports,
       addScheduledExport: scheduledExportCrud.add,
       updateScheduledExport: scheduledExportCrud.update,
@@ -1403,6 +1417,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       addReuniao: (r: Omit<Reuniao, 'id' | 'createdAt'>) => reuniaoCrud.add({ ...r, createdAt: new Date().toISOString() }),
       updateReuniao: reuniaoCrud.update,
       deleteReuniao: reuniaoCrud.del,
+      indicacoes,
+      addIndicacao: indicacaoCrud.add,
+      updateIndicacao: indicacaoCrud.update,
+      deleteIndicacao: indicacaoCrud.del,
       students,
       setStudents,
       addStudent: studentCrud.add,

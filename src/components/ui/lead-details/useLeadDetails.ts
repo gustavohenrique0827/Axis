@@ -87,6 +87,8 @@ export function useLeadDetails(lead: any, onClose: () => void) {
         id: p.id,
         name: p.name,
         price: typeof p.price === "number" ? p.price : parseFloat(String(p.price || "0")),
+        cost: typeof p.cost === "number" ? p.cost : parseFloat(String(p.cost || "0")),
+        commission: typeof p.commission === "number" ? p.commission : parseFloat(String(p.commission || "0")),
         recurrence: p.type === "Assinatura",
         category: p.category || "Geral",
       })),

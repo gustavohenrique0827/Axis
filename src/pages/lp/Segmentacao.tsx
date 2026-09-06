@@ -61,7 +61,7 @@ const SEGMENTS = [
       "Portfólio com link personalizado por corretor",
       "Agendamento de visitas com lembrete no WhatsApp",
       "Gestão de propostas e aprovação de crédito imobiliário",
-      "Contratos de locação e compra com assinatura digital",
+      "Contratos de locação e compra gerados em PDF",
     ],
   },
   {

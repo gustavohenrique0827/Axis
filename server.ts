@@ -10,19 +10,10 @@ import { createClient } from "@supabase/supabase-js";
 import { randomUUID } from "crypto";
 import axios from "axios";
 import { createGoogleCalendarRouter } from "./server/googleCalendar";
+import { getWhatsAppProvider, getActiveProviderName, isWahaConfigured } from "./server/whatsappProvider";
+import nodemailer from "nodemailer";
 
 // ── Types ──────────────────────────────────────────────────────────────────
-
-interface WhatsAppInstance {
-  id: string;
-  name: string;
-  phone: string;
-  status: "CONNECTED" | "DISCONNECTED" | "CONNECTING";
-  apiKey: string;
-  webhookUrl: string;
-  qrcode?: string;
-  createdAt: string;
-}
 
 interface ChatContact {
   id: string;
@@ -50,26 +41,17 @@ interface ChatMessage {
 
 // ── In-Memory State ────────────────────────────────────────────────────────
 //
-// instances/contacts/messages do simulador de WhatsApp eram arrays únicos e
-// globais no processo — sem tenant_id, qualquer usuário autenticado de
-// QUALQUER tenant via essas mesmas instâncias/contatos/mensagens simuladas de
-// outro tenant. Agora seguem o mesmo padrão já usado logo abaixo pra
-// sources/customFields/etc. (tenantBucket): um bucket por tenant, resolvido
-// via current_tenant_id() (RPC, roda com a sessão real do chamador).
+// contacts/messages do simulador de WhatsApp eram arrays únicos e globais no
+// processo — sem tenant_id, qualquer usuário autenticado de QUALQUER tenant
+// via esses mesmos contatos/mensagens simulados de outro tenant. Agora seguem
+// o mesmo padrão já usado logo abaixo pra sources/customFields/etc.
+// (tenantBucket): um bucket por tenant, resolvido via current_tenant_id()
+// (RPC, roda com a sessão real do chamador).
+//
+// Instâncias de WhatsApp NÃO vivem mais em memória — ver
+// server/whatsappProvider.ts + rotas /api/whatsapp/instances abaixo, que
+// agora persistem de verdade na tabela whatsapp_instances (RLS por tenant).
 
-const DEFAULT_INSTANCES: WhatsAppInstance[] = [
-  {
-    id: "evo_inst_1",
-    name: "S.P.Y. Produção",
-    phone: "+55 11 98888-7777",
-    status: "CONNECTED",
-    apiKey: "4dfg23-evoapikey-99e2-spy",
-    webhookUrl: "https://spy-crm.cloud/api/webhooks/whatsapp",
-    createdAt: "2026-05-10T12:00:00Z"
-  }
-];
-
-const instancesByTenant: Record<string, WhatsAppInstance[]> = {};
 const contactsByTenant: Record<string, ChatContact[]> = {};
 const messagesByTenant: Record<string, Record<string, ChatMessage[]>> = {};
 
@@ -280,11 +262,15 @@ const apiKeyLimiter = rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: 
 const aiLimiter = rateLimit({ windowMs: 60_000, limit: 20, standardHeaders: true, legacyHeaders: false });
 const whatsappLimiter = rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: true, legacyHeaders: false });
 const googleCalendarLimiter = rateLimit({ windowMs: 60_000, limit: 60, standardHeaders: true, legacyHeaders: false });
+// Mais restritivo que os demais — endpoint sem autenticação nenhuma (formulário
+// público do site de marketing), maior risco de abuso/spam automatizado.
+const publicLeadLimiter = rateLimit({ windowMs: 60_000, limit: 5, standardHeaders: true, legacyHeaders: false });
 app.use("/api/v1/leads", apiKeyLimiter);
 app.use("/api/leads", aiLimiter);
 app.use("/api/ai", aiLimiter);
 app.use("/api/whatsapp", whatsappLimiter);
 app.use("/api/google-calendar", googleCalendarLimiter);
+app.use("/api/public/lead-capture", publicLeadLimiter);
 
 function requireApiKey(req: express.Request, res: express.Response, next: express.NextFunction) {
   if (apiKeyTenantMap.size === 0) {
@@ -350,12 +336,13 @@ app.post("/api/v1/leads", requireApiKey, async (req, res) => {
     : (value ?? 0);
 
   // tenant_id vem só da API key (nunca do corpo da requisição) — ver requireApiKey.
+  // "createdAt" NÃO existe na tabela (só "created_at", que já tem default
+  // now()) — o insert falhava sempre com 42703 antes desta correção.
   const newLead = {
     id, name, company, email, phone, cnpj, title, seller, source,
     status, priority, value: rawValue, stageId, pipelineId,
     lead_interesse_cliente, customFields, clientId, clientName,
     productIds, tenant_id: (req as any).tenantId, tenantName, scoreIA: 50, date: now,
-    createdAt: new Date().toISOString()
   };
 
   if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
@@ -375,7 +362,7 @@ app.get("/api/v1/leads", requireApiKey, async (req, res) => {
 
   // tenant_id vem só da API key (nunca de query string) — ver requireApiKey.
   let query = supabaseService.from("leads").select("*").eq("tenant_id", (req as any).tenantId)
-    .order("createdAt", { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(parseInt(limit)).range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
 
   if (seller) query = query.eq("seller", seller);
@@ -387,6 +374,50 @@ app.get("/api/v1/leads", requireApiKey, async (req, res) => {
     return res.status(500).json({ error: "Falha ao buscar leads." });
   }
   return res.json({ success: true, count: data?.length ?? 0, leads: data ?? [] });
+});
+
+// ── Captação pública do site de marketing (InteractiveForm.tsx, /f/:niche) ──
+//
+// Antes disso, o formulário só fazia `console.log('Lead Capturado', ...)` e
+// mostrava "Nossa equipe já recebeu seus dados" — mentira: ninguém recebia
+// nada. Isso é o site de marketing do próprio S.P.Y. (não um formulário
+// embutido no site de um tenant cliente), então o lead vai para o tenant
+// configurado em SPY_FORM_TENANT_ID — variável que já existia documentada em
+// .env.example (ao lado de SPY_FORM_CLIENT_ID) mas nunca tinha sido lida em
+// lugar nenhum do código até agora.
+app.post("/api/public/lead-capture", async (req, res) => {
+  const { niche, name, phone, email, summary } = req.body ?? {};
+  if (!name?.toString().trim()) return res.status(400).json({ error: "Nome é obrigatório." });
+
+  const tenantId = process.env.SPY_FORM_TENANT_ID || process.env.AXIS_FORM_TENANT_ID;
+  if (!tenantId) return res.status(503).json({ error: "Captação de leads do site não está configurada neste ambiente." });
+  if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
+
+  const id = randomUUID();
+  const now = new Date().toISOString().split("T")[0];
+  const newLead = {
+    id,
+    name: name.toString().trim().slice(0, 200),
+    email: email?.toString().trim().slice(0, 200) || "",
+    phone: phone?.toString().trim().slice(0, 30) || "",
+    source: `Formulário do site (${niche || "não identificado"})`,
+    status: "Novo",
+    priority: "Média",
+    value: 0,
+    notes: summary?.toString().slice(0, 4000) || "",
+    tenant_id: tenantId,
+    scoreIA: 50,
+    date: now,
+  };
+
+  try {
+    const { error } = await supabaseService.from("leads").insert(newLead);
+    if (error) throw new Error(error.message);
+    return res.json({ success: true });
+  } catch (err: any) {
+    console.error("[public/lead-capture]", err?.message);
+    return res.status(500).json({ error: "Erro ao registrar sua inscrição. Tente novamente em instantes." });
+  }
 });
 
 // ── Tenant Theme Discovery (Público para tela de login) ──────────────────────
@@ -506,6 +537,111 @@ app.post("/api/leads/suggest-tags", requireUser, async (req, res) => {
   } catch (error) {
     console.error("AI Tag Suggestion Error:", error);
     res.status(500).json({ error: "Failed to suggest tags" });
+  }
+});
+
+// Análise de desempenho de aluno (nicho Educação) — o botão "Solicitar
+// Análise" no modal de notas simulava um spinner "Analisando..." e devolvia
+// sempre a mesma frase de template (progress% + "desempenho consistente"),
+// sem nenhuma IA de verdade por trás. Agora chama Gemini de fato.
+app.post("/api/ai/student-performance-insight", requireUser, async (req, res) => {
+  const { name, progress, grades } = req.body || {};
+  if (!process.env.GEMINI_API_KEY) {
+    return res.json({ insight: "IA indisponível no momento — configure a chave de IA para habilitar esta análise." });
+  }
+  try {
+    const gradesText = Array.isArray(grades) && grades.length > 0
+      ? grades.map((g: any) => `${g.subject}: ${g.value}`).join(", ")
+      : "sem notas lançadas ainda";
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: `Você é um coordenador pedagógico. Analise o desempenho deste aluno e escreva 2-3 frases objetivas
+em português, destacando pontos fortes, riscos de evasão/desengajamento e uma recomendação prática.
+Nome: ${name || "Aluno"}
+Progresso no curso: ${progress ?? "desconhecido"}%
+Notas lançadas: ${gradesText}
+Não invente notas ou fatos que não foram informados acima.`,
+    });
+    res.json({ insight: (response.text || "Não foi possível gerar uma análise no momento.").trim() });
+  } catch (error: any) {
+    console.error("Student Performance Insight Error:", error?.message);
+    res.status(500).json({ error: "Falha ao gerar análise de desempenho." });
+  }
+});
+
+// OCR de fatura de energia (nicho Energia Solar) — chave Gemini nunca sai do
+// servidor; o frontend manda só a imagem em base64, nunca a API key.
+const ALLOWED_FATURA_MIME_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+app.post("/api/ai/solar-analyze-fatura", requireUser, async (req, res) => {
+  const { imageBase64, mimeType } = req.body || {};
+  if (!process.env.GEMINI_API_KEY) return res.status(500).json({ error: "IA Offline — GEMINI_API_KEY não configurada." });
+  if (!imageBase64 || typeof imageBase64 !== "string") return res.status(400).json({ error: "Imagem da fatura é obrigatória." });
+  if (!ALLOWED_FATURA_MIME_TYPES.has(mimeType)) return res.status(400).json({ error: "Formato de imagem não suportado. Use JPEG, PNG ou WebP." });
+  // ~4MB decodificados (base64 é ~33% maior que o binário original)
+  if (imageBase64.length > 5_600_000) return res.status(400).json({ error: "Imagem muito grande. Envie uma foto de até 4MB." });
+
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { inlineData: { mimeType, data: imageBase64 } },
+            {
+              text: `Esta imagem é uma fatura de energia elétrica brasileira. Extraia exatamente estes campos.
+Se um campo não estiver legível ou não existir na fatura, retorne null para ele — nunca invente um valor.
+- distribuidora: nome da distribuidora de energia (ex: "CPFL", "Enel", "Light")
+- consumoMedioKwh: consumo do mês em kWh (número, sem unidade)
+- valorFatura: valor total da fatura em reais (número, sem "R$")
+- mesReferencia: mês/ano de referência da fatura (ex: "Março/2026")`,
+            },
+          ],
+        },
+      ],
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            distribuidora: { type: Type.STRING, nullable: true },
+            consumoMedioKwh: { type: Type.NUMBER, nullable: true },
+            valorFatura: { type: Type.NUMBER, nullable: true },
+            mesReferencia: { type: Type.STRING, nullable: true },
+          },
+        },
+      },
+    });
+
+    const extraido = JSON.parse(response.text ?? "{}");
+    const consumoMedioKwh = typeof extraido.consumoMedioKwh === "number" ? extraido.consumoMedioKwh : null;
+    const valorFatura = typeof extraido.valorFatura === "number" ? extraido.valorFatura : null;
+
+    // Dimensionamento por HSP (Horas de Sol Pico) médio nacional ~4.5h e perdas
+    // do sistema ~20% — fórmula padrão de dimensionamento fotovoltaico, não uma
+    // cotação exata (varia por região/telhado/orientação — é uma estimativa).
+    const HSP_MEDIO_BRASIL = 4.5;
+    const EFICIENCIA_SISTEMA = 0.8;
+    const potenciaEstimadaKwp = consumoMedioKwh
+      ? Math.round((consumoMedioKwh / (HSP_MEDIO_BRASIL * 30 * EFICIENCIA_SISTEMA)) * 100) / 100
+      : null;
+    // Economia estimada conservadora: sistemas solares tipicamente não zeram a
+    // conta (custo de disponibilidade mínimo da distribuidora permanece).
+    const economiaMensalEstimada = valorFatura ? Math.round(valorFatura * 0.85 * 100) / 100 : null;
+
+    res.json({
+      distribuidora: extraido.distribuidora ?? null,
+      consumoMedioKwh,
+      valorFatura,
+      mesReferencia: extraido.mesReferencia ?? null,
+      potenciaEstimadaKwp,
+      economiaMensalEstimada,
+      economiaAnualEstimada: economiaMensalEstimada ? Math.round(economiaMensalEstimada * 12 * 100) / 100 : null,
+    });
+  } catch (error: any) {
+    console.error("Solar Fatura OCR Error:", error?.message);
+    res.status(500).json({ error: "Falha ao analisar a fatura. Tente novamente com uma foto mais nítida." });
   }
 });
 
@@ -908,12 +1044,34 @@ app.post("/api/ai/aurora-chat", requireUser, async (req: any, res: any) => {
   const webhookUrl = process.env.AURORA_WEBHOOK_URL;
   if (!webhookUrl) return res.status(503).json({ error: "Aurora não está configurada neste ambiente." });
 
-  // Padrão: fixo e compartilhado com o jarvis-os (mesmo memory node no n8n) — Gustavo tem
-  // contexto contínuo entre os dois apps em vez de duas conversas isoladas. Seguro porque a
-  // própria Aurora só atende um usuário real hoje (ver system prompt do workflow AURORA CORE).
-  // Chamadores com contexto próprio (ex.: a sala de reunião, uma sessão por reuniaoId) podem
-  // passar o seu próprio sessionId pra não poluir/ser poluído pelo buffer de memória geral dela.
-  const sessionId = clientSessionId || "aurora-gustavo-principal";
+  // Este endpoint atende dois chamadores bem diferentes com a mesma Aurora (n8n AURORA CORE):
+  //   1) o widget pessoal do Gustavo/G-TECH (AuroraWidget.tsx) — não manda sessionId, cai no
+  //      buffer de memória fixo e compartilhado com o jarvis-os. A UI já esconde esse widget de
+  //      quem não é master (Layout.tsx: `user?.isMaster && ...`), mas isso é só a UI — sem essa
+  //      checagem aqui, qualquer usuário autenticado de QUALQUER tenant podia chamar a API direto
+  //      (fora do widget) e injetar mensagens/ouvir respostas na sessão pessoal do Gustavo.
+  //   2) o copilot de reunião (ReuniaoRoom.tsx / useAuroraMeetingPresence.ts) — manda um
+  //      sessionId próprio por reunião (`aurora-reuniao-<reuniaoId>`), disponível a qualquer
+  //      closer autenticado. Antes de usar esse reuniaoId pra montar a chave de memória, valida
+  //      que a reunião existe pro tenant do chamador — via req.supabase (client escopado ao JWT,
+  //      sujeito à RLS da Fase 1), então um reuniaoId de outro tenant simplesmente não aparece.
+  let sessionId: string;
+  const meetingMatch = typeof clientSessionId === "string" ? clientSessionId.match(/^aurora-reuniao-(.+)$/) : null;
+  if (meetingMatch) {
+    const { data: reuniao, error: reuniaoError } = await req.supabase
+      .from("reunioes").select("id").eq("id", meetingMatch[1]).maybeSingle();
+    if (reuniaoError || !reuniao) {
+      return res.status(403).json({ error: "Reunião não encontrada ou sem permissão de acesso." });
+    }
+    sessionId = clientSessionId;
+  } else {
+    const { data: caller, error: callerError } = await req.supabase
+      .from("users").select("is_master").eq("id", req.user.id).maybeSingle();
+    if (callerError || !caller?.is_master) {
+      return res.status(403).json({ error: "Apenas administradores master podem usar a Aurora pessoal." });
+    }
+    sessionId = clientSessionId || "aurora-gustavo-principal";
+  }
 
   try {
     const { data } = await axios.post(
@@ -924,6 +1082,157 @@ app.post("/api/ai/aurora-chat", requireUser, async (req: any, res: any) => {
     return res.json({ output: data?.output ?? "", audioBase64: data?.audioBase64 ?? null });
   } catch (err: any) {
     console.error("[Aurora Chat]", err?.response?.data ?? err?.message);
+    return res.status(502).json({ error: "Aurora está indisponível agora." });
+  }
+});
+
+// ── Aurora tenant-scoped: IA operacional que consulta dados reais do tenant ──
+//
+// Distinta da Aurora Master acima (que fala com um webhook n8n externo e é
+// exclusiva de master/reuniões) — esta é a evolução pedida de "chatbot" pra
+// "IA operacional": qualquer usuário autenticado pode perguntar em linguagem
+// natural ("quais leads estão sem contato há mais de 3 dias?") e a Aurora
+// consulta o banco de verdade, nunca inventa números.
+//
+// Isolamento: cada "tool" abaixo usa req.supabase (client escopado ao JWT do
+// chamador, sujeito a RLS) — nunca supabaseService, e nunca um tenantId vindo
+// do corpo da requisição. A IA só decide QUAL tool chamar e com quais
+// argumentos; a query em si roda com os mesmos privilégios que o usuário já
+// tem no resto do sistema. Aurora de um tenant não pode, estruturalmente,
+// consultar dado de outro tenant — o mesmo RLS de sempre continua sendo o
+// único ponto de verdade sobre isolamento.
+//
+// NÃO TESTADO contra credencial real (GEMINI_API_KEY) neste ambiente — ver
+// regra do projeto sobre marcar como "requer ambiente/credencial externa".
+const AURORA_TOOLS = [
+  {
+    name: "leads_sem_contato",
+    description: "Lista leads do funil que estão sem nenhum contato registrado há mais de N dias (ou nunca tiveram contato registrado).",
+    parameters: {
+      type: Type.OBJECT,
+      properties: { dias: { type: Type.NUMBER, description: "Número mínimo de dias sem contato" } },
+      required: ["dias"],
+    },
+  },
+  {
+    name: "resumo_pipeline",
+    description: "Retorna a contagem de leads ativos por status/etapa do funil de vendas do tenant.",
+    parameters: { type: Type.OBJECT, properties: {} },
+  },
+  {
+    name: "proximas_reunioes",
+    description: "Lista as próximas reuniões/compromissos agendados nos próximos N dias.",
+    parameters: {
+      type: Type.OBJECT,
+      properties: { dias: { type: Type.NUMBER, description: "Janela de dias à frente a considerar" } },
+      required: ["dias"],
+    },
+  },
+  {
+    name: "resumo_financeiro",
+    description: "Soma receitas e despesas lançadas nos últimos N dias, por tipo de lançamento.",
+    parameters: {
+      type: Type.OBJECT,
+      properties: { dias: { type: Type.NUMBER, description: "Janela de dias retroativos a considerar" } },
+      required: ["dias"],
+    },
+  },
+];
+
+async function runAuroraTool(name: string, args: any, supabaseClient: any): Promise<any> {
+  const dias = Number(args?.dias) > 0 ? Number(args.dias) : 3;
+
+  if (name === "leads_sem_contato") {
+    const cutoff = new Date(Date.now() - dias * 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await supabaseClient
+      .from("leads")
+      .select("name, company, status, last_contact_at")
+      .is("deleted_at", null)
+      .or(`last_contact_at.is.null,last_contact_at.lt.${cutoff}`)
+      .order("last_contact_at", { ascending: true, nullsFirst: true })
+      .limit(25);
+    if (error) return { error: error.message };
+    return { dias_considerados: dias, total: data?.length ?? 0, leads: data ?? [] };
+  }
+
+  if (name === "resumo_pipeline") {
+    const { data, error } = await supabaseClient.from("leads").select("status").is("deleted_at", null);
+    if (error) return { error: error.message };
+    const contagem: Record<string, number> = {};
+    for (const row of data ?? []) {
+      const s = row.status || "Sem status";
+      contagem[s] = (contagem[s] || 0) + 1;
+    }
+    return { total_leads: data?.length ?? 0, por_status: contagem };
+  }
+
+  if (name === "proximas_reunioes") {
+    const nowIso = new Date().toISOString();
+    const futureIso = new Date(Date.now() + dias * 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await supabaseClient
+      .from("reunioes")
+      .select('leadName, closerName, scheduledAt, status')
+      .gte("scheduledAt", nowIso)
+      .lte("scheduledAt", futureIso)
+      .order("scheduledAt", { ascending: true })
+      .limit(25);
+    if (error) return { error: error.message };
+    return { dias_considerados: dias, total: data?.length ?? 0, reunioes: data ?? [] };
+  }
+
+  if (name === "resumo_financeiro") {
+    const cutoff = new Date(Date.now() - dias * 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await supabaseClient
+      .from("finance_entries")
+      .select("type, value, status")
+      .gte("created_at", cutoff);
+    if (error) return { error: error.message };
+    const porTipo: Record<string, number> = {};
+    for (const row of data ?? []) {
+      const t = row.type || "Outro";
+      porTipo[t] = (porTipo[t] || 0) + (Number(row.value) || 0);
+    }
+    return { dias_considerados: dias, total_lancamentos: data?.length ?? 0, soma_por_tipo: porTipo };
+  }
+
+  return { error: `Ferramenta desconhecida: ${name}` };
+}
+
+app.post("/api/ai/aurora-tenant-chat", requireUser, async (req: any, res: any) => {
+  const { message } = req.body ?? {};
+  if (!message?.trim()) return res.status(400).json({ error: "Mensagem vazia." });
+  if (!process.env.GEMINI_API_KEY) return res.status(503).json({ error: "Aurora operacional não está configurada neste ambiente (GEMINI_API_KEY ausente)." });
+
+  const systemInstruction = "Você é a Aurora, assistente operacional do S.P.Y. CRM. Responda SOMENTE com base no resultado real das ferramentas disponíveis — nunca invente números, nomes ou datas. Se a pergunta não puder ser respondida com as ferramentas disponíveis, diga isso claramente em vez de adivinhar. Responda em português do Brasil, de forma direta e objetiva.";
+
+  try {
+    const first = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [{ role: "user", parts: [{ text: message }] }],
+      config: { systemInstruction, tools: [{ functionDeclarations: AURORA_TOOLS }] },
+    });
+
+    const call = (first as any).functionCalls?.[0];
+    if (!call) {
+      const text = typeof first.text === "function" ? (first as any).text() : (first.text ?? "");
+      return res.json({ output: text || "Não consegui gerar uma resposta agora." });
+    }
+
+    const toolResult = await runAuroraTool(call.name, call.args, req.supabase);
+
+    const second = await ai.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [
+        { role: "user", parts: [{ text: message }] },
+        { role: "model", parts: [{ functionCall: call }] },
+        { role: "user", parts: [{ functionResponse: { name: call.name, response: toolResult } }] },
+      ],
+      config: { systemInstruction, tools: [{ functionDeclarations: AURORA_TOOLS }] },
+    });
+    const text = typeof second.text === "function" ? (second as any).text() : (second.text ?? "");
+    return res.json({ output: text || "Não consegui interpretar o resultado agora.", tool: call.name });
+  } catch (err: any) {
+    console.error("[Aurora Tenant Chat]", err?.message);
     return res.status(502).json({ error: "Aurora está indisponível agora." });
   }
 });
@@ -1056,6 +1365,20 @@ async function requireMaster(req: any, res: express.Response, next: express.Next
   }
 }
 
+// Fase 3 (modo de log) do plano de permissões — expõe o que os triggers de
+// permission_check_log já registraram (nunca bloqueia nada, só audita).
+// RLS (has_tenant_access) já garante que cada tenant só vê seu próprio log,
+// por isso não exige requireMaster — qualquer usuário autenticado do tenant.
+app.get("/api/admin/permission-check-log", requireUser, async (req: any, res) => {
+  const { data, error } = await req.supabase
+    .from("permission_check_log")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .limit(200);
+  if (error) return res.status(500).json({ error: "Erro ao carregar o log de permissões." });
+  res.json(data || []);
+});
+
 app.get("/api/admin/tenant-admin-user/:tenantId", requireUser, requireMaster, async (req: any, res) => {
   try {
     if (!supabaseService) return res.status(503).json({ error: "SUPABASE_SERVICE_ROLE_KEY não configurada no servidor." });
@@ -1186,72 +1509,131 @@ app.post("/api/admin/tenant", requireUser, requireMaster, async (req: any, res) 
   }
 });
 
-// ── WhatsApp / Evolution API Simulator ────────────────────────────────────
+// ── WhatsApp — Simulador ou WAHA real (ver server/whatsappProvider.ts) ──
+//
+// Instâncias agora são persistidas de verdade em whatsapp_instances (RLS por
+// tenant) em vez de um array em memória do processo. Qual provider concreto
+// (Simulador ou WAHA) faz o trabalho por trás de cada chamada depende só de
+// WAHA_API_URL estar configurada no ambiente — nunca é decidido pelo cliente.
+// O frontend deve sempre consultar
+// GET /api/whatsapp/provider-status antes de apresentar essas telas como uma
+// conexão real, em vez de assumir isso.
 
 function bodyWithFallback(req: any) { return req.body || {}; }
 
+function mapInstanceRow(row: any) {
+  return {
+    id: row.id,
+    name: row.name,
+    phone: row.phone || "-",
+    status: row.status,
+    apiKey: row.api_key,
+    webhookUrl: row.webhook_url || "",
+    qrcode: row.qrcode || "",
+    provider: row.provider,
+    createdAt: row.created_at,
+  };
+}
+
+app.get("/api/whatsapp/provider-status", requireUser, async (_req: any, res) => {
+  res.json({ provider: getActiveProviderName(), configured: isWahaConfigured() });
+});
+
 app.get("/api/whatsapp/instances", requireUser, async (req: any, res) => {
   const { data, error } = await req.supabase.from("whatsapp_instances").select("*").order("created_at", { ascending: false });
-  if (!error && data && data.length > 0) return res.json(data);
-  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
-  res.json(tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES));
+  if (error) {
+    console.error("[whatsapp/instances GET]", error.message);
+    return res.status(500).json({ error: "Erro ao carregar instâncias." });
+  }
+  res.json((data || []).map(mapInstanceRow));
 });
 
 app.post("/api/whatsapp/instances", requireUser, async (req: any, res) => {
-  const { name, phone = "-", webhookUrl = "" } = req.body;
+  const { name, webhookUrl = "" } = req.body;
   if (!name) return res.status(400).json({ error: "Nome da instância é obrigatório" });
-  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
-  const newInst: WhatsAppInstance = {
-    id: "evo_inst_" + Math.random().toString(36).substring(2, 9),
-    name, phone, status: "DISCONNECTED",
-    apiKey: "evo_apikey_" + Math.random().toString(36).substring(2, 12),
-    webhookUrl: webhookUrl || "https://spy-crm.cloud/api/webhooks/whatsapp",
-    qrcode: "", createdAt: new Date().toISOString()
-  };
-  tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES).push(newInst);
-  res.json(newInst);
+
+  const provider = getWhatsAppProvider();
+  const { data: row, error: insertError } = await req.supabase
+    .from("whatsapp_instances")
+    .insert({ name, webhook_url: webhookUrl, status: "DISCONNECTED", provider: provider.name })
+    .select().maybeSingle();
+  if (insertError || !row) {
+    console.error("[whatsapp/instances POST]", insertError?.message);
+    return res.status(500).json({ error: "Erro ao criar instância." });
+  }
+
+  try {
+    const created = await provider.createInstance(row.id, webhookUrl);
+    const { data: updated } = await req.supabase
+      .from("whatsapp_instances")
+      .update({ api_key: created.apiKey })
+      .eq("id", row.id).select().maybeSingle();
+    return res.json(mapInstanceRow(updated || row));
+  } catch (err: any) {
+    console.error(`[whatsapp/instances POST] provider=${provider.name}`, err?.message);
+    // A linha já existe no banco (estado DISCONNECTED) — devolve mesmo assim
+    // em vez de deixar o usuário sem instância nenhuma; ele pode tentar
+    // conectar de novo depois.
+    return res.json(mapInstanceRow(row));
+  }
 });
 
 app.post("/api/whatsapp/instances/:id/qrcode", requireUser, async (req: any, res) => {
   const { id } = req.params;
-  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
-  const inst = tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES).find((i) => i.id === id);
-  if (!inst) return res.status(404).json({ error: "Instância não encontrada" });
-  inst.status = "CONNECTING";
-  inst.qrcode = `00020101021226450014br.gov.bcb.pix2523evo-wa-connection-token-key-${inst.id}`;
-  res.json({ status: "CONNECTING", qrcode: inst.qrcode });
+  const { data: inst, error } = await req.supabase.from("whatsapp_instances").select("*").eq("id", id).maybeSingle();
+  if (error || !inst) return res.status(404).json({ error: "Instância não encontrada" });
+
+  const provider = getWhatsAppProvider();
+  try {
+    const result = await provider.getQrCode(id);
+    await req.supabase.from("whatsapp_instances").update({ status: result.status, qrcode: result.qrcode }).eq("id", id);
+    res.json(result);
+  } catch (err: any) {
+    console.error(`[whatsapp/instances/qrcode] provider=${provider.name}`, err?.message);
+    res.status(502).json({ error: `Falha ao gerar QR code (${provider.name}): ${err?.message || "erro desconhecido"}` });
+  }
 });
 
 app.post("/api/whatsapp/instances/:id/connect", requireUser, async (req: any, res) => {
   const { id } = req.params;
-  const { phone } = bodyWithFallback(req);
-  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
-  const inst = tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES).find((i) => i.id === id);
-  if (!inst) return res.status(404).json({ error: "Instância não encontrada" });
-  inst.status = "CONNECTED";
-  inst.phone = phone || "+55 11 9" + Math.floor(1000 + Math.random() * 9000) + "-" + Math.floor(1000 + Math.random() * 9000);
-  delete inst.qrcode;
-  res.json({ status: "CONNECTED", instance: inst });
+  const { data: inst, error } = await req.supabase.from("whatsapp_instances").select("*").eq("id", id).maybeSingle();
+  if (error || !inst) return res.status(404).json({ error: "Instância não encontrada" });
+
+  const provider = getWhatsAppProvider();
+  try {
+    const result = await provider.getConnectionState(id);
+    const { data: updated } = await req.supabase
+      .from("whatsapp_instances")
+      .update({ status: result.status, phone: result.phone ?? inst.phone, qrcode: null })
+      .eq("id", id).select().maybeSingle();
+    res.json({ status: result.status, instance: mapInstanceRow(updated || inst) });
+  } catch (err: any) {
+    console.error(`[whatsapp/instances/connect] provider=${provider.name}`, err?.message);
+    res.status(502).json({ error: `Falha ao verificar conexão (${provider.name}): ${err?.message || "erro desconhecido"}` });
+  }
 });
 
 app.delete("/api/whatsapp/instances/:id", requireUser, async (req: any, res) => {
   const { id } = req.params;
-  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
-  instancesByTenant[tenantId] = tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES).filter((i) => i.id !== id);
+  const provider = getWhatsAppProvider();
+  try { await provider.deleteInstance(id); } catch (err: any) { console.error(`[whatsapp/instances DELETE] provider=${provider.name}`, err?.message); }
+  const { error } = await req.supabase.from("whatsapp_instances").delete().eq("id", id).select("id");
+  if (error) return res.status(500).json({ error: "Erro ao remover instância." });
   res.json({ success: true, message: `Instância ${id} removida` });
 });
 
 app.put("/api/whatsapp/instances/:id", requireUser, async (req: any, res) => {
   const { id } = req.params;
   const { webhookUrl, name, phone, status } = req.body;
-  const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
-  const inst = tenantBucket(instancesByTenant, tenantId, DEFAULT_INSTANCES).find((i) => i.id === id);
-  if (!inst) return res.status(404).json({ error: "Instância não encontrada" });
-  if (webhookUrl !== undefined) inst.webhookUrl = webhookUrl;
-  if (name !== undefined) inst.name = name;
-  if (phone !== undefined) inst.phone = phone;
-  if (status !== undefined) inst.status = status;
-  res.json(inst);
+  const updates: Record<string, any> = {};
+  if (webhookUrl !== undefined) updates.webhook_url = webhookUrl;
+  if (name !== undefined) updates.name = name;
+  if (phone !== undefined) updates.phone = phone;
+  if (status !== undefined) updates.status = status;
+
+  const { data: updated, error } = await req.supabase.from("whatsapp_instances").update(updates).eq("id", id).select().maybeSingle();
+  if (error || !updated) return res.status(404).json({ error: "Instância não encontrada" });
+  res.json(mapInstanceRow(updated));
 });
 
 app.get("/api/whatsapp/contacts", requireUser, async (req: any, res) => {
@@ -1293,6 +1675,24 @@ app.post("/api/whatsapp/messages/send", requireUser, async (req: any, res) => {
   const { contactId, text } = req.body;
   if (!contactId || !text) return res.status(400).json({ error: "ID do contato e texto são obrigatórios" });
   const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
+
+  const provider = getWhatsAppProvider();
+  if (provider.name === "waha") {
+    // Só entra aqui se WAHA_API_URL estiver configurada — nesse modo o envio
+    // precisa ser real (nada de eco local fingindo sucesso).
+    const contactForSend = tenantBucket(contactsByTenant, tenantId, []).find((c) => c.id === contactId);
+    if (!contactForSend) return res.status(404).json({ error: "Contato não encontrado" });
+    if (!contactForSend.phone) return res.status(400).json({ error: "Contato sem telefone cadastrado — não é possível enviar via WhatsApp." });
+    const { data: inst } = await req.supabase.from("whatsapp_instances").select("id").eq("status", "CONNECTED").limit(1).maybeSingle();
+    if (!inst) return res.status(409).json({ error: "Nenhuma instância WhatsApp conectada. Conecte uma instância antes de enviar mensagens." });
+    try {
+      await provider.sendTextMessage(inst.id, contactForSend.phone, text);
+    } catch (err: any) {
+      console.error("[whatsapp/messages/send] waha", err?.message);
+      return res.status(502).json({ error: `Falha ao enviar mensagem via WAHA: ${err?.message || "erro desconhecido"}` });
+    }
+  }
+
   const timeString = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   const userMsg: ChatMessage = {
     id: "msg_" + Math.random().toString(36).substring(2, 9),
@@ -1312,6 +1712,13 @@ app.post("/api/whatsapp/messages/send", requireUser, async (req: any, res) => {
 });
 
 app.post("/api/whatsapp/simulate-incoming", requireUser, async (req: any, res) => {
+  // Só existe pra testar a UI de conversas sem depender de tráfego real —
+  // não deve funcionar (e muito menos ser oferecido) quando há uma conexão
+  // WAHA real ativa, pra nunca ser confundido com uma mensagem que de fato
+  // chegou de um cliente no WhatsApp.
+  if (getActiveProviderName() !== "simulator") {
+    return res.status(409).json({ error: "Simulação de mensagem indisponível: há uma conexão WhatsApp real ativa (WAHA)." });
+  }
   const { contactId, text } = req.body;
   if (!contactId || !text) return res.status(400).json({ error: "contactId e texto são obrigatórios" });
   const { data: tenantId } = await req.supabase.rpc("current_tenant_id");
@@ -1382,6 +1789,138 @@ app.post("/api/whatsapp/copilot/analyze", requireUser, async (req: any, res) => 
   } catch (e) {
     console.error("Copilot analysis failure:", e);
     res.status(500).json({ error: "Erro de processamento da IA" });
+  }
+});
+
+// ── Testes reais de integrações (Configurações → Integrações) ──────────────
+//
+// "Disparar Teste" (webhooks globais e SDR) e "Testar Conexão TLS" (SMTP)
+// eram puro teatro: um toast.promise em cima de um setTimeout, sem nenhuma
+// chamada de rede de verdade — sempre "sucesso", mesmo com URL/credencial
+// inválida ou vazia. Isso roda no backend (não no navegador) porque muitos
+// receptores de webhook (n8n, Make, Zapier) não respondem com header CORS,
+// então um fetch direto do browser falharia mesmo com a URL certa.
+
+app.post("/api/integrations/webhook-test", requireUser, async (req: any, res) => {
+  const { url, event } = req.body ?? {};
+  if (!url) return res.status(400).json({ error: "URL do webhook é obrigatória." });
+  try {
+    const started = Date.now();
+    const response = await axios.post(
+      url,
+      { event: event || "test_ping", test: true, timestamp: new Date().toISOString() },
+      { timeout: 8000, validateStatus: () => true }
+    );
+    const ok = response.status >= 200 && response.status < 300;
+    res.json({ ok, status: response.status, latencyMs: Date.now() - started });
+  } catch (err: any) {
+    res.json({ ok: false, status: null, error: err?.code === "ECONNABORTED" ? "Tempo de resposta esgotado (timeout)." : (err?.message || "Falha ao conectar ao endpoint.") });
+  }
+});
+
+app.post("/api/integrations/smtp-test", requireUser, async (req: any, res) => {
+  const { smtpServer, smtpPort, encryption, smtpUser, smtpPass } = req.body ?? {};
+  if (!smtpServer || !smtpPort || !smtpUser || !smtpPass) {
+    return res.status(400).json({ error: "Preencha host, porta, usuário e senha antes de testar." });
+  }
+  try {
+    const transporter = nodemailer.createTransport({
+      host: smtpServer,
+      port: Number(smtpPort),
+      secure: encryption === "SSL/TLS", // true = TLS implícito (465); StartTLS/Nenhuma negociam na porta 587/25
+      auth: { user: smtpUser, pass: smtpPass },
+      connectionTimeout: 8000,
+    });
+    await transporter.verify();
+    res.json({ ok: true });
+  } catch (err: any) {
+    res.json({ ok: false, error: err?.message || "Falha na autenticação SMTP." });
+  }
+});
+
+// Meta Conversions API (CAPI) — dispara um evento de teste real contra a
+// Graph API usando o Pixel ID e o token informados pelo tenant. Antes disso o
+// botão de teste era um setTimeout com Math.random() que "sempre dava certo"
+// — corrigido pra ser uma chamada HTTP real, cuja resposta (aceita/rejeitada)
+// é repassada ao frontend sem reinterpretação.
+app.post("/api/integrations/meta-pixel-test", requireUser, async (req: any, res) => {
+  const { pixelId, accessToken, event } = req.body ?? {};
+  if (!pixelId || !accessToken) return res.status(400).json({ error: "Pixel ID e Token de Acesso são obrigatórios." });
+  try {
+    const response = await axios.post(
+      `https://graph.facebook.com/v19.0/${encodeURIComponent(pixelId)}/events`,
+      {
+        data: [{
+          event_name: event || "Lead",
+          event_time: Math.floor(Date.now() / 1000),
+          action_source: "system_generated",
+          user_data: { client_user_agent: "S.P.Y. CRM Integration Test" },
+        }],
+        access_token: accessToken,
+      },
+      { timeout: 10000, validateStatus: () => true }
+    );
+    const ok = response.status >= 200 && response.status < 300 && !response.data?.error;
+    res.json({ ok, status: response.status, error: response.data?.error?.message });
+  } catch (err: any) {
+    res.json({ ok: false, status: null, error: err?.message || "Falha ao contatar a Graph API do Meta." });
+  }
+});
+
+// GA4 Measurement Protocol — usa o endpoint oficial de depuração do Google
+// (/debug/mp/collect), que valida o payload sem exigir OAuth. Não confundir
+// com a API de conversões do Google Ads propriamente dita (essa exige
+// developer token + OAuth via Google Ads API e não está implementada).
+app.post("/api/integrations/ga4-test", requireUser, async (req: any, res) => {
+  const { measurementId, apiSecret, event } = req.body ?? {};
+  if (!measurementId || !apiSecret) return res.status(400).json({ error: "Measurement ID e API Secret são obrigatórios." });
+  try {
+    const response = await axios.post(
+      `https://www.google-analytics.com/debug/mp/collect?measurement_id=${encodeURIComponent(measurementId)}&api_secret=${encodeURIComponent(apiSecret)}`,
+      { client_id: "spy-crm-integration-test", events: [{ name: event || "generate_lead", params: {} }] },
+      { timeout: 10000, validateStatus: () => true }
+    );
+    const messages = response.data?.validationMessages || [];
+    const ok = response.status === 200 && messages.length === 0;
+    res.json({ ok, status: response.status, validationMessages: messages });
+  } catch (err: any) {
+    res.json({ ok: false, status: null, error: err?.message || "Falha ao contatar o endpoint de validação do GA4." });
+  }
+});
+
+// Teste de credenciais de gateway de pagamento — chamada real e de baixo
+// impacto (endpoint de "quem sou eu"/conta) contra cada gateway, nunca uma
+// cobrança de verdade. Antes disso o botão fazia só um setTimeout que sempre
+// resolvia com sucesso e o "Salvar Credenciais" nem persistia o que o usuário
+// digitava (inputs eram `defaultValue` sem `onChange`) — os dois foram
+// corrigidos (o salvamento no frontend, em ConfigIntegracoesApps.tsx).
+app.post("/api/integrations/payment-gateway-test", requireUser, async (req: any, res) => {
+  const { provider, environment, secretKey } = req.body ?? {};
+  if (!provider || !secretKey) return res.status(400).json({ error: "Provider e chave secreta são obrigatórios." });
+  try {
+    if (provider === "mercadopago") {
+      const { data } = await axios.get("https://api.mercadopago.com/users/me", {
+        headers: { Authorization: `Bearer ${secretKey}` }, timeout: 10000,
+      });
+      return res.json({ ok: true, accountLabel: data?.email || data?.nickname || `Usuário ${data?.id}` });
+    }
+    if (provider === "stripe") {
+      const { data } = await axios.get("https://api.stripe.com/v1/account", {
+        headers: { Authorization: `Bearer ${secretKey}` }, timeout: 10000,
+      });
+      return res.json({ ok: true, accountLabel: data?.settings?.dashboard?.display_name || data?.id });
+    }
+    if (provider === "asaas") {
+      const base = environment === "production" ? "https://api.asaas.com/v3" : "https://sandbox.asaas.com/api/v3";
+      const { data } = await axios.get(`${base}/myAccount`, {
+        headers: { access_token: secretKey }, timeout: 10000,
+      });
+      return res.json({ ok: true, accountLabel: data?.email || data?.name });
+    }
+    return res.status(400).json({ error: "Gateway não reconhecido." });
+  } catch (err: any) {
+    const status = err?.response?.status;
+    res.json({ ok: false, error: status ? `Gateway recusou as credenciais (HTTP ${status}).` : (err?.message || "Falha ao contatar o gateway.") });
   }
 });
 

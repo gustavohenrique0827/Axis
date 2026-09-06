@@ -8,14 +8,15 @@ import { Badge } from "../../../../components/ui/badge";
 import { Zap, Send, Save, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "../../../../contexts/DataContext";
+import { apiFetch } from "../../../../lib/apiClient";
 
 const SETTING_KEY = "integracoes_sdr_webhooks";
 
 const DEFAULT_SDR_INTEGRATIONS = {
-  webhookUrl: "https://n8n.seumodelo.com/webhook/reuniao-agendada",
-  webhookActive: true,
-  leadQualificadoUrl: "https://n8n.seumodelo.com/webhook/sdr-qualificado",
-  leadQualificadoActive: true,
+  webhookUrl: "",
+  webhookActive: false,
+  leadQualificadoUrl: "",
+  leadQualificadoActive: false,
 };
 
 export function ConfigIntegracoesSDR() {
@@ -37,22 +38,23 @@ export function ConfigIntegracoesSDR() {
     saveAppSetting(SETTING_KEY, updated);
   };
 
-  const testWebhook = (event: string) => {
+  const testWebhook = async (event: string, url: string) => {
+    if (!url) { toast.error("Preencha a URL do webhook antes de testar."); return; }
     setTesting(true);
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 1000)),
-      {
-        loading: `Enviando payload de teste '${event}'...`,
-        success: () => {
-          setTesting(false);
-          return `Webhook '${event}' disparado com sucesso! Resposta 200 OK recebida. ⚡`;
-        },
-        error: () => {
-          setTesting(false);
-          return "Erro no disparo do Webhook.";
-        },
-      }
-    );
+    try {
+      const res = await apiFetch("/api/integrations/webhook-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url, event }),
+      });
+      const data = await res.json();
+      if (data.ok) toast.success(`Webhook '${event}' disparado! Resposta HTTP ${data.status} recebida.`);
+      else toast.error(data.error || `Endpoint respondeu com status ${data.status}.`);
+    } catch {
+      toast.error("Falha ao contatar o servidor para disparar o teste.");
+    } finally {
+      setTesting(false);
+    }
   };
 
   const handleSaveReuniao = () => {
@@ -73,7 +75,7 @@ export function ConfigIntegracoesSDR() {
           <Zap className="w-5 h-5 text-purple-500" />
         </h1>
         <p className="text-sm text-[var(--color-text-muted)] mt-1">
-          Configure disparos automatizados de webhooks para ferramentas de automação (n8n, Make, Zapier) acionados por eventos de qualificação.
+          Cadastre os endpoints e valide a conexão com "Disparar Teste" (chamada HTTP real). O disparo automático nestes eventos de qualificação ainda não está implementado — hoje só o teste manual envia uma requisição de verdade.
         </p>
       </div>
 
@@ -134,7 +136,7 @@ export function ConfigIntegracoesSDR() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => testWebhook("sdr.reuniao_agendada")}
+              onClick={() => testWebhook("sdr.reuniao_agendada", config.webhookUrl)}
               loading={testing}
               className="h-9 px-4 text-xs font-bold gap-1.5"
             >
@@ -205,7 +207,7 @@ export function ConfigIntegracoesSDR() {
             <Button
               type="button"
               variant="outline"
-              onClick={() => testWebhook("sdr.lead_qualificado")}
+              onClick={() => testWebhook("sdr.lead_qualificado", config.leadQualificadoUrl)}
               loading={testing}
               className="h-9 px-4 text-xs font-bold gap-1.5"
             >

@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Check, ArrowRight, ArrowLeft, Zap, Home, Heart, GraduationCap, Briefcase, Rocket, ShieldCheck, Smartphone } from 'lucide-react';
+import { Check, ArrowRight, ArrowLeft, Zap, Home, Heart, GraduationCap, Briefcase, Rocket, ShieldCheck, Smartphone, AlertTriangle } from 'lucide-react';
 import { MascotMIA6 } from '../../components/MascotMIA6';
+import { apiFetch } from '../../lib/apiClient';
 
 const niches: Record<string, any> = {
   "mia-6": {
@@ -104,6 +105,8 @@ export function InteractiveForm() {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [inputValue, setInputValue] = useState('');
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Fallback to 'apple' if invalid niche
   const formConfig = niches[niche || ''] || niches['apple'];
@@ -116,28 +119,67 @@ export function InteractiveForm() {
     setAnswers({});
     setInputValue('');
     setIsCompleted(false);
+    setIsSubmitting(false);
+    setSubmitError(null);
   }, [niche]);
 
   const handleChoice = (option: string) => {
-    setAnswers(prev => ({ ...prev, [currentQuestion.id]: option }));
-    goToNextStep();
+    const updated = { ...answers, [currentQuestion.id]: option };
+    setAnswers(updated);
+    goToNextStep(updated);
   };
 
   const handleInputSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
-    setAnswers(prev => ({ ...prev, [currentQuestion.id]: inputValue }));
+    const updated = { ...answers, [currentQuestion.id]: inputValue };
+    setAnswers(updated);
     setInputValue('');
-    goToNextStep();
+    goToNextStep(updated);
   };
 
-  const goToNextStep = () => {
+  // Recebe as respostas explicitamente (em vez de ler o `answers` do closure)
+  // porque a última resposta acabou de ser setada via setAnswers — o state
+  // só reflete isso no próximo render, então ler `answers` aqui perderia
+  // justamente a resposta do passo final.
+  const goToNextStep = (finalAnswers: Record<string, string>) => {
     if (currentStep < totalSteps - 1) {
       setCurrentStep(prev => prev + 1);
-    } else {
+      return;
+    }
+    submitLead(finalAnswers);
+  };
+
+  const submitLead = async (finalAnswers: Record<string, string>) => {
+    setSubmitError(null);
+    setIsSubmitting(true);
+
+    const nameQuestion = formConfig.questions.find((q: any) => q.type === 'input' && q.subtype !== 'email' && q.subtype !== 'tel' && /nome/i.test(q.title));
+    const phoneQuestion = formConfig.questions.find((q: any) => q.subtype === 'tel');
+    const emailQuestion = formConfig.questions.find((q: any) => q.subtype === 'email');
+    const fallbackName = Object.values(finalAnswers).find((v) => v && !/^\(?\d/.test(v));
+
+    const payload = {
+      niche: formConfig.name,
+      name: (nameQuestion ? finalAnswers[nameQuestion.id] : fallbackName) || 'Lead sem nome informado',
+      phone: phoneQuestion ? finalAnswers[phoneQuestion.id] : undefined,
+      email: emailQuestion ? finalAnswers[emailQuestion.id] : undefined,
+      summary: formConfig.questions.map((q: any) => `${q.title} → ${finalAnswers[q.id] ?? '-'}`).join('\n'),
+    };
+
+    try {
+      const res = await apiFetch('/api/public/lead-capture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data?.success) throw new Error(data?.error || 'Falha ao registrar sua inscrição.');
       setIsCompleted(true);
-      // Aqui faria a requisição para enviar o Lead para o S.P.Y. CRM backend
-      console.log('Lead Capturado:', { nicho: formConfig.name, answers });
+    } catch (err: any) {
+      setSubmitError(err?.message || 'Não foi possível enviar seus dados agora. Tente novamente.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -158,6 +200,41 @@ export function InteractiveForm() {
 
   const theme = colorVariants[formConfig.color];
   const Icon = formConfig.icon;
+
+  if (isSubmitting) {
+    return (
+      <div className={`min-h-screen bg-gradient-to-br ${formConfig.bgGradient} flex items-center justify-center p-4`}>
+        <div className="text-center text-white/70">
+          <div className="w-12 h-12 mx-auto mb-4 rounded-full border-2 border-white/20 border-t-white animate-spin" />
+          <p className="font-semibold">Enviando suas informações...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (submitError) {
+    return (
+      <div className={`min-h-screen bg-gradient-to-br ${formConfig.bgGradient} flex items-center justify-center p-4`}>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-[var(--color-surface)]/80 backdrop-blur-xl p-10 rounded-3xl border border-white/10 max-w-lg w-full text-center shadow-2xl"
+        >
+          <div className="w-20 h-20 mx-auto rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center mb-6 text-red-400">
+            <AlertTriangle className="w-10 h-10" />
+          </div>
+          <h2 className="text-2xl font-semibold text-white mb-4">Não foi possível enviar</h2>
+          <p className="text-slate-300 mb-8 leading-relaxed">{submitError}</p>
+          <button
+            onClick={() => submitLead(answers)}
+            className={`w-full py-4 rounded-xl transition-colors ${theme.bg} ${theme.buttonText || 'text-white'} hover:opacity-90`}
+          >
+            Tentar novamente
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (isCompleted) {
     return (

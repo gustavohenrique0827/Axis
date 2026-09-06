@@ -24,6 +24,8 @@ export default function RHColaboradores() {
     newSquadLogo, setNewSquadLogo, newSquadLeader, setNewSquadLeader,
     oteBaseSalary, setOteBaseSalary, oteCommPercentage, setOteCommPercentage,
     oteVendasRealizadas, setOteVendasRealizadas, oteAtingimentoMeta, setOteAtingimentoMeta,
+    oteColaboradorId, setOteColaboradorId, oteNivel, setOteNivel, otePeriod, setOtePeriod,
+    financeCommissionEntries, handleSaveOteEntry, handleDeleteOteEntry,
     handleCreateSquad, handleDeleteSquad, filtered,
     calcVariable, calcBonus, totalOTE,
   } = useRHColaboradores();
@@ -174,6 +176,13 @@ export default function RHColaboradores() {
             oteCommPercentage={oteCommPercentage} setOteCommPercentage={setOteCommPercentage}
             oteVendasRealizadas={oteVendasRealizadas} setOteVendasRealizadas={setOteVendasRealizadas}
             oteAtingimentoMeta={oteAtingimentoMeta} setOteAtingimentoMeta={setOteAtingimentoMeta}
+            oteColaboradorId={oteColaboradorId} setOteColaboradorId={setOteColaboradorId}
+            oteNivel={oteNivel} setOteNivel={setOteNivel}
+            otePeriod={otePeriod} setOtePeriod={setOtePeriod}
+            colaboradores={colaboradores}
+            financeCommissionEntries={financeCommissionEntries}
+            onSaveOteEntry={handleSaveOteEntry}
+            onDeleteOteEntry={handleDeleteOteEntry}
             calcVariable={calcVariable} calcBonus={calcBonus} totalOTE={totalOTE}
           />
         )}

@@ -3,13 +3,14 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   Car, Plus, Search, Gauge, Fuel, Settings2, Calendar, Eye, Edit2, Trash2,
-  Copy, X, Palette, DollarSign, Grid3x3, List, TrendingUp, Package,
-  ChevronRight, ExternalLink,
+  X, Palette, DollarSign, Grid3x3, List, TrendingUp, Package,
+  ChevronRight, Landmark, ArrowRightLeft, HandCoins, Banknote,
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "../../lib/supabase";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
+import { VeiculoFinanciamentoModal } from "./components/VeiculoFinanciamentoModal";
 
 type Veiculo = {
   id: string;
@@ -27,6 +28,11 @@ type Veiculo = {
   vendedor: string;
   visitas: number;
   descricao: string;
+  isConsignado: boolean;
+  consignanteNome: string;
+  consignanteTelefone: string;
+  comissaoPercentual: number | null;
+  repasseRealizado: boolean;
   created_at?: string;
 };
 
@@ -82,6 +88,10 @@ function VeiculoFormModal({ onClose, onSave, initial }: {
     status: initial?.status ?? "Disponível",
     vendedor: initial?.vendedor ?? "",
     descricao: initial?.descricao ?? "",
+    is_consignado: initial?.isConsignado ?? false,
+    consignante_nome: initial?.consignanteNome ?? "",
+    consignante_telefone: initial?.consignanteTelefone ?? "",
+    comissao_percentual: String(initial?.comissaoPercentual ?? "10"),
   });
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
   const isEdit = Boolean(initial?.id);
@@ -157,6 +167,34 @@ function VeiculoFormModal({ onClose, onSave, initial }: {
               <textarea value={form.descricao} onChange={e => set("descricao", e.target.value)} rows={3} placeholder="Descrição do veículo, opcionais, estado de conservação..." className={`${FIELD} resize-none`} />
             </div>
           </div>
+
+          <div className="pt-4 mt-2 border-t border-white/10">
+            <label className="flex items-center gap-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.is_consignado}
+                onChange={e => setForm(f => ({ ...f, is_consignado: e.target.checked }))}
+                className="w-4 h-4 accent-blue-600"
+              />
+              <span className="text-xs font-bold text-white flex items-center gap-1.5"><HandCoins className="w-3.5 h-3.5 text-amber-400" /> Veículo Consignado (de terceiro, venda por comissão)</span>
+            </label>
+            {form.is_consignado && (
+              <div className="grid grid-cols-2 gap-4 mt-3">
+                <div>
+                  <label className={LABEL}>Nome do Consignante</label>
+                  <input value={form.consignante_nome} onChange={e => set("consignante_nome", e.target.value)} placeholder="Ex: José da Silva" className={FIELD} />
+                </div>
+                <div>
+                  <label className={LABEL}>Telefone do Consignante</label>
+                  <input value={form.consignante_telefone} onChange={e => set("consignante_telefone", e.target.value)} placeholder="(11) 99999-0000" className={FIELD} />
+                </div>
+                <div className="col-span-2">
+                  <label className={LABEL}>Comissão da Loja (%)</label>
+                  <input type="number" min="0" max="100" value={form.comissao_percentual} onChange={e => set("comissao_percentual", e.target.value)} className={FIELD} />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
         <div className="p-6 border-t border-white/5 flex justify-end gap-3">
           <Button variant="ghost" onClick={onClose} className="text-slate-400">Cancelar</Button>
@@ -169,6 +207,9 @@ function VeiculoFormModal({ onClose, onSave, initial }: {
                 ano_modelo: Number(form.ano_modelo) || null,
                 km: Number(form.km) || 0,
                 valor: Number(form.valor) || 0,
+                comissao_percentual: form.is_consignado ? (Number(form.comissao_percentual) || 0) : null,
+                consignante_nome: form.is_consignado ? form.consignante_nome : null,
+                consignante_telefone: form.is_consignado ? form.consignante_telefone : null,
               });
               onClose();
             }}
@@ -182,13 +223,73 @@ function VeiculoFormModal({ onClose, onSave, initial }: {
   );
 }
 
+type Financiamento = {
+  id: string;
+  cliente: string;
+  valor_entrada: number;
+  valor_financiado: number;
+  parcelas: number;
+  banco_financeira: string | null;
+  status: "Em Análise" | "Aprovado" | "Recusado" | "Documentação Pendente";
+  veiculo_troca_descricao: string | null;
+  created_at: string;
+};
+
+const financiamentoStatusColor = (s: string) => {
+  if (s === "Aprovado") return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
+  if (s === "Recusado") return "bg-red-500/10 text-red-400 border-red-500/20";
+  if (s === "Documentação Pendente") return "bg-amber-500/10 text-amber-400 border-amber-500/20";
+  return "bg-blue-500/10 text-blue-400 border-blue-500/20"; // Em Análise
+};
+
 // ─── DETAIL DRAWER ────────────────────────────────────────────────────────────
-function VeiculoDetailDrawer({ v, onClose, onEdit, onDelete }: {
+function VeiculoDetailDrawer({ v, onClose, onEdit, onDelete, onRepasseRegistrado }: {
   v: Veiculo;
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onRepasseRegistrado: (id: string) => void;
 }) {
+  const [financiamentos, setFinanciamentos] = useState<Financiamento[]>([]);
+  const [showFinanciamentoModal, setShowFinanciamentoModal] = useState(false);
+  const [repassando, setRepassando] = useState(false);
+
+  const refetchFinanciamentos = () => {
+    if (!supabase) return;
+    supabase.from("veiculo_financiamentos").select("*").eq("veiculo_id", v.id).order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) toast.error(`Erro ao carregar financiamentos: ${error.message}`);
+        else if (data) setFinanciamentos(data as Financiamento[]);
+      });
+  };
+
+  useEffect(() => { refetchFinanciamentos(); }, [v.id]);
+
+  const handleSaveFinanciamento = async (data: any) => {
+    if (!supabase) { toast.error("Supabase não configurado."); return; }
+    const { error } = await supabase.from("veiculo_financiamentos").insert({ ...data, veiculo_id: v.id });
+    if (error) { toast.error(`Erro ao registrar financiamento: ${error.message}`); return; }
+    toast.success("Solicitação de financiamento registrada!");
+    refetchFinanciamentos();
+  };
+
+  const handleRegistrarRepasse = async () => {
+    if (!supabase) return;
+    setRepassando(true);
+    const { error } = await supabase.rpc("registrar_repasse_consignacao", { p_veiculo_id: v.id });
+    setRepassando(false);
+    if (error) { toast.error(`Erro ao registrar repasse: ${error.message}`); return; }
+    toast.success("Repasse registrado no financeiro (Contas a Pagar).");
+    onRepasseRegistrado(v.id);
+  };
+
+  const handleUpdateFinanciamentoStatus = async (id: string, status: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("veiculo_financiamentos").update({ status }).eq("id", id);
+    if (error) { toast.error(`Erro ao atualizar status: ${error.message}`); return; }
+    setFinanciamentos(prev => prev.map(f => f.id === id ? { ...f, status: status as Financiamento["status"] } : f));
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex">
       <div className="flex-1 bg-black/60 backdrop-blur-sm" onClick={onClose} />
@@ -284,21 +385,90 @@ function VeiculoDetailDrawer({ v, onClose, onEdit, onDelete }: {
             </div>
           )}
 
-          {/* Ações rápidas */}
+          {/* Financiamento */}
           <div className="px-6 py-4">
-            <p className={LABEL}>Ações Rápidas</p>
-            <div className="space-y-2 mt-2">
+            <div className="flex items-center justify-between mb-2">
+              <p className={LABEL}>Financiamento & Troca</p>
               <button
-                onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/veiculo/${v.id}`); toast.success("Link copiado!"); }}
-                className="w-full flex items-center gap-3 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all"
+                onClick={() => setShowFinanciamentoModal(true)}
+                className="text-[10px] font-black uppercase text-blue-400 hover:text-blue-300 flex items-center gap-1"
               >
-                <Copy className="w-4 h-4 text-slate-500" />
-                <span className="text-sm text-slate-300">Copiar link do veículo</span>
-                <ExternalLink className="w-3.5 h-3.5 text-slate-500 ml-auto" />
+                <Landmark className="w-3 h-3" /> Solicitar
               </button>
             </div>
+            {financiamentos.length === 0 ? (
+              <p className="text-xs text-slate-500">Nenhuma solicitação de financiamento para este veículo ainda.</p>
+            ) : (
+              <div className="space-y-2 mt-2">
+                {financiamentos.map(f => (
+                  <div key={f.id} className="p-3 bg-white/5 rounded-xl">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="text-sm font-bold text-white">{f.cliente}</span>
+                      <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${financiamentoStatusColor(f.status)}`}>{f.status}</span>
+                    </div>
+                    <div className="text-[10px] text-slate-500 flex flex-wrap gap-x-3">
+                      <span>Entrada: R$ {f.valor_entrada.toLocaleString("pt-BR")}</span>
+                      <span>Financiado: R$ {f.valor_financiado.toLocaleString("pt-BR")} em {f.parcelas}x</span>
+                      {f.banco_financeira && <span>{f.banco_financeira}</span>}
+                    </div>
+                    {f.veiculo_troca_descricao && (
+                      <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-1">
+                        <ArrowRightLeft className="w-2.5 h-2.5" /> Troca: {f.veiculo_troca_descricao}
+                      </div>
+                    )}
+                    {f.status === "Em Análise" && (
+                      <div className="flex gap-1.5 mt-2">
+                        <button onClick={() => handleUpdateFinanciamentoStatus(f.id, "Aprovado")} className="px-2 py-0.5 text-[9px] font-extrabold uppercase bg-emerald-500/10 text-emerald-400 rounded hover:bg-emerald-500/20">Aprovar</button>
+                        <button onClick={() => handleUpdateFinanciamentoStatus(f.id, "Recusado")} className="px-2 py-0.5 text-[9px] font-extrabold uppercase bg-red-500/10 text-red-400 rounded hover:bg-red-500/20">Recusar</button>
+                        <button onClick={() => handleUpdateFinanciamentoStatus(f.id, "Documentação Pendente")} className="px-2 py-0.5 text-[9px] font-extrabold uppercase bg-amber-500/10 text-amber-400 rounded hover:bg-amber-500/20">Doc. Pendente</button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
+
+          {/* Consignação */}
+          {v.isConsignado && (
+            <div className="px-6 py-4 border-t border-white/5">
+              <p className={LABEL}>Consignação</p>
+              <div className="mt-2 p-3 bg-amber-500/5 border border-amber-500/20 rounded-xl space-y-1.5">
+                <div className="flex items-center gap-2 text-sm font-bold text-white">
+                  <HandCoins className="w-4 h-4 text-amber-400" /> {v.consignanteNome || "Consignante não identificado"}
+                </div>
+                <div className="text-[10px] text-slate-500 flex flex-wrap gap-x-3">
+                  {v.consignanteTelefone && <span>{v.consignanteTelefone}</span>}
+                  <span>Comissão da loja: {v.comissaoPercentual ?? 0}%</span>
+                  <span>Repasse ao consignante: R$ {(v.valor * (1 - (v.comissaoPercentual ?? 0) / 100)).toLocaleString("pt-BR")}</span>
+                </div>
+                {v.repasseRealizado ? (
+                  <div className="flex items-center gap-1.5 text-[10px] font-black text-emerald-400 uppercase mt-1">
+                    <Banknote className="w-3 h-3" /> Repasse já registrado no financeiro
+                  </div>
+                ) : v.status === "Vendido" ? (
+                  <button
+                    onClick={handleRegistrarRepasse}
+                    disabled={repassando}
+                    className="mt-1.5 px-3 py-1.5 text-[10px] font-extrabold uppercase bg-amber-500/10 text-amber-400 rounded-lg hover:bg-amber-500/20 disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    <Banknote className="w-3 h-3" /> {repassando ? "Registrando..." : "Registrar Repasse ao Consignante"}
+                  </button>
+                ) : (
+                  <p className="text-[10px] text-slate-600 mt-1">Repasse fica disponível após o veículo ser marcado como Vendido.</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
+
+        {showFinanciamentoModal && (
+          <VeiculoFinanciamentoModal
+            veiculoValor={v.valor}
+            onClose={() => setShowFinanciamentoModal(false)}
+            onSave={handleSaveFinanciamento}
+          />
+        )}
 
         {/* Footer */}
         <div className="p-4 border-t border-white/5 flex gap-2">
@@ -326,6 +496,9 @@ function rowToVeiculo(r: any): Veiculo {
     placa: r.placa ?? "", cor: r.cor ?? "", combustivel: r.combustivel, cambio: r.cambio,
     valor: Number(r.valor), status: r.status, vendedor: r.vendedor ?? "",
     visitas: r.visitas ?? 0, descricao: r.descricao ?? "", created_at: r.created_at,
+    isConsignado: r.is_consignado ?? false, consignanteNome: r.consignante_nome ?? "",
+    consignanteTelefone: r.consignante_telefone ?? "", comissaoPercentual: r.comissao_percentual ?? null,
+    repasseRealizado: r.repasse_realizado ?? false,
   };
 }
 
@@ -419,6 +592,10 @@ export default function Veiculos() {
           onClose={() => setSelectedVeiculo(null)}
           onEdit={() => { setEditVeiculo(selectedVeiculo); setSelectedVeiculo(null); }}
           onDelete={() => handleDelete(selectedVeiculo.id)}
+          onRepasseRegistrado={(id) => {
+            setVeiculos(prev => prev.map(v => v.id === id ? { ...v, repasseRealizado: true } : v));
+            setSelectedVeiculo(prev => prev && prev.id === id ? { ...prev, repasseRealizado: true } : prev);
+          }}
         />
       )}
 
@@ -473,8 +650,9 @@ export default function Veiculos() {
             >
               <div className={`h-40 bg-gradient-to-br ${combustivelGradient(v.combustivel)} flex items-center justify-center relative`}>
                 <Car className="w-12 h-12 text-white/10" />
-                <div className="absolute top-3 left-3">
+                <div className="absolute top-3 left-3 flex gap-1.5">
                   <span className={`text-[9px] font-black px-2.5 py-1 rounded-full border ${statusColor(v.status)}`}>{v.status}</span>
+                  {v.isConsignado && <span className="text-[9px] font-black px-2.5 py-1 rounded-full border bg-amber-500/10 text-amber-400 border-amber-500/20">Consignado</span>}
                 </div>
                 <div className="absolute top-3 right-3 flex gap-1.5">
                   <span className="text-[9px] font-black px-2 py-1 rounded-full bg-black/40 text-slate-300">{v.combustivel}</span>
@@ -483,9 +661,6 @@ export default function Veiculos() {
                 <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-4 text-slate-500 text-[10px]" onClick={e => e.stopPropagation()}>
                   <button onClick={() => setEditVeiculo(v)} className="p-1.5 rounded-lg bg-black/30 hover:bg-black/60 text-white transition-all opacity-0 group-hover:opacity-100">
                     <Edit2 className="w-3 h-3" />
-                  </button>
-                  <button onClick={() => { navigator.clipboard.writeText(`${window.location.origin}/veiculo/${v.id}`); toast.success("Link copiado!"); }} className="p-1.5 rounded-lg bg-black/30 hover:bg-black/60 text-white transition-all opacity-0 group-hover:opacity-100">
-                    <Copy className="w-3 h-3" />
                   </button>
                   <button onClick={() => handleDelete(v.id)} className="p-1.5 rounded-lg bg-black/30 hover:bg-red-500/20 text-red-400 transition-all opacity-0 group-hover:opacity-100">
                     <Trash2 className="w-3 h-3" />

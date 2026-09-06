@@ -12,7 +12,7 @@ import {
   TableCell,
 } from "../../../../components/ui/table";
 import {
-  FileText, Search, Clock, CheckCircle2, XCircle, User, Download, Trash2, History, Send,
+  FileText, Search, Clock, CheckCircle2, XCircle, User, Download, Trash2, History, Send, Link2, Eye,
 } from "lucide-react";
 import { toast } from "sonner";
 import { handleDownloadPdf } from "../../utils/proposalPdf";
@@ -30,6 +30,9 @@ interface Proposta {
   tipo?: "itens" | "texto" | "arquivo";
   conteudo_texto?: string | null;
   link_pdf?: string | null;
+  view_token?: string | null;
+  view_count?: number;
+  last_viewed_at?: string | null;
 }
 
 const TIPO_LABEL: Record<string, string> = { itens: "Modelo", texto: "Texto", arquivo: "Arquivo" };
@@ -167,6 +170,24 @@ export function PropostasTable({ propostas, proposalItems, search, onSearchChang
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">
+                      {item.view_token && (
+                        <button
+                          onClick={() => {
+                            const url = `${window.location.origin}/proposta/${item.view_token}`;
+                            navigator.clipboard.writeText(url);
+                            toast.success("Link público copiado! Envie para o cliente acompanhar a proposta.");
+                          }}
+                          title={item.view_count ? `Link público — visualizado ${item.view_count}x` : "Copiar link público"}
+                          className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:text-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/10 rounded-lg transition-colors relative"
+                        >
+                          <Link2 className="w-4 h-4" />
+                          {!!item.view_count && (
+                            <span className="absolute -top-1 -right-1 flex items-center gap-0.5 text-[8px] font-black bg-emerald-500 text-white rounded-full px-1">
+                              <Eye className="w-2 h-2" />{item.view_count}
+                            </span>
+                          )}
+                        </button>
+                      )}
                       <button
                         onClick={() => item.tipo === "arquivo" && item.link_pdf
                           ? window.open(item.link_pdf, "_blank", "noopener,noreferrer")

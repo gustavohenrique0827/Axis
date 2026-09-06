@@ -9,6 +9,7 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import PerformanceIA from "./pages/dashboard/PerformanceIA";
 import PainelGeral from "./pages/clinica/PainelGeral";
 import AgendaMedica from "./pages/clinica/AgendaMedica";
+import AnaliseFatura from "./pages/solar/AnaliseFatura";
 import Prontuarios from "./pages/clinica/Prontuarios";
 import Faturamento from "./pages/clinica/Faturamento";
 import Estoque from "./pages/clinica/Estoque";
@@ -39,6 +40,7 @@ import FinanceiroVisaoGeral from "./pages/finance/FinanceiroVisaoGeral";
 import FinanceiroReceber from "./pages/finance/FinanceiroReceber";
 import FinanceiroPagar from "./pages/finance/FinanceiroPagar";
 import FinanceiroDRE from "./pages/finance/FinanceiroDRE";
+import Indicacoes from "./pages/finance/Indicacoes";
 
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import ConfigEmpresaDados from "./pages/settings/ConfigEmpresaDados";
@@ -76,6 +78,7 @@ import GenericPlaceholder from "./pages/common/GenericPlaceholder";
 import EducationTurmas from "./pages/education/Turmas";
 import EducationConteudo from "./pages/education/Conteudo";
 import EducationCertificados from "./pages/education/Certificados";
+import EducationMensalidades from "./pages/education/Mensalidades";
 import AlunosEdu from "./pages/education/Alunos";
 import PainelGeralEdu from "./pages/education/PainelGeral";
 import Propostas from "./pages/crm/Propostas";
@@ -98,6 +101,11 @@ import ImobiliariosCorretores from "./pages/imobiliario/Corretores";
 import ImobiliariosVisitas from "./pages/imobiliario/Visitas";
 import ImobiliariosPipeline from "./pages/imobiliario/Pipeline";
 import PortfolioCorretor from "./pages/imobiliario/PortfolioCorretor";
+import ImovelPublico from "./pages/imobiliario/ImovelPublico";
+import PropostaPublica from "./pages/public/PropostaPublica";
+import CatalogoPublico from "./pages/public/CatalogoPublico";
+import VarejoVendas from "./pages/varejo/Vendas";
+import VarejoEstoque from "./pages/varejo/Estoque";
 import PainelDev from "./pages/dev/PainelDev";
 import ProjetosDev from "./pages/dev/Projetos";
 import SprintsDev from "./pages/dev/Sprints";
@@ -175,6 +183,17 @@ function AppContent() {
           </Route>
           <Route path="clientes" element={<Clientes />} />
 
+          <Route path="solar">
+            <Route index element={<Navigate to="analise-fatura" replace />} />
+            <Route path="analise-fatura" element={<AnaliseFatura />} />
+          </Route>
+
+          <Route path="varejo">
+            <Route index element={<Navigate to="vendas" replace />} />
+            <Route path="vendas" element={<VarejoVendas />} />
+            <Route path="estoque" element={<VarejoEstoque />} />
+          </Route>
+
           <Route path="propostas" element={<Propostas />} />
 
           <Route path="tarefas" element={<Tarefas />} />
@@ -187,6 +206,7 @@ function AppContent() {
             <Route path="alunos" element={<AlunosEdu />} />
             <Route path="conteudo" element={<EducationConteudo />} />
             <Route path="certificados" element={<EducationCertificados />} />
+            <Route path="mensalidades" element={<EducationMensalidades />} />
           </Route>
 
           <Route path="marketing">
@@ -214,6 +234,7 @@ function AppContent() {
             <Route path="receber" element={<FinanceiroReceber />} />
             <Route path="pagar" element={<FinanceiroPagar />} />
             <Route path="dre" element={<FinanceiroDRE />} />
+            <Route path="indicacoes" element={<Indicacoes />} />
             <Route path="categorias" element={<SettingsGenericForm />} />
             <Route path="*" element={<GenericPlaceholder />} />
           </Route>
@@ -295,6 +316,15 @@ function AppContent() {
 
         {/* Portfólio público do corretor — sem autenticação */}
         <Route path="/corretor/:slug" element={<PortfolioCorretor />} />
+
+        {/* Anúncio público de imóvel — sem autenticação */}
+        <Route path="/imovel/:id" element={<ImovelPublico />} />
+
+        {/* Catálogo público de produtos (Varejo) — sem autenticação */}
+        <Route path="/catalogo/:tenantId" element={<CatalogoPublico />} />
+
+        {/* Proposta pública com tracking — sem autenticação, acesso só via token */}
+        <Route path="/proposta/:token" element={<PropostaPublica />} />
 
         {/* Marketing/Capture Forms Hub */}
         <Route path="/f/:niche" element={<InteractiveForm />} />

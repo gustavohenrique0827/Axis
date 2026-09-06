@@ -7,15 +7,16 @@ import { Alert } from "../../../../components/ui/alert";
 import { Mail, Server, ShieldCheck, Send, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "../../../../contexts/DataContext";
+import { apiFetch } from "../../../../lib/apiClient";
 
 const SETTING_KEY = "integracoes_smtp";
 
 const DEFAULT_SMTP = {
-  smtpServer: "email-smtp.us-east-1.amazonaws.com",
+  smtpServer: "",
   smtpPort: "587",
-  smtpUser: "AKIAIOSFODNN7EXAMPLE",
-  smtpPass: "••••••••••••••••••••",
-  fromEmail: "contato@empresa.com.br",
+  smtpUser: "",
+  smtpPass: "",
+  fromEmail: "",
   encryption: "StartTLS",
 };
 
@@ -32,22 +33,26 @@ export function ConfigIntegracoesSMTP() {
 
   const [testing, setTesting] = useState(false);
 
-  const testConnection = () => {
+  const testConnection = async () => {
+    if (!config.smtpServer || !config.smtpUser || !config.smtpPass) {
+      toast.error("Preencha host, usuário e senha antes de testar.");
+      return;
+    }
     setTesting(true);
-    toast.promise(
-      new Promise((resolve) => setTimeout(resolve, 1500)),
-      {
-        loading: "Verificando credenciais e handshake TLS com o servidor...",
-        success: () => {
-          setTesting(false);
-          return "Conexão SMTP validada com sucesso! E-mail de homologação disparado. ✉️✨";
-        },
-        error: () => {
-          setTesting(false);
-          return "Falha na autenticação SMTP.";
-        },
-      }
-    );
+    try {
+      const res = await apiFetch("/api/integrations/smtp-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config),
+      });
+      const data = await res.json();
+      if (data.ok) toast.success("Conexão SMTP validada com sucesso! Handshake e autenticação confirmados.");
+      else toast.error(data.error || "Falha na autenticação SMTP.");
+    } catch {
+      toast.error("Falha ao contatar o servidor para testar a conexão.");
+    } finally {
+      setTesting(false);
+    }
   };
 
   const handleSave = async () => {
@@ -64,12 +69,12 @@ export function ConfigIntegracoesSMTP() {
           <Server className="w-5 h-5 text-[var(--color-primary-blue)]" />
         </h1>
         <p className="text-sm text-[var(--color-text-muted)] mt-1">
-          Configure seu próprio servidor SMTP transacional (AWS SES, Google Workspace, SendGrid, Mailgun) para envio de propostas, faturas e avisos.
+          Configure seu servidor SMTP e valide a conexão com "Testar Conexão TLS" (handshake e autenticação reais). Estas credenciais ainda não são usadas para enviar e-mails do sistema (propostas, faturas, avisos) — só para o teste de conexão.
         </p>
       </div>
 
       <Alert variant="info" title="Segurança & Entregabilidade">
-        Recomendamos o uso da porta 587 com protocolo STARTTLS e chave de aplicativo dedicada para garantir 99.9% de entregabilidade na caixa de entrada.
+        Recomendamos o uso da porta 587 com protocolo STARTTLS e uma chave de aplicativo dedicada (em vez da senha principal da conta).
       </Alert>
 
       <Card className="p-6 space-y-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">

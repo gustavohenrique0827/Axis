@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, GraduationCap, User, Mail, Phone, BookOpen, Loader2 } from "lucide-react";
+import { X, GraduationCap, User, Mail, Phone, BookOpen, Loader2, Wallet } from "lucide-react";
 import { Button } from "../../button";
 import { useData } from "../../../../contexts/DataContext";
 
 interface NovaMatriculaModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: { nome: string; email: string; telefone: string; curso: string }) => void;
+  onSubmit: (data: {
+    nome: string; email: string; telefone: string; curso: string;
+    valorMensalidade: string; diaVencimento: string; quantidadeParcelas: string;
+  }) => void;
 }
 
 const inputClass =
@@ -15,13 +18,16 @@ const inputClass =
 
 export function NovaMatriculaModal({ isOpen, onClose, onSubmit }: NovaMatriculaModalProps) {
   const { turmas } = useData();
-  const [form, setForm] = useState({ nome: "", email: "", telefone: "", curso: "" });
+  const [form, setForm] = useState({
+    nome: "", email: "", telefone: "", curso: "",
+    valorMensalidade: "", diaVencimento: "10", quantidadeParcelas: "12",
+  });
   const [loading, setLoading] = useState(false);
 
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
     setForm((prev) => ({ ...prev, [k]: e.target.value }));
 
-  const reset = () => setForm({ nome: "", email: "", telefone: "", curso: "" });
+  const reset = () => setForm({ nome: "", email: "", telefone: "", curso: "", valorMensalidade: "", diaVencimento: "10", quantidadeParcelas: "12" });
 
   const handleClose = () => { reset(); onClose(); };
 
@@ -29,8 +35,7 @@ export function NovaMatriculaModal({ isOpen, onClose, onSubmit }: NovaMatriculaM
     e.preventDefault();
     if (!form.nome || !form.email) return;
     setLoading(true);
-    await new Promise(r => setTimeout(r, 300));
-    onSubmit(form);
+    await onSubmit(form);
     setLoading(false);
     reset();
   };
@@ -132,6 +137,48 @@ export function NovaMatriculaModal({ isOpen, onClose, onSubmit }: NovaMatriculaM
                     ))}
                   </select>
                 </div>
+              </div>
+
+              {/* Mensalidade */}
+              <div className="pt-1 border-t border-white/10">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-2 mt-3 flex items-center gap-1.5">
+                  <Wallet className="w-3 h-3" /> Cobrança de Mensalidade
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-500 block mb-1">Valor (R$)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="299"
+                      value={form.valorMensalidade}
+                      onChange={set("valorMensalidade")}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-500 block mb-1">Dia Vencimento</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="28"
+                      value={form.diaVencimento}
+                      onChange={set("diaVencimento")}
+                      className={inputClass}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[9px] font-bold text-slate-500 block mb-1">Nº Parcelas</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={form.quantidadeParcelas}
+                      onChange={set("quantidadeParcelas")}
+                      className={inputClass}
+                    />
+                  </div>
+                </div>
+                <p className="text-[9px] text-slate-600 mt-1.5">Deixe o valor em branco para matricular sem gerar cobrança automática.</p>
               </div>
 
               {/* Footer */}

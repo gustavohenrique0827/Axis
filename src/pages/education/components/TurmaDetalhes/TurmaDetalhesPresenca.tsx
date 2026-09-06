@@ -8,8 +8,6 @@ interface Student {
   name: string;
   status: "onboarding" | "active" | "at_risk" | "completed";
   progress: number;
-  attendance: number;
-  lastPresence: string;
 }
 
 interface TurmaDetalhesPresencaProps {
@@ -72,7 +70,7 @@ export function TurmaDetalhesPresenca({
               <tr className="bg-white/5 border-b border-white/5">
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Aluno</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">Presença</th>
-                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Freq. Geral</th>
+                <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500">Progresso no Curso</th>
                 <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">Ações</th>
               </tr>
             </thead>
@@ -103,9 +101,9 @@ export function TurmaDetalhesPresenca({
                   <td className="px-6 py-5">
                     <div className="flex items-center gap-3">
                       <div className="flex-1 max-w-[100px] h-1.5 bg-white/5 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${student.attendance < 50 ? "bg-rose-500" : "bg-emerald-500"}`} style={{ width: `${student.attendance}%` }} />
+                        <div className={`h-full rounded-full ${student.progress < 50 ? "bg-rose-500" : "bg-emerald-500"}`} style={{ width: `${student.progress}%` }} />
                       </div>
-                      <span className={`text-[11px] font-black ${student.attendance < 50 ? "text-rose-500" : "text-emerald-500"}`}>{student.attendance}%</span>
+                      <span className={`text-[11px] font-black ${student.progress < 50 ? "text-rose-500" : "text-emerald-500"}`}>{student.progress}%</span>
                     </div>
                   </td>
                   <td className="px-6 py-5 text-right">

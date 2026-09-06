@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "../../components/ui/button";
 import { Plus } from "lucide-react";
 import { NovoClienteModal } from "../../components/ui/modals/crm/NovoClienteModal";
+import { ClienteContatosModal } from "../../components/ui/modals/crm/ClienteContatosModal";
 import { toast } from "sonner";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { PageContainer } from "../../components/PageContainer";
@@ -11,6 +12,7 @@ import { ClientesList } from "./components/Clientes/ClientesList";
 
 export default function Clientes() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [contatosClienteId, setContatosClienteId] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState("Todos as situações");
   const [sectorFilter, setSectorFilter] = useState("Todos os setores");
   const [searchQuery, setSearchQuery] = useState("");
@@ -43,6 +45,7 @@ export default function Clientes() {
       state: (data.estado || "SP").toUpperCase(),
       phone: data.telefone || "(11) 99999-9999",
       email: data.email || "contato@empresa.com",
+      documento: data.documento || null,
       status: "Ativo",
     };
 
@@ -90,12 +93,20 @@ export default function Clientes() {
         statusFilter={statusFilter}
         onStatusChange={setStatusFilter}
         onDelete={handleDeleteCliente}
+        onManageContatos={setContatosClienteId}
       />
 
       <NovoClienteModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onAction={handleCreateCliente}
+      />
+
+      <ClienteContatosModal
+        isOpen={!!contatosClienteId}
+        onClose={() => setContatosClienteId(null)}
+        clienteId={contatosClienteId}
+        clienteNome={clientes.find(c => c.id === contatosClienteId)?.name}
       />
     </PageContainer>
   );

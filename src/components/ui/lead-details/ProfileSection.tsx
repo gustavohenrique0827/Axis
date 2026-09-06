@@ -153,7 +153,7 @@ export function ProfileSection({
       color: "text-purple-600 dark:text-purple-400",
       action: () =>
         setAlterationLogs((prev: any[]) => [
-          { id: Date.now().toString(), author: seller || "Sistema", desc: "Contrato gerado via DocuSign", time: "Agora" },
+          { id: Date.now().toString(), author: seller || "Sistema", desc: "Contrato solicitado — gere o PDF na tela de Propostas", time: "Agora" },
           ...prev,
         ]),
     },

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "../../../../components/ui/card";
 import { Button } from "../../../../components/ui/button";
 import { Badge } from "../../../../components/ui/badge";
@@ -47,13 +48,13 @@ type IntegrationCategory = "todas" | "anuncios" | "mensageria" | "pagamentos" | 
 
 const DEFAULT_META_CONFIG = {
   connected: false,
-  accountName: "Conta Comercial Meta",
-  accountId: "act_102948172948",
-  pixelId: "10293847568291",
-  pixelStatus: "active" as "active" | "pending" | "disconnected",
-  capiToken: "EAAQZBz...sec_token",
-  datasetId: "ds_984729104",
-  trackingActive: true,
+  accountName: "",
+  accountId: "",
+  pixelId: "",
+  pixelStatus: "disconnected" as "active" | "pending" | "disconnected",
+  capiToken: "",
+  datasetId: "",
+  trackingActive: false,
   trackedEvents: {
     PageView: true,
     Lead: true,
@@ -63,45 +64,47 @@ const DEFAULT_META_CONFIG = {
     Contact: true,
     CompleteRegistration: true,
   },
-  lastTestPing: null as { event: string; timestamp: string; status: number; latency: number } | null,
+  lastTestPing: null as { event: string; timestamp: string; status: number; latency: number; ok: boolean } | null,
 };
 
 const DEFAULT_GOOGLE_CONFIG = {
   connected: false,
-  accountName: "Conta Google Ads Principal",
-  customerId: "948-204-1829",
-  measurementId: "G-9X7KD2P0LQ",
-  conversionLabel: "AW-1029482910/XyZ_Lead",
-  enhancedConversions: true,
-  tagStatus: "active" as "active" | "pending" | "disconnected",
-  lastTestPing: null as { event: string; timestamp: string; status: number; latency: number } | null,
+  accountName: "",
+  customerId: "",
+  measurementId: "",
+  apiSecret: "",
+  conversionLabel: "",
+  enhancedConversions: false,
+  tagStatus: "disconnected" as "active" | "pending" | "disconnected",
+  lastTestPing: null as { event: string; timestamp: string; status: number; latency: number; ok: boolean } | null,
 };
 
 const DEFAULT_PAYMENT_CONFIG = {
   mercadoPago: {
     connected: false,
     environment: "sandbox" as "sandbox" | "production",
-    publicKey: "APP_USR-xxxx-xxxx",
-    accessToken: "APP_USR-xxxx-xxxx-xxxx",
-    webhookUrl: "https://api.seusistema.com/api/webhooks/mercadopago",
+    publicKey: "",
+    accessToken: "",
+    webhookUrl: "",
   },
   stripe: {
     connected: false,
     environment: "sandbox" as "sandbox" | "production",
-    publishableKey: "pk_test_xxxxxxxxxxxx",
-    secretKey: "sk_test_xxxxxxxxxxxx",
-    webhookSecret: "whsec_xxxxxxxxxxxx",
+    publishableKey: "",
+    secretKey: "",
+    webhookSecret: "",
   },
   asaas: {
     connected: false,
     environment: "sandbox" as "sandbox" | "production",
-    apiKey: "$aact_xxxxxxxxxxxx",
-    webhookToken: "asaas_wh_token_xxxx",
+    apiKey: "",
+    webhookToken: "",
   },
 };
 
 export function ConfigIntegracoesApps() {
-  const { evolutionWebhookUrl, setEvolutionWebhookUrl, appSettings, appSettingsLoaded, saveAppSetting } = useData();
+  const navigate = useNavigate();
+  const { setWhatsappWebhookUrl, appSettings, appSettingsLoaded, saveAppSetting, globalWebhooks } = useData();
 
   // Search & Filter State
   const [activeCategory, setActiveCategory] = useState<IntegrationCategory>("todas");
@@ -120,6 +123,67 @@ export function ConfigIntegracoesApps() {
   const [customIntegrations, setCustomIntegrations] = useState<any[]>([]);
   const [hydrated, setHydrated] = useState(false);
 
+  // Rascunho editável do modal de pagamento (Mercado Pago/Stripe/Asaas) — os
+  // <Input> desse modal eram `defaultValue` sem `onChange`, então nada que o
+  // usuário digitava era capturado em lugar nenhum, e "Salvar Credenciais"
+  // nunca gravava nada. Corrigido: os campos agora são controlados por este
+  // estado, hidratado a partir de paymentConfig quando o modal abre.
+  const [paymentDraft, setPaymentDraft] = useState<{ environment: "sandbox" | "production"; publicKey: string; secretKey: string }>({
+    environment: "sandbox", publicKey: "", secretKey: "",
+  });
+  const [testingPayment, setTestingPayment] = useState(false);
+  const [paymentTestResult, setPaymentTestResult] = useState<{ ok: boolean; detail: string } | null>(null);
+
+  useEffect(() => {
+    if (selectedConfigModal === "mercadopago") {
+      setPaymentDraft({ environment: paymentConfig.mercadoPago.environment, publicKey: paymentConfig.mercadoPago.publicKey, secretKey: paymentConfig.mercadoPago.accessToken });
+      setPaymentTestResult(null);
+    } else if (selectedConfigModal === "stripe") {
+      setPaymentDraft({ environment: paymentConfig.stripe.environment, publicKey: paymentConfig.stripe.publishableKey, secretKey: paymentConfig.stripe.secretKey });
+      setPaymentTestResult(null);
+    } else if (selectedConfigModal === "asaas") {
+      setPaymentDraft({ environment: paymentConfig.asaas.environment, publicKey: paymentConfig.asaas.apiKey, secretKey: paymentConfig.asaas.apiKey });
+      setPaymentTestResult(null);
+    }
+  }, [selectedConfigModal]);
+
+  const handleSavePaymentCredentials = () => {
+    if (selectedConfigModal === "mercadopago") {
+      setPaymentConfig((prev: any) => ({ ...prev, mercadoPago: { ...prev.mercadoPago, environment: paymentDraft.environment, publicKey: paymentDraft.publicKey, accessToken: paymentDraft.secretKey } }));
+    } else if (selectedConfigModal === "stripe") {
+      setPaymentConfig((prev: any) => ({ ...prev, stripe: { ...prev.stripe, environment: paymentDraft.environment, publishableKey: paymentDraft.publicKey, secretKey: paymentDraft.secretKey } }));
+    } else if (selectedConfigModal === "asaas") {
+      setPaymentConfig((prev: any) => ({ ...prev, asaas: { ...prev.asaas, environment: paymentDraft.environment, apiKey: paymentDraft.secretKey } }));
+    }
+    toast.success("Credenciais salvas.");
+    setSelectedConfigModal(null);
+  };
+
+  const handleTestPaymentGateway = async () => {
+    if (!paymentDraft.secretKey) {
+      toast.error("Preencha a chave secreta / access token antes de testar.");
+      return;
+    }
+    setTestingPayment(true);
+    setPaymentTestResult(null);
+    try {
+      const res = await apiFetch("/api/integrations/payment-gateway-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ provider: selectedConfigModal, environment: paymentDraft.environment, secretKey: paymentDraft.secretKey }),
+      });
+      const data = await res.json();
+      setPaymentTestResult({ ok: !!data.ok, detail: data.ok ? (data.accountLabel || "Credenciais válidas.") : (data.error || "Falha na autenticação.") });
+      if (data.ok) toast.success(`Conexão validada — ${data.accountLabel || "credenciais aceitas pelo gateway"}.`);
+      else toast.error(data.error || "Falha na autenticação com o gateway.");
+    } catch (err: any) {
+      setPaymentTestResult({ ok: false, detail: "Falha ao contatar o servidor." });
+      toast.error("Falha ao contatar o servidor para testar o gateway.");
+    } finally {
+      setTestingPayment(false);
+    }
+  };
+
   useEffect(() => {
     if (hydrated || !appSettingsLoaded) return;
     if (appSettings.integracoes_meta_ads) setMetaConfig(appSettings.integracoes_meta_ads);
@@ -129,7 +193,7 @@ export function ConfigIntegracoesApps() {
     setHydrated(true);
   }, [appSettings, appSettingsLoaded, hydrated]);
 
-  // WhatsApp / Evolution API State
+  // WhatsApp (Simulador ou WAHA real) State
   const [instances, setInstances] = useState<any[]>([]);
   const [selectedInstanceId, setSelectedInstanceId] = useState("");
   const [webhookUrl, setWebhookUrl] = useState("");
@@ -138,6 +202,9 @@ export function ConfigIntegracoesApps() {
   const [simulationText, setSimulationText] = useState("Olá! Gostaria de mais informações sobre o produto.");
   const [savingWebhook, setSavingWebhook] = useState(false);
   const [simulating, setSimulating] = useState(false);
+  const [newInstanceName, setNewInstanceName] = useState("");
+  const [creatingInstance, setCreatingInstance] = useState(false);
+  const [connectingInstanceId, setConnectingInstanceId] = useState<string | null>(null);
 
   // Persiste no Supabase a cada mudança (mesmo modelo de auto-save que já
   // existia, só trocando o destino de localStorage para app_settings) — só
@@ -158,10 +225,13 @@ export function ConfigIntegracoesApps() {
     if (hydrated) saveAppSetting("integracoes_custom", customIntegrations);
   }, [customIntegrations, hydrated]);
 
+  const [whatsappProviderStatus, setWhatsappProviderStatus] = useState<{ provider: "simulator" | "waha"; configured: boolean } | null>(null);
+
   // Load instances & contacts for WhatsApp
   useEffect(() => {
     fetchInstances();
     fetchContacts();
+    apiFetch("/api/whatsapp/provider-status").then((r) => r.json()).then(setWhatsappProviderStatus).catch(() => setWhatsappProviderStatus(null));
   }, []);
 
   const fetchInstances = () => {
@@ -172,7 +242,7 @@ export function ConfigIntegracoesApps() {
         if (data.length > 0) {
           setSelectedInstanceId(data[0].id);
           setWebhookUrl(data[0].webhookUrl || "");
-          setEvolutionWebhookUrl(data[0].webhookUrl || "");
+          setWhatsappWebhookUrl(data[0].webhookUrl || "");
         }
       })
       .catch((err) => console.error("Error fetching instances:", err));
@@ -192,74 +262,134 @@ export function ConfigIntegracoesApps() {
   const [selectedMetaTestEvent, setSelectedMetaTestEvent] = useState("Lead");
   const [isTestingMeta, setIsTestingMeta] = useState(false);
 
-  const handleTestMetaPixel = () => {
+  const handleTestMetaPixel = async () => {
+    if (!metaConfig.pixelId || !metaConfig.capiToken) {
+      toast.error("Preencha o ID do Pixel e o Token de Acesso CAPI antes de testar.");
+      return;
+    }
     setIsTestingMeta(true);
-    setTimeout(() => {
+    const started = Date.now();
+    try {
+      const res = await apiFetch("/api/integrations/meta-pixel-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pixelId: metaConfig.pixelId, accessToken: metaConfig.capiToken, event: selectedMetaTestEvent }),
+      });
+      const data = await res.json();
       const pingResult = {
         event: selectedMetaTestEvent,
         timestamp: new Date().toLocaleTimeString("pt-BR"),
-        status: 200,
-        latency: Math.floor(Math.random() * 80) + 90,
+        status: data.status ?? 0,
+        latency: Date.now() - started,
+        ok: !!data.ok,
       };
-      setMetaConfig((prev: any) => ({
-        ...prev,
-        lastTestPing: pingResult,
-        pixelStatus: "active",
-      }));
+      setMetaConfig((prev: any) => ({ ...prev, lastTestPing: pingResult, pixelStatus: data.ok ? "active" : "pending" }));
+      if (data.ok) toast.success(`Evento '${selectedMetaTestEvent}' aceito pela Graph API do Meta (HTTP ${data.status}).`);
+      else toast.error(data.error || `Graph API recusou o evento (HTTP ${data.status ?? "?"}). Confira o Pixel ID e o token.`);
+    } catch (err: any) {
+      toast.error("Falha ao contatar o servidor para testar o Pixel.");
+    } finally {
       setIsTestingMeta(false);
-      toast.success(
-        `Evento '${selectedMetaTestEvent}' disparado com sucesso! Resposta HTTP 200 OK (${pingResult.latency}ms) via Conversions API e Pixel.`
-      );
-    }, 1200);
+    }
   };
 
   const handleToggleMetaConnected = () => {
     setMetaConfig((prev: any) => {
       const next = !prev.connected;
+      if (next && (!prev.pixelId || !prev.capiToken)) {
+        toast.error("Preencha o Pixel ID e o Token CAPI e valide com o teste de ping antes de marcar como conectado.");
+        return prev;
+      }
       toast[next ? "success" : "info"](
-        next ? "Conta Meta Ads conectada ao S.P.Y.!" : "Conta Meta Ads desconectada."
+        next ? "Meta Ads marcado como conectado." : "Meta Ads desconectado."
       );
       return { ...prev, connected: next };
     });
   };
 
-  // Google Ads actions
+  // Google Ads / GA4 actions
   const [isTestingGoogle, setIsTestingGoogle] = useState(false);
-  const handleTestGoogleTag = () => {
+  const handleTestGoogleTag = async () => {
+    if (!googleConfig.measurementId || !googleConfig.apiSecret) {
+      toast.error("Preencha o Measurement ID (GA4) e o API Secret antes de testar.");
+      return;
+    }
     setIsTestingGoogle(true);
-    setTimeout(() => {
+    const started = Date.now();
+    try {
+      const res = await apiFetch("/api/integrations/ga4-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ measurementId: googleConfig.measurementId, apiSecret: googleConfig.apiSecret, event: "generate_lead" }),
+      });
+      const data = await res.json();
       const pingResult = {
-        event: "conversion_lead",
+        event: "generate_lead",
         timestamp: new Date().toLocaleTimeString("pt-BR"),
-        status: 200,
-        latency: Math.floor(Math.random() * 90) + 110,
+        status: data.status ?? 0,
+        latency: Date.now() - started,
+        ok: !!data.ok,
       };
-      setGoogleConfig((prev: any) => ({
-        ...prev,
-        lastTestPing: pingResult,
-        tagStatus: "active",
-      }));
+      setGoogleConfig((prev: any) => ({ ...prev, lastTestPing: pingResult, tagStatus: data.ok ? "active" : "pending" }));
+      if (data.ok) toast.success("Payload validado pelo endpoint de depuração do GA4 (Measurement Protocol).");
+      else toast.error(data.error || (data.validationMessages?.[0]?.description) || "GA4 rejeitou o payload de teste. Confira o Measurement ID e o API Secret.");
+    } catch (err: any) {
+      toast.error("Falha ao contatar o servidor para validar o GA4.");
+    } finally {
       setIsTestingGoogle(false);
-      toast.success(
-        `Google Tag (${googleConfig.measurementId}) verificada com sucesso! Resposta 200 OK.`
-      );
-    }, 1200);
+    }
   };
 
   const handleToggleGoogleConnected = () => {
     setGoogleConfig((prev: any) => {
       const next = !prev.connected;
+      if (next && !prev.measurementId) {
+        toast.error("Preencha ao menos o Measurement ID antes de marcar como conectado.");
+        return prev;
+      }
       toast[next ? "success" : "info"](
-        next ? "Conta Google Ads conectada com sucesso!" : "Conta Google Ads desconectada."
+        next ? "Google Ads/Analytics marcado como conectado." : "Google Ads/Analytics desconectado."
       );
       return { ...prev, connected: next };
     });
   };
 
+  const handleCreateInstance = () => {
+    if (!newInstanceName.trim()) { toast.error("Dê um nome para a instância."); return; }
+    setCreatingInstance(true);
+    apiFetch("/api/whatsapp/instances", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newInstanceName.trim(), webhookUrl }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || "Erro ao criar instância.");
+        toast.success("Instância criada.");
+        setNewInstanceName("");
+        fetchInstances();
+      })
+      .catch((err: any) => toast.error(err?.message || "Erro ao criar instância."))
+      .finally(() => setCreatingInstance(false));
+  };
+
+  const handleConnectInstance = (id: string) => {
+    setConnectingInstanceId(id);
+    apiFetch(`/api/whatsapp/instances/${id}/connect`, { method: "POST" })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || "Erro ao conectar instância.");
+        toast.success(data.status === "CONNECTED" ? "Instância conectada!" : `Status: ${data.status}`);
+        fetchInstances();
+      })
+      .catch((err: any) => toast.error(err?.message || "Erro ao conectar instância."))
+      .finally(() => setConnectingInstanceId(null));
+  };
+
   // WhatsApp Webhook Save
-  const handleSaveEvolutionWebhook = () => {
+  const handleSaveWhatsAppWebhook = () => {
     if (!selectedInstanceId) {
-      setEvolutionWebhookUrl(webhookUrl);
+      setWhatsappWebhookUrl(webhookUrl);
       toast.success("URL de Webhook salva com sucesso!");
       return;
     }
@@ -271,8 +401,8 @@ export function ConfigIntegracoesApps() {
     })
       .then((res) => res.json())
       .then(() => {
-        setEvolutionWebhookUrl(webhookUrl);
-        toast.success("URL de Webhook da Evolution API sincronizada com sucesso!");
+        setWhatsappWebhookUrl(webhookUrl);
+        toast.success("URL de Webhook do WhatsApp sincronizada com sucesso!");
         setSavingWebhook(false);
         fetchInstances();
       })
@@ -294,19 +424,15 @@ export function ConfigIntegracoesApps() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contactId: selectedContactId, text: simulationText.trim() }),
     })
-      .then((res) => res.json())
-      .then(() => {
-        toast.promise(new Promise((resolve) => setTimeout(resolve, 800)), {
-          loading: "Evolution API processando evento 'messages.upsert'...",
-          success: "Mensagem recebida e sincronizada no CRM em tempo real! 📲⚡",
-          error: "Erro no webhook",
-        });
-        setSimulating(false);
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || "Falha ao simular recebimento.");
+        toast.success("Mensagem simulada adicionada à conversa (modo simulador — nenhuma mensagem real foi recebida).");
       })
-      .catch(() => {
-        toast.error("Falha ao simular recebimento do WhatsApp.");
-        setSimulating(false);
-      });
+      .catch((err: any) => {
+        toast.error(err?.message || "Falha ao simular recebimento do WhatsApp.");
+      })
+      .finally(() => setSimulating(false));
   };
 
   // Built-in list of catalog integrations
@@ -349,13 +475,13 @@ export function ConfigIntegracoesApps() {
         onToggle: handleToggleGoogleConnected,
       },
       {
-        id: "evolution-api",
-        name: "Evolution API (WhatsApp)",
+        id: "whatsapp",
+        name: "WhatsApp Business",
         category: "mensageria" as IntegrationCategory,
         icon: MessageSquare,
         iconBg: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
         description:
-          "Conexão nativa com instâncias do WhatsApp para envio e recebimento de mensagens, automações com IA (MIA) e webhooks em tempo real.",
+          "Conexão com instâncias de WhatsApp para envio e recebimento de mensagens (WAHA quando configurado, ou simulador em ambiente de testes).",
         connected: instances.length > 0,
         statusText: instances.length > 0 ? "Instância Ativa" : "Aguardando",
         statusVariant: (instances.length > 0 ? "success" : "warning") as any,
@@ -363,8 +489,8 @@ export function ConfigIntegracoesApps() {
         highlightInfo: instances.length > 0
           ? `Linha: ${instances[0]?.phone || "Conectada"}`
           : "Nenhuma instância ativa",
-        onConfigure: () => setSelectedConfigModal("evolution-api"),
-        onToggle: () => setSelectedConfigModal("evolution-api"),
+        onConfigure: () => setSelectedConfigModal("whatsapp"),
+        onToggle: () => setSelectedConfigModal("whatsapp"),
       },
       {
         id: "mercadopago",
@@ -438,19 +564,19 @@ export function ConfigIntegracoesApps() {
       },
       {
         id: "n8n",
-        name: "n8n Workflow Automation",
+        name: "n8n / Webhooks Globais",
         category: "automacoes" as IntegrationCategory,
         icon: Zap,
         iconBg: "bg-amber-500/10 text-amber-400 border-amber-500/20",
         description:
-          "Integração nativa com workflows self-hosted ou cloud no n8n para orquestração avançada de leads, tarefas e webhooks.",
-        connected: true,
-        statusText: "Webhooks Ativos",
-        statusVariant: "success" as any,
-        badgeText: "Conectado",
-        highlightInfo: "Disparos automáticos ativos",
-        onConfigure: () => setSelectedConfigModal("n8n"),
-        onToggle: () => toast.info("Configure os endpoints no menu Webhooks Globais."),
+          "Endpoints HTTPS para orquestração com n8n ou qualquer automação externa. O disparo automático em eventos do CRM ainda não existe — hoje só o botão de teste manual envia uma requisição real.",
+        connected: globalWebhooks.some((w: any) => w.active),
+        statusText: globalWebhooks.length > 0 ? "Webhook(s) Cadastrado(s)" : "Nenhum Webhook",
+        statusVariant: (globalWebhooks.length > 0 ? "info" : "neutral") as any,
+        badgeText: globalWebhooks.length > 0 ? `${globalWebhooks.length} endpoint(s)` : "Disponível",
+        highlightInfo: globalWebhooks.length > 0 ? "Disparo manual via teste" : "Nenhum endpoint cadastrado",
+        onConfigure: () => navigate("/configuracoes/integracoes/webhooks"),
+        onToggle: () => navigate("/configuracoes/integracoes/webhooks"),
       },
       {
         id: "smtp",
@@ -459,14 +585,14 @@ export function ConfigIntegracoesApps() {
         icon: Server,
         iconBg: "bg-rose-500/10 text-rose-400 border-rose-500/20",
         description:
-          "Envio de propostas comerciais, contratos e notificações via AWS SES, G-Suite, SendGrid ou servidor SMTP dedicado com TLS.",
-        connected: true,
-        statusText: "Configurado",
-        statusVariant: "info" as any,
-        badgeText: "SMTP Ativo",
-        highlightInfo: "Criptografia TLS habilitada",
-        onConfigure: () => setSelectedConfigModal("smtp"),
-        onToggle: () => setSelectedConfigModal("smtp"),
+          "Credenciais SMTP para validar conexão (AWS SES, G-Suite, SendGrid ou servidor dedicado). O envio real de propostas/contratos/notificações por e-mail ainda não usa essas credenciais — hoje elas só servem para o teste de conexão.",
+        connected: Boolean(appSettings?.integracoes_smtp?.smtpServer && appSettings?.integracoes_smtp?.smtpUser),
+        statusText: appSettings?.integracoes_smtp?.smtpServer ? "Credenciais Preenchidas" : "Não Configurado",
+        statusVariant: (appSettings?.integracoes_smtp?.smtpServer ? "info" : "neutral") as any,
+        badgeText: appSettings?.integracoes_smtp?.smtpServer ? "Aguarda Teste" : "Disponível",
+        highlightInfo: appSettings?.integracoes_smtp?.smtpServer || "Nenhum servidor configurado",
+        onConfigure: () => navigate("/configuracoes/integracoes/smtp"),
+        onToggle: () => navigate("/configuracoes/integracoes/smtp"),
       },
     ];
 
@@ -493,7 +619,7 @@ export function ConfigIntegracoesApps() {
     }));
 
     return [...list, ...customList];
-  }, [metaConfig, googleConfig, instances, paymentConfig, customIntegrations]);
+  }, [metaConfig, googleConfig, instances, paymentConfig, customIntegrations, globalWebhooks, appSettings]);
 
   // Filtered integrations based on Category and Search Query
   const filteredIntegrations = useMemo(() => {
@@ -847,7 +973,7 @@ export function ConfigIntegracoesApps() {
                       Disparador de Evento de Teste (Pixel & CAPI)
                     </h4>
                     <p className="text-xs text-[var(--color-text-muted)]">
-                      Simule o disparo de um evento sintético com payload estruturado para verificar se o Pixel e a CAPI estão recebendo dados em tempo real.
+                      Envia um evento de teste de verdade para a Conversions API da Meta (chamada HTTP real) para confirmar que o Pixel ID e o token estão corretos. Não há hoje disparo automático nos eventos do CRM (novo lead, negócio ganho) — só este teste manual.
                     </p>
                   </div>
 
@@ -874,24 +1000,18 @@ export function ConfigIntegracoesApps() {
                   </div>
 
                   {metaConfig.lastTestPing && (
-                    <div className="p-3.5 rounded-[var(--radius-control)] border border-emerald-500/30 bg-emerald-500/10 space-y-2 text-xs">
-                      <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400 font-bold">
+                    <div className={`p-3.5 rounded-[var(--radius-control)] border space-y-2 text-xs ${metaConfig.lastTestPing.ok ? "border-emerald-500/30 bg-emerald-500/10" : "border-red-500/30 bg-red-500/10"}`}>
+                      <div className={`flex items-center justify-between font-bold ${metaConfig.lastTestPing.ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
                         <span className="flex items-center gap-1.5">
-                          <CheckCircle2 className="w-4 h-4" /> Resposta 200 OK — Evento Capturado
+                          <CheckCircle2 className="w-4 h-4" /> {metaConfig.lastTestPing.ok ? `HTTP ${metaConfig.lastTestPing.status} — Evento aceito pela Graph API` : `HTTP ${metaConfig.lastTestPing.status || "?"} — Graph API recusou o evento`}
                         </span>
                         <span className="font-mono text-[10px]">
-                          Latência: {metaConfig.lastTestPing.latency}ms
+                          {metaConfig.lastTestPing.timestamp} • {metaConfig.lastTestPing.latency}ms
                         </span>
                       </div>
-                      <div className="bg-[var(--color-surface-elevated)]/80 p-2.5 rounded font-mono text-[11px] text-[var(--color-text-muted)] overflow-x-auto border border-[var(--color-border-default)]">
-                        {`{
-  "event_name": "${metaConfig.lastTestPing.event}",
-  "pixel_id": "${metaConfig.pixelId}",
-  "timestamp": "${metaConfig.lastTestPing.timestamp}",
-  "action_source": "website_server_capi",
-  "status": "delivered_ok"
-}`}
-                      </div>
+                      <p className="text-[11px] text-[var(--color-text-muted)]">
+                        Evento '{metaConfig.lastTestPing.event}' enviado de verdade ao endpoint /events da Graph API com o Pixel ID e token informados acima — esta é a resposta real da Meta, não uma simulação.
+                      </p>
                     </div>
                   )}
                 </div>
@@ -931,17 +1051,22 @@ export function ConfigIntegracoesApps() {
               </Button>
               <Button
                 onClick={() => {
-                  toast.success("Configuração do Google Ads salva com sucesso!");
+                  toast.success("Configuração do Google Ads/Analytics salva.");
                   setSelectedConfigModal(null);
                 }}
               >
-                Salvar Alterações
+                Fechar
               </Button>
             </div>
           }
         >
           <div className="space-y-4">
-            <FormField label="ID de Medição / G-Tag" required hint="Ex: G-XXXXXXXXXX ou AW-XXXXXXXXX">
+            <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
+              Os campos abaixo já são salvos automaticamente conforme você digita. O teste de validação usa o
+              endpoint de depuração do Measurement Protocol do GA4 (requer Measurement ID + API Secret) — a
+              validação de conversão do Google Ads em si (via OAuth/Google Ads API) não está implementada.
+            </p>
+            <FormField label="ID de Medição GA4" required hint="Ex: G-XXXXXXXXXX (Admin > Fluxos de dados)">
               <Input
                 type="text"
                 value={googleConfig.measurementId}
@@ -952,7 +1077,18 @@ export function ConfigIntegracoesApps() {
               />
             </FormField>
 
-            <FormField label="Rótulo de Conversão (Conversion Label)" hint="Ex: AW-1029482910/XyZ_Lead">
+            <FormField label="API Secret (Measurement Protocol)" hint="Gerado em Admin > Fluxos de dados > Measurement Protocol API secrets">
+              <Input
+                type="password"
+                value={googleConfig.apiSecret}
+                onChange={(e) =>
+                  setGoogleConfig((prev: any) => ({ ...prev, apiSecret: e.target.value }))
+                }
+                placeholder="••••••••••••"
+              />
+            </FormField>
+
+            <FormField label="Rótulo de Conversão Google Ads (opcional)" hint="Ex: AW-1029482910/XyZ_Lead — apenas armazenado, ainda não usado em nenhuma chamada real">
               <Input
                 type="text"
                 value={googleConfig.conversionLabel}
@@ -980,24 +1116,31 @@ export function ConfigIntegracoesApps() {
               />
             </div>
 
-            <div className="pt-2">
+            <div className="pt-2 space-y-3">
               <Button
                 variant="outline"
                 onClick={handleTestGoogleTag}
                 loading={isTestingGoogle}
                 className="w-full text-xs font-bold gap-2"
               >
-                <Activity className="w-3.5 h-3.5 text-emerald-500" /> Validar Tag de Conversão Google
+                <Activity className="w-3.5 h-3.5 text-emerald-500" /> Validar via GA4 Measurement Protocol
               </Button>
+              {googleConfig.lastTestPing && (
+                <div className={`p-3 rounded-[var(--radius-control)] border text-xs ${googleConfig.lastTestPing.ok ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400"}`}>
+                  {googleConfig.lastTestPing.ok
+                    ? `HTTP ${googleConfig.lastTestPing.status} — payload aceito pelo GA4 (${googleConfig.lastTestPing.timestamp})`
+                    : `HTTP ${googleConfig.lastTestPing.status || "?"} — GA4 rejeitou o payload (${googleConfig.lastTestPing.timestamp})`}
+                </div>
+              )}
             </div>
           </div>
         </Modal>
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL DEDICADO: EVOLUTION API (WHATSAPP) & SIMULADOR */}
+      {/* MODAL DEDICADO: WHATSAPP (WAHA OU SIMULADOR) */}
       {/* ========================================================================= */}
-      {selectedConfigModal === "evolution-api" && (
+      {selectedConfigModal === "whatsapp" && (
         <Modal
           isOpen={true}
           onClose={() => setSelectedConfigModal(null)}
@@ -1009,10 +1152,12 @@ export function ConfigIntegracoesApps() {
               </div>
               <div>
                 <h3 className="text-base font-black text-[var(--color-text-primary)]">
-                  Evolution API & Mensageria WhatsApp
+                  Mensageria WhatsApp
                 </h3>
                 <p className="text-xs text-[var(--color-text-muted)]">
-                  Gestão de instâncias ativas, callback de webhook e simulador em tempo real
+                  {whatsappProviderStatus?.provider === "waha"
+                    ? "Conectado ao WAHA — mensagens reais."
+                    : "Modo Simulador — nenhuma conexão real com WhatsApp ainda. Configure WAHA_API_URL (e WAHA_API_KEY, se seu servidor exigir) para produção."}
                 </p>
               </div>
             </div>
@@ -1029,31 +1174,43 @@ export function ConfigIntegracoesApps() {
             {/* Instance details */}
             <div className="p-4 rounded-[var(--radius-panel)] border border-[var(--color-border-default)] bg-[var(--color-surface-elevated)] space-y-3">
               <div className="flex items-center justify-between">
-                <Badge variant={instances.length > 0 ? "success" : "warning"} dot dotPulse>
-                  {instances.length > 0 ? "Instância Conectada" : "Sem Instância"}
+                <Badge variant={instances.some((i) => i.status === "CONNECTED") ? "success" : "warning"} dot dotPulse>
+                  {instances.some((i) => i.status === "CONNECTED") ? "Instância Conectada" : instances.length > 0 ? "Instância Desconectada" : "Sem Instância"}
                 </Badge>
-                <span className="text-[10px] font-mono text-[var(--color-text-faint)] uppercase">
-                  Evolution API v2.0
-                </span>
               </div>
 
               {instances.map((inst) => (
-                <div key={inst.id} className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
+                <div key={inst.id} className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono items-center">
                   <div className="text-[var(--color-text-muted)]">
-                    📞 Linha: <span className="font-bold text-[var(--color-text-primary)]">{inst.phone}</span>
+                    {inst.name} — 📞 <span className="font-bold text-[var(--color-text-primary)]">{inst.phone || "sem número"}</span>
                   </div>
-                  <div className="text-[var(--color-text-muted)]">
-                    🌐 Status: <span className="text-emerald-500 font-bold">{inst.status}</span>
-                  </div>
-                  <div className="col-span-2 truncate text-[var(--color-text-muted)]">
-                    🔑 Token: <span className="text-[var(--color-text-faint)]">{inst.apiKey}</span>
+                  <div className="text-[var(--color-text-muted)] flex items-center justify-between">
+                    🌐 Status: <span className={inst.status === "CONNECTED" ? "text-emerald-500 font-bold" : "text-amber-500 font-bold"}>{inst.status}</span>
+                    {inst.status !== "CONNECTED" && (
+                      <Button size="sm" onClick={() => handleConnectInstance(inst.id)} loading={connectingInstanceId === inst.id} className="h-7 text-[10px] px-2.5">
+                        Conectar
+                      </Button>
+                    )}
                   </div>
                 </div>
               ))}
+
+              <div className="flex gap-2 pt-2 border-t border-[var(--color-border-subtle)]">
+                <Input
+                  type="text"
+                  value={newInstanceName}
+                  onChange={(e) => setNewInstanceName(e.target.value)}
+                  placeholder="Nome da nova instância (ex: Comercial)"
+                  className="font-mono text-xs"
+                />
+                <Button onClick={handleCreateInstance} loading={creatingInstance} className="shrink-0">
+                  + Instância
+                </Button>
+              </div>
             </div>
 
             {/* Webhook Callback input */}
-            <FormField label="URL de Callback do Webhook" hint="URL para onde a Evolution API enviará eventos 'messages.upsert'">
+            <FormField label="URL de Callback do Webhook" hint="URL para onde o provedor de WhatsApp enviará eventos de mensagens recebidas">
               <div className="flex gap-2">
                 <Input
                   type="text"
@@ -1062,54 +1219,58 @@ export function ConfigIntegracoesApps() {
                   placeholder="https://sua-api.com/api/webhooks/whatsapp"
                   className="font-mono text-xs"
                 />
-                <Button onClick={handleSaveEvolutionWebhook} loading={savingWebhook} className="shrink-0">
+                <Button onClick={handleSaveWhatsAppWebhook} loading={savingWebhook} className="shrink-0">
                   Salvar
                 </Button>
               </div>
             </FormField>
 
-            {/* Inbound Simulator */}
-            <div className="p-4 rounded-[var(--radius-panel)] border border-[var(--color-border-default)] bg-[var(--color-surface-sunken)]/60 space-y-3">
-              <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-primary)] flex items-center gap-2">
-                  <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Simulador de Mensagem Recebida
-                </h4>
-                <Badge variant="warning">Ambiente de Teste</Badge>
-              </div>
+            {/* Inbound Simulator — só disponível em modo Simulador; some quando
+                há uma conexão WAHA real ativa (mensagens reais não devem ser
+                confundidas com uma simulação local). */}
+            {whatsappProviderStatus?.provider !== "waha" && (
+              <div className="p-4 rounded-[var(--radius-panel)] border border-[var(--color-border-default)] bg-[var(--color-surface-sunken)]/60 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[var(--color-text-primary)] flex items-center gap-2">
+                    <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Simulador de Mensagem Recebida
+                  </h4>
+                  <Badge variant="warning">Ambiente de Teste</Badge>
+                </div>
 
-              <div className="space-y-3">
-                <FormField label="Cliente Simulador">
-                  <select
-                    value={selectedContactId}
-                    onChange={(e) => setSelectedContactId(e.target.value)}
-                    className="w-full bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-bold"
+                <div className="space-y-3">
+                  <FormField label="Cliente Simulador">
+                    <select
+                      value={selectedContactId}
+                      onChange={(e) => setSelectedContactId(e.target.value)}
+                      className="w-full bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-bold"
+                    >
+                      {contacts.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} ({c.phone || "Sem telefone"})
+                        </option>
+                      ))}
+                    </select>
+                  </FormField>
+
+                  <FormField label="Mensagem do Cliente">
+                    <Input
+                      type="text"
+                      value={simulationText}
+                      onChange={(e) => setSimulationText(e.target.value)}
+                      placeholder="Digite a mensagem simulada..."
+                    />
+                  </FormField>
+
+                  <Button
+                    onClick={handleSimulateWhatsAppMessage}
+                    loading={simulating || contacts.length === 0}
+                    className="w-full font-bold text-xs gap-2"
                   >
-                    {contacts.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name} ({c.phone || "Sem telefone"})
-                      </option>
-                    ))}
-                  </select>
-                </FormField>
-
-                <FormField label="Mensagem do Cliente">
-                  <Input
-                    type="text"
-                    value={simulationText}
-                    onChange={(e) => setSimulationText(e.target.value)}
-                    placeholder="Digite a mensagem simulada..."
-                  />
-                </FormField>
-
-                <Button
-                  onClick={handleSimulateWhatsAppMessage}
-                  loading={simulating || contacts.length === 0}
-                  className="w-full font-bold text-xs gap-2"
-                >
-                  <Send className="w-3.5 h-3.5" /> Disparar Entrada no CRM
-                </Button>
+                    <Send className="w-3.5 h-3.5" /> Disparar Entrada Simulada no CRM
+                  </Button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </Modal>
       )}
@@ -1136,20 +1297,21 @@ export function ConfigIntegracoesApps() {
               <Button variant="outline" onClick={() => setSelectedConfigModal(null)}>
                 Cancelar
               </Button>
-              <Button
-                onClick={() => {
-                  toast.success("Credenciais de pagamento salvas!");
-                  setSelectedConfigModal(null);
-                }}
-              >
+              <Button onClick={handleSavePaymentCredentials}>
                 Salvar Credenciais
               </Button>
             </div>
           }
         >
           <div className="space-y-4">
+            <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
+              Nenhuma cobrança é processada por este painel ainda — estas credenciais só são usadas para o teste de
+              conexão abaixo (uma chamada real à API do gateway para confirmar que a chave é válida).
+            </p>
             <FormField label="Ambiente de Operação">
               <select
+                value={paymentDraft.environment}
+                onChange={(e) => setPaymentDraft((prev) => ({ ...prev, environment: e.target.value as "sandbox" | "production" }))}
                 className="w-full bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs font-bold text-[var(--color-text-primary)]"
               >
                 <option value="sandbox">Sandbox (Ambiente de Testes)</option>
@@ -1157,48 +1319,41 @@ export function ConfigIntegracoesApps() {
               </select>
             </FormField>
 
-            <FormField label="Chave Pública (Public Key)" required>
-              <Input
-                type="text"
-                placeholder="Ex: APP_USR-xxxx / pk_test_xxxx"
-                defaultValue={
-                  selectedConfigModal === "mercadopago"
-                    ? paymentConfig.mercadoPago.publicKey
-                    : selectedConfigModal === "stripe"
-                    ? paymentConfig.stripe.publishableKey
-                    : paymentConfig.asaas.apiKey
-                }
-              />
-            </FormField>
+            {selectedConfigModal !== "asaas" && (
+              <FormField label="Chave Pública (Public Key)" required>
+                <Input
+                  type="text"
+                  placeholder="Ex: APP_USR-xxxx / pk_test_xxxx"
+                  value={paymentDraft.publicKey}
+                  onChange={(e) => setPaymentDraft((prev) => ({ ...prev, publicKey: e.target.value }))}
+                />
+              </FormField>
+            )}
 
-            <FormField label="Chave Secreta / Access Token" required>
+            <FormField label={selectedConfigModal === "asaas" ? "API Key" : "Chave Secreta / Access Token"} required>
               <Input
                 type="password"
                 placeholder="Ex: APP_USR-xxxx / sk_test_xxxx"
-                defaultValue={
-                  selectedConfigModal === "mercadopago"
-                    ? paymentConfig.mercadoPago.accessToken
-                    : selectedConfigModal === "stripe"
-                    ? paymentConfig.stripe.secretKey
-                    : paymentConfig.asaas.webhookToken
-                }
+                value={paymentDraft.secretKey}
+                onChange={(e) => setPaymentDraft((prev) => ({ ...prev, secretKey: e.target.value }))}
               />
             </FormField>
 
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                toast.promise(new Promise((res) => setTimeout(res, 1000)), {
-                  loading: "Testando handshake com o gateway...",
-                  success: "Conexão com gateway validada com sucesso! 💳✨",
-                  error: "Erro na autenticação.",
-                });
-              }}
+              onClick={handleTestPaymentGateway}
+              loading={testingPayment}
               className="w-full text-xs font-bold gap-2 mt-2"
             >
               <Activity className="w-3.5 h-3.5 text-cyan-500" /> Testar Comunicação com o Gateway
             </Button>
+
+            {paymentTestResult && (
+              <div className={`p-3 rounded-[var(--radius-control)] border text-xs ${paymentTestResult.ok ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400"}`}>
+                {paymentTestResult.detail}
+              </div>
+            )}
           </div>
         </Modal>
       )}

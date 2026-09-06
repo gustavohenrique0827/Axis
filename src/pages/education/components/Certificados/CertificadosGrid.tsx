@@ -1,6 +1,8 @@
 import { Card } from "../../../../components/ui/card";
 import { Badge } from "../../../../components/ui/badge";
 import { Award, Calendar, BookOpen, ShieldCheck, Download, Share2 } from "lucide-react";
+import { toast } from "sonner";
+import { downloadCertificatePdf, shareCertificate } from "../../utils/certificatePdf";
 
 interface Certificate {
   id: string;
@@ -60,10 +62,22 @@ export function CertificadosGrid({ certs }: CertificadosGridProps) {
               <code className="text-[10px] font-mono text-amber-500 font-black tracking-widest">{cert.code}</code>
             </div>
             <div className="flex gap-2">
-              <button className="p-3 bg-white/5 hover:bg-amber-500/20 border border-white/10 rounded-xl text-slate-400 hover:text-amber-400 transition-all group/btn">
+              <button
+                onClick={() => downloadCertificatePdf(cert)}
+                title="Baixar certificado em PDF"
+                className="p-3 bg-white/5 hover:bg-amber-500/20 border border-white/10 rounded-xl text-slate-400 hover:text-amber-400 transition-all group/btn cursor-pointer"
+              >
                 <Download className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
               </button>
-              <button className="p-3 bg-white/5 hover:bg-blue-500/20 border border-white/10 rounded-xl text-slate-400 hover:text-blue-400 transition-all group/btn">
+              <button
+                onClick={async () => {
+                  const result = await shareCertificate(cert);
+                  if (result === "copied") toast.success("Dados do certificado copiados — cole onde quiser compartilhar.");
+                  if (result === "shared") toast.success("Certificado compartilhado!");
+                }}
+                title="Compartilhar certificado"
+                className="p-3 bg-white/5 hover:bg-blue-500/20 border border-white/10 rounded-xl text-slate-400 hover:text-blue-400 transition-all group/btn cursor-pointer"
+              >
                 <Share2 className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
               </button>
             </div>

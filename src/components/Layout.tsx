@@ -7,6 +7,7 @@ import { Topbar } from "./layout/Topbar";
 import { MobileNav } from "./layout/MobileNav";
 import { ErrorBoundary } from "./ErrorBoundary";
 import { AuroraWidget } from "./ui/AuroraWidget";
+import { OnboardingWizard } from "./OnboardingWizard";
 import { useData } from "../contexts/DataContextTypes";
 
 export default function Layout() {
@@ -64,6 +65,7 @@ export default function Layout() {
           tenants do S.P.Y. (Target AgroTech, Pluppex, etc.) verem esse chat. Além disso, agora
           é um módulo de verdade (Configurações → Módulos) — dá pra desligar sem mexer em código. */}
       {user?.isMaster && isModuleEnabled("aurora") && <AuroraWidget />}
+      <OnboardingWizard />
 
       <Toaster
         theme={theme}

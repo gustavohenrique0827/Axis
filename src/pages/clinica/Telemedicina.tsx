@@ -13,22 +13,31 @@ import { PageContainer } from "../../components/PageContainer";
 import { connectGoogleCalendar, consumeGoogleCalendarRedirectResult, getGoogleCalendarStatus } from "../../lib/google-auth";
 import { createMeetSpace, MeetSpace } from "../../lib/meet";
 import { useAuth } from "../../contexts/AuthContext";
+import { useData } from "../../contexts/DataContext";
 import { toast } from "sonner";
-
-const activeConferences = [
-  { id: 1, patient: 'Marcelo Dias', dr: 'Dr. Lucas Ferro', startTime: '15:30', status: 'Em Chamada' },
-  { id: 2, patient: 'Beatriz Santos', dr: 'Dra. Ana Costa', startTime: '16:00', status: 'Aguardando' },
-];
 
 export default function TelemedicinaDashboard() {
   const { activeTenantId } = useAuth();
+  const { appointments, updateAppointment } = useData();
   const [isCameraOn, setIsCameraOn] = useState(true);
   const [isMicOn, setIsMicOn] = useState(true);
-  
+
   const [googleEmail, setGoogleEmail] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [isCreatingMeeting, setIsCreatingMeeting] = useState(false);
   const [activeMeeting, setActiveMeeting] = useState<MeetSpace | null>(null);
+
+  // Fila real: teleconsultas de hoje (tipo "Teleconsulta" no agendamento).
+  const today = new Date().toISOString().split("T")[0];
+  const activeConferences = appointments.filter(a => a.date === today && a.type === "Teleconsulta");
+  const [selectedApptId, setSelectedApptId] = useState<string | null>(null);
+  const [notesDraft, setNotesDraft] = useState("");
+
+  const selectedAppt = activeConferences.find(a => a.id === selectedApptId) || activeConferences[0] || null;
+
+  useEffect(() => {
+    setNotesDraft(selectedAppt?.notes || "");
+  }, [selectedAppt?.id]);
 
   useEffect(() => {
     if (!activeTenantId) return;
@@ -88,7 +97,7 @@ export default function TelemedicinaDashboard() {
   return (
     <PageContainer 
       title="Telemedicina S.P.Y." 
-      description="Consultas virtuais criptografadas, monitoramento de sinais e integração Google Meet."
+      description="Consultas virtuais com integração Google Meet e anotações de atendimento."
       actions={
         <div className="flex items-center gap-3 flex-wrap">
           {!googleEmail ? (
@@ -194,41 +203,33 @@ export default function TelemedicinaDashboard() {
           <div className="grid md:grid-cols-2 gap-6">
             <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
               <h4 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider mb-3 flex items-center gap-2">
-                <ClipboardList className="w-4 h-4 text-[var(--color-primary-blue)]" /> Anotações Rápidas da Teleconsulta
+                <ClipboardList className="w-4 h-4 text-[var(--color-primary-blue)]" /> Anotações da Teleconsulta
+                {selectedAppt && <span className="font-normal normal-case text-[var(--color-text-muted)]">— {selectedAppt.patient}</span>}
               </h4>
-              <textarea 
-                placeholder="Observações do atendimento clínico..."
-                className="w-full h-32 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] p-3 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] resize-none"
+              <textarea
+                value={notesDraft}
+                onChange={(e) => setNotesDraft(e.target.value)}
+                disabled={!selectedAppt}
+                placeholder={selectedAppt ? "Observações do atendimento clínico..." : "Selecione um agendamento na agenda de hoje."}
+                className="w-full h-32 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] p-3 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] resize-none disabled:opacity-50"
               />
-              <Button 
-                onClick={() => toast.success("Anotações salvas no prontuário!")}
-                className="w-full mt-3 h-9 text-xs font-bold shadow-xs"
+              <Button
+                onClick={() => {
+                  if (!selectedAppt) return;
+                  updateAppointment(selectedAppt.id, { notes: notesDraft });
+                  toast.success("Anotações salvas!");
+                }}
+                disabled={!selectedAppt}
+                className="w-full mt-3 h-9 text-xs font-bold shadow-xs disabled:opacity-50"
               >
-                Salvar no Prontuário
+                Salvar Anotações
               </Button>
             </Card>
 
-            <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm flex flex-col justify-between">
-              <div>
-                <h4 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <MessageSquare className="w-4 h-4 text-[var(--color-primary-blue)]" /> Chat Direto com o Paciente
-                </h4>
-                <div className="space-y-2.5">
-                  <div className="bg-[var(--color-surface-sunken)] rounded-[var(--radius-control)] p-3 border border-[var(--color-border-subtle)]">
-                    <p className="text-xs text-[var(--color-text-primary)]">Olá doutor, o link da videochamada está funcionando perfeitamente.</p>
-                  </div>
-                </div>
-              </div>
-              <div className="mt-4 flex gap-2">
-                <input 
-                  type="text" 
-                  placeholder="Enviar mensagem..." 
-                  className="flex-1 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] h-9 px-3 text-xs text-[var(--color-text-primary)] focus:outline-none"
-                />
-                <Button size="sm" onClick={() => toast.success("Mensagem enviada!")} className="h-9 px-3">
-                  Enviar
-                </Button>
-              </div>
+            <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm flex flex-col items-center justify-center text-center gap-2">
+              <MessageSquare className="w-6 h-6 text-[var(--color-text-faint)]" />
+              <h4 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider">Chat com o Paciente</h4>
+              <p className="text-xs text-[var(--color-text-muted)]">Mensagens durante a chamada ainda não disponíveis — use o chat do próprio Google Meet por enquanto.</p>
             </Card>
           </div>
         </div>
@@ -236,26 +237,38 @@ export default function TelemedicinaDashboard() {
         {/* Sidebar info */}
         <div className="space-y-4">
           <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
-            <h4 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider mb-3">Fila de Telemedicina</h4>
-            <div className="space-y-2.5">
-              {activeConferences.map((conf) => (
-                <div key={conf.id} className="p-3 rounded-[var(--radius-control)] bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)]">
-                  <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs font-bold text-[var(--color-text-primary)]">{conf.patient}</p>
-                    <Badge variant={conf.status === 'Em Chamada' ? 'info' : 'secondary'}>{conf.status}</Badge>
-                  </div>
-                  <p className="text-[10px] text-[var(--color-text-muted)]">{conf.dr} • {conf.startTime}</p>
-                </div>
-              ))}
-            </div>
+            <h4 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider mb-3">Agenda de Hoje</h4>
+            {activeConferences.length === 0 ? (
+              <p className="text-xs text-[var(--color-text-muted)]">Nenhum agendamento para hoje.</p>
+            ) : (
+              <div className="space-y-2.5">
+                {activeConferences.map((conf) => (
+                  <button
+                    key={conf.id}
+                    onClick={() => setSelectedApptId(conf.id)}
+                    className={`w-full text-left p-3 rounded-[var(--radius-control)] border transition-colors ${
+                      selectedAppt?.id === conf.id
+                        ? "bg-[var(--color-primary-blue)]/10 border-[var(--color-primary-blue)]/40"
+                        : "bg-[var(--color-surface-sunken)] border-[var(--color-border-subtle)] hover:border-[var(--color-border-default)]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-bold text-[var(--color-text-primary)]">{conf.patient}</p>
+                      <Badge variant={conf.status === 'Confirmado' ? 'info' : 'secondary'}>{conf.status}</Badge>
+                    </div>
+                    <p className="text-[10px] text-[var(--color-text-muted)]">{conf.drName} • {conf.time}</p>
+                  </button>
+                ))}
+              </div>
+            )}
           </Card>
 
           <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
             <h4 className="text-xs font-black text-[var(--color-text-primary)] uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-emerald-500" /> Criptografia Ponta a Ponta
+              <ShieldCheck className="w-4 h-4 text-emerald-500" /> Videochamadas via Google Meet
             </h4>
             <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
-              Todas as transmissões de telemedicina são protegidas por protocolos TLS/HTTPS e resolução CFM 2.314/2022.
+              As chamadas usam a infraestrutura de segurança do Google Meet (TLS em trânsito). Verifique com sua assessoria jurídica os requisitos específicos de telemedicina (CFM) para o seu tipo de atendimento.
             </p>
           </Card>
         </div>

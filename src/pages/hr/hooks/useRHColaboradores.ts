@@ -7,7 +7,10 @@ import { confirmDialog } from "../../../components/ui/confirm-dialog";
 export const INITIAL_COLABORADORES: Colaborador[] = [];
 
 export function useRHColaboradores() {
-  const { squads, addSquad, updateSquad, deleteSquad, leads, colaboradores, addColaborador, updateColaborador, deleteColaborador } = useData();
+  const {
+    squads, addSquad, updateSquad, deleteSquad, leads, colaboradores, addColaborador, updateColaborador, deleteColaborador,
+    financeCommissionEntries, addFinanceCommissionEntry, deleteFinanceCommissionEntry,
+  } = useData();
 
   const [activeTab, setActiveTab] = useState<'membros' | 'squads'>('membros');
   const [search, setSearch] = useState("");
@@ -26,6 +29,9 @@ export function useRHColaboradores() {
   const [oteCommPercentage, setOteCommPercentage] = useState("0");
   const [oteVendasRealizadas, setOteVendasRealizadas] = useState("0");
   const [oteAtingimentoMeta, setOteAtingimentoMeta] = useState("0");
+  const [oteColaboradorId, setOteColaboradorId] = useState("");
+  const [oteNivel, setOteNivel] = useState("");
+  const [otePeriod, setOtePeriod] = useState(() => new Date().toISOString().slice(0, 7));
 
   const handleCreateSquad = (e: { preventDefault(): void }) => {
     e.preventDefault();
@@ -72,6 +78,32 @@ export function useRHColaboradores() {
   const calcBonus = (parseFloat(oteAtingimentoMeta) || 0) >= 100 ? (parseFloat(oteBaseSalary) || 0) * 0.25 : 0;
   const totalOTE = (parseFloat(oteBaseSalary) || 0) + calcVariable + calcBonus;
 
+  const handleSaveOteEntry = () => {
+    const colaborador = colaboradores.find(c => c.id === oteColaboradorId);
+    if (!colaborador) {
+      toast.error("Selecione o colaborador para salvar o modelo salarial.");
+      return;
+    }
+    const squad = squads.find(s => s.membros?.includes(colaborador.nome));
+    const vendasRealizadas = parseFloat(oteVendasRealizadas) || 0;
+    const atingimento = parseFloat(oteAtingimentoMeta) || 0;
+    const metaVendas = atingimento > 0 ? vendasRealizadas / (atingimento / 100) : 0;
+    addFinanceCommissionEntry({
+      period: otePeriod,
+      nome: colaborador.nome,
+      cargo: colaborador.cargo,
+      nivel: oteNivel || "Não informado",
+      squad: squad?.nome ?? null,
+      meta: metaVendas,
+      realizado: vendasRealizadas,
+    });
+    toast.success(`Modelo salarial de ${colaborador.nome} salvo para ${otePeriod}!`);
+  };
+
+  const handleDeleteOteEntry = (id: string) => {
+    deleteFinanceCommissionEntry(id);
+  };
+
   return {
     squads,
     addSquad,
@@ -108,6 +140,15 @@ export function useRHColaboradores() {
     setOteVendasRealizadas,
     oteAtingimentoMeta,
     setOteAtingimentoMeta,
+    oteColaboradorId,
+    setOteColaboradorId,
+    oteNivel,
+    setOteNivel,
+    otePeriod,
+    setOtePeriod,
+    financeCommissionEntries,
+    handleSaveOteEntry,
+    handleDeleteOteEntry,
     handleCreateSquad,
     handleDeleteSquad,
     filtered,

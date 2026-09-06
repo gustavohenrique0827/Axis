@@ -12,30 +12,32 @@ interface Student {
   name: string;
   status: "onboarding" | "active" | "at_risk" | "completed";
   progress: number;
-  attendance: number;
-  lastPresence: string;
 }
 
 interface EducationTurmaDetalhesProps {
   turma: { id: string; nome: string; curso: string; instrutor: string; };
+  students: Student[];
   onBack: () => void;
 }
 
-export default function EducationTurmaDetalhes({ turma, onBack }: EducationTurmaDetalhesProps) {
+export default function EducationTurmaDetalhes({ turma, students, onBack }: EducationTurmaDetalhesProps) {
   const [activeTab, setActiveTab] = useState<"kanban" | "presenca">("presenca");
-  const [attendanceDate, setAttendanceDate] = useState("2024-05-22");
+  const [attendanceDate, setAttendanceDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [searchQuery, setSearchQuery] = useState("");
-  const [students] = useState<Student[]>([]);
 
   const filteredStudents = students.filter(s =>
     s.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const progressoMedio = students.length
+    ? Math.round(students.reduce((acc, s) => acc + s.progress, 0) / students.length)
+    : 0;
+
   const kpiStats = [
-    { label: "Presença Média", value: students.length ? "88%" : "—", icon: CheckSquare, color: "text-[var(--color-primary-blue)]" },
-    { label: "Progresso Médio", value: students.length ? "42%" : "—", icon: TrendingUp, color: "text-emerald-500" },
+    { label: "Alunos na Turma", value: students.length.toString(), icon: CheckSquare, color: "text-[var(--color-primary-blue)]" },
+    { label: "Progresso Médio", value: students.length ? `${progressoMedio}%` : "—", icon: TrendingUp, color: "text-emerald-500" },
     { label: "Alunos em Risco", value: students.filter(s => s.status === "at_risk").length.toString(), icon: X, color: "text-rose-500" },
-    { label: "Aulas Realizadas", value: "0/40", icon: Calendar, color: "text-purple-500" },
+    { label: "Controle de Presença", value: "Em breve", icon: Calendar, color: "text-purple-500" },
   ];
 
   return (
@@ -86,10 +88,8 @@ export default function EducationTurmaDetalhes({ turma, onBack }: EducationTurma
             onSearchChange={setSearchQuery}
             attendanceDate={attendanceDate}
             onDateChange={setAttendanceDate}
-            onMarkAllPresent={() => toast.success("Todos os alunos marcados como presente para o dia configurado.")}
-            onToggleAttendance={(id, present) => {
-              toast.success(`${students.find(s => s.id === id)?.name || "Aluno"} marcado como ${present ? "Presente" : "Ausente"}.`);
-            }}
+            onMarkAllPresent={() => toast.info("Controle de presença por data ainda não disponível — em breve.")}
+            onToggleAttendance={() => toast.info("Controle de presença por data ainda não disponível — em breve.")}
           />
         )}
         {activeTab === "kanban" && <TurmaDetalhesKanban students={students} />}

@@ -404,6 +404,8 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                       toggleProductLink={toggleProductLink}
                       seller={seller}
                       setAlterationLogs={setAlterationLogs}
+                      leadName={leadName}
+                      companyName={companyName}
                     />
                   </div>
                 )}

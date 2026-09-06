@@ -1,17 +1,7 @@
-import { useState, useMemo } from 'react';
-import { 
-  Users, 
-  Search, 
-  Plus, 
-  FileText, 
-  Calendar, 
-  UserPlus, 
-  Download, 
-  Mail, 
-  Phone, 
-  Clock, 
-  Inbox,
-  ShieldCheck
+import { useState, useEffect, useMemo } from 'react';
+import {
+  Users, Search, UserPlus, Download, Mail, Phone, Clock, Inbox,
+  ShieldCheck, X, FileText, Trash2, Edit2, Cake, IdCard, Stethoscope
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -23,81 +13,223 @@ import { exportToCSV } from "../../lib/exportCsv";
 import { toast } from "sonner";
 import { BookingModal } from "./components/BookingModal";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../../lib/supabase";
+import { confirmDialog } from "../../components/ui/confirm-dialog";
+
+type Paciente = {
+  id: string;
+  nome: string;
+  telefone: string;
+  email: string;
+  cpf: string;
+  data_nascimento: string | null;
+  convenio: string;
+  alergias: string;
+  observacoes: string;
+  status: string;
+  created_at?: string;
+};
+
+const FIELD = "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3.5 py-2.5 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]";
+const LABEL = "text-[10px] font-black text-[var(--color-text-faint)] uppercase tracking-widest mb-1.5 block";
+
+function PacienteFormModal({ onClose, onSave, initial }: {
+  onClose: () => void;
+  onSave: (d: any) => void;
+  initial?: Partial<Paciente>;
+}) {
+  const [form, setForm] = useState({
+    nome: initial?.nome ?? "",
+    telefone: initial?.telefone ?? "",
+    email: initial?.email ?? "",
+    cpf: initial?.cpf ?? "",
+    data_nascimento: initial?.data_nascimento ?? "",
+    convenio: initial?.convenio ?? "Particular",
+    alergias: initial?.alergias ?? "",
+    observacoes: initial?.observacoes ?? "",
+  });
+  const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
+  const isEdit = Boolean(initial?.id);
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between p-6 border-b border-[var(--color-border-subtle)]">
+          <div>
+            <h2 className="text-base font-black text-[var(--color-text-primary)]">{isEdit ? "Editar Paciente" : "Novo Paciente"}</h2>
+            <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Cadastro completo para prontuário e faturamento.</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--color-surface-sunken)] text-[var(--color-text-faint)]"><X className="w-4 h-4" /></button>
+        </div>
+        <div className="p-6 space-y-4">
+          <div>
+            <label className={LABEL}>Nome Completo *</label>
+            <input value={form.nome} onChange={e => set("nome", e.target.value)} placeholder="Ex: Maria Fernandes" className={FIELD} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={LABEL}>Telefone</label>
+              <input value={form.telefone} onChange={e => set("telefone", e.target.value)} placeholder="(11) 99999-0000" className={FIELD} />
+            </div>
+            <div>
+              <label className={LABEL}>E-mail</label>
+              <input value={form.email} onChange={e => set("email", e.target.value)} placeholder="paciente@email.com" className={FIELD} />
+            </div>
+            <div>
+              <label className={LABEL}>CPF</label>
+              <input value={form.cpf} onChange={e => set("cpf", e.target.value)} placeholder="000.000.000-00" className={FIELD} />
+            </div>
+            <div>
+              <label className={LABEL}>Data de Nascimento</label>
+              <input type="date" value={form.data_nascimento} onChange={e => set("data_nascimento", e.target.value)} className={FIELD} />
+            </div>
+          </div>
+          <div>
+            <label className={LABEL}>Convênio / Plano</label>
+            <input value={form.convenio} onChange={e => set("convenio", e.target.value)} placeholder="Particular, Unimed, Bradesco Saúde..." className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Alergias</label>
+            <input value={form.alergias} onChange={e => set("alergias", e.target.value)} placeholder="Ex: Dipirona, Penicilina" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Observações Gerais</label>
+            <textarea value={form.observacoes} onChange={e => set("observacoes", e.target.value)} rows={3} className={`${FIELD} resize-none`} />
+          </div>
+        </div>
+        <div className="p-6 border-t border-[var(--color-border-subtle)] flex justify-end gap-3">
+          <Button variant="ghost" onClick={onClose}>Cancelar</Button>
+          <Button
+            onClick={() => {
+              if (!form.nome.trim()) { toast.error("Nome é obrigatório"); return; }
+              onSave(form);
+              onClose();
+            }}
+          >
+            {isEdit ? "Salvar Alterações" : "Cadastrar Paciente"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function calcIdade(dataNasc: string | null) {
+  if (!dataNasc) return null;
+  const nasc = new Date(dataNasc);
+  const hoje = new Date();
+  let idade = hoje.getFullYear() - nasc.getFullYear();
+  const m = hoje.getMonth() - nasc.getMonth();
+  if (m < 0 || (m === 0 && hoje.getDate() < nasc.getDate())) idade--;
+  return idade;
+}
+
+function rowToPaciente(r: any): Paciente {
+  return {
+    id: r.id, nome: r.nome, telefone: r.telefone ?? "", email: r.email ?? "",
+    cpf: r.cpf ?? "", data_nascimento: r.data_nascimento, convenio: r.convenio ?? "Particular",
+    alergias: r.alergias ?? "", observacoes: r.observacoes ?? "", status: r.status ?? "Ativo",
+    created_at: r.created_at,
+  };
+}
 
 export default function Pacientes() {
   const { appointments, leads, addTask, addAppointment } = useData();
   const navigate = useNavigate();
+  const [pacientes, setPacientes] = useState<Paciente[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [isBookingOpen, setIsBookingOpen] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editPaciente, setEditPaciente] = useState<Paciente | null>(null);
+  const [bookingFor, setBookingFor] = useState<Paciente | null>(null);
 
-  const patientsList = useMemo(() => {
-    const map = new Map<string, any>();
-    
-    // Sort appointments chronologically
-    const sorted = [...appointments].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-    sorted.forEach(a => {
-      const name = a.patient;
-      if (!name) return;
-      
-      const isNew = !map.has(name);
-      if (isNew) {
-        map.set(name, {
-          id: a.id,
-          name: name,
-          phone: a.phone || '(Sem telefone)',
-          lastVisit: a.date,
-          status: 'Ativo',
-          plan: 'Particular',
-          photo: name.substring(0, 2).toUpperCase(),
-          visits: 1,
-          firstVisit: a.date
-        });
-      } else {
-        const existing = map.get(name);
-        existing.lastVisit = a.date;
-        existing.visits++;
-        existing.phone = a.phone || existing.phone;
-      }
+  const refetch = () => {
+    if (!supabase) { setLoading(false); return; }
+    supabase.from("pacientes").select("*").order("created_at", { ascending: false }).then(({ data, error }) => {
+      if (error) toast.error(`Erro ao carregar pacientes: ${error.message}`);
+      else if (data) setPacientes(data.map(rowToPaciente));
+      setLoading(false);
     });
+  };
 
-    return Array.from(map.values()).sort((a, b) => b.lastVisit.localeCompare(a.lastVisit));
+  useEffect(() => { refetch(); }, []);
+
+  const visitsByName = useMemo(() => {
+    const map = new Map<string, { lastVisit: string; visits: number }>();
+    [...appointments].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).forEach(a => {
+      if (!a.patient) return;
+      const existing = map.get(a.patient);
+      if (existing) { existing.lastVisit = a.date; existing.visits++; }
+      else map.set(a.patient, { lastVisit: a.date, visits: 1 });
+    });
+    return map;
   }, [appointments]);
 
-  const filteredPatients = patientsList.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.phone.includes(searchTerm)
+  const filteredPatients = pacientes.filter(p =>
+    p.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    p.telefone.includes(searchTerm) ||
+    p.cpf.includes(searchTerm)
   );
 
-  const totalPatients = patientsList.length;
+  const totalPatients = pacientes.length;
   const currentMonth = new Date().toISOString().substring(0, 7);
-  const newThisMonth = patientsList.filter(p => p.firstVisit && p.firstVisit.startsWith(currentMonth)).length;
+  const newThisMonth = pacientes.filter(p => p.created_at && p.created_at.startsWith(currentMonth)).length;
   const today = new Date().toISOString().split('T')[0];
   const consultsToday = appointments.filter(a => a.date === today).length;
-  const retention = totalPatients > 0 
-    ? Math.round((patientsList.filter(p => p.visits > 1).length / totalPatients) * 100)
+  const comConvenio = totalPatients > 0
+    ? Math.round((pacientes.filter(p => p.convenio && p.convenio !== 'Particular').length / totalPatients) * 100)
     : 0;
 
+  const handleSave = async (form: any) => {
+    if (!supabase) { toast.error("Supabase não configurado."); return; }
+    const { data, error } = await supabase.from("pacientes").insert(form).select().maybeSingle();
+    if (error) { toast.error(`Erro ao cadastrar paciente: ${error.message}`); return; }
+    if (data) setPacientes(prev => [rowToPaciente(data), ...prev]);
+    toast.success("Paciente cadastrado com sucesso!");
+  };
+
+  const handleEdit = async (form: any) => {
+    if (!editPaciente || !supabase) return;
+    const { error } = await supabase.from("pacientes").update(form).eq("id", editPaciente.id);
+    if (error) { toast.error(`Erro ao atualizar paciente: ${error.message}`); return; }
+    setPacientes(prev => prev.map(p => p.id === editPaciente.id ? { ...p, ...form } : p));
+    toast.success("Paciente atualizado.");
+    setEditPaciente(null);
+  };
+
+  const handleDelete = async (p: Paciente) => {
+    if (!(await confirmDialog({
+      title: "Excluir paciente",
+      description: `Excluir ${p.nome}? Isso também remove o histórico de prontuário vinculado. Essa ação não pode ser desfeita.`,
+    }))) return;
+    if (!supabase) return;
+    const { error } = await supabase.from("pacientes").delete().eq("id", p.id);
+    if (error) { toast.error(`Erro ao remover paciente: ${error.message}`); return; }
+    setPacientes(prev => prev.filter(x => x.id !== p.id));
+    toast.success("Paciente removido.");
+  };
+
   return (
-    <PageContainer 
-      title="Gestão de Pacientes" 
-      description="Base centralizada de pacientes, históricos de atendimento e dados cadastrais."
+    <PageContainer
+      title="Gestão de Pacientes"
+      description="Cadastro completo de pacientes, convênios, alergias e histórico de atendimento."
       actions={
         <div className="flex items-center gap-3 flex-wrap">
-          <Button 
+          <Button
             onClick={() => {
               if (filteredPatients.length === 0) return toast.error("Nenhum dado para exportar");
               exportToCSV(filteredPatients, "Pacientes_SPY");
               toast.success("Download iniciado!");
             }}
-            variant="outline" 
+            variant="outline"
             className="h-9 px-4 text-xs font-bold gap-1.5"
           >
             <Download className="w-3.5 h-3.5" /> Exportar Base
           </Button>
 
           <Button
-            onClick={() => setIsBookingOpen(true)}
+            onClick={() => setShowForm(true)}
             className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs"
           >
             <UserPlus className="w-3.5 h-3.5" /> Novo Paciente
@@ -106,13 +238,16 @@ export default function Pacientes() {
       }
     >
       <div className="max-w-[1500px] mx-auto space-y-6 pb-12">
-        
+
+        {showForm && <PacienteFormModal onClose={() => setShowForm(false)} onSave={handleSave} />}
+        {editPaciente && <PacienteFormModal onClose={() => setEditPaciente(null)} onSave={handleEdit} initial={editPaciente} />}
+
         {/* Top Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: 'Total de Pacientes', value: totalPatients.toString(), icon: Users, color: 'text-[var(--color-primary-blue)]' },
             { label: 'Novos neste Mês', value: `+${newThisMonth}`, icon: UserPlus, color: 'text-emerald-500' },
-            { label: 'Taxa de Retenção', value: `${retention}%`, icon: ShieldCheck, color: 'text-purple-500' },
+            { label: 'Com Convênio', value: `${comConvenio}%`, icon: ShieldCheck, color: 'text-purple-500' },
             { label: 'Consultas Hoje', value: consultsToday.toString(), icon: Clock, color: 'text-amber-500' },
           ].map((stat, i) => (
             <Card key={i} className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
@@ -129,9 +264,9 @@ export default function Pacientes() {
         <Card className="p-4 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] shadow-sm">
           <div className="relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-faint)]" />
-            <input 
-              type="text" 
-              placeholder="Buscar por nome ou telefone do paciente..."
+            <input
+              type="text"
+              placeholder="Buscar por nome, telefone ou CPF do paciente..."
               className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] py-2 pl-10 pr-4 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] transition-all"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -140,11 +275,13 @@ export default function Pacientes() {
         </Card>
 
         {/* Patients Grid */}
-        {patientsList.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16 text-[var(--color-text-muted)] text-xs font-bold">Carregando pacientes...</div>
+        ) : pacientes.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3 opacity-50">
             <Inbox className="w-10 h-10 text-[var(--color-text-faint)]" />
             <p className="text-xs font-bold text-[var(--color-text-muted)] text-center">
-              Nenhum paciente cadastrado.<br/>Os pacientes aparecerão aqui conforme as consultas forem agendadas.
+              Nenhum paciente cadastrado.<br/>Clique em "Novo Paciente" para começar o cadastro.
             </p>
           </div>
         ) : filteredPatients.length === 0 ? (
@@ -154,7 +291,10 @@ export default function Pacientes() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             <AnimatePresence>
-              {filteredPatients.map((patient, i) => (
+              {filteredPatients.map((patient, i) => {
+                const visitInfo = visitsByName.get(patient.nome);
+                const idade = calcIdade(patient.data_nascimento);
+                return (
                 <motion.div
                   key={patient.id}
                   initial={{ opacity: 0, scale: 0.98 }}
@@ -164,14 +304,19 @@ export default function Pacientes() {
                   <Card className="p-5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] hover:border-[var(--color-primary-blue)]/40 transition-all group shadow-sm">
                     <div className="flex items-start gap-3.5">
                       <div className="w-12 h-12 rounded-xl bg-[var(--color-primary-blue)]/10 border border-[var(--color-primary-blue)]/20 flex items-center justify-center text-sm font-black text-[var(--color-primary-blue)] shrink-0">
-                        {patient.photo}
+                        {patient.nome.substring(0, 2).toUpperCase()}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h4 className="text-sm font-bold text-[var(--color-text-primary)] truncate">{patient.name}</h4>
-                        <div className="flex items-center gap-2 mt-1">
+                        <h4 className="text-sm font-bold text-[var(--color-text-primary)] truncate">{patient.nome}</h4>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
                           <Badge variant="success">● {patient.status}</Badge>
-                          <span className="text-[10px] text-[var(--color-text-faint)]">{patient.visits} atendimento(s)</span>
+                          <span className="text-[10px] text-[var(--color-text-faint)]">{patient.convenio}</span>
+                          {idade !== null && <span className="text-[10px] text-[var(--color-text-faint)] flex items-center gap-0.5"><Cake className="w-2.5 h-2.5" />{idade}a</span>}
                         </div>
+                      </div>
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => setEditPaciente(patient)} className="p-1.5 rounded-lg hover:bg-[var(--color-surface-sunken)] text-[var(--color-text-faint)]"><Edit2 className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => handleDelete(patient)} className="p-1.5 rounded-lg hover:bg-rose-500/10 text-rose-500"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
                     </div>
 
@@ -179,51 +324,57 @@ export default function Pacientes() {
                       <div className="space-y-0.5">
                         <p className="text-[10px] font-bold text-[var(--color-text-faint)] uppercase">Última Consulta</p>
                         <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-primary)] font-mono">
-                          <Calendar className="w-3 h-3 text-[var(--color-primary-blue)]" /> 
-                          {patient.lastVisit}
+                          <Clock className="w-3 h-3 text-[var(--color-primary-blue)]" />
+                          {visitInfo?.lastVisit || '—'}
                         </div>
                       </div>
                       <div className="space-y-0.5">
                         <p className="text-[10px] font-bold text-[var(--color-text-faint)] uppercase">Telefone</p>
                         <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-primary)]">
-                          <Phone className="w-3 h-3 text-emerald-500" /> {patient.phone}
+                          <Phone className="w-3 h-3 text-emerald-500" /> {patient.telefone || '(Sem telefone)'}
                         </div>
                       </div>
                     </div>
 
+                    {patient.alergias && (
+                      <div className="mt-3 px-2.5 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-[10px] text-rose-500 font-bold flex items-center gap-1.5">
+                        <ShieldCheck className="w-3 h-3" /> Alergias: {patient.alergias}
+                      </div>
+                    )}
+
                     <div className="mt-4 pt-3 border-t border-[var(--color-border-subtle)] flex items-center gap-2">
-                      <Button 
+                      <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => navigate('/app/clinica/prontuarios')}
+                        onClick={() => navigate(`/app/clinica/prontuarios?paciente=${patient.id}`)}
                         className="flex-1 text-xs font-bold gap-1.5 h-8"
                       >
                         <FileText className="w-3.5 h-3.5" /> Prontuário
                       </Button>
-                      <Button 
-                        variant="subtle" 
+                      <Button
+                        variant="subtle"
                         size="sm"
-                        onClick={() => toast.info(`Contato: ${patient.phone}`)}
+                        onClick={() => { setBookingFor(patient); setIsBookingOpen(true); }}
                         className="h-8 w-8 p-0"
-                        title="Ligar"
+                        title="Agendar consulta"
                       >
-                        <Phone className="w-3.5 h-3.5" />
+                        <Stethoscope className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </Card>
                 </motion.div>
-              ))}
+              );})}
             </AnimatePresence>
           </div>
         )}
       </div>
 
-      <BookingModal 
-        isOpen={isBookingOpen} 
-        onClose={() => setIsBookingOpen(false)} 
-        leads={leads} 
-        addTask={addTask} 
-        addAppointment={addAppointment} 
+      <BookingModal
+        isOpen={isBookingOpen}
+        onClose={() => { setIsBookingOpen(false); setBookingFor(null); }}
+        leads={bookingFor ? [{ id: bookingFor.id, name: bookingFor.nome, phone: bookingFor.telefone }, ...leads] : leads}
+        addTask={addTask}
+        addAppointment={addAppointment}
       />
     </PageContainer>
   );
