@@ -3,9 +3,10 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   Wrench, CheckCircle2, Clock, Activity, Calendar,
-  ShieldCheck, AlertTriangle, Plus, Search, Trash2, X
+  ShieldCheck, AlertTriangle, Plus, Search, Trash2, X, Download
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
+import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -26,8 +27,9 @@ const DEFAULT_MANUTENCOES: ManutencaoSolarItem[] = [
 ];
 
 export default function ManutencoesSolar() {
-  const { activeTenantId } = useAuth();
-  const storageKey = `spy_manutencoes_solar_${activeTenantId || "default"}`;
+  const { user, activeTenantId } = useAuth();
+  const tenantId = activeTenantId || user?.tenant_id || "default";
+  const storageKey = `spy_manutencoes_solar_${tenantId}`;
 
   const [chamados, setChamados] = useState<ManutencaoSolarItem[]>(() => {
     try {
@@ -61,7 +63,7 @@ export default function ManutencoesSolar() {
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!usina.trim()) {
-      toast.error("Informe o nome da usina / cliente.");
+      toast.error("Informe a usina ou cliente.");
       return;
     }
 
@@ -70,13 +72,13 @@ export default function ManutencoesSolar() {
       usina: usina.trim(),
       potencia: potencia.trim() || "10 kWp",
       servico,
-      data: data || new Date().toLocaleDateString("pt-BR"),
+      data: data || new Date().toISOString().slice(0, 10),
       status,
-      geracaoAtual: geracaoAtual.trim() || "Operação Normal",
+      geracaoAtual,
     };
 
     setChamados(prev => [newItem, ...prev]);
-    toast.success("Chamado de manutenção agendado!");
+    toast.success("Ordem de manutenção agendada com sucesso!");
     setModalOpen(false);
 
     setUsina("");
@@ -86,12 +88,38 @@ export default function ManutencoesSolar() {
 
   const handleDelete = (id: string) => {
     setChamados(prev => prev.filter(c => c.id !== id));
-    toast.info("Chamado removido.");
+    toast.info("Manutenção removida.");
   };
 
   const handleUpdateStatus = (id: string, newStatus: ManutencaoSolarItem["status"]) => {
     setChamados(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
     toast.success(`Status da manutenção: ${newStatus}`);
+  };
+
+  const handleExportCSV = () => {
+    if (chamados.length === 0) {
+      toast.error("Nenhuma manutenção para exportar.");
+      return;
+    }
+    const headers = ["ID", "Usina", "Potencia", "Servico", "Data_Prevista", "Geracao_Atual", "Status"];
+    const rows = chamados.map(c => [
+      c.id,
+      `"${c.usina.replace(/"/g, '""')}"`,
+      c.potencia,
+      `"${c.servico.replace(/"/g, '""')}"`,
+      c.data,
+      c.geracaoAtual,
+      c.status,
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `manutencoes_solares_${new Date().toISOString().slice(0, 10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Relatório de manutenções exportado com sucesso!");
   };
 
   const filtered = chamados.filter(c => {
@@ -105,30 +133,39 @@ export default function ManutencoesSolar() {
 
   return (
     <PageContainer
-      title="Manutenção & Pós-Venda Solar"
-      description="Planos de limpeza periódica de módulos, telemetria de inversores e chamados de garantia."
+      title="O&M — Manutenção & Pós-Venda Solar"
+      description="Operação e manutenção contínua, limpeza de placas fotovoltaicas, inspeção de inversores e termografia."
       actions={
-        <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
-          <Plus className="w-3.5 h-3.5" /> Agendar Manutenção
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleExportCSV}
+            className="h-9 px-3.5 text-xs font-semibold gap-1.5 border-[var(--color-border-subtle)] bg-[var(--color-surface-sunken)] hover:bg-[var(--color-surface-elevated)]"
+          >
+            <Download className="w-3.5 h-3.5 text-[var(--color-text-muted)]" /> Exportar CSV
+          </Button>
+          <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs bg-amber-500 hover:bg-amber-600 text-white">
+            <Plus className="w-3.5 h-3.5" /> Agendar Manutenção
+          </Button>
+        </div>
       }
     >
-      {/* Metrics */}
+      {/* Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
-          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Chamados Ativos</span>
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)] shadow-xs">
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Chamados de Manutenção</span>
           <div className="text-2xl font-black text-[var(--color-text-primary)]">{chamados.length}</div>
         </Card>
-        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
-          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Manutenções Agendadas</span>
-          <div className="text-2xl font-black text-amber-500">
-            {chamados.filter(c => c.status === "Agendada").length}
-          </div>
-        </Card>
-        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
-          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Concluídas com Sucesso</span>
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)] shadow-xs">
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Manutenções Concluídas</span>
           <div className="text-2xl font-black text-emerald-500">
             {chamados.filter(c => c.status === "Concluída").length}
+          </div>
+        </Card>
+        <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)] shadow-xs">
+          <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Agendadas na Agenda</span>
+          <div className="text-2xl font-black text-amber-500">
+            {chamados.filter(c => c.status === "Agendada").length}
           </div>
         </Card>
       </div>
@@ -142,7 +179,7 @@ export default function ManutencoesSolar() {
             placeholder="Buscar por usina ou serviço..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full pl-9 pr-3 py-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+            className="w-full pl-9 pr-3 py-2 text-xs bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-amber-500"
           />
         </div>
 
@@ -153,7 +190,7 @@ export default function ManutencoesSolar() {
               onClick={() => setFilterStatus(st)}
               className={`text-xs px-3 py-1.5 rounded-xl font-medium transition-all shrink-0 ${
                 filterStatus === st
-                  ? "bg-amber-500 text-white font-bold"
+                  ? "bg-amber-500 text-white"
                   : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
               }`}
             >
@@ -166,17 +203,14 @@ export default function ManutencoesSolar() {
       {/* List */}
       <div className="space-y-3">
         {filtered.map(c => (
-          <div key={c.id} className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div key={c.id} className="p-5 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <h4 className="text-xs font-bold text-[var(--color-text-primary)]">{c.usina}</h4>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-500 font-bold">
-                  {c.potencia}
-                </span>
-                <span className="text-[10px] text-[var(--color-text-muted)]">• {c.data}</span>
+                <span className="text-[10px] text-[var(--color-text-muted)] font-mono">• {c.potencia}</span>
               </div>
               <p className="text-[11px] text-[var(--color-text-muted)]">
-                Serviço: <strong className="text-[var(--color-text-primary)]">{c.servico}</strong> • Geração: <span className="text-emerald-500 font-bold">{c.geracaoAtual}</span>
+                Serviço: <strong className="text-[var(--color-text-primary)]">{c.servico}</strong> • Data Prevista: {c.data} • Eficiência: <strong className="text-emerald-500">{c.geracaoAtual}</strong>
               </p>
             </div>
 
@@ -184,7 +218,7 @@ export default function ManutencoesSolar() {
               <select
                 value={c.status}
                 onChange={e => handleUpdateStatus(c.id, e.target.value as any)}
-                className="text-[10px] font-bold uppercase px-2.5 py-1 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)] focus:outline-none"
+                className="text-[10px] font-bold uppercase px-2.5 py-1.5 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)] focus:outline-none"
               >
                 <option value="Agendada">Agendada</option>
                 <option value="Em Atendimento">Em Atendimento</option>
@@ -206,79 +240,93 @@ export default function ManutencoesSolar() {
         )}
       </div>
 
-      {/* Modal de Nova Manutenção */}
-      {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl p-6 w-full max-w-md shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[var(--color-text-primary)]">Agendar Manutenção Fotovoltaica</h3>
-              <button onClick={() => setModalOpen(false)} className="text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]">
-                <X className="w-4 h-4" />
-              </button>
+      {/* Standardized Modal: Nova Manutenção */}
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        maxWidth="max-w-md"
+        title={
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+              <Wrench className="w-4 h-4" />
             </div>
-
-            <form onSubmit={handleCreate} className="space-y-3">
-              <div>
-                <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Usina / Cliente</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Nome do cliente ou da usina"
-                  value={usina}
-                  onChange={e => setUsina(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Potência da Usina</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: 25 kWp"
-                    value={potencia}
-                    onChange={e => setPotencia(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Data Prevista</label>
-                  <input
-                    type="date"
-                    value={data}
-                    onChange={e => setData(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="text-[11px] font-bold text-[var(--color-text-muted)] block mb-1">Tipo de Serviço</label>
-                <select
-                  value={servico}
-                  onChange={e => setServico(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none"
-                >
-                  <option value="Limpeza e Lavagem de Módulos">Limpeza e Lavagem de Módulos</option>
-                  <option value="Inspeção de Inversor & String Box">Inspeção de Inversor & String Box</option>
-                  <option value="Termografia e Reaperto de Conexões">Termografia e Reaperto de Conexões</option>
-                  <option value="Diagnóstico de Queda de Geração">Diagnóstico de Queda de Geração</option>
-                  <option value="Substituição de Fusível / DPS">Substituição de Fusível / DPS</option>
-                </select>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button type="button" variant="outline" onClick={() => setModalOpen(false)} className="h-9 px-4 text-xs font-bold rounded-xl">
-                  Cancelar
-                </Button>
-                <Button type="submit" className="h-9 px-4 text-xs font-bold rounded-xl bg-amber-500 hover:bg-amber-600 text-white">
-                  Confirmar Agendamento
-                </Button>
-              </div>
-            </form>
+            <div>
+              <h3 className="text-base font-bold text-[var(--color-text-primary)]">Agendar Manutenção Fotovoltaica</h3>
+              <p className="text-xs text-[var(--color-text-muted)]">Abertura de OS para lavagem de módulos ou revisão elétrica</p>
+            </div>
           </div>
-        </div>
-      )}
+        }
+        footer={
+          <div className="flex items-center justify-end gap-2 w-full">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setModalOpen(false)}
+              className="h-9 px-4 text-xs font-semibold"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="form-manutencao-solar"
+              className="h-9 px-4 text-xs font-semibold bg-amber-500 hover:bg-amber-600 text-white"
+            >
+              Confirmar Agendamento
+            </Button>
+          </div>
+        }
+      >
+        <form id="form-manutencao-solar" onSubmit={handleCreate} className="space-y-3.5 py-1">
+          <div>
+            <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Usina / Cliente</label>
+            <input
+              type="text"
+              required
+              placeholder="Nome do cliente ou da usina"
+              value={usina}
+              onChange={e => setUsina(e.target.value)}
+              className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-amber-500"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Potência da Usina</label>
+              <input
+                type="text"
+                placeholder="Ex: 25 kWp"
+                value={potencia}
+                onChange={e => setPotencia(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-amber-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Data Prevista</label>
+              <input
+                type="date"
+                value={data}
+                onChange={e => setData(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-amber-500"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Tipo de Serviço</label>
+            <select
+              value={servico}
+              onChange={e => setServico(e.target.value)}
+              className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-amber-500"
+            >
+              <option value="Limpeza e Lavagem de Módulos">Limpeza e Lavagem de Módulos</option>
+              <option value="Inspeção de Inversor & String Box">Inspeção de Inversor & String Box</option>
+              <option value="Termografia e Reaperto de Conexões">Termografia e Reaperto de Conexões</option>
+              <option value="Diagnóstico de Queda de Geração">Diagnóstico de Queda de Geração</option>
+              <option value="Substituição de Fusível / DPS">Substituição de Fusível / DPS</option>
+            </select>
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }

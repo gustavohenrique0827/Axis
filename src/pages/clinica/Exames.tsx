@@ -8,6 +8,7 @@ import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
 import { PageContainer } from "../../components/PageContainer";
+import { Modal } from "../../components/ui/modal";
 import { useExames } from './hooks/useExames';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'motion/react';
@@ -221,190 +222,134 @@ export default function Exames() {
       </div>
 
       {/* Modal: Novo Pedido de Exame */}
-      <AnimatePresence>
-        {isAddModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsAddModalOpen(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Novo Pedido de Exame"
+        description="Solicite novos exames laboratoriais ou de imagem para o paciente."
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleCreateExame} className="space-y-4">
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Nome do Paciente *</label>
+            <input
+              type="text"
+              value={patientName}
+              onChange={(e) => setPatientName(e.target.value)}
+              placeholder="Nome completo do paciente"
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
+              required
             />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              className="relative w-full max-w-md bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-panel)] overflow-hidden shadow-2xl z-10"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="p-5 bg-[var(--color-surface-sunken)] border-b border-[var(--color-border-subtle)] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <FlaskConical className="w-4 h-4 text-[var(--color-primary-blue)]" />
-                  <h3 className="text-sm font-bold text-[var(--color-text-primary)] uppercase tracking-tight">Novo Pedido de Exame</h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="p-1.5 hover:bg-[var(--color-surface-elevated)] rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer border-none bg-transparent"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateExame} className="p-5 space-y-3.5">
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Nome do Paciente *</label>
-                  <input
-                    type="text"
-                    value={patientName}
-                    onChange={(e) => setPatientName(e.target.value)}
-                    placeholder="Nome completo do paciente"
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Exame Solicitado *</label>
-                  <input
-                    type="text"
-                    value={examName}
-                    onChange={(e) => setExamName(e.target.value)}
-                    placeholder="Ex: Hemograma Completo, Ultrassom Abdominal"
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Laboratório / Clínica</label>
-                    <select
-                      value={labName}
-                      onChange={(e) => setLabName(e.target.value)}
-                      className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2.5 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
-                    >
-                      <option value="Lab Vértice Central">Lab Vértice Central</option>
-                      <option value="Imobiliz Imagem">Imobiliz Imagem</option>
-                      <option value="CardioClin">CardioClin</option>
-                      <option value="Fleury / Conveniado">Fleury / Conveniado</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Data da Solicitação</label>
-                    <input
-                      type="text"
-                      value={examDate}
-                      onChange={(e) => setExamDate(e.target.value)}
-                      className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-[var(--color-border-subtle)] flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsAddModalOpen(false)}
-                    className="h-9 px-4 text-xs font-bold"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="h-9 px-5 text-xs font-bold shadow-xs gap-1.5"
-                  >
-                    <Check className="w-3.5 h-3.5" /> Criar Pedido
-                  </Button>
-                </div>
-              </form>
-            </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Exame Solicitado *</label>
+            <input
+              type="text"
+              value={examName}
+              onChange={(e) => setExamName(e.target.value)}
+              placeholder="Ex: Hemograma Completo, Ultrassom Abdominal"
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Laboratório / Clínica</label>
+              <select
+                value={labName}
+                onChange={(e) => setLabName(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2.5 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
+              >
+                <option value="Lab Vértice Central">Lab Vértice Central</option>
+                <option value="Imobiliz Imagem">Imobiliz Imagem</option>
+                <option value="CardioClin">CardioClin</option>
+                <option value="Fleury / Conveniado">Fleury / Conveniado</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Data da Solicitação</label>
+              <input
+                type="text"
+                value={examDate}
+                onChange={(e) => setExamDate(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-[var(--color-border-subtle)] flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsAddModalOpen(false)}
+              className="h-9 px-4 text-xs font-bold"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              className="h-9 px-5 text-xs font-bold shadow-xs gap-1.5"
+            >
+              <Check className="w-3.5 h-3.5" /> Criar Pedido
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Modal: Atualizar Status / Resultado */}
-      <AnimatePresence>
-        {editingExam && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setEditingExam(null)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              className="relative w-full max-w-md bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-panel)] overflow-hidden shadow-2xl z-10"
-              onClick={e => e.stopPropagation()}
+      <Modal
+        isOpen={!!editingExam}
+        onClose={() => setEditingExam(null)}
+        title={editingExam ? `Atualizar Pedido — ${editingExam.patient}` : "Atualizar Pedido"}
+        description="Atualize o status laboratorial ou digite o laudo emitido."
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleSaveEdit} className="space-y-4">
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Status</label>
+            <select
+              value={editStatus}
+              onChange={(e) => setEditStatus(e.target.value)}
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2.5 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
             >
-              <div className="p-5 bg-[var(--color-surface-sunken)] border-b border-[var(--color-border-subtle)] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Pencil className="w-4 h-4 text-[var(--color-primary-blue)]" />
-                  <h3 className="text-sm font-bold text-[var(--color-text-primary)] uppercase tracking-tight">
-                    Atualizar Pedido — {editingExam.patient}
-                  </h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setEditingExam(null)}
-                  className="p-1.5 hover:bg-[var(--color-surface-elevated)] rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer border-none bg-transparent"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <form onSubmit={handleSaveEdit} className="p-5 space-y-3.5">
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Status</label>
-                  <select
-                    value={editStatus}
-                    onChange={(e) => setEditStatus(e.target.value)}
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2.5 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
-                  >
-                    <option value="Aguardando Coleta">Aguardando Coleta</option>
-                    <option value="Em Análise">Em Análise</option>
-                    <option value="Finalizado">Finalizado</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Resultado</label>
-                  <input
-                    type="text"
-                    value={editResult}
-                    onChange={(e) => setEditResult(e.target.value)}
-                    placeholder="Ex: Normal, Alterado, ver laudo anexo"
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
-                  />
-                </div>
-
-                <div className="pt-3 border-t border-[var(--color-border-subtle)] flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setEditingExam(null)}
-                    className="h-9 px-4 text-xs font-bold"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="h-9 px-5 text-xs font-bold shadow-xs gap-1.5"
-                  >
-                    <Check className="w-3.5 h-3.5" /> Salvar
-                  </Button>
-                </div>
-              </form>
-            </motion.div>
+              <option value="Aguardando Coleta">Aguardando Coleta</option>
+              <option value="Em Análise">Em Análise</option>
+              <option value="Finalizado">Finalizado</option>
+            </select>
           </div>
-        )}
-      </AnimatePresence>
+
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Resultado</label>
+            <input
+              type="text"
+              value={editResult}
+              onChange={(e) => setEditResult(e.target.value)}
+              placeholder="Ex: Normal, Alterado, ver laudo anexo"
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
+            />
+          </div>
+
+          <div className="pt-3 border-t border-[var(--color-border-subtle)] flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setEditingExam(null)}
+              className="h-9 px-4 text-xs font-bold"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              className="h-9 px-5 text-xs font-bold shadow-xs gap-1.5"
+            >
+              <Check className="w-3.5 h-3.5" /> Salvar
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }

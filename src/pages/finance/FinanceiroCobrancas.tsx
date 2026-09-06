@@ -3,9 +3,10 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   Receipt, Plus, QrCode, Copy, CheckCircle2, Clock,
-  AlertTriangle, Search, ExternalLink, DollarSign, X, Trash2, Check
+  AlertTriangle, Search, ExternalLink, DollarSign, X, Trash2, Check, Download
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
+import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
@@ -106,17 +107,51 @@ export default function FinanceiroCobrancas() {
     });
   };
 
+  const handleExportCSV = () => {
+    if (filtered.length === 0) {
+      toast.info("Nenhuma cobrança para exportar.");
+      return;
+    }
+    const headers = ["Cliente / Sacado", "Valor (R$)", "Vencimento", "Método", "Status", "Categoria"];
+    const rows = filtered.map(c => [
+      `"${c.cliente.replace(/"/g, '""')}"`,
+      c.valor,
+      `"${c.vencimento}"`,
+      `"${c.metodo}"`,
+      `"${c.status}"`,
+      `"${(c.categoria || "").replace(/"/g, '""')}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `cobrancas_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Cobranças exportadas com sucesso!");
+  };
+
   return (
     <PageContainer
       title="Gestão de Cobranças & Faturamento"
       description="Emissão e acompanhamento de faturas, boletos bancários e cobranças via Pix com conciliação automática."
       actions={
-        <Button
-          onClick={() => setShowModal(true)}
-          className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs bg-[var(--color-primary-blue)] text-white hover:opacity-95"
-        >
-          <Plus className="w-3.5 h-3.5" /> Nova Cobrança
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={handleExportCSV}
+            variant="outline"
+            className="h-9 px-3.5 text-xs font-bold gap-1.5 border-[var(--color-border-default)]"
+          >
+            <Download className="w-3.5 h-3.5" /> Exportar CSV
+          </Button>
+          <Button
+            onClick={() => setShowModal(true)}
+            className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs bg-[var(--color-primary-blue)] text-white hover:opacity-95"
+          >
+            <Plus className="w-3.5 h-3.5" /> Nova Cobrança
+          </Button>
+        </div>
       }
     >
       {/* KPIs */}
@@ -237,101 +272,91 @@ export default function FinanceiroCobrancas() {
         </div>
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-[var(--color-surface)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl animate-in fade-in-50 zoom-in-95">
-            <div className="flex items-center justify-between pb-3 border-b border-[var(--color-border-subtle)]">
-              <h3 className="text-base font-bold text-[var(--color-text-primary)] flex items-center gap-2">
-                <Receipt className="w-4 h-4 text-[var(--color-primary-blue)]" /> Nova Cobrança
-              </h3>
-              <button
-                onClick={() => setShowModal(false)}
-                className="p-1 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)]"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleCreateCobranca} className="space-y-3">
-              <div>
-                <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                  Cliente / Sacado *
-                </label>
-                <input
-                  value={novaCobranca.cliente}
-                  onChange={e => setNovaCobranca({ ...novaCobranca, cliente: e.target.value })}
-                  placeholder="Nome do cliente ou empresa"
-                  required
-                  className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                    Valor (R$) *
-                  </label>
-                  <input
-                    value={novaCobranca.valor}
-                    onChange={e => setNovaCobranca({ ...novaCobranca, valor: e.target.value })}
-                    placeholder="1500.00"
-                    required
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] font-mono focus:outline-none focus:border-[var(--color-primary-blue)]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                    Método
-                  </label>
-                  <select
-                    value={novaCobranca.metodo}
-                    onChange={e => setNovaCobranca({ ...novaCobranca, metodo: e.target.value })}
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                  >
-                    <option value="Pix">Pix Dinâmico</option>
-                    <option value="Boleto">Boleto Bancário</option>
-                    <option value="Cartao">Cartão de Crédito</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                    Vencimento
-                  </label>
-                  <input
-                    type="date"
-                    value={novaCobranca.vencimento}
-                    onChange={e => setNovaCobranca({ ...novaCobranca, vencimento: e.target.value })}
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                  />
-                </div>
-                <div>
-                  <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
-                    Categoria
-                  </label>
-                  <input
-                    value={novaCobranca.categoria}
-                    onChange={e => setNovaCobranca({ ...novaCobranca, categoria: e.target.value })}
-                    placeholder="Honorários, Produtos..."
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-3 border-t border-[var(--color-border-subtle)]">
-                <Button type="button" variant="ghost" onClick={() => setShowModal(false)} className="text-xs">
-                  Cancelar
-                </Button>
-                <Button type="submit" className="text-xs font-bold bg-[var(--color-primary-blue)] text-white">
-                  Emitir Cobrança
-                </Button>
-              </div>
-            </form>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Nova Cobrança"
+        description="Emita uma nova ordem de cobrança via Pix, Boleto ou Cartão com conciliação automática."
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleCreateCobranca} className="space-y-3">
+          <div>
+            <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+              Cliente / Sacado *
+            </label>
+            <input
+              value={novaCobranca.cliente}
+              onChange={e => setNovaCobranca({ ...novaCobranca, cliente: e.target.value })}
+              placeholder="Nome do cliente ou empresa"
+              required
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+            />
           </div>
-        </div>
-      )}
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                Valor (R$) *
+              </label>
+              <input
+                value={novaCobranca.valor}
+                onChange={e => setNovaCobranca({ ...novaCobranca, valor: e.target.value })}
+                placeholder="1500.00"
+                required
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] font-mono focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                Método
+              </label>
+              <select
+                value={novaCobranca.metodo}
+                onChange={e => setNovaCobranca({ ...novaCobranca, metodo: e.target.value })}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              >
+                <option value="Pix">Pix Dinâmico</option>
+                <option value="Boleto">Boleto Bancário</option>
+                <option value="Cartao">Cartão de Crédito</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                Vencimento
+              </label>
+              <input
+                type="date"
+                value={novaCobranca.vencimento}
+                onChange={e => setNovaCobranca({ ...novaCobranca, vencimento: e.target.value })}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-bold uppercase text-[var(--color-text-muted)] block mb-1">
+                Categoria
+              </label>
+              <input
+                value={novaCobranca.categoria}
+                onChange={e => setNovaCobranca({ ...novaCobranca, categoria: e.target.value })}
+                placeholder="Honorários, Produtos..."
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-[var(--color-border-subtle)]">
+            <Button type="button" variant="ghost" onClick={() => setShowModal(false)} className="text-xs">
+              Cancelar
+            </Button>
+            <Button type="submit" className="text-xs font-bold bg-[var(--color-primary-blue)] text-white">
+              Emitir Cobrança
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }

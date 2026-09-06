@@ -33,6 +33,8 @@ type Paciente = {
 const FIELD = "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3.5 py-2.5 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]";
 const LABEL = "text-[10px] font-black text-[var(--color-text-faint)] uppercase tracking-widest mb-1.5 block";
 
+import { Modal } from "../../components/ui/modal";
+
 function PacienteFormModal({ onClose, onSave, initial }: {
   onClose: () => void;
   onSave: (d: any) => void;
@@ -52,52 +54,14 @@ function PacienteFormModal({ onClose, onSave, initial }: {
   const isEdit = Boolean(initial?.id);
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-lg max-h-[92vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-[var(--color-border-subtle)]">
-          <div>
-            <h2 className="text-base font-black text-[var(--color-text-primary)]">{isEdit ? "Editar Paciente" : "Novo Paciente"}</h2>
-            <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Cadastro completo para prontuário e faturamento.</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--color-surface-sunken)] text-[var(--color-text-faint)]"><X className="w-4 h-4" /></button>
-        </div>
-        <div className="p-6 space-y-4">
-          <div>
-            <label className={LABEL}>Nome Completo *</label>
-            <input value={form.nome} onChange={e => set("nome", e.target.value)} placeholder="Ex: Maria Fernandes" className={FIELD} />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={LABEL}>Telefone</label>
-              <input value={form.telefone} onChange={e => set("telefone", e.target.value)} placeholder="(11) 99999-0000" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>E-mail</label>
-              <input value={form.email} onChange={e => set("email", e.target.value)} placeholder="paciente@email.com" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>CPF</label>
-              <input value={form.cpf} onChange={e => set("cpf", e.target.value)} placeholder="000.000.000-00" className={FIELD} />
-            </div>
-            <div>
-              <label className={LABEL}>Data de Nascimento</label>
-              <input type="date" value={form.data_nascimento} onChange={e => set("data_nascimento", e.target.value)} className={FIELD} />
-            </div>
-          </div>
-          <div>
-            <label className={LABEL}>Convênio / Plano</label>
-            <input value={form.convenio} onChange={e => set("convenio", e.target.value)} placeholder="Particular, Unimed, Bradesco Saúde..." className={FIELD} />
-          </div>
-          <div>
-            <label className={LABEL}>Alergias</label>
-            <input value={form.alergias} onChange={e => set("alergias", e.target.value)} placeholder="Ex: Dipirona, Penicilina" className={FIELD} />
-          </div>
-          <div>
-            <label className={LABEL}>Observações Gerais</label>
-            <textarea value={form.observacoes} onChange={e => set("observacoes", e.target.value)} rows={3} className={`${FIELD} resize-none`} />
-          </div>
-        </div>
-        <div className="p-6 border-t border-[var(--color-border-subtle)] flex justify-end gap-3">
+    <Modal
+      isOpen
+      onClose={onClose}
+      maxWidth="max-w-lg"
+      title={isEdit ? "Editar Paciente" : "Novo Paciente"}
+      description="Cadastro completo para prontuário, agendamento e faturamento."
+      footer={
+        <div className="flex justify-end gap-2 w-full">
           <Button variant="ghost" onClick={onClose}>Cancelar</Button>
           <Button
             onClick={() => {
@@ -105,12 +69,50 @@ function PacienteFormModal({ onClose, onSave, initial }: {
               onSave(form);
               onClose();
             }}
+            className="bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white font-semibold"
           >
             {isEdit ? "Salvar Alterações" : "Cadastrar Paciente"}
           </Button>
         </div>
+      }
+    >
+      <div className="space-y-4 py-1">
+        <div>
+          <label className={LABEL}>Nome Completo *</label>
+          <input value={form.nome} onChange={e => set("nome", e.target.value)} placeholder="Ex: Maria Fernandes" className={FIELD} />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className={LABEL}>Telefone</label>
+            <input value={form.telefone} onChange={e => set("telefone", e.target.value)} placeholder="(11) 99999-0000" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>E-mail</label>
+            <input value={form.email} onChange={e => set("email", e.target.value)} placeholder="paciente@email.com" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>CPF</label>
+            <input value={form.cpf} onChange={e => set("cpf", e.target.value)} placeholder="000.000.000-00" className={FIELD} />
+          </div>
+          <div>
+            <label className={LABEL}>Data de Nascimento</label>
+            <input type="date" value={form.data_nascimento} onChange={e => set("data_nascimento", e.target.value)} className={FIELD} />
+          </div>
+        </div>
+        <div>
+          <label className={LABEL}>Convênio / Plano</label>
+          <input value={form.convenio} onChange={e => set("convenio", e.target.value)} placeholder="Particular, Unimed, Bradesco Saúde..." className={FIELD} />
+        </div>
+        <div>
+          <label className={LABEL}>Alergias</label>
+          <input value={form.alergias} onChange={e => set("alergias", e.target.value)} placeholder="Ex: Dipirona, Penicilina" className={FIELD} />
+        </div>
+        <div>
+          <label className={LABEL}>Observações Gerais</label>
+          <textarea value={form.observacoes} onChange={e => set("observacoes", e.target.value)} rows={3} className={`${FIELD} resize-none`} />
+        </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 

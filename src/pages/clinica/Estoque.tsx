@@ -2,15 +2,15 @@ import React, { useState } from 'react';
 import {
   Package, Box, Plus, Search,
   Truck, ShieldAlert, Zap,
-  BarChart3, RefreshCw, X, Check
+  BarChart3, RefreshCw, X, Check, Download
 } from 'lucide-react';
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
 import { Badge } from "../../components/ui/badge";
 import { PageContainer } from "../../components/PageContainer";
+import { Modal } from "../../components/ui/modal";
 import { useEstoque } from './hooks/useEstoque';
 import { toast } from 'sonner';
-import { motion, AnimatePresence } from 'motion/react';
 
 export default function EstoqueClinico() {
   const { items: stockItems, addItem } = useEstoque();
@@ -65,12 +65,44 @@ export default function EstoqueClinico() {
     setItemPrice('');
   };
 
+  const handleExportCSV = () => {
+    if (filteredItems.length === 0) {
+      toast.info("Nenhum insumo para exportar.");
+      return;
+    }
+    const headers = ["Nome", "Categoria", "Qtd Estoque", "Qtd Mínima", "Status", "Preço Unitário"];
+    const rows = filteredItems.map(i => [
+      `"${i.name.replace(/"/g, '""')}"`,
+      `"${i.category.replace(/"/g, '""')}"`,
+      i.qty,
+      i.minQty,
+      `"${i.status}"`,
+      `"${i.price}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `estoque_clinico_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Estoque exportado com sucesso!");
+  };
+
   return (
     <PageContainer 
       title="Estoque e Suprimentos" 
       description="Controle de insumos e alertas automáticos de estoque baixo ou crítico."
       actions={
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            onClick={handleExportCSV}
+            className="h-9 px-3.5 text-xs font-bold gap-1.5"
+          >
+            <Download className="w-3.5 h-3.5" /> Exportar CSV
+          </Button>
           <Button
             variant="outline"
             onClick={() => toast.info("Integração com fornecedores ainda não disponível — em breve.")}
@@ -205,127 +237,100 @@ export default function EstoqueClinico() {
       </div>
 
       {/* Modal: Novo Insumo */}
-      <AnimatePresence>
-        {isAddModalOpen && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsAddModalOpen(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+      <Modal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        title="Cadastrar Novo Insumo"
+        description="Preencha as informações do item para controle de reposição e estoque."
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleCreateItem} className="space-y-4">
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Nome do Material / Medicamento *</label>
+            <input
+              type="text"
+              value={itemName}
+              onChange={(e) => setItemName(e.target.value)}
+              placeholder="Ex: Luvas Cirúrgicas Látex M"
+              className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
+              required
             />
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0, y: 15 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              className="relative w-full max-w-md bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-panel)] overflow-hidden shadow-2xl z-10"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="p-5 bg-[var(--color-surface-sunken)] border-b border-[var(--color-border-subtle)] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Package className="w-4 h-4 text-[var(--color-primary-blue)]" />
-                  <h3 className="text-sm font-bold text-[var(--color-text-primary)] uppercase tracking-tight">Cadastrar Novo Insumo</h3>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(false)}
-                  className="p-1.5 hover:bg-[var(--color-surface-elevated)] rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer border-none bg-transparent"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <form onSubmit={handleCreateItem} className="p-5 space-y-3.5">
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Nome do Material / Medicamento *</label>
-                  <input
-                    type="text"
-                    value={itemName}
-                    onChange={(e) => setItemName(e.target.value)}
-                    placeholder="Ex: Luvas Cirúrgicas Látex M"
-                    className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Categoria *</label>
-                    <select
-                      value={itemCategory}
-                      onChange={(e) => setItemCategory(e.target.value)}
-                      className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2.5 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
-                    >
-                      <option value="Descartáveis">Descartáveis</option>
-                      <option value="EPIs">EPIs</option>
-                      <option value="Curativos">Curativos</option>
-                      <option value="Medicamentos">Medicamentos</option>
-                      <option value="Saneantes">Saneantes</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Preço Unitário</label>
-                    <input
-                      type="text"
-                      value={itemPrice}
-                      onChange={(e) => setItemPrice(e.target.value)}
-                      placeholder="R$ 15,00"
-                      className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Qtd em Estoque *</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={itemQty}
-                      onChange={(e) => setItemQty(e.target.value)}
-                      placeholder="100"
-                      className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-mono"
-                      required
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Qtd Mínima (Alerta) *</label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={itemMinQty}
-                      onChange={(e) => setItemMinQty(e.target.value)}
-                      placeholder="20"
-                      className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-mono"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-3 border-t border-[var(--color-border-subtle)] flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsAddModalOpen(false)}
-                    className="h-9 px-4 text-xs font-bold"
-                  >
-                    Cancelar
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="h-9 px-5 text-xs font-bold shadow-xs gap-1.5"
-                  >
-                    <Check className="w-3.5 h-3.5" /> Salvar Insumo
-                  </Button>
-                </div>
-              </form>
-            </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Categoria *</label>
+              <select
+                value={itemCategory}
+                onChange={(e) => setItemCategory(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-2.5 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-medium"
+              >
+                <option value="Descartáveis">Descartáveis</option>
+                <option value="EPIs">EPIs</option>
+                <option value="Curativos">Curativos</option>
+                <option value="Medicamentos">Medicamentos</option>
+                <option value="Saneantes">Saneantes</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Preço Unitário</label>
+              <input
+                type="text"
+                value={itemPrice}
+                onChange={(e) => setItemPrice(e.target.value)}
+                placeholder="R$ 15,00"
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Qtd em Estoque *</label>
+              <input
+                type="number"
+                min="0"
+                value={itemQty}
+                onChange={(e) => setItemQty(e.target.value)}
+                placeholder="100"
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-mono"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Qtd Mínima (Alerta) *</label>
+              <input
+                type="number"
+                min="0"
+                value={itemMinQty}
+                onChange={(e) => setItemMinQty(e.target.value)}
+                placeholder="20"
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-mono"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="pt-3 border-t border-[var(--color-border-subtle)] flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsAddModalOpen(false)}
+              className="h-9 px-4 text-xs font-bold"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              className="h-9 px-5 text-xs font-bold shadow-xs gap-1.5"
+            >
+              <Check className="w-3.5 h-3.5" /> Salvar Insumo
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }

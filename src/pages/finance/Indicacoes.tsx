@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
+import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { useData } from "../../contexts/DataContext";
@@ -321,121 +322,102 @@ export default function Indicacoes() {
         </div>
       </Card>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150" onClick={() => setIsModalOpen(false)}>
-          <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="p-6 border-b border-[var(--color-border-subtle)] flex justify-between items-center bg-[var(--color-surface-sunken)]">
-              <div>
-                <h3 className="text-base font-bold text-[var(--color-text-primary)] flex items-center gap-2">
-                  <Handshake className="w-5 h-5 text-[var(--color-primary-blue)]" /> Nova Indicação
-                </h3>
-                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Registre quem indicou e o valor de comissão devido.</p>
-              </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Nova Indicação"
+        description="Registre quem indicou e o valor de comissão devido para comissionamento transparente."
+        maxWidth="max-w-lg"
+      >
+        <form onSubmit={handleAdd} className="space-y-4">
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Quem indicou? *</label>
+            <div className="grid grid-cols-2 gap-2 mb-2">
               <button
                 type="button"
-                onClick={() => setIsModalOpen(false)}
-                className="w-8 h-8 rounded-full bg-[var(--color-surface)] border border-[var(--color-border-default)] flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
+                onClick={() => { setReferrerType("colaborador"); setReferrerId(""); }}
+                className={`h-9 rounded-[var(--radius-control)] text-xs font-bold border transition-colors cursor-pointer ${referrerType === "colaborador" ? "bg-[var(--color-primary-blue)] text-white border-[var(--color-primary-blue)]" : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] border-[var(--color-border-default)]"}`}
               >
-                <X className="w-4 h-4" />
+                Colaborador
+              </button>
+              <button
+                type="button"
+                onClick={() => { setReferrerType("cliente"); setReferrerId(""); }}
+                className={`h-9 rounded-[var(--radius-control)] text-xs font-bold border transition-colors cursor-pointer ${referrerType === "cliente" ? "bg-[var(--color-primary-blue)] text-white border-[var(--color-primary-blue)]" : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] border-[var(--color-border-default)]"}`}
+              >
+                Cliente
               </button>
             </div>
-
-            <form onSubmit={handleAdd} className="p-6 space-y-4">
-              <div>
-                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Quem indicou? *</label>
-                <div className="grid grid-cols-2 gap-2 mb-2">
-                  <button
-                    type="button"
-                    onClick={() => { setReferrerType("colaborador"); setReferrerId(""); }}
-                    className={`h-9 rounded-[var(--radius-control)] text-xs font-bold border transition-colors cursor-pointer ${referrerType === "colaborador" ? "bg-[var(--color-primary-blue)] text-white border-[var(--color-primary-blue)]" : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] border-[var(--color-border-default)]"}`}
-                  >
-                    Colaborador
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setReferrerType("cliente"); setReferrerId(""); }}
-                    className={`h-9 rounded-[var(--radius-control)] text-xs font-bold border transition-colors cursor-pointer ${referrerType === "cliente" ? "bg-[var(--color-primary-blue)] text-white border-[var(--color-primary-blue)]" : "bg-[var(--color-surface-sunken)] text-[var(--color-text-muted)] border-[var(--color-border-default)]"}`}
-                  >
-                    Cliente
-                  </button>
-                </div>
-                <select
-                  required
-                  value={referrerId}
-                  onChange={(e) => setReferrerId(e.target.value)}
-                  className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
-                >
-                  <option value="">Selecione {referrerType === "colaborador" ? "o colaborador" : "o cliente"}...</option>
-                  {referrerOptions.map((r: any) => (
-                    <option key={r.id} value={r.id}>{referrerType === "colaborador" ? r.nome : r.name}</option>
-                  ))}
-                </select>
-                {referrerOptions.length === 0 && (
-                  <p className="text-[10px] text-amber-500 mt-1">
-                    Nenhum {referrerType === "colaborador" ? "colaborador cadastrado" : "cliente na base"} ainda.
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Cliente Indicado *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Nome do novo cliente/empresa indicado"
-                  value={referredName}
-                  onChange={(e) => setReferredName(e.target.value)}
-                  className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Contato (opcional)</label>
-                <input
-                  type="text"
-                  placeholder="Telefone ou e-mail do indicado"
-                  value={referredContact}
-                  onChange={(e) => setReferredContact(e.target.value)}
-                  className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Valor da Comissão (R$) *</label>
-                <input
-                  type="number"
-                  required
-                  step="0.01"
-                  placeholder="0,00"
-                  value={commissionValue}
-                  onChange={(e) => setCommissionValue(e.target.value)}
-                  className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Observações</label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={2}
-                  placeholder="Contexto adicional sobre a indicação..."
-                  className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] resize-none"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4 border-t border-[var(--color-border-subtle)]">
-                <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="h-9 px-4 text-xs font-bold border-[var(--color-border-default)]">
-                  Cancelar
-                </Button>
-                <Button type="submit" className="h-9 px-5 text-xs font-bold shadow-xs">
-                  Registrar Indicação
-                </Button>
-              </div>
-            </form>
+            <select
+              required
+              value={referrerId}
+              onChange={(e) => setReferrerId(e.target.value)}
+              className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
+            >
+              <option value="">Selecione {referrerType === "colaborador" ? "o colaborador" : "o cliente"}...</option>
+              {referrerOptions.map((r: any) => (
+                <option key={r.id} value={r.id}>{referrerType === "colaborador" ? r.nome : r.name}</option>
+              ))}
+            </select>
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Nome do Indicado (Lead / Cliente) *</label>
+            <input
+              type="text"
+              required
+              placeholder="Ex: Pedro Henrique"
+              value={referredName}
+              onChange={(e) => setReferredName(e.target.value)}
+              className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Contato (opcional)</label>
+            <input
+              type="text"
+              placeholder="Telefone ou e-mail do indicado"
+              value={referredContact}
+              onChange={(e) => setReferredContact(e.target.value)}
+              className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Valor da Comissão (R$) *</label>
+            <input
+              type="number"
+              required
+              step="0.01"
+              placeholder="0,00"
+              value={commissionValue}
+              onChange={(e) => setCommissionValue(e.target.value)}
+              className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Observações</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={2}
+              placeholder="Contexto adicional sobre a indicação..."
+              className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] resize-none"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-[var(--color-border-subtle)]">
+            <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)} className="h-9 px-4 text-xs font-bold border-[var(--color-border-default)]">
+              Cancelar
+            </Button>
+            <Button type="submit" className="h-9 px-5 text-xs font-bold shadow-xs">
+              Registrar Indicação
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

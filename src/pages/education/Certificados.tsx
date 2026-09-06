@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Award, Plus, ShieldCheck, RefreshCw, Star, Search, CheckCircle2, XCircle } from "lucide-react";
+import { Award, Plus, ShieldCheck, RefreshCw, Star, Search, CheckCircle2, XCircle, Download } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { toast } from "sonner";
+import { Modal } from "../../components/ui/modal";
 import { PageContainer } from "../../components/PageContainer";
 import { CertificadosKPIs } from "./components/Certificados/CertificadosKPIs";
 import { CertificadosFilters } from "./components/Certificados/CertificadosFilters";
@@ -68,13 +69,6 @@ export default function Certificados() {
     c.code.toLowerCase().includes(search.toLowerCase())
   );
 
-  const kpiStats = [
-    { label: "Diplomas Emitidos", value: certs.length, icon: Award, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-    { label: "Validações Hoje", value: "--", icon: ShieldCheck, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-    { label: "Processamento", value: certs.filter(c => c.status === "Processando").length, icon: RefreshCw, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-    { label: "Média Acadêmica", value: "--", icon: Star, color: "text-[#06B6D4]", bg: "bg-[#06B6D4]/10" },
-  ];
-
   return (
     <PageContainer
       title="Certificados & Credenciais"
@@ -82,8 +76,16 @@ export default function Certificados() {
       actions={
         <div className="flex items-center gap-3">
           <Button
+            onClick={handleExportCSV}
+            variant="outline"
+            className="h-11 px-4 rounded-2xl border-[var(--color-border-default)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] text-[10px] font-black uppercase tracking-widest gap-2"
+          >
+            <Download className="w-3.5 h-3.5" /> Exportar CSV
+          </Button>
+          <Button
             onClick={() => { setValidateResult(null); setValidateCode(""); setIsValidateModalOpen(true); }}
-            variant="outline" className="h-11 px-6 rounded-2xl border-white/10 text-white text-[10px] font-black uppercase tracking-widest"
+            variant="outline"
+            className="h-11 px-6 rounded-2xl border-[var(--color-border-default)] text-[var(--color-text-primary)] hover:bg-[var(--color-surface-sunken)] text-[10px] font-black uppercase tracking-widest"
           >
             Validar Código
           </Button>
@@ -102,84 +104,125 @@ export default function Certificados() {
         <CertificadosGrid certs={filteredCerts} />
       </div>
 
-      {isEmitModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-            <div className="p-8 border-b border-white/5 bg-gradient-to-br from-amber-500/10 to-transparent">
-              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">🎓 Nova Autenticação</h3>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Emita uma nova credencial acadêmica com código de verificação único.</p>
+      <Modal
+        isOpen={isEmitModalOpen}
+        onClose={() => setIsEmitModalOpen(false)}
+        title="🎓 Nova Autenticação"
+        description="Emita uma nova credencial acadêmica com código de verificação único."
+        maxWidth="max-w-lg"
+      >
+        <form onSubmit={handleSaveCertificate} className="space-y-4">
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-muted)] block mb-1">Nome Completo do Aluno</label>
+              <input
+                required
+                placeholder="Ex: Ana Clara Silva"
+                value={studentName}
+                onChange={(e) => setStudentName(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl h-11 px-4 text-sm text-[var(--color-text-primary)] focus:border-amber-500/50 transition-all font-medium"
+              />
             </div>
-            <form onSubmit={handleSaveCertificate} className="p-8 space-y-5">
-              <div className="space-y-4">
-                <input required placeholder="Nome Completo do Aluno" value={studentName} onChange={(e) => setStudentName(e.target.value)}
-                  className="w-full bg-white/5 border border-white/5 rounded-2xl h-14 px-6 text-sm text-white focus:border-amber-500/50 transition-all font-medium uppercase"
-                />
-                <input required placeholder="Título da Formação" value={courseName} onChange={(e) => setCourseName(e.target.value)}
-                  className="w-full bg-white/5 border border-white/5 rounded-2xl h-14 px-6 text-sm text-white focus:border-amber-500/50 transition-all font-medium uppercase italic"
-                />
-                <div className="grid grid-cols-2 gap-4">
-                  <input required type="number" step="0.1" placeholder="Média (0.0 - 10.0)" value={studentGrade} onChange={(e) => setStudentGrade(e.target.value)}
-                    className="bg-white/5 border border-white/5 rounded-2xl h-14 px-6 text-sm text-white focus:border-amber-500/50 transition-all font-black font-mono"
-                  />
-                  <div className="bg-white/5 border border-white/5 rounded-2xl flex items-center justify-center text-[10px] font-black text-slate-600 uppercase tracking-widest px-4 text-center">Código SHA-256 ao salvar</div>
-                </div>
-              </div>
-              <div className="flex gap-4 pt-4">
-                <Button type="button" variant="outline" className="flex-1 h-14 rounded-2xl border-white/5 text-[10px] font-black uppercase tracking-widest" onClick={() => setIsEmitModalOpen(false)}>Cancelar</Button>
-                <Button type="submit" className="flex-1 h-14 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-black uppercase tracking-widest">Emitir Diploma</Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {isValidateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="bg-[var(--color-surface-elevated)] border border-white/10 rounded-[32px] w-full max-w-lg shadow-2xl overflow-hidden">
-            <div className="p-8 border-b border-white/5">
-              <h3 className="text-xl font-black text-white uppercase italic tracking-tighter">Validar Código</h3>
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">Verifique se um código pertence a um certificado emitido por este tenant.</p>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-muted)] block mb-1">Título da Formação / Curso</label>
+              <input
+                required
+                placeholder="Ex: Especialização em Gestão de Negócios"
+                value={courseName}
+                onChange={(e) => setCourseName(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl h-11 px-4 text-sm text-[var(--color-text-primary)] focus:border-amber-500/50 transition-all font-medium"
+              />
             </div>
-            <form onSubmit={handleValidateCode} className="p-8 space-y-4">
-              <div className="flex gap-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-semibold text-[var(--color-text-muted)] block mb-1">Média / Nota</label>
                 <input
-                  autoFocus
-                  placeholder="Ex: AX-3F9A0C1B2E4D"
-                  value={validateCode}
-                  onChange={(e) => { setValidateCode(e.target.value); setValidateResult(null); }}
-                  className="flex-1 bg-white/5 border border-white/5 rounded-2xl h-14 px-6 text-sm text-white font-mono uppercase focus:border-amber-500/50 transition-all"
+                  required
+                  type="number"
+                  step="0.1"
+                  placeholder="0.0 - 10.0"
+                  value={studentGrade}
+                  onChange={(e) => setStudentGrade(e.target.value)}
+                  className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl h-11 px-4 text-sm text-[var(--color-text-primary)] focus:border-amber-500/50 transition-all font-mono font-bold"
                 />
-                <Button type="submit" className="h-14 px-6 rounded-2xl bg-amber-600 hover:bg-amber-700 text-white gap-2">
-                  <Search className="w-4 h-4" /> Buscar
-                </Button>
               </div>
-
-              {validateResult === "not_found" && (
-                <div className="p-4 bg-rose-500/10 border border-rose-500/20 rounded-2xl flex items-center gap-3">
-                  <XCircle className="w-5 h-5 text-rose-500 shrink-0" />
-                  <p className="text-xs text-rose-400 font-bold">Código não encontrado entre os certificados emitidos.</p>
+              <div>
+                <label className="text-xs font-semibold text-[var(--color-text-muted)] block mb-1">Segurança</label>
+                <div className="bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl h-11 flex items-center justify-center text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider px-2 text-center">
+                  SHA-256 Automático
                 </div>
-              )}
-              {validateResult && validateResult !== "not_found" && (
-                <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl space-y-1.5">
-                  <div className="flex items-center gap-2 mb-1">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
-                    <p className="text-xs text-emerald-400 font-black uppercase">
-                      {validateResult.status === "Revogado" ? "Certificado revogado" : "Certificado válido"}
-                    </p>
-                  </div>
-                  <p className="text-sm text-white font-bold">{validateResult.student}</p>
-                  <p className="text-xs text-slate-400">{validateResult.course} — emitido em {validateResult.issueDate}</p>
-                </div>
-              )}
-
-              <Button type="button" variant="outline" className="w-full h-12 rounded-2xl border-white/5 text-[10px] font-black uppercase tracking-widest" onClick={() => setIsValidateModalOpen(false)}>
-                Fechar
-              </Button>
-            </form>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+          <div className="flex gap-3 pt-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1 h-11 rounded-xl border-[var(--color-border-default)] text-xs font-bold"
+              onClick={() => setIsEmitModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              className="flex-1 h-11 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold"
+            >
+              Emitir Diploma
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={isValidateModalOpen}
+        onClose={() => setIsValidateModalOpen(false)}
+        title="🔍 Validar Autenticidade"
+        description="Verifique se um código pertence a um certificado emitido por este tenant."
+        maxWidth="max-w-md"
+      >
+        <form onSubmit={handleValidateCode} className="space-y-4">
+          <div className="flex gap-2">
+            <input
+              autoFocus
+              placeholder="Ex: AX-3F9A0C1B2E4D"
+              value={validateCode}
+              onChange={(e) => { setValidateCode(e.target.value); setValidateResult(null); }}
+              className="flex-1 bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-xl h-11 px-4 text-xs font-mono uppercase text-[var(--color-text-primary)] focus:border-amber-500/50 transition-all"
+            />
+            <Button type="submit" className="h-11 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold gap-1.5">
+              <Search className="w-3.5 h-3.5" /> Buscar
+            </Button>
+          </div>
+
+          {validateResult === "not_found" && (
+            <div className="p-3 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center gap-2.5">
+              <XCircle className="w-4 h-4 text-rose-500 shrink-0" />
+              <p className="text-xs text-rose-400 font-bold">Código não encontrado entre os certificados emitidos.</p>
+            </div>
+          )}
+          {validateResult && validateResult !== "not_found" && (
+            <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/20 rounded-xl space-y-1">
+              <div className="flex items-center gap-2 mb-1">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <p className="text-xs text-emerald-400 font-bold uppercase">
+                  {validateResult.status === "Revogado" ? "Certificado revogado" : "Certificado autêntico"}
+                </p>
+              </div>
+              <p className="text-sm text-[var(--color-text-primary)] font-bold">{validateResult.student}</p>
+              <p className="text-xs text-[var(--color-text-muted)]">{validateResult.course} — emitido em {validateResult.issueDate}</p>
+            </div>
+          )}
+
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-10 rounded-xl border-[var(--color-border-default)] text-xs font-bold"
+            onClick={() => setIsValidateModalOpen(false)}
+          >
+            Fechar
+          </Button>
+        </form>
+      </Modal>
     </PageContainer>
   );
 }

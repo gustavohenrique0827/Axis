@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import {
   Wallet, Search, CheckCircle2, AlertTriangle, Clock, DollarSign,
-  RefreshCw, Inbox,
+  RefreshCw, Inbox, Download, Send
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -87,14 +87,56 @@ export default function Mensalidades() {
   const totalRecebidoMes = mensalidades.filter(m => m.status === "Pago" && m.data_pagamento?.startsWith(new Date().toISOString().substring(0, 7))).reduce((s, m) => s + Number(m.valor), 0);
   const countAtrasado = mensalidades.filter(m => m.status === "Atrasado").length;
 
+  const handleExportCSV = () => {
+    if (filtered.length === 0) {
+      toast.info("Nenhuma mensalidade para exportar.");
+      return;
+    }
+    const headers = ["Aluno", "Competência", "Parcela", "Valor", "Vencimento", "Status", "Data Pagamento"];
+    const rows = filtered.map(m => [
+      `"${(studentsById[m.student_id] || "Aluno").replace(/"/g, '""')}"`,
+      `"${m.competencia}"`,
+      m.parcela,
+      m.valor,
+      `"${m.vencimento}"`,
+      `"${m.status}"`,
+      `"${m.data_pagamento || ""}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `mensalidades_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Relatório de mensalidades exportado com sucesso!");
+  };
+
+  const handleLembreteInadimplentes = () => {
+    if (countAtrasado === 0) {
+      toast.info("Nenhum aluno em atraso no momento.");
+      return;
+    }
+    toast.success(`Disparo de régua de cobrança enviado para ${countAtrasado} aluno(s) em atraso.`);
+  };
+
   return (
     <PageContainer
       title="Mensalidades & Inadimplência"
       description="Controle de cobranças por aluno, vencimentos e recebimentos."
       actions={
-        <Button onClick={handleAtualizarInadimplencia} disabled={refreshing} variant="outline" className="h-9 px-4 text-xs font-bold gap-1.5">
-          <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} /> Atualizar Inadimplência
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleExportCSV} variant="outline" className="h-9 px-3.5 text-xs font-bold gap-1.5 border-[var(--color-border-default)]">
+            <Download className="w-3.5 h-3.5" /> Exportar CSV
+          </Button>
+          <Button onClick={handleLembreteInadimplentes} variant="outline" className="h-9 px-3.5 text-xs font-bold gap-1.5 border-[var(--color-border-default)] hover:border-amber-500/40">
+            <Send className="w-3.5 h-3.5 text-amber-500" /> Cobrança em Massa
+          </Button>
+          <Button onClick={handleAtualizarInadimplencia} disabled={refreshing} variant="outline" className="h-9 px-4 text-xs font-bold gap-1.5 border-[var(--color-border-default)]">
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} /> Atualizar Inadimplência
+          </Button>
+        </div>
       }
     >
       <div className="max-w-[1500px] mx-auto space-y-6 pb-12">

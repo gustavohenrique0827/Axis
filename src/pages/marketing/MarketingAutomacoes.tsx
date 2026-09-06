@@ -9,6 +9,7 @@ import { Button } from "../../components/ui/button";
 import { Card } from "../../components/ui/card";
 import { Input } from "../../components/ui/input";
 import { Badge } from "../../components/ui/badge";
+import { Modal } from "../../components/ui/modal";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
 
 interface Automation {
@@ -200,45 +201,46 @@ export default function MarketingAutomacoes() {
       </div>
 
       {/* Modal de Criação */}
-      {isCreateModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <Card className="w-full max-w-md p-6 bg-[var(--color-surface)] border-white/10 shadow-2xl">
-            <h2 className="text-xl font-bold text-white mb-4">Criar Novo Fluxo</h2>
-            <div className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 block">Nome da Automação</label>
-                <Input 
-                  value={newFlowName}
-                  onChange={(e) => setNewFlowName(e.target.value)}
-                  placeholder="Ex: Boas-vindas Black Friday"
-                  className="bg-[var(--color-surface-elevated)] border-white/10 text-white"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 block">Gatilho Inicial</label>
-                <select 
-                  className="w-full h-10 px-3 rounded-lg bg-[var(--color-surface-elevated)] border border-white/10 text-white text-sm"
-                  value={newFlowTrigger}
-                  onChange={(e) => setNewFlowTrigger(e.target.value)}
-                >
-                  <option value="Novo Lead">Novo Lead</option>
-                  <option value="Carrinho Abandonado">Carrinho Abandonado</option>
-                  <option value="Compra Aprovada">Compra Aprovada</option>
-                  <option value="Data Específica">Data Específica</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex gap-3 justify-end mt-6">
-              <Button variant="ghost" onClick={() => setIsCreateModalOpen(false)} className="text-slate-400 hover:text-white hover:bg-white/5">
-                Cancelar
-              </Button>
-              <Button onClick={handleCreateFlow} className="bg-purple-600 hover:bg-purple-700 text-white">
-                Criar Automação
-              </Button>
-            </div>
-          </Card>
+      <Modal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+        title="Criar Novo Fluxo"
+        description="Configure o nome e gatilho de disparo da régua de automação."
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-1 block">Nome da Automação</label>
+            <Input 
+              value={newFlowName}
+              onChange={(e) => setNewFlowName(e.target.value)}
+              placeholder="Ex: Boas-vindas Black Friday"
+              className="bg-[var(--color-surface-sunken)] border-[var(--color-border-default)] text-[var(--color-text-primary)]"
+            />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-widest mb-1 block">Gatilho Inicial</label>
+            <select 
+              className="w-full h-10 px-3 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] text-[var(--color-text-primary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
+              value={newFlowTrigger}
+              onChange={(e) => setNewFlowTrigger(e.target.value)}
+            >
+              <option value="Novo Lead">Novo Lead</option>
+              <option value="Carrinho Abandonado">Carrinho Abandonado</option>
+              <option value="Compra Aprovada">Compra Aprovada</option>
+              <option value="Data Específica">Data Específica</option>
+            </select>
+          </div>
+          <div className="flex gap-3 justify-end pt-4 border-t border-[var(--color-border-subtle)]">
+            <Button variant="ghost" onClick={() => setIsCreateModalOpen(false)} className="text-xs font-bold">
+              Cancelar
+            </Button>
+            <Button onClick={handleCreateFlow} className="bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold">
+              Criar Automação
+            </Button>
+          </div>
         </div>
-      )}
+      </Modal>
     </PageContainer>
   );
 }

@@ -3,7 +3,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   CheckSquare, Plus, Search, Car, Gauge, DollarSign,
-  CheckCircle2, Clock, Trash2, X
+  CheckCircle2, Clock, Trash2, X, Download
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
@@ -128,14 +128,47 @@ export default function AvaliacoesVeiculos() {
     return matchSearch && matchStatus;
   });
 
+  const handleExportCSV = () => {
+    if (filtered.length === 0) {
+      toast.info("Nenhuma avaliação para exportar.");
+      return;
+    }
+    const headers = ["Veículo", "Placa", "KM", "Tabela FIPE", "Oferta / Compra", "Avaliador", "Cliente", "Status", "Data"];
+    const rows = filtered.map(a => [
+      `"${a.veiculo.replace(/"/g, '""')}"`,
+      `"${a.placa}"`,
+      a.km,
+      a.fipe,
+      a.oferta,
+      `"${a.avaliador.replace(/"/g, '""')}"`,
+      `"${a.cliente.replace(/"/g, '""')}"`,
+      `"${a.status}"`,
+      `"${a.data}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `avaliacoes_veiculos_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Avaliações exportadas com sucesso!");
+  };
+
   return (
     <PageContainer
       title="Avaliações de Seminovos & Usados"
       description="Checklist cautelar, laudo de pintura, motor, histórico de leilão e precificação FIPE."
       actions={
-        <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
-          <Plus className="w-3.5 h-3.5" /> Nova Avaliação
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleExportCSV} variant="outline" className="h-9 px-3.5 text-xs font-bold gap-1.5 border-[var(--color-border-default)]">
+            <Download className="w-3.5 h-3.5" /> Exportar CSV
+          </Button>
+          <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+            <Plus className="w-3.5 h-3.5" /> Nova Avaliação
+          </Button>
+        </div>
       }
     >
       {/* Metrics */}

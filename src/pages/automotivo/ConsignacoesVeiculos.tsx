@@ -3,7 +3,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   Handshake, Plus, Search, Car, DollarSign,
-  User, CheckCircle2, Clock, Trash2, X
+  User, CheckCircle2, Clock, Trash2, X, Download
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
@@ -123,14 +123,47 @@ export default function ConsignacoesVeiculos() {
 
   const totalEstoque = consignacoes.reduce((s, c) => s + c.valorPedido, 0);
 
+  const handleExportCSV = () => {
+    if (filtered.length === 0) {
+      toast.info("Nenhuma consignação para exportar.");
+      return;
+    }
+    const headers = ["Veículo", "Placa", "Consignante", "Telefone", "Valor Pedido", "Comissão (%)", "Valor Repasse", "Status", "Data Entrada"];
+    const rows = filtered.map(c => [
+      `"${c.veiculo.replace(/"/g, '""')}"`,
+      `"${c.placa}"`,
+      `"${c.consignante.replace(/"/g, '""')}"`,
+      `"${c.telefone}"`,
+      c.valorPedido,
+      c.comissaoPct,
+      c.valorRepasse,
+      `"${c.status}"`,
+      `"${c.dataEntrada}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `consignacoes_veiculos_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Consignações exportadas com sucesso!");
+  };
+
   return (
     <PageContainer
       title="Veículos em Consignação & Repasses"
       description="Contratos de consignação, comissão retida e cálculo automático de repasse ao proprietário."
       actions={
-        <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
-          <Plus className="w-3.5 h-3.5" /> Nova Consignação
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleExportCSV} variant="outline" className="h-9 px-3.5 text-xs font-bold gap-1.5 border-[var(--color-border-default)]">
+            <Download className="w-3.5 h-3.5" /> Exportar CSV
+          </Button>
+          <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+            <Plus className="w-3.5 h-3.5" /> Nova Consignação
+          </Button>
+        </div>
       }
     >
       {/* Metrics */}

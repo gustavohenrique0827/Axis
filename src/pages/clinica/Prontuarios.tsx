@@ -30,6 +30,8 @@ type Prontuario = {
 const FIELD = "w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3.5 py-2.5 text-sm text-[var(--color-text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]";
 const LABEL = "text-[10px] font-black text-[var(--color-text-faint)] uppercase tracking-widest mb-1.5 block";
 
+import { Modal } from "../../components/ui/modal";
+
 function NovaEntradaModal({ onClose, onSave }: { onClose: () => void; onSave: (d: any) => void }) {
   const [form, setForm] = useState({
     profissional: "", queixa_principal: "", historico: "",
@@ -38,46 +40,14 @@ function NovaEntradaModal({ onClose, onSave }: { onClose: () => void; onSave: (d
   const set = (k: string, v: string) => setForm(f => ({ ...f, [k]: v }));
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-xl max-h-[92vh] overflow-y-auto shadow-2xl" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-6 border-b border-[var(--color-border-subtle)]">
-          <div>
-            <h2 className="text-base font-black text-[var(--color-text-primary)]">Nova Entrada de Prontuário</h2>
-            <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Registro clínico do atendimento de hoje.</p>
-          </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-[var(--color-surface-sunken)] text-[var(--color-text-faint)]"><X className="w-4 h-4" /></button>
-        </div>
-        <div className="p-6 space-y-4">
-          <div>
-            <label className={LABEL}>Profissional Responsável</label>
-            <input value={form.profissional} onChange={e => set("profissional", e.target.value)} placeholder="Dr(a). Nome" className={FIELD} />
-          </div>
-          <div>
-            <label className={LABEL}>Queixa Principal</label>
-            <input value={form.queixa_principal} onChange={e => set("queixa_principal", e.target.value)} placeholder="Ex: dor de cabeça há 3 dias" className={FIELD} />
-          </div>
-          <div>
-            <label className={LABEL}>Histórico / Evolução</label>
-            <textarea value={form.historico} onChange={e => set("historico", e.target.value)} rows={2} className={`${FIELD} resize-none`} />
-          </div>
-          <div>
-            <label className={LABEL}>Diagnóstico</label>
-            <textarea value={form.diagnostico} onChange={e => set("diagnostico", e.target.value)} rows={2} className={`${FIELD} resize-none`} />
-          </div>
-          <div>
-            <label className={LABEL}>Prescrição</label>
-            <textarea value={form.prescricao} onChange={e => set("prescricao", e.target.value)} rows={2} className={`${FIELD} resize-none`} />
-          </div>
-          <div>
-            <label className={LABEL}>Exames Solicitados</label>
-            <input value={form.exames_solicitados} onChange={e => set("exames_solicitados", e.target.value)} placeholder="Ex: Hemograma completo, Raio-X tórax" className={FIELD} />
-          </div>
-          <div>
-            <label className={LABEL}>Observações</label>
-            <textarea value={form.observacoes} onChange={e => set("observacoes", e.target.value)} rows={2} className={`${FIELD} resize-none`} />
-          </div>
-        </div>
-        <div className="p-6 border-t border-[var(--color-border-subtle)] flex justify-end gap-3">
+    <Modal
+      isOpen
+      onClose={onClose}
+      maxWidth="max-w-xl"
+      title="Nova Entrada de Prontuário"
+      description="Registro clínico do atendimento, diagnóstico e prescrição médica."
+      footer={
+        <div className="flex justify-end gap-2 w-full">
           <Button variant="ghost" onClick={onClose}>Cancelar</Button>
           <Button
             onClick={() => {
@@ -88,12 +58,44 @@ function NovaEntradaModal({ onClose, onSave }: { onClose: () => void; onSave: (d
               onSave(form);
               onClose();
             }}
+            className="bg-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/90 text-white font-semibold"
           >
             Salvar no Prontuário
           </Button>
         </div>
+      }
+    >
+      <div className="space-y-4 py-1">
+        <div>
+          <label className={LABEL}>Profissional Responsável</label>
+          <input value={form.profissional} onChange={e => set("profissional", e.target.value)} placeholder="Dr(a). Nome" className={FIELD} />
+        </div>
+        <div>
+          <label className={LABEL}>Queixa Principal</label>
+          <input value={form.queixa_principal} onChange={e => set("queixa_principal", e.target.value)} placeholder="Ex: dor de cabeça há 3 dias" className={FIELD} />
+        </div>
+        <div>
+          <label className={LABEL}>Histórico / Evolução</label>
+          <textarea value={form.historico} onChange={e => set("historico", e.target.value)} rows={2} className={`${FIELD} resize-none`} />
+        </div>
+        <div>
+          <label className={LABEL}>Diagnóstico</label>
+          <textarea value={form.diagnostico} onChange={e => set("diagnostico", e.target.value)} rows={2} className={`${FIELD} resize-none`} />
+        </div>
+        <div>
+          <label className={LABEL}>Prescrição</label>
+          <textarea value={form.prescricao} onChange={e => set("prescricao", e.target.value)} rows={2} className={`${FIELD} resize-none`} />
+        </div>
+        <div>
+          <label className={LABEL}>Exames Solicitados</label>
+          <input value={form.exames_solicitados} onChange={e => set("exames_solicitados", e.target.value)} placeholder="Ex: Hemograma completo, Raio-X tórax" className={FIELD} />
+        </div>
+        <div>
+          <label className={LABEL}>Observações</label>
+          <textarea value={form.observacoes} onChange={e => set("observacoes", e.target.value)} rows={2} className={`${FIELD} resize-none`} />
+        </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 

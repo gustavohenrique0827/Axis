@@ -3,7 +3,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   Building2, Plus, Search, MapPin, DollarSign,
-  TrendingUp, CheckCircle2, ArrowRight, Trash2, X
+  TrendingUp, CheckCircle2, ArrowRight, Trash2, X, Download
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
@@ -115,14 +115,46 @@ export default function Empreendimentos() {
   const vgvTotalGeral = empreendimentos.reduce((s, e) => s + e.vgvTotal, 0);
   const unidadesTotalDisp = empreendimentos.reduce((s, e) => s + e.unidadesDisponiveis, 0);
 
+  const handleExportCSV = () => {
+    if (filtered.length === 0) {
+      toast.info("Nenhum empreendimento para exportar.");
+      return;
+    }
+    const headers = ["Nome Empreendimento", "Construtora", "Cidade / UF", "VGV Total (R$)", "Total Unidades", "Unidades Disponíveis", "Previsão Entrega", "Status"];
+    const rows = filtered.map(e => [
+      `"${e.nome.replace(/"/g, '""')}"`,
+      `"${e.construtora.replace(/"/g, '""')}"`,
+      `"${e.cidade.replace(/"/g, '""')}"`,
+      e.vgvTotal,
+      e.unidadesTotal,
+      e.unidadesDisponiveis,
+      `"${e.previsaoEntrega}"`,
+      `"${e.status}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `empreendimentos_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Empreendimentos exportados com sucesso!");
+  };
+
   return (
     <PageContainer
       title="Empreendimentos & Lançamentos"
       description="Gerenciamento de torres, condomínios fechados, espelho de vendas e tabelas de construtoras."
       actions={
-        <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
-          <Plus className="w-3.5 h-3.5" /> Novo Empreendimento
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleExportCSV} variant="outline" className="h-9 px-3.5 text-xs font-bold gap-1.5 border-[var(--color-border-default)]">
+            <Download className="w-3.5 h-3.5" /> Exportar CSV
+          </Button>
+          <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+            <Plus className="w-3.5 h-3.5" /> Novo Empreendimento
+          </Button>
+        </div>
       }
     >
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

@@ -3,7 +3,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   ClipboardList, Plus, Search, MapPin, DollarSign,
-  User, CheckCircle2, Clock, Trash2, X, Filter
+  User, CheckCircle2, Clock, Trash2, X, Filter, Download
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
@@ -115,14 +115,46 @@ export default function Captacoes() {
 
   const totalVGV = captacoes.reduce((acc, c) => acc + c.valorPretendido, 0);
 
+  const handleExportCSV = () => {
+    if (filtered.length === 0) {
+      toast.info("Nenhuma captação para exportar.");
+      return;
+    }
+    const headers = ["Endereço", "Tipo", "Proprietário", "Telefone", "Corretor Responsável", "Valor Pretendido", "Status", "Data Captação"];
+    const rows = filtered.map(c => [
+      `"${c.endereco.replace(/"/g, '""')}"`,
+      `"${c.tipo}"`,
+      `"${c.proprietario.replace(/"/g, '""')}"`,
+      `"${c.telefone}"`,
+      `"${c.corretor.replace(/"/g, '""')}"`,
+      c.valorPretendido,
+      `"${c.status}"`,
+      `"${c.data}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `captacoes_imoveis_${new Date().toISOString().split("T")[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success("Captações exportadas com sucesso!");
+  };
+
   return (
     <PageContainer
       title="Captações de Imóveis"
       description="Esteira de entrada, avaliação de mercado, documentação e inclusão de novos imóveis ao portfólio."
       actions={
-        <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
-          <Plus className="w-3.5 h-3.5" /> Nova Captação
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button onClick={handleExportCSV} variant="outline" className="h-9 px-3.5 text-xs font-bold gap-1.5 border-[var(--color-border-default)]">
+            <Download className="w-3.5 h-3.5" /> Exportar CSV
+          </Button>
+          <Button onClick={() => setModalOpen(true)} className="h-9 px-4 text-xs font-bold gap-1.5 shadow-xs">
+            <Plus className="w-3.5 h-3.5" /> Nova Captação
+          </Button>
+        </div>
       }
     >
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">

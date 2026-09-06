@@ -4,6 +4,7 @@ import {
   Clock, AlertTriangle, Plus, Trash2, X, DollarSign 
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
+import { Modal } from "../../components/ui/modal";
 import React, { useMemo, useState } from "react";
 import { useData } from "../../contexts/DataContext";
 import { toast } from "sonner";
@@ -231,95 +232,80 @@ export default function GenericFinanceiroList({ title, desc, type }: GenericProp
       </Card>
 
       {/* Creation Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-150" onClick={() => setIsModalOpen(false)}>
-          <div className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-2xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-            <div className="p-6 border-b border-[var(--color-border-subtle)] flex justify-between items-center bg-[var(--color-surface-sunken)]">
-              <div>
-                <h3 className="text-base font-bold text-[var(--color-text-primary)] flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-[var(--color-primary-blue)]" />
-                  Novo {type === 'Pagar' ? 'Gasto / Despesa' : 'Recebimento / Receita'}
-                </h3>
-                <p className="text-xs text-[var(--color-text-muted)] mt-0.5">Registre um lançamento financeiro no sistema.</p>
-              </div>
-              <button 
-                type="button"
-                onClick={() => setIsModalOpen(false)} 
-                className="w-8 h-8 rounded-full bg-[var(--color-surface)] border border-[var(--color-border-default)] flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-primary)] transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title={type === 'Pagar' ? 'Novo Gasto / Despesa' : 'Novo Recebimento / Receita'}
+        description="Registre um lançamento financeiro no sistema com classificação de categoria e vencimento."
+        maxWidth="max-w-lg"
+      >
+        <form onSubmit={handleAdd} className="space-y-4">
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Descrição do Lançamento *</label>
+            <input
+              type="text"
+              required
+              placeholder="Ex: Servidor AWS, Licença de Software, Fatura..."
+              value={newDesc}
+              onChange={(e) => setNewDesc(e.target.value)}
+              className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Categoria Financeira</label>
+            <input
+              type="text"
+              placeholder="Ex: Infraestrutura, Operacional, Marketing..."
+              value={newCategory}
+              onChange={(e) => setNewCategory(e.target.value)}
+              className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Valor (R$) *</label>
+              <input
+                type="number"
+                required
+                step="0.01"
+                placeholder="0,00"
+                value={newValue}
+                onChange={(e) => setNewValue(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] font-mono"
+              />
             </div>
 
-            <form onSubmit={handleAdd} className="p-6 space-y-4">
-              <div>
-                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Descrição do Lançamento *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ex: Servidor AWS, Licença de Software, Fatura..."
-                  value={newDesc}
-                  onChange={(e) => setNewDesc(e.target.value)}
-                  className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
-                />
-              </div>
-
-              <div>
-                <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Categoria Financeira</label>
-                <input
-                  type="text"
-                  placeholder="Ex: Infraestrutura, Operacional, Marketing..."
-                  value={newCategory}
-                  onChange={(e) => setNewCategory(e.target.value)}
-                  className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Valor (R$) *</label>
-                  <input
-                    type="number"
-                    required
-                    step="0.01"
-                    placeholder="0,00"
-                    value={newValue}
-                    onChange={(e) => setNewValue(e.target.value)}
-                    className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Data de Vencimento</label>
-                  <input
-                    type="date"
-                    value={newDate}
-                    onChange={(e) => setNewDate(e.target.value)}
-                    className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
-                  />
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-2 pt-4 border-t border-[var(--color-border-subtle)]">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsModalOpen(false)}
-                  className="h-9 px-4 text-xs font-bold border-[var(--color-border-default)]"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  className="h-9 px-5 text-xs font-bold shadow-xs"
-                >
-                  Confirmar Lançamento
-                </Button>
-              </div>
-            </form>
+            <div>
+              <label className="text-xs font-bold text-[var(--color-text-muted)] mb-1 block">Data de Vencimento</label>
+              <input
+                type="date"
+                value={newDate}
+                onChange={(e) => setNewDate(e.target.value)}
+                className="w-full bg-[var(--color-surface-sunken)] text-[var(--color-text-primary)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)]"
+              />
+            </div>
           </div>
-        </div>
-      )}
+
+          <div className="flex justify-end gap-2 pt-4 border-t border-[var(--color-border-subtle)]">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsModalOpen(false)}
+              className="h-9 px-4 text-xs font-bold border-[var(--color-border-default)]"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              className="h-9 px-5 text-xs font-bold shadow-xs"
+            >
+              Confirmar Lançamento
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }
