@@ -32,17 +32,6 @@ interface OtherUser {
   role?: string;
 }
 
-const MOCK_CHANNELS: InternalChannel[] = [
-  { id: "mock-geral", name: "geral", type: "geral", description: "Canal geral da empresa" },
-  { id: "mock-dev", name: "dev", type: "squad", description: "Squad de desenvolvimento" },
-];
-
-const MOCK_MESSAGES: Record<string, InternalMessage[]> = {
-  "mock-geral": [
-    { id: "1", channel_id: "mock-geral", sender_id: "u1", sender_name: "Sistema", content: "Bem-vindo ao chat interno! 🎉", created_at: new Date().toISOString() },
-  ],
-};
-
 export function useInternalChat() {
   const { user, activeTenantId } = useAuth();
   const tenantId = activeTenantId || user?.tenantId;
@@ -59,8 +48,6 @@ export function useInternalChat() {
   // Ensure Geral channel exists, load all channels + squads
   const loadChannels = useCallback(async () => {
     if (!supabase) {
-      setChannels(MOCK_CHANNELS);
-      setMessages(MOCK_MESSAGES);
       setLoading(false);
       return;
     }

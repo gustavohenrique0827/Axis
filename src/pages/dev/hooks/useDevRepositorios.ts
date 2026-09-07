@@ -27,12 +27,6 @@ export interface GitHubConnection {
   connected_at: string;
 }
 
-const MOCK_REPOS: DevRepo[] = [
-  { id: 1, name: "spy-crm-platform", description: "Plataforma principal do CRM S.P.Y. — React + TypeScript + Supabase", language: "TypeScript", visibility: 'private', status: 'ativo', branches: 8, stars: 14, forks: 2, lastCommit: "2h atrás", openPRs: 3, contributors: ["G.H.", "M.L.", "A.R."], size: "4.2 MB" },
-  { id: 2, name: "spy-api-gateway", description: "Gateway de APIs com autenticação, rate limiting e logging centralizado", language: "TypeScript", visibility: 'private', status: 'em desenvolvimento', branches: 4, stars: 5, forks: 0, lastCommit: "1 dia atrás", openPRs: 1, contributors: ["G.H.", "P.C."], size: "1.8 MB" },
-  { id: 3, name: "spy-mobile-app", description: "App mobile para alunos — React Native + Expo", language: "TypeScript", visibility: 'private', status: 'em desenvolvimento', branches: 6, stars: 9, forks: 0, lastCommit: "4h atrás", openPRs: 5, contributors: ["A.R.", "L.M.", "T.S."], size: "12.4 MB" },
-];
-
 function rowToRepo(row: any): DevRepo {
   return {
     id: row.id,
@@ -89,7 +83,7 @@ function ghRepoToDevRepo(gh: any): DevRepo {
 }
 
 export function useDevRepositorios() {
-  const [repos, setRepos] = useState<DevRepo[]>(supabase ? [] : MOCK_REPOS);
+  const [repos, setRepos] = useState<DevRepo[]>([]);
   const [loading, setLoading] = useState(false);
   const [githubConn, setGithubConn] = useState<GitHubConnection | null>(null);
 

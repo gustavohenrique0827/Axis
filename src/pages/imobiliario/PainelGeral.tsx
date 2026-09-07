@@ -72,46 +72,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   );
 };
 
-const DEFAULT_IMOVEIS: ImovelRow[] = [
-  { id: "im-1", titulo: "Apartamento 142 - Terraço Jardins", tipo: "Apartamento", status: "Disponível", valor: 1850000, bairro: "Jardins", cidade: "São Paulo", visitas: 14, created_at: new Date().toISOString(), operacao: "Venda" },
-  { id: "im-2", titulo: "Casa em Condomínio Fechado", tipo: "Casa", status: "Disponível", valor: 3200000, bairro: "Alphaville", cidade: "Barueri", visitas: 22, created_at: new Date().toISOString(), operacao: "Venda" },
-  { id: "im-3", titulo: "Cobertura Duplex Cerqueira César", tipo: "Cobertura", status: "Vendido", valor: 4500000, bairro: "Cerqueira César", cidade: "São Paulo", visitas: 35, created_at: new Date().toISOString(), operacao: "Venda" },
-  { id: "im-4", titulo: "Conjunto Comercial Faria Lima", tipo: "Comercial", status: "Disponível", valor: 2100000, bairro: "Itaim Bibi", cidade: "São Paulo", visitas: 8, created_at: new Date().toISOString(), operacao: "Venda" },
-  { id: "im-5", titulo: "Studio Design Vila Madalena", tipo: "Apartamento", status: "Vendido", valor: 720000, bairro: "Vila Madalena", cidade: "São Paulo", visitas: 41, created_at: new Date().toISOString(), operacao: "Venda" },
-];
-
-const DEFAULT_CORRETORES: CorretorRow[] = [
-  { nome: "Gustavo Henrique", vendas_mes: 3, vgv_mes: 6350000, meta: 5000000, avaliacao: 4.9 },
-  { nome: "Mariana Costa", vendas_mes: 2, vgv_mes: 4200000, meta: 3500000, avaliacao: 4.8 },
-  { nome: "Felipe Ramos", vendas_mes: 2, vgv_mes: 3800000, meta: 3000000, avaliacao: 4.7 },
-  { nome: "Beatriz Oliveira", vendas_mes: 1, vgv_mes: 1850000, meta: 2000000, avaliacao: 4.9 },
-];
-
-const DEFAULT_VISITAS: VisitaRow[] = [
-  { data: new Date().toISOString().split("T")[0], hora: "14:00", imovel: "Apartamento 142 - Terraço Jardins", cliente: "Dr. Marcelo Fonseca", corretor: "Gustavo Henrique", status: "Confirmada" },
-  { data: new Date().toISOString().split("T")[0], hora: "16:30", imovel: "Casa Alphaville", cliente: "Camila Guimarães", corretor: "Mariana Costa", status: "Confirmada" },
-];
-
-const DEFAULT_LEADS: LeadRow[] = [
-  { etapa: "Prospecção", orcamento: 1500000, status: "Ativo" },
-  { etapa: "Qualificação", orcamento: 2200000, status: "Ativo" },
-  { etapa: "Apresentação", orcamento: 3100000, status: "Ativo" },
-  { etapa: "Negociação", orcamento: 1800000, status: "Ativo" },
-  { etapa: "Fechamento", orcamento: 4500000, status: "Ganho" },
-];
-
 export default function ImobiliarioPainel() {
-  const [imoveis, setImoveis] = useState<ImovelRow[]>(() => {
-    try {
-      const saved = localStorage.getItem("spy_imobiliario_imoveis_painel");
-      if (saved) return JSON.parse(saved);
-    } catch (e) {}
-    return DEFAULT_IMOVEIS;
-  });
+  const [imoveis, setImoveis] = useState<ImovelRow[]>([]);
   const [veiculos, setVeiculos] = useState<VeiculoRow[]>([]);
-  const [corretores, setCorretores] = useState<CorretorRow[]>(DEFAULT_CORRETORES);
-  const [visitas, setVisitas] = useState<VisitaRow[]>(DEFAULT_VISITAS);
-  const [leads, setLeads] = useState<LeadRow[]>(DEFAULT_LEADS);
+  const [corretores, setCorretores] = useState<CorretorRow[]>([]);
+  const [visitas, setVisitas] = useState<VisitaRow[]>([]);
+  const [leads, setLeads] = useState<LeadRow[]>([]);
   const [activePie, setActivePie] = useState<number | null>(null);
 
   useEffect(() => {
@@ -124,13 +90,13 @@ export default function ImobiliarioPainel() {
       supabase.from("imobiliario_visitas").select("data,hora,imovel,cliente,corretor,status").gte("data", today).order("data").limit(5),
       supabase.from("imobiliario_leads").select("etapa,orcamento,status"),
     ]).then(([im, vei, cor, vis, lea]) => {
-      if (im.data && im.data.length > 0) setImoveis(im.data);
-      if (vei.data && vei.data.length > 0) setVeiculos(vei.data);
-      if (cor.data && cor.data.length > 0) setCorretores(cor.data);
-      if (vis.data && vis.data.length > 0) setVisitas(vis.data);
-      if (lea.data && lea.data.length > 0) setLeads(lea.data);
+      setImoveis(im.data ?? []);
+      setVeiculos(vei.data ?? []);
+      setCorretores(cor.data ?? []);
+      setVisitas(vis.data ?? []);
+      setLeads(lea.data ?? []);
     }).catch(err => {
-      console.warn("Imobiliario painel data loaded from cache/defaults:", err);
+      console.error("[Supabase] Imobiliario painel:", err);
     });
   }, []);
 

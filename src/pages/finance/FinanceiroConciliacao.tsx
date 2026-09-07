@@ -10,6 +10,7 @@ import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
+import { supabase } from "../../lib/supabase";
 
 type ExtratoItem = {
   id: string;
@@ -23,52 +24,131 @@ type ExtratoItem = {
   matchSugerido?: string;
 };
 
-const INITIAL_EXTRATO: ExtratoItem[] = [
-  { id: "tx_1", data: "05/09/2026", descricao: "TED 033.4893 - ENERGIA SOLAR BR", documento: "DOC 819283", valor: 14500, tipo: "credito", banco: "Itaú Empresas", conciliado: true, matchSugerido: "Fatura Solar #1042" },
-  { id: "tx_2", data: "05/09/2026", descricao: "PIX TRANSF - SILVA IMOVEIS LTDA", documento: "E209384918", valor: 5500, tipo: "credito", banco: "Inter PJ", conciliado: true, matchSugerido: "Comissão Captação #89" },
-  { id: "tx_3", data: "06/09/2026", descricao: "DEB AUT - CEMIG DISTRIBUICAO S.A.", documento: "DEB 291039", valor: 840.50, tipo: "debito", banco: "Itaú Empresas", conciliado: false, matchSugerido: "Conta de Energia (CC-04)" },
-  { id: "tx_4", data: "06/09/2026", descricao: "PGTO FORNECEDOR - WEG DRIVES", documento: "TED 910293", valor: 28900, tipo: "debito", banco: "Inter PJ", conciliado: false, matchSugerido: "Inversores Fotovoltaicos" },
-];
+// Parser simples de CSV de extrato: espera colunas
+// data,descricao,valor[,tipo] (tipo opcional — inferido pelo sinal do valor
+// quando ausente). Não cobre o formato OFX (SGML) — só CSV/TXT delimitado.
+function parseExtratoCsv(text: string, bancoLabel: string): ExtratoItem[] {
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  const items: ExtratoItem[] = [];
+  for (const line of lines) {
+    const cols = line.split(/[,;]/).map(c => c.trim().replace(/^"|"$/g, ""));
+    if (cols.length < 3) continue;
+    const [dataRaw, descricao, valorRaw, tipoRaw] = cols;
+    const valorNum = parseFloat(valorRaw.replace(/\./g, "").replace(",", "."));
+    if (!descricao || isNaN(valorNum)) continue;
+    const tipo: "credito" | "debito" =
+      tipoRaw?.toLowerCase().startsWith("d") ? "debito"
+      : tipoRaw?.toLowerCase().startsWith("c") ? "credito"
+      : valorNum < 0 ? "debito" : "credito";
+    items.push({
+      id: `tx_${Date.now()}_${items.length}`,
+      data: dataRaw || new Date().toLocaleDateString("pt-BR"),
+      descricao,
+      documento: "-",
+      valor: Math.abs(valorNum),
+      tipo,
+      banco: bancoLabel,
+      conciliado: false,
+    });
+  }
+  return items;
+}
 
 export default function FinanceiroConciliacao() {
-  const { user } = useAuth();
-  const tenantId = user?.tenant_id || "default";
-  const storageKey = `spy_conciliacao_extrato_${tenantId}`;
+  const { activeTenantId } = useAuth();
+  const { financeEntries } = useData();
 
-  const [extrato, setExtrato] = useState<ExtratoItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return INITIAL_EXTRATO;
-  });
+  const [extrato, setExtrato] = useState<ExtratoItem[]>([]);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(extrato));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [extrato, storageKey]);
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase!
+        .from("finance_extratos_importados")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (cancelled) return;
+      if (error) {
+        toast.error("Erro ao carregar extrato importado: " + error.message);
+        return;
+      }
+      const mapped: ExtratoItem[] = (data || []).map((row: any) => ({
+        id: row.id,
+        data: row.data,
+        descricao: row.descricao,
+        documento: row.documento,
+        valor: row.valor,
+        tipo: row.tipo,
+        banco: row.banco,
+        conciliado: row.conciliado,
+        matchSugerido: row.match_sugerido,
+      }));
+      setExtrato(mapped);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTenantId]);
 
   const conciliados = extrato.filter(e => e.conciliado).length;
   const pendentes = extrato.filter(e => !e.conciliado).length;
 
+  // Concilia comparando cada lançamento do extrato com os lançamentos
+  // financeiros reais (mesmo valor, tolerância de 1 centavo, ainda não usado
+  // como match de outro item) — não é mais um "toggle tudo pra true".
   const handleConciliarAuto = () => {
     setIsProcessing(true);
     setTimeout(() => {
-      setExtrato(prev => prev.map(item => ({ ...item, conciliado: true })));
+      const usedEntryIds = new Set<string>();
+      let matched = 0;
+      setExtrato(prev =>
+        prev.map(item => {
+          if (item.conciliado) return item;
+          const entry = (financeEntries || []).find(fe =>
+            !usedEntryIds.has(fe.id) &&
+            Math.abs(Number(fe.value) - item.valor) < 0.01 &&
+            (item.tipo === "credito" ? fe.type === "Receber" : fe.type === "Pagar")
+          );
+          if (!entry) return item;
+          usedEntryIds.add(entry.id);
+          matched++;
+          if (supabase) {
+            supabase
+              .from("finance_extratos_importados")
+              .update({ conciliado: true, match_sugerido: entry.description })
+              .eq("id", item.id)
+              .then(({ error }) => {
+                if (error) console.error("Erro ao persistir conciliação automática:", error);
+              });
+          }
+          return { ...item, conciliado: true, matchSugerido: entry.description };
+        })
+      );
       setIsProcessing(false);
-      toast.success("Conciliação bancária por IA concluída! Todas as transações foram correspondidas.");
-    }, 1200);
+      if (matched > 0) {
+        toast.success(`${matched} transação(ões) conciliada(s) automaticamente com o financeiro.`);
+      } else {
+        toast.info("Nenhum lançamento financeiro correspondente foi encontrado para conciliar.");
+      }
+    }, 600);
   };
 
-  const handleManualMatch = (id: string) => {
+  const handleManualMatch = async (id: string) => {
+    if (supabase) {
+      const { error } = await supabase
+        .from("finance_extratos_importados")
+        .update({ conciliado: true })
+        .eq("id", id);
+      if (error) {
+        toast.error("Erro ao conciliar transação: " + error.message);
+        return;
+      }
+    }
     setExtrato(prev =>
       prev.map(item => (item.id === id ? { ...item, conciliado: true } : item))
     );
@@ -79,38 +159,49 @@ export default function FinanceiroConciliacao() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Simulating parsing OFX/CSV
-    toast.loading(`Processando arquivo "${file.name}"...`, { id: "ofx-import" });
-    setTimeout(() => {
-      const newItems: ExtratoItem[] = [
-        {
-          id: "tx_" + Date.now() + "_1",
-          data: new Date().toLocaleDateString("pt-BR"),
-          descricao: `PIX RECEBIDO - NOVO CLIENTE (${file.name})`,
-          documento: "DOC " + Math.floor(100000 + Math.random() * 900000),
-          valor: 3200,
-          tipo: "credito",
-          banco: "Itaú Empresas",
-          conciliado: false,
-          matchSugerido: "Honorários Recorrentes",
-        },
-        {
-          id: "tx_" + Date.now() + "_2",
-          data: new Date().toLocaleDateString("pt-BR"),
-          descricao: `TARIFA PACOTE SERVICOS BANCARIOS`,
-          documento: "DEB " + Math.floor(100000 + Math.random() * 900000),
-          valor: 89.90,
-          tipo: "debito",
-          banco: "Itaú Empresas",
-          conciliado: false,
-          matchSugerido: "Despesas Bancárias (CC-04)",
-        }
-      ];
-
-      setExtrato(prev => [...newItems, ...prev]);
-      toast.success(`Arquivo OFX "${file.name}" importado! 2 novas transações identificadas.`, { id: "ofx-import" });
+    if (file.name.toLowerCase().endsWith(".ofx")) {
+      toast.error("Importação de OFX ainda não é suportada — exporte o extrato como CSV (data, descrição, valor).");
       if (fileInputRef.current) fileInputRef.current.value = "";
-    }, 1000);
+      return;
+    }
+
+    toast.loading(`Processando arquivo "${file.name}"...`, { id: "ofx-import" });
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const text = String(reader.result || "");
+      const newItems = parseExtratoCsv(text, "Conta Importada");
+      if (newItems.length === 0) {
+        toast.error(`Não foi possível reconhecer lançamentos em "${file.name}". Confira o formato (data,descrição,valor).`, { id: "ofx-import" });
+      } else if (!supabase || !activeTenantId) {
+        toast.error("Não foi possível salvar o extrato: conexão com o banco de dados indisponível.", { id: "ofx-import" });
+      } else {
+        const { error } = await supabase.from("finance_extratos_importados").insert(
+          newItems.map(it => ({
+            id: it.id,
+            tenant_id: activeTenantId,
+            data: it.data,
+            descricao: it.descricao,
+            documento: it.documento,
+            valor: it.valor,
+            tipo: it.tipo,
+            banco: it.banco,
+            conciliado: it.conciliado,
+          }))
+        );
+        if (error) {
+          toast.error(`Erro ao salvar extrato importado: ${error.message}`, { id: "ofx-import" });
+        } else {
+          setExtrato(prev => [...newItems, ...prev]);
+          toast.success(`Arquivo "${file.name}" importado! ${newItems.length} transação(ões) identificada(s).`, { id: "ofx-import" });
+        }
+      }
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+    reader.onerror = () => {
+      toast.error(`Falha ao ler o arquivo "${file.name}".`, { id: "ofx-import" });
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+    reader.readAsText(file);
   };
 
   return (

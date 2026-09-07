@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface ConsignacaoItem {
   id: string;
@@ -17,35 +18,74 @@ interface ConsignacaoItem {
   telefone: string;
   valorPedido: number;
   comissaoAgencia: string;
+  comissaoPercentual: number;
   repasseCombinado: number;
   status: "No Pátio" | "Em Negociação" | "Vendido / Repasse Pendente" | "Repassado & Finalizado";
   data: string;
 }
 
-const DEFAULT_CONSIGNACOES: ConsignacaoItem[] = [
-  { id: "1", veiculo: "Mercedes-Benz C200 AMG Line 2022", consignante: "Eduardo Prado", telefone: "(11) 98888-1122", valorPedido: 215000, comissaoAgencia: "6%", repasseCombinado: 202100, status: "No Pátio", data: "04/09/2026" },
-  { id: "2", veiculo: "Audi Q3 Prestige Plus 2023", consignante: "Juliana Rocha", telefone: "(11) 97777-3344", valorPedido: 195000, comissaoAgencia: "5%", repasseCombinado: 185250, status: "Vendido / Repasse Pendente", data: "02/09/2026" },
-  { id: "3", veiculo: "BMW 320i M Sport 2023", consignante: "Fábio Vasconcelos", telefone: "(11) 99111-2233", valorPedido: 260000, comissaoAgencia: "5%", repasseCombinado: 247000, status: "No Pátio", data: "31/08/2026" },
-];
+// Deriva o status "de negócio" (exibido nesta tela) a partir das colunas reais
+// de imobiliario_veiculos: status (Disponível/Reservado/Vendido/Em Preparação)
+// + repasse_realizado. Não existe uma coluna própria pra esses 4 rótulos.
+function derivarStatus(dbStatus: string, repasseRealizado: boolean): ConsignacaoItem["status"] {
+  if (dbStatus === "Vendido") return repasseRealizado ? "Repassado & Finalizado" : "Vendido / Repasse Pendente";
+  if (dbStatus === "Reservado") return "Em Negociação";
+  return "No Pátio";
+}
+
+function statusParaColunas(status: ConsignacaoItem["status"]): { status: string; repasse_realizado: boolean } {
+  switch (status) {
+    case "Repassado & Finalizado": return { status: "Vendido", repasse_realizado: true };
+    case "Vendido / Repasse Pendente": return { status: "Vendido", repasse_realizado: false };
+    case "Em Negociação": return { status: "Reservado", repasse_realizado: false };
+    default: return { status: "Disponível", repasse_realizado: false };
+  }
+}
+
+function rowToConsignacao(r: any): ConsignacaoItem {
+  const pct = Number(r.comissao_percentual) || 0;
+  const valor = Number(r.valor) || 0;
+  return {
+    id: r.id,
+    veiculo: `${r.marca ?? ""} ${r.modelo ?? ""}`.trim(),
+    consignante: r.consignante_nome || "",
+    telefone: r.consignante_telefone || "",
+    valorPedido: valor,
+    comissaoAgencia: `${pct}%`,
+    comissaoPercentual: pct,
+    repasseCombinado: Math.round(valor * (1 - pct / 100)),
+    status: derivarStatus(r.status, !!r.repasse_realizado),
+    data: r.created_at ? new Date(r.created_at).toLocaleDateString("pt-BR") : "",
+  };
+}
 
 export default function ConsignacoesVeiculos() {
   const { activeTenantId } = useAuth();
-  const storageKey = `spy_consignacoes_${activeTenantId || "default"}`;
 
-  const [consignacoes, setConsignacoes] = useState<ConsignacaoItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_CONSIGNACOES;
-    } catch {
-      return DEFAULT_CONSIGNACOES;
-    }
-  });
+  const [consignacoes, setConsignacoes] = useState<ConsignacaoItem[]>([]);
+
+  const refetch = () => {
+    if (!supabase || !activeTenantId) return;
+    supabase
+      .from("imobiliario_veiculos")
+      .select("*")
+      .eq("tenant_id", activeTenantId)
+      .eq("is_consignado", true)
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) toast.error(`Erro ao carregar consignações: ${error.message}`);
+        else if (data) setConsignacoes(data.map(rowToConsignacao));
+      });
+  };
+
+  useEffect(() => { refetch(); }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
   const [modalOpen, setModalOpen] = useState(false);
 
   // Form state
+  const [marca, setMarca] = useState("");
   const [veiculo, setVeiculo] = useState("");
   const [consignante, setConsignante] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -53,18 +93,14 @@ export default function ConsignacoesVeiculos() {
   const [comissaoPercent, setComissaoPercent] = useState("5");
   const [status, setStatus] = useState<ConsignacaoItem["status"]>("No Pátio");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(consignacoes));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [consignacoes, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!veiculo.trim() || !consignante.trim()) {
-      toast.error("Preencha o modelo do veículo e o nome do proprietário.");
+    if (!marca.trim() || !veiculo.trim() || !consignante.trim()) {
+      toast.error("Preencha a marca, o modelo do veículo e o nome do proprietário.");
+      return;
+    }
+    if (!supabase || !activeTenantId) {
+      toast.error("Supabase não configurado.");
       return;
     }
 
@@ -78,36 +114,61 @@ export default function ConsignacoesVeiculos() {
     };
     const numPedido = cleanMoney(valorPedido);
     const pct = parseFloat(comissaoPercent.replace(",", ".")) || 5;
-    const repasse = Math.round(numPedido * (1 - pct / 100));
+    const { status: dbStatus, repasse_realizado } = statusParaColunas(status);
 
-    const newItem: ConsignacaoItem = {
-      id: crypto.randomUUID(),
-      veiculo: veiculo.trim(),
-      consignante: consignante.trim(),
-      telefone: telefone.trim(),
-      valorPedido: numPedido,
-      comissaoAgencia: `${pct}%`,
-      repasseCombinado: repasse,
-      status,
-      data: new Date().toLocaleDateString("pt-BR"),
-    };
+    const { data, error } = await supabase
+      .from("imobiliario_veiculos")
+      .insert({
+        marca: marca.trim(),
+        modelo: veiculo.trim(),
+        valor: numPedido,
+        status: dbStatus,
+        is_consignado: true,
+        consignante_nome: consignante.trim(),
+        consignante_telefone: telefone.trim() || null,
+        comissao_percentual: pct,
+        repasse_realizado,
+      })
+      .select()
+      .maybeSingle();
 
-    setConsignacoes(prev => [newItem, ...prev]);
+    if (error) {
+      toast.error(`Erro ao registrar consignação: ${error.message}`);
+      return;
+    }
+
+    if (data) setConsignacoes(prev => [rowToConsignacao(data), ...prev]);
     toast.success("Veículo consignado com sucesso!");
     setModalOpen(false);
 
+    setMarca("");
     setVeiculo("");
     setConsignante("");
     setTelefone("");
     setValorPedido("");
   };
 
-  const handleDelete = (id: string) => {
+  // Remove a consignação (o veículo em si permanece no estoque — ele só
+  // deixa de ser tratado como consignado).
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase
+      .from("imobiliario_veiculos")
+      .update({ is_consignado: false, consignante_nome: null, consignante_telefone: null, comissao_percentual: null, repasse_realizado: false })
+      .eq("id", id);
+    if (error) { toast.error(`Erro ao remover consignação: ${error.message}`); return; }
     setConsignacoes(prev => prev.filter(c => c.id !== id));
-    toast.info("Consignação removida.");
+    toast.info("Consignação removida (o veículo permanece no estoque).");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: ConsignacaoItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: ConsignacaoItem["status"]) => {
+    if (!supabase) return;
+    const { status: dbStatus, repasse_realizado } = statusParaColunas(newStatus);
+    const { error } = await supabase
+      .from("imobiliario_veiculos")
+      .update({ status: dbStatus, repasse_realizado })
+      .eq("id", id);
+    if (error) { toast.error(`Erro ao atualizar status: ${error.message}`); return; }
     setConsignacoes(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
     toast.success(`Status atualizado para: ${newStatus}`);
   };
@@ -297,16 +358,29 @@ export default function ConsignacoesVeiculos() {
         }
       >
         <form id="form-consignacao" onSubmit={handleCreate} className="space-y-4 py-1">
-          <div>
-            <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Veículo / Modelo</label>
-            <input
-              type="text"
-              required
-              placeholder="Ex: BMW X1 sDrive20i GP 2022"
-              value={veiculo}
-              onChange={e => setVeiculo(e.target.value)}
-              className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Marca</label>
+              <input
+                type="text"
+                required
+                placeholder="Ex: BMW"
+                value={marca}
+                onChange={e => setMarca(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Modelo</label>
+              <input
+                type="text"
+                required
+                placeholder="Ex: X1 sDrive20i GP 2022"
+                value={veiculo}
+                onChange={e => setVeiculo(e.target.value)}
+                className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

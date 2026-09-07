@@ -64,48 +64,10 @@ export default function VarejoEstoque() {
   const [formStockMin, setFormStockMin] = useState("5");
   const [formProvider, setFormProvider] = useState("");
 
-  // Histórico de Movimentações
-  const storageMovKey = `spy_estoque_mov_${tenantId}`;
-  const [historico, setHistorico] = useState<Movimentacao[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageMovKey);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return [
-      {
-        id: "mov-1",
-        product_id: "prod-1",
-        tipo: "entrada",
-        quantidade: 20,
-        motivo: "Recebimento Nota Fiscal PC-101",
-        created_at: new Date(Date.now() - 3600000 * 24).toISOString(),
-      },
-      {
-        id: "mov-2",
-        product_id: "prod-2",
-        tipo: "venda",
-        quantidade: -1,
-        motivo: "Venda PDV VND-900",
-        created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-      },
-      {
-        id: "mov-3",
-        product_id: "prod-3",
-        tipo: "entrada",
-        quantidade: 50,
-        motivo: "Reposição Distribuidora Tech",
-        created_at: new Date(Date.now() - 3600000 * 48).toISOString(),
-      },
-    ];
-  });
+  // Histórico de Movimentações — vem só da tabela real `estoque_movimentacoes`
+  // (RLS já escopa por tenant); sem seed local nem cache em localStorage.
+  const [historico, setHistorico] = useState<Movimentacao[]>([]);
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageMovKey, JSON.stringify(historico));
-    } catch {}
-  }, [historico, storageMovKey]);
-
-  // Carregar histórico adicional do Supabase se disponível
   useEffect(() => {
     if (!supabase) return;
     supabase
@@ -114,12 +76,8 @@ export default function VarejoEstoque() {
       .order("created_at", { ascending: false })
       .limit(50)
       .then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
-          setHistorico((prev) => {
-            const ids = new Set(prev.map((m) => m.id));
-            const novos = data.filter((d: any) => !ids.has(d.id));
-            return [...prev, ...novos];
-          });
+        if (!error && data) {
+          setHistorico(data);
         }
       });
   }, []);
@@ -238,9 +196,6 @@ export default function VarejoEstoque() {
         p.id === ajusteProduct.id ? { ...p, currentStock: novoSaldo } : p
       );
       setProducts(updatedList);
-      try {
-        localStorage.setItem(`spy_products_${tenantId}`, JSON.stringify(updatedList));
-      } catch {}
 
       // 2. Registrar no histórico
       const novaMov: Movimentacao = {

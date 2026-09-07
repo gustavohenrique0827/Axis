@@ -9,7 +9,12 @@ import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
+// Status alinhado ao CHECK constraint real de veiculo_financiamentos —
+// não existe um "Contrato Assinado" separado no banco; usamos os mesmos
+// 4 valores já usados pelo simulador de financiamento em
+// src/pages/imobiliario/components/VeiculoFinanciamentoModal.tsx.
 interface TrocaItem {
   id: string;
   cliente: string;
@@ -20,27 +25,61 @@ interface TrocaItem {
   valorSaida: number;
   diferenca: number;
   formaPagamento: string;
-  status: "Em Análise de Crédito" | "Proposta Aceita" | "Contrato Assinado" | "Cancelado";
+  status: "Em Análise" | "Aprovado" | "Recusado" | "Documentação Pendente";
   data: string;
 }
 
-const DEFAULT_TROCAS: TrocaItem[] = [
-  { id: "1", cliente: "Fábio Vasconcelos", telefone: "(11) 98888-2233", veiculoEntrada: "Ford Ka 1.0 SE 2019", valorEntrada: 42000, veiculoSaida: "Jeep Compass Longitude 2023", valorSaida: 152000, diferenca: 110000, formaPagamento: "Entrada + Financiamento Santander", status: "Em Análise de Crédito", data: "05/09/2026" },
-  { id: "2", cliente: "Beatriz Nogueira", telefone: "(11) 97777-4455", veiculoEntrada: "Hyundai HB20 1.6 2020", valorEntrada: 58000, veiculoSaida: "Toyota Corolla Cross XRE 2022", valorSaida: 138000, diferenca: 80000, formaPagamento: "À Vista via Pix", status: "Proposta Aceita", data: "03/09/2026" },
-];
+type VeiculoOption = { id: string; label: string; valor: number };
+
+function rowToTroca(r: any): TrocaItem {
+  const valorVeiculo = Number(r.valor_veiculo) || 0;
+  const valorTroca = Number(r.veiculo_troca_valor) || 0;
+  return {
+    id: r.id,
+    cliente: r.cliente,
+    telefone: r.telefone || "",
+    veiculoEntrada: r.veiculo_troca_descricao || "",
+    valorEntrada: valorTroca,
+    veiculoSaida: r.imobiliario_veiculos ? `${r.imobiliario_veiculos.marca} ${r.imobiliario_veiculos.modelo}` : "Veículo",
+    valorSaida: valorVeiculo,
+    diferenca: Number(r.valor_financiado) || 0,
+    formaPagamento: r.observacoes?.replace(/^Forma de pagamento:\s*/, "") || r.banco_financeira || "",
+    status: r.status,
+    data: r.created_at ? new Date(r.created_at).toLocaleDateString("pt-BR") : "",
+  };
+}
 
 export default function TrocasVeiculos() {
   const { activeTenantId } = useAuth();
-  const storageKey = `spy_trocas_veiculos_${activeTenantId || "default"}`;
 
-  const [trocas, setTrocas] = useState<TrocaItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_TROCAS;
-    } catch {
-      return DEFAULT_TROCAS;
-    }
-  });
+  const [trocas, setTrocas] = useState<TrocaItem[]>([]);
+  const [veiculosOptions, setVeiculosOptions] = useState<VeiculoOption[]>([]);
+
+  const refetch = () => {
+    if (!supabase || !activeTenantId) return;
+    supabase
+      .from("veiculo_financiamentos")
+      .select("*, imobiliario_veiculos(marca,modelo)")
+      .eq("tenant_id", activeTenantId)
+      .not("veiculo_troca_descricao", "is", null)
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) toast.error(`Erro ao carregar trocas: ${error.message}`);
+        else if (data) setTrocas(data.map(rowToTroca));
+      });
+  };
+
+  useEffect(() => {
+    refetch();
+    if (!supabase || !activeTenantId) return;
+    supabase
+      .from("imobiliario_veiculos")
+      .select("id,marca,modelo,valor")
+      .eq("tenant_id", activeTenantId)
+      .then(({ data }) => {
+        if (data) setVeiculosOptions(data.map((v: any) => ({ id: v.id, label: `${v.marca} ${v.modelo}`, valor: Number(v.valor) || 0 })));
+      });
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -51,23 +90,17 @@ export default function TrocasVeiculos() {
   const [telefone, setTelefone] = useState("");
   const [veiculoEntrada, setVeiculoEntrada] = useState("");
   const [valorEntrada, setValorEntrada] = useState("");
-  const [veiculoSaida, setVeiculoSaida] = useState("");
-  const [valorSaida, setValorSaida] = useState("");
+  const [veiculoSaidaId, setVeiculoSaidaId] = useState("");
   const [formaPagamento, setFormaPagamento] = useState("Financiamento Bancário");
-  const [status, setStatus] = useState<TrocaItem["status"]>("Em Análise de Crédito");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(trocas));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [trocas, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!cliente.trim() || !veiculoEntrada.trim() || !veiculoSaida.trim()) {
-      toast.error("Preencha o cliente e os dois veículos envolvidos na troca.");
+    if (!cliente.trim() || !veiculoEntrada.trim() || !veiculoSaidaId) {
+      toast.error("Preencha o cliente, o veículo de entrada e selecione o veículo de saída.");
+      return;
+    }
+    if (!supabase || !activeTenantId) {
+      toast.error("Supabase não configurado.");
       return;
     }
 
@@ -80,24 +113,34 @@ export default function TrocasVeiculos() {
       return parseFloat(s.replace(/[^\d.]/g, "")) || 0;
     };
     const vEntrada = cleanMoney(valorEntrada);
-    const vSaida = cleanMoney(valorSaida);
+    const veiculoSaida = veiculosOptions.find(v => v.id === veiculoSaidaId);
+    const vSaida = veiculoSaida?.valor || 0;
     const diff = Math.max(0, vSaida - vEntrada);
 
-    const newItem: TrocaItem = {
-      id: crypto.randomUUID(),
-      cliente: cliente.trim(),
-      telefone: telefone.trim(),
-      veiculoEntrada: veiculoEntrada.trim(),
-      valorEntrada: vEntrada,
-      veiculoSaida: veiculoSaida.trim(),
-      valorSaida: vSaida,
-      diferenca: diff,
-      formaPagamento,
-      status,
-      data: new Date().toLocaleDateString("pt-BR"),
-    };
+    const { data: row, error } = await supabase
+      .from("veiculo_financiamentos")
+      .insert({
+        veiculo_id: veiculoSaidaId,
+        cliente: cliente.trim(),
+        telefone: telefone.trim() || null,
+        valor_veiculo: vSaida,
+        valor_entrada: 0,
+        valor_financiado: diff,
+        parcelas: 1,
+        veiculo_troca_descricao: veiculoEntrada.trim(),
+        veiculo_troca_valor: vEntrada,
+        observacoes: `Forma de pagamento: ${formaPagamento}`,
+        status: "Em Análise",
+      })
+      .select("*, imobiliario_veiculos(marca,modelo)")
+      .maybeSingle();
 
-    setTrocas(prev => [newItem, ...prev]);
+    if (error) {
+      toast.error(`Erro ao cadastrar troca: ${error.message}`);
+      return;
+    }
+
+    if (row) setTrocas(prev => [rowToTroca(row), ...prev]);
     toast.success("Negociação de troca cadastrada com sucesso!");
     setModalOpen(false);
 
@@ -105,16 +148,21 @@ export default function TrocasVeiculos() {
     setTelefone("");
     setVeiculoEntrada("");
     setValorEntrada("");
-    setVeiculoSaida("");
-    setValorSaida("");
+    setVeiculoSaidaId("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("veiculo_financiamentos").delete().eq("id", id);
+    if (error) { toast.error(`Erro ao remover troca: ${error.message}`); return; }
     setTrocas(prev => prev.filter(t => t.id !== id));
     toast.info("Troca removida.");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: TrocaItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: TrocaItem["status"]) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("veiculo_financiamentos").update({ status: newStatus }).eq("id", id);
+    if (error) { toast.error(`Erro ao atualizar status: ${error.message}`); return; }
     setTrocas(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
     toast.success(`Status da troca: ${newStatus}`);
   };
@@ -171,7 +219,7 @@ export default function TrocasVeiculos() {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-          {["Todos", "Em Análise de Crédito", "Proposta Aceita", "Contrato Assinado", "Cancelado"].map(st => (
+          {["Todos", "Em Análise", "Aprovado", "Recusado", "Documentação Pendente"].map(st => (
             <button
               key={st}
               onClick={() => setFilterStatus(st)}
@@ -210,10 +258,10 @@ export default function TrocasVeiculos() {
                 onChange={e => handleUpdateStatus(t.id, e.target.value as any)}
                 className="text-[10px] font-bold uppercase px-2.5 py-1 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)] focus:outline-none"
               >
-                <option value="Em Análise de Crédito">Em Análise de Crédito</option>
-                <option value="Proposta Aceita">Proposta Aceita</option>
-                <option value="Contrato Assinado">Contrato Assinado</option>
-                <option value="Cancelado">Cancelado</option>
+                <option value="Em Análise">Em Análise</option>
+                <option value="Aprovado">Aprovado</option>
+                <option value="Recusado">Recusado</option>
+                <option value="Documentação Pendente">Documentação Pendente</option>
               </select>
 
               <Button size="sm" variant="ghost" onClick={() => handleDelete(t.id)} className="h-8 w-8 p-0 text-red-500 hover:bg-red-500/10 rounded-xl">
@@ -313,21 +361,17 @@ export default function TrocasVeiculos() {
 
           <div className="p-3 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] space-y-2">
             <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">Veículo Pretendido (Loja)</span>
-            <input
-              type="text"
+            <select
               required
-              placeholder="Modelo: ex. Compass Longitude 2022"
-              value={veiculoSaida}
-              onChange={e => setVeiculoSaida(e.target.value)}
+              value={veiculoSaidaId}
+              onChange={e => setVeiculoSaidaId(e.target.value)}
               className="w-full px-3 py-1.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-            />
-            <input
-              type="text"
-              placeholder="Preço de venda (R$): ex. 140.000"
-              value={valorSaida}
-              onChange={e => setValorSaida(e.target.value)}
-              className="w-full px-3 py-1.5 text-xs bg-[var(--color-surface)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-            />
+            >
+              <option value="">Selecione um veículo do estoque...</option>
+              {veiculosOptions.map(v => (
+                <option key={v.id} value={v.id}>{v.label} — R$ {v.valor.toLocaleString("pt-BR")}</option>
+              ))}
+            </select>
           </div>
 
           <div>

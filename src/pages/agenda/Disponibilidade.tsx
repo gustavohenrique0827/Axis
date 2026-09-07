@@ -3,7 +3,7 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import { Clock, Check, Save, Calendar, Coffee, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { useAuth } from "../../contexts/AuthContext";
+import { useData } from "../../contexts/DataContext";
 
 type DiaSemana = {
   id: string;
@@ -23,46 +23,26 @@ const DEFAULT_DIAS: DiaSemana[] = [
   { id: "dom", label: "Domingo", ativo: false, inicio: "09:00", fim: "12:00" },
 ];
 
+const SETTING_KEY = "agenda_disponibilidade";
+
 export default function Disponibilidade() {
-  const { user } = useAuth();
-  const tenantId = user?.tenant_id || "default";
-  const storageKey = `spy_agenda_disponibilidade_${tenantId}`;
+  const { appSettings, appSettingsLoaded, saveAppSetting } = useData();
 
-  const [dias, setDias] = useState<DiaSemana[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed.dias) return parsed.dias;
-      }
-    } catch (e) {
-      console.error(e);
-    }
-    return DEFAULT_DIAS;
-  });
-
-  const [duracaoPadrao, setDuracaoPadrao] = useState(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) return JSON.parse(saved).duracaoPadrao || "45";
-    } catch (e) {
-      console.error(e);
-    }
-    return "45";
-  });
-
-  const [intervalo, setIntervalo] = useState(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) return JSON.parse(saved).intervalo || "15";
-    } catch (e) {
-      console.error(e);
-    }
-    return "15";
-  });
+  const [dias, setDias] = useState<DiaSemana[]>(DEFAULT_DIAS);
+  const [duracaoPadrao, setDuracaoPadrao] = useState("45");
+  const [intervalo, setIntervalo] = useState("15");
 
   const [almoçoInicio, setAlmocoInicio] = useState("12:00");
   const [almoçoFim, setAlmocoFim] = useState("13:00");
+
+  useEffect(() => {
+    if (appSettingsLoaded && appSettings?.[SETTING_KEY]) {
+      const saved = appSettings[SETTING_KEY];
+      setDias(saved.dias || DEFAULT_DIAS);
+      setDuracaoPadrao(saved.duracaoPadrao || "45");
+      setIntervalo(saved.intervalo || "15");
+    }
+  }, [appSettings, appSettingsLoaded]);
 
   const handleToggleDia = (id: string) => {
     setDias(prev =>
@@ -76,12 +56,9 @@ export default function Disponibilidade() {
     );
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
-      localStorage.setItem(
-        storageKey,
-        JSON.stringify({ dias, duracaoPadrao, intervalo, almoçoInicio, almoçoFim })
-      );
+      await saveAppSetting(SETTING_KEY, { dias, duracaoPadrao, intervalo, almoçoInicio, almoçoFim });
       toast.success("Grade de horários e disponibilidade salva com sucesso!");
     } catch (e) {
       toast.error("Erro ao salvar disponibilidade.");

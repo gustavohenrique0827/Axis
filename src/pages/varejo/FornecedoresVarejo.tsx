@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface FornecedorItem {
   id: string;
@@ -21,24 +22,39 @@ interface FornecedorItem {
   categorias: string;
 }
 
-const DEFAULT_FORNECEDORES: FornecedorItem[] = [
-  { id: "1", razaoSocial: "Distribuidora Tech Brasil Ltda", cnpj: "12.345.678/0001-90", contato: "Marcos Vinicius", telefone: "(11) 3214-5500", email: "pedidos@techbrasil.com.br", prazoEntrega: "3 dias úteis", categorias: "Acessórios, Cabos, Carregadores" },
-  { id: "2", razaoSocial: "Global Imports Eletrônicos SA", cnpj: "98.765.432/0001-10", contato: "Fernanda Dias", telefone: "(11) 3322-8899", email: "vendas@globalimports.com", prazoEntrega: "5 dias úteis", categorias: "Smartwatches, Áudio, Fones" },
-  { id: "3", razaoSocial: "Atacadista Master Varejo", cnpj: "45.123.890/0001-33", contato: "Carlos Eduardo", telefone: "(19) 3881-2200", email: "comercial@mastervarejo.com.br", prazoEntrega: "2 dias úteis", categorias: "Embalagens, Suprimentos, Periféricos" },
-];
+function rowToFornecedor(row: any): FornecedorItem {
+  return {
+    id: row.id,
+    razaoSocial: row.razao_social,
+    cnpj: row.cnpj || "",
+    contato: row.contato || "",
+    telefone: row.telefone || "",
+    email: row.email || "",
+    prazoEntrega: row.prazo_entrega || "3 dias úteis",
+    categorias: row.categorias || "",
+  };
+}
 
 export default function FornecedoresVarejo() {
   const { activeTenantId } = useAuth();
-  const storageKey = `spy_fornecedores_varejo_${activeTenantId || "default"}`;
 
-  const [fornecedores, setFornecedores] = useState<FornecedorItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_FORNECEDORES;
-    } catch {
-      return DEFAULT_FORNECEDORES;
-    }
-  });
+  const [fornecedores, setFornecedores] = useState<FornecedorItem[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("varejo_fornecedores")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setFornecedores(data.map(rowToFornecedor));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -52,33 +68,38 @@ export default function FornecedoresVarejo() {
   const [prazoEntrega, setPrazoEntrega] = useState("3 dias úteis");
   const [categorias, setCategorias] = useState("");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(fornecedores));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [fornecedores, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!razaoSocial.trim()) {
       toast.error("Informe a Razão Social do fornecedor.");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
+    }
 
-    const newItem: FornecedorItem = {
-      id: crypto.randomUUID(),
-      razaoSocial: razaoSocial.trim(),
-      cnpj: cnpj.trim() || "00.000.000/0001-00",
-      contato: contato.trim() || "Comercial",
-      telefone: telefone.trim(),
-      email: email.trim(),
-      prazoEntrega: prazoEntrega.trim() || "3 dias úteis",
-      categorias: categorias.trim() || "Geral",
-    };
+    const { data, error } = await supabase
+      .from("varejo_fornecedores")
+      .insert({
+        tenant_id: activeTenantId,
+        razao_social: razaoSocial.trim(),
+        cnpj: cnpj.trim() || "00.000.000/0001-00",
+        contato: contato.trim() || "Comercial",
+        telefone: telefone.trim(),
+        email: email.trim(),
+        prazo_entrega: prazoEntrega.trim() || "3 dias úteis",
+        categorias: categorias.trim() || "Geral",
+      })
+      .select()
+      .single();
 
-    setFornecedores(prev => [newItem, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao cadastrar fornecedor.");
+      return;
+    }
+
+    setFornecedores(prev => [rowToFornecedor(data), ...prev]);
     toast.success("Fornecedor cadastrado com sucesso!");
     setModalOpen(false);
 
@@ -90,7 +111,13 @@ export default function FornecedoresVarejo() {
     setCategorias("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("varejo_fornecedores").delete().eq("id", id);
+    if (error) {
+      toast.error("Erro ao remover fornecedor.");
+      return;
+    }
     setFornecedores(prev => prev.filter(f => f.id !== id));
     toast.info("Fornecedor removido.");
   };

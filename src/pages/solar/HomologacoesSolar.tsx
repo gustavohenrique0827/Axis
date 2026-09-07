@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface HomologacaoItem {
   id: string;
@@ -21,25 +22,39 @@ interface HomologacaoItem {
   data: string;
 }
 
-const DEFAULT_HOMOLOGACOES: HomologacaoItem[] = [
-  { id: "1", cliente: "Supermercado CompreBem", concessionaria: "CPFL Paulista", protocolo: "CPFL-2026-98124", etapa: "Parecer Emitido", prazoConcessionaria: "14/09/2026", status: "Aprovado / Aguardando Troca de Medidor", data: "01/09/2026" },
-  { id: "2", cliente: "Residência Família Moreira", concessionaria: "Enel SP", protocolo: "ENEL-SOL-4412", etapa: "Solicitação de Acesso", prazoConcessionaria: "18/09/2026", status: "Em Análise Técnica", data: "03/09/2026" },
-  { id: "3", cliente: "Fazenda Santa Maria", concessionaria: "CPFL Paulista", protocolo: "CPFL-2026-77312", etapa: "Vistoria da Distribuidora", prazoConcessionaria: "10/09/2026", status: "Agendado com Concessionária", data: "28/08/2026" },
-];
+function rowToHomologacao(row: any): HomologacaoItem {
+  return {
+    id: row.id,
+    cliente: row.cliente || "",
+    concessionaria: row.concessionaria || "",
+    protocolo: row.protocolo || "",
+    etapa: row.etapa,
+    prazoConcessionaria: row.prazo_concessionaria || "",
+    status: row.status,
+    data: row.data ? new Date(row.data + "T00:00:00").toLocaleDateString("pt-BR") : "",
+  };
+}
 
 export default function HomologacoesSolar() {
-  const { user, activeTenantId } = useAuth();
-  const tenantId = activeTenantId || user?.tenant_id || "default";
-  const storageKey = `spy_homologacoes_solar_${tenantId}`;
+  const { activeTenantId } = useAuth();
 
-  const [protocolos, setProtocolos] = useState<HomologacaoItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_HOMOLOGACOES;
-    } catch {
-      return DEFAULT_HOMOLOGACOES;
-    }
-  });
+  const [protocolos, setProtocolos] = useState<HomologacaoItem[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("solar_homologacoes")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setProtocolos(data.map(rowToHomologacao));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -53,33 +68,38 @@ export default function HomologacoesSolar() {
   const [prazoConcessionaria, setPrazoConcessionaria] = useState("");
   const [status, setStatus] = useState<HomologacaoItem["status"]>("Em Análise Técnica");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(protocolos));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [protocolos, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cliente.trim() || !protocolo.trim()) {
       toast.error("Preencha o cliente e o número do protocolo.");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
+    }
 
-    const newItem: HomologacaoItem = {
-      id: crypto.randomUUID(),
-      cliente: cliente.trim(),
-      concessionaria,
-      protocolo: protocolo.trim(),
-      etapa,
-      prazoConcessionaria: prazoConcessionaria || "Em análise regulatória",
-      status,
-      data: new Date().toLocaleDateString("pt-BR"),
-    };
+    const { data, error } = await supabase
+      .from("solar_homologacoes")
+      .insert({
+        tenant_id: activeTenantId,
+        cliente: cliente.trim(),
+        concessionaria,
+        protocolo: protocolo.trim(),
+        etapa,
+        prazo_concessionaria: prazoConcessionaria || "Em análise regulatória",
+        status,
+        data: new Date().toISOString().split("T")[0],
+      })
+      .select()
+      .maybeSingle();
 
-    setProtocolos(prev => [newItem, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao registrar protocolo de homologação.");
+      return;
+    }
+
+    setProtocolos(prev => [rowToHomologacao(data), ...prev]);
     toast.success("Protocolo de homologação registrado com sucesso!");
     setModalOpen(false);
 
@@ -88,12 +108,18 @@ export default function HomologacoesSolar() {
     setPrazoConcessionaria("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("solar_homologacoes").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover protocolo."); return; }
     setProtocolos(prev => prev.filter(p => p.id !== id));
     toast.info("Protocolo removido.");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: HomologacaoItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: HomologacaoItem["status"]) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("solar_homologacoes").update({ status: newStatus }).eq("id", id);
+    if (error) { toast.error("Erro ao atualizar status."); return; }
     setProtocolos(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
     toast.success(`Status da homologação: ${newStatus}`);
   };

@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface ManutencaoSolarItem {
   id: string;
@@ -20,25 +21,38 @@ interface ManutencaoSolarItem {
   geracaoAtual: string;
 }
 
-const DEFAULT_MANUTENCOES: ManutencaoSolarItem[] = [
-  { id: "1", usina: "UFV Granja Esperança", potencia: "30 kWp", servico: "Limpeza de Módulos (Semestral)", data: "15/09/2026", status: "Agendada", geracaoAtual: "98% do esperado" },
-  { id: "2", usina: "Centro Automotivo Paulista", potencia: "15 kWp", servico: "Inspeção de Inversor & String Box", data: "02/09/2026", status: "Concluída", geracaoAtual: "100% normal" },
-  { id: "3", usina: "Supermercado CompreBem", potencia: "112.5 kWp", servico: "Termografia de Conexões Elétricas", data: "20/09/2026", status: "Agendada", geracaoAtual: "96% do esperado" },
-];
+function rowToManutencao(row: any): ManutencaoSolarItem {
+  return {
+    id: row.id,
+    usina: row.usina || "",
+    potencia: row.potencia || "",
+    servico: row.servico || "",
+    data: row.data ? new Date(row.data + "T00:00:00").toLocaleDateString("pt-BR") : "",
+    status: row.status,
+    geracaoAtual: row.geracao_atual || "",
+  };
+}
 
 export default function ManutencoesSolar() {
-  const { user, activeTenantId } = useAuth();
-  const tenantId = activeTenantId || user?.tenant_id || "default";
-  const storageKey = `spy_manutencoes_solar_${tenantId}`;
+  const { activeTenantId } = useAuth();
 
-  const [chamados, setChamados] = useState<ManutencaoSolarItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_MANUTENCOES;
-    } catch {
-      return DEFAULT_MANUTENCOES;
-    }
-  });
+  const [chamados, setChamados] = useState<ManutencaoSolarItem[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("solar_manutencoes")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setChamados(data.map(rowToManutencao));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -52,32 +66,37 @@ export default function ManutencoesSolar() {
   const [geracaoAtual, setGeracaoAtual] = useState("100% normal");
   const [status, setStatus] = useState<ManutencaoSolarItem["status"]>("Agendada");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(chamados));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [chamados, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!usina.trim()) {
       toast.error("Informe a usina ou cliente.");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
+    }
 
-    const newItem: ManutencaoSolarItem = {
-      id: crypto.randomUUID(),
-      usina: usina.trim(),
-      potencia: potencia.trim() || "10 kWp",
-      servico,
-      data: data || new Date().toISOString().slice(0, 10),
-      status,
-      geracaoAtual,
-    };
+    const { data: row, error } = await supabase
+      .from("solar_manutencoes")
+      .insert({
+        tenant_id: activeTenantId,
+        usina: usina.trim(),
+        potencia: potencia.trim() || "10 kWp",
+        servico,
+        data: data || new Date().toISOString().slice(0, 10),
+        status,
+        geracao_atual: geracaoAtual,
+      })
+      .select()
+      .maybeSingle();
 
-    setChamados(prev => [newItem, ...prev]);
+    if (error || !row) {
+      toast.error("Erro ao agendar manutenção.");
+      return;
+    }
+
+    setChamados(prev => [rowToManutencao(row), ...prev]);
     toast.success("Ordem de manutenção agendada com sucesso!");
     setModalOpen(false);
 
@@ -86,12 +105,18 @@ export default function ManutencoesSolar() {
     setData("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("solar_manutencoes").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover manutenção."); return; }
     setChamados(prev => prev.filter(c => c.id !== id));
     toast.info("Manutenção removida.");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: ManutencaoSolarItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: ManutencaoSolarItem["status"]) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("solar_manutencoes").update({ status: newStatus }).eq("id", id);
+    if (error) { toast.error("Erro ao atualizar status."); return; }
     setChamados(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
     toast.success(`Status da manutenção: ${newStatus}`);
   };

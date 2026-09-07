@@ -6,7 +6,7 @@ import {
   type ReactNode,
 } from "react";
 import { LP_THEMES, DEFAULT_LP_THEME_ID, type LpTheme } from "./LP_THEMES";
-import { BRAND_COLORS, LAST_TENANT_COLOR_KEY, updateFaviconColor } from "../../../lib/theme";
+import { updateFaviconColor } from "../../../lib/theme";
 
 interface LpThemeContextValue {
   theme: LpTheme;
@@ -33,19 +33,7 @@ export function LpThemeProvider({
   children: ReactNode;
   initialTheme?: LpTheme["id"];
 }) {
-  const [themeId, setThemeId] = useState<LpTheme["id"]>(() => {
-    if (initialTheme) return initialTheme;
-    if (typeof window !== "undefined") {
-      const savedHex = localStorage.getItem(LAST_TENANT_COLOR_KEY);
-      if (savedHex) {
-        const found = BRAND_COLORS.find(
-          (b) => b.hex.toLowerCase() === savedHex.toLowerCase()
-        );
-        if (found) return found.id as LpTheme["id"];
-      }
-    }
-    return DEFAULT_LP_THEME_ID;
-  });
+  const [themeId, setThemeId] = useState<LpTheme["id"]>(initialTheme || DEFAULT_LP_THEME_ID);
   const theme = LP_THEMES[themeId];
 
   useEffect(() => {

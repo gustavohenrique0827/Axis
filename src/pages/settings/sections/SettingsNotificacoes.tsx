@@ -34,7 +34,6 @@ import {
 } from "../../../lib/notifications";
 
 const SETTING_KEY = "notification_prefs";
-const LOCAL_STORAGE_KEY = "spy_notification_prefs";
 
 interface NotificationTrigger {
   id: string;
@@ -147,16 +146,7 @@ export function ConfigNotificacoesPreferencias() {
   const { user, updatePreferences } = useAuth();
 
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
-  const [prefs, setPrefs] = useState<NotificationTrigger[]>(() => {
-    try {
-      const fromLocal = localStorage.getItem(LOCAL_STORAGE_KEY);
-      if (fromLocal) {
-        const parsed = JSON.parse(fromLocal);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {}
-    return DEFAULT_NOTIFICATION_PREFS;
-  });
+  const [prefs, setPrefs] = useState<NotificationTrigger[]>(DEFAULT_NOTIFICATION_PREFS);
 
   const [pushPermission, setPushPermission] = useState<NotificationPermission>(() => getPushPermission());
   const [isSaving, setIsSaving] = useState(false);
@@ -177,9 +167,6 @@ export function ConfigNotificacoesPreferencias() {
 
     if (candidates && Array.isArray(candidates) && candidates.length > 0) {
       setPrefs(candidates);
-      try {
-        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(candidates));
-      } catch {}
     }
   }, [user?.preferences, appSettings]);
 
@@ -194,9 +181,6 @@ export function ConfigNotificacoesPreferencias() {
 
   const persistPrefs = async (newPrefs: NotificationTrigger[]) => {
     setPrefs(newPrefs);
-    try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newPrefs));
-    } catch {}
 
     // Persist in user preferences
     updatePreferences({ [SETTING_KEY]: newPrefs });

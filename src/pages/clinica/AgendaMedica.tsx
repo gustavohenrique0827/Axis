@@ -135,6 +135,7 @@ export default function AgendaClinica() {
           onToggle={(id) => setSelectedDrs(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id])}
           onSelectAll={() => setSelectedDrs(doctors.map(d => d.id))}
           getStatusStyle={getStatusStyle}
+          appointments={filteredAppointments}
         />
 
         <div className="lg:col-span-3 space-y-6">

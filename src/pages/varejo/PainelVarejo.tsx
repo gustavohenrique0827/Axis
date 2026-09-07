@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
@@ -10,6 +10,7 @@ import { Card } from "../../components/ui/card";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
+import { supabase } from "../../lib/supabase";
 
 interface VendaFinalizada {
   id: string;
@@ -44,119 +45,101 @@ export default function PainelVarejo() {
   const tenantId = activeTenantId || user?.tenant_id || "default";
   const { products } = useData();
 
-  // 1. Carregar vendas do PDV
-  const vendas = useMemo<VendaFinalizada[]>(() => {
-    try {
-      const saved = localStorage.getItem(`spy_vendas_${tenantId}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch {}
-    return [
-      {
-        id: "VND-9801",
-        timestamp: new Date().toISOString(),
-        data: new Date().toLocaleDateString("pt-BR"),
-        cliente: "Ana Carolina Ferraz",
-        vendedor: "Carlos Varejo",
-        itens: [
-          { id: "1", name: "Cabo USB-C Trançado 2m", price: 49.90, qty: 2, total: 99.80 },
-          { id: "2", name: "Carregador Turbo 30W GaN", price: 150.10, qty: 1, total: 150.10 },
-        ],
-        subtotal: 249.90,
-        desconto: 0,
-        total: 249.90,
-        metodo: "Pix",
-        status: "concluida",
-      },
-      {
-        id: "VND-9802",
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        data: new Date().toLocaleDateString("pt-BR"),
-        cliente: "Rodrigo Mendonça",
-        vendedor: "Fernanda Loja",
-        itens: [
-          { id: "3", name: "Fone Bluetooth ANC Pro", price: 350.00, qty: 1, total: 350.00 },
-          { id: "4", name: "Película de Vidro 3D Premium", price: 70.00, qty: 1, total: 70.00 },
-        ],
-        subtotal: 420.00,
-        desconto: 0,
-        total: 420.00,
-        metodo: "Cartão de Crédito",
-        status: "concluida",
-      },
-      {
-        id: "VND-9803",
-        timestamp: new Date(Date.now() - 7200000).toISOString(),
-        data: new Date().toLocaleDateString("pt-BR"),
-        cliente: "Consumidor Final",
-        vendedor: "Carlos Varejo",
-        itens: [
-          { id: "5", name: "Suporte Veicular MagSafe", price: 185.50, qty: 1, total: 185.50 },
-        ],
-        subtotal: 185.50,
-        desconto: 0,
-        total: 185.50,
-        metodo: "Dinheiro",
-        status: "concluida",
-      },
-      {
-        id: "VND-9804",
-        timestamp: new Date(Date.now() - 14400000).toISOString(),
-        data: new Date().toLocaleDateString("pt-BR"),
-        cliente: "Lucas Martins",
-        vendedor: "Fernanda Loja",
-        itens: [
-          { id: "6", name: "Smartwatch Sport GPS v4", price: 890.00, qty: 1, total: 890.00 },
-        ],
-        subtotal: 890.00,
-        desconto: 0,
-        total: 890.00,
-        metodo: "Cartão de Crédito",
-        status: "concluida",
-      },
-    ];
-  }, [tenantId]);
+  // 1. Vendas do PDV (banco real: vendas + venda_items)
+  const [vendas, setVendas] = useState<VendaFinalizada[]>([]);
+  // 2. Status do Caixa Atual — derivado das operações reais em `caixa_operacoes`
+  // (mesma tabela usada pelo PDV em Vendas.tsx, sem estado local/fake).
+  const [caixa, setCaixa] = useState<CaixaStatus>({
+    aberto: false,
+    dataAbertura: "",
+    saldoInicial: 0,
+    operador: "",
+  });
+  // 3. Compras e reposições (banco real: compras)
+  const [compras, setCompras] = useState<any[]>([]);
 
-  // 2. Status do Caixa Atual
-  const caixa = useMemo<CaixaStatus>(() => {
-    try {
-      const saved = localStorage.getItem(`spy_caixa_${tenantId}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === "object") {
-          return {
-            aberto: parsed.aberto ?? true,
-            dataAbertura: parsed.dataAbertura || new Date().toLocaleDateString("pt-BR") + " 08:30",
-            saldoInicial: Number(parsed.saldoInicial ?? parsed.saldo_inicial ?? 200.0) || 0,
-            operador: parsed.operador || user?.name || "Operador Principal",
-          };
-        }
-      }
-    } catch {}
-    return {
-      aberto: true,
-      dataAbertura: new Date().toLocaleDateString("pt-BR") + " 08:30",
-      saldoInicial: 200.0,
-      operador: user?.name || "Operador Principal",
-    };
-  }, [tenantId, user]);
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const hojeInicio = new Date();
+      hojeInicio.setHours(0, 0, 0, 0);
+      const { data, error } = await supabase
+        .from("caixa_operacoes")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .gte("created_at", hojeInicio.toISOString())
+        .order("created_at", { ascending: false });
+      if (cancelled || error || !data) return;
+      const ultimaAbertura = data.find((op: any) => op.tipo === "abertura");
+      setCaixa({
+        aberto: data.length > 0 && data[0].tipo !== "fechamento",
+        dataAbertura: ultimaAbertura
+          ? new Date(ultimaAbertura.created_at).toLocaleDateString("pt-BR") + " " + new Date(ultimaAbertura.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+          : "",
+        saldoInicial: Number(ultimaAbertura?.valor) || 0,
+        operador: ultimaAbertura?.operador || user?.name || "",
+      });
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId, user]);
 
-  // 3. Compras e reposições
-  const compras = useMemo<any[]>(() => {
-    try {
-      const saved = localStorage.getItem(`spy_compras_varejo_${tenantId}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const hojeInicio = new Date();
+      hojeInicio.setHours(0, 0, 0, 0);
+
+      const { data: vendasRows } = await supabase
+        .from("vendas")
+        .select("*, venda_items(*)")
+        .eq("tenant_id", activeTenantId)
+        .gte("created_at", hojeInicio.toISOString())
+        .order("created_at", { ascending: false });
+      if (!cancelled && vendasRows) {
+        setVendas(
+          vendasRows.map((v: any): VendaFinalizada => ({
+            id: v.id,
+            timestamp: v.created_at,
+            data: new Date(v.created_at).toLocaleDateString("pt-BR"),
+            cliente: v.cliente_nome || "Consumidor Final",
+            vendedor: undefined,
+            itens: (v.venda_items || []).map((it: any) => ({
+              id: it.id,
+              name: it.product_name || "Item",
+              price: Number(it.preco_unitario) || 0,
+              cost: undefined,
+              qty: it.quantidade,
+              total: Number(it.preco_unitario) * it.quantidade,
+            })),
+            subtotal: Number(v.valor_total) || 0,
+            desconto: 0,
+            total: Number(v.valor_total) || 0,
+            metodo: v.forma_pagamento || "Outro",
+            status: v.status === "cancelada" ? "cancelada" : "concluida",
+          }))
+        );
       }
-    } catch {}
-    return [
-      { id: "PC-102", fornecedor: "Distribuidora Tech Brasil", valor: 14800, data: "03/09/2026", status: "Em Transporte" },
-      { id: "PC-101", fornecedor: "Global Imports Eletrônicos", valor: 8900, data: "28/08/2026", status: "Recebido no Estoque" },
-    ];
-  }, [tenantId]);
+
+      const { data: comprasRows } = await supabase
+        .from("compras")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("data", { ascending: false })
+        .limit(10);
+      if (!cancelled && comprasRows) {
+        setCompras(comprasRows.map((c: any) => ({
+          id: c.id,
+          fornecedor: c.fornecedor,
+          valor: Number(c.valor) || 0,
+          data: new Date(c.data + "T00:00:00").toLocaleDateString("pt-BR"),
+          status: c.status,
+        })));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   // Métricas Consolidadas
   const metrics = useMemo(() => {
@@ -202,19 +185,12 @@ export default function PainelVarejo() {
       lucroEstimado,
       paymentMap,
       topProdutos,
-      totalItensEstoque: products?.length || 480,
+      totalItensEstoque: products?.length || 0,
     };
   }, [vendas, products]);
 
   // Itens com estoque crítico
   const itensCriticos = useMemo(() => {
-    if (!products || products.length === 0) {
-      return [
-        { name: "Cabo USB-C Trançado 2m", stock: 3, min: 15, status: "Crítico" },
-        { name: "Carregador Turbo 30W GaN", stock: 5, min: 20, status: "Atenção" },
-        { name: "Película de Vidro 3D Premium", stock: 8, min: 30, status: "Atenção" },
-      ];
-    }
     return (products || [])
       .filter(p => (Number(p.currentStock ?? p.current_stock ?? p.stock) || 0) <= (Number(p.minStock ?? p.min_stock) || 5))
       .slice(0, 4)

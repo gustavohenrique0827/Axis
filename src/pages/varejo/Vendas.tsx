@@ -129,22 +129,24 @@ interface CaixaOperacao {
   data: string;
 }
 
-const VENDEDORES_PADRAO = [
-  "Loja Geral (Balcão)",
-  "Carlos Eduardo (Vendedor 01)",
-  "Mariana Costa (Vendedora 02)",
-  "Lucas Martins (Vendedor 03)",
-  "Juliana Ferraz (Vendedora 04)",
-];
+const VENDEDOR_BALCAO = "Loja Geral (Balcão)";
 
 function formatPrice(value: number) {
   return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
 export default function VarejoVendas() {
-  const { products, setProducts, addFinanceEntry } = useData();
+  const { products, setProducts, colaboradores } = useData();
   const { user, activeTenantId } = useAuth();
   const tenantId = activeTenantId || "default";
+
+  const vendedoresDisponiveis = useMemo(() => {
+    const nomes = (colaboradores || [])
+      .filter((c: any) => !c.status || c.status === "Ativo")
+      .map((c: any) => c.nome)
+      .filter(Boolean);
+    return [VENDEDOR_BALCAO, ...nomes];
+  }, [colaboradores]);
 
   const [tab, setTab] = useState<"pdv" | "historico">("pdv");
   const [search, setSearch] = useState("");
@@ -153,7 +155,7 @@ export default function VarejoVendas() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [clienteNome, setClienteNome] = useState("");
   const [clienteCpf, setClienteCpf] = useState("");
-  const [vendedorSelecionado, setVendedorSelecionado] = useState(VENDEDORES_PADRAO[0]);
+  const [vendedorSelecionado, setVendedorSelecionado] = useState(VENDEDOR_BALCAO);
 
   // Pagamento
   const [formaPagamento, setFormaPagamento] = useState<"Dinheiro" | "Pix" | "Cartão de Crédito" | "Cartão de Débito" | "Misto" | "A Prazo (Crediário)">("Dinheiro");
@@ -172,15 +174,9 @@ export default function VarejoVendas() {
   const [mistoPix, setMistoPix] = useState<string>("");
   const [mistoCartao, setMistoCartao] = useState<string>("");
 
-  // Vendas em Espera (Hold / Suspender Venda)
-  const storageEsperaKey = `spy_vendas_espera_${tenantId}`;
-  const [vendasEmEspera, setVendasEmEspera] = useState<VendaEmEspera[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageEsperaKey);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return [];
-  });
+  // Vendas em Espera (Hold / Suspender Venda) — vem da tabela real
+  // `vendas_em_espera` (snapshot em jsonb), sem cache local.
+  const [vendasEmEspera, setVendasEmEspera] = useState<VendaEmEspera[]>([]);
   const [modalEsperaOpen, setModalEsperaOpen] = useState(false);
 
   // Item Avulso Modal
@@ -196,102 +192,114 @@ export default function VarejoVendas() {
   const [receiptVenda, setReceiptVenda] = useState<VendaHistorico | null>(null);
   const [receiptTab, setReceiptTab] = useState<"termico" | "nfce">("termico");
 
-  // Caixa Operations State
-  const [caixaAberto, setCaixaAberto] = useState(true);
+  // Caixa Operations State — só fica "aberto" quando uma abertura real for
+  // encontrada no banco (ver efeito de carregamento de caixa_operacoes abaixo).
+  const [caixaAberto, setCaixaAberto] = useState(false);
   const [modalCaixa, setModalCaixa] = useState<"sangria" | "suprimento" | "fechamento" | null>(null);
   const [valorOperacaoCaixa, setValorOperacaoCaixa] = useState("");
   const [motivoOperacaoCaixa, setMotivoOperacaoCaixa] = useState("");
   const [valorGavetaContado, setValorGavetaContado] = useState("");
 
-  const storageCaixaKey = `spy_caixa_operacoes_${tenantId}`;
-  const [caixaOperacoes, setCaixaOperacoes] = useState<CaixaOperacao[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageCaixaKey);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return [
-      {
-        id: "cx-1",
-        tipo: "abertura",
-        valor: 200.0,
-        motivo: "Fundo de Troco Inicial",
-        operador: user?.name || "Operador Caixa 01",
-        data: new Date().toLocaleDateString("pt-BR") + " 08:00",
-      },
-    ];
-  });
+  // Operações de caixa — tabela real `caixa_operacoes`, sem seed nem cache local.
+  const [caixaOperacoes, setCaixaOperacoes] = useState<CaixaOperacao[]>([]);
 
-  // Histórico de Vendas
-  const storageVendasKey = `spy_vendas_${tenantId}`;
-  const [historico, setHistorico] = useState<VendaHistorico[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageVendasKey);
-      if (saved) return JSON.parse(saved);
-    } catch {}
-    return [
-      {
-        id: "VND-9842",
-        cliente_nome: "Maria Helena Castro",
-        forma_pagamento: "Pix",
-        status: "paga",
-        subtotal: 389.9,
-        desconto: 20.0,
-        valor_total: 369.9,
-        operador: user?.name || "Caixa 01",
-        vendedor: "Carlos Eduardo (Vendedor 01)",
-        nfce_chave: "3526 0912 3456 7800 0190 6500 1000 0098 4210 2345 6789",
-        nfce_protocolo: "135260089234812",
-        created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-        itens: [
-          { productId: "prod-1", name: "Smartwatch Pro Ultra GPS", price: 389.9, quantidade: 1, subtotal: 389.9, sku: "SMW-ULTRA-01" },
-        ],
-      },
-      {
-        id: "VND-9841",
-        cliente_nome: "Rafael Gomes (11.222.333-44)",
-        forma_pagamento: "Cartão de Crédito (3x - Mastercard)",
-        status: "paga",
-        subtotal: 249.8,
-        desconto: 0,
-        valor_total: 249.8,
-        operador: user?.name || "Caixa 01",
-        vendedor: "Mariana Costa (Vendedora 02)",
-        nfce_chave: "3526 0912 3456 7800 0190 6500 1000 0098 4110 8765 4321",
-        nfce_protocolo: "135260089234811",
-        created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-        itens: [
-          { productId: "prod-2", name: "Fone Bluetooth TWS ANC", price: 179.9, quantidade: 1, subtotal: 179.9, sku: "AUD-FONE-02" },
-          { productId: "prod-3", name: "Carregador Turbo 30W USB-C", price: 69.9, quantidade: 1, subtotal: 69.9, sku: "ACES-CRG-30" },
-        ],
-      },
-    ];
-  });
+  // Histórico de Vendas — populado a partir de `vendas`/`venda_items` reais
+  // no Supabase (ver efeito abaixo).
+  const [historico, setHistorico] = useState<VendaHistorico[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data: vendasRows, error } = await supabase
+        .from("vendas")
+        .select("*, venda_items(*)")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false })
+        .limit(100);
+      if (cancelled || error || !vendasRows) return;
+      setHistorico(
+        vendasRows.map((v: any): VendaHistorico => ({
+          id: v.id,
+          cliente_nome: v.cliente_nome,
+          forma_pagamento: v.forma_pagamento,
+          status: v.status,
+          subtotal: v.valor_total,
+          desconto: 0,
+          valor_total: v.valor_total,
+          operador: undefined,
+          vendedor: undefined,
+          created_at: v.created_at,
+          itens: (v.venda_items || []).map((it: any): CartItemSnapshot => ({
+            productId: it.product_id,
+            name: it.product_name,
+            price: it.preco_unitario,
+            quantidade: it.quantidade,
+            subtotal: it.preco_unitario * it.quantidade,
+          })),
+        }))
+      );
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [expandedVenda, setExpandedVenda] = useState<string | null>(null);
   const [filtroHistorico, setFiltroHistorico] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
   const barcodeInputRef = useRef<HTMLInputElement>(null);
 
-  // Sync vendas com localStorage
+  // Carrega operações de caixa reais (abertura/sangria/suprimento/fechamento)
+  // e deriva se o caixa está aberto a partir da última operação do dia.
   useEffect(() => {
-    try {
-      localStorage.setItem(storageVendasKey, JSON.stringify(historico));
-    } catch {}
-  }, [historico, storageVendasKey]);
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const hojeInicio = new Date();
+      hojeInicio.setHours(0, 0, 0, 0);
+      const { data, error } = await supabase
+        .from("caixa_operacoes")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .gte("created_at", hojeInicio.toISOString())
+        .order("created_at", { ascending: false });
+      if (cancelled || error || !data) return;
+      setCaixaOperacoes(
+        data.map((op: any): CaixaOperacao => ({
+          id: op.id,
+          tipo: op.tipo,
+          valor: op.valor,
+          motivo: op.motivo || "",
+          operador: op.operador || "",
+          data: new Date(op.created_at).toLocaleDateString("pt-BR") + " " + new Date(op.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+        }))
+      );
+      setCaixaAberto(data.length > 0 && data[0].tipo !== "fechamento");
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
-  // Sync operações de caixa
+  // Carrega vendas em espera reais (snapshot do carrinho suspenso).
   useEffect(() => {
-    try {
-      localStorage.setItem(storageCaixaKey, JSON.stringify(caixaOperacoes));
-    } catch {}
-  }, [caixaOperacoes, storageCaixaKey]);
-
-  // Sync vendas em espera
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageEsperaKey, JSON.stringify(vendasEmEspera));
-    } catch {}
-  }, [vendasEmEspera, storageEsperaKey]);
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("vendas_em_espera")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (cancelled || error || !data) return;
+      setVendasEmEspera(
+        data.map((row: any): VendaEmEspera => ({
+          id: row.id,
+          identificador: row.identificador,
+          dataHora: new Date(row.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+          ...row.snapshot,
+        }))
+      );
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const categories = useMemo(() => {
     const set = new Set<string>();
@@ -486,26 +494,36 @@ export default function VarejoVendas() {
   };
 
   // Suspender Venda (Venda em Espera)
-  const handleSuspenderVenda = () => {
+  const handleSuspenderVenda = async () => {
     if (cart.length === 0) {
       toast.error("O carrinho está vazio para suspender.");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados. Não é possível suspender a venda.");
+      return;
+    }
 
     const ident = clienteNome.trim() || `Cliente Fila #${vendasEmEspera.length + 1}`;
-    const novaEspera: VendaEmEspera = {
-      id: `esp-${Date.now()}`,
+    const id = `esp-${Date.now()}`;
+    const snapshot = { cart, clienteNome, clienteCpf, vendedor: vendedorSelecionado, descontoTipo, descontoValor, subtotal };
+    const { error } = await supabase.from("vendas_em_espera").insert({
+      id,
+      tenant_id: activeTenantId,
       identificador: ident,
-      cart,
-      clienteNome,
-      clienteCpf,
-      vendedor: vendedorSelecionado,
-      descontoTipo,
-      descontoValor,
-      subtotal,
-      dataHora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-    };
+      snapshot,
+    });
+    if (error) {
+      toast.error(`Falha ao suspender venda: ${error.message}`);
+      return;
+    }
 
+    const novaEspera: VendaEmEspera = {
+      id,
+      identificador: ident,
+      dataHora: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+      ...snapshot,
+    };
     setVendasEmEspera((prev) => [novaEspera, ...prev]);
     clearCart();
     if (soundEnabled) playPosSound("alert");
@@ -513,10 +531,18 @@ export default function VarejoVendas() {
   };
 
   // Retomar Venda em Espera
-  const handleRetomarVenda = (espera: VendaEmEspera) => {
+  const handleRetomarVenda = async (espera: VendaEmEspera) => {
     if (cart.length > 0) {
       toast.warning("Finalize ou limpe a venda atual antes de retomar outra em espera.");
       return;
+    }
+
+    if (supabase) {
+      const { error } = await supabase.from("vendas_em_espera").delete().eq("id", espera.id);
+      if (error) {
+        toast.error(`Falha ao retomar venda: ${error.message}`);
+        return;
+      }
     }
 
     setCart(espera.cart);
@@ -616,7 +642,7 @@ export default function VarejoVendas() {
     setFinalizando(true);
 
     try {
-      const vendaId = `VND-${Math.floor(1000 + Math.random() * 9000)}`;
+      const vendaId = crypto.randomUUID();
       const operadorNome = user?.name || "Operador Caixa";
       const recNumber = parseFloat(valorRecebido.replace(",", ".")) || total;
 
@@ -665,85 +691,70 @@ export default function VarejoVendas() {
         })),
       };
 
-      // 1. Atualizar estoque dos produtos cadastrados (ignora avulsos)
-      const updatedProducts = products.map((prod: any) => {
-        const itemInCart = cart.find((c) => c.productId === prod.id && !c.isAvulso);
-        if (itemInCart) {
-          const novoEstoque = Math.max(0, (prod.currentStock ?? 0) - itemInCart.quantidade);
-          return { ...prod, currentStock: novoEstoque };
-        }
-        return prod;
-      });
-      setProducts(updatedProducts);
-      try {
-        localStorage.setItem(`spy_products_${tenantId}`, JSON.stringify(updatedProducts));
-      } catch {}
-
-      // 2. Registrar movimentação de estoque
-      try {
-        const movStorageKey = `spy_estoque_mov_${tenantId}`;
-        const existingMovs = JSON.parse(localStorage.getItem(movStorageKey) || "[]");
-        const newMovs = cart
-          .filter((item) => !item.isAvulso)
-          .map((item) => ({
-            id: `mov-${Math.random().toString(36).substring(2, 9)}`,
-            product_id: item.productId,
-            tipo: "venda",
-            quantidade: -item.quantidade,
-            motivo: `Venda PDV ${vendaId}`,
-            created_at: new Date().toISOString(),
-          }));
-        localStorage.setItem(movStorageKey, JSON.stringify([...newMovs, ...existingMovs]));
-      } catch {}
-
-      // 3. Lançar no Financeiro
-      if (addFinanceEntry) {
-        addFinanceEntry({
-          description: `Venda PDV ${vendaId} - ${vendaSnap.cliente_nome}`,
-          value: total,
-          type: "Receber",
-          category: "Vendas Varejo (PDV)",
-          date: new Date().toLocaleDateString("pt-BR"),
-          status: formaPagamento === "A Prazo (Crediário)" ? "Pendente" : "Pago",
-        });
+      // 1. Grava a venda no banco (aberta) + itens, e finaliza atomicamente via
+      // RPC: a função valida estoque, baixa produtos, registra
+      // estoque_movimentacoes e cria o lançamento financeiro — tudo ou nada.
+      if (!supabase || !activeTenantId) {
+        throw new Error("Sem conexão com o banco de dados. Não é possível registrar a venda.");
       }
 
-      // 4. Lançar nos Pedidos Varejo
+      const { error: vendaError } = await supabase.from("vendas").insert({
+        id: vendaId,
+        tenant_id: activeTenantId,
+        cliente_nome: vendaSnap.cliente_nome,
+        vendedor_id: null,
+        forma_pagamento: formaDesc,
+        status: "aberta",
+      });
+      if (vendaError) throw new Error(`Falha ao registrar venda: ${vendaError.message}`);
+
+      // Distribui o desconto proporcionalmente no preço unitário de cada item,
+      // para que a soma dos itens bata com o total realmente cobrado.
+      const discountRatio = subtotal > 0 ? total / subtotal : 1;
+      const { error: itemsError } = await supabase.from("venda_items").insert(
+        cart.map((item) => ({
+          tenant_id: activeTenantId,
+          venda_id: vendaId,
+          product_id: item.isAvulso ? null : item.productId,
+          product_name: item.name,
+          quantidade: item.quantidade,
+          preco_unitario: Math.round(item.price * discountRatio * 100) / 100,
+        }))
+      );
+      if (itemsError) throw new Error(`Falha ao registrar itens da venda: ${itemsError.message}`);
+
+      const { data: rpcResult, error: rpcError } = await supabase.rpc("finalizar_venda", { p_venda_id: vendaId });
+      if (rpcError) throw new Error(`Falha ao finalizar venda: ${rpcError.message}`);
+
+      const valorFinal = Number((rpcResult as any)?.valor_total ?? total);
+      vendaSnap.valor_total = valorFinal;
+
+      // Reflete a baixa de estoque na lista local de produtos (a fonte de
+      // verdade já foi atualizada no banco pela RPC acima).
+      setProducts(
+        products.map((prod: any) => {
+          const itemInCart = cart.find((c) => c.productId === prod.id && !c.isAvulso);
+          if (!itemInCart) return prod;
+          return { ...prod, currentStock: Math.max(0, (prod.currentStock ?? 0) - itemInCart.quantidade) };
+        })
+      );
+
+      // Lançar nos Pedidos Varejo (painel de separação/entrega)
       try {
-        const pedStorageKey = `spy_pedidos_varejo_${tenantId}`;
-        const existingPedidos = JSON.parse(localStorage.getItem(pedStorageKey) || "[]");
         const itensDesc = cart.map((i) => `${i.quantidade}x ${i.name}`).join(", ");
-        const newPedido = {
+        await supabase!.from("varejo_pedidos").insert({
           id: `PED-${Math.floor(9820 + Math.random() * 500)}`,
+          tenant_id: activeTenantId,
           cliente: vendaSnap.cliente_nome || "Consumidor Final",
           telefone: "",
           itens: itensDesc,
-          total,
-          formaPagto: vendaSnap.forma_pagamento || "Dinheiro",
-          data: `Hoje às ${new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`,
+          total: valorFinal,
+          forma_pagto: vendaSnap.forma_pagamento || "Dinheiro",
           status: "Entregue / Concluído",
-        };
-        localStorage.setItem(pedStorageKey, JSON.stringify([newPedido, ...existingPedidos]));
+        });
       } catch {}
 
-      // 5. Se Supabase estiver conectado
-      if (supabase) {
-        try {
-          await supabase.from("vendas").insert({
-            id: vendaId,
-            tenant_id: activeTenantId,
-            cliente_nome: vendaSnap.cliente_nome,
-            forma_pagamento: vendaSnap.forma_pagamento,
-            status: "paga",
-            valor_total: total,
-            created_at: vendaSnap.created_at,
-          });
-        } catch (supaErr) {
-          console.warn("[PDV] Supabase sync fallback to local:", supaErr);
-        }
-      }
-
-      // 6. Atualizar histórico e exibir comprovante
+      // Atualizar histórico e exibir comprovante
       setHistorico((prev) => [vendaSnap, ...prev]);
       setReceiptVenda(vendaSnap);
       setReceiptTab("termico");
@@ -780,31 +791,81 @@ export default function VarejoVendas() {
 
     if (!ok) return;
 
-    // Retornar itens ao estoque
-    if (venda.itens && venda.itens.length > 0) {
-      const restored = products.map((prod: any) => {
-        const item = venda.itens?.find((it) => it.productId === prod.id && !it.isAvulso);
-        if (item) {
-          return { ...prod, currentStock: (prod.currentStock ?? 0) + item.quantidade };
-        }
-        return prod;
-      });
-      setProducts(restored);
-      try {
-        localStorage.setItem(`spy_products_${tenantId}`, JSON.stringify(restored));
-      } catch {}
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados. Não é possível estornar a venda.");
+      return;
     }
 
-    setHistorico((prev) =>
-      prev.map((v) => (v.id === venda.id ? { ...v, status: "estornada" } : v))
-    );
+    try {
+      const { error: updError } = await supabase.from("vendas").update({ status: "cancelada" }).eq("id", venda.id);
+      if (updError) throw new Error(updError.message);
 
-    if (soundEnabled) playPosSound("alert");
-    toast.success(`Venda ${venda.id} estornada e estoque devolvido com sucesso!`);
+      // Devolve ao estoque real (banco) cada item que veio do catálogo (ignora avulsos)
+      const realItems = (venda.itens || []).filter((it) => it.productId && !it.isAvulso);
+      for (const item of realItems) {
+        const { error: movError } = await supabase.rpc("registrar_movimentacao_estoque", {
+          p_product_id: item.productId,
+          p_tipo: "entrada",
+          p_quantidade: item.quantidade,
+          p_motivo: `Estorno da venda ${venda.id}`,
+        });
+        if (movError) console.error("Falha ao devolver estoque do item:", item.productId, movError);
+      }
+
+      setProducts(
+        products.map((prod: any) => {
+          const item = realItems.find((it) => it.productId === prod.id);
+          if (!item) return prod;
+          return { ...prod, currentStock: (prod.currentStock ?? 0) + item.quantidade };
+        })
+      );
+
+      setHistorico((prev) =>
+        prev.map((v) => (v.id === venda.id ? { ...v, status: "estornada" } : v))
+      );
+
+      if (soundEnabled) playPosSound("alert");
+      toast.success("Venda estornada e estoque devolvido com sucesso!");
+    } catch (err: any) {
+      if (soundEnabled) playPosSound("error");
+      toast.error(`Falha ao estornar venda: ${err.message}`);
+    }
   };
 
   // Operações de Caixa
-  const handleExecutarOperacaoCaixa = () => {
+  const registrarOperacaoCaixa = async (tipo: CaixaOperacao["tipo"], valor: number, motivo: string) => {
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados. Não é possível registrar a operação de caixa.");
+      return null;
+    }
+    const { data, error } = await supabase
+      .from("caixa_operacoes")
+      .insert({
+        tenant_id: activeTenantId,
+        tipo,
+        valor,
+        motivo,
+        operador: user?.name || "Operador Caixa",
+      })
+      .select()
+      .single();
+    if (error || !data) {
+      toast.error(`Falha ao registrar operação de caixa: ${error?.message || "erro desconhecido"}`);
+      return null;
+    }
+    const novaOp: CaixaOperacao = {
+      id: data.id,
+      tipo: data.tipo,
+      valor: data.valor,
+      motivo: data.motivo || "",
+      operador: data.operador || "",
+      data: new Date(data.created_at).toLocaleDateString("pt-BR") + " " + new Date(data.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+    };
+    setCaixaOperacoes((prev) => [novaOp, ...prev]);
+    return novaOp;
+  };
+
+  const handleExecutarOperacaoCaixa = async () => {
     const val = parseFloat(valorOperacaoCaixa.replace(",", ".")) || 0;
     if (val <= 0 && modalCaixa !== "fechamento") {
       toast.error("Informe um valor válido.");
@@ -816,16 +877,9 @@ export default function VarejoVendas() {
       return;
     }
 
-    const novaOp: CaixaOperacao = {
-      id: `cx-${Math.floor(100 + Math.random() * 900)}`,
-      tipo: modalCaixa || "sangria",
-      valor: val,
-      motivo: motivoOperacaoCaixa.trim() || (modalCaixa === "fechamento" ? "Fechamento de Turno com Conferência" : "Operação de Caixa"),
-      operador: user?.name || "Operador Caixa",
-      data: new Date().toLocaleDateString("pt-BR") + " " + new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-    };
-
-    setCaixaOperacoes((prev) => [novaOp, ...prev]);
+    const motivo = motivoOperacaoCaixa.trim() || (modalCaixa === "fechamento" ? "Fechamento de Turno com Conferência" : "Operação de Caixa");
+    const resultado = await registrarOperacaoCaixa(modalCaixa || "sangria", val, motivo);
+    if (!resultado) return;
 
     if (modalCaixa === "fechamento") {
       setCaixaAberto(false);
@@ -840,6 +894,13 @@ export default function VarejoVendas() {
     setValorOperacaoCaixa("");
     setMotivoOperacaoCaixa("");
     setValorGavetaContado("");
+  };
+
+  const handleReabrirCaixa = async () => {
+    const resultado = await registrarOperacaoCaixa("abertura", 0, "Reabertura de Caixa");
+    if (!resultado) return;
+    setCaixaAberto(true);
+    toast.success("Caixa reaberto com sucesso!");
   };
 
   // Métricas do dia
@@ -947,10 +1008,7 @@ export default function VarejoVendas() {
           ) : (
             <Button
               size="sm"
-              onClick={() => {
-                setCaixaAberto(true);
-                toast.success("Caixa reaberto com sucesso!");
-              }}
+              onClick={handleReabrirCaixa}
               className="h-9 px-4 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white gap-1.5"
             >
               <Store className="w-3.5 h-3.5" /> Reabrir Caixa
@@ -1242,7 +1300,7 @@ export default function VarejoVendas() {
                   onChange={(e) => setVendedorSelecionado(e.target.value)}
                   className="w-full bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl px-2.5 py-1.5 text-xs text-[var(--color-text-primary)] focus:outline-none focus:border-blue-500"
                 >
-                  {VENDEDORES_PADRAO.map((v) => (
+                  {vendedoresDisponiveis.map((v) => (
                     <option key={v} value={v}>{v}</option>
                   ))}
                 </select>

@@ -15,9 +15,6 @@ export const BRAND_COLORS: BrandColorOption[] = [
 
 export const DEFAULT_BRAND_COLOR = BRAND_COLORS[0].hex;
 
-export const LAST_TENANT_COLOR_KEY = "spy_last_tenant_color";
-export const LAST_TENANT_NAME_KEY  = "spy_last_tenant_name";
-
 /**
  * Gera o SVG do Favicon oficial do S.P.Y. (mira, chapéu e óculos de espião)
  * customizado dinamicamente com a cor primária escolhida.
@@ -68,20 +65,9 @@ export function updateFaviconColor(hex: string) {
 /**
  * Aplica a cor do tema nas variáveis CSS globais e no favicon.
  */
-export function applyThemeColor(hex: string, tenantName?: string) {
+export function applyThemeColor(hex: string, _tenantName?: string) {
   if (typeof document === "undefined" || !hex) return;
   document.documentElement.style.setProperty("--color-primary-blue", hex);
   document.documentElement.style.setProperty("--primary", hex);
   updateFaviconColor(hex);
-  if (typeof window !== "undefined") {
-    localStorage.setItem(LAST_TENANT_COLOR_KEY, hex);
-    if (tenantName) {
-      localStorage.setItem(LAST_TENANT_NAME_KEY, tenantName);
-    }
-  }
-}
-
-export function getSavedThemeColor(): string {
-  if (typeof window === "undefined") return DEFAULT_BRAND_COLOR;
-  return localStorage.getItem(LAST_TENANT_COLOR_KEY) || DEFAULT_BRAND_COLOR;
 }

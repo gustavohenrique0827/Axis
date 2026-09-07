@@ -3,11 +3,10 @@
 // fluxo server-side em server/googleCalendar.ts nesta rodada (ver relatório
 // da auditoria multi-tenant do Google Calendar). Mantido isolado aqui, e não
 // mais reexportado de google-auth.ts, porque google-auth.ts agora só fala
-// com o backend e nunca guarda token nenhum no browser — este arquivo ainda
-// guarda um access_token de curta duração (GIS implicit flow nunca dá
-// refresh_token) em localStorage, mas com a MESMA correção de isolamento por
-// tenant já aplicada: a chave inclui o tenantId, então trocar de tenant
-// (switchTenant) nunca reaproveita a conexão Google de outro tenant.
+// com o backend e nunca guarda token nenhum no browser. O access_token de
+// curta duração (GIS implicit flow nunca dá refresh_token) vive só em memória
+// nesta aba — sem nenhuma persistência local — então um reload exige
+// reconectar a conta Google novamente.
 declare global {
   interface Window { google: any; }
 }
@@ -28,26 +27,6 @@ interface CachedToken {
   access_token: string;
   expires_at: number;
   email?: string;
-}
-
-const storageKey = (tenantId: string) => `spy_google_tasks_token:${tenantId}`;
-
-function getStoredToken(tenantId: string): CachedToken | null {
-  try {
-    const raw = localStorage.getItem(storageKey(tenantId));
-    if (!raw) return null;
-    const parsed: CachedToken = JSON.parse(raw);
-    if (parsed.expires_at && parsed.expires_at > Date.now() + 60_000) return parsed;
-    localStorage.removeItem(storageKey(tenantId));
-  } catch {}
-  return null;
-}
-
-function setStoredToken(tenantId: string, token: CachedToken | null) {
-  try {
-    if (token) localStorage.setItem(storageKey(tenantId), JSON.stringify(token));
-    else localStorage.removeItem(storageKey(tenantId));
-  } catch {}
 }
 
 const cachedTokens = new Map<string, CachedToken>();
@@ -104,7 +83,6 @@ export const googleSignIn = async (tenantId: string): Promise<{ user: GoogleUser
           } catch {}
           const token: CachedToken = { access_token: response.access_token, expires_at: expiresAt, email: email ?? undefined };
           cachedTokens.set(tenantId, token);
-          setStoredToken(tenantId, token);
           resolve({ user: { email, displayName: null }, accessToken: response.access_token });
         },
         error_callback: (err: any) => {
@@ -127,15 +105,9 @@ export const googleSignIn = async (tenantId: string): Promise<{ user: GoogleUser
 };
 
 export const getAccessToken = async (tenantId: string): Promise<string | null> => {
-  let cached = cachedTokens.get(tenantId);
-  if (!cached) {
-    const stored = getStoredToken(tenantId);
-    if (stored) cachedTokens.set(tenantId, stored);
-    cached = stored ?? undefined;
-  }
+  const cached = cachedTokens.get(tenantId);
   if (cached && cached.expires_at > Date.now() + 60_000) return cached.access_token;
   cachedTokens.delete(tenantId);
-  setStoredToken(tenantId, null);
   return null;
 };
 
@@ -145,7 +117,6 @@ export const logout = async (tenantId: string) => {
     try { window.google.accounts.oauth2.revoke(cached.access_token, () => {}); } catch {}
   }
   cachedTokens.delete(tenantId);
-  setStoredToken(tenantId, null);
 };
 
 export const initAuth = (

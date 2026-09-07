@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { useData } from "../../contexts/DataContext";
 
 type AgendaConfig = {
   googleConnected: boolean;
@@ -26,20 +27,19 @@ const DEFAULT_CONFIG: AgendaConfig = {
   antecedenciaMinimaHoras: "2",
 };
 
+const SETTING_KEY = "agenda_configuracoes";
+
 export default function AgendaConfiguracoes() {
   const { user } = useAuth();
-  const tenantId = user?.tenant_id || "default";
-  const storageKey = `spy_agenda_configuracoes_${tenantId}`;
+  const { appSettings, appSettingsLoaded, saveAppSetting } = useData();
 
-  const [config, setConfig] = useState<AgendaConfig>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
+  const [config, setConfig] = useState<AgendaConfig>(DEFAULT_CONFIG);
+
+  useEffect(() => {
+    if (appSettingsLoaded && appSettings?.[SETTING_KEY]) {
+      setConfig({ ...DEFAULT_CONFIG, ...appSettings[SETTING_KEY] });
     }
-    return DEFAULT_CONFIG;
-  });
+  }, [appSettings, appSettingsLoaded]);
 
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -50,9 +50,9 @@ export default function AgendaConfiguracoes() {
     }));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
-      localStorage.setItem(storageKey, JSON.stringify(config));
+      await saveAppSetting(SETTING_KEY, config);
       toast.success("Configurações da Agenda salvas com sucesso!");
     } catch (e) {
       toast.error("Erro ao salvar preferências.");

@@ -10,6 +10,12 @@ import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
+import { supabase } from "../../lib/supabase";
+
+// Status exibido na UI. No banco (`compras.status`) só existem
+// 'Pendente' | 'Em Transporte' | 'Recebido no Estoque' | 'Cancelado' — os
+// dois primeiros valores da UI ('Emitida...', 'Faturada') mapeiam para 'Pendente'.
+type CompraStatusUI = "Emitida / Aguardando Fornecedor" | "Faturada" | "Em Transporte" | "Recebido no Estoque" | "Cancelada";
 
 interface CompraItem {
   id: string;
@@ -18,29 +24,56 @@ interface CompraItem {
   itens: string;
   data: string;
   previsaoEntrega: string;
-  status: "Emitida / Aguardando Fornecedor" | "Faturada" | "Em Transporte" | "Recebido no Estoque" | "Cancelada";
+  status: CompraStatusUI;
 }
 
-const DEFAULT_COMPRAS: CompraItem[] = [
-  { id: "PC-102", fornecedor: "Distribuidora Tech Brasil", valor: 14800, itens: "120 cabos USB-C, 50 carregadores", data: "03/09/2026", previsaoEntrega: "08/09/2026", status: "Em Transporte" },
-  { id: "PC-101", fornecedor: "Global Imports Eletrônicos", valor: 8900, itens: "30 smartwatches, 40 fones bluetooth", data: "28/08/2026", previsaoEntrega: "02/09/2026", status: "Recebido no Estoque" },
-  { id: "PC-103", fornecedor: "Atacadista Master Varejo", valor: 5400, itens: "500 caixas packaging, 20 bobinas térmicas", data: "05/09/2026", previsaoEntrega: "10/09/2026", status: "Emitida / Aguardando Fornecedor" },
-];
+function dbStatusToUi(status: string): CompraStatusUI {
+  if (status === "Em Transporte") return "Em Transporte";
+  if (status === "Recebido no Estoque") return "Recebido no Estoque";
+  if (status === "Cancelado") return "Cancelada";
+  return "Emitida / Aguardando Fornecedor";
+}
+
+function uiStatusToDb(status: CompraStatusUI): string {
+  if (status === "Em Transporte") return "Em Transporte";
+  if (status === "Recebido no Estoque") return "Recebido no Estoque";
+  if (status === "Cancelada") return "Cancelado";
+  return "Pendente";
+}
+
+function rowToCompra(row: any): CompraItem {
+  return {
+    id: row.id,
+    fornecedor: row.fornecedor,
+    valor: Number(row.valor) || 0,
+    itens: row.itens || "",
+    data: new Date(row.data + "T00:00:00").toLocaleDateString("pt-BR"),
+    previsaoEntrega: row.previsao_entrega ? new Date(row.previsao_entrega + "T00:00:00").toLocaleDateString("pt-BR") : "A combinar",
+    status: dbStatusToUi(row.status),
+  };
+}
 
 export default function ComprasVarejo() {
-  const { user, activeTenantId } = useAuth();
-  const tenantId = activeTenantId || user?.tenant_id || "default";
-  const storageKey = `spy_compras_varejo_${tenantId}`;
+  const { activeTenantId } = useAuth();
   const { products, setProducts } = useData();
 
-  const [compras, setCompras] = useState<CompraItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_COMPRAS;
-    } catch {
-      return DEFAULT_COMPRAS;
-    }
-  });
+  const [compras, setCompras] = useState<CompraItem[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("compras")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("data", { ascending: false });
+      if (!cancelled && !error && data) {
+        setCompras(data.map(rowToCompra));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -59,35 +92,38 @@ export default function ComprasVarejo() {
   const [recebimentoProductId, setRecebimentoProductId] = useState<string>("");
   const [recebimentoQtd, setRecebimentoQtd] = useState<string>("50");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(compras));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [compras, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!fornecedor.trim() || !itens.trim()) {
       toast.error("Preencha o fornecedor e a lista de itens.");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
+    }
 
     const numVal = parseFloat(valor.replace(/[^\d.]/g, "").replace(",", ".")) || 0;
-    const count = compras.length + 104;
 
-    const newItem: CompraItem = {
-      id: `PC-${count}`,
-      fornecedor: fornecedor.trim(),
-      valor: numVal,
-      itens: itens.trim(),
-      data: new Date().toLocaleDateString("pt-BR"),
-      previsaoEntrega: previsaoEntrega || "A combinar",
-      status,
-    };
+    const { data, error } = await supabase
+      .from("compras")
+      .insert({
+        tenant_id: activeTenantId,
+        fornecedor: fornecedor.trim(),
+        valor: numVal,
+        itens: itens.trim(),
+        previsao_entrega: previsaoEntrega || null,
+        status: uiStatusToDb(status),
+      })
+      .select()
+      .maybeSingle();
 
-    setCompras(prev => [newItem, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao emitir ordem de compra.");
+      return;
+    }
+
+    setCompras(prev => [rowToCompra(data), ...prev]);
     toast.success("Ordem de compra emitida!");
     setModalOpen(false);
 
@@ -97,12 +133,18 @@ export default function ComprasVarejo() {
     setPrevisaoEntrega("");
   };
 
-  const handleDelete = (id: string) => {
-    setCompras(prev => prev.filter(c => c.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("compras").update({ status: "Cancelado" }).eq("id", id);
+    if (error) { toast.error("Erro ao cancelar ordem."); return; }
+    setCompras(prev => prev.map(c => c.id === id ? { ...c, status: "Cancelada" } : c));
     toast.info("Ordem de compra cancelada.");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: CompraItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: CompraItem["status"]) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("compras").update({ status: uiStatusToDb(newStatus) }).eq("id", id);
+    if (error) { toast.error("Erro ao atualizar status."); return; }
     setCompras(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
     toast.success(`Status da ordem: ${newStatus}`);
   };
@@ -114,46 +156,43 @@ export default function ComprasVarejo() {
     setModalRecebimentoOpen(true);
   };
 
-  const handleConfirmarRecebimento = () => {
+  const handleConfirmarRecebimento = async () => {
     if (!compraRecebimento) return;
     const qtdNum = parseInt(recebimentoQtd, 10) || 0;
     if (qtdNum <= 0) {
       toast.error("Informe uma quantidade válida para entrada.");
       return;
     }
-
-    // 1. Atualizar produto no estoque se selecionado
-    if (recebimentoProductId && products && products.length > 0) {
-      const updatedList = products.map((p: any) => {
-        if (p.id === recebimentoProductId) {
-          return { ...p, currentStock: (p.currentStock ?? 0) + qtdNum };
-        }
-        return p;
-      });
-      setProducts(updatedList);
-      try {
-        localStorage.setItem(`spy_products_${tenantId}`, JSON.stringify(updatedList));
-      } catch {}
+    if (!supabase) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
     }
 
-    // 2. Registrar movimentação no histórico de estoque
-    try {
-      const movStorageKey = `spy_estoque_mov_${tenantId}`;
-      const savedMov = localStorage.getItem(movStorageKey);
-      const movList = savedMov ? JSON.parse(savedMov) : [];
-      const novaMov = {
-        id: `mov-${Math.floor(1000 + Math.random() * 9000)}`,
-        product_id: recebimentoProductId || "diversos",
-        tipo: "entrada",
-        quantidade: qtdNum,
-        motivo: `Recebimento Ordem ${compraRecebimento.id} - ${compraRecebimento.fornecedor}`,
-        created_at: new Date().toISOString(),
-        operador: user?.name || "Gestor de Compras",
-      };
-      localStorage.setItem(movStorageKey, JSON.stringify([novaMov, ...movList]));
-    } catch {}
+    // 1. Dar entrada real no estoque (RPC atômica: atualiza products + grava estoque_movimentacoes)
+    if (recebimentoProductId) {
+      const { error: movError } = await supabase.rpc("registrar_movimentacao_estoque", {
+        p_product_id: recebimentoProductId,
+        p_tipo: "entrada",
+        p_quantidade: qtdNum,
+        p_motivo: `Recebimento Ordem ${compraRecebimento.id} - ${compraRecebimento.fornecedor}`,
+      });
+      if (movError) {
+        toast.error("Erro ao registrar entrada no estoque.");
+        return;
+      }
+      setProducts(
+        products.map((p: any) => (p.id === recebimentoProductId ? { ...p, currentStock: (p.currentStock ?? 0) + qtdNum } : p))
+      );
+    }
 
-    // 3. Atualizar status da ordem para "Recebido no Estoque"
+    // 2. Atualizar status da ordem para "Recebido no Estoque"
+    const { error: statusError } = await supabase
+      .from("compras")
+      .update({ status: "Recebido no Estoque" })
+      .eq("id", compraRecebimento.id);
+    if (statusError) {
+      toast.error("Entrada registrada, mas falhou ao atualizar status da ordem.");
+    }
     setCompras(prev => prev.map(c => c.id === compraRecebimento.id ? { ...c, status: "Recebido no Estoque" } : c));
 
     toast.success(`Entrada de +${qtdNum} un. confirmada no estoque com sucesso!`);

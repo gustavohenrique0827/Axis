@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface ProfissionalItem {
   id: string;
@@ -21,25 +22,39 @@ interface ProfissionalItem {
   status: "Ativo" | "Férias / Licença" | "Inativo";
 }
 
-const DEFAULT_PROFISSIONAIS: ProfissionalItem[] = [
-  { id: "1", nome: "Dr. Carlos Eduardo Ramos", crm: "CRM/SP 145.220", especialidade: "Cardiologia Clínica", telefone: "(11) 99123-4567", email: "dr.carlos@clinicamais.com.br", atendimentosMes: 84, status: "Ativo" },
-  { id: "2", nome: "Dra. Beatriz Albuquerque", crm: "CRM/SP 188.940", especialidade: "Dermatologia & Estética", telefone: "(11) 98234-5678", email: "dra.beatriz@clinicamais.com.br", atendimentosMes: 112, status: "Ativo" },
-  { id: "3", nome: "Dr. Fernando Mendes", crm: "CRO/SP 45.102", especialidade: "Ortodontia & Implantodontia", telefone: "(11) 97345-6789", email: "dr.fernando@clinicamais.com.br", atendimentosMes: 62, status: "Férias / Licença" },
-];
+function rowToProfissional(row: any): ProfissionalItem {
+  return {
+    id: row.id,
+    nome: row.nome,
+    crm: row.crm || "",
+    especialidade: row.especialidade || "",
+    telefone: row.telefone || "",
+    email: row.email || "",
+    atendimentosMes: row.atendimentos_mes ?? 0,
+    status: row.status,
+  };
+}
 
 export default function ProfissionaisClinica() {
-  const { user, activeTenantId } = useAuth();
-  const tenantId = activeTenantId || user?.tenant_id || "default";
-  const storageKey = `spy_profissionais_clinica_${tenantId}`;
+  const { activeTenantId } = useAuth();
 
-  const [profissionais, setProfissionais] = useState<ProfissionalItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_PROFISSIONAIS;
-    } catch {
-      return DEFAULT_PROFISSIONAIS;
-    }
-  });
+  const [profissionais, setProfissionais] = useState<ProfissionalItem[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("clinica_profissionais")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setProfissionais(data.map(rowToProfissional));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -53,33 +68,38 @@ export default function ProfissionaisClinica() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<ProfissionalItem["status"]>("Ativo");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(profissionais));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [profissionais, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim() || !crm.trim() || !especialidade.trim()) {
       toast.error("Preencha os campos obrigatórios (Nome, CRM/CRO e Especialidade).");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
+    }
 
-    const newItem: ProfissionalItem = {
-      id: crypto.randomUUID(),
-      nome: nome.trim(),
-      crm: crm.trim(),
-      especialidade: especialidade.trim(),
-      telefone: telefone.trim(),
-      email: email.trim(),
-      atendimentosMes: 0,
-      status,
-    };
+    const { data, error } = await supabase
+      .from("clinica_profissionais")
+      .insert({
+        tenant_id: activeTenantId,
+        nome: nome.trim(),
+        crm: crm.trim(),
+        especialidade: especialidade.trim(),
+        telefone: telefone.trim(),
+        email: email.trim(),
+        atendimentos_mes: 0,
+        status,
+      })
+      .select()
+      .maybeSingle();
 
-    setProfissionais(prev => [newItem, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao cadastrar profissional.");
+      return;
+    }
+
+    setProfissionais(prev => [rowToProfissional(data), ...prev]);
     toast.success("Profissional cadastrado com sucesso!");
     setModalOpen(false);
 
@@ -90,14 +110,21 @@ export default function ProfissionaisClinica() {
     setEmail("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("clinica_profissionais").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover profissional."); return; }
     setProfissionais(prev => prev.filter(d => d.id !== id));
     toast.info("Profissional removido.");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: ProfissionalItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: ProfissionalItem["status"]) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("clinica_profissionais").update({ status: newStatus }).eq("id", id);
+    if (error) { toast.error("Erro ao atualizar status."); return; }
+    const nome = profissionais.find(p => p.id === id)?.nome;
     setProfissionais(prev => prev.map(d => d.id === id ? { ...d, status: newStatus } : d));
-    toast.success(`Status de ${profissionais.find(p => p.id === id)?.nome}: ${newStatus}`);
+    toast.success(`Status de ${nome}: ${newStatus}`);
   };
 
   const handleExportCSV = () => {

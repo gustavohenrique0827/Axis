@@ -10,6 +10,7 @@ import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface PedidoItem {
   id: string;
@@ -18,28 +19,14 @@ interface PedidoItem {
   itens: string;
   total: number;
   formaPagto: string;
-  data: string;
+  created_at: string;
   status: "Pago / Separando" | "Em Trânsito / Entrega" | "Entregue / Concluído" | "Cancelado";
 }
 
-const DEFAULT_PEDIDOS: PedidoItem[] = [
-  { id: "PED-9821", cliente: "Lucas Pinheiro", telefone: "(11) 99888-1234", itens: "1x Smartwatch Pro Ultra, 1x Película 3D", total: 429.90, formaPagto: "Pix", data: "Hoje às 14:22", status: "Pago / Separando" },
-  { id: "PED-9820", cliente: "Carla Esteves", telefone: "(11) 98777-5432", itens: "2x Fone Bluetooth TWS, 1x Carregador 30W", total: 319.80, formaPagto: "Cartão de Crédito 3x", data: "Hoje às 11:40", status: "Entregue / Concluído" },
-  { id: "PED-9819", cliente: "Vinicius Prado", telefone: "(11) 97666-3210", itens: "1x Suporte Veicular MagSafe", total: 89.90, formaPagto: "Pix", data: "Ontem às 18:10", status: "Entregue / Concluído" },
-];
-
 export default function PedidosVarejo() {
   const { activeTenantId } = useAuth();
-  const storageKey = `spy_pedidos_varejo_${activeTenantId || "default"}`;
 
-  const [pedidos, setPedidos] = useState<PedidoItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_PEDIDOS;
-    } catch {
-      return DEFAULT_PEDIDOS;
-    }
-  });
+  const [pedidos, setPedidos] = useState<PedidoItem[]>([]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -54,32 +41,89 @@ export default function PedidosVarejo() {
   const [status, setStatus] = useState<PedidoItem["status"]>("Pago / Separando");
 
   useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(pedidos));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [pedidos, storageKey]);
+    if (!supabase || !activeTenantId) return;
 
-  const handleCreate = (e: React.FormEvent) => {
+    let cancelled = false;
+
+    (async () => {
+      const { data, error } = await supabase
+        .from("varejo_pedidos")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+
+      if (cancelled) return;
+
+      if (error) {
+        console.error(error);
+        toast.error("Falha ao carregar pedidos.");
+        return;
+      }
+
+      const mapped: PedidoItem[] = (data || []).map((row: any) => ({
+        id: row.id,
+        cliente: row.cliente,
+        telefone: row.telefone,
+        itens: row.itens,
+        total: row.total,
+        formaPagto: row.forma_pagto,
+        created_at: row.created_at,
+        status: row.status,
+      }));
+
+      setPedidos(mapped);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTenantId]);
+
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cliente.trim() || !itens.trim()) {
       toast.error("Informe o cliente e os itens do pedido.");
       return;
     }
 
+    if (!supabase || !activeTenantId) {
+      toast.error("Não foi possível registrar o pedido.");
+      return;
+    }
+
     const numVal = parseFloat(total.replace(/[^\d.]/g, "").replace(",", ".")) || 0;
     const count = pedidos.length + 9822;
 
+    const { data, error } = await supabase
+      .from("varejo_pedidos")
+      .insert({
+        id: `PED-${count}`,
+        tenant_id: activeTenantId,
+        cliente: cliente.trim(),
+        telefone: telefone.trim(),
+        itens: itens.trim(),
+        total: numVal,
+        forma_pagto: formaPagto,
+        status,
+      })
+      .select()
+      .single();
+
+    if (error || !data) {
+      console.error(error);
+      toast.error("Falha ao registrar o pedido.");
+      return;
+    }
+
     const newItem: PedidoItem = {
-      id: `PED-${count}`,
-      cliente: cliente.trim(),
-      telefone: telefone.trim(),
-      itens: itens.trim(),
-      total: numVal,
-      formaPagto,
-      data: new Date().toLocaleDateString("pt-BR") + " às " + new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
-      status,
+      id: data.id,
+      cliente: data.cliente,
+      telefone: data.telefone,
+      itens: data.itens,
+      total: data.total,
+      formaPagto: data.forma_pagto,
+      created_at: data.created_at,
+      status: data.status,
     };
 
     setPedidos(prev => [newItem, ...prev]);
@@ -92,13 +136,36 @@ export default function PedidosVarejo() {
     setTotal("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+
+    const { error } = await supabase.from("varejo_pedidos").delete().eq("id", id);
+
+    if (error) {
+      console.error(error);
+      toast.error("Falha ao remover o pedido.");
+      return;
+    }
+
     setPedidos(prev => prev.filter(p => p.id !== id));
     toast.info("Pedido removido.");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: PedidoItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: PedidoItem["status"]) => {
+    if (!supabase) return;
+
+    const previous = pedidos;
     setPedidos(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
+
+    const { error } = await supabase.from("varejo_pedidos").update({ status: newStatus }).eq("id", id);
+
+    if (error) {
+      console.error(error);
+      setPedidos(previous);
+      toast.error("Falha ao atualizar o status do pedido.");
+      return;
+    }
+
     toast.success(`Status do pedido atualizado: ${newStatus}`);
   };
 
@@ -196,7 +263,7 @@ export default function PedidosVarejo() {
                 <span className="text-[10px] text-[var(--color-text-muted)] font-medium">• {p.formaPagto}</span>
               </div>
               <p className="text-[11px] text-[var(--color-text-muted)]">
-                Itens: <strong className="text-[var(--color-text-primary)]">{p.itens}</strong> • {p.data}
+                Itens: <strong className="text-[var(--color-text-primary)]">{p.itens}</strong> • {new Date(p.created_at).toLocaleDateString("pt-BR") + " às " + new Date(p.created_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
               </p>
             </div>
 

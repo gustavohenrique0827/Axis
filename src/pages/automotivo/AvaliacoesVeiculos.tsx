@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/card";
 import { toast } from "sonner";
 import { Modal } from "../../components/ui/modal";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface AvaliacaoItem {
   id: string;
@@ -23,24 +24,44 @@ interface AvaliacaoItem {
   data: string;
 }
 
-const DEFAULT_AVALIACOES: AvaliacaoItem[] = [
-  { id: "1", veiculo: "Honda Civic Touring 1.5 Turbo 2021", placa: "ABC-1D23", km: 48000, fipe: 135000, oferta: 122000, avaliador: "Oficina & Vistoria Sul", cliente: "Marcos Vinicius", status: "Proposta Feita", data: "05/09/2026" },
-  { id: "2", veiculo: "Volkswagen T-Cross Highline 2022", placa: "XYZ-9E88", km: 32000, fipe: 118000, oferta: 108000, avaliador: "Oficina & Vistoria Sul", cliente: "Carla Mendes", status: "Em Avaliação", data: "03/09/2026" },
-  { id: "3", veiculo: "Toyota Corolla Altis Hybrid 2020", placa: "BRA-2E19", km: 55000, fipe: 125000, oferta: 112000, avaliador: "Centro Técnico Central", cliente: "Lucas Pinheiro", status: "Aprovado", data: "01/09/2026" },
-];
+function rowToAvaliacao(row: any): AvaliacaoItem {
+  return {
+    id: row.id,
+    veiculo: row.veiculo,
+    placa: row.placa,
+    km: row.km ?? 0,
+    fipe: Number(row.fipe) || 0,
+    oferta: Number(row.oferta) || 0,
+    avaliador: row.avaliador || "",
+    cliente: row.cliente || "",
+    status: row.status,
+    data: row.data ? new Date(row.data + "T00:00:00").toLocaleDateString("pt-BR") : "",
+  };
+}
 
 export default function AvaliacoesVeiculos() {
   const { activeTenantId } = useAuth();
-  const storageKey = `spy_avaliacoes_veiculos_${activeTenantId || "default"}`;
 
-  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_AVALIACOES;
-    } catch {
-      return DEFAULT_AVALIACOES;
-    }
-  });
+  const [avaliacoes, setAvaliacoes] = useState<AvaliacaoItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("automotivo_avaliacoes")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setAvaliacoes(data.map(rowToAvaliacao));
+      }
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -56,18 +77,14 @@ export default function AvaliacoesVeiculos() {
   const [cliente, setCliente] = useState("");
   const [status, setStatus] = useState<AvaliacaoItem["status"]>("Em Avaliação");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(avaliacoes));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [avaliacoes, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!veiculo.trim() || !placa.trim()) {
       toast.error("Informe o modelo do veículo e a placa.");
+      return;
+    }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
       return;
     }
 
@@ -83,20 +100,28 @@ export default function AvaliacoesVeiculos() {
     const numFipe = cleanMoney(fipe);
     const numOferta = cleanMoney(oferta) || (numFipe > 0 ? Math.round(numFipe * 0.88) : 0);
 
-    const newItem: AvaliacaoItem = {
-      id: crypto.randomUUID(),
-      veiculo: veiculo.trim(),
-      placa: placa.toUpperCase().trim(),
-      km: numKm,
-      fipe: numFipe,
-      oferta: numOferta,
-      avaliador: avaliador.trim() || "Vistoriador Interno",
-      cliente: cliente.trim() || "Cliente Balcão",
-      status,
-      data: new Date().toLocaleDateString("pt-BR"),
-    };
+    const { data, error } = await supabase
+      .from("automotivo_avaliacoes")
+      .insert({
+        tenant_id: activeTenantId,
+        veiculo: veiculo.trim(),
+        placa: placa.toUpperCase().trim(),
+        km: numKm,
+        fipe: numFipe,
+        oferta: numOferta,
+        avaliador: avaliador.trim() || "Vistoriador Interno",
+        cliente: cliente.trim() || "Cliente Balcão",
+        status,
+      })
+      .select()
+      .maybeSingle();
 
-    setAvaliacoes(prev => [newItem, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao registrar avaliação.");
+      return;
+    }
+
+    setAvaliacoes(prev => [rowToAvaliacao(data), ...prev]);
     toast.success("Avaliação iniciada com sucesso!");
     setModalOpen(false);
 
@@ -108,12 +133,18 @@ export default function AvaliacoesVeiculos() {
     setCliente("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("automotivo_avaliacoes").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover avaliação."); return; }
     setAvaliacoes(prev => prev.filter(a => a.id !== id));
     toast.info("Avaliação removida.");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: AvaliacaoItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: AvaliacaoItem["status"]) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("automotivo_avaliacoes").update({ status: newStatus }).eq("id", id);
+    if (error) { toast.error("Erro ao atualizar status."); return; }
     setAvaliacoes(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
     toast.success(`Status da avaliação: ${newStatus}`);
   };

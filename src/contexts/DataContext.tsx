@@ -15,7 +15,6 @@ import {
   defaultActivitiesOnLoad,
   getDefaultAppointments,
   defaultSquads,
-  defaultNotifications,
   defaultLeadScoreTriggers,
   defaultProducts
 } from './dataMocks';
@@ -87,16 +86,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     syncSetting('leadScoreTriggers', triggers);
   };
 
-  const [financeEntriesRaw, setFinanceEntries] = useState<FinanceEntry[]>(() => {
-    try {
-      const saved = localStorage.getItem(`spy_finance_${tenantId || "default"}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {}
-    return defaultFinanceEntries;
-  });
+  const [financeEntriesRaw, setFinanceEntries] = useState<FinanceEntry[]>(defaultFinanceEntries as FinanceEntry[]);
   const financeEntries = useMemo(() => filterByFilial(financeEntriesRaw), [financeEntriesRaw, activeFilialId]);
 
   // Mapa genérico key -> value de app_settings, para telas de configuração
@@ -203,106 +193,24 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     return result;
   };
 
-  const [leadsRaw, setLeads] = useState<Lead[]>(() => {
-    try {
-      const saved = localStorage.getItem(`spy_leads_${tenantId || "default"}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {}
-    return defaultLeads;
-  });
+  const [leadsRaw, setLeads] = useState<Lead[]>(defaultLeads);
 
-  const [tasksRaw, setTasks] = useState<Task[]>(() => {
-    try {
-      const saved = localStorage.getItem(`spy_tasks_${tenantId || "default"}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {}
-    return defaultTasks;
-  });
+  const [tasksRaw, setTasks] = useState<Task[]>(defaultTasks);
 
-  const [contractsRaw, setContracts] = useState<Contract[]>(() => {
-    try {
-      const saved = localStorage.getItem(`spy_contracts_${tenantId || "default"}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {}
-    return defaultContracts;
-  });
+  const [contractsRaw, setContracts] = useState<Contract[]>(defaultContracts);
 
   const [leadActivities, setLeadActivities] = useState<LeadActivity[]>([]);
 
   const [whatsappWebhookUrl, setWhatsappWebhookUrl] = useState<string>("");
 
-  const [appointmentsRaw, setAppointments] = useState<Appointment[]>(() => {
-    try {
-      const saved = localStorage.getItem(`spy_appointments_${tenantId || "default"}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {}
-    return getDefaultAppointments();
-  });
+  const [appointmentsRaw, setAppointments] = useState<Appointment[]>(() => getDefaultAppointments() as Appointment[]);
 
   const leads = useMemo(() => filterByFilial(leadsRaw), [leadsRaw, activeFilialId]);
   const tasks = useMemo(() => filterByFilial(tasksRaw), [tasksRaw, activeFilialId]);
   const contracts = useMemo(() => filterByFilial(contractsRaw), [contractsRaw, activeFilialId]);
   const appointments = useMemo(() => filterByFilial(appointmentsRaw), [appointmentsRaw, activeFilialId]);
 
-  const [squads, setSquads] = useState<Squad[]>(() => {
-    try {
-      const saved = localStorage.getItem(`spy_squads_${tenantId || "default"}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {}
-    return defaultSquads;
-  });
-
-  // Salvar estados localmente no localStorage por tenant para garantir persistência e carregamento imediato
-  useEffect(() => {
-    try {
-      if (leadsRaw.length > 0) localStorage.setItem(`spy_leads_${tenantId || "default"}`, JSON.stringify(leadsRaw));
-    } catch (e) {}
-  }, [leadsRaw, tenantId]);
-
-  useEffect(() => {
-    try {
-      if (tasksRaw.length > 0) localStorage.setItem(`spy_tasks_${tenantId || "default"}`, JSON.stringify(tasksRaw));
-    } catch (e) {}
-  }, [tasksRaw, tenantId]);
-
-  useEffect(() => {
-    try {
-      if (financeEntriesRaw.length > 0) localStorage.setItem(`spy_finance_${tenantId || "default"}`, JSON.stringify(financeEntriesRaw));
-    } catch (e) {}
-  }, [financeEntriesRaw, tenantId]);
-
-  useEffect(() => {
-    try {
-      if (contractsRaw.length > 0) localStorage.setItem(`spy_contracts_${tenantId || "default"}`, JSON.stringify(contractsRaw));
-    } catch (e) {}
-  }, [contractsRaw, tenantId]);
-
-  useEffect(() => {
-    try {
-      if (appointmentsRaw.length > 0) localStorage.setItem(`spy_appointments_${tenantId || "default"}`, JSON.stringify(appointmentsRaw));
-    } catch (e) {}
-  }, [appointmentsRaw, tenantId]);
-
-  useEffect(() => {
-    try {
-      if (squads.length > 0) localStorage.setItem(`spy_squads_${tenantId || "default"}`, JSON.stringify(squads));
-    } catch (e) {}
-  }, [squads, tenantId]);
+  const [squads, setSquads] = useState<Squad[]>(defaultSquads);
 
   const addSquad = async (squad: Omit<Squad, 'id'>) => {
     const newSquad = { ...squad, id: `sq${Math.random().toString(36).substring(2, 9)}` };
@@ -441,22 +349,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [marketingCampaigns, setMarketingCampaigns] = useState<any[]>([]);
   const [marketingLandingPages, setMarketingLandingPages] = useState<any[]>([]);
   const [marketingForms, setMarketingForms] = useState<any[]>([]);
-  const [productsRaw, setProducts] = useState<any[]>(() => {
-    try {
-      const saved = localStorage.getItem(`spy_products_${tenantId || "default"}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {}
-    return defaultProducts;
-  });
-
-  useEffect(() => {
-    try {
-      if (productsRaw.length > 0) localStorage.setItem(`spy_products_${tenantId || "default"}`, JSON.stringify(productsRaw));
-    } catch (e) {}
-  }, [productsRaw, tenantId]);
+  const [productsRaw, setProducts] = useState<any[]>(defaultProducts);
 
   const [proposalsRaw, setProposals] = useState<any[]>([]);
   const [proposalItems, setProposalItems] = useState<any[]>([]);

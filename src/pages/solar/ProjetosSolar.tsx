@@ -11,6 +11,7 @@ import { Modal } from "../../components/ui/modal";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface ProjetoSolarItem {
   id: string;
@@ -25,30 +26,41 @@ interface ProjetoSolarItem {
   data: string;
 }
 
-const DEFAULT_PROJETOS: ProjetoSolarItem[] = [
-  { id: "1", cliente: "Fazenda Santa Maria", telefone: "(16) 99888-1122", potenciaKwp: 45.8, geracaoMensalKwh: 5800, valorContrato: 185000, cidade: "Ribeirão Preto - SP", status: "Instalação", concessionaria: "CPFL Paulista", data: "05/09/2026" },
-  { id: "2", cliente: "Supermercado CompreBem", telefone: "(19) 98777-3344", potenciaKwp: 112.5, geracaoMensalKwh: 14500, valorContrato: 440000, cidade: "Campinas - SP", status: "Homologação", concessionaria: "CPFL Paulista", data: "02/09/2026" },
-  { id: "3", cliente: "Residência Família Moreira", telefone: "(11) 97666-5544", potenciaKwp: 8.4, geracaoMensalKwh: 1100, valorContrato: 38000, cidade: "São Paulo - SP", status: "Vistoria Concluída", concessionaria: "Enel SP", data: "30/08/2026" },
-  { id: "4", cliente: "Galpão Logístico Alpha", telefone: "(15) 99112-9988", potenciaKwp: 75.0, geracaoMensalKwh: 9800, valorContrato: 295000, cidade: "Sorocaba - SP", status: "Dimensionamento", concessionaria: "CPFL Piratininga", data: "28/08/2026" },
-];
+function rowToProjeto(row: any): ProjetoSolarItem {
+  return {
+    id: row.id,
+    cliente: row.cliente || "",
+    telefone: row.telefone || "",
+    potenciaKwp: Number(row.potencia_kwp) || 0,
+    geracaoMensalKwh: Number(row.geracao_mensal_kwh) || 0,
+    valorContrato: Number(row.valor_contrato) || 0,
+    cidade: row.cidade || "",
+    concessionaria: row.concessionaria || "",
+    status: row.status,
+    data: row.data ? new Date(row.data + "T00:00:00").toLocaleDateString("pt-BR") : "",
+  };
+}
 
 export default function ProjetosSolar() {
-  const { user, activeTenantId } = useAuth();
-  const tenantId = activeTenantId || user?.tenant_id || "default";
-  const storageKey = `spy_projetos_solar_${tenantId}`;
+  const { activeTenantId } = useAuth();
 
-  const [projetos, setProjetos] = useState<ProjetoSolarItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_PROJETOS;
-    } catch {
-      return DEFAULT_PROPOSALS();
-    }
-  });
+  const [projetos, setProjetos] = useState<ProjetoSolarItem[]>([]);
 
-  function DEFAULT_PROPOSALS() {
-    return DEFAULT_PROJETOS;
-  }
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("solar_projetos")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setProjetos(data.map(rowToProjeto));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -64,18 +76,14 @@ export default function ProjetosSolar() {
   const [concessionaria, setConcessionaria] = useState("CPFL Paulista");
   const [status, setStatus] = useState<ProjetoSolarItem["status"]>("Dimensionamento");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(projetos));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [projetos, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cliente.trim()) {
       toast.error("Informe o nome do cliente.");
+      return;
+    }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
       return;
     }
 
@@ -83,20 +91,29 @@ export default function ProjetosSolar() {
     const kwh = parseFloat(geracaoKwh.replace(/[^\d.]/g, "")) || Math.round(kwp * 125);
     const val = parseFloat(valorContrato.replace(/[^\d]/g, "")) || Math.round(kwp * 3800);
 
-    const newItem: ProjetoSolarItem = {
-      id: crypto.randomUUID(),
-      cliente: cliente.trim(),
-      telefone: telefone.trim(),
-      potenciaKwp: kwp,
-      geracaoMensalKwh: kwh,
-      valorContrato: val,
-      cidade: cidade.trim() || "São Paulo - SP",
-      concessionaria,
-      status,
-      data: new Date().toLocaleDateString("pt-BR"),
-    };
+    const { data, error } = await supabase
+      .from("solar_projetos")
+      .insert({
+        tenant_id: activeTenantId,
+        cliente: cliente.trim(),
+        telefone: telefone.trim() || null,
+        potencia_kwp: kwp,
+        geracao_mensal_kwh: kwh,
+        valor_contrato: val,
+        cidade: cidade.trim() || "São Paulo - SP",
+        concessionaria,
+        status,
+        data: new Date().toISOString().split("T")[0],
+      })
+      .select()
+      .maybeSingle();
 
-    setProjetos(prev => [newItem, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao registrar projeto solar.");
+      return;
+    }
+
+    setProjetos(prev => [rowToProjeto(data), ...prev]);
     toast.success("Projeto solar registrado com sucesso!");
     setModalOpen(false);
 
@@ -108,12 +125,18 @@ export default function ProjetosSolar() {
     setCidade("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("solar_projetos").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover projeto."); return; }
     setProjetos(prev => prev.filter(p => p.id !== id));
     toast.info("Projeto removido.");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: ProjetoSolarItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: ProjetoSolarItem["status"]) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("solar_projetos").update({ status: newStatus }).eq("id", id);
+    if (error) { toast.error("Erro ao atualizar status."); return; }
     setProjetos(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
     toast.success(`Status do projeto: ${newStatus}`);
   };

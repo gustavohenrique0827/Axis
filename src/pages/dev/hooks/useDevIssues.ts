@@ -21,17 +21,6 @@ export interface DevIssue {
   labels: string[];
 }
 
-const MOCK_ISSUES: DevIssue[] = [
-  { id: 247, issueNumber: 247, title: "Timeout na requisição de checkout após 30s", description: "Usuários relatam erro 504 ao finalizar compras com mais de 3 itens no carrinho.", severity: 'crítico', status: 'em andamento', project: "Plataforma S.P.Y. CRM", assignee: "G.H.", reporter: "M.L.", createdAt: "1h atrás", comments: 5, labels: ["checkout", "performance", "backend"] },
-  { id: 246, issueNumber: 246, title: "Layout quebrado em mobile no pipeline Kanban", description: "Cards do pipeline ficam sobrepostos em telas menores que 375px.", severity: 'alto', status: 'em review', project: "Plataforma S.P.Y. CRM", assignee: "T.S.", reporter: "A.R.", createdAt: "3h atrás", comments: 2, labels: ["mobile", "crm", "ui"] },
-  { id: 245, issueNumber: 245, title: "Emails de confirmação não estão sendo enviados", description: "Após atualização do SMTP, os emails de confirmação de matrícula pararam.", severity: 'crítico', status: 'aberto', project: "App Mobile Alunos", assignee: "P.C.", reporter: "G.H.", createdAt: "5h atrás", comments: 8, labels: ["email", "smtp", "educação"] },
-  { id: 244, issueNumber: 244, title: "Filtros de data no relatório financeiro retornam incorreto", description: "Ao filtrar por mês, o sistema inclui transações do mês anterior.", severity: 'alto', status: 'aberto', project: "Plataforma S.P.Y. CRM", assignee: "M.L.", reporter: "P.C.", createdAt: "1 dia atrás", comments: 3, labels: ["financeiro", "relatórios"] },
-  { id: 243, issueNumber: 243, title: "Erro 403 ao acessar configurações de empresa", description: "Usuários com role 'Administrador' recebem 403 ao editar dados da empresa.", severity: 'médio', status: 'em andamento', project: "Plataforma S.P.Y. CRM", assignee: "G.H.", reporter: "L.M.", createdAt: "2 dias atrás", comments: 4, labels: ["auth", "permissões"] },
-  { id: 242, issueNumber: 242, title: "Lentidão ao carregar lista de alunos com 500+ registros", description: "A página de alunos demora mais de 8 segundos quando há muitos registros.", severity: 'médio', status: 'fechado', project: "App Mobile Alunos", assignee: "A.R.", reporter: "T.S.", createdAt: "3 dias atrás", comments: 6, labels: ["performance", "educação"] },
-  { id: 241, issueNumber: 241, title: "Botão de exportar CSV não responde no Firefox", description: "No Firefox versão 118+, o botão de exportação de relatório não dispara o download.", severity: 'baixo', status: 'aberto', project: "Plataforma S.P.Y. CRM", assignee: "-", reporter: "M.L.", createdAt: "4 dias atrás", comments: 1, labels: ["browser", "exportação"] },
-  { id: 240, issueNumber: 240, title: "Tooltip de gráfico BI sobrepõe sidebar em telas 1366px", description: "Em resoluções de 1366x768, o tooltip dos gráficos ultrapassa a sidebar.", severity: 'baixo', status: 'fechado', project: "Dashboard Analytics BI", assignee: "L.M.", reporter: "G.H.", createdAt: "1 semana atrás", comments: 2, labels: ["ui", "bi"] },
-];
-
 function rowToIssue(row: any): DevIssue {
   return {
     id: row.id,
@@ -50,7 +39,7 @@ function rowToIssue(row: any): DevIssue {
 }
 
 export function useDevIssues() {
-  const [issues, setIssues] = useState<DevIssue[]>(supabase ? [] : MOCK_ISSUES);
+  const [issues, setIssues] = useState<DevIssue[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

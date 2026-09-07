@@ -12,13 +12,6 @@ export interface ExamePedido {
   result: string;
 }
 
-const MOCK_EXAMES: ExamePedido[] = [
-  { id: '1', patient: 'Ricardo Oliveira', exam: 'Hemograma Completo', date: '25 Mai, 2026', lab: 'Lab Vértice Central', status: 'Finalizado', result: 'Normal' },
-  { id: '2', patient: 'Beatriz Santos', exam: 'Ressonância Magnética (Joelho)', date: '28 Mai, 2026', lab: 'Imobiliz Imagem', status: 'Em Análise', result: '-' },
-  { id: '3', patient: 'Marcelo Dias', exam: 'Glicemia de Jejum', date: '24 Mai, 2026', lab: 'Lab Vértice Central', status: 'Finalizado', result: 'Alerta' },
-  { id: '4', patient: 'Fátima Lima', exam: 'Eletrocardiograma', date: '28 Mai, 2026', lab: 'CardioClin', status: 'Aguardando Coleta', result: '-' },
-];
-
 function rowToExame(row: any): ExamePedido {
   return {
     id: row.id,
@@ -32,7 +25,7 @@ function rowToExame(row: any): ExamePedido {
 }
 
 export function useExames() {
-  const [exames, setExames] = useState<ExamePedido[]>(supabase ? [] : MOCK_EXAMES);
+  const [exames, setExames] = useState<ExamePedido[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

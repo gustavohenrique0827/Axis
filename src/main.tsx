@@ -2,10 +2,12 @@ import {StrictMode} from 'react';
 import {createRoot} from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
-import { applyThemeColor, getSavedThemeColor } from './lib/theme';
+import { applyThemeColor, DEFAULT_BRAND_COLOR } from './lib/theme';
 
-// Aplica a cor do tema e o favicon customizado imediatamente no carregamento da aplicação
-applyThemeColor(getSavedThemeColor());
+// Aplica a cor padrão e o favicon imediatamente no carregamento; a cor real
+// do tenant chega depois, assim que o Supabase resolver (ver useLoginTheme /
+// DataContext), sem depender de nenhum cache local.
+applyThemeColor(DEFAULT_BRAND_COLOR);
 
 // Extensões de navegador (gerenciadores de senha, tradutores) mutam o DOM
 // fora do controle do React — envolvem/movem <input>s para outro elemento

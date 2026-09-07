@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface EmpreendimentoItem {
   id: string;
@@ -22,24 +23,40 @@ interface EmpreendimentoItem {
   entrega: string;
 }
 
-const DEFAULT_EMPREENDIMENTOS: EmpreendimentoItem[] = [
-  { id: "1", nome: "Residencial Terraço Jardins", construtora: "G-Tech Incorporações", cidade: "São Paulo - SP", totalUnidades: 80, unidadesDisponiveis: 18, vgvTotal: 96000000, status: "Em Obras", entrega: "Nov/2027" },
-  { id: "2", nome: "Infinity Tower Corporate", construtora: "Axis Real Estate", cidade: "São Paulo - SP", totalUnidades: 45, unidadesDisponiveis: 12, vgvTotal: 135000000, status: "Lançamento", entrega: "Mar/2028" },
-  { id: "3", nome: "Parque das Palmeiras Villa", construtora: "Prime Urbanismo", cidade: "Campinas - SP", totalUnidades: 120, unidadesDisponiveis: 34, vgvTotal: 72000000, status: "Pronto para Morar", entrega: "Entregue" },
-];
+function rowToEmpreendimento(row: any): EmpreendimentoItem {
+  return {
+    id: row.id,
+    nome: row.nome,
+    construtora: row.construtora || "",
+    cidade: row.cidade || "",
+    totalUnidades: row.total_unidades ?? 0,
+    unidadesDisponiveis: row.unidades_disponiveis ?? 0,
+    vgvTotal: Number(row.vgv_total) || 0,
+    status: row.status,
+    entrega: row.entrega || "",
+  };
+}
 
 export default function Empreendimentos() {
   const { activeTenantId } = useAuth();
-  const storageKey = `spy_empreendimentos_${activeTenantId || "default"}`;
 
-  const [empreendimentos, setEmpreendimentos] = useState<EmpreendimentoItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_EMPREENDIMENTOS;
-    } catch {
-      return DEFAULT_EMPREENDIMENTOS;
-    }
-  });
+  const [empreendimentos, setEmpreendimentos] = useState<EmpreendimentoItem[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("imobiliario_empreendimentos")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setEmpreendimentos(data.map(rowToEmpreendimento));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -55,18 +72,14 @@ export default function Empreendimentos() {
   const [status, setStatus] = useState<EmpreendimentoItem["status"]>("Lançamento");
   const [entrega, setEntrega] = useState("");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(empreendimentos));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [empreendimentos, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim()) {
       toast.error("Informe o nome do empreendimento.");
+      return;
+    }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
       return;
     }
 
@@ -74,19 +87,28 @@ export default function Empreendimentos() {
     const numDisp = parseInt(unidadesDisponiveis, 10) || numTot;
     const numVgv = parseFloat(vgvTotal.replace(/[^\d]/g, "")) || 0;
 
-    const newItem: EmpreendimentoItem = {
-      id: crypto.randomUUID(),
-      nome: nome.trim(),
-      construtora: construtora.trim() || "Incorporadora Interna",
-      cidade: cidade.trim() || "São Paulo - SP",
-      totalUnidades: numTot,
-      unidadesDisponiveis: numDisp,
-      vgvTotal: numVgv,
-      status,
-      entrega: entrega.trim() || "A definir",
-    };
+    const { data, error } = await supabase
+      .from("imobiliario_empreendimentos")
+      .insert({
+        tenant_id: activeTenantId,
+        nome: nome.trim(),
+        construtora: construtora.trim() || "Incorporadora Interna",
+        cidade: cidade.trim() || "São Paulo - SP",
+        total_unidades: numTot,
+        unidades_disponiveis: numDisp,
+        vgv_total: numVgv,
+        status,
+        entrega: entrega.trim() || "A definir",
+      })
+      .select()
+      .maybeSingle();
 
-    setEmpreendimentos(prev => [newItem, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao cadastrar empreendimento.");
+      return;
+    }
+
+    setEmpreendimentos(prev => [rowToEmpreendimento(data), ...prev]);
     toast.success("Empreendimento cadastrado com sucesso!");
     setModalOpen(false);
 
@@ -97,7 +119,10 @@ export default function Empreendimentos() {
     setEntrega("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("imobiliario_empreendimentos").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover empreendimento."); return; }
     setEmpreendimentos(prev => prev.filter(e => e.id !== id));
     toast.info("Empreendimento removido.");
   };
@@ -126,9 +151,9 @@ export default function Empreendimentos() {
       `"${e.construtora.replace(/"/g, '""')}"`,
       `"${e.cidade.replace(/"/g, '""')}"`,
       e.vgvTotal,
-      e.unidadesTotal,
+      e.totalUnidades,
       e.unidadesDisponiveis,
-      `"${e.previsaoEntrega}"`,
+      `"${e.entrega}"`,
       `"${e.status}"`
     ]);
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");

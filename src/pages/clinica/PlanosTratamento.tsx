@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface PlanoTratamentoItem {
   id: string;
@@ -23,25 +24,41 @@ interface PlanoTratamentoItem {
   data: string;
 }
 
-const DEFAULT_PLANOS: PlanoTratamentoItem[] = [
-  { id: "1", paciente: "Mariana Siqueira", telefone: "(11) 98765-4321", descricao: "Tratamento Ortodôntico Alinhadores Invisíveis", profissional: "Dr. Fernando Mendes", valorTotal: 6500, sessoesConcluidas: 4, totalSessoes: 10, status: "Em Andamento", data: "12/08/2026" },
-  { id: "2", paciente: "Guilherme Bastos", telefone: "(11) 97654-3210", descricao: "Reabilitação Oral & Prótese Fixa", profissional: "Dr. Fernando Mendes", valorTotal: 12800, sessoesConcluidas: 1, totalSessoes: 5, status: "Aprovado pelo Paciente", data: "25/08/2026" },
-  { id: "3", paciente: "Camila Guimarães", telefone: "(11) 99123-9988", descricao: "Protocolo Rejuvenescimento Facial c/ Bioestimuladores", profissional: "Dra. Beatriz Albuquerque", valorTotal: 4800, sessoesConcluidas: 3, totalSessoes: 3, status: "Concluído", data: "01/08/2026" },
-];
+function rowToPlano(row: any): PlanoTratamentoItem {
+  return {
+    id: row.id,
+    paciente: row.paciente,
+    telefone: row.telefone || "",
+    descricao: row.descricao || "",
+    profissional: row.profissional || "",
+    valorTotal: Number(row.valor_total) || 0,
+    sessoesConcluidas: row.sessoes_concluidas ?? 0,
+    totalSessoes: row.total_sessoes ?? 0,
+    status: row.status,
+    data: row.data ? new Date(row.data + "T00:00:00").toLocaleDateString("pt-BR") : "",
+  };
+}
 
 export default function PlanosTratamento() {
-  const { user, activeTenantId } = useAuth();
-  const tenantId = activeTenantId || user?.tenant_id || "default";
-  const storageKey = `spy_planos_tratamento_${tenantId}`;
+  const { activeTenantId } = useAuth();
 
-  const [planos, setPlanos] = useState<PlanoTratamentoItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_PLANOS;
-    } catch {
-      return DEFAULT_PLANOS;
-    }
-  });
+  const [planos, setPlanos] = useState<PlanoTratamentoItem[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("clinica_planos_tratamento")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setPlanos(data.map(rowToPlano));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -56,38 +73,45 @@ export default function PlanosTratamento() {
   const [totalSessoes, setTotalSessoes] = useState("4");
   const [status, setStatus] = useState<PlanoTratamentoItem["status"]>("Aprovado pelo Paciente");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(planos));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [planos, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!paciente.trim() || !descricao.trim()) {
       toast.error("Informe o paciente e a descrição do plano.");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
+    }
 
     const val = parseFloat(valorTotal.replace(/[^\d.]/g, "").replace(",", ".")) || 0;
     const sessoes = parseInt(totalSessoes, 10) || 1;
+    const hoje = new Date();
+    const dataIso = `${hoje.getFullYear()}-${String(hoje.getMonth() + 1).padStart(2, "0")}-${String(hoje.getDate()).padStart(2, "0")}`;
 
-    const newItem: PlanoTratamentoItem = {
-      id: crypto.randomUUID(),
-      paciente: paciente.trim(),
-      telefone: telefone.trim(),
-      descricao: descricao.trim(),
-      profissional: profissional.trim() || "Corpo Clínico",
-      valorTotal: val,
-      sessoesConcluidas: 0,
-      totalSessoes: sessoes,
-      status,
-      data: new Date().toLocaleDateString("pt-BR"),
-    };
+    const { data, error } = await supabase
+      .from("clinica_planos_tratamento")
+      .insert({
+        tenant_id: activeTenantId,
+        paciente: paciente.trim(),
+        telefone: telefone.trim(),
+        descricao: descricao.trim(),
+        profissional: profissional.trim() || "Corpo Clínico",
+        valor_total: val,
+        sessoes_concluidas: 0,
+        total_sessoes: sessoes,
+        status,
+        data: dataIso,
+      })
+      .select()
+      .maybeSingle();
 
-    setPlanos(prev => [newItem, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao registrar plano de tratamento.");
+      return;
+    }
+
+    setPlanos(prev => [rowToPlano(data), ...prev]);
     toast.success("Plano de tratamento registrado com sucesso!");
     setModalOpen(false);
 
@@ -99,21 +123,35 @@ export default function PlanosTratamento() {
     setTotalSessoes("4");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("clinica_planos_tratamento").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover plano."); return; }
     setPlanos(prev => prev.filter(p => p.id !== id));
     toast.info("Plano removido.");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: PlanoTratamentoItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: PlanoTratamentoItem["status"]) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("clinica_planos_tratamento").update({ status: newStatus }).eq("id", id);
+    if (error) { toast.error("Erro ao atualizar status."); return; }
     setPlanos(prev => prev.map(p => p.id === id ? { ...p, status: newStatus } : p));
     toast.success(`Status do plano atualizado: ${newStatus}`);
   };
 
-  const handleNextSession = (id: string) => {
+  const handleNextSession = async (id: string) => {
+    if (!supabase) return;
+    const plano = planos.find(p => p.id === id);
+    if (!plano) return;
+    const next = Math.min(plano.totalSessoes, plano.sessoesConcluidas + 1);
+    const nextStatus = next === plano.totalSessoes ? "Concluído" : "Em Andamento";
+    const { error } = await supabase
+      .from("clinica_planos_tratamento")
+      .update({ sessoes_concluidas: next, status: nextStatus })
+      .eq("id", id);
+    if (error) { toast.error("Erro ao registrar sessão."); return; }
     setPlanos(prev => prev.map(p => {
       if (p.id === id) {
-        const next = Math.min(p.totalSessoes, p.sessoesConcluidas + 1);
-        const nextStatus = next === p.totalSessoes ? "Concluído" : "Em Andamento";
         return { ...p, sessoesConcluidas: next, status: nextStatus };
       }
       return p;

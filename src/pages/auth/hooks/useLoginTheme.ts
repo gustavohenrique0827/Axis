@@ -3,8 +3,6 @@ import { supabase } from "../../../lib/supabase";
 import {
   DEFAULT_BRAND_COLOR,
   applyThemeColor,
-  LAST_TENANT_COLOR_KEY,
-  LAST_TENANT_NAME_KEY,
 } from "../../../lib/theme";
 
 export interface TenantOption {
@@ -50,19 +48,8 @@ function extractHostTokens(host: string): string[] {
 }
 
 export function useLoginTheme(): LoginTheme {
-  const [primaryColor, setPrimaryColor] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(LAST_TENANT_COLOR_KEY) || DEFAULT_BRAND_COLOR;
-    }
-    return DEFAULT_BRAND_COLOR;
-  });
-
-  const [tenantName, setTenantName] = useState<string>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(LAST_TENANT_NAME_KEY) || "";
-    }
-    return "";
-  });
+  const [primaryColor, setPrimaryColor] = useState<string>(DEFAULT_BRAND_COLOR);
+  const [tenantName, setTenantName] = useState<string>("");
 
   const [tenants, setTenants] = useState<TenantOption[]>([]);
   const [resolving, setResolving] = useState(false);
@@ -145,14 +132,6 @@ export function useLoginTheme(): LoginTheme {
           }
         }
 
-        // 4. Se havia salvo no localStorage, preserva
-        const savedColor = localStorage.getItem(LAST_TENANT_COLOR_KEY);
-        const savedName = localStorage.getItem(LAST_TENANT_NAME_KEY);
-        if (savedColor && savedName) {
-          setPrimaryColor(savedColor);
-          setTenantName(savedName);
-          applyThemeColor(savedColor, savedName);
-        }
       } catch (err) {
         console.warn("[useLoginTheme] Falha ao carregar tenants:", err);
       }

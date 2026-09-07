@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface InstalacaoSolarItem {
   id: string;
@@ -21,25 +22,39 @@ interface InstalacaoSolarItem {
   status: "Fixação de Estrutura" | "Passagem de Cabos" | "Instalação Inversor" | "Em Execução" | "Comissionamento" | "Obra Concluída";
 }
 
-const DEFAULT_INSTALACOES: InstalacaoSolarItem[] = [
-  { id: "1", cliente: "Fazenda Santa Maria", equipe: "Equipe Alpha (4 montadores)", progresso: 65, inicio: "01/09/2026", previsaoConclusao: "12/09/2026", modulosInstalados: "62/96 módulos", status: "Em Execução" },
-  { id: "2", cliente: "Supermercado CompreBem", equipe: "Equipe Beta (6 montadores)", progresso: 20, inicio: "04/09/2026", previsaoConclusao: "22/09/2026", modulosInstalados: "45/220 módulos", status: "Fixação de Estrutura" },
-  { id: "3", cliente: "Galpão Logístico Alpha", equipe: "Equipe Gamma (8 montadores)", progresso: 90, inicio: "25/08/2026", previsaoConclusao: "09/09/2026", modulosInstalados: "160/180 módulos", status: "Comissionamento" },
-];
+function rowToInstalacao(row: any): InstalacaoSolarItem {
+  return {
+    id: row.id,
+    cliente: row.cliente || "",
+    equipe: row.equipe || "",
+    progresso: row.progresso ?? 0,
+    inicio: row.inicio ? new Date(row.inicio + "T00:00:00").toLocaleDateString("pt-BR") : "",
+    previsaoConclusao: row.previsao_conclusao ? new Date(row.previsao_conclusao + "T00:00:00").toLocaleDateString("pt-BR") : "A definir",
+    modulosInstalados: row.modulos_instalados || "",
+    status: row.status,
+  };
+}
 
 export default function InstalacoesSolar() {
-  const { user, activeTenantId } = useAuth();
-  const tenantId = activeTenantId || user?.tenant_id || "default";
-  const storageKey = `spy_instalacoes_solar_${tenantId}`;
+  const { activeTenantId } = useAuth();
 
-  const [instalacoes, setInstalacoes] = useState<InstalacaoSolarItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_INSTALACOES;
-    } catch {
-      return DEFAULT_INSTALACOES;
-    }
-  });
+  const [instalacoes, setInstalacoes] = useState<InstalacaoSolarItem[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("solar_instalacoes")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setInstalacoes(data.map(rowToInstalacao));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -53,33 +68,38 @@ export default function InstalacoesSolar() {
   const [modulosInstalados, setModulosInstalados] = useState("");
   const [status, setStatus] = useState<InstalacaoSolarItem["status"]>("Fixação de Estrutura");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(instalacoes));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [instalacoes, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cliente.trim() || !equipe.trim()) {
       toast.error("Informe o cliente e a equipe responsável.");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
+    }
 
-    const newItem: InstalacaoSolarItem = {
-      id: crypto.randomUUID(),
-      cliente: cliente.trim(),
-      equipe: equipe.trim(),
-      progresso: parseInt(progresso, 10) || 0,
-      inicio: inicio || new Date().toISOString().slice(0, 10),
-      previsaoConclusao: previsaoConclusao || "A definir",
-      modulosInstalados: modulosInstalados.trim() || "0/0 módulos",
-      status,
-    };
+    const { data, error } = await supabase
+      .from("solar_instalacoes")
+      .insert({
+        tenant_id: activeTenantId,
+        cliente: cliente.trim(),
+        equipe: equipe.trim(),
+        progresso: parseInt(progresso, 10) || 0,
+        inicio: inicio || new Date().toISOString().slice(0, 10),
+        previsao_conclusao: previsaoConclusao || null,
+        modulos_instalados: modulosInstalados.trim() || "0/0 módulos",
+        status,
+      })
+      .select()
+      .maybeSingle();
 
-    setInstalacoes(prev => [newItem, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao registrar instalação.");
+      return;
+    }
+
+    setInstalacoes(prev => [rowToInstalacao(data), ...prev]);
     toast.success("Instalação registrada com sucesso!");
     setModalOpen(false);
 
@@ -91,17 +111,27 @@ export default function InstalacoesSolar() {
     setModulosInstalados("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("solar_instalacoes").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover obra."); return; }
     setInstalacoes(prev => prev.filter(i => i.id !== id));
     toast.info("Obra removida.");
   };
 
-  const handleUpdateProgress = (id: string, newProgress: number) => {
+  const handleUpdateProgress = async (id: string, newProgress: number) => {
+    if (!supabase) return;
     const capped = Math.min(100, Math.max(0, newProgress));
+    const current = instalacoes.find(i => i.id === id);
+    const nextStatus = capped === 100 ? "Obra Concluída" : current?.status;
+    const { error } = await supabase
+      .from("solar_instalacoes")
+      .update({ progresso: capped, status: nextStatus })
+      .eq("id", id);
+    if (error) { toast.error("Erro ao atualizar progresso."); return; }
     setInstalacoes(prev => prev.map(i => {
       if (i.id === id) {
-        const nextStatus = capped === 100 ? "Obra Concluída" : i.status;
-        return { ...i, progresso: capped, status: nextStatus };
+        return { ...i, progresso: capped, status: (nextStatus as InstalacaoSolarItem["status"]) };
       }
       return i;
     }));

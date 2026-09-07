@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface ServicoClinicoItem {
   id: string;
@@ -19,26 +20,37 @@ interface ServicoClinicoItem {
   convenios: string;
 }
 
-const DEFAULT_SERVICOS: ServicoClinicoItem[] = [
-  { id: "1", nome: "Consulta Especializada (Cardiologia)", especialidade: "Cardiologia", duracao: "40 min", valorParticular: 350, convenios: "Unimed, Amil, Bradesco, SulAmérica" },
-  { id: "2", nome: "Ecocardiograma com Doppler", especialidade: "Cardiologia / Métodos Gráficos", duracao: "30 min", valorParticular: 420, convenios: "Amil, Bradesco, SulAmérica" },
-  { id: "3", nome: "Limpeza & Profilaxia Odontológica", especialidade: "Odontologia", duracao: "50 min", valorParticular: 250, convenios: "MetLife, OdontoPrev, Particular" },
-  { id: "4", nome: "Consulta Dermatológica & Dermatoscopia", especialidade: "Dermatologia", duracao: "45 min", valorParticular: 380, convenios: "Unimed, Particular" },
-];
+function rowToServico(row: any): ServicoClinicoItem {
+  return {
+    id: row.id,
+    nome: row.nome,
+    especialidade: row.especialidade || "",
+    duracao: row.duracao || "",
+    valorParticular: Number(row.valor_particular) || 0,
+    convenios: row.convenios || "",
+  };
+}
 
 export default function ServicosClinica() {
-  const { user, activeTenantId } = useAuth();
-  const tenantId = activeTenantId || user?.tenant_id || "default";
-  const storageKey = `spy_servicos_clinica_${tenantId}`;
+  const { activeTenantId } = useAuth();
 
-  const [servicos, setServicos] = useState<ServicoClinicoItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_SERVICOS;
-    } catch {
-      return DEFAULT_SERVICOS;
-    }
-  });
+  const [servicos, setServicos] = useState<ServicoClinicoItem[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("clinica_servicos")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setServicos(data.map(rowToServico));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -50,33 +62,38 @@ export default function ServicosClinica() {
   const [valorParticular, setValorParticular] = useState("");
   const [convenios, setConvenios] = useState("");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(servicos));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [servicos, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim() || !valorParticular) {
       toast.error("Informe o nome e o valor do procedimento.");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
+    }
 
     const val = parseFloat(valorParticular.replace(/[^\d.]/g, "").replace(",", ".")) || 0;
 
-    const newItem: ServicoClinicoItem = {
-      id: crypto.randomUUID(),
-      nome: nome.trim(),
-      especialidade: especialidade.trim() || "Clínica Geral",
-      duracao: duracao.trim() || "30 min",
-      valorParticular: val,
-      convenios: convenios.trim() || "Particular",
-    };
+    const { data, error } = await supabase
+      .from("clinica_servicos")
+      .insert({
+        tenant_id: activeTenantId,
+        nome: nome.trim(),
+        especialidade: especialidade.trim() || "Clínica Geral",
+        duracao: duracao.trim() || "30 min",
+        valor_particular: val,
+        convenios: convenios.trim() || "Particular",
+      })
+      .select()
+      .maybeSingle();
 
-    setServicos(prev => [newItem, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao cadastrar procedimento.");
+      return;
+    }
+
+    setServicos(prev => [rowToServico(data), ...prev]);
     toast.success("Procedimento cadastrado com sucesso!");
     setModalOpen(false);
 
@@ -87,7 +104,10 @@ export default function ServicosClinica() {
     setConvenios("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("clinica_servicos").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover procedimento."); return; }
     setServicos(prev => prev.filter(s => s.id !== id));
     toast.info("Procedimento removido da tabela.");
   };
@@ -157,7 +177,7 @@ export default function ServicosClinica() {
         <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)] shadow-xs">
           <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Convênios Credenciados</span>
           <div className="text-2xl font-black text-blue-500">
-            6 operadoras
+            {new Set(servicos.flatMap(s => s.convenios.split(",").map(c => c.trim()).filter(Boolean))).size} operadoras
           </div>
         </Card>
       </div>

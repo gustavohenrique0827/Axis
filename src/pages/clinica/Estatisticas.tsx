@@ -68,8 +68,13 @@ export default function EstatisticasClinicas() {
   }, [appointments]);
 
   const totalPacientes = new Set(appointments.map(a => a.patient)).size;
-  const avgWaitTime = appointments.length > 0 ? "14m" : "—";
-  const occupancy = appointments.length > 0 ? "88%" : "0%";
+  // Tempo médio de espera e NPS exigiriam dados que o app ainda não coleta
+  // (timestamps reais de check-in/atendimento e respostas de pesquisa de
+  // satisfação) — sem tabela para isso, mostramos vazio em vez de inventar.
+  const avgWaitTime = "—";
+  const occupancy = appointments.length > 0
+    ? `${Math.round((appointments.filter(a => a.status === 'Confirmado' || a.status === 'Em Atendimento' || a.status === 'Finalizado').length / appointments.length) * 100)}%`
+    : "0%";
 
   return (
     <PageContainer 
@@ -91,7 +96,7 @@ export default function EstatisticasClinicas() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: "Taxa de Ocupação", value: occupancy, icon: Activity, color: "text-[var(--color-primary-blue)]" },
-            { label: "NPS dos Pacientes", value: appointments.length > 0 ? "9.4" : "—", icon: Star, color: "text-amber-500" },
+            { label: "NPS dos Pacientes", value: "—", icon: Star, color: "text-amber-500" },
             { label: "Total de Pacientes", value: totalPacientes.toString(), icon: Users, color: "text-emerald-500" },
             { label: "Tempo Médio de Espera", value: avgWaitTime, icon: Clock, color: "text-purple-500" },
           ].map((stat, i) => (

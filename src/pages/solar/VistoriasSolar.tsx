@@ -10,6 +10,7 @@ import { Modal } from "../../components/ui/modal";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface VistoriaSolarItem {
   id: string;
@@ -22,25 +23,39 @@ interface VistoriaSolarItem {
   status: "Agendada" | "Em Andamento" | "Concluída / Aprovada" | "Reprovada / Ajuste Necessário";
 }
 
-const DEFAULT_VISTORIAS: VistoriaSolarItem[] = [
-  { id: "1", cliente: "Fazenda Santa Maria", telefone: "(16) 99888-1122", endereco: "Rodovia Anhanguera, km 312", dataAgendada: "08/09/2026", responsavel: "Eng. Lucas Peixoto", tipoTelhado: "Metálico / Solo", status: "Agendada" },
-  { id: "2", cliente: "Supermercado CompreBem", telefone: "(19) 98777-3344", endereco: "Av. Brasil, 4500", dataAgendada: "05/09/2026", responsavel: "Eng. Lucas Peixoto", tipoTelhado: "Fibrocimento", status: "Concluída / Aprovada" },
-  { id: "3", cliente: "Residência Família Moreira", telefone: "(11) 97666-5544", endereco: "Rua das Acácias, 120", dataAgendada: "03/09/2026", responsavel: "Técnico Rafael Lima", tipoTelhado: "Cerâmico Colonial", status: "Concluída / Aprovada" },
-];
+function rowToVistoria(row: any): VistoriaSolarItem {
+  return {
+    id: row.id,
+    cliente: row.cliente || "",
+    telefone: row.telefone || "",
+    endereco: row.endereco || "",
+    dataAgendada: row.data_agendada ? new Date(row.data_agendada + "T00:00:00").toLocaleDateString("pt-BR") : "",
+    responsavel: row.responsavel || "",
+    tipoTelhado: row.tipo_telhado || "",
+    status: row.status,
+  };
+}
 
 export default function VistoriasSolar() {
-  const { user, activeTenantId } = useAuth();
-  const tenantId = activeTenantId || user?.tenant_id || "default";
-  const storageKey = `spy_vistorias_solar_${tenantId}`;
+  const { activeTenantId } = useAuth();
 
-  const [vistorias, setVistorias] = useState<VistoriaSolarItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_VISTORIAS;
-    } catch {
-      return DEFAULT_VISTORIAS;
-    }
-  });
+  const [vistorias, setVistorias] = useState<VistoriaSolarItem[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("solar_vistorias")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setVistorias(data.map(rowToVistoria));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -55,33 +70,38 @@ export default function VistoriasSolar() {
   const [tipoTelhado, setTipoTelhado] = useState("Metálico");
   const [status, setStatus] = useState<VistoriaSolarItem["status"]>("Agendada");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(vistorias));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [vistorias, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cliente.trim() || !endereco.trim()) {
       toast.error("Preencha o cliente e o endereço da instalação.");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
+    }
 
-    const newItem: VistoriaSolarItem = {
-      id: crypto.randomUUID(),
-      cliente: cliente.trim(),
-      telefone: telefone.trim(),
-      endereco: endereco.trim(),
-      dataAgendada: dataAgendada || new Date().toISOString().slice(0, 10),
-      responsavel: responsavel.trim() || "Eng. Responsável",
-      tipoTelhado,
-      status,
-    };
+    const { data, error } = await supabase
+      .from("solar_vistorias")
+      .insert({
+        tenant_id: activeTenantId,
+        cliente: cliente.trim(),
+        telefone: telefone.trim() || null,
+        endereco: endereco.trim(),
+        data_agendada: dataAgendada || new Date().toISOString().slice(0, 10),
+        responsavel: responsavel.trim() || "Eng. Responsável",
+        tipo_telhado: tipoTelhado,
+        status,
+      })
+      .select()
+      .maybeSingle();
 
-    setVistorias(prev => [newItem, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao agendar vistoria.");
+      return;
+    }
+
+    setVistorias(prev => [rowToVistoria(data), ...prev]);
     toast.success("Vistoria técnica agendada com sucesso!");
     setModalOpen(false);
 
@@ -92,12 +112,18 @@ export default function VistoriasSolar() {
     setResponsavel("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("solar_vistorias").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover vistoria."); return; }
     setVistorias(prev => prev.filter(v => v.id !== id));
     toast.info("Vistoria removida.");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: VistoriaSolarItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: VistoriaSolarItem["status"]) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("solar_vistorias").update({ status: newStatus }).eq("id", id);
+    if (error) { toast.error("Erro ao atualizar status."); return; }
     setVistorias(prev => prev.map(v => v.id === id ? { ...v, status: newStatus } : v));
     toast.success(`Status da vistoria: ${newStatus}`);
   };

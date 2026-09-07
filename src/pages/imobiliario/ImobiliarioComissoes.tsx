@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { Modal } from "../../components/ui/modal";
+import { supabase } from "../../lib/supabase";
 
 type Comissao = {
   id: string;
@@ -26,59 +27,42 @@ type Comissao = {
   created_at?: string;
 };
 
-const INITIAL_COMISSOES: Comissao[] = [
-  {
-    id: "1",
-    imovel: "Apartamento 142 - Terraço Jardins",
-    corretor: "Gustavo Henrique",
-    valorVenda: 1850000,
-    comissaoTotal: 111000,
-    comissaoCorretor: 55500,
-    comissaoImobiliaria: 55500,
-    status: "A Receber",
-    previsao: "15/09/2026",
-    observacoes: "Contrato assinado em cartório, aguardando liberação do financiamento bancário."
-  },
-  {
-    id: "2",
-    imovel: "Casa em Condomínio - Alphaville",
-    corretor: "Mariana Costa",
-    valorVenda: 3200000,
-    comissaoTotal: 192000,
-    comissaoCorretor: 96000,
-    comissaoImobiliaria: 96000,
-    status: "Liquidada",
-    previsao: "28/08/2026",
-    observacoes: "TED compensada na conta da imobiliária e repasse pago via Pix."
-  },
-  {
-    id: "3",
-    imovel: "Cobertura Duplex - Cerqueira César",
-    corretor: "Felipe Ramos",
-    valorVenda: 4500000,
-    comissaoTotal: 270000,
-    comissaoCorretor: 135000,
-    comissaoImobiliaria: 135000,
-    status: "Em Tramitação",
-    previsao: "30/09/2026",
-    observacoes: "Escritura pública agendada para o final do mês corrente."
-  },
-];
+function rowToComissao(row: any): Comissao {
+  return {
+    id: row.id,
+    imovel: row.imovel,
+    corretor: row.corretor || "",
+    valorVenda: Number(row.valor_venda) || 0,
+    comissaoTotal: Number(row.comissao_total) || 0,
+    comissaoCorretor: Number(row.comissao_corretor) || 0,
+    comissaoImobiliaria: Number(row.comissao_imobiliaria) || 0,
+    status: row.status,
+    previsao: row.previsao || "",
+    observacoes: row.observacoes || "",
+    created_at: row.created_at,
+  };
+}
 
 export default function ImobiliarioComissoes() {
-  const { user } = useAuth();
-  const tenantId = user?.tenant_id || "default";
-  const storageKey = `spy_imobiliario_comissoes_${tenantId}`;
+  const { user, activeTenantId } = useAuth();
 
-  const [comissoes, setComissoes] = useState<Comissao[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return INITIAL_COMISSOES;
-  });
+  const [comissoes, setComissoes] = useState<Comissao[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("imobiliario_comissoes")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setComissoes(data.map(rowToComissao));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("Todos");
@@ -94,14 +78,6 @@ export default function ImobiliarioComissoes() {
   const [previsao, setPrevisao] = useState("");
   const [observacoes, setObservacoes] = useState("");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(comissoes));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [comissoes, storageKey]);
-
   // Calculations for new entry
   const numValorVenda = parseFloat(valorVenda.replace(/\D/g, "")) || 0;
   const numPercTotal = parseFloat(percentualTotal) || 0;
@@ -110,7 +86,7 @@ export default function ImobiliarioComissoes() {
   const calcComissaoCorretor = (calcComissaoTotal * numSplitCorretor) / 100;
   const calcComissaoImobiliaria = calcComissaoTotal - calcComissaoCorretor;
 
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!imovel.trim()) {
       toast.error("Informe o imóvel negociado.");
@@ -120,22 +96,34 @@ export default function ImobiliarioComissoes() {
       toast.error("Informe um valor de venda válido.");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
+    }
 
-    const nova: Comissao = {
-      id: "com_" + Date.now(),
-      imovel: imovel.trim(),
-      corretor: corretor.trim() || "Corretor Interno",
-      valorVenda: numValorVenda,
-      comissaoTotal: calcComissaoTotal,
-      comissaoCorretor: calcComissaoCorretor,
-      comissaoImobiliaria: calcComissaoImobiliaria,
-      status,
-      previsao: previsao || new Date().toLocaleDateString("pt-BR"),
-      observacoes: observacoes.trim(),
-      created_at: new Date().toISOString(),
-    };
+    const { data, error } = await supabase
+      .from("imobiliario_comissoes")
+      .insert({
+        tenant_id: activeTenantId,
+        imovel: imovel.trim(),
+        corretor: corretor.trim() || "Corretor Interno",
+        valor_venda: numValorVenda,
+        comissao_total: calcComissaoTotal,
+        comissao_corretor: calcComissaoCorretor,
+        comissao_imobiliaria: calcComissaoImobiliaria,
+        status,
+        previsao: previsao || new Date().toLocaleDateString("pt-BR"),
+        observacoes: observacoes.trim(),
+      })
+      .select()
+      .maybeSingle();
 
-    setComissoes(prev => [nova, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao registrar comissão.");
+      return;
+    }
+
+    setComissoes(prev => [rowToComissao(data), ...prev]);
     setShowModal(false);
     toast.success("Comissão registrada com sucesso!");
 
@@ -145,7 +133,10 @@ export default function ImobiliarioComissoes() {
     setObservacoes("");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: Comissao["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: Comissao["status"]) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("imobiliario_comissoes").update({ status: newStatus }).eq("id", id);
+    if (error) { toast.error("Erro ao atualizar status."); return; }
     setComissoes(prev =>
       prev.map(c => (c.id === id ? { ...c, status: newStatus } : c))
     );
@@ -155,12 +146,15 @@ export default function ImobiliarioComissoes() {
   const handleDelete = async (id: string) => {
     const ok = await confirmDialog({
       title: "Excluir Registro de Comissão",
-      message: "Deseja realmente remover este registro de honorários? Esta ação não pode ser desfeita.",
+      description: "Deseja realmente remover este registro de honorários? Esta ação não pode ser desfeita.",
       confirmText: "Sim, Excluir",
       cancelText: "Cancelar",
-      variant: "danger",
     });
     if (!ok) return;
+
+    if (!supabase) return;
+    const { error } = await supabase.from("imobiliario_comissoes").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover comissão."); return; }
 
     setComissoes(prev => prev.filter(c => c.id !== id));
     toast.success("Registro de comissão removido.");

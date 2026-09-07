@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface TestDriveItem {
   id: string;
@@ -20,27 +21,58 @@ interface TestDriveItem {
   data: string;
   hora: string;
   cnhValida: boolean;
-  status: "Agendado" | "Confirmado" | "Em Rota / Realizando" | "Realizado / Proposta" | "Cancelado";
+  status: "Agendada" | "Confirmada" | "Realizada" | "Cancelada";
 }
 
-const DEFAULT_TEST_DRIVES: TestDriveItem[] = [
-  { id: "1", cliente: "Dr. Marcelo Fonseca", telefone: "(11) 98765-4321", carro: "BMW 320i M Sport 2022", vendedor: "Ricardo Dias", data: "06/09/2026", hora: "15:00", cnhValida: true, status: "Confirmado" },
-  { id: "2", cliente: "Camila Guimarães", telefone: "(11) 97654-3210", carro: "Toyota Corolla Altis 2.0 2024", vendedor: "Ricardo Dias", data: "07/09/2026", hora: "10:30", cnhValida: true, status: "Confirmado" },
-  { id: "3", cliente: "Jorge Benício", telefone: "(11) 99112-8877", carro: "Jeep Compass Longitude 2023", vendedor: "Ana Paula", data: "05/09/2026", hora: "16:00", cnhValida: true, status: "Realizado / Proposta" },
-];
+type VeiculoOption = { id: string; label: string };
+
+function rowToTestDrive(r: any): TestDriveItem {
+  return {
+    id: r.id,
+    cliente: r.cliente,
+    telefone: r.telefone || "",
+    carro: r.imobiliario_veiculos ? `${r.imobiliario_veiculos.marca} ${r.imobiliario_veiculos.modelo}` : r.imovel,
+    vendedor: r.corretor || "",
+    data: r.data ? new Date(r.data + "T00:00:00").toLocaleDateString("pt-BR") : "",
+    hora: r.hora || "10:00",
+    // Não existe coluna para verificação de CNH em imobiliario_visitas —
+    // campo mantido só como conveniência de UI, não persiste no banco.
+    cnhValida: true,
+    status: r.status,
+  };
+}
 
 export default function TestDrives() {
   const { activeTenantId } = useAuth();
-  const storageKey = `spy_test_drives_${activeTenantId || "default"}`;
 
-  const [testDrives, setTestDrives] = useState<TestDriveItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_TEST_DRIVES;
-    } catch {
-      return DEFAULT_TEST_DRIVES;
-    }
-  });
+  const [testDrives, setTestDrives] = useState<TestDriveItem[]>([]);
+  const [veiculosOptions, setVeiculosOptions] = useState<VeiculoOption[]>([]);
+
+  const refetch = () => {
+    if (!supabase || !activeTenantId) return;
+    supabase
+      .from("imobiliario_visitas")
+      .select("*, imobiliario_veiculos(marca,modelo)")
+      .eq("tenant_id", activeTenantId)
+      .not("veiculo_id", "is", null)
+      .order("data", { ascending: false })
+      .then(({ data, error }) => {
+        if (error) toast.error(`Erro ao carregar test-drives: ${error.message}`);
+        else if (data) setTestDrives(data.map(rowToTestDrive));
+      });
+  };
+
+  useEffect(() => {
+    refetch();
+    if (!supabase || !activeTenantId) return;
+    supabase
+      .from("imobiliario_veiculos")
+      .select("id,marca,modelo")
+      .eq("tenant_id", activeTenantId)
+      .then(({ data }) => {
+        if (data) setVeiculosOptions(data.map((v: any) => ({ id: v.id, label: `${v.marca} ${v.modelo}` })));
+      });
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -49,58 +81,69 @@ export default function TestDrives() {
   // Form state
   const [cliente, setCliente] = useState("");
   const [telefone, setTelefone] = useState("");
-  const [carro, setCarro] = useState("");
+  const [veiculoId, setVeiculoId] = useState("");
   const [vendedor, setVendedor] = useState("");
   const [data, setData] = useState("");
   const [hora, setHora] = useState("");
   const [cnhValida, setCnhValida] = useState(true);
-  const [status, setStatus] = useState<TestDriveItem["status"]>("Agendado");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(testDrives));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [testDrives, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!cliente.trim() || !carro.trim()) {
-      toast.error("Preencha o cliente e o modelo do veículo.");
+    if (!cliente.trim() || !veiculoId) {
+      toast.error("Preencha o cliente e selecione o veículo.");
+      return;
+    }
+    if (!supabase || !activeTenantId) {
+      toast.error("Supabase não configurado.");
       return;
     }
 
-    const newItem: TestDriveItem = {
-      id: crypto.randomUUID(),
-      cliente: cliente.trim(),
-      telefone: telefone.trim(),
-      carro: carro.trim(),
-      vendedor: vendedor.trim() || "Consultor de Vendas",
-      data: data || new Date().toLocaleDateString("pt-BR"),
-      hora: hora || "14:00",
-      cnhValida,
-      status,
-    };
+    const veiculoLabel = veiculosOptions.find(v => v.id === veiculoId)?.label || "Veículo";
 
-    setTestDrives(prev => [newItem, ...prev]);
+    const { data: row, error } = await supabase
+      .from("imobiliario_visitas")
+      .insert({
+        imovel: veiculoLabel,
+        veiculo_id: veiculoId,
+        cliente: cliente.trim(),
+        telefone: telefone.trim() || null,
+        corretor: vendedor.trim() || null,
+        data: data || new Date().toISOString().split("T")[0],
+        hora: hora || "14:00",
+        status: "Agendada",
+      })
+      .select("*, imobiliario_veiculos(marca,modelo)")
+      .maybeSingle();
+
+    if (error) {
+      toast.error(`Erro ao agendar test-drive: ${error.message}`);
+      return;
+    }
+
+    if (row) setTestDrives(prev => [rowToTestDrive(row), ...prev]);
     toast.success("Test-drive agendado com sucesso!");
     setModalOpen(false);
 
     setCliente("");
     setTelefone("");
-    setCarro("");
+    setVeiculoId("");
     setVendedor("");
     setData("");
     setHora("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("imobiliario_visitas").delete().eq("id", id);
+    if (error) { toast.error(`Erro ao remover test-drive: ${error.message}`); return; }
     setTestDrives(prev => prev.filter(t => t.id !== id));
     toast.info("Test-drive removido.");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: TestDriveItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: TestDriveItem["status"]) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("imobiliario_visitas").update({ status: newStatus }).eq("id", id);
+    if (error) { toast.error(`Erro ao atualizar status: ${error.message}`); return; }
     setTestDrives(prev => prev.map(t => t.id === id ? { ...t, status: newStatus } : t));
     toast.success(`Status do test-drive: ${newStatus}`);
   };
@@ -142,13 +185,13 @@ export default function TestDrives() {
         <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
           <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Confirmados Esta Semana</span>
           <div className="text-2xl font-black text-blue-500">
-            {testDrives.filter(t => t.status === "Confirmado" || t.status === "Agendado").length}
+            {testDrives.filter(t => t.status === "Confirmada" || t.status === "Agendada").length}
           </div>
         </Card>
         <Card className="p-4 bg-[var(--color-surface-elevated)]/40 border border-[var(--color-border-subtle)]">
           <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider block mb-1">Realizados com Sucesso</span>
           <div className="text-2xl font-black text-emerald-500">
-            {testDrives.filter(t => t.status === "Realizado / Proposta").length}
+            {testDrives.filter(t => t.status === "Realizada").length}
           </div>
         </Card>
       </div>
@@ -167,7 +210,7 @@ export default function TestDrives() {
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto">
-          {["Todos", "Agendado", "Confirmado", "Em Rota / Realizando", "Realizado / Proposta", "Cancelado"].map(st => (
+          {["Todos", "Agendada", "Confirmada", "Realizada", "Cancelada"].map(st => (
             <button
               key={st}
               onClick={() => setFilterStatus(st)}
@@ -217,11 +260,10 @@ export default function TestDrives() {
                 onChange={e => handleUpdateStatus(td.id, e.target.value as any)}
                 className="text-[10px] font-bold uppercase px-2.5 py-1 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-primary)] focus:outline-none"
               >
-                <option value="Agendado">Agendado</option>
-                <option value="Confirmado">Confirmado</option>
-                <option value="Em Rota / Realizando">Em Rota / Realizando</option>
-                <option value="Realizado / Proposta">Realizado / Proposta</option>
-                <option value="Cancelado">Cancelado</option>
+                <option value="Agendada">Agendada</option>
+                <option value="Confirmada">Confirmada</option>
+                <option value="Realizada">Realizada</option>
+                <option value="Cancelada">Cancelada</option>
               </select>
 
               <Button size="sm" variant="ghost" onClick={() => handleDelete(td.id)} className="h-8 w-8 p-0 text-red-500 hover:bg-red-500/10 rounded-xl">
@@ -302,14 +344,17 @@ export default function TestDrives() {
 
           <div>
             <label className="text-xs font-semibold text-[var(--color-text-primary)] block mb-1.5">Veículo do Test-Drive</label>
-            <input
-              type="text"
+            <select
               required
-              placeholder="Ex: Jeep Commander Limited T270 2023"
-              value={carro}
-              onChange={e => setCarro(e.target.value)}
+              value={veiculoId}
+              onChange={e => setVeiculoId(e.target.value)}
               className="w-full px-3 py-2 text-xs bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] rounded-xl text-[var(--color-text-primary)] focus:outline-none focus:border-[var(--color-primary-blue)]"
-            />
+            >
+              <option value="">Selecione um veículo do estoque...</option>
+              {veiculosOptions.map(v => (
+                <option key={v.id} value={v.id}>{v.label}</option>
+              ))}
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

@@ -12,14 +12,6 @@ export interface EstoqueItem {
   price: string;
 }
 
-const MOCK_ITEMS: EstoqueItem[] = [
-  { id: 1, name: 'Seringa Descartável 5ml', category: 'Descartáveis', qty: 1240, minQty: 500, status: 'Normal', price: 'R$ 0,45' },
-  { id: 2, name: 'Luvas Nitrílicas (M)', category: 'EPIs', qty: 150, minQty: 200, status: 'Crítico', price: 'R$ 42,00' },
-  { id: 3, name: 'Gaze Estéril 7,5cm', category: 'Curativos', qty: 3200, minQty: 1000, status: 'Normal', price: 'R$ 0,12' },
-  { id: 4, name: 'Amoxicilina 500mg', category: 'Medicamentos', qty: 45, minQty: 50, status: 'Alerta', price: 'R$ 18,50' },
-  { id: 5, name: 'Álcool 70% (1L)', category: 'Saneantes', qty: 12, minQty: 20, status: 'Alerta', price: 'R$ 14,90' },
-];
-
 function computeStatus(qty: number, minQty: number): string {
   if (qty === 0) return 'Crítico';
   if (qty < minQty) return qty < minQty * 0.5 ? 'Crítico' : 'Alerta';
@@ -39,7 +31,7 @@ function rowToItem(row: any): EstoqueItem {
 }
 
 export function useEstoque() {
-  const [items, setItems] = useState<EstoqueItem[]>(supabase ? [] : MOCK_ITEMS);
+  const [items, setItems] = useState<EstoqueItem[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

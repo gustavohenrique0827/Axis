@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
@@ -8,6 +8,7 @@ import {
 import { Card } from "../../components/ui/card";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 type VeiculoSummary = {
   id: string;
@@ -19,42 +20,68 @@ type VeiculoSummary = {
   km?: number;
 };
 
-const DEFAULT_VEICULOS: VeiculoSummary[] = [
-  { id: "1", marca: "Toyota", modelo: "Corolla Altis 2.0 Hybrid", anoModelo: 2024, valor: 178000, status: "Disponível", km: 12000 },
-  { id: "2", marca: "Jeep", modelo: "Compass Longitude T270", anoModelo: 2023, valor: 152000, status: "Disponível", km: 28000 },
-  { id: "3", marca: "BMW", modelo: "320i M Sport", anoModelo: 2022, valor: 245000, status: "Reservado", km: 34000 },
-  { id: "4", marca: "Volkswagen", modelo: "Nivus Highline 200 TSI", anoModelo: 2023, valor: 118000, status: "Disponível", km: 19000 },
-  { id: "5", marca: "Porsche", modelo: "Macan GTS 2.9 V6", anoModelo: 2022, valor: 520000, status: "Disponível", km: 15000 },
-];
+type TestDriveSummary = {
+  id: string;
+  cliente: string;
+  veiculo: string;
+  data: string;
+  hora: string;
+  consultor: string;
+  status: string;
+};
 
 export default function PainelAutomotivo() {
-  const { user } = useAuth();
-  const tenantId = user?.tenant_id || "default";
+  const { user, activeTenantId } = useAuth();
 
-  const [veiculos] = useState<VeiculoSummary[]>(() => {
-    try {
-      const saved = localStorage.getItem(`spy_veiculos_${tenantId}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {}
-    return DEFAULT_VEICULOS;
-  });
+  const [veiculos, setVeiculos] = useState<VeiculoSummary[]>([]);
+  const [testDrives, setTestDrives] = useState<TestDriveSummary[]>([]);
 
-  const [testDrives] = useState<any[]>(() => {
-    try {
-      const saved = localStorage.getItem(`spy_test_drives_${tenantId}`);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data: veiculosRows } = await supabase
+        .from("imobiliario_veiculos")
+        .select("id,marca,modelo,ano_modelo,valor,status,km")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && veiculosRows) {
+        setVeiculos(veiculosRows.map((v: any): VeiculoSummary => ({
+          id: v.id,
+          marca: v.marca,
+          modelo: v.modelo,
+          anoModelo: v.ano_modelo,
+          valor: Number(v.valor) || 0,
+          status: v.status,
+          km: Number(v.km) || 0,
+        })));
       }
-    } catch (e) {}
-    return [
-      { id: "1", cliente: "Dr. Marcelo Fonseca", veiculo: "BMW 320i M Sport", data: "Hoje", hora: "15:00", consultor: user?.name || "Ricardo Dias", status: "Confirmado" },
-      { id: "2", cliente: "Camila Guimarães", veiculo: "Toyota Corolla Altis", data: "Amanhã", hora: "10:30", consultor: user?.name || "Ricardo Dias", status: "Agendado" },
-    ];
-  });
+
+      const hojeISO = new Date().toISOString().split("T")[0];
+      const { data: visitasRows } = await supabase
+        .from("imobiliario_visitas")
+        .select("id,cliente,data,hora,corretor,status,imobiliario_veiculos(marca,modelo)")
+        .eq("tenant_id", activeTenantId)
+        .not("veiculo_id", "is", null)
+        .neq("status", "Cancelada")
+        .gte("data", hojeISO)
+        .order("data", { ascending: true })
+        .order("hora", { ascending: true })
+        .limit(5);
+      if (!cancelled && visitasRows) {
+        setTestDrives(visitasRows.map((v: any): TestDriveSummary => ({
+          id: v.id,
+          cliente: v.cliente,
+          veiculo: v.imobiliario_veiculos ? `${v.imobiliario_veiculos.marca} ${v.imobiliario_veiculos.modelo}` : "Veículo",
+          data: new Date(v.data + "T00:00:00").toLocaleDateString("pt-BR"),
+          hora: v.hora,
+          consultor: v.corretor || user?.name || "Consultor",
+          status: v.status,
+        })));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId, user]);
 
   const kpis = useMemo(() => {
     const disponiveis = veiculos.filter(v => v.status === "Disponível");

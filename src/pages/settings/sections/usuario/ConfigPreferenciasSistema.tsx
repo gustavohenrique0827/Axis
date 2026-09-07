@@ -52,10 +52,7 @@ export function ConfigPreferenciasSistema() {
   const handleLanguageChange = (lang: string) => {
     const updated = { ...prefs, language: lang };
     persist(updated);
-    try {
-      localStorage.setItem("spy_platform_lang", lang);
-      document.documentElement.lang = lang;
-    } catch {}
+    document.documentElement.lang = lang;
     const labels: Record<string, string> = {
       "pt-BR": "Português (Brasil)",
       "en-US": "English (United States)",
@@ -67,9 +64,6 @@ export function ConfigPreferenciasSistema() {
   const handleCurrencyChange = (curr: string) => {
     const updated = { ...prefs, currency: curr };
     persist(updated);
-    try {
-      localStorage.setItem("spy_default_currency", curr);
-    } catch {}
     const labels: Record<string, string> = {
       BRL: "Real Brasileiro (R$ - BRL)",
       USD: "Dólar Americano ($ - USD)",
@@ -95,10 +89,6 @@ export function ConfigPreferenciasSistema() {
 
   const handleSave = () => {
     persist(prefs);
-    try {
-      localStorage.setItem("spy_platform_lang", prefs.language);
-      localStorage.setItem("spy_default_currency", prefs.currency);
-    } catch {}
     toast.success("Preferências do sistema salvas com sucesso!");
   };
 

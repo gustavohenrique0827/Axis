@@ -25,64 +25,54 @@ interface SolarRow {
   data_conclusao?: string | null;
 }
 
-const STATUS_FLOW = ["Dimensionamento", "Vistoria Concluída", "Proposta Enviada", "Homologação", "Instalação", "Conectado à Rede"];
+// Mesmo vocabulário de status gravado em `solar_analises` (CHECK constraint da
+// migration 20260906_solar_analises_fatura.sql) — o funil abaixo precisa bater
+// exatamente com os valores reais gravados por AnaliseFatura.tsx, senão as
+// etapas nunca contam nenhum projeto.
+const STATUS_FLOW = ["Análise Concluída", "Visita Técnica", "Proposta Enviada", "Homologação", "Instalação", "Concluído"];
 
 const fmtBRL = (n: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(n);
 
-const DEFAULT_SOLAR_ROWS: SolarRow[] = [
-  { id: "sol-1", cliente: "Fazenda Santa Maria", status: "Instalação", potenciaKwp: 45.8, valorContrato: 185000, cidade: "Ribeirão Preto - SP", concessionaria: "CPFL Paulista", data: "05/09/2026" },
-  { id: "sol-2", cliente: "Supermercado CompreBem", status: "Homologação", potenciaKwp: 112.5, valorContrato: 440000, cidade: "Campinas - SP", concessionaria: "CPFL Paulista", data: "02/09/2026" },
-  { id: "sol-3", cliente: "Residência Família Moreira", status: "Vistoria Concluída", potenciaKwp: 8.4, valorContrato: 38000, cidade: "São Paulo - SP", concessionaria: "Enel SP", data: "30/08/2026" },
-  { id: "sol-4", cliente: "Galpão Logístico Alpha", status: "Dimensionamento", potenciaKwp: 75.0, valorContrato: 295000, cidade: "Sorocaba - SP", concessionaria: "CPFL Piratininga", data: "28/08/2026" },
-  { id: "sol-5", cliente: "Condomínio Solar Ville", status: "Conectado à Rede", potenciaKwp: 32.0, valorContrato: 136000, cidade: "Jundiaí - SP", concessionaria: "CPFL Piratininga", data: "15/08/2026" },
-  { id: "sol-6", cliente: "Indústria MetalSul", status: "Conectado à Rede", potenciaKwp: 88.0, valorContrato: 350000, cidade: "Curitiba - PR", concessionaria: "Copel", data: "10/08/2026" },
-];
-
 export default function PainelSolar() {
-  const { user, activeTenantId } = useAuth();
-  const tenantId = activeTenantId || user?.tenant_id || "default";
-  const storageKey = `spy_projetos_solar_${tenantId}`;
+  const { activeTenantId } = useAuth();
 
-  const [rows, setRows] = useState<SolarRow[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {}
-    return DEFAULT_SOLAR_ROWS;
-  });
+  const [rows, setRows] = useState<SolarRow[]>([]);
 
   useEffect(() => {
-    if (!supabase) return;
-    supabase.from("solar_analises").select("id,status,potencia_estimada_kwp,valor_proposta,created_at,data_conclusao").then(({ data }) => {
-      if (data && data.length > 0) {
-        setRows(prev => {
-          const map = new Map();
-          prev.forEach(p => map.set(p.id, p));
-          data.forEach((d: any) => {
-            map.set(d.id, {
-              ...d,
-              potenciaKwp: d.potencia_estimada_kwp,
-              valorContrato: d.valor_proposta,
-            });
-          });
-          return Array.from(map.values());
-        });
-      }
-    }).catch(err => {
-      console.warn("Solar painel data loaded from defaults:", err);
-    });
-  }, []);
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    supabase
+      .from("solar_analises")
+      .select("id,cliente,status,potencia_estimada_kwp,valor_proposta,distribuidora,created_at,data_conclusao")
+      .eq("tenant_id", activeTenantId)
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (cancelled) return;
+        if (error) { console.error("Erro ao carregar painel solar:", error.message); return; }
+        if (data) {
+          setRows(data.map((d: any): SolarRow => ({
+            id: d.id,
+            cliente: d.cliente,
+            status: d.status,
+            potenciaKwp: d.potencia_estimada_kwp != null ? Number(d.potencia_estimada_kwp) : undefined,
+            valorContrato: d.valor_proposta != null ? Number(d.valor_proposta) : undefined,
+            concessionaria: d.distribuidora || undefined,
+            created_at: d.created_at,
+            data: d.created_at ? new Date(d.created_at).toLocaleDateString("pt-BR") : undefined,
+            data_conclusao: d.data_conclusao,
+          })));
+        }
+      });
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const kpis = useMemo(() => {
     const totalProjetos = rows.length;
-    const conectados = rows.filter(r => r.status === "Conectado à Rede" || r.status === "Concluído");
+    const conectados = rows.filter(r => r.status === "Concluído");
     const vendasFechadas = conectados.length;
     const taxaConversao = totalProjetos > 0 ? (vendasFechadas / totalProjetos) * 100 : 0;
 
-    const abertos = rows.filter(r => r.status !== "Conectado à Rede" && r.status !== "Concluído");
+    const abertos = rows.filter(r => r.status !== "Concluído");
     const valorPipeline = abertos.reduce((s, r) => s + Number(r.valorContrato || r.valor_proposta || 0), 0);
 
     const potenciaTotal = rows.reduce((s, r) => s + Number(r.potenciaKwp || r.potencia_estimada_kwp || 0), 0);
@@ -120,10 +110,7 @@ export default function PainelSolar() {
 
   const porEstagio = useMemo(() => {
     return STATUS_FLOW.map(status => {
-      const count = rows.filter(r => {
-        if (status === "Conectado à Rede") return r.status === "Conectado à Rede" || r.status === "Concluído";
-        return r.status === status;
-      }).length;
+      const count = rows.filter(r => r.status === status).length;
       return { status, count };
     });
   }, [rows]);

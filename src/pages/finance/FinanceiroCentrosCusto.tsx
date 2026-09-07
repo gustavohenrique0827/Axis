@@ -10,6 +10,7 @@ import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
 import { confirmDialog } from "../../components/ui/confirm-dialog";
+import { supabase } from "../../lib/supabase";
 
 type CentroCusto = {
   id: string;
@@ -21,27 +22,11 @@ type CentroCusto = {
   created_at?: string;
 };
 
-const INITIAL_CENTROS: CentroCusto[] = [
-  { id: "1", nome: "Operação Comercial & Vendas", codigo: "CC-01", orcamento: 45000, gasto: 32000, responsavel: "Diretoria Comercial" },
-  { id: "2", nome: "Tecnologia & Produto", codigo: "CC-02", orcamento: 60000, gasto: 48500, responsavel: "Engenharia" },
-  { id: "3", nome: "Marketing & Growth", codigo: "CC-03", orcamento: 30000, gasto: 27800, responsavel: "Head de Marketing" },
-  { id: "4", nome: "Administrativo & Infra", codigo: "CC-04", orcamento: 25000, gasto: 19400, responsavel: "Financeiro / RH" },
-];
-
 export default function FinanceiroCentrosCusto() {
-  const { user } = useAuth();
+  const { user, activeTenantId } = useAuth();
   const tenantId = user?.tenant_id || "default";
-  const storageKey = `spy_centros_custo_${tenantId}`;
 
-  const [centros, setCentros] = useState<CentroCusto[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.error(e);
-    }
-    return INITIAL_CENTROS;
-  });
+  const [centros, setCentros] = useState<CentroCusto[]>([]);
 
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -55,12 +40,25 @@ export default function FinanceiroCentrosCusto() {
   const [responsavel, setResponsavel] = useState("");
 
   useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(centros));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [centros, storageKey]);
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase!
+        .from("finance_centros_custo")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: true });
+      if (cancelled) return;
+      if (error) {
+        toast.error("Erro ao carregar centros de custo: " + error.message);
+        return;
+      }
+      setCentros(data || []);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTenantId]);
 
   const handleOpenNew = () => {
     setEditingId(null);
@@ -82,10 +80,15 @@ export default function FinanceiroCentrosCusto() {
     setShowModal(true);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim()) {
       toast.error("Informe o nome do centro de custo.");
+      return;
+    }
+
+    if (!supabase || !activeTenantId) {
+      toast.error("Conexão com o banco de dados indisponível.");
       return;
     }
 
@@ -93,6 +96,22 @@ export default function FinanceiroCentrosCusto() {
     const numGasto = parseFloat(gasto) || 0;
 
     if (editingId) {
+      const { error } = await supabase
+        .from("finance_centros_custo")
+        .update({
+          nome: nome.trim(),
+          codigo: codigo.trim(),
+          orcamento: numOrcamento,
+          gasto: numGasto,
+          responsavel: responsavel.trim() || "Responsável",
+        })
+        .eq("id", editingId);
+
+      if (error) {
+        toast.error("Erro ao atualizar centro de custo: " + error.message);
+        return;
+      }
+
       setCentros(prev =>
         prev.map(c =>
           c.id === editingId
@@ -109,16 +128,25 @@ export default function FinanceiroCentrosCusto() {
       );
       toast.success("Centro de custo atualizado com sucesso!");
     } else {
-      const novo: CentroCusto = {
-        id: "cc_" + Date.now(),
-        nome: nome.trim(),
-        codigo: codigo.trim() || `CC-0${centros.length + 1}`,
-        orcamento: numOrcamento,
-        gasto: numGasto,
-        responsavel: responsavel.trim() || user?.name || "Responsável",
-        created_at: new Date().toISOString(),
-      };
-      setCentros(prev => [...prev, novo]);
+      const { data, error } = await supabase
+        .from("finance_centros_custo")
+        .insert({
+          tenant_id: activeTenantId,
+          nome: nome.trim(),
+          codigo: codigo.trim() || `CC-0${centros.length + 1}`,
+          orcamento: numOrcamento,
+          gasto: numGasto,
+          responsavel: responsavel.trim() || user?.name || "Responsável",
+        })
+        .select()
+        .single();
+
+      if (error) {
+        toast.error("Erro ao criar centro de custo: " + error.message);
+        return;
+      }
+
+      setCentros(prev => [data, ...prev]);
       toast.success("Centro de custo criado com sucesso!");
     }
 
@@ -134,6 +162,18 @@ export default function FinanceiroCentrosCusto() {
       variant: "danger",
     });
     if (!ok) return;
+
+    if (!supabase) {
+      toast.error("Conexão com o banco de dados indisponível.");
+      return;
+    }
+
+    const { error } = await supabase.from("finance_centros_custo").delete().eq("id", id);
+
+    if (error) {
+      toast.error("Erro ao excluir centro de custo: " + error.message);
+      return;
+    }
 
     setCentros(prev => prev.filter(c => c.id !== id));
     toast.success("Centro de custo excluído.");

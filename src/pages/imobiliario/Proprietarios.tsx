@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface ProprietarioItem {
   id: string;
@@ -20,25 +21,38 @@ interface ProprietarioItem {
   status: "Ativo" | "Inativo";
 }
 
-const DEFAULT_PROPRIETARIOS: ProprietarioItem[] = [
-  { id: "1", nome: "Roberto Albuquerque", telefone: "(11) 98765-1122", email: "roberto.albuquerque@email.com", imoveisCount: 3, tipo: "Pessoa Física", status: "Ativo" },
-  { id: "2", nome: "Patrícia Menezes", telefone: "(11) 97654-2233", email: "patricia.menezes@email.com", imoveisCount: 1, tipo: "Pessoa Física", status: "Ativo" },
-  { id: "3", nome: "Holdings Alpha Imóveis Ltda", telefone: "(11) 3344-5566", email: "contato@alphaimoveis.com.br", imoveisCount: 8, tipo: "Pessoa Jurídica", status: "Ativo" },
-  { id: "4", nome: "Carlos Eduardo Vieira", telefone: "(11) 96543-3344", email: "carlos.vieira@email.com", imoveisCount: 2, tipo: "Pessoa Física", status: "Ativo" },
-];
+function rowToProprietario(row: any): ProprietarioItem {
+  return {
+    id: row.id,
+    nome: row.nome,
+    telefone: row.telefone || "",
+    email: row.email || "",
+    imoveisCount: row.imoveis_count ?? 0,
+    tipo: row.tipo,
+    status: row.status,
+  };
+}
 
 export default function Proprietarios() {
   const { activeTenantId } = useAuth();
-  const storageKey = `spy_proprietarios_${activeTenantId || "default"}`;
 
-  const [proprietarios, setProprietarios] = useState<ProprietarioItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_PROPRIETARIOS;
-    } catch {
-      return DEFAULT_PROPRIETARIOS;
-    }
-  });
+  const [proprietarios, setProprietarios] = useState<ProprietarioItem[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("imobiliario_proprietarios")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setProprietarios(data.map(rowToProprietario));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
@@ -50,32 +64,37 @@ export default function Proprietarios() {
   const [tipo, setTipo] = useState<ProprietarioItem["tipo"]>("Pessoa Física");
   const [imoveisCount, setImoveisCount] = useState("1");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(proprietarios));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [proprietarios, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nome.trim()) {
       toast.error("Informe o nome do proprietário.");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
+    }
 
-    const newItem: ProprietarioItem = {
-      id: crypto.randomUUID(),
-      nome: nome.trim(),
-      telefone: telefone.trim(),
-      email: email.trim(),
-      tipo,
-      imoveisCount: parseInt(imoveisCount, 10) || 1,
-      status: "Ativo",
-    };
+    const { data, error } = await supabase
+      .from("imobiliario_proprietarios")
+      .insert({
+        tenant_id: activeTenantId,
+        nome: nome.trim(),
+        telefone: telefone.trim(),
+        email: email.trim(),
+        tipo,
+        imoveis_count: parseInt(imoveisCount, 10) || 1,
+        status: "Ativo",
+      })
+      .select()
+      .maybeSingle();
 
-    setProprietarios(prev => [newItem, ...prev]);
+    if (error || !data) {
+      toast.error("Erro ao cadastrar proprietário.");
+      return;
+    }
+
+    setProprietarios(prev => [rowToProprietario(data), ...prev]);
     toast.success("Proprietário cadastrado com sucesso!");
     setModalOpen(false);
 
@@ -85,7 +104,10 @@ export default function Proprietarios() {
     setImoveisCount("1");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("imobiliario_proprietarios").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover proprietário."); return; }
     setProprietarios(prev => prev.filter(p => p.id !== id));
     toast.info("Proprietário removido.");
   };

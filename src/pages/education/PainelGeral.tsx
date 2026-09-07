@@ -20,34 +20,11 @@ import { useNavigate } from "react-router-dom";
 
 const COLORS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#06b6d4', '#ec4899'];
 
-const DEFAULT_STUDENTS = [
-  { id: "std-1", name: "Gabriel Souza", email: "gabriel@email.com", status: "Ativo", turma: "Formação Full Stack 2026", progresso: 85 },
-  { id: "std-2", name: "Larissa Moreira", email: "larissa@email.com", status: "Ativo", turma: "IA Generativa Aplicada", progresso: 92 },
-  { id: "std-3", name: "Bruno Carvalho", email: "bruno@email.com", status: "Ativo", turma: "Gestão Comercial B2B", progresso: 64 },
-  { id: "std-4", name: "Amanda Ribeiro", email: "amanda@email.com", status: "Ativo", turma: "Formação Full Stack 2026", progresso: 78 },
-];
-
-const DEFAULT_TURMAS = [
-  { id: "t-1", nome: "Formação Full Stack 2026", alunos_count: 28, status: "Em Andamento", professor: "Lucas Martins" },
-  { id: "t-2", nome: "IA Generativa Aplicada", alunos_count: 34, status: "Em Andamento", professor: "Beatriz Oliveira" },
-  { id: "t-3", nome: "Gestão Comercial B2B", alunos_count: 22, status: "Em Andamento", professor: "Carlos Mendes" },
-];
-
-const DEFAULT_MENSALIDADES = [
-  { id: "m-1", aluno: "Gabriel Souza", valor: 650, status: "Pago", vencimento: "05/09/2026" },
-  { id: "m-2", aluno: "Larissa Moreira", valor: 890, status: "Pago", vencimento: "05/09/2026" },
-  { id: "m-3", aluno: "Bruno Carvalho", valor: 650, status: "Pendente", vencimento: "15/09/2026" },
-  { id: "m-4", aluno: "Amanda Ribeiro", valor: 650, status: "Pago", vencimento: "05/09/2026" },
-];
-
 export default function PainelGeralEducation() {
   const navigate = useNavigate();
-  const { turmas: rawTurmas, students: rawStudents, certificates, educationContent } = useData();
-  const [mensalidades, setMensalidades] = useState<any[]>(DEFAULT_MENSALIDADES);
+  const { turmas, students, certificates } = useData();
+  const [mensalidades, setMensalidades] = useState<any[]>([]);
   const [loadingMensalidades, setLoadingMensalidades] = useState(true);
-
-  const students = rawStudents.length > 0 ? rawStudents : DEFAULT_STUDENTS;
-  const turmas = rawTurmas.length > 0 ? rawTurmas : DEFAULT_TURMAS;
 
   useEffect(() => {
     if (!supabase) {
@@ -59,19 +36,17 @@ export default function PainelGeralEducation() {
       .select("*")
       .order("vencimento", { ascending: true })
       .then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           setMensalidades(data);
         }
         setLoadingMensalidades(false);
-      })
-      .catch(() => setLoadingMensalidades(false));
+      });
   }, []);
 
   // KPIs
   const totalAlunos = students.length;
   const totalTurmas = turmas.length;
-  const totalCertificados = certificates.length > 0 ? certificates.length : 18;
-  const totalConteudos = educationContent.length > 0 ? educationContent.length : 42;
+  const totalCertificados = certificates.length;
 
   const totalRecebido = useMemo(() => {
     return mensalidades

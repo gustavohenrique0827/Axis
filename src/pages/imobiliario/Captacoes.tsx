@@ -9,6 +9,7 @@ import { Card } from "../../components/ui/card";
 import { Modal } from "../../components/ui/modal";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
+import { supabase } from "../../lib/supabase";
 
 interface CaptacaoItem {
   id: string;
@@ -22,24 +23,40 @@ interface CaptacaoItem {
   data: string;
 }
 
-const DEFAULT_CAPTACOES: CaptacaoItem[] = [
-  { id: "1", endereco: "Av. Faria Lima, 1400 - Itaim Bibi", tipo: "Apartamento", valorPretendido: 1850000, corretor: "Gustavo Henrique", proprietario: "Dr. Roberto Silveira", telefone: "(11) 98765-4321", status: "Em Avaliação", data: "04/09/2026" },
-  { id: "2", endereco: "Rua Oscar Freire, 820 - Jardins", tipo: "Comercial", valorPretendido: 3400000, corretor: "Mariana Costa", proprietario: "Helena Prado", telefone: "(11) 97654-3210", status: "Contrato de Posse", data: "02/09/2026" },
-  { id: "3", endereco: "Alameda Santos, 900 - Cerqueira César", tipo: "Cobertura", valorPretendido: 4200000, corretor: "Felipe Ramos", proprietario: "Carlos Albuquerque", telefone: "(11) 99123-4567", status: "Fotos & Vistoria", data: "30/08/2026" },
-];
+function rowToCaptacao(row: any): CaptacaoItem {
+  return {
+    id: row.id,
+    endereco: row.endereco,
+    tipo: row.tipo,
+    valorPretendido: Number(row.valor_pretendido) || 0,
+    corretor: row.corretor || "",
+    proprietario: row.proprietario || "",
+    telefone: row.telefone || "",
+    status: row.status,
+    data: row.data ? new Date(row.data + "T00:00:00").toLocaleDateString("pt-BR") : "",
+  };
+}
 
 export default function Captacoes() {
   const { activeTenantId } = useAuth();
-  const storageKey = `spy_captacoes_${activeTenantId || "default"}`;
 
-  const [captacoes, setCaptacoes] = useState<CaptacaoItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(storageKey);
-      return saved ? JSON.parse(saved) : DEFAULT_CAPTACOES;
-    } catch {
-      return DEFAULT_CAPTACOES;
-    }
-  });
+  const [captacoes, setCaptacoes] = useState<CaptacaoItem[]>([]);
+
+  useEffect(() => {
+    if (!supabase || !activeTenantId) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("imobiliario_captacoes")
+        .select("*")
+        .eq("tenant_id", activeTenantId)
+        .order("created_at", { ascending: false });
+      if (!cancelled && !error && data) {
+        setCaptacoes(data.map(rowToCaptacao));
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activeTenantId]);
 
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("Todos");
@@ -54,35 +71,41 @@ export default function Captacoes() {
   const [telefone, setTelefone] = useState("");
   const [status, setStatus] = useState<CaptacaoItem["status"]>("Em Avaliação");
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(storageKey, JSON.stringify(captacoes));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [captacoes, storageKey]);
-
-  const handleCreate = (e: React.FormEvent) => {
+  const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!endereco.trim()) {
       toast.error("Informe o endereço do imóvel.");
       return;
     }
+    if (!supabase || !activeTenantId) {
+      toast.error("Sem conexão com o banco de dados.");
+      return;
+    }
 
     const numVal = parseFloat(valor.replace(/[^\d]/g, "")) || 0;
-    const newItem: CaptacaoItem = {
-      id: crypto.randomUUID(),
-      endereco: endereco.trim(),
-      tipo,
-      valorPretendido: numVal,
-      corretor: corretor.trim() || "Corretor Interno",
-      proprietario: proprietario.trim() || "Proprietário Não Identificado",
-      telefone: telefone.trim(),
-      status,
-      data: new Date().toLocaleDateString("pt-BR"),
-    };
 
-    setCaptacoes(prev => [newItem, ...prev]);
+    const { data, error } = await supabase
+      .from("imobiliario_captacoes")
+      .insert({
+        tenant_id: activeTenantId,
+        endereco: endereco.trim(),
+        tipo,
+        valor_pretendido: numVal,
+        corretor: corretor.trim() || "Corretor Interno",
+        proprietario: proprietario.trim() || "Proprietário Não Identificado",
+        telefone: telefone.trim(),
+        status,
+        data: new Date().toISOString().split("T")[0],
+      })
+      .select()
+      .maybeSingle();
+
+    if (error || !data) {
+      toast.error("Erro ao registrar captação.");
+      return;
+    }
+
+    setCaptacoes(prev => [rowToCaptacao(data), ...prev]);
     toast.success("Captação registrada com sucesso!");
     setModalOpen(false);
     // Reset form
@@ -93,12 +116,18 @@ export default function Captacoes() {
     setTelefone("");
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("imobiliario_captacoes").delete().eq("id", id);
+    if (error) { toast.error("Erro ao remover captação."); return; }
     setCaptacoes(prev => prev.filter(c => c.id !== id));
     toast.info("Captação removida.");
   };
 
-  const handleUpdateStatus = (id: string, newStatus: CaptacaoItem["status"]) => {
+  const handleUpdateStatus = async (id: string, newStatus: CaptacaoItem["status"]) => {
+    if (!supabase) return;
+    const { error } = await supabase.from("imobiliario_captacoes").update({ status: newStatus }).eq("id", id);
+    if (error) { toast.error("Erro ao atualizar status."); return; }
     setCaptacoes(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
     toast.success(`Status atualizado para: ${newStatus}`);
   };
