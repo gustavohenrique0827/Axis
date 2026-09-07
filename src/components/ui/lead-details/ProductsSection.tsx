@@ -17,9 +17,17 @@ import {
   ChevronDown,
   ChevronUp,
   Sparkles,
+  Zap,
+  Edit3,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useData } from "../../../contexts/DataContext";
 import { handleDownloadPdf } from "../../../pages/crm/utils/proposalPdf";
+import {
+  PropostaEditorWordModal,
+  PropostaEditorData,
+} from "../modals/crm/PropostaEditorWordModal";
 import { cn } from "../../../lib/utils";
 
 interface ProductsSectionProps {
@@ -57,12 +65,27 @@ export function ProductsSection({
   setAlterationLogs,
   leadName,
   companyName,
+  leadId,
 }: ProductsSectionProps) {
+  const {
+    createProposalWithItems,
+    addFinanceEntry,
+    updateLead,
+    addNotification,
+    turmas,
+    updateTurma,
+  } = useData();
+
   // Mini PDV State
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todas");
   const [showAddForm, setShowAddForm] = useState(false);
   const [discountValue, setDiscountValue] = useState<number>(0);
+  const [isAutomating, setIsAutomating] = useState(false);
+
+  // Word Editor Modal State
+  const [isWordModalOpen, setIsWordModalOpen] = useState(false);
+  const [currentProposalData, setCurrentProposalData] = useState<PropostaEditorData | null>(null);
 
   // New Product Form State
   const [newProdName, setNewProdName] = useState("");
@@ -163,6 +186,155 @@ export function ProductsSection({
     if (updateProductQuantity) {
       updateProductQuantity(prodId, next);
     }
+  };
+
+  const handleProcessFullOrder = async () => {
+    if (linkedItems.length === 0) {
+      toast.error("Adicione produtos ao pedido antes de processar a venda.");
+      return;
+    }
+
+    setIsAutomating(true);
+    try {
+      const clientName = companyName || leadName || "Cliente";
+      const propTitle = `Proposta Comercial — ${clientName}`;
+
+      // 1. Criar proposta com itens no Supabase
+      const proposalId = await createProposalWithItems({
+        titulo: propTitle,
+        cliente: clientName,
+        valor: finalTotal,
+        validade: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        status: "Enviada",
+        vendedor: seller || "Consultor S.P.Y.",
+        leadId: leadId || null,
+        tipo: "itens",
+        itens: linkedItems.map((p) => ({
+          productId: p.id,
+          descricao: p.name,
+          quantidade: p.quantity,
+          precoUnitario: p.price,
+        })),
+      });
+
+      // 2. Criar lançamento financeiro no Contas a Receber
+      const dueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+      await addFinanceEntry({
+        description: `Venda PDV — ${clientName} (${linkedItems.length} itens)`,
+        category: "Vendas / Serviços",
+        value: finalTotal,
+        type: "Receber",
+        status: "A Vencer",
+        date: dueDate,
+      });
+
+      // 3. Atualizar Lead no banco (valor, produtos e status fechado)
+      if (leadId && updateLead) {
+        await updateLead(leadId, {
+          value: finalTotal,
+          productIds: linkedProductIds,
+          status: "Fechado",
+        });
+      }
+
+      // 4. Matrícula automática em Turmas (se houver cursos/mentorias)
+      const EDUCATION_CATEGORIES = ["curso", "turma", "mentoria", "formação", "treinamento"];
+      const eduProducts = linkedItems.filter((p) =>
+        EDUCATION_CATEGORIES.some((c) => (p.category || "").toLowerCase().includes(c))
+      );
+      if (eduProducts.length > 0 && turmas && updateTurma && leadId) {
+        for (const prod of eduProducts) {
+          const turma = (turmas as any[]).find(
+            (t) => t.productId === prod.id || t.curso === prod.name
+          );
+          if (turma) {
+            const currentStudents = Array.isArray(turma.students) ? turma.students : [];
+            const already = currentStudents.some(
+              (s) => (typeof s === "string" ? s : s.leadId || s.id) === leadId
+            );
+            if (!already) {
+              await updateTurma(turma.id, {
+                students: [
+                  ...currentStudents,
+                  { leadId, name: clientName, enrolledAt: new Date().toISOString() },
+                ],
+              });
+            }
+          }
+        }
+      }
+
+      // 5. Histórico e Notificações
+      setAlterationLogs((prev: any[]) => [
+        {
+          id: Date.now().toString(),
+          author: seller || "Mini PDV",
+          desc: `⚡ Pedido de R$ ${finalTotal.toLocaleString("pt-BR")} concluído: Proposta gerada, Contas a Receber lançado e Lead atualizado.`,
+          time: "Agora",
+        },
+        ...prev,
+      ]);
+
+      addNotification({
+        title: `🎉 Venda Concluída no PDV: ${clientName}`,
+        desc: `Venda de R$ ${finalTotal.toLocaleString("pt-BR")} processada. Proposta vinculada e receita provisionada no financeiro.`,
+        type: "success",
+        category: "CRM & Vendas",
+        link: "/app/crm/propostas",
+      });
+
+      const generatedProposal: PropostaEditorData = {
+        id: proposalId,
+        cliente: clientName,
+        titulo: propTitle,
+        valor: finalTotal,
+        vendedor: seller || "Consultor S.P.Y.",
+        status: "Enviada",
+        validade: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+        itens: linkedItems.map((p) => ({
+          product_name: p.name,
+          quantidade: p.quantity,
+          preco_unitario: p.price,
+        })),
+      };
+      setCurrentProposalData(generatedProposal);
+
+      toast.success("⚡ Venda concluída e 100% automatizada!", {
+        description: "Proposta criada, contas a receber provisionado e lead atualizado.",
+        action: {
+          label: "Abrir Proposta (Word)",
+          onClick: () => setIsWordModalOpen(true),
+        },
+      });
+    } catch (err: any) {
+      toast.error("Erro na automação do pedido: " + err?.message);
+    } finally {
+      setIsAutomating(false);
+    }
+  };
+
+  const handleOpenWordEditor = () => {
+    const clientName = companyName || leadName || "Cliente";
+    const propTitle = `Proposta Comercial — ${clientName}`;
+
+    setCurrentProposalData({
+      id: currentProposalData?.id || undefined,
+      cliente: clientName,
+      titulo: currentProposalData?.titulo || propTitle,
+      valor: finalTotal,
+      vendedor: seller || "Consultor S.P.Y.",
+      status: currentProposalData?.status || "Enviada",
+      validade:
+        currentProposalData?.validade ||
+        new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      itens: linkedItems.map((p) => ({
+        product_name: p.name,
+        quantidade: p.quantity,
+        preco_unitario: p.price,
+      })),
+      conteudo_texto: currentProposalData?.conteudo_texto || null,
+    });
+    setIsWordModalOpen(true);
   };
 
   const handleGeneratePdf = () => {
@@ -465,15 +637,50 @@ export function ProductsSection({
           </div>
         </div>
 
-        {/* ── BOTÃO DE BAIXAR PDF ── */}
-        <Button
-          variant="outline"
-          disabled={linkedItems.length === 0}
-          onClick={handleGeneratePdf}
-          className="w-full text-xs font-bold gap-2 h-9 border-blue-500/30 hover:bg-blue-500/10 text-blue-400 cursor-pointer disabled:opacity-40"
-        >
-          <FileText className="w-4 h-4" /> Baixar PDF da Proposta / Orçamento
-        </Button>
+        {/* ── BOTÕES DE AÇÃO DO MINI PDV & AUTOMAÇÃO ── */}
+        <div className="space-y-2 pt-1">
+          {/* Botão Principal: Processar e Automatizar Tudo */}
+          <Button
+            type="button"
+            disabled={linkedItems.length === 0 || isAutomating}
+            onClick={handleProcessFullOrder}
+            className="w-full text-xs font-black uppercase tracking-wider gap-2 h-10 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/25 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+          >
+            {isAutomating ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" /> Automatizando Sistema...
+              </>
+            ) : (
+              <>
+                <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+                ⚡ Concluir Venda & Automatizar Tudo (PDV)
+              </>
+            )}
+          </Button>
+
+          {/* Ações Secundárias: Modo Word e PDF */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={linkedItems.length === 0}
+              onClick={handleOpenWordEditor}
+              className="text-xs font-bold gap-2 h-8.5 border-indigo-500/30 hover:bg-indigo-500/10 text-indigo-300 cursor-pointer disabled:opacity-40"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-indigo-400" /> Visualizar / Editar (Modo Word)
+            </Button>
+
+            <Button
+              type="button"
+              variant="outline"
+              disabled={linkedItems.length === 0}
+              onClick={handleGeneratePdf}
+              className="text-xs font-bold gap-2 h-8.5 border-blue-500/30 hover:bg-blue-500/10 text-blue-300 cursor-pointer disabled:opacity-40"
+            >
+              <FileText className="w-3.5 h-3.5 text-blue-400" /> Baixar PDF da Proposta
+            </Button>
+          </div>
+        </div>
       </Card>
 
       {/* ── CATÁLOGO DE PRODUTOS DISPONÍVEIS ── */}
@@ -567,6 +774,16 @@ export function ProductsSection({
           />
         )}
       </Card>
+
+      {/* ── MODAL EDITOR DE PROPOSTA MODO WORD ── */}
+      <PropostaEditorWordModal
+        isOpen={isWordModalOpen}
+        onClose={() => setIsWordModalOpen(false)}
+        proposalData={currentProposalData}
+        onSaveProposal={(updated) => {
+          setCurrentProposalData(updated);
+        }}
+      />
     </div>
   );
 }

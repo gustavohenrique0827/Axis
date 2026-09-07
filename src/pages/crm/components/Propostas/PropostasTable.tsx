@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Card } from "../../../../components/ui/card";
 import { Input } from "../../../../components/ui/input";
 import { Badge } from "../../../../components/ui/badge";
@@ -12,11 +13,15 @@ import {
   TableCell,
 } from "../../../../components/ui/table";
 import {
-  FileText, Search, Clock, CheckCircle2, XCircle, User, Download, Trash2, History, Send, Link2, Eye,
+  FileText, Search, Clock, CheckCircle2, XCircle, User, Download, Trash2, History, Send, Link2, Eye, Edit3,
 } from "lucide-react";
 import { toast } from "sonner";
 import { handleDownloadPdf } from "../../utils/proposalPdf";
 import { confirmDialog } from "../../../../components/ui/confirm-dialog";
+import {
+  PropostaEditorWordModal,
+  PropostaEditorData,
+} from "../../../../components/ui/modals/crm/PropostaEditorWordModal";
 
 interface Proposta {
   id: string;
@@ -66,6 +71,9 @@ interface PropostasTableProps {
 }
 
 export function PropostasTable({ propostas, proposalItems, search, onSearchChange, onUpdateStatus, onDelete }: PropostasTableProps) {
+  const [editingProposal, setEditingProposal] = useState<PropostaEditorData | null>(null);
+  const [isWordModalOpen, setIsWordModalOpen] = useState(false);
+
   const filtered = propostas.filter(p =>
     (p.cliente || "").toLowerCase().includes(search.toLowerCase()) ||
     p.titulo.toLowerCase().includes(search.toLowerCase())
@@ -188,37 +196,70 @@ export function PropostasTable({ propostas, proposalItems, search, onSearchChang
                           )}
                         </button>
                       )}
-                      <button
-                        onClick={() => item.tipo === "arquivo" && item.link_pdf
-                          ? window.open(item.link_pdf, "_blank", "noopener,noreferrer")
-                          : handleDownloadPdf(item as any, itens)}
-                        title={item.tipo === "arquivo" ? "Abrir Arquivo Anexado" : "Baixar Contrato (PDF)"}
-                        className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:text-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/10 rounded-lg transition-colors"
-                      >
-                        <Download className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={async () => {
-                          if (await confirmDialog({
-                            title: "Excluir proposta",
-                            description: `Excluir a proposta "${item.titulo}" (${item.cliente})? Essa ação não pode ser desfeita.`,
-                            confirmText: "Excluir",
-                          })) onDelete(item.id);
-                        }}
-                        title="Deletar Proposta"
-                        className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
-                      >
+                        <button
+                          onClick={() => {
+                            setEditingProposal({
+                              id: item.id,
+                              cliente: item.cliente,
+                              titulo: item.titulo,
+                              valor: item.valor,
+                              validade: item.validade,
+                              status: item.status,
+                              vendedor: item.vendedor,
+                              conteudo_texto: item.conteudo_texto,
+                              view_token: item.view_token,
+                              itens: itens.map((i) => ({
+                                product_name: i.product_name,
+                                quantidade: i.quantidade,
+                                preco_unitario: i.preco_unitario,
+                              })),
+                            });
+                            setIsWordModalOpen(true);
+                          }}
+                          title="Visualizar / Editar no Modo Word (Diretrizes e Contrato)"
+                          className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition-colors"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => item.tipo === "arquivo" && item.link_pdf
+                            ? window.open(item.link_pdf, "_blank", "noopener,noreferrer")
+                            : handleDownloadPdf(item as any, itens)}
+                          title={item.tipo === "arquivo" ? "Abrir Arquivo Anexado" : "Baixar Contrato (PDF)"}
+                          className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:text-[var(--color-primary-blue)] hover:bg-[var(--color-primary-blue)]/10 rounded-lg transition-colors"
+                        >
+                          <Download className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (await confirmDialog({
+                              title: "Excluir proposta",
+                              description: `Excluir a proposta "${item.titulo}" (${item.cliente})? Essa ação não pode ser desfeita.`,
+                              confirmText: "Excluir",
+                            })) onDelete(item.id);
+                          }}
+                          title="Deletar Proposta"
+                          className="p-2 bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] hover:text-danger hover:bg-danger/10 rounded-lg transition-colors"
+                        >
 
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      )}
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
+        )}
+      <PropostaEditorWordModal
+        isOpen={isWordModalOpen}
+        onClose={() => setIsWordModalOpen(false)}
+        proposalData={editingProposal}
+        onSaveProposal={(updated) => {
+          setEditingProposal(updated);
+        }}
+      />
     </>
   );
 }
