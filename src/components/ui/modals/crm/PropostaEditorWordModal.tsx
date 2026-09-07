@@ -347,6 +347,30 @@ export function PropostaEditorWordModal({
               type="button"
               onClick={() =>
                 insertClauseAtCursor(
+                  "CLÁUSULA – DA ASSINATURA RECORRENTE E VIGÊNCIA\nA prestação dos serviços e soluções de software sob o regime de recorrência mensal terá vigência inicial acordada neste instrumento, com cobrança periódica de mensalidade nas datas pactuadas. A renovação se dará automaticamente por iguais períodos, assegurado o reajuste anual pelo índice oficial (IPCA/IGP-M)."
+                )
+              }
+              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer"
+            >
+              🔄 + Recorrência & Vigência
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                insertClauseAtCursor(
+                  "CLÁUSULA – DA TAXA DE IMPLANTAÇÃO E SETUP DO SISTEMA\nA taxa de implantação/setup inicial contempla as etapas de parametrização da plataforma, migração/cargas de dados, homologação dos fluxos operacionais e treinamento capacitivo dos usuários designados pelo Contratante. O cronograma de implantação se inicia imediatamente após a formalização comercial e quitação da respectiva taxa."
+                )
+              }
+              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer"
+            >
+              🛠️ + Implantação & Setup
+            </button>
+
+            <button
+              type="button"
+              onClick={() =>
+                insertClauseAtCursor(
                   "CLÁUSULA – DA GARANTIA TÉCNICA E SUPORTE\nA Contratada concede garantia integral sobre os serviços executados pelo período de 90 (noventa) dias corridos, garantindo assistência corretiva sem custos adicionais decorrentes de vícios técnicos de fabricação ou parametrização."
                 )
               }

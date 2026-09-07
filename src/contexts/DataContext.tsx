@@ -551,7 +551,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             if (!mktCampRes.error && mktCampRes.data) setMarketingCampaigns(mktCampRes.data);
             if (!mktContRes.error && mktContRes.data) setMarketingContent(mktContRes.data);
             if (!mktLpRes.error && mktLpRes.data) setMarketingLandingPages(mktLpRes.data);
-            if (!productsRes.error && productsRes.data) setProducts(productsRes.data);
+            if (!productsRes.error && productsRes.data) {
+              setProducts(productsRes.data.map((p: any) => ({
+                ...p,
+                typeAttributes: p.typeAttributes || p.type_attributes || {},
+                attachments: Array.isArray(p.attachments) ? p.attachments : [],
+              })));
+            }
             if (!proposalsRes.error && proposalsRes.data) setProposals(proposalsRes.data);
             if (!proposalItemsRes.error && proposalItemsRes.data) setProposalItems(proposalItemsRes.data);
             if (!turmasRes.error && turmasRes.data) setTurmas(turmasRes.data);
@@ -1182,9 +1188,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             const allowed = [
               'id', 'sku', 'name', 'category', 'type', 'price', 'cost', 'margin', 'commission',
               'active', 'stockMin', 'stockMax', 'currentStock', 'dimensions', 'weight', 'material',
-              'description', 'provider', 'isBestSeller', 'tags', 'tenant_id', 'currency'
+              'description', 'provider', 'isBestSeller', 'tags', 'tenant_id', 'currency',
+              'type_attributes', 'attachments'
             ];
-            payloadToDb = Object.fromEntries(Object.entries(stamped).filter(([k]) => allowed.includes(k)));
+            const pCopy: any = { ...stamped };
+            if (pCopy.typeAttributes && !pCopy.type_attributes) pCopy.type_attributes = pCopy.typeAttributes;
+            payloadToDb = Object.fromEntries(Object.entries(pCopy).filter(([k]) => allowed.includes(k)));
             if (payloadToDb.price !== undefined) payloadToDb.price = Number(payloadToDb.price) || 0;
             if (payloadToDb.cost !== undefined) payloadToDb.cost = Number(payloadToDb.cost) || 0;
             if (payloadToDb.commission !== undefined) payloadToDb.commission = Number(payloadToDb.commission) || 0;
@@ -1208,8 +1217,12 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
             const allowed = [
               'id', 'sku', 'name', 'category', 'type', 'price', 'cost', 'margin', 'commission',
               'active', 'stockMin', 'stockMax', 'currentStock', 'dimensions', 'weight', 'material',
-              'description', 'provider', 'isBestSeller', 'tags', 'tenant_id', 'currency'
+              'description', 'provider', 'isBestSeller', 'tags', 'tenant_id', 'currency',
+              'type_attributes', 'attachments'
             ];
+            if (safeUpdates.typeAttributes && !safeUpdates.type_attributes) {
+              safeUpdates.type_attributes = safeUpdates.typeAttributes;
+            }
             safeUpdates = Object.fromEntries(Object.entries(safeUpdates).filter(([k]) => allowed.includes(k)));
             if (safeUpdates.price !== undefined) safeUpdates.price = Number(safeUpdates.price) || 0;
             if (safeUpdates.cost !== undefined) safeUpdates.cost = Number(safeUpdates.cost) || 0;

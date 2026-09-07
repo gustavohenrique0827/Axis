@@ -52,6 +52,13 @@ export function useProdutoForm() {
   const [formDescription, setFormDescription] = useState("");
   const [formCurrentStock, setFormCurrentStock] = useState("0");
 
+  // Recurrence & Implementation State
+  const [formIsRecurring, setFormIsRecurring] = useState(false);
+  const [formBillingCycle, setFormBillingCycle] = useState("Mensal");
+  const [formContractMonths, setFormContractMonths] = useState("12");
+  const [formHasImplementation, setFormHasImplementation] = useState(false);
+  const [formImplementationFee, setFormImplementationFee] = useState("0");
+
   const { products, addProduct, updateProduct, deleteProduct, setProducts, clienteBase } = useData();
   const { user, activeTenantId } = useAuth();
 
@@ -101,6 +108,11 @@ export function useProdutoForm() {
     setFormMaterial("");
     setFormDescription("");
     setFormCurrentStock("0");
+    setFormIsRecurring(false);
+    setFormBillingCycle("Mensal");
+    setFormContractMonths("12");
+    setFormHasImplementation(false);
+    setFormImplementationFee("0");
     setActiveTab("info");
     setSimulateTax(false);
     setAttachments([]);
@@ -131,6 +143,18 @@ export function useProdutoForm() {
     setFormMaterial(p.material || "");
     setFormDescription(p.description || "");
     setFormCurrentStock(p.currentStock.toString());
+
+    const isRec = !!(p.recurrence || p.typeAttributes?.isRecurring || p.type === "Assinatura");
+    setFormIsRecurring(isRec);
+    setFormBillingCycle(
+      (p.billingCycle || p.typeAttributes?.billingCycle || p.typeAttributes?.cicloCobranca || "Mensal") as string
+    );
+    setFormContractMonths(String(p.contractMonths || p.typeAttributes?.contractMonths || "12"));
+    setFormHasImplementation(
+      !!(p.hasImplementation || p.typeAttributes?.hasImplementation || p.category === "Implantação")
+    );
+    setFormImplementationFee(String(p.implementationFee || p.typeAttributes?.implementationFee || "0"));
+
     setActiveTab("info");
     setSimulateTax(false);
     setAttachments(p.attachments || []);
@@ -156,6 +180,17 @@ export function useProdutoForm() {
     const marginRatio = priceNum > 0 ? parseFloat((((priceNum - costNum) / priceNum) * 100).toFixed(1)) : 0;
     const parsedTags = formTags.split(",").map(t => t.trim().toLowerCase()).filter(t => t.length > 0);
 
+    const contractMonthsNum = parseInt(formContractMonths) || 12;
+    const implFeeNum = parseFloat(formImplementationFee) || 0;
+    const enrichedTypeAttributes = {
+      ...formTypeAttributes,
+      isRecurring: formIsRecurring,
+      billingCycle: formBillingCycle,
+      contractMonths: contractMonthsNum,
+      hasImplementation: formHasImplementation,
+      implementationFee: implFeeNum,
+    };
+
     const tenantName = user?.tenantName || "";
 
     if (editingProduct) {
@@ -164,7 +199,12 @@ export function useProdutoForm() {
         name: formName,
         category: formCategory,
         type: formType,
-        typeAttributes: formTypeAttributes,
+        typeAttributes: enrichedTypeAttributes,
+        recurrence: formIsRecurring,
+        billingCycle: formBillingCycle as any,
+        contractMonths: contractMonthsNum,
+        hasImplementation: formHasImplementation,
+        implementationFee: implFeeNum,
         price: priceNum,
         cost: costNum,
         margin: marginRatio,
@@ -192,7 +232,12 @@ export function useProdutoForm() {
         name: formName,
         category: formCategory,
         type: formType,
-        typeAttributes: formTypeAttributes,
+        typeAttributes: enrichedTypeAttributes,
+        recurrence: formIsRecurring,
+        billingCycle: formBillingCycle as any,
+        contractMonths: contractMonthsNum,
+        hasImplementation: formHasImplementation,
+        implementationFee: implFeeNum,
         price: priceNum,
         cost: costNum,
         margin: marginRatio,
@@ -326,6 +371,12 @@ export function useProdutoForm() {
     formMaterial, setFormMaterial,
     formDescription, setFormDescription,
     formCurrentStock, setFormCurrentStock,
+    // Recurrence & Implementation
+    formIsRecurring, setFormIsRecurring,
+    formBillingCycle, setFormBillingCycle,
+    formContractMonths, setFormContractMonths,
+    formHasImplementation, setFormHasImplementation,
+    formImplementationFee, setFormImplementationFee,
     products, setProducts,
     categories, types,
     handleOpenAddModal,

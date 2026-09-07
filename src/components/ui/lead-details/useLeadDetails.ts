@@ -371,6 +371,10 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     type?: string;
     sku?: string;
     description?: string;
+    recurrence?: boolean;
+    contractMonths?: number;
+    hasImplementation?: boolean;
+    implementationFee?: number;
   }) => {
     const sku = data.sku?.trim() || `PROD-${Math.floor(1000 + Math.random() * 9000)}`;
     const priceNum = Number(data.price) || 0;
@@ -395,6 +399,16 @@ export function useLeadDetails(lead: any, onClose: () => void) {
       description: data.description || "",
       provider: seller || "Interno",
       tags: ["crm", "lead"],
+      recurrence: data.recurrence ?? false,
+      contractMonths: data.contractMonths ?? 12,
+      hasImplementation: data.hasImplementation ?? false,
+      implementationFee: data.implementationFee ?? 0,
+      type_attributes: {
+        isRecurring: data.recurrence ?? false,
+        contractMonths: data.contractMonths ?? 12,
+        hasImplementation: data.hasImplementation ?? false,
+        implementationFee: data.implementationFee ?? 0,
+      },
     };
 
     await addProduct(newProd);

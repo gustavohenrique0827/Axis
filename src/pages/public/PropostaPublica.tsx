@@ -300,7 +300,19 @@ export default function PropostaPublica() {
                     {proposta.itens.map((item, i) => (
                       <tr key={i} className="hover:bg-white/[0.02] transition-colors">
                         <td className="py-3 px-4 font-semibold text-white">
-                          {item.productName}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span>{item.productName}</span>
+                            {item.productName.toLowerCase().includes("implantação") && (
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 uppercase">
+                                Setup / Implantação
+                              </span>
+                            )}
+                            {(item.productName.toLowerCase().includes("recorrente") || item.productName.toLowerCase().includes("assinatura")) && (
+                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30 uppercase">
+                                Recorrente
+                              </span>
+                            )}
+                          </div>
                         </td>
                         <td className="py-3 px-3 text-center font-mono">
                           {item.quantidade}

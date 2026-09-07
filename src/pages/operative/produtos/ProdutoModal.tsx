@@ -65,6 +65,11 @@ export interface ProdutoModalProps {
   formMaterial: string; setFormMaterial: (v: string) => void;
   formDescription: string; setFormDescription: (v: string) => void;
   formCurrentStock: string; setFormCurrentStock: (v: string) => void;
+  formIsRecurring?: boolean; setFormIsRecurring?: (v: boolean) => void;
+  formBillingCycle?: string; setFormBillingCycle?: (v: string) => void;
+  formContractMonths?: string; setFormContractMonths?: (v: string) => void;
+  formHasImplementation?: boolean; setFormHasImplementation?: (v: boolean) => void;
+  formImplementationFee?: string; setFormImplementationFee?: (v: string) => void;
   categories: string[];
   handleSaveProduct: (e: React.FormEvent<HTMLFormElement>) => void;
 }
@@ -135,6 +140,11 @@ export function ProdutoModal(props: ProdutoModalProps) {
                 formCost={props.formCost} setFormCost={props.setFormCost}
                 formCommission={props.formCommission} setFormCommission={props.setFormCommission}
                 simulateTax={props.simulateTax} setSimulateTax={props.setSimulateTax}
+                formIsRecurring={props.formIsRecurring} setFormIsRecurring={props.setFormIsRecurring}
+                formBillingCycle={props.formBillingCycle} setFormBillingCycle={props.setFormBillingCycle}
+                formContractMonths={props.formContractMonths} setFormContractMonths={props.setFormContractMonths}
+                formHasImplementation={props.formHasImplementation} setFormHasImplementation={props.setFormHasImplementation}
+                formImplementationFee={props.formImplementationFee} setFormImplementationFee={props.setFormImplementationFee}
               />
             )}
             {props.activeTab === "estoque" && (

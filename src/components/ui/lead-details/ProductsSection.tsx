@@ -20,6 +20,8 @@ import {
   Zap,
   Edit3,
   Loader2,
+  RefreshCw,
+  Wrench,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useData } from "../../../contexts/DataContext";
@@ -44,6 +46,10 @@ interface ProductsSectionProps {
     category?: string;
     type?: string;
     sku?: string;
+    recurrence?: boolean;
+    contractMonths?: number;
+    hasImplementation?: boolean;
+    implementationFee?: number;
   }) => Promise<string>;
   toggleProductLink: (id: string) => void;
   seller: string;
@@ -83,6 +89,11 @@ export function ProductsSection({
   const [discountValue, setDiscountValue] = useState<number>(0);
   const [isAutomating, setIsAutomating] = useState(false);
 
+  // Per-Item Recurrence & Implementation Configuration in PDV
+  const [itemRecurrences, setItemRecurrences] = useState<Record<string, boolean>>({});
+  const [itemMonths, setItemMonths] = useState<Record<string, number>>({});
+  const [itemImplFees, setItemImplFees] = useState<Record<string, number>>({});
+
   // Word Editor Modal State
   const [isWordModalOpen, setIsWordModalOpen] = useState(false);
   const [currentProposalData, setCurrentProposalData] = useState<PropostaEditorData | null>(null);
@@ -92,34 +103,89 @@ export function ProductsSection({
   const [newProdPrice, setNewProdPrice] = useState("");
   const [newProdCost, setNewProdCost] = useState("");
   const [newProdCommission, setNewProdCommission] = useState("5");
-  const [newProdCategory, setNewProdCategory] = useState("Serviços");
+  const [newProdCategory, setNewProdCategory] = useState("Software");
   const [newProdType, setNewProdType] = useState("Digital");
+  const [newProdIsRecurring, setNewProdIsRecurring] = useState(false);
+  const [newProdMonths, setNewProdMonths] = useState("12");
+  const [newProdHasImpl, setNewProdHasImpl] = useState(false);
+  const [newProdImplFee, setNewProdImplFee] = useState("0");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const categories = ["Todas", "Software", "Serviços", "Mentoria", "Curso/Turma", "Assinatura", "Físico"];
+  const categories = ["Todas", "Software", "Serviços", "Implantação", "Mentoria", "Curso/Turma", "Assinatura", "Físico"];
 
-  // Linked items with quantity
+  // Linked items with quantity, recurrence and implementation fee
   const linkedItems = useMemo(() => {
     return linkedProductIds
       .map((id) => {
         const prod = availableProducts.find((p) => p.id === id);
         if (!prod) return null;
         const qty = productQuantities[id] || 1;
-        const subtotal = prod.price * qty;
+
+        const isRecurring =
+          itemRecurrences[id] ??
+          !!(
+            prod.recurrence ||
+            prod.typeAttributes?.isRecurring ||
+            prod.type === "Assinatura" ||
+            prod.category === "Software"
+          );
+
+        const contractMonths =
+          itemMonths[id] ??
+          (prod.contractMonths ||
+            prod.typeAttributes?.contractMonths ||
+            (isRecurring ? 12 : 1));
+
+        const implFee =
+          itemImplFees[id] ??
+          (prod.implementationFee ||
+            prod.typeAttributes?.implementationFee ||
+            (prod.category === "Implantação" ? prod.price : 0));
+
+        const monthlyPrice = prod.price * qty;
+        const contractTotal = isRecurring
+          ? monthlyPrice * contractMonths + implFee
+          : monthlyPrice + implFee;
+
         const totalCost = (prod.cost || 0) * qty;
-        const totalCommission = subtotal * ((prod.commission || 0) / 100);
+        const totalCommission = contractTotal * ((prod.commission || 0) / 100);
+
         return {
           ...prod,
           quantity: qty,
-          subtotal,
+          isRecurring,
+          contractMonths,
+          implFee,
+          monthlyPrice,
+          subtotal: contractTotal,
           totalCost,
           totalCommission,
         };
       })
       .filter(Boolean) as Array<any>;
-  }, [linkedProductIds, availableProducts, productQuantities]);
+  }, [linkedProductIds, availableProducts, productQuantities, itemRecurrences, itemMonths, itemImplFees]);
 
-  // PDV Totals
+  // PDV Metric Totals
+  const totalMonthlyMRR = linkedItems
+    .filter((item) => item.isRecurring)
+    .reduce((acc, item) => acc + item.monthlyPrice, 0);
+
+  const totalImplementation = linkedItems.reduce(
+    (acc, item) => acc + item.implFee,
+    0
+  );
+
+  const totalOnetime = linkedItems
+    .filter((item) => !item.isRecurring)
+    .reduce((acc, item) => acc + item.monthlyPrice, 0);
+
+  // Entrada imediata (1º pagamento): Implantação + 1ª mensalidade + itens únicos
+  const firstPaymentTotal = Math.max(
+    0,
+    totalImplementation + totalMonthlyMRR + totalOnetime - (discountValue || 0)
+  );
+
+  // Valor Total do Contrato (LTV / TCV)
   const subtotalRaw = linkedItems.reduce((acc, item) => acc + item.subtotal, 0);
   const totalCost = linkedItems.reduce((acc, item) => acc + item.totalCost, 0);
   const totalCommission = linkedItems.reduce((acc, item) => acc + item.totalCommission, 0);
@@ -163,6 +229,11 @@ export function ProductsSection({
           commission: commNum,
           category: newProdCategory,
           type: newProdType,
+          recurrence: newProdIsRecurring,
+          billingCycle: newProdIsRecurring ? "Mensal" : "Pontual",
+          contractMonths: newProdIsRecurring ? (parseInt(newProdMonths) || 12) : 1,
+          hasImplementation: newProdHasImpl,
+          implementationFee: newProdHasImpl ? (parseFloat(newProdImplFee.replace(",", ".")) || 0) : 0,
         });
       } else {
         toast.info("Produto adicionado localmente.");
@@ -173,6 +244,10 @@ export function ProductsSection({
       setNewProdPrice("");
       setNewProdCost("");
       setNewProdCommission("5");
+      setNewProdIsRecurring(false);
+      setNewProdMonths("12");
+      setNewProdHasImpl(false);
+      setNewProdImplFee("0");
       setShowAddForm(false);
     } catch (err: any) {
       toast.error("Erro ao cadastrar produto: " + err?.message);
@@ -188,6 +263,52 @@ export function ProductsSection({
     }
   };
 
+  const getDetailedProposalItems = () => {
+    const items: Array<{
+      productId?: string;
+      product_name: string;
+      descricao: string;
+      quantidade: number;
+      preco_unitario: number;
+      precoUnitario: number;
+    }> = [];
+
+    linkedItems.forEach((p) => {
+      if (p.isRecurring) {
+        items.push({
+          productId: p.id,
+          product_name: `${p.name} (Assinatura Recorrente — ${p.contractMonths} meses)`,
+          descricao: `${p.name} (Assinatura Recorrente — ${p.contractMonths} meses)`,
+          quantidade: p.contractMonths * p.quantity,
+          preco_unitario: p.price,
+          precoUnitario: p.price,
+        });
+      } else {
+        items.push({
+          productId: p.id,
+          product_name: p.name,
+          descricao: p.name,
+          quantidade: p.quantity,
+          preco_unitario: p.price,
+          precoUnitario: p.price,
+        });
+      }
+
+      if (p.implFee > 0) {
+        items.push({
+          productId: p.id,
+          product_name: `Taxa de Implantação e Setup Inicial — ${p.name}`,
+          descricao: `Taxa de Implantação e Setup Inicial — ${p.name}`,
+          quantidade: 1,
+          preco_unitario: p.implFee,
+          precoUnitario: p.implFee,
+        });
+      }
+    });
+
+    return items;
+  };
+
   const handleProcessFullOrder = async () => {
     if (linkedItems.length === 0) {
       toast.error("Adicione produtos ao pedido antes de processar a venda.");
@@ -198,6 +319,7 @@ export function ProductsSection({
     try {
       const clientName = companyName || leadName || "Cliente";
       const propTitle = `Proposta Comercial — ${clientName}`;
+      const detailedItems = getDetailedProposalItems();
 
       // 1. Criar proposta com itens no Supabase
       const proposalId = await createProposalWithItems({
@@ -209,18 +331,18 @@ export function ProductsSection({
         vendedor: seller || "Consultor S.P.Y.",
         leadId: leadId || null,
         tipo: "itens",
-        itens: linkedItems.map((p) => ({
-          productId: p.id,
-          descricao: p.name,
-          quantidade: p.quantity,
-          precoUnitario: p.price,
+        itens: detailedItems.map((p) => ({
+          productId: p.productId,
+          descricao: p.descricao,
+          quantidade: p.quantidade,
+          precoUnitario: p.precoUnitario,
         })),
       });
 
       // 2. Criar lançamento financeiro no Contas a Receber
       const dueDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
       await addFinanceEntry({
-        description: `Venda PDV — ${clientName} (${linkedItems.length} itens)`,
+        description: `Venda PDV — ${clientName} (${linkedItems.length} soluções: 1º Vencimento R$ ${firstPaymentTotal.toLocaleString("pt-BR")} | LTV R$ ${finalTotal.toLocaleString("pt-BR")})`,
         category: "Vendas / Serviços",
         value: finalTotal,
         type: "Receber",
@@ -291,10 +413,10 @@ export function ProductsSection({
         vendedor: seller || "Consultor S.P.Y.",
         status: "Enviada",
         validade: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-        itens: linkedItems.map((p) => ({
-          product_name: p.name,
-          quantidade: p.quantity,
-          preco_unitario: p.price,
+        itens: detailedItems.map((p) => ({
+          product_name: p.product_name,
+          quantidade: p.quantidade,
+          preco_unitario: p.preco_unitario,
         })),
       };
       setCurrentProposalData(generatedProposal);
@@ -316,6 +438,7 @@ export function ProductsSection({
   const handleOpenWordEditor = () => {
     const clientName = companyName || leadName || "Cliente";
     const propTitle = `Proposta Comercial — ${clientName}`;
+    const detailedItems = getDetailedProposalItems();
 
     setCurrentProposalData({
       id: currentProposalData?.id || undefined,
@@ -327,10 +450,10 @@ export function ProductsSection({
       validade:
         currentProposalData?.validade ||
         new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
-      itens: linkedItems.map((p) => ({
-        product_name: p.name,
-        quantidade: p.quantity,
-        preco_unitario: p.price,
+      itens: detailedItems.map((p) => ({
+        product_name: p.product_name,
+        quantidade: p.quantidade,
+        preco_unitario: p.preco_unitario,
       })),
       conteudo_texto: currentProposalData?.conteudo_texto || null,
     });
@@ -343,6 +466,8 @@ export function ProductsSection({
       return;
     }
 
+    const detailedItems = getDetailedProposalItems();
+
     handleDownloadPdf(
       {
         id: `prop-${Date.now()}`,
@@ -352,10 +477,10 @@ export function ProductsSection({
         vendedor: seller || "Consultor",
         status: "Enviada",
       },
-      linkedItems.map((p) => ({
-        product_name: p.name,
-        quantidade: p.quantity,
-        preco_unitario: p.price,
+      detailedItems.map((p) => ({
+        product_name: p.product_name,
+        quantidade: p.quantidade,
+        preco_unitario: p.preco_unitario,
       }))
     );
 
@@ -496,6 +621,73 @@ export function ProductsSection({
               </div>
             </div>
 
+            {/* Recorrência e Implantação / Setup */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-2.5 rounded-lg bg-[var(--color-surface-sunken)] border border-white/5">
+              {/* Recorrência */}
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newProdIsRecurring}
+                    onChange={(e) => setNewProdIsRecurring(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-slate-700 text-blue-600 focus:ring-0 focus:ring-offset-0 bg-slate-900"
+                  />
+                  <span className="text-[11px] font-bold text-white flex items-center gap-1">
+                    <RefreshCw className="w-3 h-3 text-blue-400" /> Cobrança Recorrente (Mensalidade)
+                  </span>
+                </label>
+                {newProdIsRecurring && (
+                  <div className="pl-5 space-y-1 animate-in fade-in">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block">Duração do Contrato:</span>
+                    <div className="flex items-center gap-1">
+                      {["1", "3", "6", "12", "24"].map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setNewProdMonths(m)}
+                          className={cn(
+                            "px-2 py-0.5 rounded text-[10px] font-mono font-bold transition-all cursor-pointer",
+                            newProdMonths === m
+                              ? "bg-blue-600 text-white shadow-sm"
+                              : "bg-white/5 text-slate-400 hover:text-white"
+                          )}
+                        >
+                          {m}m
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Implantação / Setup */}
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newProdHasImpl}
+                    onChange={(e) => setNewProdHasImpl(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-slate-700 text-amber-500 focus:ring-0 focus:ring-offset-0 bg-slate-900"
+                  />
+                  <span className="text-[11px] font-bold text-white flex items-center gap-1">
+                    <Wrench className="w-3 h-3 text-amber-400" /> Taxa de Implantação / Setup
+                  </span>
+                </label>
+                {newProdHasImpl && (
+                  <div className="pl-5 space-y-1 animate-in fade-in">
+                    <span className="text-[9px] uppercase font-bold text-slate-400 block">Valor da Implantação (R$):</span>
+                    <input
+                      type="text"
+                      value={newProdImplFee}
+                      onChange={(e) => setNewProdImplFee(e.target.value)}
+                      placeholder="0,00"
+                      className="w-full bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded px-2 py-1 text-xs text-amber-300 font-mono font-bold focus:outline-none focus:border-amber-500"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
             <div className="flex items-center justify-end gap-2 pt-1">
               <Button
                 type="button"
@@ -535,63 +727,144 @@ export function ProductsSection({
         </div>
 
         {linkedItems.length > 0 ? (
-          <div className="space-y-2 max-h-[260px] overflow-y-auto scrollbar-thin pr-1">
+          <div className="space-y-2.5 max-h-[300px] overflow-y-auto scrollbar-thin pr-1">
             {linkedItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] hover:border-white/10 transition-all"
+                className="p-3 rounded-xl bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] hover:border-white/10 transition-all space-y-2.5"
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-white truncate">{item.name}</span>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 font-semibold uppercase">
-                      {item.category}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-white truncate">{item.name}</span>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-slate-400 font-semibold uppercase">
+                        {item.category}
+                      </span>
+                    </div>
+                    <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                      Preço Unitário: R$ {item.price.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </div>
+                  </div>
+
+                  {/* Quantidade PDV */}
+                  <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)] rounded-lg p-1">
+                    <button
+                      type="button"
+                      onClick={() => handleQtyChange(item.id, item.quantity, -1)}
+                      className="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 text-xs font-bold transition-colors cursor-pointer"
+                      title="Diminuir quantidade"
+                    >
+                      -
+                    </button>
+                    <span className="text-xs font-mono font-black text-white px-1.5 tabular-nums min-w-[20px] text-center">
+                      {item.quantity}
                     </span>
+                    <button
+                      type="button"
+                      onClick={() => handleQtyChange(item.id, item.quantity, 1)}
+                      className="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 text-xs font-bold transition-colors cursor-pointer"
+                      title="Aumentar quantidade"
+                    >
+                      +
+                    </button>
                   </div>
-                  <div className="text-[10px] text-slate-400 font-mono mt-0.5">
-                    Un: R$ {item.price.toLocaleString("pt-BR")}
-                  </div>
-                </div>
 
-                {/* Quantidade PDV */}
-                <div className="flex items-center gap-1.5 bg-[var(--color-surface-elevated)] border border-[var(--color-border-subtle)] rounded-lg p-1">
+                  {/* Subtotal do Item */}
+                  <div className="text-right min-w-[90px]">
+                    <div className="text-xs font-mono font-black text-emerald-400">
+                      R$ {item.subtotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </div>
+                    <div className="text-[9px] text-slate-500 font-mono">
+                      {item.isRecurring ? `${item.contractMonths}x R$ ${item.monthlyPrice.toLocaleString("pt-BR")}` : "Valor Pontual"}
+                    </div>
+                  </div>
+
+                  {/* Remover Item */}
                   <button
                     type="button"
-                    onClick={() => handleQtyChange(item.id, item.quantity, -1)}
-                    className="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 text-xs font-bold transition-colors cursor-pointer"
-                    title="Diminuir quantidade"
+                    onClick={() => toggleProductLink(item.id)}
+                    className="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer ml-1"
+                    title="Remover item da proposta"
                   >
-                    -
-                  </button>
-                  <span className="text-xs font-mono font-black text-white px-1.5 tabular-nums min-w-[20px] text-center">
-                    {item.quantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => handleQtyChange(item.id, item.quantity, 1)}
-                    className="w-5 h-5 rounded flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 text-xs font-bold transition-colors cursor-pointer"
-                    title="Aumentar quantidade"
-                  >
-                    +
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                {/* Subtotal do Item */}
-                <div className="text-right min-w-[80px]">
-                  <div className="text-xs font-mono font-black text-emerald-400">
-                    R$ {item.subtotal.toLocaleString("pt-BR")}
+                {/* Controles de Recorrência, Vigência e Implantação do Item */}
+                <div className="pt-2 border-t border-white/[0.05] flex flex-wrap items-center justify-between gap-2 text-[10px]">
+                  {/* Recorrente vs Pontual + Meses */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setItemRecurrences((prev) => ({
+                          ...prev,
+                          [item.id]: !item.isRecurring,
+                        }));
+                      }}
+                      className={cn(
+                        "px-2 py-0.5 rounded-md font-bold uppercase transition-colors cursor-pointer flex items-center gap-1 text-[9px]",
+                        item.isRecurring
+                          ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
+                          : "bg-white/5 text-slate-400 border border-white/10 hover:text-white"
+                      )}
+                    >
+                      <RefreshCw className="w-2.5 h-2.5" />
+                      {item.isRecurring ? "Recorrente" : "Pontual"}
+                    </button>
+
+                    {item.isRecurring && (
+                      <div className="flex items-center gap-1 bg-[var(--color-surface-elevated)] px-2 py-0.5 rounded-md border border-white/5">
+                        <span className="text-slate-400 text-[9px] font-bold">Vigência:</span>
+                        {[1, 3, 6, 12, 24].map((m) => (
+                          <button
+                            key={m}
+                            type="button"
+                            onClick={() => {
+                              setItemMonths((prev) => ({
+                                ...prev,
+                                [item.id]: m,
+                              }));
+                            }}
+                            className={cn(
+                              "px-1.5 py-0.2 rounded font-mono font-bold text-[9px] transition-colors cursor-pointer",
+                              item.contractMonths === m
+                                ? "bg-blue-600 text-white"
+                                : "text-slate-400 hover:text-white"
+                            )}
+                          >
+                            {m}m
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Taxa de Implantação / Setup */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-400 text-[9px] font-bold flex items-center gap-1">
+                      <Wrench className="w-2.5 h-2.5 text-amber-400" /> Setup:
+                    </span>
+                    <div className="relative">
+                      <span className="absolute left-1.5 top-0.5 text-[9px] text-slate-500 font-mono">R$</span>
+                      <input
+                        type="number"
+                        min="0"
+                        step="50"
+                        value={item.implFee || 0}
+                        onChange={(e) => {
+                          const val = Math.max(0, parseFloat(e.target.value) || 0);
+                          setItemImplFees((prev) => ({
+                            ...prev,
+                            [item.id]: val,
+                          }));
+                        }}
+                        className="w-20 bg-[var(--color-surface-elevated)] border border-white/10 rounded pl-5 pr-1 py-0.5 text-[10px] text-amber-300 font-mono font-bold focus:outline-none focus:border-amber-500"
+                        placeholder="0"
+                      />
+                    </div>
                   </div>
                 </div>
-
-                {/* Remover Item */}
-                <button
-                  type="button"
-                  onClick={() => toggleProductLink(item.id)}
-                  className="p-1 rounded text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors cursor-pointer"
-                  title="Remover item da proposta"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
               </div>
             ))}
           </div>
@@ -608,31 +881,50 @@ export function ProductsSection({
         )}
 
         {/* ── DETALHAMENTO FINANCEIRO DO PDV ── */}
-        <div className="bg-[var(--color-surface-sunken)] p-3 rounded-xl border border-[var(--color-border-subtle)] space-y-2">
-          <div className="flex items-center justify-between text-[10px] uppercase font-black text-slate-400">
-            <span>Métricas do Pedido</span>
-            <span>Margem: {marginPercent}%</span>
+        <div className="bg-[var(--color-surface-sunken)] p-3 rounded-xl border border-[var(--color-border-subtle)] space-y-2.5">
+          <div className="flex items-center justify-between text-[10px] uppercase font-black text-slate-400 border-b border-white/5 pb-1.5">
+            <span>Composição Comercial & Financeira</span>
+            <span className="text-emerald-400 font-mono font-bold">Margem Líquida: {marginPercent}%</span>
           </div>
 
+          {/* Linha 1: Métricas de Venda & Contrato */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
-            <div className="bg-[var(--color-surface-elevated)] p-2 rounded-lg border border-white/[0.04]">
-              <span className="text-[9px] text-slate-500 block uppercase">Subtotal</span>
-              <span className="text-white font-bold text-xs">R$ {subtotalRaw.toLocaleString("pt-BR")}</span>
+            <div className="bg-[var(--color-surface-elevated)] p-2 rounded-lg border border-blue-500/20">
+              <span className="text-[9px] text-blue-400 block uppercase font-bold">1º Vencimento (Entrada)</span>
+              <span className="text-white font-black text-xs">R$ {firstPaymentTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
             </div>
 
             <div className="bg-[var(--color-surface-elevated)] p-2 rounded-lg border border-white/[0.04]">
-              <span className="text-[9px] text-slate-500 block uppercase">Custos</span>
-              <span className="text-rose-400 font-bold text-xs">R$ {totalCost.toLocaleString("pt-BR")}</span>
+              <span className="text-[9px] text-slate-400 block uppercase font-bold">Mensalidade (MRR)</span>
+              <span className="text-blue-300 font-bold text-xs">R$ {totalMonthlyMRR.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
             </div>
 
             <div className="bg-[var(--color-surface-elevated)] p-2 rounded-lg border border-white/[0.04]">
-              <span className="text-[9px] text-slate-500 block uppercase">Comissão</span>
-              <span className="text-amber-400 font-bold text-xs">R$ {totalCommission.toLocaleString("pt-BR")}</span>
+              <span className="text-[9px] text-slate-400 block uppercase font-bold">Implantação / Setup</span>
+              <span className="text-amber-300 font-bold text-xs">R$ {totalImplementation.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
             </div>
 
-            <div className="bg-[var(--color-surface-elevated)] p-2 rounded-lg border border-white/[0.04]">
+            <div className="bg-[var(--color-surface-elevated)] p-2 rounded-lg border border-emerald-500/20">
+              <span className="text-[9px] text-emerald-400 block uppercase font-bold">Total Contrato (LTV)</span>
+              <span className="text-emerald-400 font-black text-xs">R$ {finalTotal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+            </div>
+          </div>
+
+          {/* Linha 2: Custos, Comissão e Lucro */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-mono pt-1 border-t border-white/5">
+            <div className="bg-[var(--color-surface-elevated)] p-1.5 rounded-lg border border-white/[0.04]">
+              <span className="text-[9px] text-slate-500 block uppercase">Custos Totais</span>
+              <span className="text-rose-400 font-bold text-[11px]">R$ {totalCost.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+            </div>
+
+            <div className="bg-[var(--color-surface-elevated)] p-1.5 rounded-lg border border-white/[0.04]">
+              <span className="text-[9px] text-slate-500 block uppercase">Comissão Vendas</span>
+              <span className="text-amber-400 font-bold text-[11px]">R$ {totalCommission.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
+            </div>
+
+            <div className="bg-[var(--color-surface-elevated)] p-1.5 rounded-lg border border-white/[0.04] col-span-2 sm:col-span-1">
               <span className="text-[9px] text-slate-500 block uppercase">Lucro Líquido</span>
-              <span className="text-emerald-400 font-bold text-xs">R$ {netProfit.toLocaleString("pt-BR")}</span>
+              <span className="text-emerald-400 font-bold text-[11px]">R$ {netProfit.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}</span>
             </div>
           </div>
         </div>

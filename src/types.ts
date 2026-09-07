@@ -34,6 +34,13 @@ export interface Product {
     /** Campos que variam por `type` (ex.: endereço/área pra Imóvel, ciclo de
      * cobrança pra Assinatura) — ver src/pages/operative/produtos/produto-modal/ProdutoTabInfo.tsx. */
     typeAttributes?: Record<string, string | number | boolean>;
+    /** Recorrência e Duração (SaaS / Assinatura / Serviços Recorrentes) */
+    recurrence?: boolean;
+    billingCycle?: "Mensal" | "Trimestral" | "Semestral" | "Anual" | "Pontual";
+    contractMonths?: number;
+    /** Implantação / Setup / Onboarding */
+    hasImplementation?: boolean;
+    implementationFee?: number;
 }
 
 export interface CustomField {
