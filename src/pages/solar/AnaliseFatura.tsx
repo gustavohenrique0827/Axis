@@ -181,11 +181,9 @@ export default function AnaliseFatura() {
     if (taskTitle) {
       addTask({
         title: `${taskTitle} — ${a.cliente}`,
-        related: a.cliente,
-        type: "Energia Solar",
+        description: `Tipo: Energia Solar · Status: ${next}`,
         status: "Em Aberto",
         priority: "Alta",
-        tags: ["Solar", next],
       });
     }
   };

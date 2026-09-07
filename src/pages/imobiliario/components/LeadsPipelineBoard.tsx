@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "../../../lib/supabase";
-import { cn } from "../../../lib/utils";
+import { cn, parseCurrencyBR } from "../../../lib/utils";
 import { useData } from "../../../contexts/DataContext";
 import { useAuth } from "../../../contexts/AuthContext";
 import { CriarPropostaModal } from "../../../components/ui/modals/crm/CriarPropostaModal";
@@ -274,13 +274,16 @@ function LeadDetailDrawer({ lead, onClose, onEdit, onGanho, onPerdido, onDelete,
   const { user } = useAuth();
 
   // Tarefas do lead — usa o mesmo módulo genérico de Tarefas do CRM (tabela
-  // `tasks`, já com persistência real) filtrado por `related === lead.id`,
-  // em vez do checklist hardcoded que existia antes (array fixo, sempre os
-  // mesmos 3 itens, "Nova tarefa" sem nenhuma ação).
-  const tarefasDoLead = tasks.filter((t) => t.related === lead.id);
+  // `tasks`, já com persistência real). `tasks.lead_id` tem FK estrita pra
+  // `leads.id` (funil do CRM) — um lead deste board vem de `imobiliario_leads`,
+  // uma tabela diferente, então gravar `lead.id` ali violaria a FK. Por isso o
+  // vínculo fica dentro de `description` (mesmo tratamento dado a `tipo`/`tags`
+  // na migração de schema do módulo de Tarefas) e o filtro busca por esse marcador.
+  const IMOB_LEAD_MARKER = `[imob_lead:${lead.id}]`;
+  const tarefasDoLead = tasks.filter((t) => (t.description || "").includes(IMOB_LEAD_MARKER));
   const handleAddTarefa = () => {
     if (!novaTarefaTitulo.trim()) return;
-    addTask({ title: novaTarefaTitulo.trim(), related: lead.id, status: "A Fazer" });
+    addTask({ title: novaTarefaTitulo.trim(), description: IMOB_LEAD_MARKER, status: "A Fazer" });
     setNovaTarefaTitulo("");
   };
   const handleToggleTarefa = (taskId: string, done: boolean) => {
@@ -1070,7 +1073,7 @@ export function LeadsPipelineBoard({ tipo }: { tipo: "imovel" | "veiculo" }) {
   };
 
   // KPIs
-  const totalVGV = leads.reduce((s, l) => s + l.orcamento, 0);
+  const totalVGV = leads.reduce((s, l) => s + parseCurrencyBR(l.orcamento), 0);
   const ganhos = leads.filter(l => l.status === "Ganho").length;
   const ativosCount = leads.filter(l => l.status === "Ativo").length;
   const perdidos = leads.filter(l => l.status === "Perdido").length;
@@ -1136,7 +1139,7 @@ export function LeadsPipelineBoard({ tipo }: { tipo: "imovel" | "veiculo" }) {
         <div className="flex gap-4 overflow-x-auto pb-6 -mx-2 px-2">
           {ETAPAS.map(etapa => {
             const col = leads.filter(l => l.etapa === etapa);
-            const vgvCol = col.reduce((s, l) => s + l.orcamento, 0);
+            const vgvCol = col.reduce((s, l) => s + parseCurrencyBR(l.orcamento), 0);
             const cfg = ETAPA_CFG[etapa];
             const isDragTarget = dragOverCol === etapa;
 

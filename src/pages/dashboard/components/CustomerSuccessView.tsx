@@ -27,11 +27,9 @@ export function CustomerSuccessView() {
   const handleAbrirProtocolo = (contractClient: string) => {
     addTask({
       title: `Protocolo CS — ${contractClient}`,
-      related: contractClient,
-      type: 'Sucesso do Cliente',
+      description: 'Tipo: Sucesso do Cliente · Tags: CS, Inadimplência',
       status: 'Em Aberto',
       priority: 'Alta',
-      tags: ['CS', 'Inadimplência'],
     });
   };
 

@@ -7,6 +7,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
 import { FUNIS_DEFAULT } from "../settings/sections/crm/funisTypes";
+import { parseCurrencyBR } from "../../lib/utils";
 
 // Matches ETAPA_CORES in SettingsCRM
 const ETAPA_DOT_COLORS: Record<string, string> = {
@@ -33,7 +34,7 @@ export function usePipeline() {
   const [tempDropdownId, setTempDropdownId] = useState<string | null>(null);
   const [webhookModalLead, setWebhookModalLead] = useState<any>(null);
   const [webhookUrl, setWebhookUrl] = useState("");
-  const { leads, updateLead, tasks, addTask, products, clienteBase, funis: dataFunis } = useData();
+  const { leads, updateLead, tasks, addTask, products, clienteBase, funis: dataFunis, colaboradores } = useData();
   const { user } = useAuth();
 
   const [clientFilter, setClientFilter] = useState("Todos");
@@ -203,7 +204,7 @@ export function usePipeline() {
       );
       if (productTotal > 0) return sum + productTotal;
     }
-    return sum + (parseFloat(String(item.value ?? "").replace(/[^\d,]/g, "").replace(",", ".")) || 0);
+    return sum + parseCurrencyBR(item.value ?? item.valor);
   }, 0);
 
   const formattedTotalValue = new Intl.NumberFormat("pt-BR", {
@@ -299,7 +300,7 @@ export function usePipeline() {
     nextY += 8;
 
     const leadTasks = tasks
-      .filter((t: any) => t.related === lead.name || t.related === lead.company)
+      .filter((t: any) => t.lead_id === lead.id)
       .slice(0, 5);
 
     if (leadTasks.length === 0) {
@@ -310,7 +311,11 @@ export function usePipeline() {
       autoTable(doc, {
         startY: nextY,
         head: [["Data", "Atividade", "Status"]],
-        body: leadTasks.map((t: any) => [String(t.date ?? "Recente"), String(t.desc ?? ""), String(t.status ?? "")]),
+        body: leadTasks.map((t: any) => [
+          t.due_date ? new Date(t.due_date).toLocaleDateString('pt-BR') : "Recente",
+          String(t.title ?? ""),
+          String(t.status ?? ""),
+        ]),
         theme: "grid",
         headStyles: { fillColor: [37, 99, 235] },
         styles: { fontSize: 9 },
@@ -325,12 +330,19 @@ export function usePipeline() {
     e.stopPropagation();
     const targetStageId = firstComercialStageId || "1";
     updateLead(lead.id, { pipelineId: "comercial", stageId: targetStageId });
+    // `responsible` não tem coluna própria em `tasks` — resolve o closer atual
+    // (nome em `lead.seller`) pro colaborador correspondente. `assigned_to` FK
+    // pra `users.id`, então usa `user_id` do colaborador — não `colaborador.id`
+    // (que é texto e nem sequer é uuid).
+    const assignedTo = (colaboradores as any[]).find(
+      (c: any) => c.nome === lead.seller
+    )?.user_id as string | undefined;
     addTask({
       title: "Bem-vindo ao Comercial",
-      desc: `Apresentação recebida do SDR. Lead: ${lead.name}`,
+      description: `Apresentação recebida do SDR. Lead: ${lead.name}`,
       status: "A Fazer",
-      related: lead.name,
-      responsible: lead.seller || user?.name || "Closer",
+      lead_id: lead.id,
+      assigned_to: assignedTo,
     });
     toast.success("Transferência Inteligente: Lead movido para o Comercial e tarefa criada!");
     setOpenDropdownId(null);

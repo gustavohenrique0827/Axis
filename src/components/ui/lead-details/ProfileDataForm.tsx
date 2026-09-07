@@ -2,6 +2,7 @@ import React from "react";
 import {
   Mail, Phone, Building2, User, FileCheck, Briefcase, DollarSign, Lock, Edit, Search,
 } from "lucide-react";
+import { formatCNPJ } from "../../../lib/utils";
 
 interface ProfileDataFormProps {
   isEditingInline: boolean;
@@ -12,6 +13,8 @@ interface ProfileDataFormProps {
   setLeadName: (val: string) => void;
   phone: string;
   setPhone: (val: string) => void;
+  cnpj: string;
+  setCnpj: (val: string) => void;
   email: string;
   setEmail: (val: string) => void;
   title: string;
@@ -41,7 +44,7 @@ function viewCls(colorCls = "text-[var(--color-text-primary)] font-semibold") {
 }
 
 function viewSelectCls(colorCls = "text-[var(--color-text-primary)] font-bold") {
-  return `w-full bg-transparent border-none px-0 py-0 text-xs outline-none cursor-default appearance-none pointer-events-none transition-all ${colorCls}`;
+  return `w-full bg-transparent border-none px-0 py-0 text-xs outline-none cursor-pointer appearance-none transition-all ${colorCls}`;
 }
 
 export function ProfileDataForm({
@@ -50,6 +53,7 @@ export function ProfileDataForm({
   companyName, setCompanyName,
   leadName, setLeadName,
   phone, setPhone,
+  cnpj, setCnpj,
   email, setEmail,
   title, setTitle,
   value, setValue,
@@ -101,7 +105,7 @@ export function ProfileDataForm({
               type="text"
               value={companyName}
               placeholder="Não informado"
-              readOnly={!isEditingInline}
+              onFocus={() => setIsEditingInline(true)}
               onChange={(e) => setCompanyName(e.target.value)}
               className={isEditingInline ? inputActiveClass : viewCls()}
             />
@@ -114,7 +118,7 @@ export function ProfileDataForm({
               type="text"
               value={leadName}
               placeholder="Não informado"
-              readOnly={!isEditingInline}
+              onFocus={() => setIsEditingInline(true)}
               onChange={(e) => setLeadName(e.target.value)}
               className={isEditingInline ? inputActiveClass : viewCls()}
             />
@@ -130,7 +134,7 @@ export function ProfileDataForm({
               type="email"
               value={email}
               placeholder="Não informado"
-              readOnly={!isEditingInline}
+              onFocus={() => setIsEditingInline(true)}
               onChange={(e) => setEmail(e.target.value)}
               className={isEditingInline ? inputActiveClass : viewCls(email ? "text-[var(--color-primary-blue)] font-semibold" : "text-[var(--color-text-faint)]")}
             />
@@ -143,7 +147,7 @@ export function ProfileDataForm({
               type="text"
               value={phone}
               placeholder="Não informado"
-              readOnly={!isEditingInline}
+              onFocus={() => setIsEditingInline(true)}
               onChange={(e) => setPhone(e.target.value)}
               className={isEditingInline ? inputActiveClass : viewCls(phone ? "text-emerald-600 dark:text-emerald-400 font-semibold font-mono" : "text-[var(--color-text-faint)] font-mono")}
             />
@@ -158,31 +162,29 @@ export function ProfileDataForm({
             <input
               type="text"
               maxLength={18}
-              value={lead.cnpj || ""}
+              value={cnpj}
               placeholder="00.000.000/0000-00"
-              readOnly={!isEditingInline}
+              onFocus={() => setIsEditingInline(true)}
               onChange={(e) => {
-                if (!isEditingInline) return;
-                import("../../../lib/utils").then(({ formatCNPJ }) => {
-                  updateLead(lead.id, { cnpj: (formatCNPJ as (v: string) => string)(e.target.value) });
-                });
+                setIsEditingInline(true);
+                const formatted = formatCNPJ(e.target.value);
+                setCnpj(formatted);
+                updateLead(lead.id, { cnpj: formatted });
               }}
               className={isEditingInline
                 ? "flex-1 bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] rounded-[var(--radius-control)] px-3 py-1.5 text-[var(--color-text-primary)] text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[var(--color-primary-blue)] transition-all placeholder:text-[var(--color-text-faint)]"
-                : `flex-1 ${viewCls(lead.cnpj ? "text-[var(--color-text-primary)] font-mono" : "text-[var(--color-text-faint)]")}`}
+                : `flex-1 ${viewCls(cnpj ? "text-[var(--color-text-primary)] font-mono" : "text-[var(--color-text-faint)]")}`}
             />
-            {isEditingInline && (
-              <button
-                type="button"
-                onClick={onFetchCnpj}
-                disabled={cnpjFetching || (lead.cnpj || "").replace(/\D/g, "").length !== 14}
-                className="px-2.5 py-1.5 bg-[var(--color-primary-blue)]/10 hover:bg-[var(--color-primary-blue)]/20 border border-[var(--color-primary-blue)]/20 text-[var(--color-primary-blue)] rounded-[var(--radius-control)] transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs flex items-center gap-1 font-bold"
-                title="Consultar CNPJ na Receita Federal"
-              >
-                <Search className={`w-3.5 h-3.5 ${cnpjFetching ? "animate-spin" : ""}`} />
-                <span>Receita</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={onFetchCnpj}
+              disabled={cnpjFetching || (cnpj || "").replace(/\D/g, "").length !== 14}
+              className="px-2.5 py-1.5 bg-[var(--color-primary-blue)]/10 hover:bg-[var(--color-primary-blue)]/20 border border-[var(--color-primary-blue)]/20 text-[var(--color-primary-blue)] rounded-[var(--radius-control)] transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer text-xs flex items-center gap-1 font-bold shrink-0"
+              title="Consultar CNPJ na Receita Federal"
+            >
+              <Search className={`w-3.5 h-3.5 ${cnpjFetching ? "animate-spin" : ""}`} />
+              <span>Receita</span>
+            </button>
           </div>
         </div>
 
@@ -195,7 +197,7 @@ export function ProfileDataForm({
               type="text"
               value={title}
               placeholder="Ex: Aquisição de Licenças"
-              readOnly={!isEditingInline}
+              onFocus={() => setIsEditingInline(true)}
               onChange={(e) => setTitle(e.target.value)}
               className={isEditingInline ? inputActiveClass : viewCls(title ? "text-[var(--color-text-primary)] font-semibold" : "text-[var(--color-text-faint)]")}
             />
@@ -208,7 +210,7 @@ export function ProfileDataForm({
               type="text"
               value={isEditingInline ? value : displayValue}
               placeholder="R$ 0,00"
-              readOnly={!isEditingInline}
+              onFocus={() => setIsEditingInline(true)}
               onChange={(e) => setValue(e.target.value)}
               className={isEditingInline ? inputActiveClass : viewCls("text-emerald-600 dark:text-emerald-400 font-bold font-mono")}
             />
@@ -223,7 +225,8 @@ export function ProfileDataForm({
             <select
               value={seller}
               onChange={(e) => setSeller(e.target.value)}
-              tabIndex={isEditingInline ? 0 : -1}
+              onFocus={() => setIsEditingInline(true)}
+              onClick={() => setIsEditingInline(true)}
               className={isEditingInline
                 ? inputActiveClass
                 : viewSelectCls(seller ? "text-[var(--color-primary-blue)] font-bold" : "text-[var(--color-text-faint)]")}
@@ -237,7 +240,8 @@ export function ProfileDataForm({
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as any)}
-              tabIndex={isEditingInline ? 0 : -1}
+              onFocus={() => setIsEditingInline(true)}
+              onClick={() => setIsEditingInline(true)}
               className={isEditingInline
                 ? inputActiveClass
                 : viewSelectCls(`font-bold ${priority === "Alta" ? "text-rose-600 dark:text-rose-400" : priority === "Média" ? "text-amber-600 dark:text-amber-400" : "text-[var(--color-primary-blue)]"}`)}
@@ -261,7 +265,7 @@ export function ProfileDataForm({
                   type={field.type === "Data" ? "date" : field.type === "Número" ? "number" : "text"}
                   value={customFieldsState[field.id] || ""}
                   placeholder="—"
-                  readOnly={!isEditingInline}
+                  onFocus={() => setIsEditingInline(true)}
                   onChange={(e) => setCustomFieldsState((prev) => ({ ...prev, [field.id]: e.target.value }))}
                   className={isEditingInline ? inputActiveClass : viewCls("text-[var(--color-text-primary)] font-semibold")}
                 />

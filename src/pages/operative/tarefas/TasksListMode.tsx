@@ -1,10 +1,26 @@
 import { Card } from "../../../components/ui/card";
+import { Link } from "react-router-dom";
 import {
-  CheckCircle2, Calendar, Edit, Trash2, CheckSquare, Sparkles
+  CheckCircle2, Calendar, Edit, Trash2, CheckSquare, ExternalLink
 } from "lucide-react";
 import { Task } from "../../../types";
 import { KanbanColConfig } from "../../../hooks/useKanbanConfig";
 import { useData } from "../../../contexts/DataContext";
+
+/** Formata `due_date` (ISO) pro estilo "Hoje, 09:00" / "Amanhã" / "12 mar". */
+function formatDueDate(iso?: string | null): string {
+  if (!iso) return "Sem prazo";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "Sem prazo";
+  const now = new Date();
+  const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diffDays = Math.round((startOfDay(d) - startOfDay(now)) / 86400000);
+  const time = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  if (diffDays === 0) return `Hoje, ${time}`;
+  if (diffDays === 1) return `Amanhã, ${time}`;
+  if (diffDays === -1) return `Ontem, ${time}`;
+  return `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}, ${time}`;
+}
 
 interface TasksListModeProps {
   filteredTasks: Task[];
@@ -27,11 +43,18 @@ export function TasksListMode({
   getPriorityColor,
   columns
 }: TasksListModeProps) {
-  const { colaboradores } = useData();
+  const { colaboradores, leads } = useData();
+  // `assigned_to` FK pra `users.id`, não `colaboradores.id` — usa `user_id`.
   const sellerOptions = (colaboradores as any[])
     .filter(c => c.status !== "Desligado" && c.departamento === "Vendas")
-    .map(c => c.nome as string)
-    .filter(Boolean);
+    .map(c => ({ id: c.user_id as string, nome: c.nome as string }))
+    .filter(c => c.id && c.nome);
+
+  const getLeadLabel = (t: Task): string => {
+    if (!t.lead_id) return "Interno";
+    const lead = (leads as any[]).find(l => l.id === t.lead_id);
+    return lead ? (lead.company || lead.name) : "Interno";
+  };
 
   return (
     <Card className="bg-[var(--color-surface-elevated)] border border-[var(--color-border-default)] overflow-hidden shadow-sm rounded-2xl">
@@ -62,9 +85,6 @@ export function TasksListMode({
                 </button>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 flex-wrap mb-1">
-                     <span className="text-[10px] font-bold uppercase bg-[var(--color-surface-sunken)] border border-[var(--color-border-subtle)] text-[var(--color-text-muted)] px-2 py-0.5 rounded-md">
-                       {t.type}
-                     </span>
                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${getPriorityColor(t.priority)}`}>
                        {t.priority}
                      </span>
@@ -80,32 +100,39 @@ export function TasksListMode({
                     {t.title}
                   </h4>
                   <p className="text-[11px] text-[var(--color-text-muted)] mt-1 font-medium flex flex-wrap items-center gap-2">
-                    <span>Relacionado a: <strong className="text-[var(--color-primary-blue)]">{t.related}</strong></span>
+                    <span>
+                      Relacionado a:{" "}
+                      {t.lead_id ? (
+                        <Link
+                          to={`/app/crm/pipeline?leadId=${t.lead_id}`}
+                          className="text-[var(--color-primary-blue)] hover:underline cursor-pointer font-bold inline-flex items-center gap-1"
+                          title="Abrir lead no CRM"
+                        >
+                          {getLeadLabel(t)}
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </Link>
+                      ) : (
+                        <strong className="text-[var(--color-primary-blue)]">{getLeadLabel(t)}</strong>
+                      )}
+                    </span>
                     <span className="text-[var(--color-border-default)]">&bull;</span>
                     <span className="flex items-center gap-1">
                       <span>Responsável:</span>
                       <select
-                        value={t.seller || ""}
-                        onChange={(e) => updateTask(t.id, { seller: e.target.value })}
+                        value={t.assigned_to || ""}
+                        onChange={(e) => updateTask(t.id, { assigned_to: e.target.value || null })}
                         className="bg-[var(--color-surface-sunken)] text-xs text-[var(--color-text-primary)] font-bold focus:outline-none focus:ring-1 focus:ring-[var(--color-primary-blue)] rounded px-2 py-0.5 border border-[var(--color-border-default)] cursor-pointer"
                       >
                         <option value="" className="text-[var(--color-text-muted)]">Sem responsável</option>
-                        {sellerOptions.map(name => (
-                          <option key={name} value={name}>{name}</option>
+                        {sellerOptions.map(c => (
+                          <option key={c.id} value={c.id}>{c.nome}</option>
                         ))}
                       </select>
                     </span>
-                    
-                    {t.relatedProductIds && t.relatedProductIds.length > 0 && (
-                        <>
-                            <span className="text-[var(--color-border-default)]">&bull;</span>
-                            <span className="flex items-center gap-1">
-                                <Sparkles className="w-3 h-3 text-[var(--color-primary-blue)]" />
-                                <span className="text-[var(--color-primary-blue)] font-bold truncate max-w-[150px] sm:max-w-xs">{t.relatedProductIds.join(', ')}</span>
-                            </span>
-                        </>
-                    )}
                   </p>
+                  {t.description && (
+                    <p className="text-[11px] text-[var(--color-text-faint)] mt-1 italic truncate max-w-md">{t.description}</p>
+                  )}
                 </div>
               </div>
 
@@ -113,11 +140,11 @@ export function TasksListMode({
               <div className="flex flex-wrap items-center gap-2.5 sm:justify-end shrink-0 pl-8 sm:pl-0">
                 <div className={`flex items-center gap-1.5 text-xs font-semibold ${
                   t.status === 'Concluída' ? 'text-[var(--color-text-muted)]' :
-                  t.date.includes('Ontem') || t.status === 'Atrasado' ? 'text-rose-500 font-bold' : 
-                  t.date.includes('Hoje') ? 'text-amber-500 font-bold' : 'text-[var(--color-text-muted)]'
+                  t.status === 'Atrasado' ? 'text-rose-500 font-bold' :
+                  formatDueDate(t.due_date).startsWith('Hoje') ? 'text-amber-500 font-bold' : 'text-[var(--color-text-muted)]'
                 }`}>
                   <Calendar className="w-3.5 h-3.5" />
-                  <span>{t.date}</span>
+                  <span>{formatDueDate(t.due_date)}</span>
                 </div>
 
                 {/* Change columns quickly on list mode */}

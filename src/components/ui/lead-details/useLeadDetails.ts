@@ -53,6 +53,7 @@ export function useLeadDetails(lead: any, onClose: () => void) {
   const [isEditingInline, setIsEditingInline] = useState(false);
   const [leadName, setLeadName]       = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [cnpj, setCnpj]               = useState("");
   const [phone, setPhone]             = useState("");
   const [email, setEmail]             = useState("");
   const [title, setTitle]             = useState("");
@@ -124,6 +125,7 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     if (!lead) return;
     setLeadName(lead.name || "");
     setCompanyName(lead.company || "");
+    setCnpj(lead.cnpj || "");
     setPhone(lead.phone || "");
     setEmail(lead.email || "");
     setTitle(lead.title || "");
@@ -276,7 +278,7 @@ export function useLeadDetails(lead: any, onClose: () => void) {
 
   const handleSaveAll = () => {
     updateLead(lead.id, {
-      name: leadName, company: companyName, phone, email, title, value, seller, priority,
+      name: leadName, company: companyName, cnpj, phone, email, title, value, seller, priority,
       customFields: customFieldsState, productIds: linkedProductIds,
     });
     setAlterationLogs(prev => [
@@ -368,6 +370,7 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     isEditingInline, setIsEditingInline,
     leadName, setLeadName,
     companyName, setCompanyName,
+    cnpj, setCnpj,
     phone, setPhone,
     email, setEmail,
     title, setTitle,

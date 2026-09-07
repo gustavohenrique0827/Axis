@@ -13,11 +13,14 @@ interface BasicInfoBlockProps {
   sellerOptions: string[];
   sellerPipelineId: string;
   sellerCargoLabel: string;
+  valueEstimate?: string;
+  setValueEstimate?: (v: string) => void;
 }
 
 export function BasicInfoBlock({
   emailValue, setEmailValue, phoneValue, handlePhoneChange, isEmailDuplicate,
   selectedSeller, setSelectedSeller, sellerOptions, sellerPipelineId, sellerCargoLabel,
+  valueEstimate, setValueEstimate,
 }: BasicInfoBlockProps) {
   return (
     <div className="space-y-4">
@@ -25,9 +28,20 @@ export function BasicInfoBlock({
         <User className="w-3.5 h-3.5 text-[var(--color-primary-blue)]" /> Informações do Contato
       </h4>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <FormField label="Nome do Contato" required>
           <Input name="name" required type="text" placeholder="Nome completo do lead" />
+        </FormField>
+
+        <FormField label="Valor Estimado / Negócio (R$)">
+          <Input
+            name="value"
+            type="text"
+            value={valueEstimate || ""}
+            onChange={(e) => setValueEstimate?.(e.target.value)}
+            placeholder="Ex: R$ 5.000,00"
+            className="font-mono text-emerald-600 dark:text-emerald-400 font-bold"
+          />
         </FormField>
 
         <FormField label="Cargo / Sufixo (Opcional)">

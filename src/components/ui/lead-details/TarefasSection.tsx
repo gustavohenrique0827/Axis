@@ -26,9 +26,12 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
   const { tasks, addTask, updateTask, deleteTask, colaboradores } = useData();
   const { activeTenantId, user } = useAuth();
 
-  const leadTasks = (tasks as any[]).filter(
-    (t) => t.related === lead.id || t.related === leadName || t.related === lead.company
-  );
+  const leadTasks = (tasks as any[]).filter((t) => t.lead_id === lead.id);
+
+  // `assigned_to` FK pra `users.id` — `user.id` (public.users.id) já é esse
+  // valor direto, não precisa passar por `colaboradores.id` (que é texto e
+  // nem sequer é uuid).
+  const currentUserColaboradorId = user?.id;
 
   const [showForm, setShowForm] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -105,17 +108,15 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
       }
     }
 
+    const dueDate = new Date(`${newDate}T${newTime}:00`);
     addTask({
       title: newTitle.trim(),
-      description: newDesc.trim(),
-      related: lead.id,
-      type: "CRM",
-      date: newDate,
-      time: newTime,
-      duration: newDuration,
+      description: newDesc.trim() || undefined,
+      lead_id: lead.id,
+      due_date: isNaN(dueDate.getTime()) ? undefined : dueDate.toISOString(),
       status: "A Fazer",
       priority: newPriority,
-      seller: user?.name || seller || "Sistema",
+      assigned_to: currentUserColaboradorId,
       convidados: convidados.length > 0 ? convidados : undefined,
       calendarLink,
       googleEventId,
@@ -373,7 +374,7 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
             Pendentes ({pending.length})
           </p>
           {pending.map((task) => (
-            <TaskCard key={task.id} task={task} onToggle={toggleDone} onDelete={deleteTask} />
+            <TaskCard key={task.id} task={task} onToggle={toggleDone} onDelete={deleteTask} colaboradores={colaboradores as any[]} />
           ))}
         </div>
       )}
@@ -385,7 +386,7 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
             Concluídas ({done.length})
           </p>
           {done.map((task) => (
-            <TaskCard key={task.id} task={task} onToggle={toggleDone} onDelete={deleteTask} dimmed />
+            <TaskCard key={task.id} task={task} onToggle={toggleDone} onDelete={deleteTask} dimmed colaboradores={colaboradores as any[]} />
           ))}
         </div>
       )}
@@ -402,13 +403,23 @@ export function TarefasSection({ lead, leadName, seller }: TarefasSectionProps) 
   );
 }
 
-function TaskCard({ task, onToggle, onDelete, dimmed }: {
+function TaskCard({ task, onToggle, onDelete, dimmed, colaboradores }: {
   task: any;
   onToggle: (t: any) => void;
   onDelete: (id: string) => void;
   dimmed?: boolean;
+  colaboradores: any[];
 }) {
   const isDone = task.status === "Concluída" || task.status === "Cancelado";
+  const assigneeName = task.assigned_to
+    ? colaboradores.find((c: any) => c.user_id === task.assigned_to)?.nome
+    : null;
+  const dueDateLabel = (() => {
+    if (!task.due_date) return null;
+    const d = new Date(task.due_date);
+    if (isNaN(d.getTime())) return null;
+    return d.toLocaleString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+  })();
 
   return (
     <Card className={cn(
@@ -429,13 +440,13 @@ function TaskCard({ task, onToggle, onDelete, dimmed }: {
         <p className={cn("text-xs font-bold leading-snug", isDone ? "line-through text-[var(--color-text-faint)]" : "text-[var(--color-text-primary)]")}>
           {task.title}
         </p>
-        {(task.description || task.desc) && (
-          <p className="text-[11px] text-[var(--color-text-muted)] leading-snug line-clamp-2">{task.description || task.desc}</p>
+        {task.description && (
+          <p className="text-[11px] text-[var(--color-text-muted)] leading-snug line-clamp-2">{task.description}</p>
         )}
         <div className="flex items-center gap-2 flex-wrap pt-0.5">
-          {task.date && (
+          {dueDateLabel && (
             <span className="flex items-center gap-1 text-[10px] text-[var(--color-text-faint)] font-medium">
-              <Clock className="w-3 h-3" /> {task.date}{task.time ? ` às ${task.time}` : ""}
+              <Clock className="w-3 h-3" /> {dueDateLabel}
             </span>
           )}
           {task.priority && (
@@ -449,9 +460,9 @@ function TaskCard({ task, onToggle, onDelete, dimmed }: {
           <span className="text-[10px] font-bold text-[var(--color-text-muted)]">
             {task.status}
           </span>
-          {task.seller && (
+          {assigneeName && (
             <span className="text-[10px] text-[var(--color-text-faint)]">
-              · {task.seller}
+              · {assigneeName}
             </span>
           )}
           {task.convidados && task.convidados.length > 0 && (

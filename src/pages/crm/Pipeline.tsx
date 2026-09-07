@@ -86,6 +86,16 @@ export default function Pipeline() {
   }, [searchParams, setSearchQuery]);
 
   useEffect(() => {
+    const targetLeadId = searchParams.get("leadId") || searchParams.get("lead");
+    if (targetLeadId && (leads as any[]).length > 0) {
+      const found = (leads as any[]).find((l: any) => l.id === targetLeadId);
+      if (found) {
+        setSelectedLead(found);
+      }
+    }
+  }, [searchParams, leads, setSelectedLead]);
+
+  useEffect(() => {
     setMinimizedColumns(
       new Set(activePipelineStages.filter((s: any) => s.iniciarMinimizado).map((s: any) => s.id))
     );

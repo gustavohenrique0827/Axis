@@ -21,7 +21,9 @@ export type NovaTarefaPayload = {
   dataFim: string;
   /** Compatibilidade legado (recebe dataInicio) */
   data?: string;
+  /** id do lead vinculado (`leads.id`) — vazio = tarefa interna, sem lead. */
   relacionado: string;
+  /** `users.id` do responsável (`colaboradores.user_id`) — vazio = não atribuído. */
   vendedor: string;
   produtos: string[];
   tags: string;
@@ -86,32 +88,39 @@ export function NovaTarefaModal({
   title = "Nova Tarefa / Compromisso",
   submitText = "Agendar Tarefa",
 }: NovaTarefaModalProps) {
-  const { colaboradores, products } = useData();
+  const { colaboradores, products, leads } = useData();
   const { activeTenantId, user } = useAuth();
 
-  /* ─── Colaboradores disponíveis ────────────────────────────── */
+  // `assigned_to` FK pra `users.id`, não `colaboradores.id` (texto, nem uuid) —
+  // por isso a opção usa `user_id` do colaborador. Colaborador sem `user_id`
+  // vinculado (conta de sistema nunca logada) fica de fora da lista, já que
+  // não há como atribuir uma tarefa a ele via essa coluna.
   const collaboratorOptions = useMemo(
     () =>
       (colaboradores as any[])
         .filter((c) => c.status !== "Desligado")
-        .map((c) => ({ name: (c.nome || c.name || "") as string, email: (c.email || "") as string }))
-        .filter((c) => c.name),
+        .map((c) => ({ id: c.user_id as string, name: (c.nome || c.name || "") as string, email: (c.email || "") as string }))
+        .filter((c) => c.name && c.id),
     [colaboradores]
   );
-  const sellerOptions = useMemo(() => {
-    const list = [...collaboratorOptions];
-    if (user?.name && !list.some((c) => c.name === user.name)) {
-      list.unshift({ name: user.name, email: user.email || "" });
-    }
-    return list;
-  }, [collaboratorOptions, user?.name, user?.email]);
+  const sellerOptions = collaboratorOptions;
+  const currentUserColaboradorId = useMemo(() => {
+    if (!user?.email) return "";
+    return collaboratorOptions.find((c) => c.email.toLowerCase() === user.email!.toLowerCase())?.id || "";
+  }, [collaboratorOptions, user?.email]);
+
+  /* ─── Leads disponíveis pra vincular a tarefa (`lead_id`) ─────────────── */
+  const leadOptions = useMemo(
+    () => (leads as any[]).map((l) => ({ id: l.id as string, label: (l.company || l.name || "") as string })).filter((l) => l.label),
+    [leads]
+  );
 
   /* ─── Campos principais ─────────────────────────────────────── */
   const [nome, setNome] = useState(initialValue?.nome || "");
   const [tipo, setTipo] = useState(initialValue?.tipo || TASK_TYPES[0]);
   const [prioridade, setPrioridade] = useState(initialValue?.prioridade || "Média");
   const [relacionado, setRelacionado] = useState(initialValue?.relacionado || "");
-  const [vendedor, setVendedor] = useState(initialValue?.vendedor || user?.name || "");
+  const [vendedor, setVendedor] = useState(initialValue?.vendedor || currentUserColaboradorId || "");
   const [produtos, setProdutos] = useState<string[]>(initialValue?.produtos || []);
   const [tags, setTags] = useState(initialValue?.tags || "");
 
@@ -155,7 +164,7 @@ export function NovaTarefaModal({
       setHoraFim(twoHoursFromNow());
     }
     setRelacionado(initialValue?.relacionado || "");
-    setVendedor(initialValue?.vendedor || user?.name || "");
+    setVendedor(initialValue?.vendedor || currentUserColaboradorId || "");
     setProdutos(initialValue?.produtos || []);
     setTags(initialValue?.tags || "");
     setConvidados(initialValue?.convidados || []);
@@ -210,9 +219,12 @@ export function NovaTarefaModal({
 
   /* ─── Submit ─────────────────────────────────────────────────── */
   const canSubmit = useMemo(
-    () => Boolean(nome.trim() && relacionado.trim() && dataDate && horaInicio),
-    [nome, relacionado, dataDate, horaInicio]
+    () => Boolean(nome.trim() && dataDate && horaInicio),
+    [nome, dataDate, horaInicio]
   );
+
+  const relacionadoLabel = leadOptions.find((l) => l.id === relacionado)?.label || "Interno";
+  const vendedorLabel = sellerOptions.find((c) => c.id === vendedor)?.name || "";
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -232,8 +244,8 @@ export function NovaTarefaModal({
           title: `${tipo} — ${nome}`,
           description: [
             `📋 Tarefa: ${nome}`,
-            `🏢 Relacionado: ${relacionado}`,
-            vendedor ? `👤 Responsável: ${vendedor}` : "",
+            `🏢 Relacionado: ${relacionadoLabel}`,
+            vendedorLabel ? `👤 Responsável: ${vendedorLabel}` : "",
             tags ? `🏷️ Tags: ${tags}` : "",
             attendees.length > 0 ? `👥 Convidados: ${attendees.join(", ")}` : "",
           ].filter(Boolean).join("\n"),
@@ -263,7 +275,7 @@ export function NovaTarefaModal({
       dataInicio,
       dataFim,
       data: dataInicio,
-      relacionado: relacionado.trim(),
+      relacionado,
       vendedor,
       produtos,
       tags: tags.trim(),
@@ -327,13 +339,12 @@ export function NovaTarefaModal({
             <label className={labelClass}>
               <Users className="w-3 h-3" /> Lead / Empresa Associado
             </label>
-            <input
-              value={relacionado}
-              onChange={(e) => setRelacionado(e.target.value)}
-              className={fieldClass}
-              placeholder="Ex: Vértice Innovations"
-              required
-            />
+            <select value={relacionado} onChange={(e) => setRelacionado(e.target.value)} className={fieldClass}>
+              <option value="">Nenhum (Interno)</option>
+              {leadOptions.map((l) => (
+                <option key={l.id} value={l.id}>{l.label}</option>
+              ))}
+            </select>
           </div>
         </div>
 
@@ -407,7 +418,7 @@ export function NovaTarefaModal({
           <select value={vendedor} onChange={(e) => setVendedor(e.target.value)} className={fieldClass}>
             <option value="">Não Atribuído</option>
             {sellerOptions.map((c) => (
-              <option key={c.name} value={c.name}>{c.name}{c.email ? ` — ${c.email}` : ""}</option>
+              <option key={c.id} value={c.id}>{c.name}{c.email ? ` — ${c.email}` : ""}</option>
             ))}
             {sellerOptions.length === 0 && (
               <option value="" disabled>Nenhum colaborador cadastrado</option>

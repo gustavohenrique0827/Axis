@@ -9,8 +9,6 @@ interface TasksFilterProps {
   setDeadlineFilter: (val: string) => void;
   selectedPriorities: string[];
   setSelectedPriorities: React.Dispatch<React.SetStateAction<string[]>>;
-  selectedTypes: string[];
-  setSelectedTypes: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
 export function TasksFilter({
@@ -20,8 +18,6 @@ export function TasksFilter({
   setDeadlineFilter,
   selectedPriorities,
   setSelectedPriorities,
-  selectedTypes,
-  setSelectedTypes
 }: TasksFilterProps) {
   return (
     <Card className="p-4 bg-[var(--color-surface-elevated)]/60 border border-white/5 shadow-md flex flex-col gap-3 rounded-3xl">
@@ -52,14 +48,13 @@ export function TasksFilter({
         </div>
 
         {/* Reset Filters */}
-        {(searchQuery !== "" || selectedPriorities.length > 0 || selectedTypes.length > 0 || deadlineFilter !== "") && (
-          <button 
+        {(searchQuery !== "" || selectedPriorities.length > 0 || deadlineFilter !== "") && (
+          <button
             onClick={() => {
               setSearchQuery("");
               setSelectedPriorities([]);
-              setSelectedTypes([]);
               setDeadlineFilter("");
-            }} 
+            }}
             className="text-[11px] font-bold text-red-400 hover:text-red-300 border border-red-500/10 hover:bg-red-500/5 rounded-xl px-4 h-[38px] transition-all whitespace-nowrap shrink-0 cursor-pointer"
           >
             Limpar Filtros
@@ -93,34 +88,6 @@ export function TasksFilter({
               </button>
             );
           })}
-        </div>
-
-        {/* Multi Type Select Tag Chips (Scrollbar scrollable wrapper) */}
-        <div className="flex flex-1 items-center gap-1.5 bg-[var(--color-surface)] border border-white/5 rounded-xl p-1 overflow-x-auto scrollbar-none">
-          <span className="text-[10px] text-slate-500 font-black uppercase tracking-wider px-2.5 shrink-0">Tipos de Ação:</span>
-          <div className="flex gap-1 overflow-x-auto scrollbar-none">
-            {["Reunião Presencial", "Call Online", "Acompanhamento (Follow-up)", "Demonstração", "Envio Docs", "Ligação"].map(t => {
-              const isSelected = selectedTypes.includes(t);
-              return (
-                <button
-                  key={t}
-                  onClick={() => {
-                    setSelectedTypes(prev => 
-                      prev.includes(t) ? prev.filter(x => x !== t) : [...prev, t]
-                    );
-                  }}
-                  type="button"
-                  className={`text-[10.5px] font-black px-3 py-1 rounded-lg transition-all whitespace-nowrap border cursor-pointer ${
-                    isSelected 
-                      ? 'bg-[#06B6D4]/15 text-[#06B6D4] border-[#06B6D4]/30'
-                      : 'bg-transparent text-slate-400 hover:text-white border-transparent'
-                  }`}
-                >
-                  {t}
-                </button>
-              );
-            })}
-          </div>
         </div>
       </div>
     </Card>

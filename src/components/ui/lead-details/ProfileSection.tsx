@@ -18,6 +18,8 @@ interface ProfileSectionProps {
   setLeadName: (val: string) => void;
   phone: string;
   setPhone: (val: string) => void;
+  cnpj: string;
+  setCnpj: (val: string) => void;
   email: string;
   setEmail: (val: string) => void;
   title: string;
@@ -57,6 +59,7 @@ export function ProfileSection({
   companyName, setCompanyName,
   leadName, setLeadName,
   phone, setPhone,
+  cnpj, setCnpj,
   email, setEmail,
   title, setTitle,
   value, setValue,
@@ -103,7 +106,7 @@ export function ProfileSection({
   }, [lead?.productIds, products, value]);
 
   const fetchCnpjData = async () => {
-    const digits = (lead.cnpj || "").replace(/\D/g, "");
+    const digits = (cnpj || lead.cnpj || "").replace(/\D/g, "");
     if (digits.length !== 14) return;
     setCnpjFetching(true);
     try {
@@ -204,6 +207,7 @@ export function ProfileSection({
         companyName={companyName} setCompanyName={setCompanyName}
         leadName={leadName} setLeadName={setLeadName}
         phone={phone} setPhone={setPhone}
+        cnpj={cnpj} setCnpj={setCnpj}
         email={email} setEmail={setEmail}
         title={title} setTitle={setTitle}
         value={value} setValue={setValue}

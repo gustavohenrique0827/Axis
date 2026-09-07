@@ -2,6 +2,9 @@ import React from "react";
 import { ChevronRight, Plus } from "lucide-react";
 import { LeadCard } from "./LeadCard";
 import { Task } from "../../../../types";
+import { useData } from "../../../../contexts/DataContext";
+
+import { parseCurrencyBR } from "../../../../lib/utils";
 
 interface PipelineKanbanBoardProps {
   activePipelineStages: any[];
@@ -53,14 +56,19 @@ export function PipelineKanbanBoard({
   triggerCelebration,
   onReuniaoStageDrop,
 }: PipelineKanbanBoardProps) {
+  const { products } = useData();
+
+  // Mesma regra do LeadCard: quando o lead tem produtos vinculados, o valor
+  // exibido vem da soma dos preços dos produtos, não do campo value/valor —
+  // ignorar isso aqui fazia o total da coluna mostrar R$ 0 com leads que já
+  // exibiam valor (via produto) nos cards.
   const getLeadValue = (l: any) => {
-    const raw = l.value ?? l.valor;
-    if (typeof raw === "number") return raw;
-    if (typeof raw === "string") {
-      const clean = raw.replace(/[^\d.,]/g, "").replace(",", ".");
-      return parseFloat(clean) || 0;
+    const linkedProducts = (products as any[]).filter((p) => (l.productIds || []).includes(p.id));
+    if (linkedProducts.length > 0) {
+      return linkedProducts.reduce((s, p) => s + (Number(p.price) || 0), 0);
     }
-    return 0;
+    const raw = l.value ?? l.valor;
+    return parseCurrencyBR(raw);
   };
 
   const handleDrop = (stage: any, e: React.DragEvent) => {

@@ -52,6 +52,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
     leadName, setLeadName,
     companyName, setCompanyName,
     phone, setPhone,
+    cnpj, setCnpj,
     email, setEmail,
     title, setTitle,
     value, setValue,
@@ -233,6 +234,7 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                       companyName={companyName}    setCompanyName={setCompanyName}
                       leadName={leadName}          setLeadName={setLeadName}
                       phone={phone}                setPhone={setPhone}
+                      cnpj={cnpj}                  setCnpj={setCnpj}
                       email={email}                setEmail={setEmail}
                       title={title}                setTitle={setTitle}
                       value={value}                setValue={setValue}

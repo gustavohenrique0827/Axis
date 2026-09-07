@@ -16,7 +16,7 @@ export function FinanceiroKPIs({ receita, despesa, mrr, inadimplencia }: Finance
     { label: "Receita (Real)",      value: fmt(receita),               trend: "--", positive: true,  icon: TrendingUp,  color: "text-emerald-500" },
     { label: "Custo Operacional",   value: fmt(despesa),               trend: "--", positive: true,  icon: Wallet,      color: "text-rose-500" },
     { label: "MRR Global",          value: fmt(mrr),                   trend: "--", positive: true,  icon: Globe,       color: "text-blue-500" },
-    { label: "Índice de Churn",     value: `${inadimplencia.toFixed(1)}%`, trend: "--", positive: false, icon: AlertCircle, color: "text-amber-500" },
+    { label: "Contas a Pagar em Atraso", value: `${inadimplencia.toFixed(1)}%`, trend: "--", positive: false, icon: AlertCircle, color: "text-amber-500" },
   ];
 
   return (

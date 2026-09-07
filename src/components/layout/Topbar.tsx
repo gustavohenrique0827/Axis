@@ -228,7 +228,14 @@ export function Topbar({
                       return (
                         <div
                           key={n.id}
-                          onClick={() => markNotificationAsRead(n.id)}
+                          onClick={() => {
+                            markNotificationAsRead(n.id);
+                            const target = n.link || (n.category === "CRM" ? "/app/crm/pipeline" : n.title?.toLowerCase().includes("tarefa") ? "/app/tarefas" : undefined);
+                            if (target) {
+                              navigate(target);
+                              setIsNotificationsOpen(false);
+                            }
+                          }}
                           className={`p-3.5 hover:bg-[var(--color-surface-sunken)] cursor-pointer transition-all flex gap-3 relative group ${
                             !n.read ? "bg-[var(--color-primary-blue)]/[0.04]" : ""
                           }`}

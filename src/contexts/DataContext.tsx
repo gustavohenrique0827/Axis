@@ -20,6 +20,7 @@ import {
 } from './dataMocks';
 import { DataContext, DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, Reuniao, Indicacao, useData } from './DataContextTypes';
 import { apiFetch } from "../lib/apiClient";
+import { parseCurrencyBR } from "../lib/utils";
 
 export { useData };
 export type { DataContextType, LeadActivity, Notification, Appointment, GlobalWebhook, FinanceEntry, Reuniao };
@@ -654,22 +655,25 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     const checkColdLeads = () => {
       leadsRef.current.forEach(lead => {
         if (lead.id && !handledColdLeadsRef.current[lead.id] && lead.scoreIA !== undefined && lead.scoreIA < 40) {
+          const nurturingTaskTitle = `Nutrição de Reengajamento: ${lead.name}`;
+          // Sem coluna `tags` na tabela `tasks` — dedupe por lead_id + prefixo do
+          // título (ambos colunas reais), em vez da antiga tag "reengajamento".
           const hasNurturingTask = tasksRef.current.some(t =>
-            (t.related === lead.company || t.related === lead.name) &&
-            t.tags?.includes("reengajamento")
+            t.lead_id === lead.id && t.title === nurturingTaskTitle
           );
 
           if (!hasNurturingTask) {
             handledColdLeadsRef.current[lead.id] = true;
+            const tomorrow9am = new Date();
+            tomorrow9am.setDate(tomorrow9am.getDate() + 1);
+            tomorrow9am.setHours(9, 0, 0, 0);
             const newTask: Omit<Task, 'id'> = {
-              title: `Nutrição de Reengajamento: ${lead.name}`,
-              related: lead.company || lead.name,
-              type: "E-mail",
-              date: "Amanhã, 09:00",
+              title: nurturingTaskTitle,
+              description: "Tipo: E-mail — automação de reengajamento (lead frio, Score IA < 40).",
+              lead_id: lead.id,
+              due_date: tomorrow9am.toISOString(),
               status: "Em Aberto",
               priority: "Média",
-              seller: lead.seller || "",
-              tags: ["reengajamento", "Frio", "Automação"]
             };
 
             addTask(newTask);
@@ -764,36 +768,24 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (leads.length === 0) return;
     const randomLead = leads[Math.floor(Math.random() * leads.length)];
     const uniqueSellers = Array.from(new Set(leads.map(l => l.seller).filter(Boolean)));
-    const randomSeller = uniqueSellers.length > 0
+    const randomSellerName = uniqueSellers.length > 0
       ? uniqueSellers[Math.floor(Math.random() * uniqueSellers.length)]
       : "";
+    const randomSellerColaborador = (colaboradores as any[]).find(c => c.nome === randomSellerName);
+
+    const today9am = new Date();
+    today9am.setHours(9, 0, 0, 0);
 
     const newTask: Omit<Task, 'id'> = {
       title: "Retornar contato com lead",
-      related: randomLead.company || randomLead.name,
-      type: "Call",
-      date: "Hoje, 09:00",
+      description: "Tipo: Call",
+      lead_id: randomLead.id,
+      due_date: today9am.toISOString(),
       status: "Atrasado",
       priority: "Alta",
-      seller: randomSeller
+      assigned_to: randomSellerColaborador?.user_id,
     };
     addTask(newTask);
-  };
-
-  const parseTaskDate = (dateStr: string): Date => {
-    const now = new Date();
-    if (!dateStr) return now;
-    const directDate = new Date(dateStr);
-    if (!isNaN(directDate.getTime())) return directDate;
-
-    const lower = dateStr.toLowerCase();
-    if (lower.includes("hoje")) return now;
-    if (lower.includes("amanhã") || lower.includes("amanha")) {
-      const tomorrow = new Date();
-      tomorrow.setDate(now.getDate() + 1);
-      return tomorrow;
-    }
-    return now;
   };
 
   const triggerScoreRecalculation = async (leadId: string, currentLeadsList?: Lead[], currentActivitiesList?: LeadActivity[]) => {
@@ -841,16 +833,15 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     toast.success('Novo lead adicionado com sucesso!');
     addNotification({
       title: "Novo Lead",
-      desc: `${lead.name} da empresa ${lead.company} foi adicionado.`,
+      desc: `${lead.name} da empresa ${lead.company || "lead"} foi adicionado.`,
+      link: `/app/crm/pipeline?leadId=${newId}`,
+      category: "CRM",
       type: "success"
     });
 
     if (supabase) {
       try {
-        // Parse numeric value: strip "R$ " prefix before saving
-        const rawValue = typeof lead.value === 'string'
-          ? parseFloat(lead.value.replace(/[^\d.,]/g, '').replace(',', '.')) || 0
-          : (lead.value ?? 0);
+        const rawValue = parseCurrencyBR(lead.value);
 
         const dbPayload = {
           id: newId,
@@ -937,8 +928,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       try {
         // Strip unknown / non-DB fields and fix value type
         const { customTags, ...safeUpdates } = updates as any;
-        if (safeUpdates.value !== undefined && typeof safeUpdates.value === 'string') {
-          safeUpdates.value = parseFloat(safeUpdates.value.replace(/[^\d.,]/g, '').replace(',', '.')) || 0;
+        if (safeUpdates.value !== undefined) {
+          safeUpdates.value = parseCurrencyBR(safeUpdates.value);
         }
         const { error } = await supabase.from('leads').update(safeUpdates).eq('id', id);
         if (error) console.error("Supabase update lead failed:", error.message);
@@ -992,34 +983,59 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     setTimeout(() => { triggerScoreRecalculation(leadId); }, 400);
   };
 
+  // Colunas reais da tabela `tasks` — qualquer outro campo (ex.: convidados/
+  // calendarLink, usados só pra feedback imediato de Google Calendar na UI)
+  // é decorativo no estado local e NUNCA deve ir pro insert/update do Supabase,
+  // ou o Postgres rejeita a linha inteira com "column does not exist".
+  const TASK_COLUMNS = [
+    'id', 'tenant_id', 'lead_id', 'assigned_to', 'creator_id', 'title',
+    'description', 'status', 'priority', 'due_date', 'completed_at',
+    'created_at', 'updated_at', 'deleted_at', 'filial_id',
+  ] as const;
+
+  const pickTaskColumns = (obj: Record<string, any>) => {
+    const picked: Record<string, any> = {};
+    for (const key of TASK_COLUMNS) {
+      if (key in obj) picked[key] = obj[key];
+    }
+    return picked;
+  };
+
   const addTask = async (task: Omit<Task, 'id'>) => {
-    const newTask: any = { ...task, id: Math.random().toString(36).substr(2, 9) };
+    const newTask: Task = { ...task, id: crypto.randomUUID() };
     if (tenantId) newTask.tenant_id = tenantId;
-    newTask.filial_id = activeFilialId;
+    if (user?.id) newTask.creator_id = user.id;
+    newTask.filial_id = activeFilialId ?? null;
     setTasks(prev => [newTask, ...prev]);
-    toast.success('Tarefa agendada!');
     addNotification({
       title: "Nova Tarefa",
       desc: `Agendada: ${task.title}`,
+      link: task.lead_id ? `/app/crm/pipeline?leadId=${task.lead_id}` : `/app/tarefas`,
+      category: "CRM",
       type: "info"
     }, true);
 
     if (supabase) {
-      try {
-        await supabase.from('tasks').insert(newTask);
-      } catch (err) {
-        console.error("Supabase add task failed:", err);
+      const { error } = await supabase.from('tasks').insert(pickTaskColumns(newTask));
+      if (error) {
+        console.error("[Supabase] insert tasks error:", error.message, error.details);
+        setTasks(prev => prev.filter(t => t.id !== newTask.id));
+        toast.error(`Erro ao salvar tarefa: ${error.message}`);
+        return;
       }
     }
+    toast.success('Tarefa agendada!');
   };
 
   const updateTask = async (id: string, updates: Partial<Task>) => {
+    const previousTask = tasks.find(t => t.id === id);
     setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
     if (supabase) {
-      try {
-        await supabase.from('tasks').update(updates).eq('id', id);
-      } catch (err) {
-        console.error("Supabase update task failed:", err);
+      const { error } = await supabase.from('tasks').update(pickTaskColumns(updates)).eq('id', id);
+      if (error) {
+        console.error("[Supabase] update tasks error:", error.message, error.details);
+        if (previousTask) setTasks(prev => prev.map(t => t.id === id ? previousTask : t));
+        toast.error(`Erro ao atualizar tarefa: ${error.message}`);
       }
     }
   };
@@ -1266,35 +1282,37 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (tenantId) newEntry.tenant_id = tenantId;
     newEntry.filial_id = activeFilialId;
     setFinanceEntries(prev => [newEntry, ...prev]);
-    toast.success(`${entry.type === 'Pagar' ? 'Despesa' : 'Receita'} registrada!`);
     if (supabase) {
-      try {
-        await supabase.from('finance_entries').insert(newEntry);
-      } catch (err) {
-        console.error("Supabase add finance_entries failed:", err);
+      const { error } = await supabase.from('finance_entries').insert(newEntry);
+      if (error) {
+        console.error("Supabase add finance_entries failed:", error.message, error.details);
+        toast.error(`Erro ao salvar lançamento: ${error.message}`);
+        return;
       }
     }
+    toast.success(`${entry.type === 'Pagar' ? 'Despesa' : 'Receita'} registrada!`);
   };
 
   const deleteFinanceEntry = async (id: string) => {
     setFinanceEntries(prev => prev.filter(f => f.id !== id));
-    toast.info('Lançamento financeiro removido.');
     if (supabase) {
-      try {
-        await supabase.from('finance_entries').delete().eq('id', id);
-      } catch (err) {
-        console.error("Supabase delete finance_entries failed:", err);
+      const { error } = await supabase.from('finance_entries').delete().eq('id', id);
+      if (error) {
+        console.error("Supabase delete finance_entries failed:", error.message);
+        toast.error(`Erro ao remover lançamento: ${error.message}`);
+        return;
       }
     }
+    toast.info('Lançamento financeiro removido.');
   };
 
   const updateFinanceEntry = async (id: string, updates: Partial<FinanceEntry>) => {
     setFinanceEntries(prev => prev.map(f => f.id === id ? { ...f, ...updates } : f));
     if (supabase) {
-      try {
-        await supabase.from('finance_entries').update(updates).eq('id', id);
-      } catch (err) {
-        console.error("Supabase update finance_entries failed:", err);
+      const { error } = await supabase.from('finance_entries').update(updates).eq('id', id);
+      if (error) {
+        console.error("Supabase update finance_entries failed:", error.message);
+        toast.error(`Erro ao atualizar lançamento: ${error.message}`);
       }
     }
   };

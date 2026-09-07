@@ -245,12 +245,12 @@ export default function FinanceiroConciliacao() {
         <Card className="p-5 bg-[var(--color-surface)] border border-[var(--color-border-default)] shadow-xs">
           <div className="flex items-center justify-between mb-2">
             <span className="text-[10px] font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
-              Contas Bancárias Integradas
+              Lançamentos Importados
             </span>
             <Building2 className="w-5 h-5 text-[var(--color-primary-blue)]" />
           </div>
-          <div className="text-2xl font-black text-[var(--color-text-primary)]">2</div>
-          <p className="text-[10px] text-[var(--color-text-muted)] mt-1">Itaú Empresas & Inter PJ Conectados</p>
+          <div className="text-2xl font-black text-[var(--color-text-primary)]">{extrato.length}</div>
+          <p className="text-[10px] text-[var(--color-text-muted)] mt-1">Via upload de extrato CSV/OFX</p>
         </Card>
       </div>
 

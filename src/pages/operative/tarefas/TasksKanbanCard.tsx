@@ -1,8 +1,24 @@
 import { Card } from "../../../components/ui/card";
-import { Edit, CheckCircle2, Trash2, Clock, AlertTriangle, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Edit, CheckCircle2, Trash2, Clock, AlertTriangle, ExternalLink } from "lucide-react";
 import { Task } from "../../../types";
 import { KanbanColConfig } from "../../../hooks/useKanbanConfig";
 import { useData } from "../../../contexts/DataContext";
+
+/** Formata `due_date` (ISO) pro estilo "Hoje, 09:00" / "Amanhã" / "12 mar". */
+function formatDueDate(iso?: string | null): string {
+  if (!iso) return "Sem prazo";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "Sem prazo";
+  const now = new Date();
+  const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diffDays = Math.round((startOfDay(d) - startOfDay(now)) / 86400000);
+  const time = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  if (diffDays === 0) return `Hoje, ${time}`;
+  if (diffDays === 1) return `Amanhã, ${time}`;
+  if (diffDays === -1) return `Ontem, ${time}`;
+  return `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}, ${time}`;
+}
 
 interface TasksKanbanCardProps {
   task: Task;
@@ -33,11 +49,18 @@ export function TasksKanbanCard({
   moveTaskStatus,
   columns,
 }: TasksKanbanCardProps) {
-  const { colaboradores } = useData();
+  const { colaboradores, leads } = useData();
+  // `assigned_to` FK pra `users.id`, não `colaboradores.id` — usa `user_id`.
   const sellerOptions = (colaboradores as any[])
     .filter(c => c.status !== "Desligado" && c.departamento === "Vendas")
-    .map(c => c.nome as string)
-    .filter(Boolean);
+    .map(c => ({ id: c.user_id as string, nome: c.nome as string }))
+    .filter(c => c.id && c.nome);
+
+  const leadLabel = (() => {
+    if (!task.lead_id) return "Interno";
+    const lead = (leads as any[]).find(l => l.id === task.lead_id);
+    return lead ? (lead.company || lead.name) : "Interno";
+  })();
 
   return (
     <Card
@@ -55,65 +78,50 @@ export function TasksKanbanCard({
       }`}
     >
       <div className="flex justify-between items-start mb-3 gap-2 flex-wrap">
-        <span className="text-[9px] font-black text-[#06B6D4] uppercase tracking-widest bg-[#06B6D4]/10 px-2 py-0.5 rounded-md border border-[#06B6D4]/5">
-          {task.type}
+        <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase ${getPriorityColor(task.priority)}`}>
+          {task.priority}
         </span>
-        <div className="flex gap-1.5 items-center">
-          <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded border uppercase ${getPriorityColor(task.priority)}`}>
-            {task.priority}
-          </span>
-        </div>
       </div>
 
       <h4 className={`text-sm font-black text-white italic tracking-tighter uppercase mb-2 leading-snug break-words ${task.status === 'Concluída' ? 'text-slate-500 line-through' : ''}`}>
         {task.title}
       </h4>
 
+      {task.description && (
+        <p className="text-[10px] text-slate-500 mb-2 line-clamp-2">{task.description}</p>
+      )}
+
       <div className="flex items-center gap-2 mb-2 bg-white/[0.01] border border-white/[0.03] p-1.5 rounded-lg">
         <div className="w-5 h-5 rounded-md bg-[#2563EB]/10 border border-[#2563EB]/20 flex items-center justify-center text-[9px] font-black text-[#2563EB]">GT</div>
-        <span className="text-[10px] text-slate-400 font-medium truncate">{task.related}</span>
+        {task.lead_id ? (
+          <Link
+            to={`/app/crm/pipeline?leadId=${task.lead_id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="text-[10px] text-blue-400 hover:text-blue-300 hover:underline font-bold truncate flex items-center gap-1 cursor-pointer"
+            title="Abrir lead no pipeline"
+          >
+            <span>{leadLabel}</span>
+            <ExternalLink className="w-2.5 h-2.5 shrink-0" />
+          </Link>
+        ) : (
+          <span className="text-[10px] text-slate-400 font-medium truncate">{leadLabel}</span>
+        )}
       </div>
 
       <div className="flex items-center gap-1.5 mb-4 bg-[var(--color-surface)] border border-white/5 px-2 py-1 rounded-lg">
         <span className="text-[8px] font-black text-slate-500 uppercase shrink-0">Responsável:</span>
         <select
-          value={task.seller || ""}
-          onChange={(e) => updateTask(task.id, { seller: e.target.value })}
-          className={`bg-transparent text-[10px] ${task.seller ? 'text-slate-300' : 'text-rose-400 font-black'} font-bold focus:outline-none focus:ring-1 focus:ring-[#2563EB] rounded px-1 cursor-pointer w-full`}
+          value={task.assigned_to || ""}
+          onChange={(e) => updateTask(task.id, { assigned_to: e.target.value || null })}
+          className={`bg-transparent text-[10px] ${task.assigned_to ? 'text-slate-300' : 'text-rose-400 font-black'} font-bold focus:outline-none focus:ring-1 focus:ring-[#2563EB] rounded px-1 cursor-pointer w-full`}
         >
           <option value="" className="text-rose-400 font-bold bg-[var(--color-surface)]">Nenhum (Atenção!)</option>
-          {sellerOptions.map(name => (
-            <option key={name} value={name} className="text-white bg-[var(--color-surface)]">{name}</option>
+          {sellerOptions.map(c => (
+            <option key={c.id} value={c.id} className="text-white bg-[var(--color-surface)]">{c.nome}</option>
           ))}
         </select>
-        {!task.seller && <AlertTriangle className="w-3 h-3 text-rose-400 shrink-0"/>}
+        {!task.assigned_to && <AlertTriangle className="w-3 h-3 text-rose-400 shrink-0"/>}
       </div>
-
-      <div className="flex gap-1 flex-wrap mb-3">
-        {(task.tags || []).map((tag, i) => (
-          <button
-            key={i}
-            onClick={(e) => {
-              e.stopPropagation();
-              setSearchQuery(tag);
-            }}
-            className="text-[9px] bg-white/5 px-1.5 py-0.5 text-slate-400 rounded-md hover:bg-[#2563EB]/20 hover:text-white border-none cursor-pointer"
-          >
-            #{tag}
-          </button>
-        ))}
-      </div>
-
-      {task.relatedProductIds && task.relatedProductIds.length > 0 && (
-        <div className="mb-3 flex flex-wrap gap-1">
-          {task.relatedProductIds.map((prod, i) => (
-            <span key={i} className="text-[9px] px-1.5 py-0.5 rounded bg-[#06B6D4]/10 text-[#06B6D4] border border-[#06B6D4]/20 flex items-center gap-1 shrink-0">
-              <Sparkles className="w-2.5 h-2.5" />
-              {prod}
-            </span>
-          ))}
-        </div>
-      )}
 
       <div className="pt-3 border-t border-white/5 flex flex-col gap-3 justify-between">
         {/* Date and actions */}
@@ -121,9 +129,9 @@ export function TasksKanbanCard({
           <div className={`flex items-center gap-1.5 text-[10px] font-bold ${
             task.status === 'Concluída' ? 'text-slate-500' :
             task.status === 'Atrasado' ? 'text-rose-400' :
-            task.date.includes('Hoje') ? 'text-yellow-400' : 'text-slate-400'
+            formatDueDate(task.due_date).startsWith('Hoje') ? 'text-yellow-400' : 'text-slate-400'
           }`}>
-            <Clock className="w-3 h-3" /> {task.date}
+            <Clock className="w-3 h-3" /> {formatDueDate(task.due_date)}
           </div>
 
           {/* Action Buttons: Status Toggles & Trash */}

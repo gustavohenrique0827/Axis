@@ -13,10 +13,9 @@ export function useTarefas() {
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('kanban');
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPriorities, setSelectedPriorities] = useState<string[]>([]);
-  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [deadlineFilter, setDeadlineFilter] = useState<string>("");
-  const { tasks, addTask, updateTask, deleteTask, appSettings } = useData();
-  const { activeTenantId } = useAuth();
+  const { tasks, addTask, updateTask, deleteTask, appSettings, leads, colaboradores, products } = useData();
+  const { activeTenantId, user } = useAuth();
 
   const [needsAuth, setNeedsAuth] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -30,6 +29,24 @@ export function useTarefas() {
     );
     return () => unsubscribe();
   }, [activeTenantId]);
+
+  /** Nome de exibição do lead vinculado (substitui o antigo campo livre `related`). */
+  const getLeadLabel = (task: Task): string => {
+    if (!task.lead_id) return "Interno";
+    const lead = (leads as any[]).find(l => l.id === task.lead_id);
+    return lead ? (lead.company || lead.name) : "Interno";
+  };
+
+  /** Nome de exibição do responsável (substitui o antigo campo livre `seller`). */
+  const getAssigneeLabel = (task: Task): string => {
+    if (!task.assigned_to) return "";
+    const colab = (colaboradores as any[]).find(c => c.user_id === task.assigned_to);
+    return colab?.nome || "";
+  };
+
+  // `assigned_to` FK pra `users.id` — `user.id` (public.users.id) já é esse
+  // valor direto, sem precisar resolver via `colaboradores`.
+  const currentUserColaboradorId = user?.id || "";
 
   const handleSyncGoogleTasks = async () => {
     if (!activeTenantId) return;
@@ -52,29 +69,25 @@ export function useTarefas() {
         headers: { Authorization: `Bearer ${token}` }
       });
       const listsData = await listsRes.json();
-      
+
       let importedCount = 0;
-      
+
       if (listsData.items && listsData.items.length > 0) {
         for (const list of listsData.items) {
            const tasksRes = await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${list.id}/tasks`, {
              headers: { Authorization: `Bearer ${token}` }
            });
            const tasksData = await tasksRes.json();
-           
+
            if (tasksData.items) {
              for (const gTask of tasksData.items) {
                if (!tasks.some(t => t.title === gTask.title)) {
                  addTask({
                    title: gTask.title,
-                   type: "Acompanhamento (Follow-up)",
+                   description: "Importado do Google Tasks.",
                    priority: "Média",
-                   date: gTask.due ? new Date(gTask.due).toLocaleDateString('pt-BR') : "Hoje",
-                   related: "Google Tasks",
+                   due_date: gTask.due ? new Date(gTask.due).toISOString() : undefined,
                    status: gTask.status === "completed" ? "Concluída" : "Em Aberto",
-                   seller: "",
-                   relatedProductIds: [],
-                   tags: ["google-tasks"]
                  });
                  importedCount++;
                }
@@ -82,9 +95,9 @@ export function useTarefas() {
            }
         }
       }
-      
+
       toast.success(`Sincronização concluída: ${importedCount} tarefas importadas.`);
-      
+
     } catch (err) {
       console.error(err);
       toast.error("Erro ao sincronizar com Google Tasks. Verifique os popups e permissões.");
@@ -98,81 +111,53 @@ export function useTarefas() {
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [draggedOverCol, setDraggedOverCol] = useState<string | null>(null);
 
-  const parseTaskDate = (dateStr: string): Date => {
+  /** Formata `due_date` (ISO) pro estilo "Hoje, 09:00" / "Amanhã, 14:00" / "12 mar, 10:00". */
+  const formatDueDate = (iso?: string | null): string => {
+    if (!iso) return "Sem prazo";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "Sem prazo";
     const now = new Date();
-    if (!dateStr) return now;
-    
-    const directDate = new Date(dateStr);
-    if (!isNaN(directDate.getTime())) {
-      return directDate;
-    }
+    const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+    const diffDays = Math.round((startOfDay(d) - startOfDay(now)) / 86400000);
+    const time = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    if (diffDays === 0) return `Hoje, ${time}`;
+    if (diffDays === 1) return `Amanhã, ${time}`;
+    if (diffDays === -1) return `Ontem, ${time}`;
+    return `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}, ${time}`;
+  };
 
-    const lower = dateStr.toLowerCase();
-    if (lower.includes("hoje")) {
-      return now;
-    }
-    if (lower.includes("amanhã") || lower.includes("amanha")) {
-      const tomorrow = new Date();
-      tomorrow.setDate(now.getDate() + 1);
-      return tomorrow;
-    }
-    if (lower.includes("ontem")) {
-      const yesterday = new Date();
-      yesterday.setDate(now.getDate() - 1);
-      return yesterday;
-    }
-    
-    try {
-      const cleanStr = dateStr.replace(/[^0-9a-zA-Záàâãéèêíóôõúç \-\/]/g, '').trim();
-      const slashParts = cleanStr.split('/');
-      if (slashParts.length >= 2) {
-        const day = parseInt(slashParts[0], 10);
-        const month = parseInt(slashParts[1], 10) - 1;
-        const year = slashParts[2] ? parseInt(slashParts[2], 10) : now.getFullYear();
-        if (!isNaN(day) && !isNaN(month)) {
-          return new Date(year, month, day);
-        }
-      }
-      
-      const words = cleanStr.split(/\s+/);
-      if (words.length >= 2) {
-        const day = parseInt(words[0], 10);
-        const monthLabel = words[1].toLowerCase().substring(0, 3);
-        const months: Record<string, number> = {
-          jan: 0, fev: 1, mar: 2, abr: 3, mai: 4, jun: 5, jul: 6, ago: 7, set: 8, out: 9, nov: 10, dez: 11
-        };
-        const month = months[monthLabel] !== undefined ? months[monthLabel] : now.getMonth();
-        const year = words[2] ? parseInt(words[2], 10) : now.getFullYear();
-        if (!isNaN(day)) {
-          return new Date(year, month, day);
-        }
-      }
-    } catch (e) {}
-    return now;
+  /** Converte `due_date` (ISO) pro formato "YYYY-MM-DDTHH:mm" usado pelo <input type="datetime-local"> do modal. */
+  const dueDateToDatetimeLocal = (iso?: string | null): string => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const hours = String(d.getHours()).padStart(2, '0');
+    const minutes = String(d.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
   };
 
   const filteredTasks = useMemo(() => {
     return tasks.filter(t => {
+      const leadLabel = getLeadLabel(t).toLowerCase();
       const matchesSearch = t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            t.related.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      const matchesPriority = selectedPriorities.length === 0 || selectedPriorities.includes(t.priority);
-      
-      const matchesType = selectedTypes.length === 0 || selectedTypes.some(selectedOption => {
-        const typeLower = t.type.toLowerCase();
-        const optionLower = selectedOption.toLowerCase();
-        return typeLower === optionLower || typeLower.includes(optionLower) || optionLower.includes(typeLower);
-      });
-      
+                            leadLabel.includes(searchQuery.toLowerCase()) ||
+                            (t.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesPriority = selectedPriorities.length === 0 || (t.priority ? selectedPriorities.includes(t.priority) : false);
+
       const matchesDeadline = !deadlineFilter || (() => {
-        const taskDate = parseTaskDate(t.date);
+        if (!t.due_date) return false;
+        const taskDate = new Date(t.due_date);
         const limitDate = new Date(deadlineFilter + 'T23:59:59');
         return taskDate <= limitDate;
       })();
-      
-      return matchesSearch && matchesPriority && matchesType && matchesDeadline;
+
+      return matchesSearch && matchesPriority && matchesDeadline;
     });
-  }, [tasks, searchQuery, selectedPriorities, selectedTypes, deadlineFilter]);
+  }, [tasks, searchQuery, selectedPriorities, deadlineFilter, leads]);
 
   const totalCount = tasks.length;
   const completedCount = tasks.filter(t => t.status === 'Concluída').length;
@@ -180,26 +165,6 @@ export function useTarefas() {
   const overdueCount = tasks.filter(t => t.status === 'Atrasado').length;
   const highPriorityCount = tasks.filter(t => t.priority === 'Alta' && t.status !== 'Concluída').length;
   const completionRate = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
-
-  const convertReadableDateToDatetimeLocal = (dateStr: string): string => {
-    const taskDate = parseTaskDate(dateStr);
-    const year = taskDate.getFullYear();
-    const month = String(taskDate.getMonth() + 1).padStart(2, '0');
-    const day = String(taskDate.getDate()).padStart(2, '0');
-    
-    let hours = "09";
-    let minutes = "00";
-    const timeMatch = dateStr?.match(/(\d{2}):(\d{2})/);
-    if (timeMatch) {
-      hours = timeMatch[1];
-      minutes = timeMatch[2];
-    } else {
-      hours = String(taskDate.getHours()).padStart(2, '0');
-      minutes = String(taskDate.getMinutes()).padStart(2, '0');
-    }
-    
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
-  };
 
   const pushTaskToGoogle = async (task: Task) => {
     if (!activeTenantId) return;
@@ -214,16 +179,16 @@ export function useTarefas() {
       if (!listsData.items || listsData.items.length === 0) return;
 
       const listId = listsData.items[0].id;
-      
+
       await fetch(`https://tasks.googleapis.com/tasks/v1/lists/${listId}/tasks`, {
         method: 'POST',
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           title: task.title,
-          due: task.date !== "Hoje" ? new Date(task.date).toISOString() : undefined
+          due: task.due_date ? new Date(task.due_date).toISOString() : undefined
         })
       });
     } catch (err) {
@@ -232,44 +197,46 @@ export function useTarefas() {
   };
 
   const handleSaveTask = (data: any) => {
-    const rawDate = data.data;
-    let formattedDate = "Hoje";
-    
+    const rawDate: string | undefined = data.dataInicio || data.data;
+    let dueDateISO: string | undefined;
     if (rawDate) {
       const parsed = new Date(rawDate);
-      if (!isNaN(parsed.getTime())) {
-        formattedDate = parsed.toLocaleString('pt-BR', { 
-          day: '2-digit', 
-          month: 'short', 
-          hour: '2-digit', 
-          minute: '2-digit' 
-        });
-      }
+      if (!isNaN(parsed.getTime())) dueDateISO = parsed.toISOString();
     }
 
+    // `tipo` (categoria) e produtos selecionados não têm coluna própria na
+    // tabela `tasks` — dobrados dentro de `description`, texto livre, em vez
+    // de inventar schema novo (ver comentário no types.ts `Task`).
+    const produtoNomes = Array.isArray(data.produtos)
+      ? (data.produtos as string[])
+          .map(id => (products as any[]).find(p => p.id === id)?.name)
+          .filter(Boolean)
+      : [];
+    const descriptionParts = [
+      data.tipo ? `Tipo: ${data.tipo}` : null,
+      produtoNomes.length > 0 ? `Produtos: ${produtoNomes.join(', ')}` : null,
+      data.tags ? `Tags: ${data.tags}` : null,
+    ].filter(Boolean);
+    const description = descriptionParts.length > 0 ? descriptionParts.join(' · ') : undefined;
+
+    const commonFields = {
+      title: data.nome,
+      description,
+      priority: data.prioridade || "Média",
+      due_date: dueDateISO,
+      lead_id: data.relacionado || undefined,
+      assigned_to: data.vendedor || undefined,
+      convidados: data.convidados,
+      calendarLink: data.calendarLink,
+    };
+
     if (editingTask) {
-      updateTask(editingTask.id, {
-        title: data.nome,
-        type: data.tipo || "Acompanhamento (Follow-up)",
-        priority: data.prioridade || "Média",
-        date: formattedDate,
-        related: data.relacionado || "Interno",
-        seller: data.vendedor || "",
-        relatedProductIds: data.produtos,
-        tags: data.tags ? data.tags.split(',').map((t: string) => t.trim()) : []
-      });
+      updateTask(editingTask.id, commonFields);
       toast.success("Tarefa editada com sucesso!");
     } else {
       const newTask: any = {
-        title: data.nome,
-        type: data.tipo || "Acompanhamento (Follow-up)",
-        priority: data.prioridade || "Média",
-        date: formattedDate,
-        related: data.relacionado || "Interno",
+        ...commonFields,
         status: "Em Aberto",
-        seller: data.vendedor || "",
-        relatedProductIds: data.produtos,
-        tags: data.tags ? data.tags.split(',').map((t: string) => t.trim()) : []
       };
       addTask(newTask);
       pushTaskToGoogle(newTask);
@@ -317,7 +284,6 @@ export function useTarefas() {
     viewMode, setViewMode,
     searchQuery, setSearchQuery,
     selectedPriorities, setSelectedPriorities,
-    selectedTypes, setSelectedTypes,
     deadlineFilter, setDeadlineFilter,
     tasks, addTask, updateTask, deleteTask,
     needsAuth,
@@ -333,7 +299,11 @@ export function useTarefas() {
     overdueCount,
     highPriorityCount,
     completionRate,
-    convertReadableDateToDatetimeLocal,
+    formatDueDate,
+    dueDateToDatetimeLocal,
+    getLeadLabel,
+    getAssigneeLabel,
+    currentUserColaboradorId,
     handleSaveTask,
     toggleTaskStatus,
     moveTaskStatus,

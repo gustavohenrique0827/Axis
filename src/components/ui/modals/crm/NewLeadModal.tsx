@@ -3,7 +3,7 @@ import { Modal } from "../../modal";
 import { Button } from "../../button";
 import { useData } from "../../../../contexts/DataContext";
 import { useAuth } from "../../../../contexts/AuthContext";
-import { formatPhone, validatePhone } from "../../../../lib/utils";
+import { formatPhone, validatePhone, formatCurrencyBR, parseCurrencyBR } from "../../../../lib/utils";
 import { ClientSelectorBlock } from "../../new-lead/ClientSelectorBlock";
 import { BasicInfoBlock } from "../../new-lead/BasicInfoBlock";
 import { CompanyBlock } from "../../new-lead/CompanyBlock";
@@ -44,6 +44,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
   const [linkedinLink, setLinkedinLink] = useState("");
   const [currentRole, setCurrentRole] = useState("");
   const [teamSize, setTeamSize] = useState("");
+  const [valueEstimate, setValueEstimate] = useState("");
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([]);
 
   const isEmailDuplicate = leads.some(l => l.email.toLowerCase() === emailValue.toLowerCase() && emailValue !== "");
@@ -178,7 +179,11 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
       name: formData.get("name") as string,
       company: companyValue || (formData.get("company") as string),
       cnpj: cnpjValue, email: emailValue, phone: phoneValue,
-      status: "Novo", value: "R$ 0", date: "Hoje",
+      status: "Novo",
+      value: valueEstimate.trim()
+        ? formatCurrencyBR(parseCurrencyBR(valueEstimate))
+        : "R$ 0",
+      date: "Hoje",
       seller: selectedSeller || sellerOptions[0] || "Não Atribuído",
       title: "Novo Negócio", priority: "Média",
       pipelineId: sellerPipelineId,
@@ -192,6 +197,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
 
     setLoading(false);
     setCnpjValue(""); setCompanyValue(""); setEmailValue(""); setPhoneValue("");
+    setValueEstimate("");
     setLinkedinLink(""); setCurrentRole(""); setTeamSize("");
     setClientSearch(""); setSelectedClientId(""); setSelectedClientName("");
     setSelectedSeller(user?.name || sellerOptions[0] || ""); setSelectedProductIds([]);
@@ -244,6 +250,7 @@ export function NewLeadModal({ isOpen, onClose, firstStageId = "1", firstComerci
           isEmailDuplicate={isEmailDuplicate}
           selectedSeller={selectedSeller} setSelectedSeller={setSelectedSeller}
           sellerOptions={sellerOptions} sellerPipelineId={sellerPipelineId} sellerCargoLabel={sellerCargoLabel}
+          valueEstimate={valueEstimate} setValueEstimate={setValueEstimate}
         />
         <CompanyBlock
           cnpjValue={cnpjValue} handleCnpjChange={handleCnpjChange}

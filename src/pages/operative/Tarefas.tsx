@@ -31,8 +31,6 @@ export default function Tarefas() {
     setSearchQuery,
     selectedPriorities,
     setSelectedPriorities,
-    selectedTypes,
-    setSelectedTypes,
     deadlineFilter,
     setDeadlineFilter,
     needsAuth,
@@ -53,7 +51,7 @@ export default function Tarefas() {
     overdueCount,
     highPriorityCount,
     completionRate,
-    convertReadableDateToDatetimeLocal,
+    dueDateToDatetimeLocal,
     handleSaveTask,
     openNewTaskModal,
     openEditTaskModal,
@@ -137,8 +135,6 @@ export default function Tarefas() {
           setDeadlineFilter={setDeadlineFilter}
           selectedPriorities={selectedPriorities}
           setSelectedPriorities={setSelectedPriorities}
-          selectedTypes={selectedTypes}
-          setSelectedTypes={setSelectedTypes}
         />
 
         {/* Views */}
@@ -185,13 +181,10 @@ export default function Tarefas() {
         onSave={handleSaveTask}
         initialValue={editingTask ? {
           nome: editingTask.title,
-          tipo: editingTask.type,
           prioridade: editingTask.priority,
-          data: convertReadableDateToDatetimeLocal(editingTask.date),
-          relacionado: editingTask.related,
-          vendedor: editingTask.seller || "Carlos Eduardo Mendes",
-          produtos: editingTask.relatedProductIds || [],
-          tags: (editingTask.tags || []).join(", ")
+          dataInicio: dueDateToDatetimeLocal(editingTask.due_date),
+          relacionado: editingTask.lead_id || "",
+          vendedor: editingTask.assigned_to || "",
         } : undefined}
       />
 
@@ -211,25 +204,22 @@ export default function Tarefas() {
         isOpen={isPautaModalOpen}
         onClose={() => setIsPautaModalOpen(false)}
         onSave={(data) => {
-          let formattedDate = "Hoje";
+          let dueDateISO: string | undefined;
           if (data.data) {
             const combined = new Date(`${data.data}T${data.hora || "00:00"}`);
-            if (!isNaN(combined.getTime())) {
-              formattedDate = combined.toLocaleString('pt-BR', {
-                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
-              });
-            }
+            if (!isNaN(combined.getTime())) dueDateISO = combined.toISOString();
           }
+          const description = [
+            data.descricao,
+            data.responsavel ? `Responsável: ${data.responsavel}` : null,
+            data.participantes ? `Participantes: ${data.participantes}` : null,
+          ].filter(Boolean).join(' · ') || undefined;
           addTask({
             title: data.titulo,
-            description: data.descricao,
-            type: "Reunião / Pauta",
+            description,
             priority: "Média",
-            date: formattedDate,
-            related: "Interno",
+            due_date: dueDateISO,
             status: "Em Aberto",
-            responsible: data.responsavel,
-            tags: data.participantes ? data.participantes.split(',').map((p) => p.trim()).filter(Boolean) : [],
           });
         }}
       />

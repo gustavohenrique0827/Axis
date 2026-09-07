@@ -60,7 +60,7 @@ export default function RelatoriosExecutivos() {
 
     const pLeads = leads.filter(l => isWithin(l.date || l.createdAt));
     const pFinance = financeEntries.filter(f => isWithin(f.date));
-    const pTasks = tasks.filter(t => isWithin(t.date));
+    const pTasks = tasks.filter(t => isWithin(t.due_date ?? undefined));
 
     return { leads: pLeads, finance: pFinance, tasks: pTasks };
   }, [leads, financeEntries, tasks, periodo]);

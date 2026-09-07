@@ -76,14 +76,14 @@ export function BookingModal({ isOpen, onClose, leads, addTask, addAppointment }
     const doctor = doctors.find(d => d.id === selectedDoctorId);
     const specialty = selectedSpecialty || doctor?.specialty || 'Clínica Geral';
 
+    const dueDate = new Date(`${bookingDate}T${bookingTime}:00`);
     addTask({
       title: `Consulta: ${specialty} - ${doctor?.name || 'Médico'}`,
-      related: patientName,
-      type: 'Consulta',
-      date: `${bookingDate}, ${bookingTime}`,
+      description: `Paciente: ${patientName} · Tipo: Consulta (${specialty})`,
+      lead_id: !selectedIsPaciente ? selectedPatientId : undefined,
+      due_date: isNaN(dueDate.getTime()) ? undefined : dueDate.toISOString(),
       status: 'Em Aberto',
       priority: 'Alta',
-      tags: ['Clínica', specialty]
     });
 
     if (addAppointment) {

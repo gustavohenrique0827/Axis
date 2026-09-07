@@ -84,25 +84,47 @@ export interface Lead {
   tags?: string[];
 }
 
+/**
+ * Espelha 1:1 as colunas reais da tabela `tasks` no Supabase — ver
+ * DataContext.tsx `addTask`/`updateTask` para o motivo de manter esse
+ * espelhamento exato (evita inserts com colunas inexistentes, que falhavam
+ * silenciosamente antes desse type ser corrigido).
+ *
+ * Campos que existiam aqui antes mas NÃO têm coluna correspondente no banco
+ * foram removidos ou remapeados:
+ * - `related` (string livre "empresa X") → `lead_id` (uuid, FK real pra `leads`).
+ *   Telas resolvem o nome pra exibição via `leads` do useData(), não mais por
+ *   comparação de string.
+ * - `seller`/`responsible` (nome em texto) → `assigned_to` (uuid do colaborador).
+ *   Telas resolvem o nome exibido via `colaboradores` do useData().
+ * - `type`, `tags`, `relatedProductIds` não têm coluna própria — quando havia
+ *   informação relevante nesses campos, ela é dobrada dentro de `description`
+ *   (texto livre) no momento da criação da tarefa, em vez de inventar schema novo.
+ */
 export interface Task {
   id: string;
+  tenant_id?: string;
+  /** FK pra `leads.id` — tarefa vinculada a um lead específico (ou null/undefined = interna). */
+  lead_id?: string | null;
+  /** uuid do colaborador responsável (ver `Colaborador.id`), não um nome em texto. */
+  assigned_to?: string | null;
+  creator_id?: string | null;
   title: string;
-  related: string;
-  type?: string;
-  date?: string;
-  time?: string;
-  duration?: number;
-
-  // compat: algumas telas usam `desc`, outras usam `description`
   description?: string;
-  desc?: string;
   status: 'Atrasado' | 'Cancelado' | 'Em Aberto' | 'Concluída' | 'A Fazer' | 'Aguardando';
   priority?: 'Alta' | 'Média' | 'Baixa';
-  seller?: string;
-  sellerId?: string;
-  tags?: string[];
-  relatedProductIds?: string[];
-  responsible?: string;
+  /** ISO datetime — prazo/agendamento da tarefa. */
+  due_date?: string | null;
+  completed_at?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  deleted_at?: string | null;
+  filial_id?: string | null;
+
+  // Campos auxiliares de integração com Google Calendar — não são colunas da
+  // tabela `tasks` (removidos do payload antes do insert/update em
+  // DataContext.tsx), existem só pra feedback imediato na sessão atual
+  // (ex.: exibir o link do evento criado logo após salvar).
   convidados?: string[];
   calendarLink?: string;
   googleEventId?: string;

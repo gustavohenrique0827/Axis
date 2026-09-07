@@ -3,14 +3,20 @@ import { PageContainer } from "../../components/PageContainer";
 import { Button } from "../../components/ui/button";
 import {
   Calendar, CheckCircle2, ShieldCheck, Zap,
-  Save, RefreshCw, MessageSquare, Video, Clock
+  Save, RefreshCw, MessageSquare, Video, Clock, XCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "../../contexts/AuthContext";
 import { useData } from "../../contexts/DataContext";
+import {
+  connectGoogleCalendar,
+  consumeGoogleCalendarRedirectResult,
+  disconnectGoogleCalendar,
+  getGoogleCalendarStatus,
+  type GoogleCalendarStatus,
+} from "../../lib/google-auth";
 
 type AgendaConfig = {
-  googleConnected: boolean;
   autoInvite: boolean;
   lembreteWhatsapp: boolean;
   autoMeetLink: boolean;
@@ -19,7 +25,6 @@ type AgendaConfig = {
 };
 
 const DEFAULT_CONFIG: AgendaConfig = {
-  googleConnected: true,
   autoInvite: true,
   lembreteWhatsapp: true,
   autoMeetLink: true,
@@ -30,7 +35,7 @@ const DEFAULT_CONFIG: AgendaConfig = {
 const SETTING_KEY = "agenda_configuracoes";
 
 export default function AgendaConfiguracoes() {
-  const { user } = useAuth();
+  const { activeTenantId } = useAuth();
   const { appSettings, appSettingsLoaded, saveAppSetting } = useData();
 
   const [config, setConfig] = useState<AgendaConfig>(DEFAULT_CONFIG);
@@ -41,7 +46,34 @@ export default function AgendaConfiguracoes() {
     }
   }, [appSettings, appSettingsLoaded]);
 
-  const [isSyncing, setIsSyncing] = useState(false);
+  // Estado real da conexão Google vem sempre do backend (server/googleCalendar.ts)
+  // via getGoogleCalendarStatus — nunca é um valor local/otimista, pra não mentir
+  // "Conectado" quando o backend não tem token nenhum guardado.
+  const [googleStatus, setGoogleStatus] = useState<GoogleCalendarStatus | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+
+  const refreshGoogleStatus = () => {
+    if (!activeTenantId) return;
+    getGoogleCalendarStatus(activeTenantId).then(setGoogleStatus);
+  };
+
+  useEffect(() => {
+    refreshGoogleStatus();
+  }, [activeTenantId]);
+
+  // Depois de voltar do consentimento do Google (redirect real pro backend e de
+  // volta), avisa o usuário e recarrega o status.
+  useEffect(() => {
+    const result = consumeGoogleCalendarRedirectResult();
+    if (!result) return;
+    if (result.status === "connected") {
+      toast.success("Conta Google conectada com sucesso!");
+      refreshGoogleStatus();
+    } else {
+      toast.error("Não foi possível conectar ao Google" + (result.reason ? ` (${result.reason})` : "."));
+    }
+  }, [activeTenantId]);
 
   const handleToggle = (key: keyof AgendaConfig) => {
     setConfig(prev => ({
@@ -59,14 +91,32 @@ export default function AgendaConfiguracoes() {
     }
   };
 
-  const handleReconnectGoogle = () => {
-    setIsSyncing(true);
-    setTimeout(() => {
-      setIsSyncing(false);
-      setConfig(prev => ({ ...prev, googleConnected: true }));
-      toast.success("Sincronização com Google Calendar reestabelecida com sucesso!");
-    }, 1200);
+  const handleConnectGoogle = async () => {
+    if (!activeTenantId) return;
+    setIsConnecting(true);
+    try {
+      await connectGoogleCalendar(activeTenantId, "/agenda/configuracoes");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao conectar ao Google.");
+      setIsConnecting(false);
+    }
   };
+
+  const handleDisconnectGoogle = async () => {
+    if (!activeTenantId) return;
+    setIsDisconnecting(true);
+    try {
+      await disconnectGoogleCalendar(activeTenantId);
+      toast.success("Conta Google desconectada.");
+      refreshGoogleStatus();
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao desconectar a conta Google.");
+    } finally {
+      setIsDisconnecting(false);
+    }
+  };
+
+  const isConnected = googleStatus?.connected ?? false;
 
   return (
     <PageContainer
@@ -88,28 +138,43 @@ export default function AgendaConfiguracoes() {
             <Calendar className="w-4 h-4 text-[var(--color-primary-blue)]" /> Conexão Google Calendar & Meet
           </h4>
 
-          <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className={`p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+            isConnected ? "bg-emerald-500/10 border-emerald-500/25" : "bg-amber-500/10 border-amber-500/25"
+          }`}>
             <div className="flex items-center gap-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+              {isConnected
+                ? <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />
+                : <XCircle className="w-5 h-5 text-amber-500 shrink-0" />}
               <div>
                 <p className="text-xs font-bold text-[var(--color-text-primary)]">
-                  {config.googleConnected ? "Google Agenda Conectado e Ativo" : "Google Agenda Desconectado"}
+                  {isConnected ? "Google Agenda Conectado e Ativo" : "Google Agenda Desconectado"}
                 </p>
                 <p className="text-[10px] text-[var(--color-text-muted)]">
-                  {config.googleConnected
-                    ? `Sincronizado com ${user?.email || "conta corporativa"}. Reuniões criadas geram links do Google Meet automaticamente.`
+                  {isConnected
+                    ? `Sincronizado com ${googleStatus?.email || "sua conta Google"}. Reuniões criadas geram links do Google Meet automaticamente.`
                     : "Conecte sua conta para habilitar sincronização em tempo real."}
                 </p>
               </div>
             </div>
-            <button
-              onClick={handleReconnectGoogle}
-              disabled={isSyncing}
-              className="px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border-default)] text-xs font-bold text-[var(--color-text-primary)] hover:bg-[var(--color-surface-elevated)] transition-all shrink-0 flex items-center gap-1.5"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin text-blue-500' : ''}`} />
-              {isSyncing ? "Conectando..." : "Reconectar"}
-            </button>
+            {isConnected ? (
+              <button
+                onClick={handleDisconnectGoogle}
+                disabled={isDisconnecting}
+                className="px-3 py-1.5 rounded-lg bg-[var(--color-surface)] border border-[var(--color-border-default)] text-xs font-bold text-[var(--color-text-primary)] hover:bg-[var(--color-surface-elevated)] transition-all shrink-0 flex items-center gap-1.5"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isDisconnecting ? 'animate-spin text-blue-500' : ''}`} />
+                {isDisconnecting ? "Desconectando..." : "Desconectar"}
+              </button>
+            ) : (
+              <button
+                onClick={handleConnectGoogle}
+                disabled={isConnecting}
+                className="px-3 py-1.5 rounded-lg bg-[var(--color-primary-blue)] text-white text-xs font-bold hover:opacity-95 transition-all shrink-0 flex items-center gap-1.5"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isConnecting ? 'animate-spin' : ''}`} />
+                {isConnecting ? "Conectando..." : "Conectar Google Agenda"}
+              </button>
+            )}
           </div>
 
           <div className="space-y-3 pt-2">

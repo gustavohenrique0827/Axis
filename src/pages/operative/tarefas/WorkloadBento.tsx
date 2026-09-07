@@ -20,9 +20,29 @@ interface WorkloadBentoProps {
   onExpandTask: (task: Task) => void;
 }
 
+/** Formata `due_date` (ISO) pro estilo "Hoje, 09:00" / "Amanhã" / "12 mar". */
+function formatDueDate(iso?: string | null): string {
+  if (!iso) return "Sem prazo";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "Sem prazo";
+  const now = new Date();
+  const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const diffDays = Math.round((startOfDay(d) - startOfDay(now)) / 86400000);
+  const time = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+  if (diffDays === 0) return `Hoje, ${time}`;
+  if (diffDays === 1) return `Amanhã, ${time}`;
+  if (diffDays === -1) return `Ontem, ${time}`;
+  return `${d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })}, ${time}`;
+}
+
 export function WorkloadBento({ tasks, highPriorityCount, onExpandTask }: WorkloadBentoProps) {
   const { leads } = useData();
   const activeUrgentTask = tasks.find(t => t.priority === 'Alta' && t.status !== 'Concluída');
+  const activeUrgentTaskLeadLabel = activeUrgentTask?.lead_id
+    ? ((leads as any[]).find(l => l.id === activeUrgentTask.lead_id)?.company
+       || (leads as any[]).find(l => l.id === activeUrgentTask.lead_id)?.name
+       || "Interno")
+    : "Interno";
 
   const workloadData = useMemo(() => {
     const active = tasks.filter(t => t.status !== 'Concluída');
@@ -84,7 +104,7 @@ export function WorkloadBento({ tasks, highPriorityCount, onExpandTask }: Worklo
                       >
                          <div className="flex justify-between items-start mb-4">
                            <Badge className="bg-rose-500/10 text-rose-400 border-rose-500/20 font-black uppercase text-[8px] h-6">Urgente / High Ticket</Badge>
-                           <span className="text-[10px] font-mono text-slate-500">{activeUrgentTask.date}</span>
+                           <span className="text-[10px] font-mono text-slate-500">{formatDueDate(activeUrgentTask.due_date)}</span>
                          </div>
                          <h4 className="text-xl font-black text-white italic tracking-tighter leading-tight mb-4 group-hover/task:text-blue-400 transition-colors">
                             {activeUrgentTask.title}
@@ -92,7 +112,7 @@ export function WorkloadBento({ tasks, highPriorityCount, onExpandTask }: Worklo
                          <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
                                <div className="w-6 h-6 rounded-full bg-blue-500/20 border border-white/10 flex items-center justify-center text-[8px] font-black">SP</div>
-                               <span className="text-[10px] font-black text-slate-400 uppercase">{activeUrgentTask.related}</span>
+                               <span className="text-[10px] font-black text-slate-400 uppercase">{activeUrgentTaskLeadLabel}</span>
                             </div>
                             <Button
                               onClick={() => onExpandTask(activeUrgentTask)}

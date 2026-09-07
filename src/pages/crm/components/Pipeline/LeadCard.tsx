@@ -76,7 +76,7 @@ export function LeadCard({
 
   const isDragging    = draggedLeadId === item.id;
   const hasDelayedTask = tasks.some(
-    t => (t.related === item.name || t.related === item.company) && t.status === 'Atrasado'
+    t => t.lead_id === item.id && t.status === 'Atrasado'
   );
   const temp      = (item.temperature || 'frio').toLowerCase() as keyof typeof TEMP;
   const score     = item.scoreIA ?? 45;

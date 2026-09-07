@@ -62,18 +62,16 @@ export function RevenueIntelligenceModal({ lead, stageName, pipelineName, onClos
 
   function handleCreateTask() {
     if (!result?.task) return;
+    const combinedDate = `${result.task.date} ${result.task.time}`.trim();
+    const parsed = new Date(combinedDate);
     addTask({
       title: result.task.title,
-      type: 'Acompanhamento (Follow-up)',
-      priority: 'Alta',
-      date: `${result.task.date} ${result.task.time}`.trim(),
-      related: lead.name,
-      status: 'Em Aberto',
-      seller: lead.seller ?? '',
-      relatedProductIds: [],
-      tags: ['revenue-ia'],
       description: result.task.description,
-    } as any);
+      priority: 'Alta',
+      due_date: isNaN(parsed.getTime()) ? undefined : parsed.toISOString(),
+      lead_id: lead.id,
+      status: 'Em Aberto',
+    });
     toast.success('Tarefa criada com sucesso!');
   }
 
