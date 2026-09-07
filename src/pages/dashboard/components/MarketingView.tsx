@@ -103,8 +103,8 @@ export function MarketingView() {
                  <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest bg-white/5 px-3 py-1.5 rounded-xl border border-white/5 italic">Atribuição Dinâmica Aurora</span>
               </div>
            </div>
-           <div className="h-[320px]">
-              <ResponsiveContainer width="100%" height="100%">
+           <div className="h-[320px] w-full min-w-0">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={280}>
                  <BarChart data={attributionData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
                     <XAxis dataKey="name" stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />
@@ -141,8 +141,8 @@ export function MarketingView() {
               <h4 className="text-sm font-black text-white uppercase tracking-widest mb-8 flex items-center gap-2">
                 <Share2 className="w-4 h-4 text-purple-400" /> Voz de Mercado
               </h4>
-              <div className="h-[200px]">
-                 <ResponsiveContainer width="100%" height="100%">
+              <div className="h-[200px] w-full min-w-0">
+                 <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={180}>
                     <PieChart>
                        <Pie
                          data={sourceData}

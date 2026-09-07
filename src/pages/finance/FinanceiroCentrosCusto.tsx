@@ -24,7 +24,7 @@ type CentroCusto = {
 
 export default function FinanceiroCentrosCusto() {
   const { user, activeTenantId } = useAuth();
-  const tenantId = user?.tenant_id || "default";
+  const tenantId = activeTenantId || user?.tenantId || (user as any)?.tenant_id || "default";
 
   const [centros, setCentros] = useState<CentroCusto[]>([]);
 

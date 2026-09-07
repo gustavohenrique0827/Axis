@@ -13,9 +13,7 @@ import { toast } from "sonner";
 // ─── Constantes ────────────────────────────────────────────────────────────
 const TENANT_ID = "27ef95ee-84dd-499e-9f25-cd9baecb5fe4";
 const SITE_KEY  = "eempreenda";
-const PREVIEW   = import.meta.env.DEV
-  ? "http://localhost:5175"
-  : "https://escolaempreendamais.pluppex.com.br";
+const PREVIEW   = "https://escolaempreendamais.pluppex.com.br";
 
 type SectionKey = "hero" | "pillars" | "benefits" | "testimonials" | "faq";
 

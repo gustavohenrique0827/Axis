@@ -78,11 +78,7 @@ export function NovoFormularioModal({ isOpen, onClose, onSave }: NovoFormularioM
             onClick={() => {
               setName("Inscrição — E-EMPREENDA+");
               setDescription("Formulário oficial de qualificação com 5 passos interativos, rodízio de SDRs e captação direta de leads no CRM.");
-              setPreviewUrl(
-                import.meta.env.DEV
-                  ? "http://localhost:5175/inscricao"
-                  : "https://escolaempreendamais.pluppex.com.br/inscricao"
-              );
+              setPreviewUrl("https://escolaempreendamais.pluppex.com.br/inscricao");
               setSource("landing_empreenda");
             }}
             className="text-[10px] font-black text-orange-400 hover:text-orange-300 hover:underline uppercase tracking-wider"

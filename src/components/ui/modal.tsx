@@ -6,6 +6,7 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string | React.ReactNode;
+  description?: string | React.ReactNode;
   children: React.ReactNode;
   footer?: React.ReactNode;
   maxWidth?: string;
@@ -17,6 +18,7 @@ export function Modal({
   isOpen,
   onClose,
   title,
+  description,
   children,
   footer,
   maxWidth = "max-w-md",
@@ -86,14 +88,28 @@ export function Modal({
         {title !== undefined && title !== null && (
           <div className="flex items-center justify-between gap-4 px-6 py-5 border-b border-[var(--color-border-default)] shrink-0">
             {typeof title === "string" ? (
-              <h3
-                id={titleId}
-                className="text-base font-black text-[var(--color-text-primary)] tracking-tight"
-              >
-                {title}
-              </h3>
+              <div>
+                <h3
+                  id={titleId}
+                  className="text-base font-black text-[var(--color-text-primary)] tracking-tight"
+                >
+                  {title}
+                </h3>
+                {description && (
+                  <p className="text-xs text-[var(--color-text-muted)] mt-0.5 font-medium">
+                    {description}
+                  </p>
+                )}
+              </div>
             ) : (
-              <div className="flex-1 min-w-0">{title}</div>
+              <div className="flex-1 min-w-0">
+                {title}
+                {description && (
+                  <p className="text-xs text-[var(--color-text-muted)] mt-0.5 font-medium">
+                    {description}
+                  </p>
+                )}
+              </div>
             )}
             <button
               type="button"

@@ -26,7 +26,7 @@ function buildStages(funis: any[], isSDR: boolean) {
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useLeadDetails(lead: any, onClose: () => void) {
-  const { leadActivities, addLeadActivity, updateLead, deleteLead, customLeadFields, products, turmas, addTurma, updateTurma, funis } = useData();
+  const { leadActivities, addLeadActivity, updateLead, deleteLead, customLeadFields, products, addProduct, turmas, addTurma, updateTurma, funis } = useData();
 
   // ── Exclusão ─────────────────────────────────────────────────────────────────
   const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
@@ -97,14 +97,24 @@ export function useLeadDetails(lead: any, onClose: () => void) {
   );
 
   const [linkedProductIds, setLinkedProductIds] = useState<string[]>([]);
+  const [productQuantities, setProductQuantities] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (lead?.customFields?.productQuantities) {
+      setProductQuantities(lead.customFields.productQuantities);
+    } else {
+      setProductQuantities({});
+    }
+  }, [lead?.id]);
 
   const estimatedSum = useMemo(
     () =>
       linkedProductIds.reduce((sum, id) => {
         const p = availableProducts.find(prod => prod.id === id);
-        return sum + (p ? p.price : 0);
+        const qty = productQuantities[id] || 1;
+        return sum + (p ? p.price * qty : 0);
       }, 0),
-    [linkedProductIds, availableProducts]
+    [linkedProductIds, availableProducts, productQuantities]
   );
 
   // Sincroniza o campo value com o total dos produtos vinculados (view e edição)
@@ -338,6 +348,123 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     );
   };
 
+  const updateProductQuantity = (prodId: string, qty: number) => {
+    const cleanQty = Math.max(1, Math.round(qty));
+    setProductQuantities(prev => {
+      const next = { ...prev, [prodId]: cleanQty };
+      updateLead(lead.id, {
+        customFields: {
+          ...(customFieldsState || {}),
+          productQuantities: next,
+        },
+      });
+      return next;
+    });
+  };
+
+  const handleCreateAndLinkProduct = async (data: {
+    name: string;
+    price: number;
+    cost?: number;
+    commission?: number;
+    category?: string;
+    type?: string;
+    sku?: string;
+    description?: string;
+  }) => {
+    const sku = data.sku?.trim() || `PROD-${Math.floor(1000 + Math.random() * 9000)}`;
+    const priceNum = Number(data.price) || 0;
+    const costNum = Number(data.cost) || 0;
+    const commNum = Number(data.commission) || 0;
+    const marginRatio = priceNum > 0 ? parseFloat((((priceNum - costNum) / priceNum) * 100).toFixed(1)) : 0;
+
+    const newProd = {
+      id: crypto.randomUUID(),
+      sku,
+      name: data.name.trim(),
+      category: data.category || "Serviços",
+      type: data.type || "Digital",
+      price: priceNum,
+      cost: costNum,
+      margin: marginRatio,
+      commission: commNum,
+      active: true,
+      stockMin: 1,
+      stockMax: 100,
+      currentStock: 10,
+      description: data.description || "",
+      provider: seller || "Interno",
+      tags: ["crm", "lead"],
+    };
+
+    await addProduct(newProd);
+
+    // Link immediately to current lead
+    const nextIds = linkedProductIds.includes(newProd.id) ? linkedProductIds : [...linkedProductIds, newProd.id];
+    setLinkedProductIds(nextIds);
+    setProductQuantities(prev => ({ ...prev, [newProd.id]: 1 }));
+    updateLead(lead.id, {
+      productIds: nextIds,
+      customFields: {
+        ...(customFieldsState || {}),
+        productIds: nextIds,
+        productQuantities: {
+          ...(productQuantities || {}),
+          [newProd.id]: 1,
+        },
+      },
+    });
+
+    setAlterationLogs(prev => [
+      {
+        id: Date.now().toString(),
+        author: seller || "Sistema",
+        desc: `Cadastrou e vinculou produto '${newProd.name}' (R$ ${priceNum.toLocaleString("pt-BR")})`,
+        time: "Agora",
+      },
+      ...prev,
+    ]);
+
+    toast.success(`Produto "${newProd.name}" cadastrado no banco e vinculado!`);
+    return newProd.id;
+  };
+
+  const handleUpdateScore = (newScore: number, customTemp?: "Quente" | "Morno" | "Frio") => {
+    const clampedScore = Math.max(0, Math.min(100, Math.round(newScore)));
+    const derivedTemp: "Quente" | "Morno" | "Frio" = customTemp || (
+      clampedScore >= 71 ? "Quente" : clampedScore >= 41 ? "Morno" : "Frio"
+    );
+    const newProb = clampedScore >= 71 ? 80 : clampedScore >= 41 ? 50 : 25;
+
+    setScore(clampedScore);
+    setTemperature(derivedTemp);
+    setProbability(newProb);
+
+    updateLead(lead.id, {
+      scoreIA: clampedScore,
+      temperature: derivedTemp,
+      probability: newProb,
+    });
+
+    if (supabase) {
+      supabase.from("leads").update({
+        scoreIA: clampedScore,
+        score_ia: clampedScore,
+        temperature: derivedTemp,
+      }).eq("id", lead.id).then(() => {});
+    }
+
+    setAlterationLogs(prev => [
+      {
+        id: Date.now().toString(),
+        author: seller || "Sistema",
+        desc: `Score do lead atualizado para ${clampedScore}/100 (${derivedTemp})`,
+        time: "Agora",
+      },
+      ...prev,
+    ]);
+  };
+
   // ─── Visual helpers ───────────────────────────────────────────────────────────
 
   const tempColors = {
@@ -364,6 +491,9 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     // Products
     availableProducts,
     linkedProductIds, setLinkedProductIds,
+    productQuantities, setProductQuantities,
+    updateProductQuantity,
+    handleCreateAndLinkProduct,
     estimatedSum,
     toggleProductLink,
     // Lead editable fields
@@ -378,7 +508,11 @@ export function useLeadDetails(lead: any, onClose: () => void) {
     seller, setSeller,
     priority, setPriority,
     // Intelligence
-    score, temperature, probability, slaStatus, timeIdle,
+    score, setScore,
+    temperature, setTemperature,
+    probability, setProbability,
+    slaStatus, timeIdle,
+    handleUpdateScore,
     // Tags
     customTags, newTagInput, setNewTagInput,
     // Logs

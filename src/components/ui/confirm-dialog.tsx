@@ -4,8 +4,11 @@ import { ConfirmModal } from "./modals/shared/ConfirmModal";
 interface ConfirmOptions {
   title?: string;
   description?: string;
+  message?: string;
   confirmText?: string;
+  confirmLabel?: string;
   cancelText?: string;
+  variant?: string;
 }
 
 type ConfirmState = ConfirmOptions & { resolve: (value: boolean) => void };
@@ -16,12 +19,17 @@ let listener: ((state: ConfirmState) => void) | null = null;
 // o mesmo ConfirmModal já usado em Contracts/AgendaCRM/Tarefas — sem precisar de um estado
 // "xToDelete" + JSX próprio em cada tela. Uso: `if (await confirmDialog({ description: "..." })) { ...delete... }`
 export function confirmDialog(options: ConfirmOptions = {}): Promise<boolean> {
+  const normalized: ConfirmOptions = {
+    ...options,
+    description: options.description || options.message,
+    confirmText: options.confirmText || options.confirmLabel,
+  };
   return new Promise((resolve) => {
     if (!listener) {
-      resolve(window.confirm(options.description || options.title || "Confirmar ação?"));
+      resolve(window.confirm(normalized.description || normalized.title || "Confirmar ação?"));
       return;
     }
-    listener({ ...options, resolve });
+    listener({ ...normalized, resolve });
   });
 }
 

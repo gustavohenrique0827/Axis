@@ -204,7 +204,7 @@ export function usePipeline() {
       );
       if (productTotal > 0) return sum + productTotal;
     }
-    return sum + parseCurrencyBR(item.value ?? item.valor);
+    return sum + parseCurrencyBR(item.value ?? (item as any).valor);
   }, 0);
 
   const formattedTotalValue = new Intl.NumberFormat("pt-BR", {

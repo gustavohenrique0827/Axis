@@ -12,9 +12,7 @@ import { LandingPageCard } from "./components/LandingPages/LandingPageCard";
 import { LandingPageCreateModal } from "./components/LandingPages/LandingPageCreateModal";
 import { LandingPageTrackingModal } from "./components/LandingPages/LandingPageTrackingModal";
 
-const PREVIEW_URL = import.meta.env.DEV
-  ? "http://localhost:5175"
-  : "https://escolaempreendamais.pluppex.com.br";
+const PREVIEW_URL = "https://escolaempreendamais.pluppex.com.br";
 
 export default function MarketingLandingPages() {
   const navigate = useNavigate();

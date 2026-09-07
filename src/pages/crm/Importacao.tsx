@@ -13,7 +13,7 @@ import { useData } from "../../contexts/DataContext";
 
 export default function CRMImportacao() {
   const { user, activeTenantId } = useAuth();
-  const { refetchLeads } = useData();
+  const { refetchLeads } = useData() as any;
   const [file, setFile] = useState<File | null>(null);
   const [previewRows, setPreviewRows] = useState<any[]>([]);
   const [isImporting, setIsImporting] = useState(false);

@@ -189,17 +189,16 @@ export default function ConsignacoesVeiculos() {
       toast.info("Nenhuma consignação para exportar.");
       return;
     }
-    const headers = ["Veículo", "Placa", "Consignante", "Telefone", "Valor Pedido", "Comissão (%)", "Valor Repasse", "Status", "Data Entrada"];
+    const headers = ["Veículo", "Consignante", "Telefone", "Valor Pedido", "Comissão (%)", "Valor Repasse", "Status", "Data"];
     const rows = filtered.map(c => [
       `"${c.veiculo.replace(/"/g, '""')}"`,
-      `"${c.placa}"`,
       `"${c.consignante.replace(/"/g, '""')}"`,
       `"${c.telefone}"`,
       c.valorPedido,
-      c.comissaoPct,
-      c.valorRepasse,
+      c.comissaoPercentual,
+      c.repasseCombinado,
       `"${c.status}"`,
-      `"${c.dataEntrada}"`
+      `"${c.data}"`
     ]);
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
     const encodedUri = encodeURI(csvContent);

@@ -42,7 +42,7 @@ interface CaixaStatus {
 
 export default function PainelVarejo() {
   const { user, activeTenantId } = useAuth();
-  const tenantId = activeTenantId || user?.tenant_id || "default";
+  const tenantId = activeTenantId || user?.tenantId || (user as any)?.tenant_id || "default";
   const { products } = useData();
 
   // 1. Vendas do PDV (banco real: vendas + venda_items)

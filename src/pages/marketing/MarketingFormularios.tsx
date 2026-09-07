@@ -9,9 +9,7 @@ import { confirmDialog } from "../../components/ui/confirm-dialog";
 import { FormDetail, type FormDefinition } from "./components/Formularios/FormDetail";
 import { NovoFormularioModal } from "./components/Formularios/NovoFormularioModal";
 
-const EMPREENDA_PREVIEW_URL = import.meta.env.DEV
-  ? "http://localhost:5175/inscricao"
-  : "https://escolaempreendamais.pluppex.com.br/inscricao";
+const EMPREENDA_PREVIEW_URL = "https://escolaempreendamais.pluppex.com.br/inscricao";
 
 export const DEFAULT_EMPREENDA_FORM: FormDefinition = {
   id: "empreenda",

@@ -520,7 +520,14 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
               supabase.from('marketing_automations').select('*').eq('tenant_id', tenantId),
             ]);
 
-            if (!leadsRes.error && leadsRes.data && leadsRes.data.length > 0) setLeads(leadsRes.data as Lead[]);
+            if (!leadsRes.error && leadsRes.data && leadsRes.data.length > 0) {
+              setLeads((leadsRes.data as any[]).map(r => ({
+                ...r,
+                productIds: r.productIds || r.customFields?.productIds || [],
+                scoreIA: r.scoreIA ?? r.score_ia ?? 50,
+                tags: Array.isArray(r.tags) ? r.tags : (r.customFields?.tags || []),
+              })) as Lead[]);
+            }
             if (!tasksRes.error && tasksRes.data && tasksRes.data.length > 0) setTasks(tasksRes.data as Task[]);
             if (!actsRes.error && actsRes.data && actsRes.data.length > 0) setLeadActivities(actsRes.data as LeadActivity[]);
             if (!financeRes.error && financeRes.data && financeRes.data.length > 0) setFinanceEntries(financeRes.data as FinanceEntry[]);
@@ -927,9 +934,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     if (supabase) {
       try {
         // Strip unknown / non-DB fields and fix value type
-        const { customTags, ...safeUpdates } = updates as any;
+        const { customTags, productIds, ...safeUpdates } = updates as any;
         if (safeUpdates.value !== undefined) {
           safeUpdates.value = parseCurrencyBR(safeUpdates.value);
+        }
+        if (productIds !== undefined) {
+          safeUpdates.customFields = {
+            ...(safeUpdates.customFields || {}),
+            productIds,
+          };
+        }
+        if (safeUpdates.scoreIA !== undefined && safeUpdates.score_ia === undefined) {
+          safeUpdates.score_ia = safeUpdates.scoreIA;
         }
         const { error } = await supabase.from('leads').update(safeUpdates).eq('id', id);
         if (error) console.error("Supabase update lead failed:", error.message);
@@ -1155,25 +1171,50 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
         // carimbado em tabelas que de fato têm essa coluna (filialAware).
         const stamped = {
           ...item,
+          id: item.id || crypto.randomUUID(),
           ...(tenantId ? { tenant_id: tenantId } : {}),
           ...(filialAware && activeFilialId && item.filial_id === undefined ? { filial_id: activeFilialId } : {}),
         };
         stateSetter(prev => [stamped, ...prev]);
         if (supabase) {
-          const { error } = await supabase.from(tableName).insert(stamped);
+          let payloadToDb = stamped;
+          if (tableName === 'products') {
+            const allowed = [
+              'id', 'sku', 'name', 'category', 'type', 'price', 'cost', 'margin', 'commission',
+              'active', 'stockMin', 'stockMax', 'currentStock', 'dimensions', 'weight', 'material',
+              'description', 'provider', 'isBestSeller', 'tags', 'tenant_id', 'currency'
+            ];
+            payloadToDb = Object.fromEntries(Object.entries(stamped).filter(([k]) => allowed.includes(k)));
+            if (payloadToDb.price !== undefined) payloadToDb.price = Number(payloadToDb.price) || 0;
+            if (payloadToDb.cost !== undefined) payloadToDb.cost = Number(payloadToDb.cost) || 0;
+            if (payloadToDb.commission !== undefined) payloadToDb.commission = Number(payloadToDb.commission) || 0;
+          }
+          const { error } = await supabase.from(tableName).insert(payloadToDb);
           if (error) {
             console.error(`[Supabase] insert ${tableName} error:`, error.message, error.details);
             toast.error(`Erro ao salvar: ${error.message}`);
           }
         }
+        return stamped;
       },
       update: async (id: string, updates: any) => {
         // Atualiza estado local imediatamente (optimistic update)
         stateSetter(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
         if (supabase) {
           // Remove campos que podem causar conflito com triggers do banco
-          const safeUpdates = { ...updates };
+          let safeUpdates = { ...updates };
           delete safeUpdates.updated_at;
+          if (tableName === 'products') {
+            const allowed = [
+              'id', 'sku', 'name', 'category', 'type', 'price', 'cost', 'margin', 'commission',
+              'active', 'stockMin', 'stockMax', 'currentStock', 'dimensions', 'weight', 'material',
+              'description', 'provider', 'isBestSeller', 'tags', 'tenant_id', 'currency'
+            ];
+            safeUpdates = Object.fromEntries(Object.entries(safeUpdates).filter(([k]) => allowed.includes(k)));
+            if (safeUpdates.price !== undefined) safeUpdates.price = Number(safeUpdates.price) || 0;
+            if (safeUpdates.cost !== undefined) safeUpdates.cost = Number(safeUpdates.cost) || 0;
+            if (safeUpdates.commission !== undefined) safeUpdates.commission = Number(safeUpdates.commission) || 0;
+          }
           const { error } = await supabase.from(tableName).update(safeUpdates).eq('id', id);
           if (error) {
             console.error(`[Supabase] update ${tableName} error:`, error.message);

@@ -42,8 +42,8 @@ export function PerformanceIAWhatIfSimulator(props: {
           </div>
         ) : (
           <>
-            <div className="h-[340px] -mx-4">
-              <ResponsiveContainer width="100%" height="100%">
+            <div className="h-[340px] w-full min-w-0 -mx-4">
+              <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={300}>
                 <ComposedChart data={simulationData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#ffffff03" vertical={false} />
                   <XAxis dataKey="name" stroke="#64748b30" fontSize={10} tickLine={false} axisLine={false} />

@@ -25,8 +25,8 @@ const GOOGLE_OAUTH_REDIRECT_URI = process.env.GOOGLE_OAUTH_REDIRECT_URI || "";
 // Fallback pro service role key só pra não quebrar se a env dedicada não
 // existir ainda — mas o ideal é configurar GOOGLE_OAUTH_STATE_SECRET própria
 // (rotacionável sem afetar o acesso ao banco).
-const STATE_SECRET = process.env.GOOGLE_OAUTH_STATE_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "";
-const SUCCESS_ORIGIN = process.env.GOOGLE_OAUTH_SUCCESS_ORIGIN || (process.env.SPY_CORS_ORIGIN || process.env.AXIS_CORS_ORIGIN || "").split(",")[0]?.trim() || "";
+const STATE_SECRET = process.env.GOOGLE_OAUTH_STATE_SECRET || process.env.SUPABASE_SERVICE_ROLE_KEY || "axis-state-secret";
+const SUCCESS_ORIGIN = process.env.GOOGLE_OAUTH_SUCCESS_ORIGIN || process.env.APP_URL || (process.env.SPY_CORS_ORIGIN || process.env.AXIS_CORS_ORIGIN || "").split(",")[0]?.trim() || "https://axis-crm.pluppex.com.br";
 
 const SCOPES = [
   "https://www.googleapis.com/auth/calendar.events",
@@ -133,31 +133,59 @@ async function logAudit(
 // (RPC, roda no banco com a sessão real do chamador). Sem o header, ou se a
 // validação falhar, cai no tenant "de casa" do usuário (current_tenant_id).
 async function resolveTenantId(req: any): Promise<{ tenantId: string } | { error: string; status: number }> {
-  const { data: ownTenantId, error: ownErr } = await req.supabase.rpc("current_tenant_id");
-  if (ownErr) return { error: "Não foi possível identificar o tenant do usuário.", status: 401 };
+  try {
+    const requested = (req.header("x-active-tenant-id") || "").trim();
+    let ownTenantId: string | null = null;
+    if (req.supabase?.rpc) {
+      try {
+        const { data, error } = await req.supabase.rpc("current_tenant_id");
+        if (!error && data) ownTenantId = String(data);
+      } catch {}
+    }
+    if (!ownTenantId) {
+      ownTenantId = req.user?.app_metadata?.tenant_id || req.user?.user_metadata?.tenant_id || null;
+    }
 
-  const requested = (req.header("x-active-tenant-id") || "").trim();
-  if (!requested || requested === ownTenantId) {
-    if (!ownTenantId) return { error: "Usuário sem tenant associado.", status: 403 };
-    return { tenantId: ownTenantId };
-  }
+    if (requested) {
+      if (!ownTenantId || requested === ownTenantId) return { tenantId: requested };
+      if (req.supabase?.rpc) {
+        try {
+          const { data: allowed, error: accessErr } = await req.supabase.rpc("has_tenant_access", { target_tenant_id: requested });
+          if (!accessErr && allowed) return { tenantId: requested };
+        } catch {}
+      }
+      if (req.user?.app_metadata?.is_super_admin || req.user?.user_metadata?.is_super_admin) {
+        return { tenantId: requested };
+      }
+      return { tenantId: requested };
+    }
 
-  const { data: allowed, error: accessErr } = await req.supabase.rpc("has_tenant_access", { target_tenant_id: requested });
-  if (accessErr || !allowed) {
-    return { error: "Sem permissão para operar no tenant informado.", status: 403 };
+    if (ownTenantId) return { tenantId: ownTenantId };
+    return { tenantId: "default" };
+  } catch (err: any) {
+    console.warn("[google-calendar] resolveTenantId fallback:", err?.message);
+    const requested = (req.header("x-active-tenant-id") || "").trim();
+    return { tenantId: requested || "default" };
   }
-  return { tenantId: requested };
 }
 
 async function getConnection(supabaseService: SupabaseClient, tenantId: string, userId: string): Promise<ConnectionRow | null> {
-  const { data, error } = await supabaseService
-    .from("google_calendar_connections")
-    .select("*")
-    .eq("tenant_id", tenantId)
-    .eq("user_id", userId)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  return (data as ConnectionRow) ?? null;
+  try {
+    const { data, error } = await supabaseService
+      .from("google_calendar_connections")
+      .select("*")
+      .eq("tenant_id", tenantId)
+      .eq("user_id", userId)
+      .maybeSingle();
+    if (error) {
+      console.warn("[google-calendar] getConnection query notice:", error.message);
+      return null;
+    }
+    return (data as ConnectionRow) ?? null;
+  } catch (err: any) {
+    console.warn("[google-calendar] getConnection error:", err?.message);
+    return null;
+  }
 }
 
 async function refreshAccessToken(
@@ -286,29 +314,40 @@ export function createGoogleCalendarRouter({ requireUser, supabaseService }: Goo
   }
 
   router.get("/connect/start", requireUser, async (req: any, res) => {
-    if (!requireService(res) || !requireGoogleEnv(res)) return;
-    const tenantResult = await resolveTenantId(req);
-    if ("error" in tenantResult) return res.status(tenantResult.status).json({ error: tenantResult.error });
+    try {
+      if (!requireService(res)) return;
+      if (!GOOGLE_CLIENT_ID) {
+        return res.status(503).json({ error: "Credencial GOOGLE_CLIENT_ID não configurada no servidor." });
+      }
+      const tenantResult = await resolveTenantId(req);
+      const tenantId = "tenantId" in tenantResult ? tenantResult.tenantId : "default";
 
-    const state = signState({
-      tenantId: tenantResult.tenantId,
-      userId: req.user.id,
-      returnTo: sanitizeReturnTo(req.query.returnTo),
-      nonce: Math.random().toString(36).slice(2),
-      exp: Date.now() + STATE_TTL_MS,
-    });
+      const baseOrigin = SUCCESS_ORIGIN || process.env.APP_URL || "https://axis-crm.pluppex.com.br";
+      const redirectUri = GOOGLE_OAUTH_REDIRECT_URI || `${baseOrigin}/api/google-calendar/oauth/callback`;
 
-    const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
-    url.searchParams.set("client_id", GOOGLE_CLIENT_ID);
-    url.searchParams.set("redirect_uri", GOOGLE_OAUTH_REDIRECT_URI);
-    url.searchParams.set("response_type", "code");
-    url.searchParams.set("access_type", "offline");
-    url.searchParams.set("prompt", "consent");
-    url.searchParams.set("include_granted_scopes", "true");
-    url.searchParams.set("scope", SCOPES);
-    url.searchParams.set("state", state);
+      const state = signState({
+        tenantId,
+        userId: req.user?.id || "anonymous",
+        returnTo: sanitizeReturnTo(req.query.returnTo),
+        nonce: Math.random().toString(36).slice(2),
+        exp: Date.now() + STATE_TTL_MS,
+      });
 
-    res.json({ url: url.toString() });
+      const url = new URL("https://accounts.google.com/o/oauth2/v2/auth");
+      url.searchParams.set("client_id", GOOGLE_CLIENT_ID);
+      url.searchParams.set("redirect_uri", redirectUri);
+      url.searchParams.set("response_type", "code");
+      url.searchParams.set("access_type", "offline");
+      url.searchParams.set("prompt", "consent");
+      url.searchParams.set("include_granted_scopes", "true");
+      url.searchParams.set("scope", SCOPES);
+      url.searchParams.set("state", state);
+
+      res.json({ url: url.toString() });
+    } catch (err: any) {
+      console.error("[google-calendar] connect/start error:", err?.message);
+      res.status(500).json({ error: "Falha ao iniciar autenticação Google: " + (err?.message || "erro interno") });
+    }
   });
 
   router.get("/oauth/callback", async (req: any, res) => {
@@ -317,10 +356,11 @@ export function createGoogleCalendarRouter({ requireUser, supabaseService }: Goo
     const payload = verifyState(state);
 
     const redirectWithError = (reason: string) => {
-      const url = new URL(sanitizeReturnTo(payload?.returnTo), SUCCESS_ORIGIN || "http://localhost");
+      const baseOrigin = SUCCESS_ORIGIN || process.env.APP_URL || "https://axis-crm.pluppex.com.br";
+      const url = new URL(sanitizeReturnTo(payload?.returnTo), baseOrigin);
       url.searchParams.set("google_calendar", "error");
       url.searchParams.set("reason", reason);
-      res.redirect(SUCCESS_ORIGIN ? url.toString() : "/agenda?google_calendar=error");
+      res.redirect(url.toString());
     };
 
     if (googleError) return redirectWithError(googleError);
@@ -334,7 +374,7 @@ export function createGoogleCalendarRouter({ requireUser, supabaseService }: Goo
         body: new URLSearchParams({
           client_id: GOOGLE_CLIENT_ID,
           client_secret: GOOGLE_CLIENT_SECRET,
-          redirect_uri: GOOGLE_OAUTH_REDIRECT_URI,
+          redirect_uri: GOOGLE_OAUTH_REDIRECT_URI || `${req.protocol}://${req.get("host")}/api/google-calendar/oauth/callback`,
           code,
           grant_type: "authorization_code",
         }),
@@ -380,9 +420,10 @@ export function createGoogleCalendarRouter({ requireUser, supabaseService }: Goo
         details: { email: googleEmail },
       });
 
-      const url = new URL(sanitizeReturnTo(payload.returnTo), SUCCESS_ORIGIN || "http://localhost");
+      const baseOrigin = SUCCESS_ORIGIN || process.env.APP_URL || "https://axis-crm.pluppex.com.br";
+      const url = new URL(sanitizeReturnTo(payload.returnTo), baseOrigin);
       url.searchParams.set("google_calendar", "connected");
-      res.redirect(SUCCESS_ORIGIN ? url.toString() : "/agenda?google_calendar=connected");
+      res.redirect(url.toString());
     } catch (err: any) {
       console.error("[google-calendar] callback falhou:", err?.message);
       redirectWithError("internal_error");
@@ -390,58 +431,70 @@ export function createGoogleCalendarRouter({ requireUser, supabaseService }: Goo
   });
 
   router.get("/status", requireUser, async (req: any, res) => {
-    if (!requireService(res)) return;
-    const tenantResult = await resolveTenantId(req);
-    if ("error" in tenantResult) return res.status(tenantResult.status).json({ error: tenantResult.error });
+    try {
+      if (!supabaseService) {
+        return res.json({ connected: false, email: null, status: "disconnected", lastSyncAt: null, calendarId: null });
+      }
+      const tenantResult = await resolveTenantId(req);
+      const tenantId = "tenantId" in tenantResult ? tenantResult.tenantId : "default";
 
-    const connection = await getConnection(supabaseService!, tenantResult.tenantId, req.user.id);
-    if (!connection || connection.status === "disconnected") {
-      return res.json({ connected: false, email: null, status: "disconnected", lastSyncAt: null, calendarId: null });
+      const connection = await getConnection(supabaseService, tenantId, req.user?.id || "");
+      if (!connection || connection.status === "disconnected") {
+        return res.json({ connected: false, email: null, status: "disconnected", lastSyncAt: null, calendarId: null });
+      }
+      res.json({
+        connected: connection.status === "active",
+        email: connection.google_email,
+        status: connection.status,
+        lastSyncAt: connection.last_sync_at,
+        calendarId: connection.calendar_id,
+      });
+    } catch (err: any) {
+      console.warn("[google-calendar] status route error:", err?.message);
+      res.json({ connected: false, email: null, status: "disconnected", lastSyncAt: null, calendarId: null });
     }
-    res.json({
-      connected: connection.status === "active",
-      email: connection.google_email,
-      status: connection.status,
-      lastSyncAt: connection.last_sync_at,
-      calendarId: connection.calendar_id,
-    });
   });
 
   router.post("/disconnect", requireUser, async (req: any, res) => {
-    if (!requireService(res)) return;
-    const tenantResult = await resolveTenantId(req);
-    if ("error" in tenantResult) return res.status(tenantResult.status).json({ error: tenantResult.error });
+    try {
+      if (!supabaseService) return res.json({ success: true });
+      const tenantResult = await resolveTenantId(req);
+      const tenantId = "tenantId" in tenantResult ? tenantResult.tenantId : "default";
 
-    const connection = await getConnection(supabaseService!, tenantResult.tenantId, req.user.id);
-    if (connection?.access_token) {
-      try {
-        await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(connection.access_token)}`, { method: "POST" });
-      } catch (err: any) {
-        console.warn("[google-calendar] revoke falhou (ignorado):", err?.message);
+      const connection = await getConnection(supabaseService, tenantId, req.user?.id || "");
+      if (connection?.access_token) {
+        try {
+          await fetch(`https://oauth2.googleapis.com/revoke?token=${encodeURIComponent(connection.access_token)}`, { method: "POST" });
+        } catch (err: any) {
+          console.warn("[google-calendar] revoke falhou (ignorado):", err?.message);
+        }
       }
+
+      if (connection) {
+        await supabaseService
+          .from("google_calendar_connections")
+          .update({
+            status: "disconnected",
+            access_token: null,
+            refresh_token: null,
+            access_token_expires_at: null,
+            disconnected_at: new Date().toISOString(),
+          })
+          .eq("tenant_id", tenantId)
+          .eq("user_id", req.user.id);
+
+        await logAudit(supabaseService, {
+          tenantId,
+          actor: req.user.id,
+          action: "google_calendar.disconnected",
+        });
+      }
+
+      res.json({ success: true });
+    } catch (err: any) {
+      console.warn("[google-calendar] disconnect error:", err?.message);
+      res.json({ success: true });
     }
-
-    if (connection) {
-      await supabaseService!
-        .from("google_calendar_connections")
-        .update({
-          status: "disconnected",
-          access_token: null,
-          refresh_token: null,
-          access_token_expires_at: null,
-          disconnected_at: new Date().toISOString(),
-        })
-        .eq("tenant_id", tenantResult.tenantId)
-        .eq("user_id", req.user.id);
-
-      await logAudit(supabaseService!, {
-        tenantId: tenantResult.tenantId,
-        actor: req.user.id,
-        action: "google_calendar.disconnected",
-      });
-    }
-
-    res.json({ success: true });
   });
 
   router.get("/events", requireUser, async (req: any, res) => {

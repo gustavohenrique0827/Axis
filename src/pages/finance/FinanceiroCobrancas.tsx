@@ -56,9 +56,9 @@ export default function FinanceiroCobrancas() {
   };
 
   const handleToggleStatus = (id: string, currentStatus: string) => {
-    const nextStatus = currentStatus === "Liquidada" ? "Pendente" : "Pago";
+    const nextStatus: "Pago" | "A Vencer" = currentStatus === "Liquidada" || currentStatus === "Pago" ? "A Vencer" : "Pago";
     updateFinanceEntry(id, { status: nextStatus });
-    toast.success(nextStatus === "Pago" ? "Cobrança marcada como Liquidada!" : "Cobrança retornada para Pendente.");
+    toast.success(nextStatus === "Pago" ? "Cobrança marcada como Liquidada!" : "Cobrança retornada para A Vencer.");
   };
 
   const handleDelete = async (id: string) => {
@@ -93,7 +93,7 @@ export default function FinanceiroCobrancas() {
       type: "Receber",
       category: novaCobranca.categoria || "Serviços / Honorários",
       date: novaCobranca.vencimento,
-      status: "Pendente",
+      status: "A Vencer",
     });
 
     toast.success("Cobrança emitida e vinculada ao Contas a Receber!");

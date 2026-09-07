@@ -76,6 +76,10 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
     toggleProductLink,
     availableProducts,
     linkedProductIds,
+    productQuantities,
+    updateProductQuantity,
+    handleCreateAndLinkProduct,
+    handleUpdateScore,
     stagesDef,
     currentStageId, setCurrentStageId,
     reportContextOverride, setReportContextOverride,
@@ -343,7 +347,14 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                   <NotasSection
                     lead={lead}
                     leadName={leadName}
+                    companyName={companyName}
                     updateLead={updateLead}
+                    score={score}
+                    temperature={temperature}
+                    probability={probability}
+                    handleUpdateScore={handleUpdateScore}
+                    seller={seller}
+                    setAlterationLogs={setAlterationLogs}
                   />
                 )}
 
@@ -403,11 +414,15 @@ export function LeadDetailsModal({ isOpen, onClose, lead }: LeadDetailsModalProp
                       estimatedSum={estimatedSum}
                       availableProducts={availableProducts}
                       linkedProductIds={linkedProductIds}
+                      productQuantities={productQuantities}
+                      updateProductQuantity={updateProductQuantity}
+                      handleCreateAndLinkProduct={handleCreateAndLinkProduct}
                       toggleProductLink={toggleProductLink}
                       seller={seller}
                       setAlterationLogs={setAlterationLogs}
                       leadName={leadName}
                       companyName={companyName}
+                      leadId={lead.id}
                     />
                   </div>
                 )}
