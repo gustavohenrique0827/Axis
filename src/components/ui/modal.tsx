@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { cn } from "../../lib/utils";
 
 interface ModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface ModalProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   maxWidth?: string;
+  className?: string;
   position?: "center" | "right";
   noPadding?: boolean;
 }
@@ -22,6 +24,7 @@ export function Modal({
   children,
   footer,
   maxWidth = "max-w-md",
+  className,
   position = "center",
   noPadding = false,
 }: ModalProps) {
@@ -74,11 +77,14 @@ export function Modal({
 
       {/* Dialog */}
       <div
-        className={`relative w-[95vw] sm:w-full ${maxWidth} bg-[var(--color-surface-elevated)] shadow-2xl shadow-black/30 ring-1 ring-black/5 overflow-hidden flex flex-col animate-in fade-in duration-200 ${
+        className={cn(
+          "relative w-[95vw] sm:w-full bg-[var(--color-surface-elevated)] shadow-2xl shadow-black/30 ring-1 ring-black/5 overflow-hidden flex flex-col animate-in fade-in duration-200",
+          maxWidth,
           position === "right"
             ? "h-full border-l border-[var(--color-border-default)] rounded-l-[var(--radius-panel-lg)] max-h-screen slide-in-from-right-10"
-            : "border border-[var(--color-border-default)] rounded-[var(--radius-panel-lg)] max-h-[90vh] zoom-in-95 slide-in-from-bottom-2"
-        }`}
+            : "border border-[var(--color-border-default)] rounded-[var(--radius-panel-lg)] max-h-[90vh] zoom-in-95 slide-in-from-bottom-2",
+          className
+        )}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}

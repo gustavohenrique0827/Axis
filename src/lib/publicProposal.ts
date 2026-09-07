@@ -6,7 +6,19 @@ export interface PublicProposalItem {
   precoUnitario: number;
 }
 
+export interface PublicProposalEmpresaDados {
+  razaoSocial?: string;
+  nomeFantasia?: string;
+  cnpj?: string;
+  inscricaoEstadual?: string;
+  endereco?: string;
+  emailContato?: string;
+  telefoneContato?: string;
+  website?: string;
+}
+
 export interface PublicProposal {
+  id?: string;
   titulo: string;
   cliente: string | null;
   valor: number | null;
@@ -15,18 +27,46 @@ export interface PublicProposal {
   tipo: string;
   conteudoTexto: string | null;
   criadaEm: string;
+  vendedor?: string | null;
+  tenantId?: string | null;
+  tenantName?: string | null;
+  tenantPrimaryColor?: string | null;
+  tenantNiche?: string | null;
+  empresaDados?: PublicProposalEmpresaDados | null;
   itens: PublicProposalItem[];
 }
 
-// Busca uma proposta pelo view_token público via RPC SECURITY DEFINER
-// (get_public_proposal) — nunca faz select direto em `proposals`/`proposal_items`,
-// então não depende de RLS/grants anon nessas tabelas para funcionar com segurança.
+// Busca uma proposta pelo view_token público.
+// 1º Tenta via endpoint de backend (/api/public-proposal/:token) que traz o branding completo do Tenant.
+// 2º Fallback para RPC RPC SECURITY DEFINER (get_public_proposal) se a API não estiver respondendo.
 export async function fetchPublicProposal(token: string): Promise<PublicProposal | null> {
-  if (!supabase || !token) return null;
-  const { data, error } = await supabase.rpc("get_public_proposal", { p_token: token });
-  if (error) {
-    console.error("[publicProposal] erro ao buscar proposta:", error.message);
+  if (!token) return null;
+
+  try {
+    const res = await fetch(`/api/public-proposal/${token}`, {
+      headers: { Accept: "application/json" },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.titulo) {
+        return data as PublicProposal;
+      }
+    }
+  } catch (err) {
+    console.warn("[publicProposal] API route indisponível, tentando RPC direto...", err);
+  }
+
+  // Fallback via RPC Supabase
+  if (!supabase) return null;
+  try {
+    const { data, error } = await supabase.rpc("get_public_proposal", { p_token: token });
+    if (error) {
+      console.error("[publicProposal] erro ao buscar proposta via RPC:", error.message);
+      return null;
+    }
+    return (data as PublicProposal) ?? null;
+  } catch (rpcErr) {
+    console.error("[publicProposal] RPC falhou:", rpcErr);
     return null;
   }
-  return (data as PublicProposal) ?? null;
 }

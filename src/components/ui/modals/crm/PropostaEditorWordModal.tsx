@@ -7,11 +7,6 @@ import {
   ExternalLink,
   Eye,
   Edit3,
-  Bold,
-  Italic,
-  List,
-  Heading1,
-  Heading2,
   ShieldCheck,
   Calendar,
   CreditCard,
@@ -21,12 +16,20 @@ import {
   Sparkles,
   Printer,
   Copy,
+  Maximize2,
+  Minimize2,
+  Sun,
+  Moon,
+  ZoomIn,
+  ZoomOut,
+  HelpCircle,
 } from "lucide-react";
 import { Modal } from "../../modal";
 import { Button } from "../../button";
 import { Badge } from "../../badge";
 import { toast } from "sonner";
 import { useData } from "../../../../contexts/DataContext";
+import { useAuth } from "../../../../contexts/AuthContext";
 import { handleDownloadPdf } from "../../../../pages/crm/utils/proposalPdf";
 import { cn } from "../../../../lib/utils";
 
@@ -54,8 +57,8 @@ interface PropostaEditorWordModalProps {
   onSaveProposal?: (data: PropostaEditorData) => Promise<void> | void;
 }
 
-const DEFAULT_TERMS_TEMPLATE = `CLÁUSULA 1ª – DO OBJETO E ESCOPO
-O presente instrumento tem por finalidade a prestação dos serviços especializados e o fornecimento das soluções discriminadas na Tabela de Itens e Escopo Financeiro deste documento, em estrita consonância com os padrões técnicos de excelência do mercado.
+const DEFAULT_TERMS_TEMPLATE = (tenantName: string) => `CLÁUSULA 1ª – DO OBJETO E ESCOPO
+O presente instrumento tem por finalidade a prestação dos serviços especializados e o fornecimento das soluções discriminadas na Tabela de Itens e Escopo Financeiro deste documento, em estrita consonância com os padrões técnicos de excelência da ${tenantName}.
 
 CLÁUSULA 2ª – DAS OBRIGAÇÕES DA CONTRATADA
 A Contratada se compromete a:
@@ -88,7 +91,17 @@ export function PropostaEditorWordModal({
   proposalData,
   onSaveProposal,
 }: PropostaEditorWordModalProps) {
-  const { updateProposal, createProposalWithItems } = useData();
+  const { updateProposal, tenantPrimaryColor, appSettings } = useData();
+  const { activeTenantName } = useAuth();
+
+  // Multi-tenant Branding & Details
+  const empresaDados = appSettings?.empresa_dados || {};
+  const tenantName =
+    empresaDados?.nomeFantasia ||
+    empresaDados?.razaoSocial ||
+    activeTenantName ||
+    "Empresa Proponente";
+  const brandColor = tenantPrimaryColor || "#2563EB";
 
   // Document Fields
   const [titulo, setTitulo] = useState("");
@@ -98,11 +111,16 @@ export function PropostaEditorWordModal({
   const [validade, setValidade] = useState("");
   const [status, setStatus] = useState("Enviada");
   const [conteudoTexto, setConteudoTexto] = useState("");
-  const [itens, setItens] = useState<Array<{ product_name: string; quantidade: number; preco_unitario: number }>>([]);
+  const [itens, setItens] = useState<
+    Array<{ product_name: string; quantidade: number; preco_unitario: number }>
+  >([]);
   const [viewToken, setViewToken] = useState<string | null>(null);
 
-  // View state
+  // View state & ergonomics
   const [mode, setMode] = useState<"edit" | "preview">("edit");
+  const [editorTheme, setEditorTheme] = useState<"light" | "dark">("light");
+  const [isMaximized, setIsMaximized] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState<number>(100);
   const [isSaving, setIsSaving] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -111,18 +129,20 @@ export function PropostaEditorWordModal({
 
     setTitulo(proposalData.titulo || "Proposta Comercial");
     setCliente(proposalData.cliente || "Cliente");
-    setVendedor(proposalData.vendedor || "Consultor S.P.Y.");
+    setVendedor(proposalData.vendedor || "Consultoria Comercial");
     setValor(proposalData.valor || 0);
     setValidade(
       proposalData.validade ||
         new Date(Date.now() + 15 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10)
     );
     setStatus(proposalData.status || "Enviada");
-    setConteudoTexto(proposalData.conteudo_texto?.trim() || DEFAULT_TERMS_TEMPLATE);
+    setConteudoTexto(
+      proposalData.conteudo_texto?.trim() || DEFAULT_TERMS_TEMPLATE(tenantName)
+    );
     setItens(proposalData.itens || []);
     setViewToken(proposalData.view_token || null);
     setMode("edit");
-  }, [isOpen, proposalData]);
+  }, [isOpen, proposalData, tenantName]);
 
   if (!isOpen || !proposalData) return null;
 
@@ -137,12 +157,20 @@ export function PropostaEditorWordModal({
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
     const current = textarea.value;
-    const updated = current.substring(0, start) + "\n\n" + clauseText + "\n\n" + current.substring(end);
+    const updated =
+      current.substring(0, start) +
+      "\n\n" +
+      clauseText +
+      "\n\n" +
+      current.substring(end);
     setConteudoTexto(updated);
     toast.success("Cláusula inserida no documento!");
     setTimeout(() => {
       textarea.focus();
-      textarea.setSelectionRange(start + clauseText.length + 4, start + clauseText.length + 4);
+      textarea.setSelectionRange(
+        start + clauseText.length + 4,
+        start + clauseText.length + 4
+      );
     }, 50);
   };
 
@@ -223,51 +251,88 @@ export function PropostaEditorWordModal({
     toast.success("PDF da Proposta gerado com sucesso!");
   };
 
+  const isLight = editorTheme === "light";
+
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title=""
-      size="2xl"
-      className="p-0 bg-[#0f1117] border border-slate-700/60 text-white overflow-hidden max-w-5xl"
+      noPadding={true}
+      maxWidth={
+        isMaximized
+          ? "max-w-none w-screen h-screen m-0"
+          : "max-w-[1360px] w-[96vw]"
+      }
+      className={cn(
+        "overflow-hidden flex flex-col transition-all duration-200 border",
+        isLight
+          ? "bg-slate-100 border-slate-300 text-slate-900 shadow-2xl"
+          : "bg-[#0f1118] border-slate-700/60 text-white shadow-2xl",
+        isMaximized
+          ? "fixed inset-0 h-screen max-h-screen rounded-none z-[110]"
+          : "h-[92vh] max-h-[92vh] rounded-2xl"
+      )}
     >
-      {/* ── WORD-LIKE TOP ACTION BAR ── */}
-      <div className="bg-[#181b24] border-b border-slate-800 px-5 py-3 flex flex-wrap items-center justify-between gap-3">
+      {/* ── TOP ACTION BAR (WORD / DOCS TOOLBAR) ── */}
+      <div
+        className={cn(
+          "px-6 py-3 border-b flex flex-wrap items-center justify-between gap-3 shrink-0 transition-colors",
+          isLight
+            ? "bg-white border-slate-200 text-slate-800 shadow-xs"
+            : "bg-[#161822] border-slate-800 text-white"
+        )}
+      >
+        {/* Brand & Document Identity */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
-            <FileText className="w-5 h-5" />
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-base shadow-md shrink-0"
+            style={{ backgroundColor: brandColor }}
+          >
+            {tenantName.charAt(0).toUpperCase()}
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-wider text-white">
-                Editor de Proposta & Contrato
+            <div className="flex items-center gap-2 flex-wrap">
+              <span
+                className="text-xs font-black uppercase tracking-wider"
+                style={{ color: isLight ? brandColor : "#93c5fd" }}
+              >
+                {tenantName}
               </span>
-              <Badge variant="primary" className="text-[9px] font-mono px-1.5 py-0">
-                Word Mode
-              </Badge>
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-slate-200/80 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                Word Editor
+              </span>
               {viewToken && (
-                <Badge variant="success" className="text-[9px] font-mono px-1.5 py-0">
-                  Link Ativo
-                </Badge>
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Link Público Ativo
+                </span>
               )}
             </div>
-            <p className="text-[11px] text-slate-400">
-              Diretrizes formais, termos jurídicos e escopo executivo
+            <p className="text-[11px] text-slate-500 dark:text-slate-400">
+              Ambiente de Redação Contratual & Diretrizes Executivas
             </p>
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* Workspace Controls & Primary Actions */}
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="bg-slate-900/80 p-0.5 rounded-lg border border-slate-700/60 flex items-center">
+          {/* Mode Switcher: Edit vs Preview */}
+          <div
+            className={cn(
+              "p-0.5 rounded-lg border flex items-center",
+              isLight
+                ? "bg-slate-100 border-slate-200"
+                : "bg-slate-900 border-slate-700/60"
+            )}
+          >
             <button
               type="button"
               onClick={() => setMode("edit")}
               className={cn(
-                "px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
+                "px-3 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
                 mode === "edit"
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-white text-slate-900 shadow-sm dark:bg-blue-600 dark:text-white"
+                  : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               )}
             >
               <Edit3 className="w-3.5 h-3.5" /> Edição
@@ -276,81 +341,183 @@ export function PropostaEditorWordModal({
               type="button"
               onClick={() => setMode("preview")}
               className={cn(
-                "px-2.5 py-1 rounded text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
+                "px-3 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
                 mode === "preview"
-                  ? "bg-blue-600 text-white shadow-sm"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-white text-slate-900 shadow-sm dark:bg-blue-600 dark:text-white"
+                  : "text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               )}
             >
               <Eye className="w-3.5 h-3.5" /> Visualização A4
             </button>
           </div>
 
-          {viewToken && (
-            <Button
+          {/* Zoom Controls */}
+          <div
+            className={cn(
+              "hidden md:flex items-center gap-1 px-2 py-1 rounded-lg border text-xs font-mono font-bold",
+              isLight
+                ? "bg-slate-100 border-slate-200 text-slate-600"
+                : "bg-slate-900 border-slate-700/60 text-slate-300"
+            )}
+          >
+            <button
               type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleCopyPublicLink}
-              title="Copiar link público para o cliente"
-              className="text-xs gap-1.5 h-8 border-slate-700 hover:bg-slate-800 text-slate-200 cursor-pointer"
+              onClick={() => setZoomLevel((z) => Math.max(80, z - 10))}
+              className="p-0.5 hover:text-blue-600 cursor-pointer"
+              title="Reduzir Zoom"
             >
-              <Link2 className="w-3.5 h-3.5 text-blue-400" /> Copiar Link
-            </Button>
+              <ZoomOut className="w-3.5 h-3.5" />
+            </button>
+            <span className="w-10 text-center">{zoomLevel}%</span>
+            <button
+              type="button"
+              onClick={() => setZoomLevel((z) => Math.min(130, z + 10))}
+              className="p-0.5 hover:text-blue-600 cursor-pointer"
+              title="Aumentar Zoom"
+            >
+              <ZoomIn className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* Theme Switcher: Office Light vs Studio Dark */}
+          <button
+            type="button"
+            onClick={() => setEditorTheme(isLight ? "dark" : "light")}
+            className={cn(
+              "p-2 rounded-lg border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
+              isLight
+                ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200"
+                : "bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800"
+            )}
+            title={isLight ? "Mudar para Modo Escuro" : "Mudar para Modo Claro Office"}
+          >
+            {isLight ? <Moon className="w-4 h-4 text-slate-600" /> : <Sun className="w-4 h-4 text-amber-400" />}
+          </button>
+
+          {/* Fullscreen Maximize Toggle */}
+          <button
+            type="button"
+            onClick={() => setIsMaximized(!isMaximized)}
+            className={cn(
+              "p-2 rounded-lg border text-xs font-bold transition-all cursor-pointer",
+              isLight
+                ? "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200"
+                : "bg-slate-900 border-slate-700 text-slate-300 hover:bg-slate-800"
+            )}
+            title={isMaximized ? "Restaurar Janela" : "Expandir em Tela Cheia"}
+          >
+            {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+          </button>
+
+          {/* Public Link Share Actions */}
+          {viewToken && (
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleCopyPublicLink}
+                title="Copiar link público para o cliente"
+                className={cn(
+                  "text-xs gap-1.5 h-8.5 font-bold cursor-pointer",
+                  isLight
+                    ? "border-slate-300 text-slate-700 hover:bg-slate-100"
+                    : "border-slate-700 text-slate-200 hover:bg-slate-800"
+                )}
+              >
+                <Link2 className="w-3.5 h-3.5 text-blue-500" /> Copiar Link
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleOpenPublicProposal}
+                title="Ver proposta exatamente como o cliente vê"
+                className={cn(
+                  "text-xs gap-1.5 h-8.5 font-bold cursor-pointer",
+                  isLight
+                    ? "border-slate-300 text-slate-700 hover:bg-slate-100"
+                    : "border-slate-700 text-slate-200 hover:bg-slate-800"
+                )}
+              >
+                <ExternalLink className="w-3.5 h-3.5 text-emerald-500" /> Ver como Cliente
+              </Button>
+            </>
           )}
 
-          {viewToken && (
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleOpenPublicProposal}
-              title="Abrir página pública da proposta"
-              className="text-xs gap-1.5 h-8 border-slate-700 hover:bg-slate-800 text-slate-200 cursor-pointer"
-            >
-              <ExternalLink className="w-3.5 h-3.5 text-emerald-400" /> Ver como Cliente
-            </Button>
-          )}
-
+          {/* Export PDF Button */}
           <Button
             type="button"
             variant="outline"
             size="sm"
             onClick={handleExportPdf}
-            className="text-xs gap-1.5 h-8 border-slate-700 hover:bg-slate-800 text-slate-200 cursor-pointer"
+            className={cn(
+              "text-xs gap-1.5 h-8.5 font-bold cursor-pointer",
+              isLight
+                ? "border-slate-300 text-slate-700 hover:bg-slate-100"
+                : "border-slate-700 text-slate-200 hover:bg-slate-800"
+            )}
           >
-            <Download className="w-3.5 h-3.5 text-rose-400" /> Baixar PDF
+            <Download className="w-3.5 h-3.5" /> Baixar PDF
           </Button>
 
+          {/* Save Button */}
           <Button
             type="button"
-            variant="primary"
             size="sm"
             disabled={isSaving}
             onClick={handleSave}
-            className="text-xs gap-1.5 h-8 font-bold bg-blue-600 hover:bg-blue-500 cursor-pointer shadow-lg shadow-blue-500/20"
+            style={{ backgroundColor: brandColor }}
+            className="text-xs font-black uppercase tracking-wider gap-1.5 h-8.5 px-4 text-white shadow-md hover:brightness-110 cursor-pointer"
           >
-            <Save className="w-3.5 h-3.5" /> {isSaving ? "Salvando..." : "Salvar Alterações"}
+            <Save className="w-3.5 h-3.5" />
+            {isSaving ? "Salvando..." : "Salvar Proposta"}
           </Button>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className={cn(
+              "p-2 rounded-xl border transition-colors cursor-pointer ml-1",
+              isLight
+                ? "border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                : "border-slate-700 text-slate-400 hover:text-white hover:bg-slate-800"
+            )}
+            title="Fechar Editor"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       </div>
 
-      {/* ── WORD-LIKE TOOLBAR RIBBON (QUICK CLAUSES & FORMATTING) ── */}
+      {/* ── QUICK INSERT CLAUSES RIBBON ── */}
       {mode === "edit" && (
-        <div className="bg-[#1e222d] border-b border-slate-800 px-5 py-2 flex items-center justify-between gap-2 overflow-x-auto scrollbar-none text-xs">
+        <div
+          className={cn(
+            "px-6 py-2 border-b flex items-center justify-between gap-2 overflow-x-auto scrollbar-none text-xs shrink-0",
+            isLight
+              ? "bg-slate-50 border-slate-200 text-slate-700"
+              : "bg-[#1a1d29] border-slate-800 text-slate-300"
+          )}
+        >
           <div className="flex items-center gap-1.5 flex-nowrap">
-            <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 mr-2 flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-amber-400" /> Inserir Cláusulas:
+            <span className="text-[10px] font-black uppercase tracking-wider text-slate-500 mr-2 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" /> Inserir Cláusulas com 1 Clique:
             </span>
 
             <button
               type="button"
               onClick={() =>
                 insertClauseAtCursor(
-                  "CLÁUSULA – DA ASSINATURA RECORRENTE E VIGÊNCIA\nA prestação dos serviços e soluções de software sob o regime de recorrência mensal terá vigência inicial acordada neste instrumento, com cobrança periódica de mensalidade nas datas pactuadas. A renovação se dará automaticamente por iguais períodos, assegurado o reajuste anual pelo índice oficial (IPCA/IGP-M)."
+                  `CLÁUSULA – DA ASSINATURA RECORRENTE E VIGÊNCIA\nA prestação dos serviços e soluções de software sob o regime de recorrência mensal terá vigência inicial acordada neste instrumento, com faturamento periódico emitido pela ${tenantName}. A renovação se dará automaticamente por iguais períodos, assegurado o reajuste anual pelo índice oficial (IPCA/IGP-M).`
                 )
               }
-              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer"
+              className={cn(
+                "px-2.5 py-1 rounded border text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer",
+                isLight
+                  ? "bg-white border-slate-200 text-slate-700 hover:border-blue-500 hover:text-blue-600"
+                  : "bg-slate-800 border-slate-700 text-slate-300 hover:text-white"
+              )}
             >
               🔄 + Recorrência & Vigência
             </button>
@@ -359,10 +526,15 @@ export function PropostaEditorWordModal({
               type="button"
               onClick={() =>
                 insertClauseAtCursor(
-                  "CLÁUSULA – DA TAXA DE IMPLANTAÇÃO E SETUP DO SISTEMA\nA taxa de implantação/setup inicial contempla as etapas de parametrização da plataforma, migração/cargas de dados, homologação dos fluxos operacionais e treinamento capacitivo dos usuários designados pelo Contratante. O cronograma de implantação se inicia imediatamente após a formalização comercial e quitação da respectiva taxa."
+                  `CLÁUSULA – DA TAXA DE IMPLANTAÇÃO E SETUP DO SISTEMA\nA taxa de implantação/setup inicial contempla as etapas de parametrização da plataforma, cargas de dados, homologação dos fluxos operacionais e treinamento capacitatório dos usuários designados pelo Contratante. O cronograma de implantação pela equipe da ${tenantName} se inicia imediatamente após a formalização comercial e quitação da respectiva taxa.`
                 )
               }
-              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer"
+              className={cn(
+                "px-2.5 py-1 rounded border text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer",
+                isLight
+                  ? "bg-white border-slate-200 text-slate-700 hover:border-blue-500 hover:text-blue-600"
+                  : "bg-slate-800 border-slate-700 text-slate-300 hover:text-white"
+              )}
             >
               🛠️ + Implantação & Setup
             </button>
@@ -371,10 +543,15 @@ export function PropostaEditorWordModal({
               type="button"
               onClick={() =>
                 insertClauseAtCursor(
-                  "CLÁUSULA – DA GARANTIA TÉCNICA E SUPORTE\nA Contratada concede garantia integral sobre os serviços executados pelo período de 90 (noventa) dias corridos, garantindo assistência corretiva sem custos adicionais decorrentes de vícios técnicos de fabricação ou parametrização."
+                  `CLÁUSULA – DA GARANTIA TÉCNICA E SUPORTE\nA Contratada (${tenantName}) concede garantia integral sobre os serviços executados pelo período de 90 (noventa) dias corridos, garantindo assistência corretiva sem custos adicionais decorrentes de vícios técnicos de fabricação ou parametrização.`
                 )
               }
-              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer"
+              className={cn(
+                "px-2.5 py-1 rounded border text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer",
+                isLight
+                  ? "bg-white border-slate-200 text-slate-700 hover:border-blue-500 hover:text-blue-600"
+                  : "bg-slate-800 border-slate-700 text-slate-300 hover:text-white"
+              )}
             >
               🛡️ + Garantia & Suporte
             </button>
@@ -383,10 +560,15 @@ export function PropostaEditorWordModal({
               type="button"
               onClick={() =>
                 insertClauseAtCursor(
-                  "CLÁUSULA – DA CONTA BANCÁRIA E CHAVE PIX OFICIAL\nOs pagamentos referentes a esta proposta deverão ser efetuados na seguinte conta bancária oficial da Contratada:\n• Banco: 001 - Banco do Brasil S.A.\n• Chave PIX (CNPJ): 00.000.000/0001-00\n• Titular: AXIS BUSINESS & CONSULTORIA LTDA\nO comprovante de transferência deverá ser remetido ao e-mail financeiro@axis.com.br."
+                  `CLÁUSULA – DA CONTA BANCÁRIA E PAGAMENTOS\nOs pagamentos referentes a esta proposta deverão ser efetuados em favor da ${tenantName} (${empresaDados?.razaoSocial || tenantName}), CNPJ: ${empresaDados?.cnpj || "00.000.000/0001-00"}.\nO comprovante de transferência deverá ser remetido ao e-mail ${empresaDados?.emailContato || "financeiro@empresa.com.br"}.`
                 )
               }
-              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer"
+              className={cn(
+                "px-2.5 py-1 rounded border text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer",
+                isLight
+                  ? "bg-white border-slate-200 text-slate-700 hover:border-blue-500 hover:text-blue-600"
+                  : "bg-slate-800 border-slate-700 text-slate-300 hover:text-white"
+              )}
             >
               💳 + Dados Bancários / PIX
             </button>
@@ -398,9 +580,14 @@ export function PropostaEditorWordModal({
                   "CLÁUSULA – DOS NÍVEIS DE SERVIÇO (SLA)\nOs atendimentos de chamados e suporte obedecerão aos seguintes níveis de severidade:\n• Crítica (paralisação total): Resposta em até 2 horas e resolução em até 8 horas úteis;\n• Alta: Resposta em até 4 horas úteis;\n• Normal/Dúvidas: Resposta em até 24 horas úteis."
                 )
               }
-              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer"
+              className={cn(
+                "px-2.5 py-1 rounded border text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer",
+                isLight
+                  ? "bg-white border-slate-200 text-slate-700 hover:border-blue-500 hover:text-blue-600"
+                  : "bg-slate-800 border-slate-700 text-slate-300 hover:text-white"
+              )}
             >
-              ⏱️ + SLAs e Atendimento
+              ⏱️ + SLAs e Suporte
             </button>
 
             <button
@@ -410,47 +597,92 @@ export function PropostaEditorWordModal({
                   "CLÁUSULA – DAS TESTEMUNHAS E ASSINATURA ELETRÔNICA\nAs partes concordam expressamente que a aceitação digital desta proposta via link web ou confirmação documental possui plena validade jurídica e eficácia probatória para todos os fins de direito, nos termos da MP 2.200-2/2001."
                 )
               }
-              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700/60 text-[11px] font-medium whitespace-nowrap transition-colors cursor-pointer"
+              className={cn(
+                "px-2.5 py-1 rounded border text-[11px] font-semibold whitespace-nowrap transition-colors cursor-pointer",
+                isLight
+                  ? "bg-white border-slate-200 text-slate-700 hover:border-blue-500 hover:text-blue-600"
+                  : "bg-slate-800 border-slate-700 text-slate-300 hover:text-white"
+              )}
             >
               ✍️ + Validade Digital
             </button>
           </div>
 
-          <div className="text-[10px] text-slate-500 font-mono hidden md:block">
+          <div className="text-[11px] text-slate-400 font-mono hidden md:block">
             {conteudoTexto.length} caracteres
           </div>
         </div>
       )}
 
       {/* ── DESK ENVIRONMENT / FOLHA A4 CENTRALIZADA ── */}
-      <div className="bg-[#12141a] p-4 sm:p-8 max-h-[75vh] overflow-y-auto scrollbar-thin">
+      <div
+        className={cn(
+          "flex-1 overflow-y-auto p-4 sm:p-10 scrollbar-thin transition-colors",
+          isLight
+            ? "bg-[#eef2f6]"
+            : "bg-[#0b0d13]"
+        )}
+      >
         {/* A4 PAPER CANVAS */}
-        <div className="bg-white text-slate-900 shadow-2xl rounded-sm p-8 sm:p-14 max-w-4xl mx-auto border border-slate-300/80 min-h-[1050px] relative font-sans">
-          {/* HEADER DO DOCUMENTO */}
-          <div className="border-b-2 border-blue-600 pb-5 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div
+          style={{
+            transform: zoomLevel !== 100 ? `scale(${zoomLevel / 100})` : undefined,
+            transformOrigin: "top center",
+          }}
+          className={cn(
+            "bg-white text-slate-900 shadow-2xl rounded-sm p-8 sm:p-14 max-w-4xl mx-auto border min-h-[1050px] relative font-sans transition-all",
+            isLight
+              ? "border-slate-300/80 shadow-slate-400/30"
+              : "border-slate-800 shadow-black/80"
+          )}
+        >
+          {/* HEADER DO DOCUMENTO (COM IDENTIDADE DO TENANT) */}
+          <div
+            className="pb-5 mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b-2"
+            style={{ borderColor: brandColor }}
+          >
             <div>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-xl font-black tracking-tight text-blue-700">
-                  AXIS S.P.Y.
+                <span
+                  className="text-xl font-black tracking-tight"
+                  style={{ color: brandColor }}
+                >
+                  {tenantName.toUpperCase()}
                 </span>
-                <span className="text-xs font-bold uppercase tracking-widest text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                  Documento Comercial
+                <span
+                  className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded border"
+                  style={{
+                    backgroundColor: `${brandColor}15`,
+                    color: brandColor,
+                    borderColor: `${brandColor}30`,
+                  }}
+                >
+                  Documento Comercial Oficial
                 </span>
               </div>
               <p className="text-xs text-slate-500">
-                Sistema Integrado de Gestão, Inteligência & Contratos
+                {empresaDados?.razaoSocial || "Sistema Integrado de Gestão & Contratos Comerciais"}
               </p>
             </div>
 
             <div className="text-left sm:text-right space-y-0.5 text-xs text-slate-600">
               <p className="font-bold text-slate-800">
-                PROPOSTA REF: <span className="font-mono text-blue-600">PROP-{proposalData.id?.slice(0, 8) || "NEW"}</span>
+                PROPOSTA REF:{" "}
+                <span className="font-mono" style={{ color: brandColor }}>
+                  PROP-{proposalData.id?.slice(0, 8) || "NOVA"}
+                </span>
               </p>
               <p>
-                Data de Emissão: <span className="font-medium text-slate-700">{new Date().toLocaleDateString("pt-BR")}</span>
+                Data de Emissão:{" "}
+                <span className="font-medium text-slate-700">
+                  {new Date().toLocaleDateString("pt-BR")}
+                </span>
               </p>
               <p>
-                Status: <span className="font-bold text-emerald-600 uppercase">{status}</span>
+                Status:{" "}
+                <span className="font-bold text-emerald-600 uppercase">
+                  {status}
+                </span>
               </p>
             </div>
           </div>
@@ -467,7 +699,7 @@ export function PropostaEditorWordModal({
                   value={cliente}
                   onChange={(e) => setCliente(e.target.value)}
                   placeholder="Nome do Cliente / Razão Social"
-                  className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 font-bold text-slate-900 text-sm focus:outline-none focus:border-blue-600"
+                  className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 font-bold text-slate-900 text-sm focus:outline-none focus:border-blue-600 shadow-xs"
                 />
               ) : (
                 <p className="text-base font-bold text-slate-900">{cliente}</p>
@@ -484,7 +716,7 @@ export function PropostaEditorWordModal({
                   value={titulo}
                   onChange={(e) => setTitulo(e.target.value)}
                   placeholder="Título da Proposta"
-                  className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 font-bold text-slate-900 text-sm focus:outline-none focus:border-blue-600"
+                  className="w-full bg-white border border-slate-300 rounded px-2.5 py-1.5 font-bold text-slate-900 text-sm focus:outline-none focus:border-blue-600 shadow-xs"
                 />
               ) : (
                 <p className="text-base font-bold text-slate-900">{titulo}</p>
@@ -501,7 +733,7 @@ export function PropostaEditorWordModal({
                   value={vendedor}
                   onChange={(e) => setVendedor(e.target.value)}
                   placeholder="Nome do Consultor"
-                  className="w-full bg-white border border-slate-300 rounded px-2.5 py-1 font-medium text-slate-800 focus:outline-none focus:border-blue-600"
+                  className="w-full bg-white border border-slate-300 rounded px-2.5 py-1 font-medium text-slate-800 focus:outline-none focus:border-blue-600 shadow-xs"
                 />
               ) : (
                 <p className="font-semibold text-slate-800">{vendedor}</p>
@@ -517,11 +749,13 @@ export function PropostaEditorWordModal({
                   type="date"
                   value={validade}
                   onChange={(e) => setValidade(e.target.value)}
-                  className="w-full bg-white border border-slate-300 rounded px-2.5 py-1 font-medium text-slate-800 focus:outline-none focus:border-blue-600"
+                  className="w-full bg-white border border-slate-300 rounded px-2.5 py-1 font-medium text-slate-800 focus:outline-none focus:border-blue-600 shadow-xs"
                 />
               ) : (
                 <p className="font-semibold text-slate-800">
-                  {validade ? new Date(validade).toLocaleDateString("pt-BR") : "15 dias a contar da emissão"}
+                  {validade
+                    ? new Date(validade).toLocaleDateString("pt-BR")
+                    : "15 dias a contar da emissão"}
                 </p>
               )}
             </div>
@@ -531,7 +765,7 @@ export function PropostaEditorWordModal({
           <div className="mb-8">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                <CreditCard className="w-3.5 h-3.5" style={{ color: brandColor }} />
                 Escopo Financeiro & Itens de Fornecimento
               </h4>
               <span className="text-[11px] text-slate-500 font-mono">
@@ -539,7 +773,7 @@ export function PropostaEditorWordModal({
               </span>
             </div>
 
-            <div className="border border-slate-200 rounded-lg overflow-hidden">
+            <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
               <table className="w-full text-xs text-left">
                 <thead className="bg-slate-100 text-slate-600 font-black uppercase tracking-wider text-[10px] border-b border-slate-200">
                   <tr>
@@ -580,7 +814,10 @@ export function PropostaEditorWordModal({
                     <td colSpan={3} className="py-3 px-4 text-right uppercase text-[11px] text-slate-600">
                       Investimento Total da Proposta:
                     </td>
-                    <td className="py-3 px-4 text-right font-mono text-base font-black text-emerald-600">
+                    <td
+                      className="py-3 px-4 text-right font-mono text-base font-black"
+                      style={{ color: brandColor }}
+                    >
                       R$ {valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
                     </td>
                   </tr>
@@ -593,11 +830,13 @@ export function PropostaEditorWordModal({
           <div className="mb-10">
             <div className="flex items-center justify-between mb-2">
               <h4 className="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
+                <ShieldCheck className="w-3.5 h-3.5" style={{ color: brandColor }} />
                 Diretrizes, Cláusulas e Termos Contratuais
               </h4>
               <span className="text-[10px] text-slate-400">
-                {mode === "edit" ? "Edite o texto diretamente na área abaixo" : "Documento formatado para leitura"}
+                {mode === "edit"
+                  ? "Edite o texto diretamente na área abaixo"
+                  : "Documento formatado para leitura oficial"}
               </span>
             </div>
 
@@ -606,9 +845,9 @@ export function PropostaEditorWordModal({
                 ref={textareaRef}
                 value={conteudoTexto}
                 onChange={(e) => setConteudoTexto(e.target.value)}
-                rows={16}
+                rows={18}
                 placeholder="Insira as cláusulas, termos, condições e diretrizes desta proposta..."
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-xs font-sans text-slate-800 leading-relaxed focus:outline-none focus:border-blue-600 focus:bg-white transition-all resize-y"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-5 text-xs font-sans text-slate-800 leading-relaxed focus:outline-none focus:border-blue-600 focus:bg-white transition-all resize-y shadow-xs"
               />
             ) : (
               <div className="bg-slate-50/60 border border-slate-200 rounded-xl p-6 text-xs text-slate-700 leading-relaxed whitespace-pre-wrap font-sans text-justify">
@@ -634,9 +873,14 @@ export function PropostaEditorWordModal({
               <div>
                 <div className="border-t border-slate-400 pt-2 w-3/4 mx-auto">
                   <p className="font-bold text-slate-900">{vendedor}</p>
-                  <p className="text-[10px] text-slate-500 uppercase tracking-wider">
-                    AXIS S.P.Y. BUSINESS (CONTRATADA)
+                  <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
+                    {tenantName.toUpperCase()} (CONTRATADA)
                   </p>
+                  {empresaDados?.cnpj && (
+                    <p className="text-[9px] text-slate-400 font-mono">
+                      CNPJ: {empresaDados.cnpj}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>

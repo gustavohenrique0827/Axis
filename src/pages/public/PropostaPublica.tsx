@@ -14,6 +14,12 @@ import {
   Clock,
   Sparkles,
   Lock,
+  Sun,
+  Moon,
+  Phone,
+  Mail,
+  MapPin,
+  ExternalLink,
 } from "lucide-react";
 import { Card } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -45,6 +51,7 @@ export default function PropostaPublica() {
   const [proposta, setProposta] = useState<PublicProposal | null | undefined>(undefined);
   const [isAccepted, setIsAccepted] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false); // Default to clean Executive Light theme
 
   useEffect(() => {
     if (!token) {
@@ -61,9 +68,9 @@ export default function PropostaPublica() {
 
   if (proposta === undefined) {
     return (
-      <div className="min-h-screen bg-[#0d0f14] flex flex-col items-center justify-center gap-3">
-        <div className="w-10 h-10 border-3 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-        <p className="text-slate-400 text-xs font-mono tracking-wider uppercase">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0d0f14] flex flex-col items-center justify-center gap-3">
+        <div className="w-10 h-10 border-3 border-blue-500/20 border-t-blue-600 rounded-full animate-spin" />
+        <p className="text-slate-500 text-xs font-mono tracking-wider uppercase">
           Carregando proposta comercial autenticada...
         </p>
       </div>
@@ -72,12 +79,12 @@ export default function PropostaPublica() {
 
   if (!proposta) {
     return (
-      <div className="min-h-screen bg-[#0d0f14] flex items-center justify-center px-4">
-        <Card className="p-8 text-center max-w-md bg-[#13161f] border border-white/10 rounded-3xl shadow-2xl">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4">
+        <Card className="p-8 text-center max-w-md bg-white border border-slate-200 rounded-3xl shadow-xl">
           <AlertTriangle className="w-14 h-14 text-amber-500 mx-auto mb-4 opacity-80" />
-          <h1 className="text-xl font-black text-white mb-2">Proposta não encontrada</h1>
-          <p className="text-slate-400 text-xs leading-relaxed mb-6">
-            O link acessado pode ter expirado, estar incorreto ou a proposta foi reemitida com novos termos. Entre em contato com o seu consultor para obter a versão atualizada.
+          <h1 className="text-xl font-black text-slate-900 mb-2">Proposta não encontrada</h1>
+          <p className="text-slate-500 text-xs leading-relaxed mb-6">
+            O link acessado pode ter expirado, estar incorreto ou a proposta foi reemitida com novos termos. Entre em contato com a equipe comercial para obter a versão atualizada.
           </p>
           <Button
             variant="outline"
@@ -91,6 +98,13 @@ export default function PropostaPublica() {
     );
   }
 
+  // Multi-tenant Branding & Details
+  const brandColor = proposta.tenantPrimaryColor || "#2563EB";
+  const tenantName =
+    proposta.tenantName ||
+    proposta.empresaDados?.nomeFantasia ||
+    proposta.empresaDados?.razaoSocial ||
+    "Empresa Proponente";
   const isVencida = proposta.validade ? new Date(proposta.validade) < new Date() : false;
 
   const handleAcceptProposal = () => {
@@ -99,7 +113,7 @@ export default function PropostaPublica() {
       setIsAccepted(true);
       setIsAccepting(false);
       toast.success("🎉 Proposta Aceita com Sucesso!", {
-        description: "Seu consultor comercial já foi notificado para darmos início à implantação.",
+        description: `O aceite comercial foi registrado junto à ${tenantName}.`,
         duration: 8000,
       });
     }, 600);
@@ -112,7 +126,7 @@ export default function PropostaPublica() {
         cliente: proposta.cliente || "Cliente",
         titulo: proposta.titulo,
         valor: proposta.valor || 0,
-        vendedor: "Consultoria Axis S.P.Y.",
+        vendedor: proposta.vendedor || tenantName,
         validade: proposta.validade || undefined,
         status: isAccepted ? "Aceita" : (proposta.status as any) || "Enviada",
         tipo: "texto",
@@ -124,44 +138,92 @@ export default function PropostaPublica() {
         preco_unitario: i.precoUnitario,
       })) || []
     );
-    toast.success("PDF do contrato gerado com sucesso!");
+    toast.success("PDF do documento gerado com sucesso!");
   };
 
   return (
-    <div className="min-h-screen bg-[#0b0c10] text-slate-100 font-sans selection:bg-blue-600 selection:text-white pb-16">
-      {/* ── TOP NAV INSTITUCIONAL ── */}
-      <header className="sticky top-0 z-30 bg-[#0f1118]/90 backdrop-blur-md border-b border-white/[0.08] px-4 sm:px-8 py-3.5">
+    <div
+      className={cn(
+        "min-h-screen font-sans selection:bg-blue-600 selection:text-white pb-20 transition-colors",
+        isDarkMode ? "bg-[#0b0c10] text-slate-100" : "bg-[#f8fafc] text-slate-900"
+      )}
+    >
+      {/* ── TOP NAV INSTITUCIONAL (COM BRANDING DO TENANT) ── */}
+      <header
+        className={cn(
+          "sticky top-0 z-30 backdrop-blur-md border-b px-4 sm:px-8 py-3.5 transition-colors",
+          isDarkMode
+            ? "bg-[#0f1118]/90 border-white/[0.08]"
+            : "bg-white/90 border-slate-200/80 shadow-xs"
+        )}
+      >
         <div className="max-w-4xl mx-auto flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-black text-sm shadow-md shadow-blue-500/30">
-              A
+          <div className="flex items-center gap-3">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shadow-md shrink-0"
+              style={{ backgroundColor: brandColor }}
+            >
+              {tenantName.charAt(0).toUpperCase()}
             </div>
             <div>
-              <span className="text-xs font-black tracking-wider text-white uppercase block">
-                AXIS S.P.Y. BUSINESS
+              <span
+                className="text-xs font-black tracking-wider uppercase block"
+                style={{ color: isDarkMode ? "#f8fafc" : brandColor }}
+              >
+                {tenantName}
               </span>
-              <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
-                <Lock className="w-2.5 h-2.5 text-emerald-400" /> Documento Autenticado
+              <span
+                className={cn(
+                  "text-[10px] font-mono flex items-center gap-1",
+                  isDarkMode ? "text-slate-400" : "text-slate-500"
+                )}
+              >
+                <Lock className="w-2.5 h-2.5 text-emerald-500" /> Documento Autenticado & Oficial
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Theme Toggle (Light / Dark) */}
+            <button
+              type="button"
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={cn(
+                "p-2 rounded-xl border text-xs font-bold transition-all cursor-pointer",
+                isDarkMode
+                  ? "bg-[#181a24] border-slate-700 text-amber-300 hover:bg-slate-800"
+                  : "bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200"
+              )}
+              title={isDarkMode ? "Mudar para Modo Claro" : "Mudar para Modo Escuro"}
+            >
+              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={handleDownloadDocPdf}
-              className="text-xs gap-1.5 h-8 border-white/10 hover:bg-white/5 text-slate-300"
+              className={cn(
+                "text-xs gap-1.5 h-8.5 font-bold cursor-pointer",
+                isDarkMode
+                  ? "border-white/10 hover:bg-white/5 text-slate-300"
+                  : "border-slate-300 hover:bg-slate-100 text-slate-700"
+              )}
             >
-              <Download className="w-3.5 h-3.5 text-blue-400" /> Baixar PDF
+              <Download className="w-3.5 h-3.5" style={{ color: brandColor }} /> Baixar PDF
             </Button>
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => window.print()}
-              className="text-xs gap-1.5 h-8 border-white/10 hover:bg-white/5 text-slate-300 hidden sm:inline-flex"
+              className={cn(
+                "text-xs gap-1.5 h-8.5 font-bold hidden sm:inline-flex cursor-pointer",
+                isDarkMode
+                  ? "border-white/10 hover:bg-white/5 text-slate-300"
+                  : "border-slate-300 hover:bg-slate-100 text-slate-700"
+              )}
             >
               <Printer className="w-3.5 h-3.5" /> Imprimir
             </Button>
@@ -174,100 +236,188 @@ export default function PropostaPublica() {
         {/* BANNER DE ACEITE REALIZADO */}
         {isAccepted && (
           <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-xs font-black uppercase text-emerald-400 tracking-wide">
+              <h4 className="text-xs font-black uppercase text-emerald-600 dark:text-emerald-400 tracking-wide">
                 Proposta Aprovada pelo Cliente
               </h4>
-              <p className="text-[11px] text-slate-300">
-                O aceite comercial foi formalizado. A equipe executiva já iniciou os preparativos de implantação.
+              <p className={cn("text-[11px]", isDarkMode ? "text-slate-300" : "text-slate-600")}>
+                O aceite comercial foi formalizado. A equipe da <strong>{tenantName}</strong> já foi notificada para os trâmites de implantação.
               </p>
             </div>
           </div>
         )}
 
-        {/* CARTÃO PRINCIPAL DA PROPOSTA */}
-        <Card className="p-6 sm:p-10 bg-[#12141c] border border-white/[0.08] rounded-3xl shadow-2xl relative overflow-hidden">
-          {/* Luz de fundo decorativa */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+        {/* CARTÃO PRINCIPAL DA PROPOSTA COM IDENTIDADE DO TENANT */}
+        <Card
+          className={cn(
+            "p-6 sm:p-12 rounded-3xl shadow-xl relative overflow-hidden transition-colors border",
+            isDarkMode
+              ? "bg-[#12141c] border-white/[0.08]"
+              : "bg-white border-slate-200/90 shadow-slate-200/50"
+          )}
+        >
+          {/* Faixa superior de destaque com a cor da marca do Tenant */}
+          <div
+            className="absolute top-0 left-0 right-0 h-2"
+            style={{ backgroundColor: brandColor }}
+          />
 
           {/* CABEÇALHO DO DOCUMENTO */}
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-white/[0.08]">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/30 font-bold">
-                  Proposta Comercial Oficial
+          <div
+            className={cn(
+              "flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b",
+              isDarkMode ? "border-white/[0.08]" : "border-slate-200"
+            )}
+          >
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span
+                  className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full font-bold border"
+                  style={{
+                    backgroundColor: `${brandColor}15`,
+                    color: brandColor,
+                    borderColor: `${brandColor}30`,
+                  }}
+                >
+                  Proposta Oficial • {tenantName}
                 </span>
                 {isVencida && !isAccepted && (
-                  <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-400 border border-rose-500/30 font-bold">
+                  <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-rose-500/15 text-rose-500 border border-rose-500/30 font-bold">
                     Vencida
                   </span>
                 )}
                 {isAccepted && (
-                  <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold flex items-center gap-1">
+                  <span className="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3" /> Aprovada
                   </span>
                 )}
               </div>
 
-              <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              <h1
+                className={cn(
+                  "text-2xl sm:text-3xl font-black tracking-tight",
+                  isDarkMode ? "text-white" : "text-slate-900"
+                )}
+              >
                 {proposta.titulo}
               </h1>
 
               {proposta.cliente && (
-                <p className="text-xs text-slate-400">
-                  Apresentada exclusivamente para: <strong className="text-slate-200">{proposta.cliente}</strong>
+                <p className={cn("text-xs", isDarkMode ? "text-slate-400" : "text-slate-500")}>
+                  Apresentada exclusivamente para:{" "}
+                  <strong className={isDarkMode ? "text-slate-200" : "text-slate-800"}>
+                    {proposta.cliente}
+                  </strong>
                 </p>
               )}
             </div>
 
-            <div className="text-left sm:text-right space-y-1 text-xs text-slate-400">
+            <div
+              className={cn(
+                "text-left sm:text-right space-y-1 text-xs",
+                isDarkMode ? "text-slate-400" : "text-slate-500"
+              )}
+            >
               <p>
-                Emissão: <span className="font-semibold text-white">{formatDate(proposta.criadaEm)}</span>
+                Emissão:{" "}
+                <span className={cn("font-semibold", isDarkMode ? "text-white" : "text-slate-800")}>
+                  {formatDate(proposta.criadaEm)}
+                </span>
               </p>
               <p className="flex items-center sm:justify-end gap-1">
-                <Calendar className="w-3 h-3 text-amber-400" />
-                Válida até: <span className="font-semibold text-white">{formatDate(proposta.validade)}</span>
+                <Calendar className="w-3.5 h-3.5 text-amber-500" />
+                Válida até:{" "}
+                <span className={cn("font-semibold", isDarkMode ? "text-white" : "text-slate-800")}>
+                  {formatDate(proposta.validade)}
+                </span>
               </p>
             </div>
           </div>
 
           {/* CARDS COM MÉTRICAS DE INVESTIMENTO */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-8">
-            <div className="bg-[#181a24] p-5 rounded-2xl border border-white/[0.06]">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+            <div
+              className={cn(
+                "p-5 rounded-2xl border transition-colors",
+                isDarkMode
+                  ? "bg-[#181a24] border-white/[0.06]"
+                  : "bg-slate-50 border-slate-200/80"
+              )}
+            >
+              <span
+                className={cn(
+                  "text-[10px] font-black uppercase tracking-wider block mb-1",
+                  isDarkMode ? "text-slate-400" : "text-slate-500"
+                )}
+              >
                 Investimento Total
               </span>
-              <p className="text-2xl font-mono font-black text-emerald-400">
+              <p
+                className="text-2xl font-mono font-black"
+                style={{ color: brandColor }}
+              >
                 {formatMoney(proposta.valor)}
               </p>
-              <span className="text-[10px] text-slate-500 block mt-1">
+              <span className="text-[10px] text-slate-400 block mt-1">
                 Condições e formas de pagamento descritas abaixo
               </span>
             </div>
 
-            <div className="bg-[#181a24] p-5 rounded-2xl border border-white/[0.06]">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+            <div
+              className={cn(
+                "p-5 rounded-2xl border transition-colors",
+                isDarkMode
+                  ? "bg-[#181a24] border-white/[0.06]"
+                  : "bg-slate-50 border-slate-200/80"
+              )}
+            >
+              <span
+                className={cn(
+                  "text-[10px] font-black uppercase tracking-wider block mb-1",
+                  isDarkMode ? "text-slate-400" : "text-slate-500"
+                )}
+              >
                 Validade Comercial
               </span>
-              <p className="text-sm font-bold text-white mt-1">
+              <p
+                className={cn(
+                  "text-sm font-bold mt-1",
+                  isDarkMode ? "text-white" : "text-slate-800"
+                )}
+              >
                 {formatDate(proposta.validade)}
               </p>
-              <span className="text-[10px] text-slate-500 block mt-1">
+              <span className="text-[10px] text-slate-400 block mt-1">
                 Condições garantidas durante o período
               </span>
             </div>
 
-            <div className="bg-[#181a24] p-5 rounded-2xl border border-white/[0.06]">
-              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block mb-1">
+            <div
+              className={cn(
+                "p-5 rounded-2xl border transition-colors",
+                isDarkMode
+                  ? "bg-[#181a24] border-white/[0.06]"
+                  : "bg-slate-50 border-slate-200/80"
+              )}
+            >
+              <span
+                className={cn(
+                  "text-[10px] font-black uppercase tracking-wider block mb-1",
+                  isDarkMode ? "text-slate-400" : "text-slate-500"
+                )}
+              >
                 Status da Proposta
               </span>
-              <p className="text-sm font-bold text-blue-400 mt-1 uppercase">
+              <p
+                className="text-sm font-bold mt-1 uppercase"
+                style={{ color: brandColor }}
+              >
                 {isAccepted ? "Aceita & Formalizada" : proposta.status || "Enviada"}
               </p>
-              <span className="text-[10px] text-slate-500 block mt-1">
+              <span className="text-[10px] text-slate-400 block mt-1">
                 {isAccepted ? "Pronta para execução" : "Aguardando confirmação"}
               </span>
             </div>
@@ -277,18 +427,36 @@ export default function PropostaPublica() {
           {proposta.itens && proposta.itens.length > 0 && (
             <div className="space-y-3 mb-8">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-black uppercase tracking-wider text-white flex items-center gap-1.5">
-                  <CreditCard className="w-3.5 h-3.5 text-blue-400" />
+                <h3
+                  className={cn(
+                    "text-xs font-black uppercase tracking-wider flex items-center gap-1.5",
+                    isDarkMode ? "text-white" : "text-slate-900"
+                  )}
+                >
+                  <CreditCard className="w-3.5 h-3.5" style={{ color: brandColor }} />
                   Escopo de Fornecimento & Soluções
                 </h3>
                 <span className="text-[10px] text-slate-400 font-mono">
-                  {proposta.itens.length} {proposta.itens.length === 1 ? "item contratado" : "itens contratados"}
+                  {proposta.itens.length}{" "}
+                  {proposta.itens.length === 1 ? "item contratado" : "itens contratados"}
                 </span>
               </div>
 
-              <div className="border border-white/[0.08] rounded-2xl overflow-hidden bg-[#161822]">
+              <div
+                className={cn(
+                  "border rounded-2xl overflow-hidden",
+                  isDarkMode ? "border-white/[0.08] bg-[#161822]" : "border-slate-200 bg-white shadow-xs"
+                )}
+              >
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-white/[0.03] text-slate-400 uppercase tracking-wider text-[10px] border-b border-white/[0.08]">
+                  <thead
+                    className={cn(
+                      "uppercase tracking-wider text-[10px] border-b font-black",
+                      isDarkMode
+                        ? "bg-white/[0.03] text-slate-400 border-white/[0.08]"
+                        : "bg-slate-100 text-slate-600 border-slate-200"
+                    )}
+                  >
                     <tr>
                       <th className="py-3 px-4">Item / Descrição</th>
                       <th className="py-3 px-3 text-center">Quantidade</th>
@@ -296,42 +464,77 @@ export default function PropostaPublica() {
                       <th className="py-3 px-4 text-right">Subtotal</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-white/[0.04] text-slate-200">
+                  <tbody
+                    className={cn(
+                      "divide-y",
+                      isDarkMode ? "divide-white/[0.04] text-slate-200" : "divide-slate-100 text-slate-800"
+                    )}
+                  >
                     {proposta.itens.map((item, i) => (
-                      <tr key={i} className="hover:bg-white/[0.02] transition-colors">
-                        <td className="py-3 px-4 font-semibold text-white">
+                      <tr
+                        key={i}
+                        className={cn(
+                          "transition-colors",
+                          isDarkMode ? "hover:bg-white/[0.02]" : "hover:bg-slate-50"
+                        )}
+                      >
+                        <td className="py-3 px-4 font-semibold">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span>{item.productName}</span>
                             {item.productName.toLowerCase().includes("implantação") && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-amber-500/15 text-amber-400 border border-amber-500/30 uppercase">
+                              <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 uppercase">
                                 Setup / Implantação
                               </span>
                             )}
-                            {(item.productName.toLowerCase().includes("recorrente") || item.productName.toLowerCase().includes("assinatura")) && (
-                              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/30 uppercase">
+                            {(item.productName.toLowerCase().includes("recorrente") ||
+                              item.productName.toLowerCase().includes("assinatura")) && (
+                              <span
+                                className="text-[9px] font-bold px-2 py-0.5 rounded-full border uppercase"
+                                style={{
+                                  backgroundColor: `${brandColor}15`,
+                                  color: brandColor,
+                                  borderColor: `${brandColor}30`,
+                                }}
+                              >
                                 Recorrente
                               </span>
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-3 text-center font-mono">
+                        <td className="py-3 px-3 text-center font-mono font-medium">
                           {item.quantidade}
                         </td>
-                        <td className="py-3 px-3 text-right font-mono text-slate-400">
+                        <td className="py-3 px-3 text-right font-mono text-slate-500">
                           {formatMoney(item.precoUnitario)}
                         </td>
-                        <td className="py-3 px-4 text-right font-mono font-bold text-white">
+                        <td className="py-3 px-4 text-right font-mono font-bold">
                           {formatMoney(item.precoUnitario * item.quantidade)}
                         </td>
                       </tr>
                     ))}
                   </tbody>
-                  <tfoot className="bg-white/[0.02] border-t-2 border-white/[0.08] font-bold">
+                  <tfoot
+                    className={cn(
+                      "border-t-2 font-bold",
+                      isDarkMode
+                        ? "bg-white/[0.02] border-white/[0.08]"
+                        : "bg-slate-50 border-slate-200"
+                    )}
+                  >
                     <tr>
-                      <td colSpan={3} className="py-3.5 px-4 text-right uppercase text-[11px] text-slate-400">
+                      <td
+                        colSpan={3}
+                        className={cn(
+                          "py-3.5 px-4 text-right uppercase text-[11px]",
+                          isDarkMode ? "text-slate-400" : "text-slate-600"
+                        )}
+                      >
                         Total do Fornecimento:
                       </td>
-                      <td className="py-3.5 px-4 text-right font-mono text-base font-black text-emerald-400">
+                      <td
+                        className="py-3.5 px-4 text-right font-mono text-base font-black"
+                        style={{ color: brandColor }}
+                      >
                         {formatMoney(proposta.valor)}
                       </td>
                     </tr>
@@ -343,28 +546,110 @@ export default function PropostaPublica() {
 
           {/* DIRETRIZES E TERMOS CONTRATUAIS */}
           {proposta.conteudoTexto && (
-            <div className="space-y-3 pt-6 border-t border-white/[0.08]">
+            <div
+              className={cn(
+                "space-y-3 pt-6 border-t",
+                isDarkMode ? "border-white/[0.08]" : "border-slate-200"
+              )}
+            >
               <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-blue-400" />
-                <h3 className="text-xs font-black uppercase tracking-wider text-white">
+                <ShieldCheck className="w-4 h-4" style={{ color: brandColor }} />
+                <h3
+                  className={cn(
+                    "text-xs font-black uppercase tracking-wider",
+                    isDarkMode ? "text-white" : "text-slate-900"
+                  )}
+                >
                   Diretrizes, Cláusulas e Termos Contratuais
                 </h3>
               </div>
 
-              <div className="p-6 rounded-2xl bg-[#161822] border border-white/[0.08] text-xs text-slate-300 leading-relaxed whitespace-pre-wrap text-justify">
+              <div
+                className={cn(
+                  "p-6 sm:p-8 rounded-2xl border text-xs leading-relaxed whitespace-pre-wrap text-justify shadow-xs",
+                  isDarkMode
+                    ? "bg-[#161822] border-white/[0.08] text-slate-300"
+                    : "bg-slate-50/80 border-slate-200 text-slate-700"
+                )}
+              >
                 {proposta.conteudoTexto}
               </div>
             </div>
           )}
 
-          {/* AÇÕES DE ACEITE DIGITAL */}
-          <div className="mt-10 pt-8 border-t border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold text-white mb-0.5">
-                Pronto para dar o próximo passo?
+          {/* DADOS DA EMPRESA PROPONENTE (CONTRATADA) */}
+          <div
+            className={cn(
+              "mt-8 p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs",
+              isDarkMode
+                ? "bg-[#161822] border-white/[0.08]"
+                : "bg-slate-50 border-slate-200"
+            )}
+          >
+            <div className="space-y-1">
+              <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 block">
+                Empresa Proponente / Contratada
+              </span>
+              <p
+                className={cn(
+                  "font-bold text-sm",
+                  isDarkMode ? "text-white" : "text-slate-900"
+                )}
+              >
+                {tenantName}
               </p>
-              <p className="text-[11px] text-slate-400">
-                A formalização digital assegura o início imediato dos trabalhos e a garantia dos valores propostos.
+              {proposta.empresaDados?.cnpj && (
+                <p className="text-[11px] font-mono text-slate-500">
+                  CNPJ: {proposta.empresaDados.cnpj}
+                </p>
+              )}
+              {proposta.empresaDados?.endereco && (
+                <p className="text-[11px] text-slate-500 flex items-center gap-1">
+                  <MapPin className="w-3 h-3 text-slate-400" /> {proposta.empresaDados.endereco}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1 text-left sm:text-right">
+              {proposta.vendedor && (
+                <p className="text-xs">
+                  <span className="text-slate-400">Consultor Responsável:</span>{" "}
+                  <strong className={isDarkMode ? "text-slate-200" : "text-slate-800"}>
+                    {proposta.vendedor}
+                  </strong>
+                </p>
+              )}
+              {proposta.empresaDados?.emailContato && (
+                <p className="text-xs text-slate-500 flex items-center sm:justify-end gap-1">
+                  <Mail className="w-3 h-3 text-slate-400" /> {proposta.empresaDados.emailContato}
+                </p>
+              )}
+              {proposta.empresaDados?.telefoneContato && (
+                <p className="text-xs text-slate-500 flex items-center sm:justify-end gap-1">
+                  <Phone className="w-3 h-3 text-slate-400" /> {proposta.empresaDados.telefoneContato}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* AÇÕES DE ACEITE DIGITAL */}
+          <div
+            className={cn(
+              "mt-10 pt-8 border-t flex flex-col sm:flex-row sm:items-center justify-between gap-4",
+              isDarkMode ? "border-white/[0.08]" : "border-slate-200"
+            )}
+          >
+            <div>
+              <p
+                className={cn(
+                  "text-xs font-bold mb-0.5",
+                  isDarkMode ? "text-white" : "text-slate-900"
+                )}
+              >
+                Pronto para dar o próximo passo com a {tenantName}?
+              </p>
+              <p className="text-[11px] text-slate-500">
+                A formalização digital assegura o início imediato dos trabalhos e a reserva das condições propostas.
               </p>
             </div>
 
@@ -375,13 +660,14 @@ export default function PropostaPublica() {
                   size="lg"
                   disabled={isAccepting || isVencida}
                   onClick={handleAcceptProposal}
-                  className="w-full sm:w-auto text-xs font-black uppercase tracking-wider h-11 px-6 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xl shadow-emerald-500/25 cursor-pointer disabled:opacity-40"
+                  style={{ backgroundColor: brandColor }}
+                  className="w-full sm:w-auto text-xs font-black uppercase tracking-wider h-11 px-6 text-white shadow-xl hover:brightness-110 cursor-pointer disabled:opacity-40"
                 >
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                   {isAccepting ? "Registrando Aceite..." : "Aceitar Proposta Comercial"}
                 </Button>
               ) : (
-                <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs font-bold">
+                <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/40 text-xs font-bold">
                   <CheckCircle2 className="w-4 h-4" /> Proposta Aceita com Sucesso
                 </div>
               )}
@@ -391,10 +677,10 @@ export default function PropostaPublica() {
 
         {/* RODAPÉ INSTITUCIONAL */}
         <div className="text-center pt-4 space-y-1">
-          <p className="text-[11px] text-slate-500">
-            Documento gerado e autenticado por <strong className="text-blue-400">AXIS S.P.Y. BUSINESS SUITE</strong>
+          <p className="text-[11px] text-slate-400">
+            Documento emitido por <strong style={{ color: brandColor }}>{tenantName}</strong>
           </p>
-          <p className="text-[10px] text-slate-600">
+          <p className="text-[10px] text-slate-400">
             Todos os direitos reservados. Em conformidade com a MP nº 2.200-2/2001 e a LGPD (Lei nº 13.709/2018).
           </p>
         </div>

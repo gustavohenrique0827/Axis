@@ -516,6 +516,114 @@ app.get("/api/auth/tenant-theme", async (req, res) => {
   }
 });
 
+// ── Public Proposal Authenticated Fetch with Full Multi-Tenant Branding ─────
+app.get("/api/public-proposal/:token", async (req, res) => {
+  const { token } = req.params;
+  const client = supabaseService || supabase;
+  if (!client) {
+    return res.status(503).json({ error: "Supabase client indisponível." });
+  }
+
+  try {
+    if (!token || token.length < 16) {
+      return res.status(400).json({ error: "Token de proposta inválido." });
+    }
+
+    // 1. Busca a proposta pelo view_token
+    const { data: proposal, error: propErr } = await client
+      .from("proposals")
+      .select("*")
+      .eq("view_token", token)
+      .maybeSingle();
+
+    if (propErr || !proposal) {
+      return res.status(404).json({ error: "Proposta não encontrada ou link expirado." });
+    }
+
+    // 2. Incrementa contador de visualização e timestamp de auditoria
+    await client
+      .from("proposals")
+      .update({
+        view_count: (proposal.view_count || 0) + 1,
+        last_viewed_at: new Date().toISOString(),
+        first_viewed_at: proposal.first_viewed_at || new Date().toISOString(),
+      })
+      .eq("id", proposal.id);
+
+    // 3. Busca itens da proposta
+    const { data: items } = await client
+      .from("proposal_items")
+      .select("product_name, quantidade, preco_unitario")
+      .eq("proposal_id", proposal.id)
+      .order("created_at", { ascending: true });
+
+    // 4. Busca dados do tenant responsável pela proposta
+    let tenantData: any = null;
+    if (proposal.tenant_id) {
+      const { data: tenant } = await client
+        .from("tenants")
+        .select("id, name, primary_color, niche")
+        .eq("id", proposal.tenant_id)
+        .maybeSingle();
+      tenantData = tenant;
+    }
+
+    // 5. Busca configurações corporativas (empresa_dados) do tenant
+    let empresaDados: any = null;
+    if (proposal.tenant_id) {
+      const { data: setting } = await client
+        .from("app_settings")
+        .select("value")
+        .eq("key", "empresa_dados")
+        .eq("tenant_id", proposal.tenant_id)
+        .maybeSingle();
+      if (setting?.value) {
+        empresaDados = setting.value;
+      }
+    }
+
+    const tenantPrimaryColor = tenantData?.primary_color || "#2563EB";
+    const tenantName =
+      empresaDados?.nomeFantasia ||
+      empresaDados?.razaoSocial ||
+      tenantData?.name ||
+      "Empresa Proponente";
+
+    return res.json({
+      id: proposal.id,
+      titulo: proposal.titulo,
+      cliente: proposal.cliente,
+      valor: proposal.valor,
+      status: proposal.status,
+      validade: proposal.validade,
+      tipo: proposal.tipo,
+      conteudoTexto: proposal.conteudo_texto,
+      criadaEm: proposal.created_at,
+      vendedor: proposal.vendedor,
+      tenantId: proposal.tenant_id,
+      tenantName,
+      tenantPrimaryColor,
+      tenantNiche: tenantData?.niche || "",
+      empresaDados: empresaDados || {
+        razaoSocial: tenantName,
+        nomeFantasia: tenantName,
+        cnpj: "",
+        emailContato: "",
+        telefoneContato: "",
+        endereco: "",
+      },
+      itens: (items || []).map((i: any) => ({
+        productName: i.product_name,
+        quantidade: i.quantidade,
+        precoUnitario: i.preco_unitario,
+      })),
+    });
+  } catch (err: any) {
+    console.error("[public-proposal] Erro ao carregar proposta:", err?.message);
+    return res.status(500).json({ error: "Erro interno ao processar proposta comercial." });
+  }
+});
+
 // ── AI Routes ──────────────────────────────────────────────────────────────
 
 app.post("/api/leads/suggest-tags", requireUser, async (req, res) => {
